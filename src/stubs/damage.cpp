@@ -27,8 +27,6 @@ bool function_b9d20(long object_index) { return false; }
 void __stdcall function_bef30(long object_index, long a, long b, long c, long d) { }
 // @stub 0x10d4e0
 void function_10d4e0(long object_index) { }
-// @stub 0xfc330
-void __stdcall function_fc330(long object_index, long a, long b) { }
 /* sets a region's permutation */
 // @stub 0xa8360
 void function_a8360(long object_index, long region_index, long permutation_index, bool a) { }
@@ -62,8 +60,6 @@ void function_119280(long object_index, unsigned long flags) { }
 void __stdcall function_101c80(long object_index) { }
 // @stub 0xb7880
 void __stdcall function_b7880(long object_index, long node_index, real_point3d const *point, union real_vector3d const *impulse, bool flag) { }
-// @stub 0xfa820
-void function_fa820(long projectile_index, union real_vector3d const *impulse) { }
 // @stub 0x10cf80
 void function_10cf80(union real_vector3d const *impulse, long item_index, bool flag) { }
 // @stub 0xde620

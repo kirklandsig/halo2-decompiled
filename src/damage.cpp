@@ -1981,7 +1981,7 @@ void __stdcall function_bef30(long object_index, long a, long b, long c, long d)
 bool function_100390(long weapon_index, long barrel_index);
 bool function_1003e0(long weapon_index, long barrel_index);
 void function_10d4e0(long object_index);
-void __stdcall function_fc330(long object_index, long a, long b);
+void __stdcall projectile_detonate(long projectile_index, bool detach_contrail, real contrail_time); /* projectiles.cpp, 0xfc330 */
 void function_da860(byte const *owner, byte const *target, word mask, word *bits);
 void function_daa50(byte const *owner, byte const *target, word mask, word *bits);
 struct s_time_entry;
@@ -2122,7 +2122,7 @@ void function_da110(long permutation_index, s_damage_info *info, long object_ind
 		if ((1 << datum->type) & 0x1c)
 			function_10d4e0(object_index);
 		else if ((1 << datum->type) & 0x20)
-			function_fc330(object_index, 0, 0);
+			projectile_detonate(object_index, false, 0.0f);
 	}
 
 	datum = &((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff];
@@ -2454,7 +2454,7 @@ long function_cbd50(long unit_index, short weapon_slot);
 void __stdcall function_101c80(long object_index);
 void __stdcall function_b7880(long object_index, long node_index, real_point3d const *point, real_vector3d const *impulse,
 	bool flag);
-void function_fa820(long projectile_index, real_vector3d const *impulse);
+void projectile_accelerate(long projectile_index, real_vector3d const *impulse); /* projectiles.cpp, 0xfa820 */
 void function_10cf80(real_vector3d const *impulse, long item_index, bool flag);
 void __stdcall function_de620(long biped_index, real_vector3d const *impulse);
 void function_119020(long creature_index, real_vector3d const *impulse);
@@ -2590,7 +2590,7 @@ void object_damage_aftermath(s_damage_report const *report, long object_index)
 						function_10cf80(&thrown_impulse, object_index, large);
 						break;
 					case 5:
-						function_fa820(object_index, &thrown_impulse);
+						projectile_accelerate(object_index, &thrown_impulse);
 						break;
 					case 12:
 						function_119020(object_index, &thrown_impulse);

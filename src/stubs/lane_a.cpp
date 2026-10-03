@@ -174,12 +174,6 @@ void function_1e7960(void)
 {
 }
 
-// @stub 0xfa9a0
-bool __stdcall function_fa9a0(long *value)
-{
-	return false;
-}
-
 // @stub 0x187df0
 void __stdcall function_187df0(bool value)
 {
