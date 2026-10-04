@@ -9,8 +9,8 @@ through `0x2713bf` is explicitly excluded and remains untouched.
 
 Keep `src/unknown_271e50.cpp` unchanged, including its initializer,
 near `path_heap_bubble_up` (`0x271e50`) and matched
-`path_heap_bubble_down` (`0x271ef0`). Seven of the other 16 entries now have source: four exact and three with
-byte differences; nine remain unwritten.
+`path_heap_bubble_down` (`0x271ef0`). Nine of the other 16 entries now have source: four exact and five with
+byte differences; seven remain unwritten.
 The preceding obstacle-query helper `0x270400` and following scenario
 starting-location lookup `0x2729b0` are outside this claim. This does not
 claim all historical path-related routines or scattered initializers.
@@ -37,6 +37,8 @@ in that object file:
 | path_state_destination | `0x1350e0` | `0x236c80` | `0x2713c0` (inferred) |
 | path_heap_insert | `0x135290` | `0x2373b0` | `0x271fd0` (inferred) |
 | closest_point_to_attractor | `0x135510` | `0x237810` | `0x272740` (inferred) |
+| path_state_approach_point | `0x1356d0` | `0x237910` | `0x270640` (inferred) |
+| path_attractor_weight | `0x135620` | `0x2384d0` | `0x272810` (inferred) |
 
 The three setter mappings use retail field stores and the established path
 state/source layouts, not address order alone. Retail copies a 16-byte start
@@ -64,7 +66,7 @@ instructions determine this implementation's types, offsets, and behavior.
 | `0x270590` | 41 | Exact match |
 | `0x2705c0` | 58 | Exact match |
 | `0x270600` | 63 | 63/63 bytes; registers and return layout |
-| `0x270640` | 263 | Unwritten |
+| `0x270640` | 263 | 243/263 bytes; conventions and layout |
 | `0x270750` | 467 | Unwritten |
 | `0x270930` | 1116 | Unwritten |
 | `0x270d90` | 1388 | Unwritten |
@@ -78,7 +80,7 @@ instructions determine this implementation's types, offsets, and behavior.
 | `0x272020` | 1760 | Unwritten |
 | `0x272700` | 57 | Exact match |
 | `0x272740` | 206 | 216/206 bytes; FP ordering and scheduling |
-| `0x272810` | 402 | Unwritten |
+| `0x272810` | 402 | 408/402 bytes; FP ordering and scheduling |
 
 ## First batch results
 
@@ -157,11 +159,65 @@ These are isolated machine-code checks; no in-game runtime tests were run.
 Emulation dependencies and evidence remain local and are not added to the
 repository.
 
+## Third batch results
+
+Two more routines are implemented, both currently checker `todo`:
+
+- `path_state_approach_point` (`0x270640`): 243/263 bytes, first difference
+  +7. Finds a node with the existing hash lookup, then walks its parents
+  while coordinate-space indices agree and a segment trace reports clear.
+  At a root it returns the source's start point with `at_start = true`;
+  otherwise it returns the current entry point with `at_start = false`.
+  A missing hash key returns false without touching either output.
+  Argument registers/stack cleanup, the trace stub convention, early
+  failure, and loop/return layout differ from retail.
+- `path_attractor_weight` (`0x272810`): 408/402 bytes, first difference +3.
+  Converts the endpoint and attractor into the start point's space through
+  existing `function_210690`, ignoring its boolean result as retail does.
+  Uses retail's `(start-attractor)` projection and endpoint policy. Returns
+  zero weight and `FLT_MAX` distance unless squared distance is strictly
+  below squared radius. Inside the radius, writes sqrt(distance squared)
+  and returns `(1 - distance/radius) * attractor_weight` using x87 arithmetic.
+  SSE sums, register/stack scheduling, and x87 division/constant loading
+  differ. Rounding equivalence is not established.
+
+Local node fields now expose parent +2 and the 16-byte entry point +0x18,
+retaining the 0x44 stride and hash key +8. No shared layout was edited.
+A new `src/stubs/path.cpp` supplies only dependency `0x26c4e0`, the segment
+trace wrapper which calls `0x26c590` in retail. It is outside this claim and
+its implementation is still missing. Its declaration carries the two
+node points, existing 0x24-byte trace result, pathfinding pointer, both node
+indices, and flags. No existing dependency signature or flag was changed.
+
+Full check3 against `6f40393`: **4,337 game / total matches**, no upstream
+or prior path match lost. All 41 SDK layout assertions pass. One source
+implementation/full build in this batch.
+
+Isolated machine-code comparisons:
+
+- 64 approach cases agree, including missing keys (outputs untouched),
+  roots, coordinate-space mismatches, and blocked/clear parent segments.
+  The trace dependency was intercepted with chosen responses; complete
+  argument lists and call sequences were compared. This checks the caller,
+  not the missing trace implementation.
+- 150 attractor boundary cases agree, using the actual point-conversion
+  routine with output index NONE: degenerate segments, projection endpoint
+  choices, zero/negative/positive radii, strict radius boundaries, and weights.
+- 32 more cases agree with intercepted successful/failed coordinate
+  conversion. Both calls receive the expected index and point, in order;
+  failure does not stop the caller.
+- 21 of 200 deterministic random finite attractor cases differ bitwise.
+  Largest observed absolute differences: weight `2.384185791015625e-7`,
+  distance `4.76837158203125e-7`. These samples are not error bounds.
+
+No in-game runtime tests. The new trace stub remains a dependency to
+replace when its implementation becomes available.
+
 ## Remaining work
 
-Nine entries remain unwritten: `0x270640`, `0x270750`, `0x270930`,
-`0x270d90`, `0x2713f0`, `0x2715a0`, `0x271630`, `0x272020`, `0x272810`.
-Next, recover the helpers at `0x270640` and `0x272810`, then their callers.
+Seven entries remain unwritten: `0x270750`, `0x270930`, `0x270d90`,
+`0x2713f0`, `0x2715a0`, `0x271630`, `0x272020`.
+Next, recover `0x270750` and `0x2713f0`, building on the recovered helpers.
 Preserve the five exact matches and the existing near heap helper. Replace
 only the remaining claimed stubs (`0x270750`, `0x2715a0`) when their real
 implementations are ready. Keep this PR draft during recovery.

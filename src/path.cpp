@@ -3,6 +3,12 @@
 #include "real_math.h"
 #include "path.h"
 #include "unknown_20fe20.h"
+#include "lane_c_callees.h"
+#include <float.h>
+
+bool function_26c4e0(s_node_point const *start, s_node_point const *end,
+	s_path_trace_result *result, s_pathfinding_data *pathfinding,
+	long start_node_index, long end_node_index, long flags);
 
 /* Local views of fields not yet named in path.h. */
 struct s_path_input_view
@@ -32,9 +38,13 @@ struct s_path_destination_view
    begins at the actual node's start and exposes the hash key at +8. */
 struct s_path_node_key_view
 {
-	byte unknown00[8];
+	short unknown00;
+	short parent;
+	long unknown04;
 	long node_index;
-	byte unknown0c[0x44 - 0xc];
+	byte unknown0c[0x18 - 0xc];
+	s_node_point entry_point;
+	byte unknown28[0x44 - 0x28];
 };
 
 struct s_path_lookup_view
@@ -61,6 +71,7 @@ struct s_path_location_view
 };
 
 PRIVATE void path_heap_bubble_up(path_state *state, short index);
+short path_node_from_hash_table(path_state *state, long node_index);
 
 // @retail 0x270590
 void path_input_set_start(s_path_source *source, s_node_point const *point, long node_index)
@@ -97,6 +108,45 @@ PRIVATE bool function_270600(s_path_location const *location, long node_index)
 		}
 	}
 	return false;
+}
+
+// @retail 0x270640
+PRIVATE bool path_state_approach_point(path_state *state, s_node_point const *point,
+	long node_index, bool *at_start, s_node_point *out)
+{
+	short index = path_node_from_hash_table(state, node_index);
+	if (index == NONE)
+	{
+		return false;
+	}
+	s_path_lookup_view *lookup = (s_path_lookup_view *)state;
+	s_path_node_key_view *node = &lookup->nodes[index];
+	while (node->parent != NONE)
+	{
+		s_path_node_key_view *parent = &lookup->nodes[node->parent];
+		if (point->output_index != parent->entry_point.output_index)
+		{
+			break;
+		}
+		s_path_trace_result trace;
+		if (function_26c4e0(point, &parent->entry_point, &trace,
+			(s_pathfinding_data *)state->pathfinding, node_index, parent->node_index, 0))
+		{
+			break;
+		}
+		node = &lookup->nodes[node->parent];
+	}
+	if (node->parent == NONE)
+	{
+		*at_start = true;
+		*out = ((s_path_input_view *)&state->source)->start;
+	}
+	else
+	{
+		*at_start = false;
+		*out = node->entry_point;
+	}
+	return true;
 }
 
 // @retail 0x2713c0
@@ -167,4 +217,51 @@ PRIVATE void closest_point_to_attractor(real_point3d const *attractor,
 	{
 		*out = *start;
 	}
+}
+
+// @retail 0x272810
+PRIVATE real path_attractor_weight(path_state const *state, s_node_point const *start,
+	real_point3d const *end, real *distance_out)
+{
+	s_path_input_view const *input = (s_path_input_view const *)&state->source;
+	real distance = FLT_MAX;
+	real weight = 0.0f;
+	real_point3d local_end;
+	real_point3d local_attractor;
+	function_210690(start->output_index, end, &local_end);
+	function_210690(start->output_index, &input->attractor_point, &local_attractor);
+	real_vector3d delta;
+	vector3d_from_points3d(&start->point, &local_end, &delta);
+	real length_squared = delta.k * delta.k + delta.i * delta.i + delta.j * delta.j;
+	real_point3d closest;
+	if (length_squared > 0.0f)
+	{
+		real t = ((start->point.z - local_attractor.z) * delta.k +
+			(start->point.y - local_attractor.y) * delta.j +
+			(start->point.x - local_attractor.x) * delta.i) / length_squared;
+		if (t < 0.0f || t > 1.0f)
+		{
+			closest = local_end;
+		}
+		else
+		{
+			closest.x = delta.i * t + start->point.x;
+			closest.y = delta.j * t + start->point.y;
+			closest.z = delta.k * t + start->point.z;
+		}
+	}
+	else
+	{
+		closest = start->point;
+	}
+	vector3d_from_points3d(&local_attractor, &closest, &delta);
+	real distance_squared = delta.k * delta.k + delta.j * delta.j + delta.i * delta.i;
+	if (input->attractor_radius * input->attractor_radius > distance_squared)
+	{
+		double length = sqrt(distance_squared);
+		distance = (real)length;
+		weight = (real)((1.0 - length / input->attractor_radius) * input->attractor_weight);
+	}
+	*distance_out = distance;
+	return weight;
 }
