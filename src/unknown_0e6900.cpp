@@ -9,129 +9,136 @@
 /* a unit request type's handlers (0x467564..0x4677b4, 0x10 bytes each, in
    0xe7280..0xedf60): the first performs the request */
 typedef bool (__stdcall *t_unit_request_proc)(long unit_index, s_unit_request *request);
+typedef bool (__stdcall *t_unit_request_update_proc)(long unit_index, long type);
+typedef void (__stdcall *t_unit_request_end_proc)(long unit_index, long type);
 
+/* perform, update (each tick), finished and interrupted (the last three
+   take the request type) */
 struct s_unit_request_definition
 {
 	t_unit_request_proc perform;
-	t_unit_request_proc unknown04;
-	t_unit_request_proc unknown08;
-	t_unit_request_proc unknown0c;
+	t_unit_request_update_proc update;
+	t_unit_request_end_proc finished;
+	t_unit_request_end_proc interrupted;
 };
+
+#define UNIT_REQUEST_DEFINITION(perform, update, finished, interrupted) \
+	{ (t_unit_request_proc)(perform), (t_unit_request_update_proc)(update), (t_unit_request_end_proc)(finished), \
+	(t_unit_request_end_proc)(interrupted) }
 
 /* the callbacks (stubs in src/stubs/lane_i.cpp) */
 bool __stdcall function_e7280(long unit_index, s_unit_request *request);
-bool __stdcall function_e7320(long unit_index, s_unit_request *request);
-bool __stdcall function_e73c0(long unit_index, s_unit_request *request);
+bool __stdcall function_e7320(long unit_index, long type);
+void __stdcall function_e73c0(long unit_index, long type);
 bool __stdcall function_e7440(long unit_index, s_unit_request *request);
-bool __stdcall function_e7fb0(long unit_index, s_unit_request *request);
-bool __stdcall function_e8380(long unit_index, s_unit_request *request);
-bool __stdcall function_e8420(long unit_index, s_unit_request *request);
-bool __stdcall function_e8980(long unit_index, s_unit_request *request);
-bool __stdcall function_e8b20(long unit_index, s_unit_request *request);
-bool __stdcall function_e8c10(long unit_index, s_unit_request *request);
-bool __stdcall function_e8d10(long unit_index, s_unit_request *request);
-bool __stdcall function_e8de0(long unit_index, s_unit_request *request);
-bool __stdcall function_e9000(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_throw_grenade(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_throw_grenade_update(long unit_index, long type);
+void __stdcall unit_action_throw_grenade_interrupted(long unit_index, long type);
+bool __stdcall unit_action_weapon_switch(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_weapon_switch_update(long unit_index, long type);
+void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type);
+void __stdcall unit_action_weapon_switch_finished(long unit_index, long type);
+bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request);
 bool __stdcall function_e9190(long unit_index, s_unit_request *request);
 bool __stdcall function_e9370(long unit_index, s_unit_request *request);
 bool __stdcall function_e9500(long unit_index, s_unit_request *request);
 bool __stdcall function_e9690(long unit_index, s_unit_request *request);
-bool __stdcall function_e9830(long unit_index, s_unit_request *request);
-bool __stdcall function_e9ed0(long unit_index, s_unit_request *request);
-bool __stdcall function_ea090(long unit_index, s_unit_request *request);
-bool __stdcall function_ea1c0(long unit_index, s_unit_request *request);
-bool __stdcall function_ea6b0(long unit_index, s_unit_request *request);
-bool __stdcall function_ea7c0(long unit_index, s_unit_request *request);
-bool __stdcall function_ea830(long unit_index, s_unit_request *request);
-bool __stdcall function_eab80(long unit_index, s_unit_request *request);
-bool __stdcall function_eae60(long unit_index, s_unit_request *request);
-bool __stdcall function_eaea0(long unit_index, s_unit_request *request);
-bool __stdcall function_eaeb0(long unit_index, s_unit_request *request);
-bool __stdcall function_eb090(long unit_index, s_unit_request *request);
-bool __stdcall function_eb270(long unit_index, s_unit_request *request);
-bool __stdcall function_eb340(long unit_index, s_unit_request *request);
-bool __stdcall function_eb3c0(long unit_index, s_unit_request *request);
-bool __stdcall function_eb520(long unit_index, s_unit_request *request);
-bool __stdcall function_eb5a0(long unit_index, s_unit_request *request);
-bool __stdcall function_eb5d0(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_melee(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_melee_attack(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_melee_attack_update(long unit_index, long type);
+void __stdcall unit_action_melee_attack_interrupted(long unit_index, long type);
+void __stdcall unit_action_vehicle_entry_finished(long unit_index, long type);
+bool __stdcall unit_action_vehicle_entry_update(long unit_index, long type);
+bool __stdcall unit_action_vehicle_entry(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_vehicle_exit(long unit_index, s_unit_request *request);
+void __stdcall unit_action_vehicle_exit_finished(long unit_index, long type);
+bool __stdcall unit_action_vehicle_exit_immediate(long unit_index, s_unit_request *request);
+bool __stdcall unit_action_vehicle_exit_update(long unit_index, long type);
+bool __stdcall unit_action_vehicle_board(long unit_index, s_unit_request *request);
+void __stdcall unit_action_vehicle_board_finished(long unit_index, long type);
+bool __stdcall unit_action_vehicle_board_update(long unit_index, long type);
+bool __stdcall unit_action_vehicle_ejection(long unit_index, s_unit_request *request);
+void __stdcall unit_action_vehicle_ejection_finished(long unit_index, long type);
+bool __stdcall unit_action_vehicle_ejection_update(long unit_index, long type);
+bool __stdcall unit_action_vehicle_flip(long unit_index, s_unit_request *request);
 bool __stdcall function_eb7e0(long unit_index, s_unit_request *request);
-bool __stdcall function_eb960(long unit_index, s_unit_request *request);
+void __stdcall function_eb960(long unit_index, long type);
 bool __stdcall function_ebaa0(long unit_index, s_unit_request *request);
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request);
 bool __stdcall function_ebd30(long unit_index, s_unit_request *request);
 bool __stdcall function_ebf20(long unit_index, s_unit_request *request);
 bool __stdcall function_ec050(long unit_index, s_unit_request *request);
-bool __stdcall function_ec2b0(long unit_index, s_unit_request *request);
+void __stdcall function_ec2b0(long unit_index, long type);
 bool __stdcall function_ec2d0(long unit_index, s_unit_request *request);
-bool __stdcall function_ec330(long unit_index, s_unit_request *request);
+void __stdcall function_ec330(long unit_index, long type);
 bool __stdcall function_ec380(long unit_index, s_unit_request *request);
-bool __stdcall function_ec4f0(long unit_index, s_unit_request *request);
+bool __stdcall function_ec4f0(long unit_index, long type);
 bool __stdcall function_ec940(long unit_index, s_unit_request *request);
 bool __stdcall function_ec970(long unit_index, s_unit_request *request);
 bool __stdcall function_ec9a0(long unit_index, s_unit_request *request);
-bool __stdcall function_ecb20(long unit_index, s_unit_request *request);
+void __stdcall function_ecb20(long unit_index, long type);
 bool __stdcall function_ecb80(long unit_index, s_unit_request *request);
-bool __stdcall function_ecc70(long unit_index, s_unit_request *request);
+void __stdcall function_ecc70(long unit_index, long type);
 bool __stdcall function_eccc0(long unit_index, s_unit_request *request);
 bool __stdcall function_ecd50(long unit_index, s_unit_request *request);
-bool __stdcall function_ecdc0(long unit_index, s_unit_request *request);
+void __stdcall function_ecdc0(long unit_index, long type);
 bool __stdcall function_ecf30(long unit_index, s_unit_request *request);
-bool __stdcall function_ecfc0(long unit_index, s_unit_request *request);
+void __stdcall function_ecfc0(long unit_index, long type);
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request);
-bool __stdcall function_ed560(long unit_index, s_unit_request *request);
+bool __stdcall function_ed560(long unit_index, long type);
 bool __stdcall function_ed680(long unit_index, s_unit_request *request);
-bool __stdcall function_ed710(long unit_index, s_unit_request *request);
+bool __stdcall function_ed710(long unit_index, long type);
 bool __stdcall function_ed800(long unit_index, s_unit_request *request);
-bool __stdcall function_ed910(long unit_index, s_unit_request *request);
+bool __stdcall function_ed910(long unit_index, long type);
 bool __stdcall function_eda30(long unit_index, s_unit_request *request);
 bool __stdcall function_ede60(long unit_index, s_unit_request *request);
-bool __stdcall function_edf10(long unit_index, s_unit_request *request);
-bool __stdcall function_edf60(long unit_index, s_unit_request *request);
+bool __stdcall function_edf10(long unit_index, long type);
+void __stdcall function_edf60(long unit_index, long type);
 
 /* folded in retail with the other empty callbacks of two arguments */
-static bool __stdcall unit_request_ignore(long unit_index, s_unit_request *request)
+static void __stdcall unit_request_ignore(long unit_index, long type)
 {
-	return false;
 }
 
-s_unit_request_definition g_467564 = {function_e7280, function_e7320, 0, function_e73c0};
-s_unit_request_definition g_467574 = {function_e7440, 0, 0, 0};
-s_unit_request_definition g_467584 = {function_e8980, function_e8b20, function_e8d10, function_e8c10};
-s_unit_request_definition g_467594 = {function_e8de0, 0, 0, 0};
-s_unit_request_definition g_4675a4 = {function_e9000, 0, 0, 0};
-s_unit_request_definition g_4675b4 = {function_e9190, 0, 0, 0};
-s_unit_request_definition g_4675c4 = {function_e7fb0, function_e8380, 0, function_e8420};
-s_unit_request_definition g_4675d4 = {function_e9370, 0, 0, 0};
-s_unit_request_definition g_4675e4 = {function_e9500, 0, 0, 0};
-s_unit_request_definition g_4675f4 = {function_e9690, 0, 0, 0};
-s_unit_request_definition g_467604 = {function_e9830, 0, 0, 0};
-s_unit_request_definition g_467614 = {function_e9ed0, function_ea090, 0, function_ea1c0};
-s_unit_request_definition g_467624 = {function_ea830, function_ea7c0, function_ea6b0, 0};
-s_unit_request_definition g_467634 = {function_eab80, function_eaeb0, function_eae60, 0};
-s_unit_request_definition g_467644 = {function_eaea0, 0, 0, 0};
-s_unit_request_definition g_467654 = {function_eb090, function_eb340, function_eb270, 0};
-s_unit_request_definition g_467664 = {function_eb3c0, function_eb5a0, function_eb520, unit_request_ignore};
-s_unit_request_definition g_467674 = {function_eb5d0, 0, 0, 0};
-s_unit_request_definition g_467684 = {function_eb7e0, 0, function_eb960, 0};
-s_unit_request_definition g_467694 = {function_ebaa0, 0, function_ec2b0, 0};
-s_unit_request_definition g_4676a4 = {function_ebb40, 0, 0, 0};
-s_unit_request_definition g_4676b4 = {function_ebd30, 0, 0, 0};
-s_unit_request_definition g_4676c4 = {function_ebf20, 0, 0, 0};
-s_unit_request_definition g_4676d4 = {function_ec050, 0, function_ec2b0, 0};
-s_unit_request_definition g_4676e4 = {function_ec2d0, 0, function_ec330, 0};
-s_unit_request_definition g_4676f4 = {function_ec380, function_ec4f0, 0, 0};
-s_unit_request_definition g_467704 = {function_ec940, 0, function_ec2b0, 0};
-s_unit_request_definition g_467714 = {function_ec970, 0, function_ec2b0, 0};
-s_unit_request_definition g_467724 = {function_ec9a0, 0, function_ecb20, 0};
-s_unit_request_definition g_467734 = {function_eccc0, 0, 0, 0};
-s_unit_request_definition g_467744 = {function_ecd50, 0, function_ecdc0, 0};
-s_unit_request_definition g_467754 = {function_ecb80, 0, function_ecc70, 0};
-s_unit_request_definition g_467764 = {function_ecf30, 0, function_ecfc0, 0};
-s_unit_request_definition g_467774 = {function_ecff0, function_ed560, 0, 0};
-s_unit_request_definition g_467784 = {function_ed680, function_ed710, 0, 0};
-s_unit_request_definition g_467794 = {function_ed800, function_ed910, 0, 0};
-s_unit_request_definition g_4677a4 = {function_eda30, 0, 0, 0};
-s_unit_request_definition g_4677b4 = {function_ede60, function_edf10, function_edf60, 0};
+s_unit_request_definition g_467564 = UNIT_REQUEST_DEFINITION(function_e7280, function_e7320, 0, function_e73c0);
+s_unit_request_definition g_467574 = UNIT_REQUEST_DEFINITION(function_e7440, 0, 0, 0);
+s_unit_request_definition g_467584 = UNIT_REQUEST_DEFINITION(unit_action_weapon_switch, unit_action_weapon_switch_update, unit_action_weapon_switch_finished, unit_action_weapon_switch_interrupted);
+s_unit_request_definition g_467594 = UNIT_REQUEST_DEFINITION(unit_action_drop_weapon, 0, 0, 0);
+s_unit_request_definition g_4675a4 = UNIT_REQUEST_DEFINITION(unit_action_pickup_weapon, 0, 0, 0);
+s_unit_request_definition g_4675b4 = UNIT_REQUEST_DEFINITION(function_e9190, 0, 0, 0);
+s_unit_request_definition g_4675c4 = UNIT_REQUEST_DEFINITION(unit_action_throw_grenade, unit_action_throw_grenade_update, 0, unit_action_throw_grenade_interrupted);
+s_unit_request_definition g_4675d4 = UNIT_REQUEST_DEFINITION(function_e9370, 0, 0, 0);
+s_unit_request_definition g_4675e4 = UNIT_REQUEST_DEFINITION(function_e9500, 0, 0, 0);
+s_unit_request_definition g_4675f4 = UNIT_REQUEST_DEFINITION(function_e9690, 0, 0, 0);
+s_unit_request_definition g_467604 = UNIT_REQUEST_DEFINITION(unit_action_melee, 0, 0, 0);
+s_unit_request_definition g_467614 = UNIT_REQUEST_DEFINITION(unit_action_melee_attack, unit_action_melee_attack_update, 0, unit_action_melee_attack_interrupted);
+s_unit_request_definition g_467624 = UNIT_REQUEST_DEFINITION(unit_action_vehicle_entry, unit_action_vehicle_entry_update, unit_action_vehicle_entry_finished, 0);
+s_unit_request_definition g_467634 = UNIT_REQUEST_DEFINITION(unit_action_vehicle_exit, unit_action_vehicle_exit_update, unit_action_vehicle_exit_finished, 0);
+s_unit_request_definition g_467644 = UNIT_REQUEST_DEFINITION(unit_action_vehicle_exit_immediate, 0, 0, 0);
+s_unit_request_definition g_467654 = UNIT_REQUEST_DEFINITION(unit_action_vehicle_board, unit_action_vehicle_board_update, unit_action_vehicle_board_finished, 0);
+s_unit_request_definition g_467664 = UNIT_REQUEST_DEFINITION(unit_action_vehicle_ejection, unit_action_vehicle_ejection_update, unit_action_vehicle_ejection_finished, unit_request_ignore);
+s_unit_request_definition g_467674 = UNIT_REQUEST_DEFINITION(unit_action_vehicle_flip, 0, 0, 0);
+s_unit_request_definition g_467684 = UNIT_REQUEST_DEFINITION(function_eb7e0, 0, function_eb960, 0);
+s_unit_request_definition g_467694 = UNIT_REQUEST_DEFINITION(function_ebaa0, 0, function_ec2b0, 0);
+s_unit_request_definition g_4676a4 = UNIT_REQUEST_DEFINITION(function_ebb40, 0, 0, 0);
+s_unit_request_definition g_4676b4 = UNIT_REQUEST_DEFINITION(function_ebd30, 0, 0, 0);
+s_unit_request_definition g_4676c4 = UNIT_REQUEST_DEFINITION(function_ebf20, 0, 0, 0);
+s_unit_request_definition g_4676d4 = UNIT_REQUEST_DEFINITION(function_ec050, 0, function_ec2b0, 0);
+s_unit_request_definition g_4676e4 = UNIT_REQUEST_DEFINITION(function_ec2d0, 0, function_ec330, 0);
+s_unit_request_definition g_4676f4 = UNIT_REQUEST_DEFINITION(function_ec380, function_ec4f0, 0, 0);
+s_unit_request_definition g_467704 = UNIT_REQUEST_DEFINITION(function_ec940, 0, function_ec2b0, 0);
+s_unit_request_definition g_467714 = UNIT_REQUEST_DEFINITION(function_ec970, 0, function_ec2b0, 0);
+s_unit_request_definition g_467724 = UNIT_REQUEST_DEFINITION(function_ec9a0, 0, function_ecb20, 0);
+s_unit_request_definition g_467734 = UNIT_REQUEST_DEFINITION(function_eccc0, 0, 0, 0);
+s_unit_request_definition g_467744 = UNIT_REQUEST_DEFINITION(function_ecd50, 0, function_ecdc0, 0);
+s_unit_request_definition g_467754 = UNIT_REQUEST_DEFINITION(function_ecb80, 0, function_ecc70, 0);
+s_unit_request_definition g_467764 = UNIT_REQUEST_DEFINITION(function_ecf30, 0, function_ecfc0, 0);
+s_unit_request_definition g_467774 = UNIT_REQUEST_DEFINITION(function_ecff0, function_ed560, 0, 0);
+s_unit_request_definition g_467784 = UNIT_REQUEST_DEFINITION(function_ed680, function_ed710, 0, 0);
+s_unit_request_definition g_467794 = UNIT_REQUEST_DEFINITION(function_ed800, function_ed910, 0, 0);
+s_unit_request_definition g_4677a4 = UNIT_REQUEST_DEFINITION(function_eda30, 0, 0, 0);
+s_unit_request_definition g_4677b4 = UNIT_REQUEST_DEFINITION(function_ede60, function_edf10, function_edf60, 0);
 
 /* the definition of each request type (60 types, in .data) */
 s_unit_request_definition *g_4677c8[60] =
