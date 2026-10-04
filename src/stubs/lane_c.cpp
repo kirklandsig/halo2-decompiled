@@ -84,9 +84,6 @@ bool function_26c590(long node_index, real_point3d const *origin, s_path_trace_r
 // @stub 0x26d100
 long function_26d100(real_vector3d const *up, s_collision_result_1697c0 *collision, long *unknown, real_point3d const *point) { return 0; }
 
-// @stub 0x272700
-short path_node_from_hash_table(path_state *state, long node_index) { return 0; }
-
 /* callees of the physics code (unknown_1c25a0.cpp, unknown_1cec30.cpp) */
 
 // @stub 0x30bd50
