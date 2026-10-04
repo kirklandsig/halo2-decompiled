@@ -46,6 +46,22 @@ struct s_path_lookup_view
 	short hash_table[4096];
 };
 
+struct s_path_location_entry_view
+{
+	short unknown00;
+	short unknown02;
+	long node_index;
+};
+
+struct s_path_location_view
+{
+	short flags;
+	short count;
+	s_path_location_entry_view entries[3];
+};
+
+PRIVATE void path_heap_bubble_up(path_state *state, short index);
+
 // @retail 0x270590
 void path_input_set_start(s_path_source *source, s_node_point const *point, long node_index)
 {
@@ -68,6 +84,21 @@ void path_input_set_attractor(s_path_source *source, real_point3d const *point,
 	input->unknown44 = unknown;
 }
 
+// @retail 0x270600
+PRIVATE bool function_270600(s_path_location const *location, long node_index)
+{
+	s_path_location_view const *view = (s_path_location_view const *)location;
+	for (short i = 0; i < view->count; i++)
+	{
+		if (view->entries[i].unknown00 == NONE &&
+			view->entries[i].node_index == node_index && (view->flags & (1 << i)))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 // @retail 0x2713c0
 void path_state_destination(path_state *state, s_node_point const *point,
 	long node_index, real radius)
@@ -77,6 +108,19 @@ void path_state_destination(path_state *state, s_node_point const *point,
 	destination->destination = *point;
 	destination->destination_node_index = node_index;
 	destination->destination_radius = radius;
+}
+
+// @retail 0x271fd0
+PRIVATE void path_heap_insert(path_state *state, short node_index, short cost)
+{
+	short index = state->heap_count;
+	if (index < 1024)
+	{
+		state->heap_count = index + 1;
+		state->heap[index].node = node_index;
+		state->heap[index].cost = cost;
+		path_heap_bubble_up(state, index);
+	}
 }
 
 // @retail 0x272700
@@ -92,4 +136,35 @@ short path_node_from_hash_table(path_state *state, long node_index)
 	}
 	while (result != NONE && lookup->nodes[result].node_index != node_index);
 	return result;
+}
+
+// @retail 0x272740
+PRIVATE void closest_point_to_attractor(real_point3d const *attractor,
+	real_point3d const *start, real_point3d const *end, real_point3d *out)
+{
+	real_vector3d delta;
+	delta.i = end->x - start->x;
+	delta.j = end->y - start->y;
+	delta.k = end->z - start->z;
+	real length_squared = delta.i * delta.i + delta.j * delta.j + delta.k * delta.k;
+	if (length_squared > 0.0f)
+	{
+		real t = ((start->y - attractor->y) * delta.j +
+			(start->z - attractor->z) * delta.k +
+			(start->x - attractor->x) * delta.i) / length_squared;
+		if (t < 0.0f || t > 1.0f)
+		{
+			*out = *end;
+		}
+		else
+		{
+			out->x = delta.i * t + start->x;
+			out->y = delta.j * t + start->y;
+			out->z = delta.k * t + start->z;
+		}
+	}
+	else
+	{
+		*out = *start;
+	}
 }

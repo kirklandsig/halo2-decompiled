@@ -9,7 +9,8 @@ through `0x2713bf` is explicitly excluded and remains untouched.
 
 Keep `src/unknown_271e50.cpp` unchanged, including its initializer,
 near `path_heap_bubble_up` (`0x271e50`) and matched
-`path_heap_bubble_down` (`0x271ef0`). Four of the other 16 entries are now exact matches; 12 remain unwritten.
+`path_heap_bubble_down` (`0x271ef0`). Seven of the other 16 entries now have source: four exact and three with
+byte differences; nine remain unwritten.
 The preceding obstacle-query helper `0x270400` and following scenario
 starting-location lookup `0x2729b0` are outside this claim. This does not
 claim all historical path-related routines or scattered initializers.
@@ -34,6 +35,8 @@ in that object file:
 | path_input_set_start | `0x134e80` | `0x236a00` | `0x270590` (inferred) |
 | path_input_set_attractor | `0x134eb0` | `0x236a30` | `0x2705c0` (inferred) |
 | path_state_destination | `0x1350e0` | `0x236c80` | `0x2713c0` (inferred) |
+| path_heap_insert | `0x135290` | `0x2373b0` | `0x271fd0` (inferred) |
+| closest_point_to_attractor | `0x135510` | `0x237810` | `0x272740` (inferred) |
 
 The three setter mappings use retail field stores and the established path
 state/source layouts, not address order alone. Retail copies a 16-byte start
@@ -60,7 +63,7 @@ instructions determine this implementation's types, offsets, and behavior.
 | --- | ---: | --- |
 | `0x270590` | 41 | Exact match |
 | `0x2705c0` | 58 | Exact match |
-| `0x270600` | 63 | Unwritten |
+| `0x270600` | 63 | 63/63 bytes; registers and return layout |
 | `0x270640` | 263 | Unwritten |
 | `0x270750` | 467 | Unwritten |
 | `0x270930` | 1116 | Unwritten |
@@ -71,10 +74,10 @@ instructions determine this implementation's types, offsets, and behavior.
 | `0x271630` | 2076 | Unwritten |
 | `0x271e50` | 150 | Existing todo; preserve |
 | `0x271ef0` | 221 | Existing matched; preserve |
-| `0x271fd0` | 65 | Unwritten |
+| `0x271fd0` | 65 | 65/65 bytes; registers |
 | `0x272020` | 1760 | Unwritten |
 | `0x272700` | 57 | Exact match |
-| `0x272740` | 206 | Unwritten |
+| `0x272740` | 206 | 216/206 bytes; FP ordering and scheduling |
 | `0x272810` | 402 | Unwritten |
 
 ## First batch results
@@ -104,10 +107,61 @@ Validation against upstream `6f40393`:
   remain unchanged. Only the existing `0x272700` stub was removed.
 - No game runtime tests.
 
+## Second batch results
+
+Three more routines are implemented. The checker records all three as
+`todo` with byte differences; no earlier match was lost.
+
+- `function_270600`: 63/63 bytes, first difference +0. Tests a location's
+  signed count, entries with a NONE short field and matching node key,
+  and the corresponding active bit in its signed-short mask. The local
+  view is 0x1c bytes: mask +0, count +2, three 8-byte entries +4 (short
+  field +0, key +4). Registers, initial boolean setup, alignment padding,
+  and return blocks differ. The original name is unknown.
+- `path_heap_insert`: 65/65 bytes, first difference +1. If signed heap
+  count is below 1024, increment it, write node/cost at the old index,
+  then call the existing `path_heap_bubble_up`. Only register allocation
+  differs (including the existing callee's selected argument register).
+  That helper's source and flags remain unchanged.
+- `closest_point_to_attractor`: 216/206 bytes, first difference +3.
+  Uses `delta = end - start`. For positive squared length, retail's
+  numerator is `(start-attractor) dot delta`, summed in y/z/x order.
+  A parameter below zero or above one selects `end`; otherwise it
+  interpolates from `start`. Nonpositive/unordered squared length selects
+  `start`. This unusual numerator sign and endpoint policy are preserved.
+  The compiler sums squared length in z/y/x order, versus retail x/y/z,
+  and uses different SSE registers, loads, interpolation operands, and a
+  longer conditional jump. Rounding equivalence is not established.
+
+Full original-compiler check2 against `6f40393`: **4,337 game / total
+matches**, no upstream or first-batch match lost. All 37 layout assertions
+pass. No additional stubs, shared-header changes, or other files' flag
+changes were needed. One implementation/build for this batch; stopped at
+register/operand differences under the decompilation guidelines.
+
+Isolated x86/SSE emulation compared retail and linked code:
+
+- 240 location cases agree, covering signed/empty counts, first/last hits,
+  key mismatch, NONE fields, and active/inactive masks.
+- 20 heap cases agree, executing each image's real bubble-up helper;
+  includes empty heap (count 1), full capacity, and low/equal/high costs.
+- 32 closest-point boundary/alias cases agree, including zero-length
+  segments, parameters 0/1 and outside that interval, NaNs, and output
+  aliasing each input.
+- In 200 deterministic random finite cases, six closest-point results
+  differ in their bits. The largest absolute coordinate difference in
+  that sample is `9.5367431640625e-7`, consistent with the changed sum
+  order. This sample is not a bound or an exhaustive equivalence proof.
+
+These are isolated machine-code checks; no in-game runtime tests were run.
+Emulation dependencies and evidence remain local and are not added to the
+repository.
+
 ## Remaining work
 
-Twelve entries remain unwritten. Start with the leaf helpers `0x270600`
-and `0x272740`, then heap insertion `0x271fd0` and the search routines.
+Nine entries remain unwritten: `0x270640`, `0x270750`, `0x270930`,
+`0x270d90`, `0x2713f0`, `0x2715a0`, `0x271630`, `0x272020`, `0x272810`.
+Next, recover the helpers at `0x270640` and `0x272810`, then their callers.
 Preserve the five exact matches and the existing near heap helper. Replace
 only the remaining claimed stubs (`0x270750`, `0x2715a0`) when their real
 implementations are ready. Keep this PR draft during recovery.
