@@ -9,7 +9,7 @@ through `0x2713bf` is explicitly excluded and remains untouched.
 
 Keep `src/unknown_271e50.cpp` unchanged, including its initializer,
 near `path_heap_bubble_up` (`0x271e50`) and matched
-`path_heap_bubble_down` (`0x271ef0`). The other 16 entries need recovery.
+`path_heap_bubble_down` (`0x271ef0`). Four of the other 16 entries are now exact matches; 12 remain unwritten.
 The preceding obstacle-query helper `0x270400` and following scenario
 starting-location lookup `0x2729b0` are outside this claim. This does not
 claim all historical path-related routines or scattered initializers.
@@ -56,16 +56,16 @@ instructions determine this implementation's types, offsets, and behavior.
 
 ## Inventory
 
-| Retail | Bytes | Initial state |
+| Retail | Bytes | Current state |
 | --- | ---: | --- |
-| `0x270590` | 41 | Unwritten |
-| `0x2705c0` | 58 | Unwritten |
+| `0x270590` | 41 | Exact match |
+| `0x2705c0` | 58 | Exact match |
 | `0x270600` | 63 | Unwritten |
 | `0x270640` | 263 | Unwritten |
 | `0x270750` | 467 | Unwritten |
 | `0x270930` | 1116 | Unwritten |
 | `0x270d90` | 1388 | Unwritten |
-| `0x2713c0` | 46 | Unwritten |
+| `0x2713c0` | 46 | Exact match |
 | `0x2713f0` | 425 | Unwritten |
 | `0x2715a0` | 135 | Unwritten |
 | `0x271630` | 2076 | Unwritten |
@@ -73,15 +73,41 @@ instructions determine this implementation's types, offsets, and behavior.
 | `0x271ef0` | 221 | Existing matched; preserve |
 | `0x271fd0` | 65 | Unwritten |
 | `0x272020` | 1760 | Unwritten |
-| `0x272700` | 57 | Unwritten |
+| `0x272700` | 57 | Exact match |
 | `0x272740` | 206 | Unwritten |
 | `0x272810` | 402 | Unwritten |
 
-## Plan
+## First batch results
 
-Start with both input setters, the destination setter, and the hash lookup.
-Use local views and leave `include/path.h` unchanged. Replace only the hash
-lookup's existing stub in the first batch. Then recover the remaining search
-helpers and callers in small batches, retaining the existing upstream code.
-A full original-compiler check must preserve every upstream match before
-publication. The draft claim precedes all source implementation.
+All four new routines match exactly on the first implementation and build:
+start setter (41 bytes), attractor setter (58), destination setter (46), and
+hash lookup (57), totaling 202 new matched bytes. Including the existing
+heap helpers, six of the 18 claimed entries have source and five match.
+
+The hash starts at `(node_index & 511) * 8`, probes signed short entries,
+wraps with `& 4095`, and stops at NONE or a node with the requested key.
+Retail's hash table begins at state +0x120b6; node keys are at
+state +0xb8 + index*0x44. The local lookup view covers the full nodes,
+1025 heap entries, and hash table without altering the existing partial
+`path_node`/`path_state` views. There are no globals or external calls in
+these four routines.
+
+Validation against upstream `6f40393`:
+
+- Full baseline: 4,333 game / total matches.
+- Full implementation check: **4,337 game / total matches**, none lost.
+- All 27 SDK layout assertions pass, including the shared point type,
+  setter fields, node stride, heap count, heap, and hash table offsets.
+- Linked code sizes and return stack cleanup agree with retail; the hash
+  masks, node stride, and memory offsets were independently inspected.
+- Existing initializer and heap source, shared headers, and other flags
+  remain unchanged. Only the existing `0x272700` stub was removed.
+- No game runtime tests.
+
+## Remaining work
+
+Twelve entries remain unwritten. Start with the leaf helpers `0x270600`
+and `0x272740`, then heap insertion `0x271fd0` and the search routines.
+Preserve the five exact matches and the existing near heap helper. Replace
+only the remaining claimed stubs (`0x270750`, `0x2715a0`) when their real
+implementations are ready. Keep this PR draft during recovery.
