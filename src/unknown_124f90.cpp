@@ -260,7 +260,9 @@ struct s_sound_system_view
 	bool hardware_available;
 	bool enabled;
 	bool unknown7b;
-	byte unknown7c[4];
+	byte unknown7c;
+	bool changing_pause;
+	byte unknown7e[2];
 	dword field_14_2;
 	long time;
 	s_sound_listener listeners[4];
@@ -595,7 +597,10 @@ struct s_sound_globals_tables_view
 
 struct s_sound_system_channels_view
 {
-	byte unknown00[0x58];
+	dword free_bits[2];
+	byte unknown08[0x38];
+	long first_channel[3];
+	long last_channel[3];
 	dword available_bits[2];
 	dword streaming_bits[2];
 	byte unknown68[8];
@@ -2268,4 +2273,137 @@ real function_12a9d0(long listener_index, s_sound_position const *position)
 	source_speed = position->velocity.k * direction.k + position->velocity.j * direction.j + position->velocity.i * direction.i + 111.548553f;
 	ratio = (111.548553f - listener_speed) / (source_speed > 0.001f ? source_speed : 0.001f);
 	return (real)(log(PIN(ratio, 0.125, 4.0f)) * 1731.234f);
+}
+
+void looping_sound_controllers_synchronize(bool initial_playback);
+void function_21f570(void);
+void function_21f5a0(void);
+void function_21d4d0(void);
+
+/* pauses or resumes the voices and impulse buffers together */
+// @retail 0x125a90
+void function_125a90(long value)
+{
+	bool paused = value == 0;
+
+	if (paused != SOUND_SYSTEM->unknown7b)
+	{
+		SOUND_SYSTEM->changing_pause = true;
+		SOUND_SYSTEM->unknown7b = paused;
+		switch (value)
+		{
+		case 0:
+			for (long i = 0; i < SOUND_SYSTEM->voice_count; i++)
+				sound_voice_reset_stream((short)i);
+			function_21f570();
+			break;
+		case 1:
+			for (long i = 0; i < SOUND_SYSTEM->voice_count; i++)
+				sound_voice_restart_stream((short)i);
+			looping_sound_controllers_synchronize(true);
+			function_21f5a0();
+			SOUND_SYSTEM->field_14_2 = GetTickCount();
+			break;
+		}
+		SOUND_SYSTEM->changing_pause = false;
+	}
+}
+
+/* clears the effects and stops sounds in the initial playback state */
+// @retail 0x126400
+void function_126400(void)
+{
+	if (SOUND_SYSTEM->initialized)
+	{
+		function_21d4d0();
+		s_record_pool *sounds = g_4e637c;
+		long sound_index = data_datum_index(sounds, function_16bc00(sounds, 0));
+
+		while (sound_index != NONE)
+		{
+			s_sound_playback *sound = (s_sound_playback *)sounds->data + (sound_index & 0xffff);
+
+			if (!sound->state)
+			{
+				function_127320(sound_index, 10);
+				sounds = g_4e637c;
+			}
+			sound_index = data_datum_index(sounds, function_16bc00(sounds, sound_index == NONE ? 0 : (sound_index & 0xffff) + 1));
+		}
+	}
+}
+
+struct s_voice_playing_sound;
+long sound_voice_find_or_create(s_voice_playing_sound const *sound);
+
+struct s_driver_voice_index_view
+{
+	word identifier;
+	short buffer_index;
+	byte unknown04[0x6c - 4];
+};
+
+static inline short sound_voice_find_available_channel(char type)
+{
+	s_sound_system_channels_view *system = (s_sound_system_channels_view *)g_4e6380;
+	short result = NONE;
+
+	for (long i = system->first_channel[type]; i <= system->last_channel[type]; i++)
+	{
+		if ((system->free_bits[i >> 5] & (1 << (i & 31))) && !(system->streaming_bits[i >> 5] & (1 << (i & 31))))
+		{
+			result = (short)i;
+			break;
+		}
+	}
+	return result;
+}
+
+/* assigns a free channel and, when needed, a shared driver voice */
+// @retail 0x1295e0
+bool __stdcall function_1295e0(short voice_index)
+{
+	s_sound_voice *voice = &g_4e6378[voice_index];
+	s_sound_playback *sound = SOUND_PLAYBACK_GET(voice->sound_index);
+	bool result = true;
+
+	if (voice->channel_index == NONE || ((sound->priority & 2) && voice->unknown0e == NONE))
+	{
+		short channel = sound_voice_find_available_channel((char)voice->definition_type);
+		if (channel != NONE)
+		{
+			long driver_index = NONE;
+			short buffer_index = NONE;
+			char requested_buffer = (char)sound->value_a2;
+
+			if (requested_buffer != NONE)
+			{
+				DWORD status;
+				IDirectSoundBuffer_GetStatus(SOUND_DRIVER_GLOBALS->voices[requested_buffer].buffer, &status);
+				if (!(status & DSBSTATUS_PLAYING))
+					buffer_index = (char)sound->value_a2;
+			}
+			else if (sound->priority & 2)
+			{
+				driver_index = sound_voice_find_or_create((s_voice_playing_sound const *)sound);
+				if (driver_index != NONE)
+					buffer_index = ((s_driver_voice_index_view *)g_502114->data)[driver_index & 0xffff].buffer_index;
+			}
+			if (buffer_index != NONE || (!(sound->priority & 2) && (char)sound->value_a2 == NONE))
+			{
+				s_sound_system_channels_view *system = (s_sound_system_channels_view *)g_4e6380;
+				voice->unknown0e = buffer_index;
+				voice->channel_index = channel;
+				voice->driver_voice_index = driver_index;
+				system->streaming_bits[channel >> 5] |= 1 << (channel & 31);
+				channel = voice->channel_index;
+				system->free_bits[channel >> 5] &= ~(1 << (channel & 31));
+				return result;
+			}
+		}
+		result = false;
+		function_127320(voice->sound_index, 7);
+		sound_voice_free(voice_index);
+	}
+	return result;
 }

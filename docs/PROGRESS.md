@@ -2,6 +2,16 @@
 
 The newest entry comes first.
 
+## 2026-10-05: 5180 functions match
+
+```
+matched 5180 of 11321 game functions (510156 of 2785198 bytes, 18.32%)
+```
+
+**The first two Codex lanes:** 11 new matches, none lost. Codex wrote the code; a Claude agent checked and committed it.
+- **Lane J (network handle tables):** 0x995c0, 0x99690 and their callers. This also completed two of lane D's functions.
+- **Lane L (preference getters and font loading):** 0x121100, 0x1210a0, 0x1223a0, and the UI caller 0x2bba01.
+
 ## 2026-10-05: 5169 functions match
 
 ```

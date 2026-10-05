@@ -103,11 +103,6 @@ void function_22387b(void)
 {
 }
 
-// @stub 0x125a90
-void function_125a90(long value)
-{
-}
-
 /* UI lane round 2: the custom game profile list (unknown_2c9ddb.cpp) */
 
 // @stub 0x2ca284

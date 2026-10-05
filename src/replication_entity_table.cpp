@@ -9,10 +9,6 @@
 
 #define HANDLE_INDEX(handle) ((handle) & 0x3ff)
 
-/* a handle table's entry state (unknown_099690.cpp) */
-struct s_099690_globals;
-void function_99690(s_099690_globals *g, long index, long new_state);
-
 // @retail 0x89d20
 long replication_table_get_chain(s_handle_peers *peers, long handle, long *handles)
 {
@@ -92,7 +88,7 @@ long replication_table_create(s_handle_peers *peers, long index)
 	for (short i = 0; i < 15; i++)
 	{
 		if (peers->tables[i])
-			function_99690((s_099690_globals *)peers->tables[i], handle, 1);
+			function_99690(peers->tables[i], handle, 1);
 	}
 	return handle;
 }

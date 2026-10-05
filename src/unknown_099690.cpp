@@ -1,110 +1,69 @@
 // @flags /O2 /Gr
-/* UNKNOWN_099690.CPP */
 
-#include "unknown_11c920.h"
-
-struct s_099690_entry
-{
-	long a24;
-	long l28;
-	short state;
-	short next;
-	long l30;
-	short s34;
-	short pad36;
-};
-
-struct s_099690_peer
-{
-	byte unknown00[0x44];
-	byte unknown44[0x400 * 8];
-};
-
-struct s_099690_globals
-{
-	byte unknown00[0xc];
-	long bit_index;
-	byte unknown10[4];
-	byte *peers;
-	byte unknown18[0xc];
-	s_099690_entry entries[0x400];
-	long head;
-	byte unknown5028[4];
-	long count502c;
-	byte unknown5030[4];
-	long count5034;
-	byte unknown5038[4];
-	long count503c;
-};
+#include "unknown_096ed0.h"
 
 // @retail 0x99690
-void function_99690(s_099690_globals *g, long index, long new_state)
+c_handle_table_450cd0 *function_99690(c_handle_table_450cd0 *self, long index, long new_state)
 {
 	long i = index & 0x3ff;
-	s_099690_entry *entry = &g->entries[i];
-	word *peer = (word *)(g->peers + i * 8 + 0x44);
-	short old_state = entry->state;
+	short old_state = (short)self->entries[i].state;
 
 	if (new_state == old_state)
-		return;
+		return self;
+	s_handle_peer *peer = &self->table->peers[i];
 
 	if (old_state == 1)
-		g->count502c--;
+		self->unknown502c--;
 	else if (old_state == 3)
 	{
-		if (peer[1] & (1 << g->bit_index))
-			g->count503c--;
-		else if (entry->l28)
-			g->count5034--;
+		if (peer->mask & (1 << self->shift))
+			self->unknown503c--;
+		else if (self->entries[i].unknown04)
+			self->unknown5034--;
 	}
 
 	if (new_state == 1)
-		g->count502c++;
+		self->unknown502c++;
 	else if (new_state == 3)
 	{
-		if (peer[1] & (1 << g->bit_index))
-			g->count503c++;
-		else if (entry->l28)
-			g->count5034++;
+		if (peer->mask & (1 << self->shift))
+			self->unknown503c++;
+		else if (self->entries[i].unknown04)
+			self->unknown5034++;
 	}
-	else if (new_state == 0)
+
+	if (new_state == 0)
 	{
-		entry->a24 = NONE;
-		if (g->head == i)
+		self->entries[i].handle = NONE;
+		if (self->unknown5024 == i)
 		{
-			g->head = entry->next;
-			entry->next = (short)NONE;
-			entry->s34 = 0;
-			entry->state = (short)new_state;
-			return;
+			self->unknown5024 = self->entries[i].unknown0a;
 		}
 		else
 		{
 			long j = 0;
 			do
 			{
-				if (g->entries[j].next == i)
+				if (self->entries[j].unknown0a == i)
 				{
-					g->entries[j].next = entry->next;
+					self->entries[j].unknown0a = self->entries[i].unknown0a;
 					break;
 				}
 				j++;
 			}
 			while (j < 0x400);
-			entry->next = (short)NONE;
-			entry->s34 = 0;
-			entry->state = (short)new_state;
-			return;
 		}
+		self->entries[i].unknown0a = (short)NONE;
+		self->entries[i].unknown10 = 0;
 	}
-
-	if (entry->state == 0)
+	else if (self->entries[i].state == 0)
 	{
-		entry->a24 = index;
-		entry->l28 = 0;
-		entry->l30 = 0;
-		entry->next = (short)g->head;
-		g->head = i;
+		self->entries[i].handle = index;
+		self->entries[i].unknown04 = 0;
+		self->entries[i].unknown0c = 0;
+		self->entries[i].unknown0a = (short)self->unknown5024;
+		self->unknown5024 = i;
 	}
-	entry->state = (short)new_state;
+	self->entries[i].state = (short)new_state;
+	return self;
 }

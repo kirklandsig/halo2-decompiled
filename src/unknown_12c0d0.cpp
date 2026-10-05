@@ -884,3 +884,60 @@ void function_12d520(long address)
 	}
 	g_4e6464->block_delete(lock->block_index);
 }
+
+struct s_type_7ba8e9;
+long function_1365a0(s_type_7ba8e9 const *bitmap, short mipmap_index);
+
+/* dimensions and resident level addresses used to build a texture header */
+struct s_bitmap_texture_view
+{
+	dword signature;
+	short width;
+	short height;
+	char depth;
+	byte unknown09;
+	short type;
+	short format;
+	word flags;
+	byte unknown10[4];
+	short mipmap_count;
+	byte unknown16[0x40 - 0x16];
+	dword level_addresses[3];
+};
+
+// @retail 0x12d6d0
+void __stdcall function_12d6d0(s_bitmap_texture_view const *bitmap, long level, D3DTexture *texture)
+{
+	texture->Data = 0;
+	texture->Lock = 0;
+	texture->Common = 0x40001;
+	if (bitmap->flags & 0x10)
+	{
+		long format = g_450768[1][bitmap->format];
+		if ((bitmap->flags & 0x20) && (bitmap->format == 10 || bitmap->format == 11))
+			format = 0x36;
+		texture->Format = (format << 8) | 0x10029;
+		long pitch = function_1365a0((s_type_7ba8e9 const *)bitmap, 0);
+		texture->Size = ((((pitch - 1) / 64) << 12 | (bitmap->height - 1)) << 12) | (bitmap->width - 1);
+	}
+	else
+	{
+		real reductions[3] = { 0.0f, 1.0f, 2.0f };
+		short reduction = (short)reductions[level];
+		long width = bitmap->width >> reduction;
+		long height = bitmap->height >> reduction;
+		long depth = bitmap->depth >> reduction;
+		long levels = bitmap_get_mipmap_count((short)width, (short)height, (short)depth, bitmap->format, false, bitmap->mipmap_count - reduction);
+		long format = g_450768[0][bitmap->format];
+		if ((bitmap->flags & 0x20) && (bitmap->format == 10 || bitmap->format == 11))
+			format = 0x33;
+		short width_bits = (short)log2_floor(width);
+		short height_bits = (short)log2_floor(height);
+		short depth_bits = (short)log2_floor(depth);
+
+		texture->Format = (((((((depth_bits << 4) | height_bits) << 4) | width_bits) << 12 | format) << 4 |
+			(bitmap->type == 1 ? 3 : 2)) << 4) | (bitmap->type == 2 ? 4 : 0) | ((levels + 1) << 16) | 9;
+		texture->Size = 0;
+	}
+	texture->Data = bitmap->level_addresses[level] & 0xfffffff;
+}

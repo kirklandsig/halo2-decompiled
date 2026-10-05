@@ -407,8 +407,8 @@ bool c_game_engine_player_entity_definition::v22(s_entity_slot *entity, long b, 
 bool c_game_engine_player_entity_definition::v23(s_entity_slot *entity, long b, long c, long d)
 {
 	bool result = false;
-	long id = entity->id;
 	c_engine_peer *manager = g_55e4d0[g_4e9ae8->engine_index];
+	long id = entity->id;
 	long index;
 
 	for (index = 0; index < 16; index++)
@@ -1707,6 +1707,11 @@ void c_unit_melee_damage_event_definition::v9(long a, void const *data, s_bitstr
 void __fastcall function_24f6b0(dword index, vector3f *direction);
 void function_194bc0(vector3f const *direction, s_bitstream *stream);
 
+static inline void event_write_direction(s_bitstream *stream, vector3f const *direction)
+{
+	function_194bc0(direction, stream);
+}
+
 #define SET_FLAG(flags, bit, value) ((value) ? ((flags) |= (1 << (bit))) : ((flags) &= ~(1 << (bit))))
 
 /* the data of a damage aftermath event */
@@ -1756,7 +1761,7 @@ void c_damage_aftermath_event_definition::v9(long a, void const *data, s_bitstre
 	stream_write_checked(stream, event->damage_type + 1, 5);
 	stream_write_bit(stream, event->has_direction);
 	if (event->has_direction)
-		function_194bc0(&event->direction, stream);
+		event_write_direction(stream, &event->direction);
 	{
 		long quantized;
 		real scaled = event->unknown18 * 15.5f;

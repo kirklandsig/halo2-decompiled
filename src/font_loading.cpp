@@ -294,7 +294,7 @@ void function_1223a0(long font_index, char const *name, bool wait)
 	s_font_cache_entry *entry = &g_4e2920[font_index];
 	s_async_task task;
 
-	entry->pending = true;
+	*(volatile bool *)&entry->pending = true;
 	memset(&task, 0, sizeof(task));
 	csstrncpy(task.function_1223a0.name, name, sizeof(task.function_1223a0.name));
 	task.function_1223a0.font_index = font_index;

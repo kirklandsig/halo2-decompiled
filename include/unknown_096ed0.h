@@ -220,4 +220,6 @@ public:
 	c_handle_source *source;
 };
 
+c_handle_table_450cd0 *function_99690(c_handle_table_450cd0 *self, long index, long new_state);
+
 #endif

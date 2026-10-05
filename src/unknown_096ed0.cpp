@@ -8,10 +8,6 @@
 
 // @flags /O2 /arch:SSE /Gr
 
-/* 0x99690 is defined over its own view of the table (unknown_099690.cpp) */
-struct s_099690_globals;
-void function_99690(s_099690_globals *g, long index, long new_state);
-
 /* the release routine retail inlines here (allocation is handle_allocate in the header) */
 static inline void free_block(void *block)
 {
@@ -79,15 +75,14 @@ void function_995c0(c_handle_table_450cd0 *self, long handle)
 	long index = handle & 0x3ff;
 	s_handle_peer *peer = &self->table->peers[index];
 	s_handle_entry *entry = &self->entries[index];
-	word state = entry->state;
-	if (state == 1 && !(entry->unknown10 & state))
+	if (self->entries[index].state == 1 && !(self->entries[index].unknown10 & self->entries[index].state))
 	{
-		function_99690((s_099690_globals *)self, handle, 0);
+		function_99690(self, handle, 0);
 		self->unknown5038++;
 		return;
 	}
-	if (state == 1)
-		function_99690((s_099690_globals *)self, handle, 3);
+	if (self->entries[index].state == 1)
+		function_99690(self, handle, 3);
 	peer->mask |= (word)(1 << self->shift);
 	if (entry->state == 3)
 	{
@@ -111,7 +106,7 @@ void function_98ac0(c_handle_table_450cd0 *self, long handle)
 	else
 		self->unknown0a = 1;
 	self->entries[index].unknown10 |= 1;
-	function_99690((s_099690_globals *)self, handle, 2);
+	function_99690(self, handle, 2);
 }
 
 // @retail 0x98b60
@@ -127,7 +122,7 @@ void function_98b60(c_handle_table_450cd0 *self, long handle)
 	}
 	else
 		self->unknown0a = 1;
-	function_99690((s_099690_globals *)self, handle, 4);
+	function_99690(self, handle, 4);
 }
 
 // @retail 0x98bf0
@@ -518,21 +513,21 @@ void c_handle_table_450cd0::v8(long handle, bool flag)
 					if (!flag)
 					{
 						if (peer->mask & (1 << shift))
-							function_99690((s_099690_globals *)this, item_handle, 3);
+							function_99690(this, item_handle, 3);
 						else
-							function_99690((s_099690_globals *)this, item_handle, 1);
+							function_99690(this, item_handle, 1);
 					}
 					else
 					{
-						function_99690((s_099690_globals *)this, item_handle, 3);
+						function_99690(this, item_handle, 3);
 						unknown5028++;
 					}
 				}
 				else if (!flag)
-					function_99690((s_099690_globals *)this, item_handle, 3);
+					function_99690(this, item_handle, 3);
 				else
 				{
-					function_99690((s_099690_globals *)this, item_handle, 0);
+					function_99690(this, item_handle, 0);
 					peer->mask &= ~(1 << shift);
 					s_handle_peers *peers = table;
 					if (peers->peers[index].mask == 0)

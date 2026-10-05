@@ -85,13 +85,8 @@ void function_121060(long value)
 // @retail 0x1210a0
 void function_1210a0(long *value)
 {
-	long result = global_preferences_globals.current.unknown174;
-
-	if (result < 0)
-		result = 0;
-	else if (result > 3)
-		result = 3;
-	*value = result;
+	*value = global_preferences_globals.current.unknown174 < 0 ? 0 :
+		(global_preferences_globals.current.unknown174 > 3 ? 3 : global_preferences_globals.current.unknown174);
 }
 
 // @retail 0x1210c0
@@ -111,13 +106,8 @@ void function_1210c0(long value)
 // @retail 0x121100
 void function_121100(long *value)
 {
-	long result = global_preferences_globals.current.unknown178;
-
-	if (result < 0)
-		result = 0;
-	else if (result > 3)
-		result = 3;
-	*value = result;
+	*value = global_preferences_globals.current.unknown178 < 0 ? 0 :
+		(global_preferences_globals.current.unknown178 > 3 ? 3 : global_preferences_globals.current.unknown178);
 }
 
 // @retail 0x121120
