@@ -4,6 +4,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1a58b0.h"
+#include "object_markers.h"
 
 /* ---- views of the data used below ---- */
 
@@ -959,5 +960,163 @@ short __stdcall function_1a79e0(long actor_index, short level, bool active)
 		slot->unknown4 = index;
 		return choice;
 	}
+	return result;
+}
+
+struct s_object_marker_target
+{
+	long object_index;
+	long marker_index;
+	byte unknown08[0x10];
+	byte flags;
+};
+
+struct s_target_marker
+{
+	long name;
+	byte unknown04[0x18];
+};
+
+struct s_target_marker_table
+{
+	byte unknown00[0x68];
+	long count;
+	s_target_marker *markers;
+};
+
+struct s_object;
+s_object *function_bae20(long object_index, dword type_mask);
+
+/* Resolves an object's target marker and its one or two transforms. */
+// @retail 0x1a6bf0
+bool function_1a6bf0(s_object_marker_target const *target, long *object_index,
+	long *marker_index, s_target_marker **definition, transform4x3f *first,
+	transform4x3f *second, bool *has_second)
+{
+	bool result = false;
+	long index = target->object_index;
+
+	if (index != NONE && function_bae20(index, NONE) && !(target->flags & 1))
+	{
+		*object_index = index;
+		*marker_index = target->marker_index;
+		if (*marker_index == NONE)
+			result = true;
+		else
+		{
+			long object_definition = OBJECT_HEADER(*object_index)->object->definition_index;
+			long marker_tag = *(long *)(g_4e3b44[object_definition & 0xffff].bytes + 0x38);
+			if (marker_tag != NONE)
+			{
+				s_target_marker_table *table = (s_target_marker_table *)g_4e3b44[marker_tag & 0xffff].bytes;
+				if (*marker_index >= 0 && *marker_index < table->count)
+				{
+					s_object_marker markers[2];
+					*definition = &table->markers[*marker_index];
+					long marker_name = (*definition)->name;
+					long marker_object = *object_index;
+					long count = function_b8d30(marker_object, marker_name, markers, 2, false);
+					if (count)
+					{
+						*first = markers[0].matrix;
+						result = true;
+						if (count == 2)
+						{
+							*second = markers[1].matrix;
+							*has_second = true;
+						}
+						else
+							*has_second = false;
+					}
+				}
+			}
+		}
+	}
+	return result;
+}
+
+struct s_sort_candidate_view
+{
+	byte unknown00[0x18];
+	vector3f facing;
+	real maximum_facing_angle;
+	bool alternate;
+	byte unknown29[0xf];
+	vector3f direction;
+	real distance;
+	real angle;
+	real score;
+	real secondary_score;
+	real scaled_score;
+	dword flags;
+	real maximum_distance;
+};
+
+struct s_sort_weight_view
+{
+	real angle_limit;
+	real distance_limit;
+	real scaled_angle_limit;
+	real scaled_distance_limit;
+	dword unknown10;
+	dword flags;
+	real secondary_angle_limit;
+	real secondary_distance_limit;
+	real maximum_distance;
+};
+
+real function_1a4870(real distance, real maximum_distance, real angle, real maximum_angle);
+real function_50650(real cosine);
+
+/* Scores an eligible candidate with angular and distance falloffs. */
+// @retail 0x1a60f0
+bool function_1a60f0(s_sort_candidate_view *candidate, s_sort_weight_view const *weights, real scale)
+{
+	bool result = true;
+	if (candidate->maximum_facing_angle > 0.0f)
+	{
+		vector3f inverse;
+		inverse.i = 0.0f - candidate->direction.i;
+		inverse.j = 0.0f - candidate->direction.j;
+		inverse.k = 0.0f - candidate->direction.k;
+		real cosine = dot3f(&candidate->facing, &inverse);
+		cosine = -1.0f > cosine ? -1.0f : cosine > 1.0f ? 1.0f : cosine;
+		if (!(function_50650(cosine) <= candidate->maximum_facing_angle))
+			result = false;
+	}
+	if (result && scale != 0.0f)
+	{
+		if (weights->flags & 8)
+		{
+			if (!(candidate->flags & 1) || candidate->distance >
+				(candidate->maximum_distance == 0.0f ? weights->maximum_distance : candidate->maximum_distance))
+				result = false;
+		}
+		if ((candidate->flags & 2) && candidate->distance >
+			(candidate->maximum_distance == 0.0f ? weights->maximum_distance : candidate->maximum_distance))
+			candidate->flags &= ~2;
+		if (result)
+		{
+			if (!candidate->alternate)
+			{
+				candidate->score = function_1a4870(candidate->angle, weights->angle_limit, candidate->distance, weights->distance_limit);
+				candidate->secondary_score = function_1a4870(candidate->angle, weights->secondary_angle_limit, candidate->distance, weights->secondary_distance_limit);
+				candidate->scaled_score = scale * function_1a4870(candidate->angle, weights->scaled_angle_limit, candidate->distance, weights->scaled_distance_limit);
+				if (candidate->score == 0.0f && candidate->secondary_score == 0.0f && candidate->scaled_score == 0.0f)
+					result = false;
+			}
+			else
+			{
+				real score = function_1a4870(candidate->angle, weights->angle_limit, candidate->distance, weights->distance_limit);
+				candidate->score = 0.0f;
+				candidate->secondary_score = 0.0f;
+				candidate->scaled_score = 0.0f;
+				if (score < 1.0f)
+					result = false;
+			}
+		}
+	}
+	else
+		result = false;
 	return result;
 }
