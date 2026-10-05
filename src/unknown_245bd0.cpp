@@ -86,11 +86,13 @@ bool function_245bd0(
 				if (length2 > g_45dbd8)
 				{
 					real t = dot / length2;
-					vector3f n;
-					n.i = d.i - capsule->vector.i * t;
-					n.j = d.j - capsule->vector.j * t;
-					n.k = d.k - capsule->vector.k * t;
-					plane->n = n;
+					vector3f scaled;
+					scaled.i = capsule->vector.i * t;
+					scaled.j = capsule->vector.j * t;
+					scaled.k = capsule->vector.k * t;
+					plane->i = d.i - scaled.i;
+					plane->j = d.j - scaled.j;
+					plane->k = d.k - scaled.k;
 				}
 				else
 				{
@@ -103,13 +105,24 @@ bool function_245bd0(
 					plane->j = 0.f;
 					plane->k = 1.f;
 				}
-				plane->d = capsule->origin.z * plane->k + capsule->origin.y * plane->j + capsule->origin.x * plane->i + capsule->radius;
+				plane->d = dot3f((vector3f const *)&capsule->origin, &plane->n) + capsule->radius;
 				*distance = capsule->radius - magnitude;
 				return true;
 			}
 		}
 	}
 	return false;
+}
+
+PRIVATE inline void shape_difference2d(point2f const *a, point2f const *b, point2f *out)
+{
+	out->x = a->x - b->x;
+	out->y = a->y - b->y;
+}
+
+PRIVATE inline real shape_cross2d(point2f const *a, point2f const *b)
+{
+	return a->x * b->y - a->y * b->x;
 }
 
 // @retail 0x245d80
@@ -136,13 +149,13 @@ bool function_245d80(
 			do
 			{
 				point2f const *a = &prism->points[i];
-				real ax = a->x - p2.x;
-				real ay = a->y - p2.y;
+				point2f da;
+				shape_difference2d(a, &p2, &da);
 				long next = (i + 1 >= count) ? 0 : i + 1;
 				point2f const *b = &prism->points[next];
-				real bx = b->x - p2.x;
-				real by = b->y - p2.y;
-				if (0.f > by * ax - ay * bx)
+				point2f db;
+				shape_difference2d(b, &p2, &db);
+				if (0.f > shape_cross2d(&da, &db))
 				{
 					return false;
 				}
@@ -176,102 +189,90 @@ struct s_shape_result
 	plane3f plane;
 };
 
-/* finds the shape a point is deepest in, with the plane to push it out
-   through */
+PRIVATE inline void shape_scale3d(vector3f const *v, real scale, vector3f *out)
+{
+	out->i = v->i * scale;
+	out->j = scale * v->j;
+	out->k = v->k * scale;
+}
+
+/* The point test inlined into the shape collection query. */
+PRIVATE inline bool shape_sphere_point(s_sphere const *sphere, point3f const *point, plane3f *plane, real *depth)
+{
+	vector3f d;
+	vector3d_from_points3d(&sphere->center, point, &d);
+	real distance_squared = d.j * d.j + d.k * d.k + d.i * d.i;
+	if (sphere->radius * sphere->radius > distance_squared)
+	{
+		real distance = (real)sqrt(distance_squared);
+		if (distance > g_45dbd8)
+		{
+			real scale = 1.f / distance;
+			shape_scale3d(&d, scale, &plane->n);
+		}
+		else
+		{
+			plane->i = 0.f;
+			plane->j = 0.f;
+			plane->k = 1.f;
+		}
+		plane->d = dot3f((vector3f const *)&sphere->center, &plane->n) + sphere->radius;
+		*depth = sphere->radius - distance;
+		return true;
+	}
+	return false;
+}
+
+PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_header *out)
+{
+	out->unknown00 = source->unknown00;
+	out->unknown04 = source->unknown04;
+	out->unknown08 = source->unknown08;
+	out->unknown0c = source->unknown0c;
+	out->unknown0d = source->unknown0d;
+	out->unknown0e = source->unknown0e;
+}
+
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
-	real best_depth = -FLT_MAX;
 	short best_type = NONE;
 	short best_index = NONE;
+	real best_depth = -FLT_MAX;
 	plane3f best_plane;
-
 	for (short type = 0; type < 3; type++)
 	{
 		for (short index = 0; index < shapes->counts[type]; index++)
 		{
 			real depth;
 			plane3f plane;
-			bool hit = false;
-
-			if (type == 0)
+			if ((type == 0 && shape_sphere_point(&shapes->spheres[index], point, &plane, &depth)) ||
+				(type == 1 && function_245bd0(point, &shapes->capsules[index], &plane, &depth)) ||
+				(type == 2 && function_245d80(&shapes->prisms[index], point, &depth, &plane)))
 			{
-				s_sphere const *sphere = &shapes->spheres[index];
-				vector3f d;
-
-				vector3d_from_points3d(&sphere->center, point, &d);
-				real distance_squared = length_sq3f(&d);
-				if (sphere->radius * sphere->radius > distance_squared)
+				if (depth > best_depth)
 				{
-					real distance = (real)sqrt(distance_squared);
-
-					if (distance > g_45dbd8)
-					{
-						real scale = 1.0f / distance;
-
-						plane.i = d.i * scale;
-						plane.j = d.j * scale;
-						plane.k = d.k * scale;
-					}
-					else
-					{
-						plane.i = 0.0f;
-						plane.j = 0.0f;
-						plane.k = 1.0f;
-					}
-					plane.d = sphere->center.z * plane.k + sphere->center.y * plane.j + sphere->center.x * plane.i + sphere->radius;
-					depth = sphere->radius - distance;
-					hit = true;
+					best_type = type;
+					best_index = index;
+					best_depth = depth;
+					best_plane = plane;
 				}
-			}
-			else if (type == 1)
-			{
-				hit = function_245bd0(point, &shapes->capsules[index], &plane, &depth);
-			}
-			else if (type == 2)
-			{
-				hit = function_245d80(&shapes->prisms[index], point, &depth, &plane);
-			}
-
-			if (hit && depth > best_depth)
-			{
-				best_plane = plane;
-				best_type = type;
-				best_index = index;
-				best_depth = depth;
 			}
 		}
 	}
-
-	if (best_type == NONE)
-		return false;
-
-	s_shape_header const *header = 0;
-
-	result->plane = best_plane;
-	result->depth = best_depth;
-	switch (best_type)
+	if (best_type != NONE)
 	{
-	case 0:
-		header = &shapes->spheres[best_index].header;
-		break;
-	case 1:
-		header = &shapes->capsules[best_index].header;
-		break;
-	case 2:
-		header = &shapes->prisms[best_index].header;
-		break;
+		result->depth = best_depth;
+		result->plane = best_plane;
+		switch (best_type)
+		{
+		case 0: shape_copy_header(&shapes->spheres[best_index].header, &result->header); break;
+		case 1: shape_copy_header(&shapes->capsules[best_index].header, &result->header); break;
+		case 2: shape_copy_header(&shapes->prisms[best_index].header, &result->header); break;
+		}
+		return true;
 	}
-	if (header)
-	{
-		result->header.unknown00 = header->unknown00;
-		result->header.unknown04 = header->unknown04;
-		result->header.unknown08 = header->unknown08;
-		result->header.unknown0c = header->unknown0c;
-		result->header.unknown0d = header->unknown0d;
-		result->header.unknown0e = header->unknown0e;
-	}
-	return true;
+	return false;
 }
 
 // @retail 0x2461a0
@@ -544,6 +545,62 @@ bool function_2466b0(
 	out->n = prism->plane.n;
 	out->d = prism->plane.d + prism->thickness;
 	return true;
+}
+
+struct s_ray_shape_result
+{
+	s_shape_header header;
+	real time;
+	point3f position;
+	plane3f plane;
+};
+
+// @retail 0x2469b0
+bool function_2469b0(s_shapes const *shapes, point3f const *start,
+	vector3f const *direction, s_ray_shape_result *result)
+{
+	short best_type = NONE;
+	short best_index = NONE;
+	real best_time = FLT_MAX;
+	plane3f best_plane;
+	for (short type = 0; type < 3; type++)
+	{
+		for (short index = 0; index < shapes->counts[type]; index++)
+		{
+			real time;
+			plane3f plane;
+			if (((type == 0 && function_2461a0(start, &shapes->spheres[index], direction, &plane, &time)) ||
+				(type == 1 && function_246360(direction, &shapes->capsules[index], start, &time, &plane)) ||
+				(type == 2 && function_2466b0(&shapes->prisms[index], start, direction, &time, &plane))) &&
+				best_time > time && dot3f(direction, &plane.n) < -0.0001f)
+			{
+				best_time = time;
+				best_type = type;
+				best_index = index;
+				best_plane = plane;
+			}
+		}
+	}
+	if (best_type != NONE)
+	{
+		result->time = best_time;
+		result->position.x = direction->i * best_time + start->x;
+		result->position.y = direction->j * best_time + start->y;
+		result->position.z = direction->k * best_time + start->z;
+		result->plane = best_plane;
+		switch (best_type)
+		{
+		case 0: shape_copy_header(&shapes->spheres[best_index].header, &result->header); break;
+		case 1: shape_copy_header(&shapes->capsules[best_index].header, &result->header); break;
+		case 2: shape_copy_header(&shapes->prisms[best_index].header, &result->header); break;
+		}
+		return true;
+	}
+	result->time = 1.f;
+	result->position.x = start->x + direction->i;
+	result->position.y = start->y + direction->j;
+	result->position.z = start->z + direction->k;
+	return false;
 }
 
 /* the object at 0x246eb0: clamp(|vector| - 0.5, 0, 1) of the vector at +0x28 */
