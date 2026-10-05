@@ -1,12 +1,12 @@
 // @flags /O2 /arch:SSE /Gr
-/* GLOBAL_PREFERENCES.CPP: the console's preferences, kept in
+/* UNKNOWN_120D80.CPP: the console's preferences, kept in
    z:\preferences.dat: a signed block of 0x1e8 bytes loaded at startup and
    written back asynchronously when it changes. The setters at 0x120df0,
    0x120e40, 0x121040 and 0x121060 moved here from unknown_11fc80.cpp. */
 
 #include "unknown_11c920.h"
 #include "async.h"
-#include "global_preferences.h"
+#include "unknown_120d80.h"
 #include <xtl.h>
 #include <string.h>
 

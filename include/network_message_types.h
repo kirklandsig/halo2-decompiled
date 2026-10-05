@@ -115,7 +115,7 @@ public:
 /* the registration functions, one per family */
 void network_message_types_register_discovery(c_type_659ceb *collection);          /* 0xac800 */
 void network_message_types_register_connection(c_type_659ceb *collection);         /* 0xacb10 */
-void network_message_types_register_session_protocol(c_type_659ceb *collection);   /* 0xadab0 */
+void function_adab0(c_type_659ceb *collection);   /* 0xadab0 */
 void network_message_types_register_session_membership(c_type_659ceb *collection); /* 0xaf680 */
 void network_message_types_register_session_parameters(c_type_659ceb *collection); /* 0xb2220 */
 void network_message_types_register_view_establishment(c_type_659ceb *collection); /* 0xb2680 */

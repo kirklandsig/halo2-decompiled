@@ -1,7 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 
 class c_game_engine_entity_definition;
 

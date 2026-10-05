@@ -7,7 +7,7 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "data_array.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 #include "unknown_xa19f52.h"
 #include "entity_relevance.h"
 #include <float.h>

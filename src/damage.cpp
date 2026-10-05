@@ -700,7 +700,7 @@ void function_d6800(long object_index, s_damage_owner const *owner, bool notify_
 }
 
 // @retail 0xd6bc0
-void function_d6bc0(long object_index)
+void __stdcall function_d6bc0(long object_index)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
 	s_damage_region_accumulator accumulator;

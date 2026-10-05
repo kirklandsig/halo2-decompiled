@@ -20,6 +20,17 @@ struct s_unknown_01dcc0
 
 s_unknown_01dcc0 g_4b4b58[32];
 
+// @retail 0x25960
+long function_25960(void)
+{
+	long result = NONE;
+	if (g_4b4b58[20].data && !g_4b4b58[20].flag95)
+		return 20;
+	if (g_4b4b58[18].data && !g_4b4b58[18].flag95)
+		result = 18;
+	return result;
+}
+
 // @retail 0x1dcc0
 void *function_01dcc0(long index)
 {

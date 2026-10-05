@@ -10,12 +10,21 @@
 
 /* the blocks of g_4e0350 (the scenario) at +0x16c (0x38 bytes each) that
    function_262b40 looks references up in */
+struct s_reference_range_view
+{
+	byte unknown00[0x38];
+	short first;
+	short count;
+	byte unknown3c[0x88 - 0x3c];
+};
+
 struct s_262b40_block
 {
 	byte unknown00[0x28];
 	long count;
 	s_262b40_result *entries;
-	byte unknown30[0x38 - 0x30];
+	byte unknown30[4];
+	s_reference_range_view *ranges;
 };
 
 struct s_262b40_scenario_view
@@ -134,5 +143,38 @@ s_262b40_result *function_262b40(s_reference reference)
 		}
 	}
 
+	return result;
+}
+
+
+// @retail 0x262890
+bool function_262890(long actor_index, s_reference reference)
+{
+	s_actor_view *actor = actor_get(actor_index);
+	bool result = false;
+	if (!REFERENCE_EQUAL(reference, g_470fa0))
+	{
+		for (short i = 0; i < 4; i++)
+		{
+			if (REFERENCE_EQUAL(reference, actor->unknown400[i].reference))
+			{
+				result = true;
+				break;
+			}
+		}
+	}
+	return result;
+}
+
+// @retail 0x262640
+bool function_262640(short block_index, short range_index, s_reference reference)
+{
+	bool result = false;
+	if (!(reference.unknown2 & 0x8000) && block_index != NONE && range_index != NONE && block_index == reference.unknown2)
+	{
+		s_262b40_block *block = &((s_262b40_scenario_view *)g_4e0350)->blocks[(word)block_index];
+		s_reference_range_view *range = &block->ranges[range_index];
+		result = reference.unknown0 >= range->first && reference.unknown0 < range->first + range->count;
+	}
 	return result;
 }

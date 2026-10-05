@@ -6,7 +6,7 @@
 #include "slot_handler.h"
 #include "props.h"
 #include "unknown_2551c0.h"
-#include "lane_c_callees.h"
+#include "unknown_0259a0.h"
 
 /* the slot state of handler 0x76 */
 struct s_slot_76_state

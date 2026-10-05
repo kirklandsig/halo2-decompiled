@@ -9,7 +9,7 @@
 #include <string.h>
 #include "globals.h"
 #include "unknown_059ad0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include "online_tasks.h"
 #include "online_friends.h"
 

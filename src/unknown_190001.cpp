@@ -3,7 +3,7 @@
    each): their sign-in state, profiles, online users, presence and the menu
    input they generate (lane H) */
 
-#include "global_preferences.h"
+#include "unknown_120d80.h"
 #include "unknown_11c920.h"
 #include <xtl.h>
 #include <xonline.h>

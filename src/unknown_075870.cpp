@@ -6,7 +6,7 @@
 #include "globals.h"
 #include "unknown_075870.h"
 #include "unknown_059ad0.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 #include <xtl.h>
 #include <string.h>
 #include <float.h>

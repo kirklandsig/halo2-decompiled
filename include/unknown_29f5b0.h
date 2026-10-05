@@ -6,7 +6,7 @@
 #include "unknown_11c920.h"
 #include "hs.h"
 
-/* hs_return: stores a script function's value in the calling frame */
+/* script_return_store: stores a script function's value in the calling frame */
 void function_209ae0(long thread_index, long value);
 
 /* evaluates a script function's arguments one per call; returns the

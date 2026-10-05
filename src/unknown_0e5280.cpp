@@ -7,7 +7,7 @@
 #include "globals.h"
 #include "unknown_1e1f20.h"
 
-long __stdcall function_cbd80(long object_index, long unknown);
+long __stdcall function_cbd80(long object_index, long *holder_index);
 
 // @retail 0xe5280
 long function_e5280(long unit_index)

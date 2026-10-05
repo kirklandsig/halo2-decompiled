@@ -295,15 +295,15 @@ inline void ai_script_object_list_add(long list_index, long object_index)
 long __stdcall function_272ea0(long ai_index)
 {
 	/* The caller supplies the ai index on the stack. */
-	long const *const ai_index_reference = &ai_index;
+	long const *const local_87dd4a = &ai_index;
 	long list_index = NONE;
-	if (*ai_index_reference != NONE)
+	if (*local_87dd4a != NONE)
 	{
 		list_index = function_1ded60();
 		if (list_index != NONE)
 		{
 			s_ai_actor_iterator iterator;
-			ai_actor_iterator_new(*ai_index_reference, &iterator);
+			ai_actor_iterator_new(*local_87dd4a, &iterator);
 			s_actor_datum *actor;
 			while ((actor = ai_actor_iterator_next(&iterator)) != NULL)
 			{

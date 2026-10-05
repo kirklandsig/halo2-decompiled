@@ -5,7 +5,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "data_array.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 #include "object_default_placement.h"
 

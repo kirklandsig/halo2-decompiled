@@ -1,6 +1,6 @@
 // @flags /O2 /Gr
 /* UNKNOWN_209D50.CPP: evaluates the arguments of a script function, one per
-   call, into the thread's current frame (hs_runtime; the front end of lane
+   call, into the thread's current frame (script_thread_runner; the front end of lane
    A's script functions) */
 
 #include "unknown_11c920.h"

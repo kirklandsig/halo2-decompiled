@@ -319,7 +319,7 @@ bool __stdcall function_fd3c0(long projectile_index)
 	return true;
 }
 
-/* an iterator over the projectiles (c_object_iterator<projectile_datum>):
+/* an iterator over the projectiles (object_list_iterator<projectile_datum>):
    the current one, then the object iterator */
 struct s_projectile_iterator
 {

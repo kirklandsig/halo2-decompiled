@@ -12,7 +12,7 @@
 #include "object_markers.h"
 #include "object_iterator.h"
 #include "unknown_1c62f0.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 #include <math.h>
 
@@ -82,7 +82,7 @@ struct s_device
 	long first_child_index;
 	long parent_index;
 	byte unknown018[0x64 - 0x18];
-	point3f world_position;
+	point3f field_xcc658c;
 	vector3f forward;
 	vector3f up;
 	byte unknown088[0xaa - 0x88];
@@ -1018,7 +1018,7 @@ bool __stdcall function_107ed0(long device_index, long name, real seconds)
 						transform4x3f start;
 						transform4x3f inverse;
 						transform4x3f relative;
-						function_1420f0(&original, &device->world_position, &device->forward, &device->up);
+						function_1420f0(&original, &device->field_xcc658c, &device->forward, &device->up);
 						adjusted = original;
 						if (device->flags & 8)
 						{
@@ -1082,7 +1082,7 @@ bool __stdcall function_107ed0(long device_index, long name, real seconds)
 									orientation_from_matrix4x3(&original, (rigid_transform_scaled *)&orientation);
 									function_11dbb0(a, &orientation, a);
 									function_11dbb0(b, &orientation, b);
-									function_1420f0(&relative, &device->world_position, &device->forward, &device->up);
+									function_1420f0(&relative, &device->field_xcc658c, &device->forward, &device->up);
 									function_141590(&relative, &inverse);
 									orientation_from_matrix4x3(&inverse, (rigid_transform_scaled *)&orientation);
 									function_11dbb0(a, &orientation, a);

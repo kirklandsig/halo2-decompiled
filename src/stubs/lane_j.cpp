@@ -18,12 +18,6 @@ void __stdcall function_a9120(long unit_index, long trick)
 {
 }
 
-// @stub 0xc92c0
-bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *a, bool *b)
-{
-	return false;
-}
-
 struct s_bitstream;
 struct s_network_connection;
 

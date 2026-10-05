@@ -7,8 +7,8 @@
 #include <string.h>
 #include "globals.h"
 #include "unknown_058dd0.h"
-#include "network_session_manager.h"
-#include "network_configuration.h"
+#include "unknown_058ee0.h"
+#include "unknown_0662e0.h"
 #include "online_tasks.h"
 
 #define SESSION_STATE_IS_LIVE(state) ((state) > 2 && (state) <= 8)

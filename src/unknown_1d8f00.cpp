@@ -1,5 +1,5 @@
 // @flags /O2 /arch:SSE /Gr
-/* RENDER_MODEL_MARKERS.CPP: a render model's named marker groups, the markers
+/* UNKNOWN_1D8F00.CPP: a render model's named marker groups, the markers
    of a group placed on an object's node matrices, and pulling a node chain
    toward a marker */
 

@@ -4,7 +4,7 @@
 #include "unknown_1cec30.h"
 #include "slot_owner.h"
 #include "unknown_1c62f0.h"
-#include "lane_c_callees.h"
+#include "unknown_0259a0.h"
 #include "unknown_1765e0.h"
 
 // @stub 0x3123a0
@@ -55,7 +55,7 @@ void function_1d1260(s_havok_component *component) { }
 void __stdcall function_1d01c0(s_havok_component *component) { }
 // @stub 0x3126f0
 void hkRigidBody::setTransform(hkTransform const &transform) { }
-/* callees of the slot handler callbacks (lane_c_callees.h) */
+/* callees of the slot handler callbacks (unknown_0259a0.h) */
 
 
 // @stub 0x1697c0
@@ -137,8 +137,6 @@ struct real_quaternion_transform;
 
 
 
-// @stub 0x2624d0
-bool function_2624d0(s_261d20_entry *entry, s_reference reference) { return false; }
 
 // @stub 0x260160
 bool function_260160(long actor_index, s_261d20_entry *entry, s_prop_search *search) { return false; }

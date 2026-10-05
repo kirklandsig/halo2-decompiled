@@ -6,17 +6,11 @@ struct s_havok_component;
 struct s_vehicle_physics_state;
 struct s_vehicle_ray;
 
-// @stub 0xc42e0
-void __stdcall function_c42e0(long unit_index, void const *placement) { }
-
 // @stub 0x2053c0
 void function_2053c0(real *value, real const *rates, real direction, real dt) { }
 
 // @stub 0x2054b0
 void function_2054b0(real *value, real const *rates, real direction, real dt, real target) { }
-
-// @stub 0x205510
-bool function_205510(void *buffer, void const *definition_physics, s_havok_component *component) { return 0; }
 
 // @stub 0x1cfb90
 void function_1cfb90(transform4x3f const *matrix, void const *buffer) { }
@@ -26,9 +20,6 @@ bool __stdcall function_205be0(s_vehicle_physics_state *state, long vehicle_inde
 
 // @stub 0x2056e0
 void __stdcall function_2056e0(long vehicle_index, s_vehicle_physics_state *state, real braking, vector3f const *force, vector3f const *torque) { }
-
-// @stub 0xcc380
-bool function_cc380(long object_index) { return 0; }
 
 // @stub 0x113e40
 bool function_113e40(long unit_index) { return 0; }

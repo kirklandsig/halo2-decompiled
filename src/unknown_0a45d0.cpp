@@ -2,7 +2,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "engine_peer.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 
 class c_handler
 {

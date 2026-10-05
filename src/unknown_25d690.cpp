@@ -6,7 +6,7 @@
 #include "globals.h"
 #include "props.h"
 #include "unknown_26b230.h"
-#include "actor_iterator.h"
+#include "unknown_1e46c0.h"
 #include <string.h>
 
 s_prop_type_entry g_470f10[9] =

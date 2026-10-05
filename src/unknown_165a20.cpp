@@ -1,6 +1,6 @@
 // @flags /O2 /Gr
 /* UNKNOWN_165A20.CPP: the object lists of a visibility pass (the end of
-   visibility_projections_and_volumes.cpp in the original): adding objects
+   visibility_volume_group.cpp in the original): adding objects
    and clearing the flags of the ones a viewer's own object hides */
 
 #include "unknown_11c920.h"

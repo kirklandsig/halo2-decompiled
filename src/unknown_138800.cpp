@@ -17,7 +17,7 @@ bool g_4f55e7;
 
 void function_123ed0();
 
-/* 0x138800 (game_in_progress.cpp): whether a game is in progress */
+/* 0x138800 (unknown_138800_2.cpp): whether a game is in progress */
 bool function_138800();
 
 // @retail 0x138820

@@ -121,7 +121,7 @@ void cache_file_path_from_slot(long index, char *path, long path_size)
 
 bool cache_header_verify(s_cache_header const *header);
 
-__forceinline s_cache_header *cache_file_header(s_cache_file *file)
+__forceinline s_cache_header *function_xafcc06(s_cache_file *file)
 {
 	return (s_cache_header *)file->unknown04;
 }
@@ -136,7 +136,7 @@ bool cache_file_header_read(long index)
 	char path[256];
 
 	cache_file_path_from_slot(index, path, sizeof(path));
-	s_cache_header *header = cache_file_header(file);
+	s_cache_header *header = function_xafcc06(file);
 	function_1a0f10(*(s_file_handle *)&file->handle, header, 0x800, 0, 0, 6, (dword *)&bytes_read, &done);
 	if (!done)
 	{

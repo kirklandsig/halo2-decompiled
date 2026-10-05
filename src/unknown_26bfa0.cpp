@@ -4,7 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "slot_handler.h"
-#include "lane_c_callees.h"
+#include "unknown_0259a0.h"
 
 /* the object as 0x26bfa0 reads it */
 struct s_location_object
@@ -168,5 +168,52 @@ void function_26c180(long actor_index)
 				function_26bfa0(unit_index, &actor->location.unknown10, &actor->location);
 			}
 		}
+	}
+}
+
+bool function_26be60(long object_index);
+
+// @retail 0x26c120
+bool function_26c120(long actor_index)
+{
+	s_actor_location_view *actor = (s_actor_location_view *)actor_get(actor_index);
+	if (!actor->unknown229 && actor->unknown26c == NONE)
+	{
+		long object_index = actor->unit_index;
+		if (object_index != NONE && ((s_object_header_view *)g_4e0300->data)[object_index & 0xffff].type == 0)
+			return function_26be60(object_index);
+	}
+	return true;
+}
+
+struct s_location_target_view
+{
+	byte unknown00[0x3c];
+	long object_index;
+	byte unknown40[4];
+	long location_index;
+	s_location_view location;
+};
+
+long function_1e3480(long object_index);
+
+// @retail 0x26c240
+void function_26c240(s_location_target_view *target, long object_index)
+{
+	long actor_index = function_1e3480(object_index);
+	if (actor_index != NONE)
+	{
+		s_actor_location_view *actor = (s_actor_location_view *)actor_get(actor_index);
+		function_26c180(actor_index);
+		target->location_index = actor->location.unknown10;
+		target->location.point = actor->location.point;
+	}
+	else if (target->object_index != NONE)
+	{
+		function_26bfa0(target->object_index, &target->location_index, &target->location);
+	}
+	else
+	{
+		function_26bfa0(object_index, &target->location_index, &target->location);
 	}
 }

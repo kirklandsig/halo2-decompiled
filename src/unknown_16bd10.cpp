@@ -8,7 +8,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 
 /* a camera pan's velocity profile: it accelerates from the start rate to

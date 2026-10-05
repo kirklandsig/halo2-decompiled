@@ -7,7 +7,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0820f0.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 #include <xtl.h>
 #include <stdlib.h>
 #include <string.h>

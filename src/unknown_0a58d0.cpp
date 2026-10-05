@@ -3,7 +3,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 #include "unknown_xa19f52.h"
 
 /* the entity an index stands for, or none when its salt is stale; retail

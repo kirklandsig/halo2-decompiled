@@ -6,7 +6,7 @@
 #include "slot_handler.h"
 #include "ai_actor.h"
 #include "unknown_2626b0.h"
-#include "lane_c_callees.h"
+#include "unknown_0259a0.h"
 
 /* the state of a slot of type 0x58 */
 struct s_slot_58

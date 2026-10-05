@@ -215,7 +215,7 @@ void __stdcall function_67fc0(dword flags)
 		s_simulation_world *world = g_4cf77c;
 		if (GAME_MODE == 1 && world->state == 1)
 		{
-			function_6b040((c_simulation_world *)world);
+			function_6b040((c_class_6a600 *)world);
 			g_4cf772 = 0;
 			g_4cf771 = 0;
 		}
@@ -239,7 +239,7 @@ void __stdcall function_67fc0(dword flags)
 			function_67ee0();
 		}
 	}
-	((c_simulation_world *)g_4cf77c)->delete_all_players();
+	((c_class_6a600 *)g_4cf77c)->function_6a600();
 	function_83370(g_4cf780, flags);
 	function_6a770(g_4cf77c);
 	g_4cf77b = 0;

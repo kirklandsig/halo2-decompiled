@@ -3,7 +3,7 @@
 
 #include "unknown_11c920.h"
 #include <string.h>
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 
 struct s_name_table
 {

@@ -1,6 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
-/* TRANSPORT_ENDPOINT.CPP: the winsock transport endpoint (Bungie's
-   transport_endpoint_winsock.cpp): its socket and options, binding,
+/* UNKNOWN_0B4DA0.CPP: the winsock transport endpoint (Bungie's
+   socket_endpoint_part.cpp): its socket and options, binding,
    connecting, and reading and writing packets (outside lane J's region;
    decompiled for src/unknown_092870.cpp, which calls it). The endpoint itself
    is created by 0xb4d50 (src/unknown_0b49a0.cpp). */
@@ -8,7 +8,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_07aec0.h"
-#include "transport_endpoint.h"
+#include "unknown_0b4da0.h"
 #include <xtl.h>
 #include <string.h>
 

@@ -10,6 +10,59 @@ long g_450768[8][24];
 dword g_43e8a8[12];
 long g_43e8d8[6];
 
+D3DResource *g_509378;
+D3DResource *g_509380;
+D3DResource *g_509374;
+D3DResource *g_50937c;
+D3DResource *g_485ae4;
+D3DResource *g_485ae8;
+D3DResource *g_485aec;
+
+// @retail 0x14a60
+void function_014a60(void)
+{
+	if (g_509378)
+	{
+		D3DResource_Release(g_509378);
+		g_509378 = NULL;
+	}
+	if (g_509380)
+	{
+		D3DResource_Release(g_509380);
+		g_509380 = NULL;
+	}
+	if (g_509374)
+	{
+		D3DResource_Release(g_509374);
+		g_509374 = NULL;
+	}
+	if (g_50937c)
+	{
+		D3DResource_Release(g_50937c);
+		g_50937c = NULL;
+	}
+}
+
+// @retail 0x1d2a0
+void function_01d2a0(void)
+{
+	if (g_485ae4)
+	{
+		D3DResource_Release(g_485ae4);
+		g_485ae4 = NULL;
+	}
+	if (g_485ae8)
+	{
+		D3DResource_Release(g_485ae8);
+		g_485ae8 = NULL;
+	}
+	if (g_485aec)
+	{
+		D3DResource_Release(g_485aec);
+		g_485aec = NULL;
+	}
+}
+
 /* the palette tag data: a list of palette groups, each pointing at 256-color
    palettes (0x400 bytes apart) that are loaded into D3D palette headers */
 struct s_palette_group

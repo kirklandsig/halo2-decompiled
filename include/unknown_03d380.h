@@ -17,7 +17,7 @@ struct s_47f048_object
 void function_593e0(void);
 void function_67f60(void);
 void function_67ee0(void);
-void function_6b040(c_simulation_world *world);
+void function_6b040(c_class_6a600 *world);
 void function_bb7f0(void);
 void function_183f10(void);
 void function_162420(void);

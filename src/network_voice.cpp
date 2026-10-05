@@ -16,7 +16,7 @@
 #include "unknown_059ad0.h"
 #include "network_voice.h"
 #include "unknown_067e10.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include "crc.h"
 
 c_voice_xhv g_476fc8;
@@ -648,7 +648,7 @@ bool voice_port_flag0_only(long port)
 	return result;
 }
 
-/* src/network_session_manager.cpp */
+/* src/unknown_058ee0.cpp */
 bool network_session_manager_get_session(c_class_58d20 **session);
 
 // @retail 0x547e0
@@ -1092,6 +1092,17 @@ void voice_xhv_submit_packet(c_voice_xhv *xhv, long id, void *data, long size)
 	}
 }
 
+// @retail 0x53890
+void voice_submit_incoming_packet(long id, void *data, long size)
+{
+	if (voice_is_enabled() && voice_has_remote_talker(id))
+	{
+		voice_fpu_enter();
+		voice_xhv_submit_packet(&g_476fc8, id, data, size);
+		voice_fpu_leave();
+	}
+}
+
 /* the per-player values the voice settings keep (0x5259b8) */
 struct s_voice_player_values
 {
@@ -1433,10 +1444,10 @@ bool voice_member_is_route_target(long member)
 			result = true;
 			goto done;
 		}
-		dword local_players = voice_get_local_player_mask();
+		dword local_9b462b = voice_get_local_player_mask();
 		for (long i = 0; i < 16; i++)
 		{
-			if ((local_players & (1 << i)) && !voice_port_flag1(i) && !voice_port_flag2(i))
+			if ((local_9b462b & (1 << i)) && !voice_port_flag1(i) && !voice_port_flag2(i))
 			{
 				dword players = voice_player_values_get(&g_5259b8, i);
 				if (players)
@@ -1598,7 +1609,7 @@ dword function_53c70(void)
 	return mask;
 }
 
-/* src/network_session_interface.cpp */
+/* src/unknown_054fe0.cpp */
 byte *network_session_interface_get_data_4db0(void);
 
 // @retail 0x53d90
@@ -1623,7 +1634,7 @@ bool function_53d40(void)
 }
 
 /* src/unknown_067e10.cpp */
-bool function_696d0(c_simulation_world *world, long player_index);
+bool function_696d0(c_class_6a600 *world, long player_index);
 
 /* whether the simulation world has a player marked (its flag25) */
 // @retail 0x54df0
@@ -1632,7 +1643,7 @@ bool function_54df0(long player_index)
 	bool result = false;
 	if (voice_available() && g_4e6948 && g_4e6948->flag1120)
 	{
-		c_simulation_world *world = (c_simulation_world *)g_4cf77c;
+		c_class_6a600 *world = (c_class_6a600 *)g_4cf77c;
 		if (world)
 			result = world_player_get(world, player_index) && function_696d0(world, player_index);
 	}
@@ -1709,7 +1720,7 @@ long voice_player_settings_get_active_value(s_voice_player_settings *settings, l
 	return result;
 }
 
-/* src/game_in_progress.cpp, src/unknown_067e10.cpp */
+/* src/unknown_138800_2.cpp, src/unknown_067e10.cpp */
 bool function_138800();
 bool function_68250(void);
 

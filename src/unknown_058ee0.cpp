@@ -1,8 +1,8 @@
 // @flags /O2 /Ob1 /arch:SSE /Gr
-/* NETWORK_SESSION_MANAGER.CPP: the session manager (0x527330): its state
+/* UNKNOWN_058EE0.CPP: the session manager (0x527330): its state
    machine (the states at 0x52738c..0x527fd8, the owner at 0x527334), the
    game session (session_a) and the other session (session_b) (lane D).
-   Everything is one struct global, s_session_states (network_session_manager.h). */
+   Everything is one struct global, s_session_states (unknown_058ee0.h). */
 
 #include "unknown_11c920.h"
 #include <xtl.h>
@@ -10,7 +10,7 @@
 #include "globals.h"
 #include "unknown_059ad0.h"
 #include "unknown_058dd0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 
 s_session_states g_527330;
 
@@ -72,7 +72,7 @@ bool function_596a0(c_class_58d20 **session)
 }
 dword function_0592d0(void);
 
-/* src/network_session_interface.cpp, src/unknown_1932c0.cpp */
+/* src/unknown_054fe0.cpp, src/unknown_1932c0.cpp */
 long network_session_interface_get_value_49c8(void);
 struct s_surface_description;
 s_surface_description *function_192e60(long index);

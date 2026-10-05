@@ -401,7 +401,7 @@ void __stdcall function_dd0d0(long arg_159e6d, s_biped_physics_input *input, boo
 	}
 }
 
-void __stdcall function_cba50(long unit_index, vector3f *aim, long unknown);
+bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking);
 bool function_10f820(long object_index);
 void function_de080(vector3f const *forward, vector3f const *up, vector2f *forward2d,
 	vector2f *left2d);
@@ -1825,7 +1825,8 @@ void function_dfdb0(long arg_159e6d, long *surface, long *location, point3f *poi
 	}
 }
 
-bool function_c5460(long unit_index, long ignore_index, point3f const *point, long a, long b, real radius, long c);
+bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position, point3f *result,
+	long a5, real radius, long a7);
 
 /* drops the biped out of a vehicle: level and upright, at a clear spot
    by the vehicle (or anywhere clear) */

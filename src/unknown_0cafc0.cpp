@@ -5,7 +5,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
-#include "lane_c_callees.h"
+#include "unknown_0259a0.h"
 
 /* the unit as this file reads it */
 struct s_unit_eye_object

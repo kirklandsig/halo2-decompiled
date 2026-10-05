@@ -101,7 +101,7 @@ struct s_type_f4462a
 	short parameter_types[k_maximum_hs_function_parameters];
 };
 
-/* the function table, defined beside hs_return in unknown_209ae0.cpp */
+/* the function table, defined beside script_return_store in unknown_209ae0.cpp */
 extern s_type_f4462a *g_4744e0[];
 
 inline s_type_f4462a *function_xca4acb(short function_index)

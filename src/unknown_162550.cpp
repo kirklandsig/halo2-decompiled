@@ -1,8 +1,8 @@
 #include "unknown_11c920.h"
 #include "font_loading.h"
 #include "globals.h"
-#include "lane_c_callees.h"
-#include "marker_list.h"
+#include "unknown_0259a0.h"
+#include "unknown_13927e.h"
 
 // @flags /O2 /arch:SSE /Gr
 

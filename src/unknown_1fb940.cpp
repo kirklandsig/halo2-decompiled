@@ -1,6 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 /* UNKNOWN_1FB940.CPP: the clusters an event in one cluster reaches (with
-   event_handling's 0x1fbac0..0x1fc210) */
+   event_dispatch_group's 0x1fbac0..0x1fc210) */
 
 #include "unknown_11c920.h"
 #include "globals.h"

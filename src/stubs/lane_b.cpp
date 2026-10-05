@@ -128,8 +128,6 @@ short __stdcall function_1b54d0(long actor_index, s_slot *slot) { return 0; }
 // @stub 0x1b5aa0
 short __stdcall function_1b5aa0(long actor_index, s_slot *slot, bool active) { return 0; }
 
-// @stub 0x1b5e00
-short __stdcall function_1b5e00(long actor_index, short level, bool active) { return 0; }
 
 
 // @stub 0x1b69e0
@@ -207,8 +205,6 @@ bool __stdcall function_1f46f0(long actor_index, short type, s_reference referen
 // @stub 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown) { return 0; }
 
-// @stub 0x26e030
-s_262b40_result *__stdcall function_26e030(s_reference reference) { return 0; }
 
 
 // @stub 0x262590
@@ -224,5 +220,3 @@ bool __stdcall function_1bfb10(long actor_index, s_slot *slot) { return 0; }
 // @stub 0x1bff80
 bool __stdcall function_1bff80(long actor_index, s_slot *slot) { return 0; }
 
-// @stub 0xc6de0
-void function_c6de0(long object_index, void *control) { }

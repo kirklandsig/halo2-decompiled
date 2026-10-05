@@ -103,12 +103,6 @@ long __stdcall function_120e70(byte *buffer)
 	return 0;
 }
 
-// @stub 0x215b50
-word *function_215b50(long variant, word *buffer)
-{
-	return 0;
-}
-
 /* unknown_2b116a.cpp's list (only the member the stub defines) */
 class c_potential_squad_leader_player_list
 {

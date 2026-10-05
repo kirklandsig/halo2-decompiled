@@ -3,11 +3,11 @@
 /* OBJECT_TYPES_21_2.H: the item, projectile, weapon and device object types
    (vtables 0x451f68, 0x4521b4, 0x4524d8 and 0x452848), whose retail tables
    also hold small event definition classes (event_definitions.h). The object
-   types derive from the shared base in object_type_definitions.h.
+   types derive from the shared base in unknown_0a58d0.h.
    Slots this batch does not decompile are placeholders. */
 
 #include "unknown_11c920.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 #include "event_definitions.h"
 
 /* the item type (vtable 0x451f68) */

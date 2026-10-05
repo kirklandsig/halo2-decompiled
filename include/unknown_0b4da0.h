@@ -1,8 +1,8 @@
-/* TRANSPORT_ENDPOINT.H: a transport endpoint, a socket of the transport
-   layer (src/transport_endpoint.cpp; src/unknown_0b49a0.cpp creates them) */
+/* UNKNOWN_0B4DA0.H: a transport endpoint, a socket of the transport
+   layer (src/unknown_0b4da0.cpp; src/unknown_0b49a0.cpp creates them) */
 
-#ifndef TRANSPORT_ENDPOINT_H
-#define TRANSPORT_ENDPOINT_H
+#ifndef UNKNOWN_0B4DA0_H
+#define UNKNOWN_0B4DA0_H
 
 #include "unknown_11c920.h"
 #include "globals.h"

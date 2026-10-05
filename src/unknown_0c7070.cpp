@@ -18,7 +18,7 @@ struct s_object_c7070_header
 };
 
 // retail's table at 0x467430
-const long g_467430[5] = { 0x5000049, 0x7000679, 0x700067a, 0x700067b, 0x700067c };
+extern const long g_467430[5] = { 0x5000049, 0x7000679, 0x700067a, 0x700067b, 0x700067c };
 
 // @retail 0xc7070
 bool function_0c7070(long object_index)

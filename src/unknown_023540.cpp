@@ -38,7 +38,39 @@ struct s_surface_size
 
 struct s_table_entry g_4b89b0[1];
 long g_5093e8;
-byte g_487b1c[1];
+struct s_487b10_arena
+{
+	byte initialized;
+	byte field_01[7];
+	long field_08;
+	byte data[0x27000];
+	long count;
+	byte active;
+	byte field_27011[3];
+	long field_27014;
+	long field_27018;
+	long field_2701c;
+	byte field_27020[0x20];
+	long record_count;
+	byte records[0x6000];
+};
+
+s_487b10_arena g_487b10;
+
+// @retail 0x1d660
+void function_01d660(void)
+{
+	g_487b10.field_08 = 0;
+	g_487b10.count = 0;
+	memset(g_487b10.data, 0, sizeof(g_487b10.data));
+	g_487b10.active = false;
+	g_487b10.field_27014 = 0;
+	g_487b10.field_27018 = 0;
+	g_487b10.field_2701c = 0;
+	g_487b10.record_count = 0;
+	memset(g_487b10.records, 0, sizeof(g_487b10.records));
+	g_487b10.initialized = true;
+}
 
 // @retail 0x23540
 void function_023540(
@@ -242,12 +274,13 @@ __inline long find_table_entry(
 	return NONE;
 }
 
+// @retail 0x1d6b0
 __inline real *table_entry_data(
 	long handle)
 {
 	byte *base = NULL;
 	if (handle != NONE && !(handle & 0x80000000))
-		base = g_487b1c + (handle & 0xfffffff);
+		base = g_487b10.data + (handle & 0xfffffff);
 	return (real *)base;
 }
 

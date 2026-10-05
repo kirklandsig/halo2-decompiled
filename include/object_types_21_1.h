@@ -8,11 +8,11 @@
    The entity definitions have 27 slots (a45d0, 2bcc80 and a5750 at slots
    6..8); the event definitions have 12 (9bed0, a5750 and a size method at
    slots 4..6; event_definitions.h). The two kinds are separate hierarchies
-   from the object types of object_type_definitions.h. Slots that no decompiled function owns keep
+   from the object types of unknown_0a58d0.h. Slots that no decompiled function owns keep
    empty placeholder bodies. */
 
 #include "unknown_11c920.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 #include "event_definitions.h"
 
 /* an entity as the entity definitions see it: the identifier, and the slot

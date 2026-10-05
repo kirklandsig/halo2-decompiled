@@ -1,9 +1,115 @@
 #include "unknown_11c920.h"
 #include "unknown_08b110.h"
 #include "unknown_096ed0.h"
+#include "unknown_067e10.h"
+#include "network_message_types.h"
 #include <string.h>
 
 // @flags /O2 /Ob1 /Gr
+
+struct s_simulation_controller
+{
+	long field_00;
+	long field_04;
+	long field_08;
+	t_player_key key;
+	s_machine_address machine;
+	byte field_1e[2];
+	c_class_6a600 *world;
+	bool field_24;
+	bool field_25;
+	byte field_26[2];
+	long field_28;
+	s_player_action action;
+};
+
+void player_action_initialize(s_player_action *action);
+
+static inline bool controller_world_is_authority(c_class_6a600 *world)
+{
+	return world->state != 3 && world->state != 5;
+}
+
+// @retail 0x84750
+void simulation_controller_initialize(s_simulation_controller *controller, c_class_6a600 *world,
+	long field_00, long field_04, long field_08, const s_machine_address *machine, const t_player_key *key)
+{
+	controller->field_00 = field_00;
+	controller->field_04 = field_04;
+	controller->field_08 = field_08;
+	memcpy(controller->key, *key, sizeof(controller->key));
+	controller->machine = *machine;
+	controller->field_24 = false;
+	controller->world = world;
+	controller->field_25 = !controller_world_is_authority(world);
+	controller->field_28 = NONE;
+	player_action_initialize(&controller->action);
+}
+
+struct s_replication_sender_view
+{
+	byte unknown00[0xc];
+	c_vtable_450d1c *senders[15];
+};
+
+// @retail 0x89f20
+void replication_node_start(s_node_450d1c *node, s_owner_450d1c *owner, dword mask)
+{
+	bool sent = false;
+	node->unknown00 = 1;
+	node->time = g_510548 ? g_51054c : GetTickCount();
+	long i = 0;
+	do
+	{
+		if (mask & (1 << i))
+		{
+			c_vtable_450d1c *sender = ((s_replication_sender_view *)owner)->senders[i];
+			if (sender)
+			{
+				node->active_mask |= 1 << sender->player;
+				sender->pending++;
+				sent = true;
+			}
+		}
+		i++;
+	} while (i < 15);
+	if (!sent)
+	{
+		owner->manager->v3(node);
+		s_node_450d1c **link = &owner->head;
+		if (*link)
+		{
+			do
+			{
+				s_node_450d1c *current = *link;
+				if (current == node)
+				{
+					*link = node->next;
+					break;
+				}
+				link = &current->next;
+			} while (*link);
+		}
+		owner->count--;
+		void *data = node->data;
+		if (data)
+		{
+			long info;
+			if (!g_4d87f8->allocator->get_info(data, &info))
+				info = NONE;
+			s_allocator_globals *globals = g_4d87f8;
+			globals->allocator->release(data, NONE);
+			if (data)
+				globals->count--;
+		}
+		long info;
+		if (!g_4d87f8->allocator->get_info(node, &info))
+			info = NONE;
+		s_allocator_globals *globals = g_4d87f8;
+		globals->allocator->release(node, NONE);
+		globals->count--;
+	}
+}
 
 // @retail 0x699a0
 long function_699a0(long index, void *table)

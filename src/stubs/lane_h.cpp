@@ -101,12 +101,6 @@ bool __stdcall function_19bfd0(struct s_content_item *item)
 	return false;
 }
 
-// @stub 0x64060
-bool __stdcall function_64060(struct s_game_variant *variant)
-{
-	return false;
-}
-
 struct s_network_session_player;
 
 // @stub 0x805d0

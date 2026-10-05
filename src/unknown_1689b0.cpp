@@ -542,7 +542,7 @@ static inline long collision_leaf_cluster(long leaf_index)
    once they are real, try the marker. */
 /* tests a vector from a point against the structure, its instanced planes,
    the instanced geometry and the objects of the clusters it crosses */
-/* retail 0x1697c0 (collision_test_vector) */
+/* retail 0x1697c0 (ray_cast_test) */
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision)
 {
@@ -827,7 +827,7 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
-/* collision_test_vector between two points */
+/* ray_cast_test between two points */
 // @retail 0x16a040
 bool function_16a040(long flags, point3f const *point0, point3f const *point1, long ignore_object_index,
 	long ignore_unit_index, s_collision_result_1697c0 *result)

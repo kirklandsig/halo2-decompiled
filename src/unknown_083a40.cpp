@@ -18,7 +18,7 @@ bool simulation_watcher_get_players(s_simulation_world_owner *watcher, long *unk
 		*unknown1c = watcher->unknown1c;
 		memcpy(state, watcher->unknown24, sizeof(watcher->unknown24));
 		*player_mask = watcher->players.player_mask;
-		*in_game_mask = simulation_player_collection_get_in_game_mask(&watcher->players);
+		*in_game_mask = function_84be0(&watcher->players);
 		memset(keys, 0, 16 * sizeof(keys[0]));
 		for (long i = 0; i < 16; i++)
 		{
@@ -146,7 +146,7 @@ void simulation_watcher_update_machines(s_simulation_world_owner *watcher)
 			memcpy(update.key, player->key, sizeof(update.key));
 			simulation_player_collection_apply_update(&watcher->players, &update);
 
-			c_simulation_world *world = watcher->world;
+			c_class_6a600 *world = watcher->world;
 			if (world->state != 3 && world->state != 5)
 			{
 				long index = i & 0xffff;
@@ -182,7 +182,7 @@ void simulation_player_collection_clear(s_type_c67652 *collection);
 void simulation_player_collection_build(s_type_c67652 *collection);
 
 /* src/unknown_067e10.cpp */
-void function_69610(c_simulation_world *world);
+void function_69610(c_class_6a600 *world);
 
 /* starts the watcher over: no machines and no players */
 // @retail 0x82fa0
@@ -220,7 +220,7 @@ void simulation_watcher_rebuild_players(s_simulation_world_owner *watcher)
 	memcpy(watcher->unknownbd0, machines->machines, sizeof(watcher->unknownbd0));
 	watcher->unknown18 = NONE;
 	watcher->unknownc30 = true;
-	c_simulation_world *world = watcher->world;
+	c_class_6a600 *world = watcher->world;
 	if (world->state != 3 && world->state != 5)
 		function_69610(world);
 }
@@ -231,7 +231,7 @@ void simulation_watcher_rebuild_players(s_simulation_world_owner *watcher)
 // @retail 0x83570
 void simulation_watcher_mark_player(s_simulation_world_owner *watcher, long player_index)
 {
-	c_simulation_world *world = watcher->world;
+	c_class_6a600 *world = watcher->world;
 	if (world->state != 3 && world->state != 5)
 	{
 		if (world_player_get(world, player_index))
@@ -252,7 +252,7 @@ void simulation_watcher_mark_player(s_simulation_world_owner *watcher, long play
 bool simulation_watcher_changed(s_simulation_world_owner *watcher)
 {
 	bool result = false;
-	c_simulation_world *world = watcher->world;
+	c_class_6a600 *world = watcher->world;
 	if (world && world->state != 3)
 	{
 		if (watcher->unknown84)

@@ -7,6 +7,30 @@
 
 #define k_real_epsilon 0.0001f
 
+// @retail 0x1c1a0
+double __cdecl function_1c1a0(real value)
+{
+	return fabs(value);
+}
+
+// @retail 0x1d6d0
+double __stdcall function_1d6d0(real value)
+{
+	return ceil(value);
+}
+
+// @retail 0x2b460
+double __cdecl function_2b460(real value)
+{
+	return floor(value);
+}
+
+// @retail 0x2b480
+double __stdcall function_2b480(real value)
+{
+	return floor(value);
+}
+
 // @retail 0x2b400
 real normalize2d(point2f *v)
 {

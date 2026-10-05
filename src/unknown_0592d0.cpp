@@ -3,7 +3,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 
 // @retail 0x592d0
 dword function_0592d0(void)

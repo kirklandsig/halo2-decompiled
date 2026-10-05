@@ -5,7 +5,7 @@
 
 #include "unknown_11c920.h"
 #include "main_globals.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include "async.h"
 #include "globals.h"
 #include <xtl.h>

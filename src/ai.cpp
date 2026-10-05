@@ -7,8 +7,8 @@
 #include "slot_handler.h"
 #include "unknown_123b30.h"
 #include "data_array.h"
-#include "lane_c_callees.h"
-#include "actor_iterator.h"
+#include "unknown_0259a0.h"
+#include "unknown_1e46c0.h"
 #include "unknown_0d0690.h"
 #include <string.h>
 #include <math.h>

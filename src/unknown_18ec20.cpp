@@ -6,7 +6,7 @@
 #include "globals.h"
 #include "unknown_12b400.h"
 #include "online_tasks.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include <string.h>
 
 long g_4ed294;

@@ -19,19 +19,6 @@ void function_bd970(long weapon_index, s_16760c_render_model *render_model, s_an
 {
 }
 
-/* the unit's zoom queries (unowned) */
-// @stub 0xc8a10
-bool function_c8a10(long unit_index)
-{
-	return false;
-}
-
-// @stub 0xd03b0
-bool function_d03b0(long unit_index)
-{
-	return false;
-}
-
 /* takes the camera matrix in eax in retail */
 // @stub 0x3f660
 void function_3f660(transform4x3f const *matrix)

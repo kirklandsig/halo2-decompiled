@@ -8,7 +8,7 @@
 #include "globals.h"
 #include "online_tasks.h"
 #include "unknown_058dd0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include <string.h>
 
 /* the mute list startup task, and each controller's mute list task, users

@@ -8,7 +8,7 @@
 #include <xonline.h>
 #include "globals.h"
 #include "unknown_059ad0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 
 struct s_network_session_membership;
 

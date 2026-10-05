@@ -8,10 +8,10 @@
 #include <xtl.h>
 #include <xonline.h>
 #include <string.h>
-#include "global_preferences.h"
+#include "unknown_120d80.h"
 #include "globals.h"
 #include "unknown_059ad0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include "unknown_19c1d0.h"
 #include "unknown_19d220.h"
 #include "screen_widgets.h"
@@ -2301,7 +2301,7 @@ long function_19adca(XUID const *xuid)
 		result = function_19ad39(session, xuid);
 	return result;
 }
-/* the session manager (network_session_manager.cpp) */
+/* the session manager (unknown_058ee0.cpp) */
 void network_session_manager_check_joining_leader(void);
 void network_session_manager_leave_session_a(bool close);
 void network_session_manager_leave_session_b(bool close);

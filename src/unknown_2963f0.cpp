@@ -3,7 +3,7 @@
    names as fallbacks */
 
 #include "unknown_11c920.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 
 #define ANY_NAME 0x30000d9
 

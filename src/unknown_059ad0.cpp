@@ -14,7 +14,7 @@
 #include "unknown_075870.h"
 #include "network_message_types.h"
 #include "unknown_058dd0.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 
 /* the session listener at +0x78a8 */
 class c_network_session_listener

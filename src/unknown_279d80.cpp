@@ -6,7 +6,7 @@
    and animated data through function_279860. */
 
 #include "unknown_11c920.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_xd56787.h"
 #include "unknown_0259d0.h"
 #include "unknown_11cb00.h"

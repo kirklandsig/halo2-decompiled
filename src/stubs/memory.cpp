@@ -14,11 +14,6 @@ void __stdcall function_78880(void *p)
 {
 }
 
-// @stub 0x215880
-void function_215880(void *ref)
-{
-}
-
 // @stub 0x81780
 void __stdcall function_81780(long stage)
 {

@@ -8,7 +8,7 @@
 #include <xonline.h>
 #include <xhv.h>
 #include "network_voice.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 
 /* a sound to play by label (unknown_189010.cpp) */
 struct s_sound_label_play

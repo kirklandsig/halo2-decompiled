@@ -1,6 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 /* UNKNOWN_213380.CPP: the end of a content signature calculation. Decompiled
-   by lane L: the preferences file (global_preferences.cpp) begins the
+   by lane L: the preferences file (unknown_120d80.cpp) begins the
    calculation inline and calls this with a register argument. */
 
 #include "unknown_11c920.h"

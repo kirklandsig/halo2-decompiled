@@ -13,12 +13,6 @@ struct s_damage_object;
 
 // @stub 0xb8b70
 void function_b8b70(long object_index) { }
-struct s_unit_child_iterator;
-/* the units among an object's children (another file's) */
-// @stub 0xd0590
-void function_d0590(s_unit_child_iterator *iterator, long object_index) { }
-// @stub 0xd05c0
-s_damage_object *function_d05c0(s_unit_child_iterator *iterator) { return 0; }
 // @stub 0xb9c60
 void function_b9c60(long object_index, bool flag) { }
 // @stub 0xbef30
@@ -47,8 +41,6 @@ void __stdcall function_184250(s_type_1e6529 const *data) { }
 // @stub 0xba690
 void function_ba690(long object_index, unsigned char **states, long *state_count, long *a, long *b) { }
 struct s_damage_report;
-// @stub 0xc9e70
-void function_c9e70(long unit_index, unsigned long flags, s_type_1e6529 const *data, s_damage_report const *report) { }
 // @stub 0x119280
 void function_119280(long object_index, unsigned long flags) { }
 /* called by function_d9640 (0xd9640) */
@@ -60,16 +52,9 @@ void function_119020(long creature_index, union vector3f const *impulse) { }
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long player_index, unsigned short team, unsigned char kind) { }
 // @stub 0x1e8fa0
 void function_1e8fa0(long player_index, long object_index, unsigned char kind) { }
-// @stub 0xca0b0
-void __stdcall function_ca0b0(long unit_index, s_damage_report const *report) { }
 // @stub 0xa80f0
 void function_a80f0(long object_index, s_damage_report const *report) { }
 /* called by function_d7b80 (0xd7b80) */
-// @stub 0xcc010
-bool function_cc010(long object_index, union vector3f const *direction) { return false; }
-/* called by 0xdc0a0 */
-// @stub 0xcc410
-bool function_cc410(long unit_index) { return false; }
 // @stub 0x155b60
 void function_155b60(long unit_index) { }
 /* called by function_d5de0 (0xd5de0) */

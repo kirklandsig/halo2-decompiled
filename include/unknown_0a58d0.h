@@ -1,6 +1,6 @@
 #pragma once
 
-/* OBJECT_TYPE_DEFINITIONS.H: the object type definition class hierarchy.
+/* UNKNOWN_0A58D0.H: the object type definition class hierarchy.
 
    Retail has one 36-slot vtable per object type (turret entity definition at
    0x452788, vehicle at 0x4520f0, and others at 0x452030 and 0x451f68 that are

@@ -328,3 +328,51 @@ bool function_291b40(long name, short command_script_index, long ai_index, long 
 
 	return result;
 }
+
+struct s_player_291670
+{
+	byte unknown00[0x2c];
+	long object_index;
+};
+
+struct s_object_291670
+{
+	byte unknown00[0x30];
+	point3f position;
+};
+
+struct s_object_header_291670
+{
+	byte unknown00[8];
+	s_object_291670 *object;
+};
+
+bool function_11c470(long trigger_volume_index, point3f const *point);
+
+/* tests the player units against a trigger volume */
+// @retail 0x291670
+bool function_291670(short trigger_volume_index, bool all_players)
+{
+	bool result = false;
+	s_record_pool_iterator iterator;
+	iterator.data = g_4e8c24;
+	iterator.index = NONE;
+	s_player_291670 *player;
+	while ((player = (s_player_291670 *)data_iterator_next_inlined(&iterator)) != NULL)
+	{
+		bool inside = false;
+		if (player->object_index != NONE)
+		{
+			if (function_11c470(trigger_volume_index, &((s_object_header_291670 *)g_4e0300->data)[player->object_index & 0xffff].object->position))
+				inside = true;
+		}
+		if (all_players)
+			result &= inside;
+		else if (inside)
+		{
+			result = true;
+			break;
+		}
+	}
+	return result;
+}

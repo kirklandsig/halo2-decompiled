@@ -29,10 +29,10 @@ void __stdcall function_565c0(s_voice_routing *routing, unsigned long members, s
 {
 }
 
-class c_simulation_world;
+class c_class_6a600;
 
 // @stub 0x693a0
-void __stdcall function_693a0(c_simulation_world *world)
+void __stdcall function_693a0(c_class_6a600 *world)
 {
 }
 

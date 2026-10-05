@@ -12,7 +12,7 @@ The handlers of the unit request table at 0x467564
 #include "data_array.h"
 #include "unknown_1c62f0.h"
 #include "unknown_1cafc0.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unit_requests.h"
 #include "unknown_1cec30.h"
 #include <math.h>
@@ -148,7 +148,7 @@ void function_b7360(long object_index);
 void function_bba20(long object_index);
 void function_b9fc0(long object_index, vector3f *forward, vector3f *up);
 bool function_0c7070(long unit_index);
-void function_cf040(long unit_index, long unknown);
+void function_cf040(long unit_index, short type);
 bool function_10f3b0(long object_index, long name, long unknown);
 bool function_10f340(long object_index, long name, long unknown);
 bool function_10f630(long object_index, long *first, long *second);
@@ -747,7 +747,7 @@ bool function_a76b0(long unit_index, long flag);
 void function_cafc0(long unit_index, point3f *position);
 void function_a91c0(long unit_index, long projectile_index, point3f const *origin, vector3f const *forward);
 void __stdcall function_b8540(long object_index);
-void function_d0e60(long unit_index, long a, long b);
+void function_d0e60(long unit_index, real amount, real limit);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_1ff360(long actor_index, point3f const *target, vector3f *velocity);
 void function_b75a0(long object_index, point3f const *point, vector3f const *forward, vector3f const *up,
@@ -1179,7 +1179,7 @@ bool function_e8510(long unit_index, bool immediate, bool silent, bool primary)
 
 bool function_10fd40(long unit_index, long action_name, long state_name, bool flag);
 bool function_10fcd0(long unit_index, long unknown, long state_name, long action_name);
-void __stdcall function_d0870(long unit_index, bool secondary);
+void __stdcall function_d0870(long weapon_index, long unit_index, bool secondary);
 void __stdcall function_fff40(long a, long b);
 
 /* a unit's weapon animations: its vehicle seat's weapon's, or the
@@ -1258,7 +1258,7 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 					return;
 				}
 
-				function_d0870(unit_index, hand != 0);
+				function_d0870(weapon_index, unit_index, hand != 0);
 				(&unit->current_weapon_index)[hand] = (char)slot;
 				unit->weapon_ready_times[slot] = g_510c54->game_time;
 
@@ -2391,7 +2391,7 @@ done:
 
 void function_b9c60(long object_index, bool flag);
 void function_ba690(long object_index, unsigned char **states, long *state_count, long *a, long *b);
-void __stdcall function_d1360(long vehicle_index, short seat_index, long a, long b);
+void __stdcall function_d1360(long vehicle_index, long seat_index, bool a, bool b);
 void function_e5300(long unit_index, long a);
 
 /* entering a vehicle's seat finished: the unit's visibility in the seat,
@@ -2472,7 +2472,7 @@ bool __stdcall unit_action_vehicle_entry(long unit_index, s_unit_request *reques
 }
 
 long function_10eef0(long object_index, bool alternate, bool no_request);
-void function_d12b0(long vehicle_index, short seat_index, long a, long b);
+void function_d12b0(long vehicle_index, long seat_index, bool a, bool b);
 bool function_b9d20(long object_index);
 void __stdcall function_bef30(long object_index, long a, long b, long c, long d);
 void function_b8b70(long object_index);
@@ -2798,7 +2798,7 @@ bool __stdcall unit_action_vehicle_board(long unit_index, s_unit_request *reques
 	return true;
 }
 
-void __stdcall function_d0f30(long unit_index, long a, long b);
+bool __stdcall function_d0f30(long unit_index, bool a, bool b);
 long function_10f720(long object_index, bool first);
 
 /* boarding finished: the unit moves to the boarded seat (or just leaves

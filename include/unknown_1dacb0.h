@@ -1,4 +1,4 @@
-/* ANIMATION_GRAPH.H: the animation graph tag and the lookups of its
+/* UNKNOWN_1DACB0.H: the animation graph tag and the lookups of its
    animations (src/arg_0e6cbc.cpp, 0x1dacb0..0x1ddea0).
 
    An animation is named by a c_type_709360: the graph it is in (NONE for the
@@ -7,8 +7,8 @@
    resource of the graph (the cache of unknown_123680.cpp); the lookups request
    the resources of the animations they touch. */
 
-#ifndef ANIMATION_GRAPH_H
-#define ANIMATION_GRAPH_H
+#ifndef UNKNOWN_1DACB0_H
+#define UNKNOWN_1DACB0_H
 
 #include "unknown_11c920.h"
 #include "globals.h"

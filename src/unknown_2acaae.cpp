@@ -18,14 +18,14 @@ public:
 	virtual void v18(void *parameters);
 	virtual screen_load_proc get_load_proc();
 
-	void configure(long title_name, progress_screen_poll poll, progress_screen_cleanup cleanup, void *context);
+	void configure(long field_210, progress_screen_poll poll, progress_screen_cleanup cleanup, void *context);
 
 	void *context;
 	real fraction;
 	bool finished;
 	progress_screen_poll poll;
 	progress_screen_cleanup cleanup;
-	long title_name;
+	long field_210;
 	long description;
 };
 
@@ -58,7 +58,7 @@ c_progress_screen::c_progress_screen(long a, long b, word user_flags) :
 	finished(false),
 	poll(NULL),
 	cleanup(NULL),
-	title_name(0),
+	field_210(0),
 	description(0)
 {
 }
@@ -75,9 +75,9 @@ c_class_1473c9 *__stdcall progress_screen_load(s_screen_parameters *parameters)
 }
 
 // @retail 0x2acba0
-void c_progress_screen::configure(long title_name, progress_screen_poll poll, progress_screen_cleanup cleanup, void *context)
+void c_progress_screen::configure(long field_210, progress_screen_poll poll, progress_screen_cleanup cleanup, void *context)
 {
-	this->title_name = title_name;
+	this->field_210 = field_210;
 	this->poll = poll;
 	this->cleanup = cleanup;
 	this->context = context;

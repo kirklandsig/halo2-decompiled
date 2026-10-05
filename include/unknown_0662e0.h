@@ -1,13 +1,13 @@
-#ifndef NETWORK_CONFIGURATION_H
-#define NETWORK_CONFIGURATION_H
+#ifndef UNKNOWN_0662E0_H
+#define UNKNOWN_0662E0_H
 
 #include "unknown_11c920.h"
 #include <wchar.h>
 
 // The network configuration (retail 0x4ce040, 0x1730 bytes): the tuning values of the
 // network session, the simulation and the bandwidth controller. network_configuration_set_defaults
-// fills it in; it can be replaced by network_configuration.dat, downloaded from Xbox Live
-// title storage through the online file g_477058. The field names give their offsets.
+// fills it in; it can be replaced by a .dat configuration file (the wide string in
+// src/unknown_0662e0.cpp), downloaded from Xbox Live title storage through the online file g_477058. The field names give their offsets.
 
 struct s_network_configuration_levels
 {

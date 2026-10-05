@@ -11,9 +11,6 @@ struct s_biped_physics_result;
 struct s_biped_physics_move;
 struct s_biped_ground_collision;
 
-// @stub 0xcba50
-void __stdcall function_cba50(long unit_index, vector3f *aim, long unknown) { }
-
 // @stub 0x1e5af0
 void function_1e5af0(s_biped_physics_output *output, void *physics, vector3f const *up, vector3f const *forward) { }
 
@@ -49,9 +46,6 @@ void __stdcall function_1ed340(void *physics, long arg_159e6d) { }
 
 // @stub 0x1696d0
 bool function_1696d0(long flags, s_biped_ground_collision *collision, long object_index, point3f const *point, vector3f const *vector, long a, long b) { return 0; }
-
-// @stub 0xc5460
-bool function_c5460(long unit_index, long ignore_index, point3f const *point, long a, long b, real radius, long c) { return 0; }
 
 // @stub 0x1d5120
 bool function_1d5120(s_havok_component *component, long rigid_body_index, long a, long b, real rate, char *result, char value) { return 0; }

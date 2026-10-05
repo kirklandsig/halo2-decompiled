@@ -6,7 +6,7 @@
 #include "unknown_11c920.h"
 #include <string.h>
 #include "globals.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_1c62f0.h"
 
 /* the animation state of an object (a view of unknown_1cafc0.cpp's) */

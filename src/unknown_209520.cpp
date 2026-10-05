@@ -1,5 +1,5 @@
 // @flags /O2 /arch:SSE /Gr
-/* UNKNOWN_209520.CPP: the script runtime's threads (hs_runtime): starting a
+/* UNKNOWN_209520.CPP: the script runtime's threads (script_thread_runner): starting a
    script's thread, evaluating an expression node into a frame, and reading
    and casting global values (outside functions the command scripts of lane I
    call) */

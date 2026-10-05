@@ -13,7 +13,7 @@
 #include "loop_allocator.h"
 #include "globals.h"
 #include "unknown_059ad0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include "unknown_19b510.h"
 
 void function_08ebd0(s_entry_source *source, s_entry *entry);
@@ -371,7 +371,7 @@ struct s_message_task_screen
 
 struct s_player_identity;
 
-/* network_session_interface.cpp */
+/* unknown_054fe0.cpp */
 s_long_pair *network_session_interface_get_data_4999(void);
 
 /* online_tasks.cpp */

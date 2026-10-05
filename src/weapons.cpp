@@ -7,7 +7,7 @@
 #include "globals.h"
 #include "object_markers.h"
 #include <math.h>
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "effects.h"
 #include "unknown_1cafc0.h"
 

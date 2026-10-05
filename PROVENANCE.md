@@ -105,6 +105,9 @@ and remediated as described below; item 3 is still under review.
      `point3f`, `string_handle` and `s_record_pool`.
    - 120 files were renamed to `unknown_<lowest address in the file>`, and
      the documents named after them followed.
+   - Every later merge is rescanned the same way, comments and documents
+     included. On 2026-10-05, a rescan renamed another 40 identifiers and 18
+     files that recent work had introduced.
    - What was deliberately kept: single common words (`damage`, `path`,
      `units`, `distance3d` and the like), generic idioms made of common words
      with a generic suffix (`entity_index`, `edge_count`, `control_flags`,

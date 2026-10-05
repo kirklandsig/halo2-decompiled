@@ -9,25 +9,6 @@
 
 #define HANDLE_INDEX(handle) ((handle) & 0x3ff)
 
-struct s_sender;
-void function_96ed0(s_sender *self);
-
-struct s_sender_tables
-{
-	byte unknown00[0xc];
-	s_sender *tables[15];
-};
-
-// @retail 0x89dc0
-void replication_table_clear_senders(s_sender_tables *senders)
-{
-	for (long i = 0; i < 15; i++)
-	{
-		if (senders->tables[i])
-			function_96ed0(senders->tables[i]);
-	}
-}
-
 // @retail 0x89d20
 long replication_table_get_chain(s_handle_peers *peers, long handle, long *handles)
 {

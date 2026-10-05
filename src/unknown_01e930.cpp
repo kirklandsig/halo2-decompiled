@@ -2,7 +2,7 @@
 /* UNKNOWN_01E930.CPP: Bink movie playback
 
 Bink allocates through function_156710 and
-function_156810, which bink_playback_initialize (unknown_155ea0.cpp)
+function_156810, which video_playback_setup (unknown_155ea0.cpp)
 registers: the allocations come from a permanent block of physical memory
 and are tracked in g_4e9148. */
 
@@ -122,7 +122,7 @@ void function_12c600(void);
 double timing_ticks_to_seconds(__int64 ticks);
 bool function_2148b0(long a);
 struct D3DTexture *function_23e340(short width, short height, short format,
-	void *(__stdcall *allocate)(long size, long alignment), long *size, void **data);
+	void *(__stdcall *allocate)(long size, long alignment), long *size, void **data, struct D3DTexture *header);
 short function_1358c0(short format);
 void __stdcall function_3e0450(void *open, void *direct_sound);
 void *__stdcall function_3e0af0(char const *name, dword flags);
@@ -574,7 +574,8 @@ void function_156090(char const *name, dword flags)
 	g_4e9188.width = (short)movie->width;
 	g_4e9188.height = (short)movie->height;
 	g_4e9188.copy_flags = 3;
-	g_4e9188.texture = function_23e340(g_4e9188.width, g_4e9188.height, 10, function_156620, &texture_size, &texture_data);
+	g_4e9188.texture = function_23e340(g_4e9188.width, g_4e9188.height, 10, function_156620, &texture_size, &texture_data,
+		(struct D3DTexture *)g_4e9188.texture_header);
 	if (!g_4e9188.texture)
 	{
 		function_1565e0();

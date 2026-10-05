@@ -7,7 +7,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 #include <string.h>
 

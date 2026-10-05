@@ -1,8 +1,8 @@
-/* NETWORK_SESSION_MANAGER.H: the session manager's owner (0x527334) and its
+/* UNKNOWN_058EE0.H: the session manager's owner (0x527334) and its
    states as the manager's functions see them (lane D) */
 
-#ifndef NETWORK_SESSION_MANAGER_H
-#define NETWORK_SESSION_MANAGER_H
+#ifndef UNKNOWN_058EE0_H
+#define UNKNOWN_058EE0_H
 
 #include "unknown_11c920.h"
 #include <xtl.h>

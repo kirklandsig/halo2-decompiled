@@ -5,7 +5,7 @@
 #define ENTITY_RELEVANCE_H
 
 #include "unknown_11c920.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 
 /* what an entity's update was last sent with */
 struct s_update_state;

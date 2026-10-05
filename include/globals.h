@@ -312,7 +312,7 @@ struct s_looping_sound_globals
 extern s_looping_sound_globals *g_4ed288;
 
 /* g_4e9188: the Bink state (unknown_01e930.cpp); the memory callbacks are
-   registered by bink_playback_initialize (155ea0) */
+   registered by video_playback_setup (155ea0) */
 struct s_bink_globals
 {
 	byte initialized;
@@ -327,7 +327,8 @@ struct s_bink_globals
 	short height;
 	dword copy_flags;
 	struct D3DTexture *texture;
-	byte unknown1c[0x3c - 0x1c];
+	byte texture_header[0x14];	/* the D3DTexture header 0x23e340 fills */
+	byte unknown30[0x3c - 0x30];
 	byte material[0xd4 - 0x3c];
 	byte *permanent_memory;
 	long permanent_memory_used;
@@ -939,7 +940,7 @@ extern bool g_47f058;
 extern long g_47ff38;
 
 /* shared with lane D's network and simulation code (unknown_067e10.cpp,
-   online_tasks.cpp, network_session_interface.cpp) */
+   online_tasks.cpp, unknown_054fe0.cpp) */
 extern byte g_4cf771; /* defined in unknown_03d380.cpp */
 extern byte g_4cf772; /* defined in unknown_03d380.cpp */
 typedef void (__stdcall *game_module_proc)(dword);

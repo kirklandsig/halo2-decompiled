@@ -561,11 +561,11 @@ void c_class_938e0::handle_mode_acknowledge(const s_network_message_mode_acknowl
 
 /* the simulation messages: each goes to the world's view of the channel it
    arrived on (src/unknown_067e10.cpp, src/unknown_085540.cpp) */
-c_simulation_view *function_6adc0(c_simulation_world *world, long value);
-bool simulation_world_queue_block(c_simulation_world *world, const s_simulation_block_data *data);
+c_simulation_view *function_6adc0(c_class_6a600 *world, long value);
+bool simulation_world_queue_block(c_class_6a600 *world, const s_simulation_block_data *data);
 
 
-#define SIMULATION_WORLD ((c_simulation_world *)g_4cf77c)
+#define SIMULATION_WORLD ((c_class_6a600 *)g_4cf77c)
 
 struct s_type_22101d
 {
@@ -641,7 +641,7 @@ void c_class_938e0::handle_synchronous_update(const s_simulation_block_data *mes
 	c_simulation_view *view = simulation_get_view_by_channel(channel_index);
 	if (view && view->type == 1)
 	{
-		c_simulation_world *world = view->world;
+		c_class_6a600 *world = view->world;
 		if (world->flag24)
 			simulation_world_queue_block(world, message);
 	}

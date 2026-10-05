@@ -693,8 +693,8 @@ bool signed_file_read_begin(void *header, dword header_size, void *body, dword b
 {
 	s_signed_file_read_parameters parameters;
 
-	task->unknown1 = false;
-	task->succeeded = false;
+	*(volatile bool *)&task->unknown1 = false;
+	*(volatile bool *)&task->succeeded = false;
 	task->progress = 0.0f;
 	task->state = 4;
 	function_x91aa57(task->path, path, sizeof(task->path));
@@ -899,8 +899,8 @@ bool signed_file_write_begin(void *header, dword header_size, void *body, dword 
 {
 	s_signed_file_write_parameters parameters;
 
-	task->unknown1 = false;
-	task->succeeded = false;
+	*(volatile bool *)&task->unknown1 = false;
+	*(volatile bool *)&task->succeeded = false;
 	task->progress = -1.0f;
 	task->state = 4;
 	function_x91aa57(task->path, path, sizeof(task->path));

@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_1fb7e0.h"
+#include "unknown_0d0690.h"
 
 s_ai_player *ai_player_get(long player_index);
 
@@ -79,6 +80,62 @@ void function_1bbc00(long player_index, long vehicle_index)
 
 			if (!TEST_FIELD_BIT(definition->seats[seat_index].flag11))
 				function_20ba60(0x66, unit_index, vehicle_index, NONE, NONE, NULL);
+		}
+	}
+}
+
+// @retail 0x1bbcc0
+void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
+{
+	if (g_4f55d0->active)
+	{
+		s_ai_player *player = ai_player_get(player_index);
+		long player_slot = NONE;
+
+		for (long i = 0; i < MAXIMUM_AI_PLAYERS; i++)
+		{
+			if (g_4f55cc[i].player_index == player_index)
+			{
+				player_slot = i;
+				break;
+			}
+		}
+		if (player)
+		{
+			real time;
+			long ticks;
+			s_object_child_iterator iterator;
+
+			player->unit_index = vehicle_index;
+			player->unknown08 = (short)seat_index;
+			time = (real)g_510c54->field_2_3 * 10.0f;
+			__asm
+			{
+				fld time
+				fistp ticks
+			}
+			player->unknown0a = (short)ticks;
+
+			function_d0620(vehicle_index, &iterator);
+			while (function_d0690(&iterator))
+			{
+				long actor_index = object_get(iterator.child_index)->actor_index;
+
+				if (actor_index != NONE)
+				{
+					s_actor_view *actor = actor_get(actor_index);
+
+					actor->unknown31c = (short)player_slot;
+					time = (real)g_510c54->field_2_3 * 2.0f;
+					__asm
+					{
+						fld time
+						fistp ticks
+					}
+					actor->unknown31e = (short)ticks;
+					*(short *)actor->unknown320 = 0;
+				}
+			}
 		}
 	}
 }

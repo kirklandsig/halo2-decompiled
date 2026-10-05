@@ -7,7 +7,7 @@
 #define UNKNOWN_1C62F0_H
 
 #include "unknown_11c920.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 
 struct real_quaternion_transform;
 struct s_animation_state;

@@ -18,7 +18,7 @@ struct s_type_2d4969
 };
 
 // @retail 0x1916dc
-bool WeaponStateIsDepleted(s_type_2d4969 const *state)
+bool function_1916dc(s_type_2d4969 const *state)
 {
 	bool depleted = false;
 

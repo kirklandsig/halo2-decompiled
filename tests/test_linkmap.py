@@ -52,11 +52,11 @@ def test_extent_runs_to_next_symbol_or_section_end():
 
 def test_plain_name():
     assert plain_name('?function_163ba0@@YIXPAKPBXJ@Z') == 'function_163ba0'
-    assert plain_name('?delete_all_players@c_simulation_world@@QAAXXZ') == 'c_simulation_world::delete_all_players'
+    assert plain_name('?remove_all@c_world@@QAAXXZ') == 'c_world::remove_all'
     assert plain_name('@entry@0') == 'entry'
     assert plain_name('_strncmp') == 'strncmp'
-    assert plain_name('??_Gc_page_heap@@UAEPAXI@Z') == "c_page_heap::`deleting destructor'"
-    assert plain_name('??_Ec_page_heap@@UAEPAXI@Z') == "c_page_heap::`deleting destructor'"
+    assert plain_name('??_Gc_heap@@UAEPAXI@Z') == "c_heap::`deleting destructor'"
+    assert plain_name('??_Ec_heap@@UAEPAXI@Z') == "c_heap::`deleting destructor'"
     assert plain_name('_RtlSizeHeap@12') == 'RtlSizeHeap'
 
 

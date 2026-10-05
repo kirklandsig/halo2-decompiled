@@ -15,7 +15,7 @@
 #include <math.h>
 #include <string.h>
 
-class c_impact
+class c_class_227600
 {
 public:
 	static bool function_227600(long impact_definition_index, c_type_47f957 material_a,
@@ -352,7 +352,7 @@ void function_226440(void)
 }
 
 // @retail 0x227600
-bool c_impact::function_227600(
+bool c_class_227600::function_227600(
 	long impact_definition_index,
 	c_type_47f957 material_a,
 	c_type_47f957 material_b,
@@ -563,7 +563,7 @@ bool impacts_match(
 	{
 		return (impact_component_a == component_a && impact_component_b == component_b ||
 			impact_component_a == component_b && impact_component_b == component_a) &&
-			c_impact::function_227600(NONE, impact_material_a, impact_material_b, material_a, material_b) &&
+			c_class_227600::function_227600(NONE, impact_material_a, impact_material_b, material_a, material_b) &&
 			impact_unknown == unknown &&
 			impact_type == type;
 	}

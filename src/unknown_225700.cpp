@@ -6,7 +6,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "global_preferences.h"
+#include "unknown_120d80.h"
 #include <xtl.h>
 #include <string.h>
 

@@ -1,13 +1,15 @@
 // @flags /O2 /Gr
 #include "unknown_11c920.h"
+#include "loop_allocator.h"
 
-class c_reference
+// The allocator methods are shared with the memory source at 0x476fbc.
+class c_physical_memory_source : public c_memory_source
 {
 public:
-	c_reference() : count(2) {}
-	virtual void v0() {}
-	virtual void v1(void *p) {}
-	long count;
+	virtual void *allocate(long size);
+	virtual void release(void *block) {}
+
+	long unknown04;
 };
 
 struct s_profile_location_bytes
@@ -43,7 +45,8 @@ void __stdcall function_2157e0(long stage)
 	{
 	case 1:
 		{
-			c_reference ref;
+			c_physical_memory_source ref;
+			ref.unknown04 = 2;
 			function_215880(&ref);
 		}
 		break;
@@ -62,16 +65,19 @@ void function_215810(void)
 		long count = g_55c160;
 		for (i = 0; i < count; i++)
 		{
-			function_216800(&g_55c164[i].unknown04, (long)g_55c164[i].field0);
+			s_55c164 *entry = &g_55c164[i];
+			long file_index = (long)entry->field0;
+			function_216800(entry->unknown04, file_index);
 		}
 		g_55c14f = 1;
 	}
 
-	c_reference ref;
-	c_reference *reference = &ref;
+	c_physical_memory_source ref;
+	ref.unknown04 = 2;
+	c_physical_memory_source *reference = &ref;
 	if (table)
 	{
-		reference->v1(table);
+		reference->release(table);
 		g_51ea14 = 0;
 	}
 	g_55c14e = 0;
@@ -90,7 +96,8 @@ bool function_216800(void *location, long file_index)
 			long unit = (file_index >> 4) & 0xf;
 			long index = (file_index >> 8) & 0x1fff;
 			s_profile_location_table *table = (s_profile_location_table *)((byte *)files + 0xbef8) + unit;
-			long bounded_index = index < 0 ? 0 : index > table->count - 1 ? table->count - 1 : index;
+			long count = table->count;
+			long bounded_index = index < 0 ? 0 : index > count - 1 ? count - 1 : index;
 			if (bounded_index == index)
 			{
 				*(s_profile_location_bytes *)location = table->entries[index];

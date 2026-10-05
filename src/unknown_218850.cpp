@@ -25,7 +25,7 @@ static inline void sound_cache_page_touch(s_sound_cache_allocator *allocator, lo
 	((s_sound_cache_page *)allocator->pages->data)[index & 0xffff].last_used = allocator->time;
 }
 
-/* the sound cache request (xbox_sound_cache.cpp): flags bit 0 blocks until
+/* the sound cache request (sound_cache_request_part.cpp): flags bit 0 blocks until
    the chunk is loaded, bit 1 starts loading it, bit 2 locks it. Returns bit 1
    when loaded, bit 2 when locked, bit 0 while still loading.
    Standard convention (see docs/DECOMPILING.md):

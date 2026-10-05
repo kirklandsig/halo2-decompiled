@@ -249,3 +249,38 @@ bool __stdcall function_1b5f30(long actor_index, s_slot *slot)
 
 	return true;
 }
+
+short function_1a78a0(long actor_index, long argument, short level);
+void function_25d420(long prop_ref_index, short type, long actor_index);
+
+// @retail 0x1b5e00
+short __stdcall function_1b5e00(long actor_index, short level, bool active)
+{
+	s_actor_view *actor = actor_get(actor_index);
+	short result = g_46fbe4;
+	s_slot_22 *state = (s_slot_22 *)&actor->slots[level];
+
+	if (actor->prop_index != NONE)
+	{
+		s_prop_view_fields *view = prop_node_view(prop_node_get(actor->prop_index));
+
+		if (view && !view->unknown69)
+		{
+			if (state->unknown18 != actor->prop_index)
+			{
+				state->unknown18 = actor->prop_index;
+				state->header.unknown4 = NONE;
+			}
+			if (view->unknown6a[2])
+			{
+				view->unknown6a[2] = 0;
+				state->header.unknown4 = NONE;
+			}
+			/* The choice helper consumes the complete argument slot. */
+			result = function_1a78a0(actor_index, *(long *)&active, level);
+			if (result == g_46fbe4)
+				function_25d420(actor->prop_index, 0, actor_index);
+		}
+	}
+	return result;
+}

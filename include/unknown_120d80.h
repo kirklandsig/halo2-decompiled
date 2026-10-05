@@ -1,7 +1,7 @@
-/* GLOBAL_PREFERENCES.H: the console's preferences in z:\preferences.dat
-   (global_preferences.cpp) */
-#ifndef GLOBAL_PREFERENCES_H
-#define GLOBAL_PREFERENCES_H
+/* UNKNOWN_120D80.H: the console's preferences in z:\preferences.dat
+   (unknown_120d80.cpp) */
+#ifndef UNKNOWN_120D80_H
+#define UNKNOWN_120D80_H
 
 #include "unknown_11c920.h"
 #include "job_queue.h"

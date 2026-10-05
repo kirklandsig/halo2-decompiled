@@ -1,12 +1,12 @@
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 
 // @flags /O2 /arch:SSE /Gr
 
 /* the vehicle type (vtable at 0x4520f0) and the base-class methods whose
    retail copy is first reached through it; the hierarchy is in
-   object_type_definitions.h */
+   unknown_0a58d0.h */
 
 /* the object header array of g_4e0300 (12 bytes each, the object pointer at
    +8), read as bytes */

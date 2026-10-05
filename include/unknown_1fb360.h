@@ -22,8 +22,8 @@ struct s_recorded_animation
 
 s_recorded_animation *recorded_animation_find(long object_index, long *datum_index);
 long recorded_animation_get_frames(long object_index);
-/* plays a cutscene recording on a unit (recording_play: flags 0;
-   recording_play_and_delete: 8; recording_play_and_hover: 0x10) */
+/* plays a cutscene recording on a unit (cutscene_play: flags 0;
+   cutscene_play_and_free: 8; cutscene_play_and_float: 0x10) */
 bool function_1fb360(long unit_index, short recording_index, long flags);
 
 #endif

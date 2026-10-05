@@ -2,6 +2,78 @@
 
 The newest entry comes first.
 
+## 2026-10-05: 5662 functions match
+
+```
+matched 5662 of 11318 game functions (567386 of 2784283 bytes, 20.38%)
+```
+
+**Codex lane U**, round 2: 15 new matches, none lost. They cover storage requests, cached locations, audio queue nodes, and memory-source helpers.
+
+## 2026-10-05: provenance clean-up, part 3
+
+A rescan of the whole tree, now extended to comments and documents, renamed 18 source and header files whose names matched non-permitted sources. They became `unknown_<lowest address>` files. Includes, guards and the function inventory were updated to match. No match status changed.
+
+## 2026-10-05: 5647 functions match
+
+```
+matched 5647 of 11318 game functions (566269 of 2784283 bytes, 20.34%)
+```
+
+**Codex lane W**, round 1: 22 new matches, none lost. The region, 0x011000–0x04ffff, is newly opened. It covers low-level core code: allocators and arenas, data structures and utilities.
+
+## 2026-10-05: 5625 functions match
+
+```
+matched 5625 of 11318 game functions (564812 of 2784283 bytes, 20.29%)
+```
+
+**Codex lane V**, round 1: 23 new matches, none lost. The region, 0x260000–0x26e36f, is newly opened. The work covers props, clump iteration, AI state callbacks and a rebuilt callback table.
+
+## 2026-10-05: 5602 functions match
+
+```
+matched 5602 of 11318 game functions (562650 of 2784283 bytes, 20.21%)
+```
+
+**Contributor pull requests**, merged after independent review: 30 new matches, none lost.
+- @Banshee64: the unit object type (#33, 22 matches), cloth simulation (#48), flexible chain callbacks (#50, 7 matches), and 0x23e340's seventh argument (#51).
+- @coldspear: synthetic class names in the linkmap tests (#45).
+
+**Provenance clean-up.** A rescan found identifiers that recent merges had brought in and that match non-permitted sources exactly. 40 names were renamed to behavioural names or placeholders. The rescan now also covers names that appear only in comments and docs.
+
+## 2026-10-05: 5572 functions match
+
+```
+matched 5572 of 11318 game functions (560032 of 2784283 bytes, 20.11%)
+```
+
+**Codex lane U**, round 1: 33 new matches, none lost. This is a newly opened region (0x200000–0x217fff) covering AI squads and memory sources, along with a dozen smaller groups.
+
+## 2026-10-05: 5539 functions match
+
+```
+matched 5539 of 11318 game functions (557648 of 2784283 bytes, 20.03%)
+```
+
+**Codex lane D**, round 17: 4 new matches, none lost. They cover voice packet submission, the simulation-world replication reset, a session helper, and connection initialisation.
+
+## 2026-10-05: 5535 functions match
+
+```
+matched 5535 of 11318 game functions (557104 of 2784283 bytes, 20.01%)
+```
+
+**Codex lane A**, round 17: 4 new matches, none lost. They are AI-script actor helpers and saved-game file tasks.
+
+## 2026-10-05: 5531 functions match
+
+```
+matched 5531 of 11318 game functions (556335 of 2784283 bytes, 19.98%)
+```
+
+**Codex lane B**, round 7: 5 new matches, none lost. They are actor slot handlers and their AI support. One new function's file broke two functions in another lane under LTCG, so the function was folded into an existing file with the same flags.
+
 ## 2026-10-05: 5526 functions match
 
 ```
@@ -560,7 +632,7 @@ matched 4647 of 11321 game functions (421089 of 2785198 bytes, 15.12%)
 ```
 
 **Lane A**, round 11: 25 new matches, none lost. They are script built-in
-evaluators and helpers. `scenario_location_from_point` (0x11bed0) now takes
+evaluators and helpers. `location_for_point` (0x11bed0) now takes
 its arguments in Halo CE's order, which matches two more callers.
 
 ## 2026-10-04: 4622 functions match; past 15%
@@ -968,7 +1040,7 @@ matched 2423 of 11317 game functions (191340 of 2783395 bytes, 6.87%)
 ```
 
 - **lane D**, round 4: the network session manager and voice chat. It also
-  found the source of a dead stack store in retail's inlined `is_host` check:
+  found the source of a dead stack store in retail's inlined `host_check` check:
   a `volatile` local on the non-host path. That one change matched the check
   and the session setters it is inlined into.
 - **lane L**, round 1 (`0x120000`): the async job queue and worker thread,
@@ -1244,7 +1316,7 @@ matched 354 of 17586 functions in scope (26036 of 3730854 bytes, 0.70%)
 **Object types are a class hierarchy.** The vtables for vehicles, turrets and
 related object types share most of their slots. Every slot that two or more
 of these vtables share is now a method of one base class,
-`c_object_type_definition`, in `include/object_type_definitions.h`. Each type's
+`c_object_type_definition`, in `include/unknown_0a58d0.h`. Each type's
 own overrides live in its derived class. The methods decompiled so far match
 with the class written as plain C++.
 

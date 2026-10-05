@@ -4,7 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 #include <string.h>
 
 #define OBJECT_HEADER(index) (&((s_object_header *)g_4e0300->data)[(index) & 0xFFFF])

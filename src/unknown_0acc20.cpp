@@ -458,7 +458,7 @@ SESSION_CONTROL_DECODE(peer_reestablish)
 SESSION_CONTROL_DECODE(peer_establish)
 
 // @retail 0xadab0
-void network_message_types_register_session_protocol(c_type_659ceb *collection)
+void function_adab0(c_type_659ceb *collection)
 {
 	REGISTER_MESSAGE_TYPE(collection, _network_message_type_join_request, "join-request", 0x1b8, message_join_request_encode, message_join_request_decode);
 	REGISTER_MESSAGE_TYPE(collection, _network_message_type_join_abort, "join-abort", 0x10, message_join_abort_encode, message_join_abort_decode);

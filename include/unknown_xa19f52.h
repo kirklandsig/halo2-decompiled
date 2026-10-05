@@ -7,7 +7,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 
 /* the entity definitions (g_4cf784, src/unknown_067eb0.cpp): a count, then
    one definition per entity type */

@@ -4,7 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "object_type_definitions.h"
+#include "unknown_0a58d0.h"
 #include "object_types_21_2.h"
 #include <string.h>
 

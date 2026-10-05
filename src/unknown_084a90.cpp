@@ -27,6 +27,44 @@ struct s_simulation_player_datum
 	byte unknown164[0x21c - 0x164];
 };
 
+struct s_simulation_player_identity
+{
+	long index;
+	dword key[3];
+};
+
+static inline s_simulation_player_datum *simulation_player_at_index(s_record_pool *data, long index)
+{
+	s_simulation_player_datum *result = 0;
+	if (index != NONE && index >= 0 && index < data->high_water_index)
+	{
+		s_simulation_player_datum *player = (s_simulation_player_datum *)(data->data + data->size * index);
+		if (player->salt)
+			result = player;
+	}
+	return result;
+}
+
+void function_14c540(long player_index);
+
+// @retail 0x850c0
+bool simulation_player_remove_if_left(const s_simulation_player_identity *identity)
+{
+	s_simulation_player_datum *player;
+	long index = identity->index;
+	player = simulation_player_at_index(g_4e8c24, index);
+	bool result = false;
+	if (player)
+	{
+		if (memcmp(player->key, identity->key, sizeof(player->key)) == 0 && player->field_2_2)
+		{
+			function_14c540(data_datum_index(g_4e8c24, index));
+			result = true;
+		}
+	}
+	return result;
+}
+
 // @retail 0x84a90
 void simulation_player_collection_clear(s_type_c67652 *collection)
 {
@@ -191,7 +229,7 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 }
 
 // @retail 0x84be0
-dword simulation_player_collection_get_in_game_mask(const s_type_c67652 *collection)
+dword function_84be0(const s_type_c67652 *collection)
 {
 	dword mask = 0;
 	for (long i = 0; i < 16; i++)

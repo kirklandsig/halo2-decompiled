@@ -4,7 +4,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1428b0.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include "unknown_1c62f0.h"
 
 /* the scenery definition (the tag data) */

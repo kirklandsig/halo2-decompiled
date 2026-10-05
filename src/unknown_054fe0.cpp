@@ -1,5 +1,5 @@
 // @flags /O2 /Ob1 /Gr
-/* NETWORK_SESSION_INTERFACE.CPP: the session interface globals (0x4cd868)
+/* UNKNOWN_054FE0.CPP: the session interface globals (0x4cd868)
    and the queries on the current game session (the manager's session_a) (lane D) */
 
 #include "unknown_11c920.h"
@@ -9,9 +9,9 @@
 #include <wchar.h>
 #include "globals.h"
 #include "unknown_059ad0.h"
-#include "network_session_manager.h"
+#include "unknown_058ee0.h"
 #include "online_tasks.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 
 /* one local user's state (0xd0 bytes) */
 #pragma pack(push, 1)
@@ -153,6 +153,40 @@ long network_session_interface_get_value_49a4(void)
 	c_class_58d20 *session = network_session_get_live();
 	if (session && SESSION_STATE_IS_LIVE(session->state))
 		result = session->value49a4;
+	return result;
+}
+
+struct s_game_variant;
+struct s_session_data4db0;
+struct s_161c90;
+long function_161c90(const s_161c90 *value);
+bool network_session_parameters_set_data4db0(c_class_58d20 *session, const s_session_data4db0 *data);
+bool network_session_parameters_set_value4dac(c_class_58d20 *session, long value);
+
+static inline bool session_interface_stop_countdown(c_class_58d20 *session)
+{
+	return network_session_start_countdown(session, 0, false, 0, 0);
+}
+
+// @retail 0x64060
+bool __stdcall function_64060(s_game_variant *variant)
+{
+	bool result = false;
+	if (network_session_interface_local_machine_is_host())
+	{
+		c_class_58d20 *session = 0;
+		network_session_get_current_if_valid(&session);
+		long mode;
+		if (session->value18 == 0)
+			mode = 0;
+		else if (!variant)
+			mode = 1;
+		else
+			mode = function_161c90((const s_161c90 *)variant);
+		result = network_session_parameters_set_data4db0(session, (const s_session_data4db0 *)variant) &&
+			network_session_parameters_set_value4dac(session, mode) &&
+			session_interface_stop_countdown(session);
+	}
 	return result;
 }
 

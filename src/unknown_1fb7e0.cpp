@@ -58,8 +58,8 @@ struct s_1fb8a0_squad
 // @retail 0x1fb8a0
 bool function_1fb8a0(long squad_index, short type)
 {
-	s_1fb8a0_squad *squad = (s_1fb8a0_squad *)(g_51e9d8->data + (squad_index & 0xffff) * sizeof(s_1fb8a0_squad));
 	bool result = false;
+	s_1fb8a0_squad *squad = (s_1fb8a0_squad *)(g_51e9d8->data + (squad_index & 0xffff) * sizeof(s_1fb8a0_squad));
 	bool valid = true;
 
 	if (type == 0x77 || type == 0x78)

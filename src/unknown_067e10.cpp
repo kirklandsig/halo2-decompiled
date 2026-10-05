@@ -8,16 +8,16 @@
 #include "globals.h"
 #include "unknown_123b30.h"
 #include "unknown_067e10.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 #include "unknown_075870.h"
 
-#define SIMULATION_WORLD ((c_simulation_world *)g_4cf77c)
+#define SIMULATION_WORLD ((c_class_6a600 *)g_4cf77c)
 #define NUMBEROF(array) (sizeof(array) / sizeof((array)[0]))
 
 // @retail 0x814f0
-c_simulation_world::c_simulation_world()
+c_class_6a600::c_class_6a600()
 {
-	c_simulation_world *world = this;
+	c_class_6a600 *world = this;
 	s_simulation_world_player *player = world->players;
 	for (long i = 0; i < 16; i++, player++)
 	{
@@ -48,7 +48,7 @@ struct s_view_iterator
 };
 
 // @retail 0x69470
-bool world_next_view(c_simulation_world *world, s_view_iterator *iterator, c_simulation_view **out)
+bool world_next_view(c_class_6a600 *world, s_view_iterator *iterator, c_simulation_view **out)
 {
 	bool result = false;
 
@@ -69,7 +69,7 @@ bool world_next_view(c_simulation_world *world, s_view_iterator *iterator, c_sim
 
 
 // @retail 0x67e10
-bool function_67e10(c_simulation_world *world)
+bool function_67e10(c_class_6a600 *world)
 {
 	return world->state != 3 && world->state != 5;
 }
@@ -94,7 +94,7 @@ bool function_68290(void)
 	bool result = false;
 	if (g_4cf770 && !g_4cf772)
 	{
-		c_simulation_world *world = SIMULATION_WORLD;
+		c_class_6a600 *world = SIMULATION_WORLD;
 		if (world->state)
 			result = world->unknown18 != 4;
 	}
@@ -102,7 +102,7 @@ bool function_68290(void)
 }
 
 // @retail 0x690d0
-void function_690d0(c_simulation_world *world, long actor_index, const dword *state)
+void function_690d0(c_class_6a600 *world, long actor_index, const dword *state)
 {
 	if (world->state != 3 && world->state != 5)
 	{
@@ -116,7 +116,7 @@ void function_690d0(c_simulation_world *world, long actor_index, const dword *st
 }
 
 // @retail 0x69580
-void function_69580(c_simulation_world *world, long player_index)
+void function_69580(c_class_6a600 *world, long player_index)
 {
 	long absolute_index = (word)player_index;
 	s_simulation_world_player *player = &world->players[absolute_index];
@@ -137,7 +137,7 @@ void function_69580(c_simulation_world *world, long player_index)
 }
 
 // @retail 0x69610
-void function_69610(c_simulation_world *world)
+void function_69610(c_class_6a600 *world)
 {
 	for (short i = 0; i < 16; i++)
 	{
@@ -148,7 +148,7 @@ void function_69610(c_simulation_world *world)
 }
 
 // @retail 0x696d0
-bool function_696d0(c_simulation_world *world, long player_index)
+bool function_696d0(c_class_6a600 *world, long player_index)
 {
 	bool result = false;
 	s_simulation_world_player *player = &world->players[player_index & 0xffff];
@@ -158,7 +158,7 @@ bool function_696d0(c_simulation_world *world, long player_index)
 }
 
 // @retail 0x696f0
-dword function_696f0(c_simulation_world *world)
+dword function_696f0(c_class_6a600 *world)
 {
 	dword mask = 0;
 	for (long i = 0; i < 16; i++)
@@ -171,7 +171,7 @@ dword function_696f0(c_simulation_world *world)
 }
 
 // @retail 0x6a480
-dword function_6a480(c_simulation_world *world)
+dword function_6a480(c_class_6a600 *world)
 {
 	dword mask = 0;
 	for (long i = 0; i < 16; i++)
@@ -194,7 +194,7 @@ dword function_6a480(c_simulation_world *world)
 }
 
 // @retail 0x6a600
-void c_simulation_world::delete_all_players(void)
+void c_class_6a600::function_6a600(void)
 {
 	for (long i = 0; i < 16; i++)
 	{
@@ -210,7 +210,7 @@ void c_simulation_world::delete_all_players(void)
 }
 
 // @retail 0x6a6f0
-void c_simulation_world::delete_all_actors(void)
+void c_class_6a600::function_6a6f0(void)
 {
 	for (long i = 0; i < 16; i++)
 	{
@@ -225,7 +225,7 @@ void c_simulation_world::delete_all_actors(void)
 }
 
 // @retail 0x6a860
-void function_6a860(c_simulation_world *world, long *size)
+void function_6a860(c_class_6a600 *world, long *size)
 {
 	for (short i = 0; i < 4; i++)
 		g_46e320[i](0);
@@ -234,7 +234,7 @@ void function_6a860(c_simulation_world *world, long *size)
 }
 
 // @retail 0x6a990
-bool world_buffer_append(c_simulation_world *world, long size, const void *data, long offset)
+bool world_buffer_append(c_class_6a600 *world, long size, const void *data, long offset)
 {
 	bool result = false;
 	if (world_receiving_join_data(world) && world->buffer_size == offset)
@@ -261,7 +261,7 @@ void function_199540(dword flags);
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size);
 
 // @retail 0x6a8a0
-bool world_buffer_allocate(c_simulation_world *world)
+bool world_buffer_allocate(c_class_6a600 *world)
 {
 	bool result = false;
 	byte *buffer;
@@ -276,7 +276,7 @@ bool world_buffer_allocate(c_simulation_world *world)
 }
 
 // @retail 0x6ab10
-void function_6ab10(c_simulation_world *world)
+void function_6ab10(c_class_6a600 *world)
 {
 	s_simulation_block *block = world->first_block;
 	while (block)
@@ -298,7 +298,7 @@ void function_6ab10(c_simulation_world *world)
 }
 
 // @retail 0x6ab90
-bool function_6ab90(c_simulation_world *world, const s_simulation_block_data *data)
+bool function_6ab90(c_class_6a600 *world, const s_simulation_block_data *data)
 {
 	s_allocator_globals *globals = g_4d87f8;
 	s_simulation_block *block = (s_simulation_block *)globals->allocator->allocate(sizeof(s_simulation_block), 0, 0);
@@ -325,7 +325,7 @@ bool function_6ab90(c_simulation_world *world, const s_simulation_block_data *da
 }
 
 // @retail 0x6ac30
-void function_6ac30(c_simulation_world *world, s_simulation_block_data *data)
+void function_6ac30(c_class_6a600 *world, s_simulation_block_data *data)
 {
 	s_simulation_block *block = world->first_block;
 	*data = block->data;
@@ -342,7 +342,7 @@ void function_6ac30(c_simulation_world *world, s_simulation_block_data *data)
 }
 
 // @retail 0x6acb0
-c_simulation_view *function_6acb0(c_simulation_world *world)
+c_simulation_view *function_6acb0(c_class_6a600 *world)
 {
 	s_view_iterator iterator;
 	c_simulation_view *view = 0;
@@ -353,7 +353,7 @@ c_simulation_view *function_6acb0(c_simulation_world *world)
 }
 
 // @retail 0x6ace0
-c_simulation_view *function_6ace0(c_simulation_world *world, long value)
+c_simulation_view *function_6ace0(c_class_6a600 *world, long value)
 {
 	s_view_iterator iterator;
 	c_simulation_view *view;
@@ -372,7 +372,7 @@ c_simulation_view *function_6ace0(c_simulation_world *world, long value)
 }
 
 // @retail 0x6ad40
-c_simulation_view *function_6ad40(c_simulation_world *world, const s_machine_address *address)
+c_simulation_view *function_6ad40(c_class_6a600 *world, const s_machine_address *address)
 {
 	s_view_iterator iterator;
 	c_simulation_view *view;
@@ -388,7 +388,7 @@ c_simulation_view *function_6ad40(c_simulation_world *world, const s_machine_add
 }
 
 // @retail 0x6adc0
-c_simulation_view *function_6adc0(c_simulation_world *world, long value)
+c_simulation_view *function_6adc0(c_class_6a600 *world, long value)
 {
 	s_view_iterator iterator;
 	c_simulation_view *view;
@@ -412,7 +412,7 @@ bool simulation_machine_is_ready(const s_machine_address *address)
 	bool result = false;
 	if (g_4cf770)
 	{
-		c_simulation_world *world = SIMULATION_WORLD;
+		c_class_6a600 *world = SIMULATION_WORLD;
 		if (world->state)
 		{
 			s_machine_address local_address = world->local_address;
@@ -436,7 +436,7 @@ bool simulation_machine_is_ready(const s_machine_address *address)
 }
 
 // @retail 0x6a2e0
-void function_6a2e0(c_simulation_world *world)
+void function_6a2e0(c_class_6a600 *world)
 {
 	dword established = function_6a480(world);
 	for (long i = 0; i < 16; i++)
@@ -463,7 +463,7 @@ static inline long world_time_get(void)
 }
 
 // @retail 0x6b2a0
-void function_6b2a0(c_simulation_world *world)
+void function_6b2a0(c_class_6a600 *world)
 {
 	world->unknown30 = 0;
 	if (world->flag24)
@@ -520,7 +520,7 @@ struct s_key_450d14;
 // @retail 0x6a3b0
 s_match_450d14 *__stdcall function_6a3b0(void *table, s_key_450d14 *key, long index)
 {
-	c_simulation_world *world = (c_simulation_world *)table;
+	c_class_6a600 *world = (c_class_6a600 *)table;
 	s_machine_table *machine_table = (s_machine_table *)g_4e8c20;
 	dword machine_mask = machine_table->machine_mask;
 	s_machine_address machines[16];
@@ -551,7 +551,7 @@ s_match_450d14 *__stdcall function_6a3b0(void *table, s_key_450d14 *key, long in
 }
 
 // @retail 0x6a7f0
-void function_6a7f0(c_simulation_world *world, s_key_450d14 *key, dword controller_mask, const s_simulation_player_state *states)
+void function_6a7f0(c_class_6a600 *world, s_key_450d14 *key, dword controller_mask, const s_simulation_player_state *states)
 {
 	for (long i = 0; i < 4; i++, states++)
 	{
@@ -610,7 +610,7 @@ void function_68350(s_simulation_watcher_state *state, bool *valid)
 void function_12d520(long a);
 
 // @retail 0x6aae0
-void world_buffer_dispose(c_simulation_world *world)
+void world_buffer_dispose(c_class_6a600 *world)
 {
 	function_12d520((long)world->buffer);
 	world->buffer = 0;
@@ -618,7 +618,7 @@ void world_buffer_dispose(c_simulation_world *world)
 }
 
 // @retail 0x6aa20
-bool world_buffer_complete(c_simulation_world *world, long size)
+bool world_buffer_complete(c_class_6a600 *world, long size)
 {
 	long const *size_reference = &size;
 	bool result = false;
@@ -639,7 +639,7 @@ bool world_buffer_complete(c_simulation_world *world, long size)
 	return result;
 }
 
-static __forceinline void world_change_substate(c_simulation_world *world, long substate)
+static __forceinline void world_change_substate(c_class_6a600 *world, long substate)
 {
 	if (substate != 4)
 	{
@@ -669,13 +669,13 @@ static __forceinline void world_change_substate(c_simulation_world *world, long 
 }
 
 // @retail 0x6b160
-void world_set_substate(c_simulation_world *world, long substate)
+void world_set_substate(c_class_6a600 *world, long substate)
 {
 	world_change_substate(world, substate);
 }
 
 // @retail 0x6b1f0
-void world_enter_substate_3(c_simulation_world *world, long value)
+void world_enter_substate_3(c_class_6a600 *world, long value)
 {
 	world_change_substate(world, 3);
 	world->unknown1c = world_time_get();
@@ -688,7 +688,7 @@ static inline bool world_substate_active(long substate)
 }
 
 // @retail 0x6b310
-void function_6b310(c_simulation_world *world)
+void function_6b310(c_class_6a600 *world)
 {
 	long substate = world->unknown18;
 	if (substate == 4)
@@ -698,7 +698,7 @@ void function_6b310(c_simulation_world *world)
 }
 
 // @retail 0x6b350
-void function_6b350(c_simulation_world *world)
+void function_6b350(c_class_6a600 *world)
 {
 	long substate = world->unknown18;
 	if (world_substate_active(substate) && substate != 6)
@@ -706,7 +706,7 @@ void function_6b350(c_simulation_world *world)
 }
 
 // @retail 0x69c50
-void function_69c50(c_simulation_world *world)
+void function_69c50(c_class_6a600 *world)
 {
 	if (world->state == 1)
 	{
@@ -721,7 +721,7 @@ void function_69c50(c_simulation_world *world)
 
 /* the first view onto an authority (a type 1 or 3 view); retail inlines
    0x6acb0 into the world code */
-static inline c_simulation_view *world_get_authority_view(c_simulation_world *world)
+static inline c_simulation_view *world_get_authority_view(c_class_6a600 *world)
 {
 	s_view_iterator iterator;
 	c_simulation_view *view = 0;
@@ -740,7 +740,7 @@ byte g_4cf778;
 byte g_4cf779;
 
 /* not decompiled yet (src/stubs/lane_d.cpp) */
-void __stdcall function_693a0(c_simulation_world *world);
+void __stdcall function_693a0(c_class_6a600 *world);
 
 /* the authority's player keys message (type 0x26) */
 struct s_simulation_player_keys_message
@@ -751,7 +751,7 @@ struct s_simulation_player_keys_message
 };
 
 // @retail 0x6a560
-void function_6a560(c_simulation_world *world, bool force)
+void function_6a560(c_class_6a600 *world, bool force)
 {
 	c_simulation_view *view = world_get_authority_view(world);
 	if (view && view->established())
@@ -765,7 +765,7 @@ void function_6a560(c_simulation_world *world, bool force)
 }
 
 // @retail 0x6b090
-void simulation_world_view_established(c_simulation_world *world, c_simulation_view *view, bool established)
+void simulation_world_view_established(c_class_6a600 *world, c_simulation_view *view, bool established)
 {
 	if (established && view == world_get_authority_view(world))
 	{
@@ -781,7 +781,7 @@ void simulation_world_view_established(c_simulation_world *world, c_simulation_v
 }
 
 // @retail 0x6b040
-void function_6b040(c_simulation_world *world)
+void function_6b040(c_class_6a600 *world)
 {
 	function_693a0(world);
 	long substate = world->unknown18;
@@ -793,7 +793,7 @@ void function_6b040(c_simulation_world *world)
 }
 
 // @retail 0x69f10
-void function_69f10(c_simulation_world *world)
+void function_69f10(c_class_6a600 *world)
 {
 	c_simulation_view *view = world_get_authority_view(world);
 	if (view)
@@ -810,14 +810,14 @@ void function_69f10(c_simulation_world *world)
 }
 
 // @retail 0x6b110
-void simulation_world_view_synchronized(c_simulation_world *world, c_simulation_view *view, bool synchronized)
+void simulation_world_view_synchronized(c_class_6a600 *world, c_simulation_view *view, bool synchronized)
 {
 	if (synchronized && view == world_get_authority_view(world) && world->unknown18 == 3)
 		function_69f10(world);
 }
 
 // @retail 0x69eb0
-void function_69eb0(c_simulation_world *world)
+void function_69eb0(c_class_6a600 *world)
 {
 	c_simulation_view *view = world_get_authority_view(world);
 	if (view && view->unknown3c != NONE && view->failure_reason == 0)
@@ -828,7 +828,7 @@ void function_69eb0(c_simulation_world *world)
 }
 
 // @retail 0x69f90
-void function_69f90(c_simulation_world *world)
+void function_69f90(c_class_6a600 *world)
 {
 	long elapsed = world_time_since(world->time34);
 	if ((world->unknown30 >= g_network_configuration.valued18 || elapsed >= g_network_configuration.valued1c) && world->unknown18 != 1)
@@ -839,7 +839,7 @@ void function_69f90(c_simulation_world *world)
 }
 
 // @retail 0x69fe0
-void function_69fe0(c_simulation_world *world)
+void function_69fe0(c_class_6a600 *world)
 {
 	c_simulation_view *view = world_get_authority_view(world);
 	if (view && (view->established() || world->unknown18 == 3))
@@ -853,7 +853,7 @@ void function_137fe0(void);
 long g_4cf774;
 
 // @retail 0x69790
-long function_69790(c_simulation_world *world)
+long function_69790(c_class_6a600 *world)
 {
 	long result = 0x7fffffff;
 	c_simulation_view *best = 0;
@@ -898,7 +898,7 @@ long function_69790(c_simulation_world *world)
 }
 
 // @retail 0x69300
-inline long function_69300(c_simulation_world *world, bool *buffered)
+inline long function_69300(c_class_6a600 *world, bool *buffered)
 {
 	long result = 0;
 	*buffered = false;
@@ -928,7 +928,7 @@ inline long function_69300(c_simulation_world *world, bool *buffered)
 }
 
 // @retail 0x69350
-void function_69350(c_simulation_world *world, bool value)
+void function_69350(c_class_6a600 *world, bool value)
 {
 	world->flag25 = value;
 	if (value)
@@ -949,7 +949,7 @@ long function_680c0(bool *buffered)
 	return result;
 }
 
-static inline void world_reset_to_substate_1(c_simulation_world *world)
+static inline void world_reset_to_substate_1(c_class_6a600 *world)
 {
 	if (world->unknown18 != 1)
 	{
@@ -970,7 +970,7 @@ void function_068750(void)
 }
 
 // @retail 0x6a2a0
-void function_6a2a0(c_simulation_world *world, c_simulation_view *view)
+void function_6a2a0(c_class_6a600 *world, c_simulation_view *view)
 {
 	if (view->state != 2)
 	{
@@ -982,7 +982,7 @@ void function_6a2a0(c_simulation_world *world, c_simulation_view *view)
 }
 
 // @retail 0x69640
-bool simulation_world_player_valid(long player_index, c_simulation_world *world, const t_player_key *key)
+bool simulation_world_player_valid(long player_index, c_class_6a600 *world, const t_player_key *key)
 {
 	long index = player_index & 0xffff;
 	bool result = false;
@@ -1044,7 +1044,7 @@ static inline void view_set_state(c_simulation_view *view, long new_state, long 
 
 /* the established views go back to state 2 */
 // @retail 0x69dd0
-void function_69dd0(c_simulation_world *world)
+void function_69dd0(c_class_6a600 *world)
 {
 	s_view_iterator iterator;
 	c_simulation_view *view;
@@ -1058,7 +1058,7 @@ void function_69dd0(c_simulation_world *world)
 }
 
 // @retail 0x698e0
-bool simulation_world_queue_block(c_simulation_world *world, const s_simulation_block_data *data)
+bool simulation_world_queue_block(c_class_6a600 *world, const s_simulation_block_data *data)
 {
 	bool result = false;
 	long expected = world->unknown1210 + 1;

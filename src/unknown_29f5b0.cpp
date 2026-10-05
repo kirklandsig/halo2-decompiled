@@ -28,7 +28,7 @@
 #include "object_markers.h"
 #include "object_queries.h"
 #include "object_iterator.h"
-#include "animation_graph.h"
+#include "unknown_1dacb0.h"
 #include <string.h>
 #include <math.h>
 #include <xmmintrin.h>
@@ -9318,7 +9318,7 @@ void __stdcall function_2aae20(short function_index, long thread_index, bool ini
 
 s_type_f4462a const g_44e3ac = { _hs_type_void, 0, function_2aae20, NULL, 0 };
 
-/* 665: void (hud_message) */
+/* 665: void (hud_text_notice) */
 // @retail 0x2aae40
 void __stdcall function_2aae40(short function_index, long thread_index, bool initialize)
 {
@@ -9333,7 +9333,7 @@ void __stdcall function_2aae40(short function_index, long thread_index, bool ini
 
 s_type_f4462a const g_44e3bc = { _hs_type_void, 0, function_2aae40, NULL, 1, { _hs_type_hud_message } };
 
-/* 666: void (hud_message) */
+/* 666: void (hud_text_notice) */
 // @retail 0x2aae90
 void __stdcall function_2aae90(short function_index, long thread_index, bool initialize)
 {

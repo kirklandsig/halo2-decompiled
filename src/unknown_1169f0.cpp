@@ -62,10 +62,15 @@ long __stdcall function_116ac0(long index)
 	return ((s_cloth_tag_data *)g_4e3b44[element->tag_index & 0xffff].bytes)->value;
 }
 
+void __stdcall function_1168a0(real elapsed);
+long __stdcall function_116980(long tag_index, long object_index);
+void __stdcall function_116b00(long, long, long, long, long, long, void *);
+void __stdcall function_117060(void *submission);
+
 /* the callbacks of the table at 0x4674d8 that are decompiled */
 void *g_4674d8[12] =
 {
-	(void *)function_116a10, (void *)function_116a50, (void *)function_116a70, (void *)function_116a80, 0,
-	(void *)function_1169f0, 0, 0, 0, 0,
+	(void *)function_116a10, (void *)function_116a50, (void *)function_116a70, (void *)function_116a80, (void *)function_116980,
+	(void *)function_1169f0, (void *)function_1168a0, 0, (void *)function_116b00, (void *)function_117060,
 	(void *)function_116ac0, 0
 };

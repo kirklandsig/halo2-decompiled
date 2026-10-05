@@ -146,7 +146,7 @@ void function_1a07b0(s_player_profile *profile, long type)
 	}
 }
 
-/* the saved game files (saved_game_files.cpp, not decompiled yet) */
+/* the saved game files (save_file_group.cpp, not decompiled yet) */
 bool function_2161d0(long file_index, void *buffer, long size);
 bool function_216240(long file_index, void *buffer, long size, wchar_t *name);
 

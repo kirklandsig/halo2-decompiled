@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "bitstream.h"
 #include "unknown_096ed0.h"
+#include "unknown_067e10.h"
 #include <string.h>
 
 struct s_entry;
@@ -134,6 +135,27 @@ struct c_entry_table
 };
 
 #define ENTRY_INDEX(identifier) ((identifier) & 0x3ff)
+
+struct s_sender_tables;
+void replication_table_reset(s_handle_peers *peers);
+void replication_table_clear_senders(s_sender_tables *senders);
+
+// @retail 0x68dc0
+void simulation_world_reset_replication(c_class_6a600 *world)
+{
+	world->flag25 = false;
+	world->flag2c = false;
+	world->flag2e = false;
+	if (world->state == 4 || world->state == 5)
+	{
+		replication_table_reset((s_handle_peers *)world->distribution->peers);
+		replication_table_clear_senders((s_sender_tables *)world->distribution->unknown2048);
+		((c_entry_table *)&world->distribution->field_2098)->function_08a030();
+		world->function_6a6f0();
+	}
+	if (world->state == 3)
+		function_6ab10(world);
+}
 
 void replication_table_mark(s_handle_peers *peers, long handle, dword mask);
 

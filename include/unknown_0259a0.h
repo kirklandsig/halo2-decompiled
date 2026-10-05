@@ -1,4 +1,4 @@
-/* LANE_C_CALLEES.H: game functions outside 0x1c0000..0x1cffff that lane C's
+/* UNKNOWN_0259A0.H: game functions outside 0x1c0000..0x1cffff that lane C's
    sources call and nobody has decompiled yet. src/stubs/lane_c.cpp defines
    them (the ones lane B calls too are in slot_handler.h); whoever decompiles one moves its prototype to the callee's own header
    and deletes the stub. Functions retail calls with stack arguments only
@@ -6,8 +6,8 @@
    match; the rest take LTCG register conventions retail chose from their
    bodies, which a stub can't reproduce. */
 
-#ifndef LANE_C_CALLEES_H
-#define LANE_C_CALLEES_H
+#ifndef UNKNOWN_0259A0_H
+#define UNKNOWN_0259A0_H
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"

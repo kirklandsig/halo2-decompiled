@@ -278,7 +278,7 @@ void network_connection_establish(s_network_connection *connection, long remote_
 /* ---- reading a connection's packets ---- */
 
 #include "bitstream.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 
 /* the clients a connection hands its packets to, and the owner that hears
    about its traffic; their vtables are in the client code */
@@ -646,6 +646,14 @@ void network_connection_connect(s_type_99af70 const *address, s_network_connecti
 	}
 }
 
+static inline void connection_add_handler(s_network_connection *connection, dword type, c_connection_client *client)
+{
+	s_connection_handler *handler = &connection->handlers[connection->handler_count];
+	handler->type = type;
+	handler->client = client;
+	connection->handler_count++;
+}
+
 /* sets a connection up: its link, its handler and configuration, and the
    streams its flags ask for (the reliable stream, the unreliable stream and
    the connection's own client) */
@@ -673,29 +681,18 @@ bool network_connection_initialize(s_network_connection *connection, long id, dw
 		connection->reliable_stream_index = network_reliable_stream_allocate(0);
 		if (connection->reliable_stream_index == NONE)
 			goto done;
-		c_connection_client *client = (c_connection_client *)network_reliable_stream_get(connection->reliable_stream_index);
-		s_connection_handler *reliable = &connection->handlers[connection->handler_count];
-		reliable->client = client;
-		reliable->type = 0x31;
-		connection->handler_count++;
+		connection_add_handler(connection, 0x31, (c_connection_client *)network_reliable_stream_get(connection->reliable_stream_index));
 	}
 	if (connection->flags & 0x10)
 	{
 		connection->stream_index = network_stream_allocate(0);
 		if (connection->stream_index == NONE)
 			goto done;
-		c_connection_client *client = (c_connection_client *)network_stream_get(connection->stream_index);
-		s_connection_handler *unreliable = &connection->handlers[connection->handler_count];
-		unreliable->client = client;
-		unreliable->type = 0x19;
-		connection->handler_count++;
+		connection_add_handler(connection, 0x19, (c_connection_client *)network_stream_get(connection->stream_index));
 	}
 	if (connection->flags & 0x20)
 	{
-		s_connection_handler *own = &connection->handlers[connection->handler_count];
-		own->type = 1;
-		own->client = (c_connection_client *)&connection->unknown18;
-		connection->handler_count++;
+		connection_add_handler(connection, 1, (c_connection_client *)&connection->unknown18);
 	}
 	result = true;
 done:

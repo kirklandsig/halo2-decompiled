@@ -1,5 +1,5 @@
 // @flags /O2 /arch:SSE /Gr
-/* UNKNOWN_25FC30.CPP: firing position evaluators (actor_firing_position) */
+/* UNKNOWN_25FC30.CPP: firing position evaluators (firing_position_group) */
 
 #include "unknown_11c920.h"
 #include "unknown_25fc30.h"
@@ -9,7 +9,7 @@
 #include "unknown_2626b0.h"
 #include "unknown_0d0690.h"
 #include "unknown_1e1f20.h"
-#include "lane_c_callees.h"
+#include "unknown_0259a0.h"
 
 typedef bool (__stdcall *firing_position_evaluate_proc)(long, s_type_967e20 *, s_type_b36ac5 *);
 typedef void (__stdcall *firing_position_pre_evaluate_proc)(long, s_type_967e20 *, short, s_type_b36ac5 *);

@@ -10,6 +10,8 @@
 #include "unknown_0259d0.h"
 #include "timed_effect.h"
 #include "visibility_slot.h"
+#include "unknown_123b30.h"
+#include "crc.h"
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
@@ -56,6 +58,71 @@ word g_48564c;
 word g_48564e;
 dword g_4b81fc[0xa6];
 D3DPIXELSHADERDEF g_484f68;
+long g_5234b0;
+extern long g_485898;
+
+struct s_5093e4
+{
+	bool flag0;
+	bool flag1;
+	byte unknown02[2];
+	real value4;
+	real value8;
+	real valuec;
+	real value10;
+	real value14;
+	bool flag18;
+	bool flag19;
+	bool flag1a;
+	byte unknown1b;
+	real value1c;
+	real value20;
+};
+
+extern s_5093e4 *g_5093e4;
+
+// @retail 0x20eb0
+void function_020eb0(void)
+{
+	long size = sizeof(s_5093e4);
+	byte *memory = game_state_globals.base_address + game_state_globals.cpu_allocation_size;
+	game_state_globals.cpu_allocation_size += size;
+	function_163ba0(&game_state_globals.allocation_size_checksum, &size, sizeof(size));
+	s_5093e4 *state = (s_5093e4 *)memory;
+	g_5093e4 = state;
+	state->flag0 = false;
+	state->flag1 = false;
+	state->value4 = -1.0f;
+	state->value8 = -1.0f;
+	state->valuec = -1.0f;
+	state->value10 = -1.0f;
+	state->value14 = -1.0f;
+	state->flag18 = true;
+	state->flag19 = false;
+	state->value1c = -1.0f;
+	state->value20 = -1.0f;
+	state->flag1a = false;
+}
+
+// @retail 0x206a0
+void function_0206a0(void)
+{
+	long frame = g_485aa0;
+	if (frame >= 0 && (((g_485898 >= 4 && g_485898 <= 7) && frame == g_5234b0) || frame > g_5234b0 || !g_5234b0))
+	{
+		for (long i = 0; i < 511; i++)
+			g_51f40c[i].valid = false;
+		g_5234b0 = frame;
+		g_51f408 = true;
+		long special_mode = 1;
+		if (g_485898 < 4 || g_485898 > 7)
+			special_mode = 0;
+		g_51f409 = !(byte)special_mode;
+	}
+	else
+		g_51f408 = false;
+	g_5234c4 = NONE;
+}
 
 // @retail 0x20560
 real function_020560(long index)
@@ -76,6 +143,20 @@ real function_020560(long index)
 	}
 
 	return result;
+}
+
+// @retail 0x20720
+void function_020720(long player)
+{
+	if (player == NONE)
+		return;
+	if (g_51f408 && !g_4850c8)
+		g_5234c4 = player;
+	else
+	{
+		for (long index = 0; index < g_5233ec; index++)
+			function_20e50(index);
+	}
 }
 
 // @retail 0x20770
@@ -377,6 +458,33 @@ void function_0226b0(void)
 {
 	if (g_51f400)
 		hash_table_initialize(g_51f400);
+}
+
+struct s_0226d0_block
+{
+	long field_00;
+	long checksum;
+	byte field_08[0x14];
+	long handle;
+};
+
+struct s_0226d0_structure
+{
+	byte field_00[8];
+	long checksum;
+};
+
+// @retail 0x226d0
+bool function_0226d0(void)
+{
+	bool result = false;
+	if (g_4e0344 && g_4e0344->count > 0 && g_4e0348)
+	{
+		s_0226d0_block *block = (s_0226d0_block *)g_4e0344->bsp;
+		if (block->handle != NONE && block->checksum == ((s_0226d0_structure *)g_4e0348)->checksum)
+			result = true;
+	}
+	return result;
 }
 
 // @retail 0x22710

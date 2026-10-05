@@ -1,5 +1,5 @@
 // @flags /O2 /Ob1 /Gr
-/* UNKNOWN_209580.CPP: runs a script thread if it is due (hs_runtime; lane
+/* UNKNOWN_209580.CPP: runs a script thread if it is due (script_thread_runner; lane
    I's outside function, kept out of line as in retail, where the command
    scripts' 0x258880 calls it) */
 

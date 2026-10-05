@@ -10,7 +10,7 @@
 #include "globals.h"
 #include "unknown_075870.h"
 #include "unknown_067e10.h"
-#include "network_configuration.h"
+#include "unknown_0662e0.h"
 
 /* the establishment message (type 0x25) */
 struct s_simulation_view_establishment
@@ -519,7 +519,7 @@ bool c_simulation_view::join_data_begin(long field_0_4)
 		{
 			if (world_buffer_allocate(world))
 			{
-				c_simulation_world *world = this->world;
+				c_class_6a600 *world = this->world;
 				world->unknown28 = field_0_4;
 				if (world->state == 3)
 				{
@@ -543,7 +543,7 @@ bool c_simulation_view::join_data_begin(long field_0_4)
 bool c_simulation_view::join_data_receive(long offset, const void *data, long size)
 {
 	bool result = false;
-	c_simulation_world *world = this->world;
+	c_class_6a600 *world = this->world;
 	if (world_receiving_join_data(world))
 	{
 		if (size > 0)

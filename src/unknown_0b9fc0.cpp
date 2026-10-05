@@ -2,7 +2,7 @@
 /* UNKNOWN_0B9FC0.CPP: machines
 
 The machine object type's callbacks (its definition
-at 0x468310) and the helpers only they call. Halo CE's device_machines.c
+at 0x468310) and the helpers only they call. Halo CE's machine source file
 has the same place, new and update; Halo 2 adds the portals a door opens
 and closes, and keyframes the machine's Havok bodies to its nodes. */
 

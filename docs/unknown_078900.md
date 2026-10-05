@@ -55,7 +55,7 @@ packet count.
 `g_network_configuration + 0x14a0`, which `0x75970` receives from
 `0x8db3b` (`push 0x4cf4e0`). The offsets below are from `0x4cf4e0`. The last
 column gives the matching `s_network_configuration` field from
-`include/network_configuration.h`. The defaults were read by running retail
+`include/unknown_0662e0.h`. The defaults were read by running retail
 `0x67a40` (`function_67a40`, already matched) in an emulator with the XBE
 mapped.
 

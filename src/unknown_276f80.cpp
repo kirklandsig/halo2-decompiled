@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "command_scripts.h"
 #include "unknown_276f80.h"
+#include "squads.h"
 #include <math.h>
 
 /* the radii of something the command script being run does, squared */
@@ -67,10 +68,10 @@ void function_276c00(long object_index, real a, real b, real c)
 		{
 			s_command_script *look_script = command_script_get(script_index);
 			look_script->flag52 = true;
-			look_script->flag46 = false;
+			*(volatile bool *)&look_script->flag46 = false;
+			*(volatile bool *)&look_script->flag51 = false;
 			look_script->type54 = 1;
 			look_script->index58 = object_index;
-			look_script->flag51 = false;
 			s_command_script *aim_script = command_script_get(script_index);
 			aim_script->flag46 = true;
 			aim_script->type48 = 1;
@@ -294,5 +295,66 @@ void function_277620(short value, long index_a, long index_b, long index_c)
 		script->index_a = index_b;
 		script->index_b = index_c;
 		script->flag5c = true;
+	}
+}
+
+struct s_actor_277680
+{
+	byte unknown000[0x266];
+	bool active;
+	byte unknown267[5];
+	long object_index;
+	short mode;
+	byte unknown272[0x658 - 0x272];
+	real value658;
+	byte unknown65c[0x674 - 0x65c];
+	real value674;
+};
+
+struct s_unit_277680
+{
+	byte unknown000[0x354];
+	real speed;
+};
+
+struct s_object_header_277680
+{
+	byte unknown00[8];
+	s_unit_277680 *object;
+};
+
+void function_10b010(long object_index, real forward_speed, real left_speed, real up_speed);
+
+/* sets the current actor's scripted speed and directional movement */
+// @retail 0x277680
+void __stdcall function_277680(real value)
+{
+	if (g_50240c != NONE && g_502410 != NONE)
+	{
+		s_actor_277680 *actor = (s_actor_277680 *)actor_datum_get(g_50240c);
+		s_command_script *script = command_script_get(g_502410);
+		if (actor->active)
+		{
+			long object_index = actor->object_index;
+			s_unit_277680 *unit = ((s_object_header_277680 *)g_4e0300->data)[object_index & 0xffff].object;
+			function_10b010(object_index, value, 0.0f, 0.0f);
+			unit->speed = value;
+			script->flag64 = true;
+			script->value68 = value;
+			real direction;
+			if (fabs(value) < 1.5f)
+				direction = 0.0f;
+			else
+				direction = value > 0.0f ? 1.0 : -1.0;
+			switch (actor->mode)
+			{
+			case 3:
+				actor->value658 = direction;
+				break;
+			case 5:
+				actor->value674 = direction;
+				break;
+			}
+		}
 	}
 }

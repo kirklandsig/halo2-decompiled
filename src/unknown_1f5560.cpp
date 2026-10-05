@@ -4,6 +4,8 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1e3920.h"
+#include "slot_handler.h"
+#include "unknown_2626b0.h"
 #include "unit_requests.h"
 #include "props.h"
 #include "unknown_0259d0.h"
@@ -274,5 +276,146 @@ bool function_1f58c0(long actor_index, vector3f *facing, short *unknown)
 		}
 	}
 
+	return result;
+}
+
+bool function_e7020(long unit_index, bool *alternate, long name);
+bool function_10f340(long unit_index, long mode, long set);
+bool function_10f9b0(long unit_index, long mode, long set, long lookup_flags, transform4x3f *matrix, bool any_weapon);
+
+// @retail 0x1f57a0
+bool function_1f57a0(long actor_index, long name)
+{
+	s_actor_moving *actor = actor_moving_get(actor_index);
+	bool result = false;
+	/* Retail keeps the animation name in its argument slot. */
+	long const *name_reference = &name;
+
+	if (actor->unknown26c == NONE)
+	{
+		bool alternate;
+		result = function_e7020(actor->unit_index, &alternate, *name_reference);
+	}
+	return result;
+}
+
+// @retail 0x1f5a60
+real function_1f5a60(long unit_index)
+{
+	real result = 0.92f;
+	transform4x3f matrix;
+
+	if (function_10f9b0(unit_index, 0x50000cb, 0x60000cd, 3, &matrix, false))
+		result = 0.0f - matrix.position.z;
+	return result;
+}
+
+// @retail 0x1f5ef0
+bool function_1f5ef0(long actor_index, long mode)
+{
+	bool result = false;
+	s_actor_moving *actor = actor_moving_get(actor_index);
+
+	if (actor->unit_index != NONE)
+		result = function_10f340(actor->unit_index, mode, 0x400000c);
+	return result;
+}
+
+/* Chooses the unit animation mode from the actor's requested mode and state. */
+// @retail 0x1f5f30
+long function_1f5f30(long actor_index)
+{
+	s_actor_view *actor = actor_get(actor_index);
+	long result;
+
+	if (actor->unknown450 != NONE)
+		result = actor->unknown450;
+	else
+	{
+		result = 0x6000086;
+		if (actor->unknown44b[1])
+			result = 0x7000039;
+		else if (actor->unknown44b[0])
+			result = 0x4000089;
+		else if (actor->unknown225 &&
+			(*(long *)((byte *)actor + 0x7fc) == 0x700002c || function_1f5ef0(actor_index, 0x700002c)))
+			result = 0x700002c;
+		else
+		{
+			switch (actor->unknown084)
+			{
+			case 1: result = 0x6000084; break;
+			case 2: break;
+			case 3: result = 0x6000085; break;
+			case 4: result = 0x6000086; break;
+			case 5: result = 0x4000089; break;
+			}
+		}
+	}
+	if (result == 0x4000089 && !actor->unknown5d0 && actor->unknown024 != 1 && team_is_enemy(actor->unknown024, 1))
+		result = 0x6000086;
+	return result;
+}
+
+struct s_actor_move_request
+{
+	bool active;
+	byte unknown01[3];
+	s_path_point target;
+	long target_index;
+	real distance;
+	s_path_point start;
+	bool flag2c;
+	bool flag2d;
+	bool flag2e;
+	byte unknown2f;
+	short mode;
+	short value32;
+	long next_index;
+	short value38;
+	byte unknown3a[2];
+	s_path_point next_target;
+	byte unknown4c[0xa0 - 0x4c];
+	long valuea0;
+	short valuea4;
+	byte unknowna6[0xc4 - 0xa6];
+};
+
+struct s_actor_move_target
+{
+	s_path_point point;
+	long unknown10;
+	long index;
+};
+
+/* Seeds a movement request from an actor location and a valid target. */
+// @retail 0x1f9490
+bool function_1f9490(long actor_index, s_reference reference, s_actor_move_request *request)
+{
+	s_actor_moving *actor = actor_moving_get(actor_index);
+	s_actor_move_target *target = (s_actor_move_target *)function_262b40(reference);
+	bool result = false;
+
+	if (target)
+	{
+		function_26c180(actor_index);
+		memset(request, 0, sizeof(*request));
+		request->start = actor->location;
+		request->target = target->point;
+		request->target_index = target->index;
+		request->distance = 0.0f;
+		request->flag2c = true;
+		request->flag2d = true;
+		request->flag2e = false;
+		request->value32 = 0;
+		request->value38 = NONE;
+		request->next_target = target->point;
+		request->next_index = target->index;
+		request->mode = 6;
+		request->valuea0 = NONE;
+		request->valuea4 = NONE;
+		request->active = true;
+		result = true;
+	}
 	return result;
 }
