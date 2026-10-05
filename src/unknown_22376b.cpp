@@ -1,10 +1,10 @@
 // @flags /O1 /Gr
 /* UNKNOWN_22376B.CPP: the demo disc's demos
-   and the content downloader, launched as other images (retail's
-   unknown_22376b.cpp; 0x22387b is not decompiled yet) */
+   and the content downloader, launched as other images */
 
 #include "unknown_11c920.h"
 #include <xtl.h>
+#include <xonline.h>
 #include "files.h"
 
 s_type_acf665 *function_136710(s_type_acf665 *file, bool replace, const char *name);
@@ -81,6 +81,25 @@ bool function_22382b(void)
 		g_47ffb4 = false;
 	}
 	return g_55e781;
+}
+
+// @retail 0x22387b
+void function_22387b(void)
+{
+	if (function_22382b())
+	{
+		LD_DOWNLOADER launch_data = { 0 };
+		XONLINE_LOGON_STATE logon_state;
+
+		if (SUCCEEDED(XOnlineSaveLogonState(&logon_state)))
+			launch_data.LogonState = logon_state;
+		function_22376b(0);
+		XLaunchNewImage("d:\\Downloader.xbe", (PLAUNCH_DATA)&launch_data);
+		XLaunchNewImage(NULL, (PLAUNCH_DATA)&launch_data);
+		for (;;)
+		{
+		}
+	}
 }
 
 /* the dashboard launch data: the reason, then the context and parameters */

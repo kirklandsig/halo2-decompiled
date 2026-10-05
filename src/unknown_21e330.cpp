@@ -543,6 +543,42 @@ void function_21f960(dword size, dword const *buffer)
 	}
 }
 
+long function_2197f0(real gain);
+real function_12aff0(real lower, real upper, real value, bool clamp);
+
+real g_468834 = 1.0f;
+
+PRIVATE inline real reverb_decibels_add(long first, long second)
+{
+	return (real)((double)*(real *)&first + *(real *)&second);
+}
+
+// @retail 0x21ece0
+void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
+{
+	DSFX_HIGH_LEVEL_EFFECT_DESCRIPTION description;
+	long gain = function_2197f0(g_468834);
+
+	description.effectType = DSFX_EFFECT_TYPE_I3DL2REVERB;
+	description.I3DL2Reverb.lRoom = (long)(function_12aff0(-64.0f, 0.0f,
+		reverb_decibels_add(*(long const *)&reverb->room, gain), true) * 6400.0f - 6400.0f);
+	description.I3DL2Reverb.lRoomHF = (long)(function_12aff0(-64.0f, 0.0f,
+		reverb_decibels_add(*(long const *)&reverb->room_hf, gain), true) * 6400.0f - 6400.0f);
+	description.I3DL2Reverb.flRoomRolloffFactor = reverb->room_rolloff;
+	description.I3DL2Reverb.flDecayTime = reverb->decay_time;
+	description.I3DL2Reverb.flDecayHFRatio = reverb->decay_hf_ratio;
+	description.I3DL2Reverb.lReflections = (long)(function_12aff0(-64.0f, 10.0f,
+		reverb_decibels_add(*(long const *)&reverb->reflections, gain), true) * 7400.0f - 6400.0f);
+	description.I3DL2Reverb.flReflectionsDelay = reverb->reflections_delay;
+	description.I3DL2Reverb.lReverb = (long)(function_12aff0(-64.0f, 20.0f,
+		reverb_decibels_add(*(long const *)&reverb->reverb, gain), true) * 8400.0f - 6400.0f);
+	description.I3DL2Reverb.flReverbDelay = reverb->reverb_delay;
+	description.I3DL2Reverb.flDiffusion = reverb->diffusion * 100.0f;
+	description.I3DL2Reverb.flDensity = reverb->density * 100.0f;
+	description.I3DL2Reverb.flHFReference = reverb->hf_reference;
+	XAudioSetEffectData(effect_index, &description, NULL);
+}
+
 /* ---- the listener ---- */
 
 /* the reverb of no environment */

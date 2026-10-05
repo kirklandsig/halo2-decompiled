@@ -79,11 +79,6 @@ void function_12360(s_bitmap_view *bitmap, real priority)
 {
 }
 
-/* lane K's 0x22387b */
-// @stub 0x22387b
-void function_22387b(void)
-{
-}
 
 /* UI lane round 2: the custom game profile list (unknown_2c9ddb.cpp) */
 
