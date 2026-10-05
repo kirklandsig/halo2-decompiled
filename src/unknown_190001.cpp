@@ -1428,7 +1428,7 @@ void function_18f9be(void)
 
 				dialog_ok_show(0, controller_dialog_id(index), 4, 1 << index, function_191135, function_19119c);
 				type = g_4e0350 ? ((s_scenario_type_view *)g_4e0350)->type : NONE;
-				if (type == 0 && !function_146840())
+				if (type == 0 && !(byte)function_146840())
 				{
 					g_510c54->unknown01 = true;
 					function_125a90(0);

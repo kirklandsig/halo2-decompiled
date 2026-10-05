@@ -322,3 +322,16 @@ done:
 	function_x697631(origin, direction, distance, &result->point);
 	return success;
 }
+
+
+// @retail 0x26d370
+bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance)
+{
+	bool result = true;
+	real denominator = dot3f(direction, &plane->n);
+	if (fabs(denominator) > 0.01)
+		*distance = -(plane_distance_to_point(plane, point) / denominator);
+	else
+		result = false;
+	return result;
+}
