@@ -5,9 +5,12 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_18f576.h"
+#include "screen_widgets.h"
+#include "unknown_24b5bc.h"
 #include <xtl.h>
 #include <xonline.h>
 #include <string.h>
+#include <new>
 
 /* the profile a slot holds (0x1e0 bytes at +0x18) */
 struct s_player_profile
@@ -58,13 +61,16 @@ struct s_player_slot_data
 	byte value200;
 	byte unknown201[3];
 	byte value204;
-	byte unknown205[0x470 - 0x205];
+	byte unknown205[3];
+	s_player_slot_profile sign_in_profile;
+	byte unknown46c[4];
 };
 
 /* a view of g_54e8e0's slots: the head, the online user at +0x470 (whose
    flags 1900a5 reads), then the identity */
 struct s_player_slot_view : s_player_slot_data, XONLINE_USER
 {
+	s_player_slot_view();
 	s_player_identity identity;
 	s_player_slot_blockb82 blockb82;
 	long valuec14;
@@ -98,6 +104,17 @@ static inline long player_slot_next(long index)
 /* player_slot_get.cpp: retail built it without LTCG, so its callers see
    the standard convention (it may clobber edx) */
 s_player_slot_view *player_slot_get(long index);
+
+// @retail 0x18f564
+s_player_slot_view::s_player_slot_view()
+{
+}
+
+// @retail 0x18f548
+s_player_slot_view *__stdcall function_18f548(s_player_slot_view *slots)
+{
+	return new (slots) s_player_slot_view[k_player_slot_count];
+}
 
 // @retail 0x18f8b8
 bool controller_is_connected(short index)
@@ -334,4 +351,51 @@ bool function_18ffc3(long index, s_player_slot_blockb82 *block)
 		memset(block, 0, sizeof(*block));
 	}
 	return valid;
+}
+
+struct s_type_fb9815;
+void machine_identifier_build(s_type_fb9815 *identifier, long index);
+long __stdcall function_64610(dword *xuid);
+void function_2172a0(long handle);
+void function_190c34(long index);
+void function_190eb3(long index);
+void function_53810(long voice_mask, long controller_index);
+void function_54fc0(long controller_index, long voice_through_tv);
+
+struct s_55c164
+{
+	void *field0;
+	byte unknown04[0x40];
+};
+extern long g_55c160;
+extern s_55c164 g_55c164[16];
+
+// @retail 0x18fb34
+void __stdcall function_18fb34(long index, s_player_profile_settings *settings, long profile_index)
+{
+	s_player_slot_view *slot = &player_slots()[index];
+	bool changed = !(slot->flags & 0x10) || slot->profile_index != profile_index;
+
+	if (!(slot->flags & 0x10))
+	{
+		machine_identifier_build((s_type_fb9815 *)&slot->s_player_slot_data::xuid, index);
+		slot->controller_id = function_64610((dword *)&slot->s_player_slot_data::xuid);
+		slot->profile_index = NONE;
+	}
+	if (changed && slot->profile_index != NONE)
+	{
+		function_2172a0(slot->profile_index);
+	}
+	slot->profile = *(s_player_profile *)settings;
+	slot->flags |= 0x10;
+	slot->profile_index = profile_index;
+	function_190c34(index);
+	function_190eb3(index);
+	if (changed && slot->profile_index != NONE)
+	{
+		g_55c160++;
+		g_55c164[g_55c160 - 1].field0 = (void *)slot->profile_index;
+	}
+	function_53810(settings->voice_mask, index);
+	function_54fc0(index, settings->voice_through_tv);
 }

@@ -3,6 +3,7 @@
    history of the references it gave up (actor +0x3fe, +0x400) */
 
 #include "unknown_11c920.h"
+#include <string.h>
 #include "globals.h"
 #include "data_array.h"
 #include "slot_handler.h"
@@ -176,5 +177,48 @@ bool function_262640(short block_index, short range_index, s_reference reference
 		s_reference_range_view *range = &block->ranges[range_index];
 		result = reference.unknown0 >= range->first && reference.unknown0 < range->first + range->count;
 	}
+	return result;
+}
+
+
+struct hash_node
+{
+	void *key;
+	dword hash;
+	hash_node *next;
+	byte data[1];
+};
+
+struct hash_table
+{
+	byte unknown00[0x20];
+	dword bucket_count;
+	long maximum_count;
+	long data_size;
+	dword (__stdcall *hash_proc)(const void *key);
+	bool (__stdcall *compare_proc)(const void *key_a, const void *key_b);
+	c_data_allocator *allocator;
+	hash_node *free_list;
+	hash_node *buckets[1];
+};
+
+hash_node *function_13e2d0(hash_table *table, void *key);
+
+PRIVATE inline bool reference_table_find(hash_table *table, void *key, void *data)
+{
+	hash_node *node = function_13e2d0(table, key);
+	if (node && data)
+	{
+		memcpy(data, node->data, table->data_size);
+		return true;
+	}
+	return false;
+}
+
+// @retail 0x262a30
+long function_262a30(s_reference reference)
+{
+	long result = NONE;
+	reference_table_find((hash_table *)g_557c6c, *(void **)&reference, &result);
 	return result;
 }
