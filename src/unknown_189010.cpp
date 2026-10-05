@@ -10,6 +10,11 @@
 #include "local_cameras.h"
 #include <math.h>
 
+long function_189ee0(long tag_index);
+real sound_permutation_reference_duration(long definition_index, s_sound_permutation_reference const *reference);
+void function_109220(long object_index, long tag_index, long sound_index);
+extern s_sound_source_callbacks const g_444b3c;
+
 struct s_sound_tag_flags
 {
 	byte flags;
@@ -589,3 +594,89 @@ bool function_1897c0(long local_player_index, long unit_index, long tag_index, s
 	}
 	return false;
 }
+
+/* 0x189cd0: retained for the next matching pass. LTCG removes the unused
+   fourth and fifth arguments (ret 0x14 instead of retail's ret 0x1c),
+   breaking matched callers 0x292080, 0x2a9e00 and 0x2a9ed0. Taking the
+   arguments' addresses did not preserve them. Keep the lane_a stub until
+   the retail convention is reproduced. */
+#if 0
+void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
+{
+	long const *object_reference = &object_index;
+	(void)&a;
+	(void)&b;
+	real *duration = (real *)duration_address;
+
+	if (tag_index != NONE)
+	{
+		long slot_index = function_189ee0(tag_index);
+		if (slot_index != NONE)
+		{
+			long sound_index;
+			s_sound_source_description description;
+			s_looping_sound_slot *slot = &g_4ed288->slots[slot_index];
+			if (duration)
+			{
+				*duration = sound_permutation_reference_duration(tag_index, &slot->permutation);
+			}
+			s_sound_tag *tag = (s_sound_tag *)g_4e3b44[tag_index & 0xffff].bytes;
+			s_sound_class_view *sound_class = &((s_sound_globals_view *)g_51ebd4)->classes[tag->class_index];
+			s_sound_class_spatialization *spatialization = NULL;
+			if (sound_class->spatialization.flags & 7)
+				spatialization = &sound_class->spatialization;
+			bool positioned = spatialization && (spatialization->flags & 1);
+
+			if (scale < 0.0f)
+				scale = 0.0f;
+			else if (scale > 1.0f)
+				scale = 1.0f;
+
+			if (*object_reference == NONE && !positioned)
+			{
+				s_sound_request request;
+				request.location.unknown02 = 0;
+				request.location.flags = 0x400;
+				request.location.audible = 0;
+				request.location.requested_audible = 0;
+				request.location.scale = scale;
+				request.location.unknown08 = 0;
+				request.object_index = NONE;
+				request.platform_playback = function_18d5b0(label);
+				request.variant = (char const *)&slot->permutation;
+				request.marker = NULL;
+				request.source = &g_444b3c;
+				sound_index = function_189fe0(&request, tag_index);
+			}
+			else
+			{
+				description.flags = 0;
+				if (*object_reference != NONE)
+				{
+					s_object_marker object_marker;
+					function_b8d30(*object_reference, 0x4000095, &object_marker, 1, false);
+					function_1892a0(&description, &object_marker.node_matrix.position,
+						&object_marker.node_matrix.forward, object_marker.node_index, tag_index, *object_reference);
+				}
+				if (spatialization)
+					description.flags |= 1;
+				else
+					description.flags &= ~1;
+				sound_index = function_189340(*object_reference, &g_444b3c, tag_index, positioned ? 2 : 1,
+					(s_sound_marker *)&description, scale, function_18d5b0(label), (char const *)&slot->permutation);
+				if (sound_index != NONE && *object_reference != NONE)
+				{
+					function_109220(*object_reference, tag_index, sound_index);
+				}
+			}
+			slot->source_index = sound_index;
+			if (sound_index != NONE)
+				return;
+		}
+	}
+	if (duration)
+	{
+		*duration = 0.0f;
+	}
+}
+#endif
