@@ -15,7 +15,7 @@ public:
 	virtual void slot2() {}
 	virtual void slot3() {}
 	virtual void slot4() {}
-	virtual long get_type() { return 0; }
+	virtual long shape_kind() { return 0; }
 	virtual void bounds(s_extent_transform const *transform, real tolerance, s_extent_bounds *result) {}
 	virtual void slot7() {}
 	virtual void slot8() {}
@@ -62,13 +62,13 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 	local.rows[1] = transform->rows[1];
 	local.rows[2] = transform->rows[2];
 	local.rows[3] = transform->rows[3];
-	if (shape->get_type() == 21)
+	if (shape->shape_kind() == 21)
 	{
 		s_extent_transform combined;
 		combined.compose(&local, (s_extent_transform *)data->vectors);
 		result = function_182d90(data->field_c.nested, radius, &combined, minimum, maximum);
 	}
-	else if (shape->get_type() == 9)
+	else if (shape->shape_kind() == 9)
 	{
 		for (long i = 0; i < data->field_c.count; i++)
 		{
@@ -80,7 +80,7 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 	}
 	else
 	{
-		long type = shape->get_type();
+		long type = shape->shape_kind();
 		if (type == 2 || (type > 9 && type <= 11))
 		{
 			long key = shape->first_key();
@@ -93,17 +93,17 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 				key = shape->next_key(key);
 			}
 		}
-		else if (shape->get_type() == 19)
+		else if (shape->shape_kind() == 19)
 			result = function_182d90(data->field_c.nested, radius, &local, minimum, maximum);
-		else if (shape->get_type() == 17)
+		else if (shape->shape_kind() == 17)
 			result = function_182d90(data->field_c.nested, radius, &local, minimum, maximum);
-		else if (shape->get_type() == 20)
+		else if (shape->shape_kind() == 20)
 			result = function_182d90(data->field_c.nested, radius, &local, minimum, maximum);
-		else if (shape->get_type() == 23)
+		else if (shape->shape_kind() == 23)
 			result = function_182d90(*(c_extent_shape **)((byte *)shape + 0x30), radius, &local, minimum, maximum);
 		else
 		{
-			switch (shape->get_type())
+			switch (shape->shape_kind())
 			{
 			case 4:
 				result = data->field_c.radius + extent_length(local.rows[3]);

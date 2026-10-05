@@ -41,7 +41,7 @@ void function_191234(long index);
 bool function_1249f0(long memory_unit, char *drive_letter);
 bool voice_port_can_talk(long port);
 void function_190f9b(long index);
-long online_task_get_status(long task_index);
+long online_task_poll(long task_index);
 void online_teams_enumerate_get_results(long task_index, DWORD *count, XUID *teams);
 void online_team_get_details(long task_index, XUID const *team, XONLINE_TEAM *details);
 long online_team_members_enumerate(long controller_index, XUID const *team);
@@ -115,7 +115,7 @@ void function_18f62b()
 		if (TEST_FIELD_BIT(slot->field_0_5)) function_190f9b(index);
 		if (slot->team_task != NONE)
 		{
-			long status = online_task_get_status(slot->team_task);
+			long status = online_task_poll(slot->team_task);
 			bool done = status != 0;
 			if (status > 0 && status <= 2)
 			{
@@ -137,7 +137,7 @@ void function_18f62b()
 		}
 		if (slot->member_task != NONE)
 		{
-			long status = online_task_get_status(slot->member_task);
+			long status = online_task_poll(slot->member_task);
 			bool done = status != 0 && status != 1;
 			switch (status)
 			{

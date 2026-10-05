@@ -287,7 +287,7 @@ public:
 	virtual void slot2() {}
 	virtual void slot3() {}
 	virtual void slot4() {}
-	virtual long get_type() { return 0; }
+	virtual long shape_kind() { return 0; }
 };
 
 struct s_distance_query_body
@@ -374,8 +374,8 @@ bool __stdcall function_183670(long component_a, long component_b, point3f *a, p
 					s_distance_query_body *body_b = second->bodies[j].body;
 					c_distance_query_shape *shape_a = body_a->shape;
 					c_distance_query_shape *shape_b = body_b->shape;
-					long type_b = shape_b->get_type();
-					long type_a = shape_a->get_type();
+					long type_b = shape_b->shape_kind();
+					long type_a = shape_a->shape_kind();
 					context.dispatch->query[type_a][type_b](&body_a->shape, &body_b->shape, &context, &collector);
 					s_distance_query_contact *contacts = (s_distance_query_contact *)collector.entries.data;
 					for (long k = 0; k < collector.entries.count; k++)
