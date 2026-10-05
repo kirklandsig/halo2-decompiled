@@ -26,7 +26,7 @@ bool function_6c7e0();
 bool function_1906da(long index);
 bool voice_data_is_wave(const long *data, long size);
 bool voice_port_can_talk(long port);
-long online_task_get_status(long task_index);
+long online_task_poll(long task_index);
 void function_08eeb0(s_state_block *block);
 void online_message_block_set_text(s_state_block *block, const wchar_t *text);
 void online_message_block_set_values(s_state_block *block, long value210, long value214, long value20c);
@@ -259,7 +259,7 @@ void c_xbox_live_message_send_screen::v3()
 	{
 		if (list.task_index != NONE)
 		{
-			switch (online_task_get_status(list.task_index))
+			switch (online_task_poll(list.task_index))
 			{
 			case 0:
 			case 1:

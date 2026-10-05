@@ -1,9 +1,11 @@
-﻿// @flags /O2 /Gr
+// @flags /O2 /Gr
 /* UNKNOWN_1E77C0.CPP: recording a unit request in its player's local state
    (the e6900 callee) */
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include <string.h>
+#include <xmmintrin.h>
 
 /* a player (g_4e8c24, 0x21c bytes): +0x28 is its local player slot */
 struct s_player_request_view
@@ -24,13 +26,21 @@ struct s_time_entry
 	short b;
 };
 
+struct s_request_transition
+{
+	short state;
+	short ticks;
+};
+
 /* a local player's state in g_51e9c0 (src/unknown_1e6a40.cpp), 0x1b0 bytes:
    the four last unit requests at +0x150 */
 struct s_local_player_state_view
 {
-	byte unknown000[0x150];
+	s_request_transition transitions[32];
+	byte unknown080[0x150 - 0x80];
 	s_time_entry requests[4];
-	byte unknown170[0x194 - 0x170];
+	dword request_flags[8];
+	long version;
 	byte field_194;
 	byte field_195;
 	byte field_196;
@@ -63,6 +73,28 @@ void function_1e9070(long player_index)
 	long index = player->local_player_index;
 	if (index != NONE)
 		((s_local_player_state_view *)g_51e9c0)[index].field_19b = (byte)g_510c54->field_2_3;
+}
+
+struct s_request_screen_bounds
+{
+	short top, left, bottom, right;
+};
+
+// @retail 0x1e90b0
+void function_1e90b0(long first, const s_request_screen_bounds *bounds, point2f *points)
+{
+	__m128 left = _mm_cvtsi32_ss(_mm_setzero_ps(), bounds->left);
+	__m128 right = _mm_cvtsi32_ss(_mm_setzero_ps(), bounds->right);
+	__m128 top = _mm_cvtsi32_ss(_mm_setzero_ps(), bounds->top);
+	__m128 bottom = _mm_cvtsi32_ss(_mm_setzero_ps(), bounds->bottom);
+	_mm_store_ss(&points[first % 4].x, left);
+	_mm_store_ss(&points[first % 4].y, top);
+	_mm_store_ss(&points[(first + 1) % 4].x, right);
+	_mm_store_ss(&points[(first + 1) % 4].y, top);
+	_mm_store_ss(&points[(first + 2) % 4].x, right);
+	_mm_store_ss(&points[(first + 2) % 4].y, bottom);
+	_mm_store_ss(&points[(first + 3) % 4].x, left);
+	_mm_store_ss(&points[(first + 3) % 4].y, bottom);
 }
 
 PRIVATE inline long next_request_player(long current)
@@ -322,12 +354,6 @@ void function_1e6b00(long player_index, s_request_source *source)
 	}
 }
 
-struct s_request_transition
-{
-	short state;
-	short ticks;
-};
-
 // @retail 0x1e8d80
 bool __stdcall function_1e8d80(long index, s_local_player_state_view *state, s_entry_420 *entry, s_request_transition *output)
 {
@@ -436,4 +462,52 @@ bool function_1e8eb0(long object_index, long type, bool any_nonzero)
 		}
 	}
 	return result;
+}
+
+struct s_request_profile
+{
+	__int64 field_0[0x128 / 8];
+	dword flags[8];
+	byte field_148[0x1e0 - 0x148];
+};
+
+// @retail 0x1e73b0
+void function_1e73b0()
+{
+	for (long local_index = next_request_player(NONE); local_index != NONE;
+		local_index = next_request_player(local_index))
+	{
+		long player_index = local_index == NONE ? NONE : g_4e8c20->entries[local_index];
+		if (player_index != NONE)
+		{
+			s_player_request_view *player = (s_player_request_view *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c);
+			long profile_index = *(long *)((byte *)player + 0x24);
+			if (profile_index != NONE)
+			{
+				s_request_profile profile;
+				long version;
+				s_player_slot *slot = &g_54e8e0[profile_index];
+				if (slot && (*(byte *)slot & 0x10))
+				{
+					profile = *(s_request_profile *)((byte *)slot + 0x18);
+					version = *(long *)((byte *)slot + 0x1f8);
+				}
+				else
+				{
+					memset(&profile, 0, sizeof(profile));
+					version = NONE;
+				}
+				s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
+				memcpy(state->request_flags, profile.flags, sizeof(profile.flags));
+				state->version = version;
+				for (long i = 0; i < 32; i++)
+				{
+					s_request_transition *transition = &state->transitions[i];
+					transition->ticks = 0;
+					long value = ((state->request_flags[1] & (1 << i)) ? 2 : 0) + ((state->request_flags[0] & (1 << i)) ? 1 : 0);
+					transition->state = value == 3 ? 5 : 0;
+				}
+			}
+		}
+	}
 }

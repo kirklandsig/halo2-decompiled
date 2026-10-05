@@ -618,7 +618,7 @@ screen_load_proc c_xbox_live_message_display_screen::get_load_proc()
 	return function_2b54b2;
 }
 
-long online_task_get_status(long task_index);
+long online_task_poll(long task_index);
 bool online_message_details_get_property(long task_index, long property, void *buffer, DWORD size, bool *too_small, DWORD *required_size);
 long online_message_download_attachment(long details_task_index, long property, void *buffer, DWORD size);
 bool online_message_download_get_results(long task_index, DWORD *received_size, BYTE **data, DWORD *total_size);
@@ -734,7 +734,7 @@ __forceinline void c_xbox_live_message_display_screen::read_details()
 {
 	if (task_2d08 != NONE)
 	{
-		switch (online_task_get_status(task_2d08))
+		switch (online_task_poll(task_2d08))
 		{
 		case 0:
 			return;
@@ -788,7 +788,7 @@ void c_xbox_live_message_display_screen::update_attachment()
 {
 	if (task_2d0c != NONE)
 	{
-		switch (online_task_get_status(task_2d0c))
+		switch (online_task_poll(task_2d0c))
 		{
 		case 0:
 			return;

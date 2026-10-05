@@ -4,6 +4,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1a58b0.h"
+#include "object_markers.h"
 
 /* ---- views of the data used below ---- */
 
@@ -959,5 +960,505 @@ short __stdcall function_1a79e0(long actor_index, short level, bool active)
 		slot->unknown4 = index;
 		return choice;
 	}
+	return result;
+}
+
+struct s_surface_unit_view
+{
+	byte unknown00[0x14];
+	long parent_index;
+	byte unknown18[0xc1 - 0x18];
+	byte flags_c1;
+	byte unknownc2[0x3dc - 0xc2];
+	byte movement_type;
+	byte unknown3dd[0x40c - 0x3dd];
+	long body_index;
+	byte unknown410[0x448 - 0x410];
+	long support_index;
+	byte unknown44c[4];
+	vector3f normal;
+};
+
+struct s_surface_support_view
+{
+	byte unknown00[0xb4];
+	long component_index;
+};
+
+struct s_surface_component_view
+{
+	byte unknown00[0x74];
+	long body_count;
+	byte unknown78[0xa0 - 0x78];
+};
+
+struct s_object;
+struct s_havok_component;
+s_object *function_badc0(long object_index, dword type_mask);
+point3f *function_b9dd0(long object_index, point3f *result);
+void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
+bool function_e4050(long object_index);
+bool function_109e00(long object_index, vector3f *velocity, bool definition_flag_required);
+void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+
+// @retail 0x1a68a0
+void function_1a68a0(long object_index, vector3f *velocity)
+{
+	s_object_header *header = OBJECT_HEADER(object_index);
+	if (((1 << header->type) & 1))
+	{
+		s_surface_unit_view *unit = (s_surface_unit_view *)header->object;
+		if (unit->parent_index == NONE && !(unit->flags_c1 & 1) && unit->movement_type == 1 && !function_e4050(object_index))
+		{
+			/* The queried support velocity uses a separate scratch vector in retail. */
+			vector3f reference = *g_4687a4;
+			point3f position;
+			vector3f support_velocity;
+			if (!function_109e00(object_index, &support_velocity, false) && unit->support_index != NONE)
+			{
+				s_surface_support_view *support = (s_surface_support_view *)function_badc0(unit->support_index, NONE);
+				if (support && support->component_index != NONE)
+				{
+					s_surface_component_view *component = &((s_surface_component_view *)g_51e9b8->data)[support->component_index & 0xffff];
+					long body_index = unit->body_index;
+					long clamped = body_index < 0 ? 0 : body_index > component->body_count - 1 ? component->body_count - 1 : body_index;
+					if (clamped == body_index)
+					{
+						function_b9dd0(object_index, &position);
+						havok_component_rigid_body_point_velocity_get(unit->body_index, (s_havok_component *)component, &position, &support_velocity);
+					}
+				}
+			}
+			function_ba1d0(object_index, velocity, NULL);
+			vector3f relative;
+			relative.i = velocity->i - reference.i;
+			relative.j = velocity->j - reference.j;
+			relative.k = velocity->k - reference.k;
+			real projection = unit->normal.i * relative.i + unit->normal.k * relative.k + unit->normal.j * relative.j;
+			vector3f projected;
+			projected.i = unit->normal.i * projection;
+			projected.j = unit->normal.j * projection;
+			projected.k = unit->normal.k * projection;
+			velocity->i -= projected.i;
+			velocity->j -= projected.j;
+			velocity->k -= projected.k;
+			return;
+		}
+	}
+	function_ba1d0(object_index, velocity, NULL);
+}
+
+struct s_object_marker_target
+{
+	long object_index;
+	long marker_index;
+	byte unknown08[0x10];
+	byte flags;
+};
+
+struct s_target_marker
+{
+	long name;
+	real radius;
+	real maximum_facing_angle;
+	byte unknown0c[8];
+	dword flags;
+	real maximum_distance;
+};
+
+struct s_target_marker_table
+{
+	byte unknown00[0x68];
+	long count;
+	s_target_marker *markers;
+};
+
+struct s_object;
+s_object *function_bae20(long object_index, dword type_mask);
+
+/* Resolves an object's target marker and its one or two transforms. */
+// @retail 0x1a6bf0
+bool function_1a6bf0(s_object_marker_target const *target, long *object_index,
+	long *marker_index, s_target_marker **definition, transform4x3f *first,
+	transform4x3f *second, bool *has_second)
+{
+	bool result = false;
+	long index = target->object_index;
+
+	if (index != NONE && function_bae20(index, NONE) && !(target->flags & 1))
+	{
+		*object_index = index;
+		*marker_index = target->marker_index;
+		if (*marker_index == NONE)
+			result = true;
+		else
+		{
+			long object_definition = OBJECT_HEADER(*object_index)->object->definition_index;
+			long marker_tag = *(long *)(g_4e3b44[object_definition & 0xffff].bytes + 0x38);
+			if (marker_tag != NONE)
+			{
+				s_target_marker_table *table = (s_target_marker_table *)g_4e3b44[marker_tag & 0xffff].bytes;
+				if (*marker_index >= 0 && *marker_index < table->count)
+				{
+					s_object_marker markers[2];
+					*definition = &table->markers[*marker_index];
+					long marker_name = (*definition)->name;
+					long marker_object = *object_index;
+					long count = function_b8d30(marker_object, marker_name, markers, 2, false);
+					if (count)
+					{
+						*first = markers[0].matrix;
+						result = true;
+						if (count == 2)
+						{
+							*second = markers[1].matrix;
+							*has_second = true;
+						}
+						else
+							*has_second = false;
+					}
+				}
+			}
+		}
+	}
+	return result;
+}
+
+struct s_sort_candidate_view
+{
+	long object_index;
+	long marker_index;
+	point3f point;
+	real radius;
+	vector3f facing;
+	real maximum_facing_angle;
+	bool alternate;
+	byte unknown29[3];
+	vector3f offset;
+	vector3f direction;
+	real distance;
+	real angle;
+	real score;
+	real secondary_score;
+	real scaled_score;
+	dword flags;
+	real maximum_distance;
+};
+
+struct s_sort_weight_view
+{
+	real distance;
+	real angle;
+	real scaled_distance;
+	real scaled_angle;
+	real outer_distance;
+	dword flags;
+	real secondary_distance;
+	real secondary_angle;
+	real maximum_distance;
+};
+
+real function_1a4870(real distance, real maximum_distance, real angle, real maximum_angle);
+real function_50650(real cosine);
+real function_30bf0(vector3f *vector);
+
+struct s_weight_unit_view
+{
+	byte unknown00[0x212];
+	char primary_slot;
+	char secondary_slot;
+	byte unknown214[4];
+	long weapons[4];
+};
+
+struct s_weight_weapon_definition
+{
+	byte unknown00[0x12c];
+	dword flags;
+	byte unknown130[0x208 - 0x130];
+	real distance;
+	real angle;
+	real scaled_distance;
+	real scaled_angle;
+	real outer_distance;
+	byte unknown21c[0x294 - 0x21c];
+	short mode;
+};
+
+real function_101090(long weapon_index, short zoom);
+bool function_101160(long weapon_index);
+bool function_1011d0(long weapon_index);
+
+#define WEIGHT_MAX(a, b) ((a) > (b) ? (a) : (b))
+
+// @retail 0x1a50a0
+bool function_1a50a0(long unit_index, short zoom, s_sort_weight_view *weights)
+{
+	bool result = false;
+	if (unit_index != NONE)
+	{
+		s_weight_unit_view *unit = (s_weight_unit_view *)OBJECT_HEADER(unit_index)->object;
+		short primary_slot = unit->primary_slot;
+		if (primary_slot != NONE)
+		{
+			long weapon_index = unit->weapons[primary_slot];
+			if (weapon_index != NONE)
+			{
+				s_weight_weapon_definition *definition = (s_weight_weapon_definition *)g_4e3b44[OBJECT_HEADER(weapon_index)->object->definition_index & 0xffff].bytes;
+				if (zoom != NONE || !(bool)((definition->flags >> 5) & 1))
+				{
+					real scale = function_101090(weapon_index, zoom);
+					real inverse = 1.0f / scale;
+					weights->distance = definition->distance * inverse;
+					weights->angle = definition->angle * scale;
+					weights->scaled_distance = definition->scaled_distance * inverse;
+					weights->scaled_angle = definition->scaled_angle * scale;
+					real outer_distance = WEIGHT_MAX(definition->outer_distance, definition->distance) * inverse;
+					weights->outer_distance = outer_distance;
+					weights->flags = 0;
+					weights->maximum_distance = 0.0f;
+					if (function_1011d0(weapon_index))
+					{
+						if (definition->mode == 1)
+						{
+							weights->flags = 0x20;
+							weights->maximum_distance = weights->angle;
+						}
+					}
+					else if (function_101160(weapon_index))
+					{
+						if (definition->mode == 1)
+						{
+							weights->flags = 8;
+							weights->maximum_distance = weights->angle;
+						}
+						else if (definition->mode == 2)
+						{
+							weights->flags = 0x10;
+							weights->maximum_distance = weights->angle;
+						}
+					}
+					unit = (s_weight_unit_view *)OBJECT_HEADER(unit_index)->object;
+					short secondary_slot = unit->secondary_slot;
+					if (secondary_slot != NONE && unit->weapons[secondary_slot] != NONE)
+					{
+						long secondary_index = unit->weapons[secondary_slot];
+						definition = (s_weight_weapon_definition *)g_4e3b44[OBJECT_HEADER(secondary_index)->object->definition_index & 0xffff].bytes;
+						scale = function_101090(secondary_index, zoom);
+						inverse = 1.0f / scale;
+						weights->secondary_distance = definition->distance;
+						weights->secondary_angle = definition->angle;
+						weights->scaled_distance = WEIGHT_MAX(weights->scaled_distance, definition->scaled_distance * inverse);
+						weights->scaled_angle = WEIGHT_MAX(weights->scaled_angle, definition->scaled_angle * scale);
+						weights->outer_distance = WEIGHT_MAX(outer_distance, WEIGHT_MAX(definition->outer_distance, definition->distance) * inverse);
+					}
+					else
+					{
+						weights->secondary_distance = 0.0f;
+						weights->secondary_angle = 0.0f;
+					}
+					result = true;
+				}
+			}
+		}
+	}
+	return result;
+}
+
+#undef WEIGHT_MAX
+
+struct s_unit_child_iterator
+{
+	long object_index;
+	long unit_index;
+	short seat_index;
+	long next_index;
+};
+
+struct s_target_occupant_view
+{
+	long definition_index;
+	byte unknown04[0x10 - 4];
+	long first_child_index;
+	byte unknown14[0x138 - 0x14];
+	short team;
+};
+
+struct s_target_seat_view
+{
+	dword flags;
+	byte unknown04[0xb0 - 4];
+};
+
+struct s_target_seats_definition
+{
+	byte unknown00[0x1cc];
+	s_target_seat_view *seats;
+};
+
+struct s_damage_object;
+s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
+bool function_1df560(short team_a, short team_b);
+
+// @retail 0x1a5b00
+bool function_1a5b00(long object_index, short team, bool *has_hostile)
+{
+	long object_offset = (object_index & 0xffff) * sizeof(s_object_header);
+	s_target_seats_definition *definition = (s_target_seats_definition *)g_4e3b44[((s_object_header *)(object_offset + (byte *)g_4e0300->data))->object->definition_index & 0xffff].bytes;
+	bool result = false;
+	s_unit_child_iterator iterator;
+	*has_hostile = false;
+	iterator.object_index = object_index;
+	iterator.unit_index = NONE;
+	iterator.seat_index = NONE;
+	iterator.next_index = ((s_target_occupant_view *)((s_object_header *)(object_offset + (byte *)g_4e0300->data))->object)->first_child_index;
+	while (function_d05c0(&iterator))
+	{
+		s_target_occupant_view *occupant = (s_target_occupant_view *)OBJECT_HEADER(iterator.unit_index)->object;
+		if (iterator.seat_index != NONE)
+		{
+			if (!function_1df560(team, occupant->team))
+			{
+				if (!(bool)((definition->seats[iterator.seat_index].flags >> 11) & 1))
+				{
+					return *has_hostile = true;
+				}
+			}
+			else
+				result = true;
+		}
+	}
+	return result;
+}
+
+struct s_candidate_object_view
+{
+	long definition_index;
+	byte unknown04[0x3c - 4];
+	real radius;
+	byte unknown40[0xaa - 0x40];
+	byte type;
+};
+
+struct s_candidate_unit_definition
+{
+	byte unknown00[0x240];
+	dword flags;
+	real maximum_distance;
+};
+
+// @retail 0x1a5e40
+bool function_1a5e40(long object_index, long marker_index, s_target_marker const *marker,
+	transform4x3f const *first, transform4x3f const *second, bool alternate,
+	point3f const *origin, vector3f const *direction, s_sort_candidate_view *candidate)
+{
+	s_candidate_object_view *object = (s_candidate_object_view *)OBJECT_HEADER(object_index)->object;
+	bool result = false;
+	candidate->object_index = object_index;
+	candidate->marker_index = marker_index;
+	candidate->maximum_distance = 0.0f;
+	candidate->flags = 0;
+	if (marker_index == NONE)
+	{
+		if (!((1 << object->type) & 1))
+			return result;
+		if (!function_1a62e0(object_index, &candidate->point, direction, origin))
+			return false;
+		s_candidate_unit_definition *definition = (s_candidate_unit_definition *)g_4e3b44[object->definition_index & 0xffff].bytes;
+		if (definition->flags & 1)
+			candidate->flags |= 1;
+		else
+			candidate->flags &= ~1;
+		if (definition->flags & 6)
+			candidate->flags |= 2;
+		else
+			candidate->flags &= ~2;
+		candidate->maximum_distance = definition->maximum_distance;
+		candidate->radius = object->radius;
+		candidate->maximum_facing_angle = 0.0f;
+	}
+	else
+	{
+		if (second)
+		{
+			vector3f axis;
+			vector3d_from_points3d(&first->position, &second->position, &axis);
+			function_1a6340(&axis, direction, &candidate->point, &first->position, origin, marker->radius);
+		}
+		else
+			function_1a65b0(direction, &candidate->point, origin, &first->position, marker->radius);
+		if (marker->flags & 1)
+			candidate->flags |= 1;
+		else
+			candidate->flags &= ~1;
+		if (marker->flags & 0x12)
+			candidate->flags |= 2;
+		else
+			candidate->flags &= ~2;
+		candidate->maximum_distance = marker->maximum_distance;
+		candidate->radius = marker->radius;
+		candidate->maximum_facing_angle = marker->maximum_facing_angle;
+		candidate->facing = first->forward;
+	}
+	vector3d_from_points3d(origin, &candidate->point, &candidate->offset);
+	candidate->direction = candidate->offset;
+	candidate->distance = function_30bf0(&candidate->direction);
+	candidate->alternate = alternate;
+	real cosine = dot3f(&candidate->direction, direction);
+	cosine = -1.0f > cosine ? -1.0f : cosine > 1.0f ? 1.0f : cosine;
+	candidate->angle = function_50650(cosine);
+	result = true;
+	return result;
+}
+
+// @retail 0x1a60f0
+bool function_1a60f0(s_sort_candidate_view *candidate, s_sort_weight_view const *weights, real scale)
+{
+	bool result = true;
+	if (candidate->maximum_facing_angle > 0.0f)
+	{
+		vector3f inverse;
+		inverse.i = 0.0f - candidate->direction.i;
+		inverse.j = 0.0f - candidate->direction.j;
+		inverse.k = 0.0f - candidate->direction.k;
+		real cosine = dot3f(&candidate->facing, &inverse);
+		cosine = -1.0f > cosine ? -1.0f : cosine > 1.0f ? 1.0f : cosine;
+		if (!(function_50650(cosine) <= candidate->maximum_facing_angle))
+			result = false;
+	}
+	if (result && scale != 0.0f)
+	{
+		if (weights->flags & 8)
+		{
+			if (!(candidate->flags & 1) || candidate->distance >
+				(candidate->maximum_distance == 0.0f ? weights->maximum_distance : candidate->maximum_distance))
+				result = false;
+		}
+		if ((candidate->flags & 2) && candidate->distance >
+			(candidate->maximum_distance == 0.0f ? weights->maximum_distance : candidate->maximum_distance))
+			candidate->flags &= ~2;
+		if (result)
+		{
+			if (!candidate->alternate)
+			{
+				candidate->score = function_1a4870(candidate->angle, weights->distance, candidate->distance, weights->angle);
+				candidate->secondary_score = function_1a4870(candidate->angle, weights->secondary_distance, candidate->distance, weights->secondary_angle);
+				candidate->scaled_score = scale * function_1a4870(candidate->angle, weights->scaled_distance, candidate->distance, weights->scaled_angle);
+				if (candidate->score == 0.0f && candidate->secondary_score == 0.0f && candidate->scaled_score == 0.0f)
+					result = false;
+			}
+			else
+			{
+				real score = function_1a4870(candidate->angle, weights->distance, candidate->distance, weights->angle);
+				candidate->score = 0.0f;
+				candidate->secondary_score = 0.0f;
+				candidate->scaled_score = 0.0f;
+				if (score < 1.0f)
+					result = false;
+			}
+		}
+	}
+	else
+		result = false;
 	return result;
 }

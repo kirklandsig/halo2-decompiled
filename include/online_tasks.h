@@ -73,7 +73,7 @@ static inline s_type_9df9da *online_task_get_unchecked(long task_index)
 
 
 void online_tasks_initialize(void);
-long online_task_get_status(long task_index);
+long online_task_poll(long task_index);
 inline long online_task_new(void);
 long online_task_get_type(long task_index);
 long online_task_find(long type, long controller_index);

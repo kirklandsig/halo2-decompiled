@@ -146,3 +146,77 @@ void function_1e1740(long actor_index, long object_index)
 			callback(actor_index, i < 4 ? &actor->slots[i] : NULL, *object_reference);
 	}
 }
+
+#include "unknown_2551c0.h"
+
+struct s_actor_object_query
+{
+	long definition_index;
+	dword flags;
+	byte field_8[0x14 - 8];
+	long parent_index;
+	byte field_18[0x28 - 0x18];
+	dword location[2];
+	byte field_30[0x70 - 0x30];
+	vector3f direction;
+	byte field_7c[0xaa - 0x7c];
+	byte type;
+	byte field_ab[0x134 - 0xab];
+	dword flags134;
+	byte field_138[2];
+	short link_offset;
+};
+
+PRIVATE inline s_actor_object_query *actor_query_object(long index)
+{
+	return (s_actor_object_query *)ai_object_get(index);
+}
+
+PRIVATE inline long actor_query_root(long index)
+{
+	long result = NONE;
+	while (index != NONE)
+	{
+		result = index;
+		index = actor_query_object(index)->parent_index;
+	}
+	return result;
+}
+
+PRIVATE inline bool actor_query_enabled(long index)
+{
+	dword flags = actor_query_object(index)->flags;
+	return !((bool)((flags >> 18) & 1)) && !((bool)((flags >> 7) & 1));
+}
+
+long function_baf80(long object_index);
+
+// @retail 0x1e13f0
+bool function_1e13f0(long actor_index)
+{
+	s_actor_view *actor = actor_get(actor_index);
+	bool result = false;
+	if (actor->unknown018 != NONE)
+	{
+		if (actor_query_enabled(function_baf80(actor->unknown018)))
+			return true;
+	}
+	else
+	{
+		long perception_index = *(long *)((byte *)actor + 0x1c);
+		if (perception_index != NONE)
+		{
+			long object_index = perception_get(perception_index)->object_index;
+			while (object_index != NONE)
+			{
+				s_actor_object_query *object = actor_query_object(object_index);
+				long current = object_index;
+				byte *links = object->flags134 == 0 ? (byte *)object + object->link_offset : NULL;
+				object_index = links ? *(long *)(links + 0xc) : NONE;
+				if (actor_query_enabled(actor_query_root(current)))
+					return true;
+			}
+		}
+	}
+	return result;
+}

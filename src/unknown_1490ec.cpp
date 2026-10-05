@@ -544,7 +544,7 @@ void window_manager_update_team_task(void)
 {
 	if (g_54d598.team_task != NONE)
 	{
-		long status = online_task_get_status(g_54d598.team_task);
+		long status = online_task_poll(g_54d598.team_task);
 		bool finished = status != 0;
 
 		if (status > 0 && status <= 2)
@@ -580,7 +580,7 @@ void window_manager_update_team_members_task(void)
 {
 	if (g_54d598.task750 != NONE)
 	{
-		long status = online_task_get_status(g_54d598.task750);
+		long status = online_task_poll(g_54d598.task750);
 		bool finished = status != 0 && status != 1;
 
 		switch (status)

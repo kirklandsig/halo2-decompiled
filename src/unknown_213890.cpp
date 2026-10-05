@@ -20,3 +20,21 @@ void function_213890(void)
 			SwitchToThread();
 	}
 }
+
+extern char const *g_46880c;
+char *function_11c9c0(char *buffer, long maximum_count, const char *format, ...);
+
+// @retail 0x2138f0
+void __stdcall function_2138f0(long first, long last)
+{
+	(void)&last;
+	char path[0x100];
+	for (long index = first; index < last; index++)
+	{
+		function_11c9c0(path, sizeof(path), "%scache%03d%s", "z:\\", index, g_46880c);
+		DeleteFileA(path);
+		function_11c9c0(path, sizeof(path), "%scache%03d%s", "n:\\", index, g_46880c);
+		DeleteFileA(path);
+	}
+	SetLastError(0);
+}

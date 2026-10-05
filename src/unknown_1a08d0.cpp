@@ -102,7 +102,7 @@ long function_1a0b40(
 	dword access = 0;
 	dword share_mode = 0;
 	dword flags = 0;
-	dword creation_disposition;
+	dword volatile creation_disposition;
 	s_async_task task;
 
 	memset(&task, 0, sizeof(task));

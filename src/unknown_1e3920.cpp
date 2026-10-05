@@ -99,7 +99,9 @@ struct s_actor_point_request
 	s_record_pool *pool;
 	long iterator_index;
 	long datum_index;
-	byte field_20[0xc];
+	long group_index;
+	long actor_index;
+	long next_actor_index;
 	short type;
 	short mode;
 	real radius;
@@ -107,7 +109,104 @@ struct s_actor_point_request
 	long index;
 	point3f point;
 	long result_index;
+	real squared_distance;
 };
+
+struct s_actor_point_group
+{
+	long field_0;
+	point3f point;
+	short field_10;
+	short team;
+	byte field_14[4];
+	long first_actor;
+	byte field_1c[0x50 - 0x1c];
+};
+
+bool function_1df560(short first, short second);
+
+PRIVATE __forceinline s_actor_point_group *actor_point_next_group(s_actor_point_request *request)
+{
+	s_actor_point_group *result = NULL;
+	if (g_4f55d0->active)
+	{
+		s_record_pool *pool = request->pool;
+		long index = function_16bc00(pool, request->datum_index + 1);
+		s_actor_point_group *group = NULL;
+		if (index != NONE)
+		{
+			group = (s_actor_point_group *)(pool->data + pool->size * index);
+			request->datum_index = index;
+			request->iterator_index = (*(short *)group << 16) | index;
+		}
+		else
+		{
+			request->datum_index = pool->maximum_count;
+			request->iterator_index = NONE;
+		}
+		*(s_actor_point_group **)((byte *)request + 0x10) = group;
+		if (group)
+			result = group;
+		request->group_index = request->iterator_index;
+	}
+	return result;
+}
+
+// @retail 0x1e47d0
+s_actor_moving *function_1e47d0(s_actor_point_request *request)
+{
+	for (;;)
+	{
+		if (request->index == NONE)
+		{
+			bool eligible = false;
+			s_actor_point_group *group;
+			while ((group = actor_point_next_group(request)) != NULL)
+			{
+				switch (request->type)
+				{
+				case 0: eligible = !function_1df560(group->team, request->mode); break;
+				case 1: eligible = function_1df560(group->team, request->mode); break;
+				case 2: eligible = true; break;
+				}
+				if (eligible)
+				{
+					vector3f delta;
+					vector3d_from_points3d(&request->point, &group->point, &delta);
+					if (sqrt(length_sq3f(&delta)) < request->radius + 6.0)
+					{
+						request->index = request->group_index;
+						request->next_actor_index = ((s_actor_point_group *)g_502420->data)[request->index & 0xffff].first_actor;
+						break;
+					}
+				}
+			}
+		}
+		if (request->index == NONE)
+			return NULL;
+		s_actor_moving *actor = NULL;
+		if (request->next_actor_index != NONE)
+		{
+			actor = actor_moving_get(request->next_actor_index);
+			request->actor_index = request->next_actor_index;
+			request->next_actor_index = *(long *)((byte *)actor + 0x80);
+		}
+		if (actor)
+		{
+			vector3f delta;
+			vector3d_from_points3d(&actor->position, &request->point, &delta);
+			real squared = length_sq3f(&delta);
+			if (squared < request->radius_squared)
+			{
+				request->result_index = request->actor_index;
+				request->squared_distance = squared;
+				return actor;
+			}
+		}
+		else
+			request->index = NONE;
+	}
+}
 
 __forceinline void actor_point_iterator_initialize(s_record_pool_iterator *iterator)
 {
@@ -322,4 +421,86 @@ real function_1e20b0(long actor_index)
 		result = (real)sqrt((height * 2.0f) * 6.417322635650635f);
 	}
 	return result;
+}
+
+struct s_actor_control_request
+{
+	long name;
+	short mode;
+	byte field_6[0x10 - 6];
+	dword flags;
+	vector3f movement;
+	real first_scale;
+	real second_scale;
+	vector3f forward;
+	vector3f first;
+	vector3f second;
+	vector3f third;
+	byte field_58[0x7c - 0x58];
+};
+
+struct s_actor_control_view
+{
+	byte field_0[8];
+	bool reset;
+	byte field_9[0x18 - 9];
+	long unit_index;
+	byte field_1c[0x7fc - 0x1c];
+	long name;
+	byte field_800[0xc];
+	short mode;
+	byte field_80e[2];
+	dword flags;
+	vector3f movement;
+	real first_scale;
+	real second_scale;
+	vector3f forward;
+	vector3f first;
+	vector3f second;
+	vector3f third;
+};
+
+struct s_unit_control_view
+{
+	byte field_0[0x130];
+	long simulation_index;
+	byte field_134[8];
+	long player_index;
+};
+
+struct s_unit_state_c6ef0;
+class c_class_6a600;
+void function_c6ef0(s_unit_state_c6ef0 *state);
+void function_c6de0(long object_index, void *control);
+void __stdcall function_cbf60(long unit_index, bool active);
+void function_690d0(c_class_6a600 *world, long actor_index, const dword *state);
+
+// @retail 0x1e4390
+void function_1e4390(long actor_index)
+{
+	s_actor_control_view *actor = (s_actor_control_view *)actor_moving_get(actor_index);
+	s_unit_control_view *unit = (s_unit_control_view *)moving_object_get(actor->unit_index);
+	if (unit->player_index == NONE || *((byte *)g_4e8c20 + 6))
+	{
+		s_actor_control_request state;
+		function_c6ef0((s_unit_state_c6ef0 *)&state);
+		state.name = actor->name;
+		state.flags = actor->flags;
+		state.movement = actor->movement;
+		state.first_scale = actor->first_scale;
+		state.second_scale = actor->second_scale;
+		state.mode = actor->mode;
+		state.forward = actor->forward;
+		state.first = actor->first;
+		state.second = actor->second;
+		state.third = actor->third;
+		if (actor->reset)
+		{
+			function_cbf60(actor->unit_index, true);
+			actor->reset = false;
+		}
+		function_c6de0(actor->unit_index, &state);
+		if (unit->simulation_index != NONE && !g_4cf772 && *(long *)((byte *)g_4cf77c + 8) != 0)
+			function_690d0((c_class_6a600 *)g_4cf77c, unit->simulation_index, (const dword *)&state);
+	}
 }

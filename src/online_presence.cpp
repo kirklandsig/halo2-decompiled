@@ -102,7 +102,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 	memset(presences, 0, count * sizeof(XONLINE_PRESENCE));
 	if (task && online_logon_connected())
 	{
-		long status = online_task_get_status(task_index);
+		long status = online_task_poll(task_index);
 		if ((status == 1 || status == 2) && SUCCEEDED(XOnlinePresenceGetLatest((XONLINETASK_HANDLE)task->handle, group_id, count, presences)))
 		{
 			for (DWORD i = 0; i < count; i++)

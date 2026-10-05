@@ -314,3 +314,131 @@ void function_1efbd0(dword id, s_mix_output *output, s_mix_source *source, signe
 		}
 	}
 }
+
+struct s_slot_entry_list;
+extern s_slot_entry_list *g_4e0340;
+extern byte *g_4ed280;
+extern long *g_51e9cc;
+long function_184000(long bit, long index);
+
+struct s_surface_flags
+{
+	byte field_0[4];
+	byte flags;
+	byte bit;
+	byte field_6[2];
+};
+
+struct s_surface_list
+{
+	byte field_0[0x2c];
+	s_surface_flags *surfaces;
+};
+
+struct s_surface_owner
+{
+	byte field_0[0x9c];
+	s_surface_flags *surfaces;
+	byte field_a0[0xc8 - 0xa0];
+};
+
+struct s_surface_instance
+{
+	byte field_0[0x34];
+	short owner;
+	byte field_36[0x58 - 0x36];
+};
+
+struct s_surface_globals
+{
+	byte field_0[0x13c];
+	s_surface_owner *owners;
+	long count;
+	s_surface_instance *instances;
+};
+
+struct s_surface_object_header
+{
+	short salt;
+	byte flags;
+	byte type;
+	byte field_4[4];
+	s_object_view *object;
+};
+
+// @retail 0x1ef3e0
+bool function_1ef3e0(dword key)
+{
+	long surface_index = (key >> 16) & 0x1fff;
+	long object_index = key & 0xffff;
+	bool result = true;
+	switch (key >> 29)
+	{
+	case 5:
+		{
+			s_surface_globals *globals = (s_surface_globals *)g_4e0348;
+			s_surface_flags *surface = &globals->owners[globals->instances[object_index].owner].surfaces[surface_index];
+			if ((surface->flags & 8) && !(byte)function_184000(surface->bit, object_index))
+				result = false;
+		}
+		break;
+	case 1:
+		{
+			s_surface_flags *surface = &((s_surface_list *)g_4e0340)->surfaces[object_index];
+			if (surface->flags & 8)
+			{
+				long bit = surface->bit;
+				if (bit != NONE && !(((dword *)(g_4ed280 + 1))[g_4686c4 * 8 + (bit >> 5)] & (1 << (bit & 31))))
+					result = false;
+			}
+		}
+		break;
+	case 2:
+		break;
+	case 3:
+	case 4:
+		{
+			long index = g_51e9cc[object_index];
+			if (index == NONE)
+				result = false;
+			else
+			{
+				s_surface_object_header *header = &((s_surface_object_header *)g_4e0300->data)[index & 0xffff];
+				if (header->flags & 0x10)
+					result = false;
+				else
+				{
+					s_object_view *object = header->object;
+					signed char *values = (signed char *)object + object->offset11a;
+					if (values[surface_index & 31] != ((surface_index >> 5) & 0xff))
+						result = false;
+				}
+			}
+		}
+		break;
+	default:
+		__assume(0);
+	}
+	return result;
+}
+
+struct s_surface_key_array
+{
+	dword *keys;
+	long count;
+};
+
+// @retail 0x1eece0
+void function_1eece0(s_surface_key_array *array, void *owner)
+{
+	for (long index = 0; index < array->count; index++)
+	{
+		if (!function_1ef3e0(array->keys[index]))
+		{
+			array->count--;
+			for (long i = index; i < array->count; i++)
+				array->keys[i] = array->keys[i + 1];
+			index--;
+		}
+	}
+}

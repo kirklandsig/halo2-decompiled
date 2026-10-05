@@ -34,7 +34,7 @@ void online_tasks_initialize(void)
 }
 
 // @retail 0x6b5d0
-long online_task_get_status(long task_index)
+long online_task_poll(long task_index)
 {
 	s_type_9df9da *task = online_task_try_get(task_index);
 

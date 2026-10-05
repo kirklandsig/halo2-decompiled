@@ -4,6 +4,8 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_058dd0.h"
+#include "unknown_058ee0.h"
+#include "unknown_0662e0.h"
 #include <xtl.h>
 #include <string.h>
 #include <stdlib.h>
@@ -429,6 +431,8 @@ void c_session_state_in_match::leave(long a)
 
 /* ---- start-match ---- */
 
+void function_72950(c_class_58d20 *session);
+
 // @retail 0x728b0
 void c_session_state_start_match::enter(long a, long b, long c)
 {
@@ -437,7 +441,7 @@ void c_session_state_start_match::enter(long a, long b, long c)
 	{
 		network_session_leave(s, false);
 	}
-	function_072950();
+	function_72950(s);
 	mode = 3;
 	unknown14 = 0;
 	unknown18 = 0;
@@ -920,4 +924,178 @@ bool c_session_client::function_06dcc0(s_session_remote *remote)
 		result = false;
 	}
 	return result;
+}
+
+// @retail 0x70160
+long function_70160(c_class_58d20 *session)
+{
+	long started = session->time4984;
+	return session_time_get() - started;
+}
+
+// @retail 0x70c50
+void c_session_state_matchmaking::function_070c50(bool flag)
+{
+	if (flag)
+	{
+		long started = unknowna7c;
+		long elapsed = session_time_get() - started;
+		s_session_state_matchmaking_view *state = (s_session_state_matchmaking_view *)this;
+		state->unknowna90++;
+		state->unknowna94 += elapsed;
+	}
+	flaga78 = false;
+}
+
+// @retail 0x70d20
+void c_session_state_matchmaking::function_070d20(bool flag)
+{
+	if (flag)
+	{
+		long started = unknowna68;
+		long elapsed = session_time_get() - started;
+		s_session_state_matchmaking_view *state = (s_session_state_matchmaking_view *)this;
+		state->unknowna84++;
+		state->unknowna88 += elapsed;
+	}
+	flaga64 = false;
+}
+
+// @retail 0x70c00
+void function_70c00(c_session_state_matchmaking *state)
+{
+	network_session_set_mode(state->owner->session_a, 7);
+	state->unknown968 = time(NULL);
+	state->unknowna7c = session_time_get();
+	((s_session_state_matchmaking_view *)state)->unknowna8c++;
+	state->flaga78 = true;
+}
+
+// @retail 0x70c90
+void function_70c90(c_session_state_matchmaking *state)
+{
+	c_session_state_matchmaking *const *state_reference = &state;
+	network_session_set_mode((*state_reference)->owner->session_a, 10);
+	long now = session_time_get();
+	long attempts = ((s_session_state_matchmaking_view *)state)->unknowna80;
+	state->unknowna68 = now;
+	((s_session_state_matchmaking_view *)state)->unknowna80 = attempts + 1;
+	state->flaga64 = true;
+	*(long *)((byte *)state + 0xa6c) = 0;
+	*(long *)((byte *)state + 0xa70) = session_time_get();
+	*(long *)((byte *)state + 0xa74) = 0;
+}
+
+// @retail 0x72140
+bool function_72140(c_session_state_matchmaking *state)
+{
+	c_class_58d20 *session = state->owner->session_b;
+	bool result = true;
+	for (long index = 0; index < session->member_count && result; index++)
+	{
+		if (session->members[index].properties.unknownc4 != 2)
+			result = false;
+	}
+	return result;
+}
+
+// @retail 0x70570
+long function_70570(c_session_state_matchmaking *state)
+{
+	long result = 0;
+	c_class_58d20 *session = state->owner->session_b;
+	switch (state->owner->session_a->type)
+	{
+	case 6:
+		result = 1;
+		break;
+	case 7:
+		result = 1;
+		break;
+	case 8:
+		result = 3;
+		break;
+	case 9:
+		result = 3;
+		break;
+	case 10:
+		result = 2;
+		break;
+	case 11:
+	case 12:
+	case 13:
+		result = session_state_is_live(session) && session->flag49e8 ? 4 : 2;
+		break;
+	}
+	return result;
+}
+
+// @retail 0x71f80
+bool function_71f80(c_session_state_matchmaking *state)
+{
+	s_session_owner *owner = state->owner;
+	c_class_58d20 *session = owner->session_b;
+	long current = session->state;
+	if (current != 0)
+	{
+		if (!function_058d90(session) && current > 2 && current <= 8)
+		{
+			long next;
+			long type = session->type;
+			if (type >= 2 && type <= 4)
+				next = 7;
+			else if (type == 5)
+				next = 9;
+			else
+				return false;
+			function_06df60(owner, next, 0, 0);
+			state->mode = 2;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool network_session_is_leaving(c_class_58d20 *session);
+
+// @retail 0x72950
+void function_72950(c_class_58d20 *session)
+{
+	long current = session->state;
+	if (current == 5 || current == 6 || current == 7 || current == 8)
+	{
+		time_t now = time(NULL);
+		long seed = rand();
+		seed ^= GetTickCount();
+		seed ^= (long)now;
+		session->set_value_4da8(seed);
+		session->clear_value_49c4();
+	}
+	else
+	{
+		volatile long unused = current;
+	}
+}
+
+// @retail 0x70b70
+void function_70b70(c_session_state_matchmaking *state)
+{
+	c_class_58d20 *session = state->owner->session_b;
+	long current = session->state;
+	if (current != 0 && !function_058d90(session))
+	{
+		if (current == 5 || current == 6 || current == 7 || current == 8)
+		{
+			if (session->type != 14 && !network_session_is_leaving(session))
+				network_session_set_mode(session, 14);
+			if (session->member_count <= 1 ||
+				(session->type == 14 && function_70160(session) >= g_network_configuration.value1a8))
+				network_session_leave(session, false);
+		}
+		else
+		{
+			volatile long unused = current;
+			network_session_leave(session, false);
+		}
+	}
 }

@@ -260,11 +260,6 @@ void function_1e3400(long actor_index, long squad_index)
 {
 }
 
-// @stub 0x201ad0
-void function_201ad0(long squad_index, long vehicle_index)
-{
-}
-
 // @stub 0x2011f0
 void function_2011f0(long squad_index)
 {

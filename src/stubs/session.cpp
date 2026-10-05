@@ -13,21 +13,6 @@ bool c_session_state_pre_game::function_06e410()
 	return false;
 }
 
-// @stub 0x70c50
-void c_session_state_matchmaking::function_070c50(bool flag)
-{
-}
-
-// @stub 0x70d20
-void c_session_state_matchmaking::function_070d20(bool flag)
-{
-}
-
-// @stub 0x72950
-void c_session_state_start_match::function_072950()
-{
-}
-
 // @stub 0x6ec80
 bool function_06ec80(c_class_58d20 *s, bool flag)
 {
@@ -76,6 +61,5 @@ void __stdcall function_06dc60(c_session_client *client, long n)
 void __stdcall function_07b140(void *x, long a, long ten, long twelve, void *local)
 {
 }
-
 
 

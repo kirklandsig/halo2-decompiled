@@ -1,4 +1,5 @@
 #include "unknown_11c920.h"
+#include <string.h>
 
 // @flags /O2 /Gr
 
@@ -29,4 +30,39 @@ dword function_217b70(word const *text)
 			break;
 	}
 	return length;
+}
+
+const word *function_217620(int language);
+const word *function_217680(int language);
+const word *function_2176e0(int language);
+const word *function_217740(int language);
+const word *function_2177a0(int language);
+const word *function_2177f0(int language);
+const word *function_217840(int language);
+const word *function_2178a0(int language);
+const word *function_217900(int language);
+const word *function_217960(int language);
+const word *function_2179c0(int language);
+
+// @retail 0x217a80
+void function_217a80(long language, long string_handle_2, word *buffer)
+{
+	const word *text = L"";
+	switch (string_handle_2)
+	{
+	case 0x1b0006e8: text = function_217a20(language); break;
+	case 0x1b0006e9: text = function_217620(language); break;
+	case 0x130006ea: text = function_217680(language); break;
+	case 0x110006eb: text = function_2176e0(language); break;
+	case 0x110006ec: text = function_217740(language); break;
+	case 0x140006ed: text = function_2177a0(language); break;
+	case 0x170006ee: text = function_2177f0(language); break;
+	case 0x170006ef: text = function_217840(language); break;
+	case 0x100006f0: text = function_2178a0(language); break;
+	case 0x140006f1: text = function_217900(language); break;
+	case 0x180006f2: text = function_217960(language); break;
+	case 0x150006f3: text = function_2179c0(language); break;
+	}
+	wcsncpy(buffer, text, 0xff);
+	buffer[0xff] = 0;
 }

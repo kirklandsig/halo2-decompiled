@@ -166,13 +166,13 @@ bool __stdcall function_3bb80(void const *a, void const *b, void const *context)
 	s_sort_record const *left = (s_sort_record const *)a;
 	s_sort_record const *right = (s_sort_record const *)b;
 	if (left->value10 > right->value10) return true;
-	else if (left->value10 < right->value10) goto less;
+	if (left->value10 < right->value10) return false;
 	if (left->key > right->key) return true;
-	else if (left->key < right->key) goto less;
+	if (left->key < right->key) return false;
 	if (left->group > right->group) return true;
-	else if (left->group < right->group) goto less;
+	if (left->group < right->group) return false;
 	if (left->value08 > right->value08) return true;
-less:
+	if (left->value08 < right->value08) return false;
 	return false;
 }
 
@@ -182,17 +182,17 @@ bool __stdcall function_3bbd0(void const *a, void const *b, void const *context)
 	s_sort_record const *left = (s_sort_record const *)a;
 	s_sort_record const *right = (s_sort_record const *)b;
 	if (left->group > right->group) return true;
-	else if (left->group < right->group) goto less;
+	if (left->group < right->group) return false;
 	if (left->subkey > right->subkey) return true;
-	else if (left->subkey < right->subkey) goto less;
+	if (left->subkey < right->subkey) return false;
 	if (left->value10 > right->value10) return true;
-	else if (left->value10 < right->value10) goto less;
+	if (left->value10 < right->value10) return false;
 	if (left->key > right->key) return true;
-	else if (left->key < right->key) goto less;
+	if (left->key < right->key) return false;
 	if (left->value0c > right->value0c) return true;
-	else if (left->value0c < right->value0c) goto less;
+	if (left->value0c < right->value0c) return false;
 	if (left->index > right->index) return true;
-less:
+	if (left->index < right->index) return false;
 	return false;
 }
 

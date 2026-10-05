@@ -33,7 +33,7 @@ struct s_character_a50
 };
 
 long function_1e4a50(long index);
-bool function_26fc80(long actor_index, long object_index, real distance, void *path);
+bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point);
 bool function_e4050(long object_index);
 
 /* where the actor goes to reach the object */
@@ -47,7 +47,7 @@ bool function_1be410(point3f *point, long object_index, long actor_index)
 
 	if (character)
 		distance = character->unknown4;
-	if (!function_26fc80(actor_index, object_index, distance, path))
+	if (!function_26fc80(actor_index, object_index, distance, path, point))
 	{
 		*point = object->unknown030;
 		point->z += object->unknown03c;

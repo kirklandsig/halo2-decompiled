@@ -4,6 +4,12 @@
 
 #include "unknown_11c920.h"
 #include "ai_actor.h"
+#include "unknown_2551c0.h"
+#include "object_markers.h"
+#include "object_queries.h"
+#include "unknown_19ec40.h"
+#include "unknown_1e46c0.h"
+#include <string.h>
 
 struct s_ai_weapon_definition
 {
@@ -138,4 +144,134 @@ void function_1e31b0(long unit_index)
 	state.second = unit->second;
 	function_c6de0(unit_index, &state);
 	function_cbf60(unit_index, false);
+}
+
+struct s_actor_object_query
+{
+	long definition_index;
+	dword flags;
+	byte field_8[0x14 - 8];
+	long parent_index;
+	byte field_18[0x28 - 0x18];
+	dword location[2];
+	byte field_30[0x70 - 0x30];
+	vector3f direction;
+	byte field_7c[0xaa - 0x7c];
+	byte type;
+	byte field_ab[0x134 - 0xab];
+	dword flags134;
+	byte field_138[2];
+	short link_offset;
+};
+
+PRIVATE inline s_actor_object_query *actor_query_object(long index)
+{
+	return (s_actor_object_query *)ai_object_get(index);
+}
+
+PRIVATE inline long actor_query_root(long index)
+{
+	long result = NONE;
+	while (index != NONE)
+	{
+		result = index;
+		index = actor_query_object(index)->parent_index;
+	}
+	return result;
+}
+
+struct s_actor_object_sample
+{
+	point3f point;
+	point3f center;
+	vector3f direction;
+	dword location[2];
+	vector3f velocity;
+};
+
+// @retail 0x1e3a00
+void function_1e3a00(long object_index, s_actor_object_sample *sample)
+{
+	s_actor_object_sample *const *sample_reference = &sample;
+	s_actor_object_query *object = actor_query_object(object_index);
+	function_b9dd0(object_index, &(*sample_reference)->center);
+	(*sample_reference)->direction = object->direction;
+	if ((1 << object->type) & 3)
+	{
+		s_object_marker marker;
+		function_b8d30(object_index, 0x4000095, &marker, 1, false);
+		memcpy(&(*sample_reference)->point, &marker.matrix.position, sizeof(point3f));
+	}
+	else
+		memcpy(&(*sample_reference)->point, &(*sample_reference)->center, sizeof(point3f));
+	function_ba1d0(object_index, &(*sample_reference)->velocity, NULL);
+	s_actor_object_query *root = actor_query_object(actor_query_root(object_index));
+	memcpy((*sample_reference)->location, root->location, sizeof(root->location));
+}
+
+struct s_actor_variant_entry
+{
+	long value;
+	short variant;
+	byte field_6[6];
+};
+
+struct s_actor_variant_definition
+{
+	byte field_0[0x2c];
+	long count;
+	s_actor_variant_entry *entries;
+};
+
+// @retail 0x1e06b0
+long function_1e06b0(long tag_index)
+{
+	s_actor_variant_definition *definition = (s_actor_variant_definition *)g_4e3b44[tag_index & 0xffff].bytes;
+	long result = 0;
+	if (definition->count == 1)
+		return definition->entries[0].value;
+	if (definition->count > 1)
+	{
+		signed char counts[64];
+		signed char choices[64];
+		memset(counts, 0, sizeof(counts));
+		s_actor_iterator iterator;
+		function_x66da2b(&iterator, false);
+		s_actor_view *actor;
+		while ((actor = (s_actor_view *)function_1e46c0(&iterator)) != NULL)
+		{
+			if (*(long *)((byte *)actor + 0x54) == tag_index && actor->unknown018 != NONE)
+			{
+				signed char variant = *((signed char *)ai_object_get(actor->unknown018) + 0xb1);
+				if (variant >= 0 && variant < 64)
+					counts[variant]++;
+			}
+		}
+		short choice_count = 0;
+		short minimum = 32767;
+		for (short i = 0; i < definition->count; i++)
+		{
+			s_actor_variant_entry *entry = &definition->entries[i];
+			if (entry->value && entry->variant >= 0 && entry->variant < 64)
+			{
+				short count = counts[entry->variant];
+				if (count < minimum)
+				{
+					choices[0] = (signed char)i;
+					choice_count = 1;
+					minimum = count;
+				}
+				else if (count == minimum)
+					choices[choice_count++] = (signed char)i;
+			}
+		}
+		if (choice_count > 0)
+		{
+			dword seed = g_4e7408->unknown0 * 0x19660d + 0x3c6ef35f;
+			g_4e7408->unknown0 = seed;
+			short choice = (short)(((seed >> 16) * choice_count) >> 16);
+			result = definition->entries[choices[choice]].value;
+		}
+	}
+	return result;
 }

@@ -747,7 +747,7 @@ void __stdcall function_239968(c_online_task_screen *screen)
 
 	if (view->task_index != NONE)
 	{
-		switch (online_task_get_status(view->task_index))
+		switch (online_task_poll(view->task_index))
 		{
 		case 2:
 			break;

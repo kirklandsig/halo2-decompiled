@@ -5,6 +5,29 @@
 #include <string.h>
 #include "unknown_058ee0.h"
 
+struct s_buffer_pair
+{
+	long first;
+	long second;
+};
+
+s_buffer_pair g_5093c0;
+long g_5093c8;
+long g_5093cc;
+
+// @retail 0x13d50
+void function_13d50(s_buffer_pair const *values, long mode, long count)
+{
+	/* The count remains on the stack in retail. */
+	(void)&count;
+	long first = values->first;
+	long second = values->second;
+	g_5093c8 = mode;
+	g_5093c0.first = first;
+	g_5093c0.second = second;
+	g_5093cc = count;
+}
+
 /* the texture stages: [0] the textures set on the device (0x51f3c8), [1] the
    textures wanted (0x51f3d8) */
 IDirect3DBaseTexture8 *g_51f3c8[2][4];
@@ -559,6 +582,120 @@ void function_1c620(s_shader_cache *state, long a, long b, long c, byte const *d
 }
 
 byte g_485af1;
+
+extern byte g_51f0f0[0x2d8];
+extern byte *g_485a80;
+
+struct s_shader_slot
+{
+	dword unknown00;
+	long tag;
+};
+
+// @retail 0x1cc30
+dword function_1cc30(long index)
+{
+	s_shader_slot *slot = &(*(s_shader_slot **)(g_485a80 + 0x5c))[index];
+	function_1c590((s_shader_cache *)g_51f0f0, slot->tag, 0);
+	return function_1cb70(slot->tag, 0);
+}
+
+// @retail 0x1c7f0
+void function_1c7f0(long index)
+{
+	/* The binding index occupies a stack slot in retail. */
+	long const *reference = &index;
+	s_shader_binding *binding = &((s_shader_cache *)g_51f0f0)->bindings[*reference & 0xffff];
+	binding->field_0c = NONE;
+	binding->tag = NONE;
+	binding->index = NONE;
+}
+
+// @retail 0x1e8c0
+long function_1e8c0(char const *key)
+{
+	/* This key is passed on the stack by the cache callback interface. */
+	char const *const *reference = &key;
+	return (*reference)[3] * 59 + (*reference)[2] * 53 + (*reference)[1] * 43 + (*reference)[0] * 17;
+}
+
+struct s_cache_key
+{
+	word key;
+	word flags;
+};
+
+// @retail 0x1e8f0
+long function_1e8f0(s_cache_key const *a, s_cache_key const *b)
+{
+	/* Both pointers are stack arguments in the cache callback interface. */
+	s_cache_key const *const *local_6e666f = &a;
+	s_cache_key const *const *right_reference = &b;
+	word right_flags = (*right_reference)->flags;
+	word left_flags = (*local_6e666f)->flags;
+	if ((bool)(right_flags & 1) == (bool)(left_flags & 1) && (*local_6e666f)->key == (*right_reference)->key &&
+		(short)((left_flags ^ right_flags) & ~1) == 0)
+		return 1;
+	return 0;
+}
+
+struct s_cache_record
+{
+	long count;
+	byte unknown04[8];
+	byte active;
+	byte unknown0d[0x63];
+};
+
+struct s_cache_record_state
+{
+	long count;
+	dword unknown04;
+	s_cache_record *records;
+	void *buffer;
+	byte unknown10;
+	bool available;
+	byte unknown12[2];
+};
+
+s_cache_record_state g_4b6280;
+
+struct hash_table;
+extern hash_table *g_51f400;
+
+struct s_cache_hash_view
+{
+	byte unknown00[0x34];
+	c_data_allocator *allocator;
+};
+
+// @retail 0x1e310
+void function_1e310(void)
+{
+	if (g_4b6280.records)
+	{
+		if (!VirtualFree(g_4b6280.records, 0, MEM_RELEASE)) GetLastError();
+		if (!VirtualFree(g_4b6280.buffer, 0, MEM_RELEASE)) GetLastError();
+	}
+	((s_cache_hash_view *)g_51f400)->allocator->deallocate(g_51f400);
+	g_51f400 = 0;
+}
+
+// @retail 0x1e2d0
+s_cache_record *function_1e2d0(void)
+{
+	s_cache_record *result = 0;
+	if (g_4b6280.count < 1024)
+	{
+		result = &g_4b6280.records[g_4b6280.count];
+		result->count = 0;
+		g_4b6280.count++;
+		result->active = 0;
+	}
+	else if (g_4b6280.available)
+		g_4b6280.available = false;
+	return result;
+}
 
 // @retail 0x1cdd0
 void function_1cdd0(real const *bounds, byte flags)

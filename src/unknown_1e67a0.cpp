@@ -15,6 +15,132 @@ struct s_tracking_target;
 struct s_unknown_object;
 struct s_unknown_output;
 
+struct s_biped_physics_output;
+struct s_physics_movement_definition
+{
+	dword flags;
+};
+
+struct s_physics_movement_input
+{
+	byte field_0[0x2c];
+	long index;
+	byte field_30[4];
+	transform4x3f matrix;
+	byte field_68[0xc];
+	vector3f vector;
+};
+
+struct s_physics_movement_output
+{
+	long field_0;
+	bool enabled;
+	byte field_5[3];
+	s_physics_movement_definition *definition;
+	byte field_c[8];
+	dword flags;
+	byte field_18[0x54 - 0x18];
+	long index;
+	transform4x3f matrix;
+	vector3f vector;
+	real rate;
+	vector3f direction;
+	bool field_a8;
+	byte field_a9[0xdc - 0xa9];
+	vector3f control;
+	byte field_e8[0xc];
+	vector3f default_direction;
+	byte field_100[0xc];
+	vector3f active_direction;
+	byte field_118[0x138 - 0x118];
+	vector3f velocity;
+	real speed;
+	long field_148;
+};
+
+struct s_physics_movement_settings
+{
+	byte field_0[0x24];
+	real limited_speed;
+	byte field_28[4];
+	real forward;
+	real backward;
+	real sideways;
+	real speed;
+	real crouched_forward;
+	real crouched_backward;
+	real crouched_sideways;
+	real crouched_speed;
+	long field_4c;
+};
+
+struct s_physics_movement_globals
+{
+	byte field_0[0x134];
+	s_physics_movement_settings *settings;
+};
+
+// @retail 0x1e6120
+void function_1e6120(s_biped_physics_output *output, void *physics, real rate,
+	bool airborne, bool limited, bool mode, real crouch)
+{
+	s_physics_movement_output *state = (s_physics_movement_output *)output;
+	s_physics_movement_input *input = (s_physics_movement_input *)physics;
+	const bool *airborne_reference = &airborne;
+	const bool *limited_reference = &limited;
+	const bool *mode_reference = &mode;
+	const real *crouch_reference = &crouch;
+	state->index = input->index;
+	state->matrix = input->matrix;
+	state->vector = input->vector;
+	state->rate = rate;
+	state->field_a8 = *mode_reference;
+	state->direction = state->default_direction;
+	state->enabled = true;
+	real blend = 0.0f;
+	if (!(state->flags & 4))
+		blend = *crouch_reference;
+	if ((bool)((state->definition->flags >> 2) & 1) && !*airborne_reference)
+	{
+		s_physics_movement_settings *settings = ((s_physics_movement_globals *)g_4e034c)->settings;
+		vector3f control = state->control;
+		real squared = length_sq3f(&control);
+		if (squared > 1.0f)
+		{
+			real scale = 1.0f / (real)sqrt(squared);
+			control.i = (real)(control.i * scale);
+			control.j = (real)(control.j * scale);
+		}
+		real remaining = 1.0f - blend;
+		real first, second;
+		if (control.i > 0.0f)
+		{
+			first = settings->forward;
+			second = settings->crouched_forward;
+		}
+		else
+		{
+			first = settings->backward;
+			second = settings->crouched_backward;
+		}
+		state->velocity.i = first * remaining + second * blend;
+		state->velocity.j = settings->sideways * remaining + settings->crouched_sideways * blend;
+		state->velocity.k = 0.0f;
+		state->speed = settings->speed * remaining + settings->crouched_speed * blend;
+		state->field_148 = settings->field_4c;
+		if (*limited_reference)
+		{
+			state->velocity.i = control.i > 0.0f ? settings->limited_speed : 0.0f;
+			state->velocity.j = 0.0f;
+		}
+		state->velocity.i *= control.i;
+		state->velocity.j *= control.j;
+		state->direction = state->active_direction;
+	}
+	else if (!(state->flags & 8) && !(state->flags & 4))
+		state->speed = 3.4028234663852886e+38f;
+}
+
 void function_1f1930(const s_shape_contact *contact, s_shape_side *side);
 void function_1faeb0(const s_contact *contact, s_contact_result *result);
 void function_1fc620(s_tracking_result *result, const s_tracking_source *source, const s_tracking_target *target);

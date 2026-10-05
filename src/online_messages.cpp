@@ -140,7 +140,7 @@ long online_message_download_attachment(long details_task_index, long property, 
 {
 	long task_index = NONE;
 
-	if (online_task_get_status(details_task_index) == 2)
+	if (online_task_poll(details_task_index) == 2)
 	{
 		s_type_9df9da *local_c5a52a = function_6b910(details_task_index);
 		if (local_c5a52a && online_logon_connected())
@@ -173,7 +173,7 @@ bool online_message_download_get_results(long task_index, DWORD *received_size, 
 	*data = 0;
 	*received_size = 0;
 	*total_size = 0;
-	if (online_task_get_status(task_index) == 2)
+	if (online_task_poll(task_index) == 2)
 	{
 		s_type_9df9da *task = function_6b910(task_index);
 		if (task && online_logon_connected() &&
@@ -725,7 +725,7 @@ void __stdcall online_message_block_send_finished(c_online_task_screen *screen)
 
 	if (task_index != NONE)
 	{
-		long status = online_task_get_status(task_index);
+		long status = online_task_poll(task_index);
 		if (status != 2)
 		{
 			if (status <= 2 || status > 5)

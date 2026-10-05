@@ -20,41 +20,7 @@
 bool function_1999b3(void);
 long function_19a161(void);
 
-/* the screen of 0x24fd74 (not written yet) */
-class c_screen_24fd74 : public c_class_1473c9
-{
-public:
-	void function_250155();
-	void function_250eb7();
-	void function_250cda(long index, bool update);
-	void change_team(long index, long delta);
-	void show_session_state();
-	void update_countdown(bool signed_in_needed);
-	void function_250f3a(byte *data);
-	void function_2508a8();
-	void handle_lobby_choice(s_controller_reference **controller, long *item);
-	/* the player slots' team changes, and A to join */
-	virtual bool v10(s_widget_event *event);
-
-	byte unknown610[0x812 - 0x610];
-	byte value812;
-	bool value813;
-	/* each player slot's team */
-	struct
-	{
-		bool valid;
-		byte unknown1;
-		short team;
-	} teams[16];
-	byte unknown854[0x1424 - 0x854];
-	/* the countdown's stage (NONE when none) and when it reached 3 */
-	long countdown_stage;
-	dword countdown_time;
-	short mode;
-	byte unknown142e[0x1470 - 0x142e];
-	/* when the session's state was last shown in a dialog */
-	dword state_shown_time;
-};
+#include "unknown_24fa12.h"
 
 /* shows the network connection's state in the mode's text */
 // @retail 0x250155

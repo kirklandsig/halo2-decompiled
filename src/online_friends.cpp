@@ -86,7 +86,7 @@ short online_friends_get_latest(long task_index, XONLINE_FRIEND *friends)
 
 	if (task && online_logon_connected())
 	{
-		if (online_task_get_status(task_index) == 1 || online_task_get_status(task_index) == 2)
+		if (online_task_poll(task_index) == 1 || online_task_poll(task_index) == 2)
 			count = (short)XOnlineFriendsGetLatest(task->controller_index, MAX_FRIENDS, friends);
 	}
 	return count;

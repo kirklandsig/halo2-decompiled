@@ -123,9 +123,3 @@ void function_1391ed(void)
 void __stdcall function_24d8d3(long player_index)
 {
 }
-
-// @stub 0x24fa4c
-c_class_1473c9 *__stdcall function_24fa4c(s_screen_parameters *parameters)
-{
-	return 0;
-}

@@ -60,3 +60,22 @@ short function_209580(long thread_index)
 	}
 	return result;
 }
+
+PRIVATE inline long next_script_record(s_record_pool *records, long index)
+{
+	long next = index == NONE ? 0 : (index & 0xffff) + 1;
+	return data_datum_index(records, function_16bc00(records, next));
+}
+
+// @retail 0x209e70
+long function_209e70(short script_index)
+{
+	s_record_pool *records = g_4f9384;
+	for (long index = next_script_record(records, NONE); index != NONE; index = next_script_record(records, index))
+	{
+		s_hs_due_thread *thread = (s_hs_due_thread *)(records->data + (index & 0xffff) * sizeof(s_hs_due_thread));
+		if (*(long *)&thread->unknown00[4] == script_index)
+			return index;
+	}
+	return NONE;
+}

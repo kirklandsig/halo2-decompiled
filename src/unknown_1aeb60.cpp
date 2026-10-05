@@ -5,6 +5,8 @@
 #include "unknown_11c920.h"
 #include "slot_handler.h"
 #include "ai_actor.h"
+#include "unknown_1fb7e0.h"
+#include "unknown_26b230.h"
 
 /* the state of a slot of type 0xe */
 struct s_slot_0e
@@ -28,8 +30,9 @@ struct s_slot_0f
 	bool unknown15;
 	bool unknown16;
 	bool unknown17;
-	byte unknown18[0x34 - 0x18];
-	bool unknown34;
+	s_type_c3b527 point;
+	vector3f facing;
+	char unknown34;
 	byte unknown35[0x40 - 0x35];
 };
 
@@ -43,6 +46,8 @@ struct s_prop_datum_0f
 };
 
 bool function_1f8660(long index);
+void function_1f86a0(long index);
+bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop);
 short __stdcall function_1aec30(long actor_index, short level, bool active);
 void __stdcall function_1af810(long actor_index, s_slot *slot);
 void __stdcall function_1afb30(long actor_index, s_slot *slot);
@@ -84,6 +89,86 @@ bool __stdcall function_1aebd0(long actor_index, s_slot *slot)
 	while (i < 4);
 	state->unknown0c = false;
 	return true;
+}
+
+short __stdcall function_1a79e0(long actor_index, short level, bool active);
+short function_1a6fe0(long owner_index, short type);
+real function_30bf0(vector3f *vector);
+struct s_clump_object_view;
+s_clump_object_view *function_26bdd0(s_iterator *iterator);
+
+// @retail 0x1aec30
+short __stdcall function_1aec30(long actor_index, short level, bool active)
+{
+	s_actor_view *actor = actor_get(actor_index);
+	short result = function_1a79e0(actor_index, level, active);
+	long prop_index = actor->prop_index;
+	if (prop_index != NONE)
+	{
+		s_prop_node_view *node = prop_node_get(prop_index);
+		if (result != g_46fbe4 && node->unknown24 >= 1 && node->unknown24 <= 2)
+			*(short *)((byte *)actor + 0x306) = 0;
+	}
+	long weapon_index = function_1e1f20(actor_index);
+	if (weapon_index != NONE)
+	{
+		byte *entry = (byte *)function_1e5280(actor_index, ai_object_get(weapon_index)->definition_index);
+		if (entry && (*entry & 2))
+			actor->unknown449 = true;
+	}
+	bool *state = &((s_slot_0e *)((byte *)actor + 0x90 + level * sizeof(s_slot)))->unknown0c;
+	if (!actor->unknown5d0 && actor->unknown07c != NONE && !actor->unknown229 && actor->unknown26c == NONE && prop_index != NONE)
+	{
+		if (actor->unknown040)
+		{
+			s_prop_state_view *prop = prop_node_state(prop_node_get(prop_index));
+			real minimum = *state ? 2.0f : 2.5f;
+			vector3f direction;
+			vector3d_from_points3d(&actor->position, &prop->position, &direction);
+			if (function_30bf0(&direction) > minimum)
+			{
+				real furthest = -50.0f;
+				bool found = false;
+				s_iterator iterator;
+				function_26bda0(actor->unknown07c, &iterator);
+				s_actor_view *other = (s_actor_view *)function_26bdd0(&iterator);
+				while (other)
+				{
+					if (other != actor && other->unknown26c == NONE && function_1a6fe0(iterator.index, 0xe) != NONE)
+					{
+						vector3f offset;
+						vector3d_from_points3d(&actor->position, &other->position, &offset);
+						if (9.0f > length_sq3f(&offset))
+						{
+							vector3f facing;
+							vector3d_from_points3d(&actor->position, &other->position, &facing);
+							real distance = dot3f(&direction, &facing);
+							found = true;
+							if (distance > furthest)
+								furthest = distance;
+						}
+					}
+					other = (s_actor_view *)function_26bdd0(&iterator);
+				}
+				if (found)
+				{
+					if (*state)
+					{
+						if (furthest >= 2.0f)
+							*state = true;
+					}
+					else if (-0.25f >= furthest)
+						*state = true;
+				}
+			}
+			else
+				*state = false;
+		}
+	}
+	else
+		*state = false;
+	actor->unknown449 = actor->unknown449 | (*(bool *)actor->unknown3dc | *state);
+	return result;
 }
 
 /* ---- slot type 0xf ---- */
@@ -222,6 +307,65 @@ bool function_1af530(long actor_index, long *b, long *a)
 		result = true;
 	}
 	return result;
+}
+
+struct s_prop_timer_0f
+{
+	byte unknown00[0x38];
+	long time;
+	byte unknown3c[0xc4 - 0x3c];
+};
+
+struct s_unit_state_0f
+{
+	byte unknown00[0x346];
+	short state_offset;
+};
+
+// @retail 0x1afb30
+void __stdcall function_1afb30(long actor_index, s_slot *slot)
+{
+	s_actor_view *actor = actor_get(actor_index);
+	s_slot_0f *state = (s_slot_0f *)slot;
+
+	if (state->timer > 0)
+	{
+		state->timer--;
+		if (!state->timer && actor->unknown227 && !actor->unknown229)
+			function_1f86a0(actor_index);
+	}
+	if (--state->ticks <= 0)
+	{
+		if (actor->prop_index != NONE)
+		{
+			s_prop_node_view *node = prop_node_get(actor->prop_index);
+			s_prop_timer_0f *timer = &((s_prop_timer_0f *)g_50241c->data)[node->unknown08 & 0xffff];
+			long now = g_510c54->game_time;
+			if ((real)(now - timer->time) * g_510c54->rate > 10.0f)
+			{
+				function_1fb7e0(actor_index, 0x96, NULL, node->object_index, NONE);
+				timer->time = now;
+			}
+		}
+		real seconds = slot_random_range(3.0f, 10.0f);
+		real ticks = g_510c54->field_2_3 * seconds;
+		long rounded;
+		__asm
+		{
+			fld ticks
+			fistp rounded
+		}
+		state->ticks = (short)rounded;
+	}
+	if (state->unknown16 && !state->unknown17 && state->unknown34 && actor_get(actor_index)->unknown504 == 2)
+	{
+		s_unit_state_0f *unit = (s_unit_state_0f *)ai_object_get(actor->unknown018);
+		if (*(short *)((byte *)unit + unit->state_offset + 0x36) != 7)
+		{
+			function_1f4f40(actor_index, &state->facing, state->unknown34, &state->point, true);
+			state->unknown17 = true;
+		}
+	}
 }
 
 // @retail 0x1afcf0

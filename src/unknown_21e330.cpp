@@ -12,6 +12,7 @@
 #include <string.h>
 #include "sound_driver.h"
 #include "unknown_2ae170.h"
+#include "unknown_21e230.h"
 
 typedef char check_sound_driver_globals_size[sizeof(s_sound_driver_globals) == 0x2ad8 ? 1 : -1];
 typedef char check_sound_driver_direct_sound[offsetof(s_sound_driver_globals, direct_sound) == 0x2ab0 ? 1 : -1];
@@ -545,6 +546,172 @@ void function_21f960(dword size, dword const *buffer)
 
 long function_2197f0(real gain);
 real function_12aff0(real lower, real upper, real value, bool clamp);
+
+struct s_sound_random_parameter
+{
+	real lower;
+	real upper;
+	real offset;
+	real variation;
+};
+
+struct s_sound_filter_parameters
+{
+	long mode;
+	long quality;
+	s_sound_random_parameter coefficients[4];
+};
+
+struct s_sound_lfo_parameters
+{
+	s_sound_random_parameter values[4];
+};
+
+struct s_sound_channel_parameters
+{
+	dword seed;
+	real interpolation;
+	byte unknown08[8];
+	s_sound_filter_parameters const *filter;
+	s_sound_lfo_parameters const *pitch_lfo;
+	s_sound_lfo_parameters const *combined_lfo;
+	dword effect_words[0x100];
+	dword effect_data_size;
+};
+
+typedef char check_channel_effect_size_offset[offsetof(s_sound_channel_parameters, effect_data_size) == 0x41c ? 1 : -1];
+
+real function_219880(s_sound_random_parameter const *parameter, dword *seed, real interpolation);
+
+// @retail 0x2201f0
+void function_2201f0(long channel_index, s_sound_channel_parameters const *parameters, bool force)
+{
+	if (parameters)
+	{
+		s_sound_stream *stream = sound_driver_channel_get(channel_index);
+		real interpolation = parameters->interpolation;
+		dword seed;
+		long channel_count;
+		bool filter_set = false;
+		bool pitch_set = false;
+		bool combined_set = false;
+		seed = parameters->seed;
+		channel_count = stream->channel_count;
+		s_sound_filter_parameters const *filter = parameters->filter;
+		if (filter)
+		{
+			if (!force && fabs(parameters->interpolation - *(real *)stream->unknown04) < 0.0001f)
+				goto finished;
+			DSFILTERDESC description = {0};
+			real a = function_219880(&filter->coefficients[0], &seed, interpolation);
+			real b = function_219880(&filter->coefficients[1], &seed, interpolation);
+			real c = function_219880(&filter->coefficients[2], &seed, interpolation);
+			real d = function_219880(&filter->coefficients[3], &seed, interpolation);
+			switch (filter->mode)
+			{
+			case 0:
+				*(volatile DWORD *)&description.dwMode = DSFILTER_MODE_PARAMEQ;
+				{
+					long quality = *(long volatile const *)&filter->quality;
+					description.dwQCoefficient = PIN(quality, 0, 7);
+				}
+				description.adwCoefficients[0] = sound_filter_frequency_coefficient(a);
+				description.adwCoefficients[1] = function_21e330(b);
+				description.adwCoefficients[2] = sound_filter_frequency_coefficient(c);
+				description.adwCoefficients[3] = function_21e330(d);
+				break;
+			case 1:
+				description.dwMode = DSFILTER_MODE_DLS2;
+				description.adwCoefficients[0] = sound_filter_frequency_coefficient(a);
+				description.adwCoefficients[1] = sound_filter_gain_coefficient(b);
+				description.adwCoefficients[2] = sound_filter_frequency_coefficient(c);
+				description.adwCoefficients[3] = sound_filter_gain_coefficient(d);
+				break;
+			case 2:
+				if (channel_count != 0)
+					goto filter_finished;
+				*(volatile DWORD *)&description.dwMode = DSFILTER_MODE_MULTI;
+				{
+					long quality = *(long volatile const *)&filter->quality;
+					description.dwQCoefficient = PIN(quality, 0, 7);
+				}
+				description.adwCoefficients[0] = sound_filter_frequency_coefficient(a);
+				description.adwCoefficients[1] = sound_filter_gain_coefficient(b);
+				description.adwCoefficients[2] = sound_filter_frequency_coefficient(c);
+				description.adwCoefficients[3] = function_21e330(d);
+				break;
+			default:
+				goto filter_finished;
+			}
+			filter_set = true;
+			stream->stream->SetFilter(&description);
+		}
+	filter_finished:
+		if (force)
+		{
+			s_sound_lfo_parameters const *pitch = parameters->pitch_lfo;
+			if (pitch)
+			{
+				DSLFODESC description = {0};
+				description.dwLFO = 1;
+				real delay = function_219880(&pitch->values[0], &seed, interpolation);
+				real frequency = function_219880(&pitch->values[1], &seed, interpolation);
+				real amount = function_219880(&pitch->values[2], &seed, interpolation);
+				long value = real_truncate(delay * 1500.0f);
+				description.dwDelay = PIN(value, 0, 0xffff);
+				value = real_truncate(frequency * 43.69066619873047f);
+				description.dwDelta = PIN(value, 0, 0x3ff);
+				value = real_truncate(amount * 128.0f);
+				description.lPitchModulation = PIN(value, -128, 127);
+				stream->stream->SetLFO(&description);
+				pitch_set = true;
+			}
+			s_sound_lfo_parameters const *combined = parameters->combined_lfo;
+			if (combined)
+			{
+				DSLFODESC description = {0};
+				description.dwLFO = 0;
+				real delay = function_219880(&combined->values[0], &seed, interpolation);
+				real frequency = function_219880(&combined->values[1], &seed, interpolation);
+				real cutoff = function_219880(&combined->values[2], &seed, interpolation);
+				real amplitude = function_219880(&combined->values[3], &seed, interpolation);
+				long value = real_truncate(delay * 1500.0f);
+				description.dwDelay = PIN(value, 0, 0xffff);
+				value = real_truncate(frequency * 43.69066619873047f);
+				description.dwDelta = PIN(value, 0, 0x3ff);
+				value = real_truncate(cutoff * 16.0f);
+				description.lFilterCutOffRange = PIN(value, -128, 127);
+				value = real_truncate(amplitude * 16.0f);
+				description.lAmplitudeModulation = PIN(value, -128, 128);
+				stream->stream->SetLFO(&description);
+				combined_set = true;
+			}
+			if (!filter_set)
+			{
+				DSFILTERDESC description;
+				memset(&description.dwQCoefficient, 0, sizeof(description) - sizeof(description.dwMode));
+				description.dwMode = DSFILTER_MODE_BYPASS;
+				stream->stream->SetFilter(&description);
+			}
+			if (!pitch_set)
+			{
+				DSLFODESC description = {0};
+				description.dwLFO = 1;
+				stream->stream->SetLFO(&description);
+			}
+			if (!combined_set)
+			{
+				DSLFODESC description;
+				memset(&description.dwDelay, 0, sizeof(description) - sizeof(description.dwLFO));
+				description.dwLFO = 0;
+				stream->stream->SetLFO(&description);
+			}
+		}
+	finished:
+		*(real *)stream->unknown04 = interpolation;
+		function_21f960(parameters->effect_data_size, parameters->effect_words);
+	}
+}
 
 real g_468834 = 1.0f;
 

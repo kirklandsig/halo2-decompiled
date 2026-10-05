@@ -7,6 +7,7 @@
 #include "unknown_075870.h"
 #include "unknown_059ad0.h"
 #include "unknown_0662e0.h"
+#include "network_voice.h"
 #include <xtl.h>
 #include <string.h>
 #include <float.h>
@@ -849,4 +850,365 @@ void network_observer_channel_probe(s_network_observer *observer, long channel_i
 		channel->qos_handle = NONE;
 		channel->flags |= 8;
 	}
+}
+
+/* A local view of the channel's measurement and probe fields. */
+struct s_observer_bandwidth_channel
+{
+	long state;
+	byte unknown04[0x250 - 4];
+	long sample_count;
+	byte unknown254[0x358 - 0x254];
+	long sample_losses;
+	byte unknown35c[0x48c - 0x35c];
+	bool active;
+	bool wanted;
+	bool has_callback;
+	bool callback_active;
+	bool callback_inactive;
+	byte unknown491[3];
+	long budget;
+	long burst;
+	real rate;
+	bool rate_limited;
+	bool budget_limited;
+	bool burst_limited;
+	byte unknown4a3;
+	long sent_bytes;
+	long received_bytes;
+	long stream_delay;
+	long smoothed_delay;
+	long smoothed_interval;
+	long loss_count;
+	dword loss_window;
+	bool backoff;
+	byte unknown4c1[3];
+	long backoff_time;
+	long backoff_delay;
+	long backoff_budget;
+	long backoff_burst;
+	real backoff_rate;
+	long loss_penalty;
+	long probe_state;
+	long probe_reset_time;
+	long sample_time;
+	long probe_time;
+	long probe_failures;
+	long baseline_delay;
+	bool probe_pending;
+	byte unknown4f5[3];
+	long saved_budget;
+	long saved_burst;
+	real saved_rate;
+	long probe_delay;
+	long probe_received_rate;
+	bool probe_budget_limited;
+	bool probe_rate_limited;
+	bool probe_burst_limited;
+	byte unknown50f;
+	long measured_sent_rate;
+	long measured_received_rate;
+	long constrained_cycles;
+	long unconstrained_cycles;
+};
+
+// @retail 0x79560
+long function_79560(s_network_observer *observer, long index)
+{
+	long result = 0;
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+	long started = observer->value4f38;
+	long elapsed = observer_time_get() - started;
+	if (elapsed > 0)
+		result = channel->received_bytes * 8000 / elapsed;
+	return result;
+}
+
+// @retail 0x795b0
+long function_795b0(s_network_observer *observer, long index)
+{
+	long result = 0;
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+	long started = observer->value4f38;
+	long elapsed = observer_time_get() - started;
+	if (elapsed > 0)
+		result = channel->sent_bytes * 8000 / elapsed;
+	return result;
+}
+
+// @retail 0x79d90
+void function_79d90(s_network_observer *observer, long index)
+{
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+	if (channel->probe_state != 0)
+	{
+		channel->probe_state = 0;
+		channel->probe_reset_time = observer_time_get();
+	}
+}
+
+// @retail 0x78a10
+bool function_78a10(long index, s_network_observer *observer, long *delay, real *rate, long *received_rate, long *loss_percent)
+{
+	bool result = false;
+	if (index >= 0 && index < MAXIMUM_OBSERVER_CHANNELS)
+	{
+		s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+		if (channel->state && channel->active)
+		{
+			*delay = channel->smoothed_delay;
+			*rate = channel->rate;
+			*received_rate = channel->measured_received_rate;
+			*loss_percent = (long)((real)channel->sample_losses / (real)channel->sample_count * 100.0f);
+			result = true;
+		}
+	}
+	return result;
+}
+
+// @retail 0x79600
+void function_79600(s_network_observer *observer, long index, long budget, long burst, real rate)
+{
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+	bool limited = network_observer_rate_below(observer, rate, channel->wanted, channel->has_callback, channel->callback_inactive);
+	channel->budget = budget;
+	channel->rate = rate;
+	channel->rate_limited = limited;
+	channel->burst = burst;
+}
+
+// @retail 0x7a2a0
+real function_7a2a0(s_network_observer *observer, long index)
+{
+	real result = 0.0f;
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+	if (channel->probe_state == 1)
+	{
+		if (channel->probe_time != NONE)
+		{
+			long last = channel->probe_time;
+			result = (real)((observer_time_get() - last) * *(long *)((byte *)observer->configuration + 0x1cc));
+			if (result > *(real *)((byte *)observer->configuration + 0x1c8))
+				result = *(real *)((byte *)observer->configuration + 0x1c8);
+		}
+		else
+			result = *(real *)((byte *)observer->configuration + 0x1c8);
+		result -= (real)channel->budget * *(real *)((byte *)observer->configuration + 0x1d0);
+	}
+	return result;
+}
+
+// @retail 0x7a110
+void function_7a110(s_network_observer *observer, long index)
+{
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+	if (channel->probe_pending)
+	{
+		function_79600(observer, index, channel->saved_budget, channel->saved_burst, channel->saved_rate);
+		channel->probe_pending = false;
+		channel->probe_state = 1;
+	}
+}
+
+// @retail 0x79480
+void function_79480(s_network_observer *observer)
+{
+	s_network_observer *const *observer_reference = &observer;
+	long now = observer_time_get();
+	observer_time_get();
+	for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
+	{
+		s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&(*observer_reference)->channels[index];
+		if (channel->state && channel->active)
+		{
+			long sent_rate = function_795b0(*observer_reference, index);
+			function_79560(*observer_reference, index);
+			long delay = channel->smoothed_delay;
+			if (sent_rate > 0)
+			{
+				channel->probe_budget_limited |= channel->budget_limited;
+				channel->probe_rate_limited |= channel->rate_limited;
+				channel->probe_burst_limited |= channel->burst_limited;
+			}
+			if (channel->probe_budget_limited || channel->probe_rate_limited || channel->probe_burst_limited)
+			{
+				channel->constrained_cycles++;
+				channel->unconstrained_cycles = 0;
+			}
+			else
+			{
+				channel->unconstrained_cycles++;
+				channel->constrained_cycles = 0;
+			}
+			if (delay < channel->baseline_delay)
+			{
+				channel->baseline_delay = delay;
+				channel->probe_failures = 0;
+			}
+			channel->received_bytes = 0;
+			channel->sent_bytes = 0;
+			channel->budget_limited = false;
+			channel->burst_limited = false;
+		}
+	}
+	observer->value4f38 = now;
+}
+
+// @retail 0x79660
+void function_79660(s_network_observer *observer, long index, long bytes, long delay, long stream_delay)
+{
+	s_network_observer *const *observer_reference = &observer;
+	long const *index_reference = &index;
+	long const *stream_delay_reference = &stream_delay;
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&(*observer_reference)->channels[*index_reference];
+	channel->received_bytes = bytes + channel->received_bytes;
+	channel->stream_delay = *stream_delay_reference;
+	long interval = 0;
+	long last = channel->sample_time;
+	if (last != NONE)
+		interval = observer_time_get() - last;
+	channel->sample_time = observer_time_get();
+	channel->smoothed_delay += (delay - channel->smoothed_delay) >> *(long *)((byte *)observer->configuration + 0x170);
+	channel->smoothed_interval += (interval - channel->smoothed_interval) >> *(long *)((byte *)observer->configuration + 0x170);
+	if (channel->backoff)
+	{
+		long delay = channel->smoothed_delay > channel->backoff_delay ? channel->smoothed_delay : channel->backoff_delay;
+		long started = channel->backoff_time;
+		if (observer_time_get() - started >= *(long *)((byte *)observer->configuration + 0x17c) * delay)
+		{
+			function_79600(observer, index, channel->backoff_budget, channel->backoff_burst, channel->backoff_rate);
+			channel->backoff = false;
+		}
+	}
+	else if (channel->loss_penalty > 0)
+		channel->loss_penalty--;
+}
+
+// @retail 0x79260
+void function_79260(s_network_observer *observer)
+{
+	long count;
+	long total;
+	long started = observer->value4f38;
+	long elapsed = observer_time_get() - started;
+	if (observer->flag4f3c || elapsed >= *(long *)((byte *)observer->configuration + 0x19c))
+	{
+		if (observer->flag4f3d)
+		{
+			for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
+			{
+				s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+				if (channel->state && channel->active && (channel->probe_state == 2 || channel->probe_state == 3))
+					function_7a110(observer, index);
+			}
+		}
+		else if (elapsed >= *(long *)((byte *)observer->configuration + 0x1a4))
+		{
+			long penalized = 0;
+			count = 0;
+			long qualifying = 0;
+			total = 0;
+			for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
+			{
+				s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+				if (channel->state && channel->active)
+				{
+					long sent = function_795b0(observer, index);
+					long received = function_79560(observer, index);
+					bool enough = !channel->budget_limited || received >= *(long *)((byte *)observer->configuration + 0x1a8);
+					count++;
+					penalized += channel->loss_penalty > 0;
+					if (enough && !channel->rate_limited)
+						qualifying++;
+					channel->measured_sent_rate = sent;
+					channel->measured_received_rate = received;
+					total += received;
+				}
+			}
+			if (penalized == 0)
+				network_observer_update_bandwidth(observer, count, total, qualifying);
+		}
+		if (observer->flag4f3e)
+		{
+			count = 0;
+			total = 0;
+			for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
+			{
+				s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+				if (channel->state && channel->active)
+				{
+					count++;
+					long rate = 0;
+					long start = observer->value4f38;
+					long age = observer_time_get() - start;
+					if (age > 0)
+						rate = channel->sent_bytes * 8000 / age;
+					total += rate;
+				}
+			}
+			if (count > 0)
+			{
+				if (observer->value4e0c != NONE)
+					total = observer->value4e0c + ((total - observer->value4e0c) >> observer->configuration->shift1b4);
+				observer->value4e0c = total;
+			}
+		}
+		function_79480(observer);
+	}
+	observer->flag4f3c = false;
+	observer->flag4f3d = false;
+	observer->flag4f3e = false;
+}
+
+// @retail 0x7a740
+void function_7a740(s_network_observer *observer)
+{
+	long upper = 0;
+	long lower = 0;
+	bool found_lower = false;
+	bool found_upper = false;
+	s_network_observer *const *observer_reference = &observer;
+	for (long index = 16; index > 0; index--)
+	{
+		if (!found_upper && (*observer_reference)->value4e04 >= g_network_configuration.levels[1].values[index])
+		{
+			upper = index;
+			found_upper = true;
+		}
+		if (!found_lower && (*observer_reference)->value4e04 >= g_network_configuration.levels[0].values[index])
+		{
+			lower = index;
+			found_lower = true;
+		}
+	}
+	if (g_4c9878.initialized)
+	{
+		g_4c9878.unknown08 = upper;
+		g_4c9878.unknown0c = lower;
+	}
+}
+
+// @retail 0x7a4a0
+void function_7a4a0(s_network_observer *observer)
+{
+	bool backoff = false;
+	bool active_callback = false;
+	bool limited_callback = false;
+	long mode = 0;
+	for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
+	{
+		s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
+		if (channel->state && channel->active)
+		{
+			backoff |= channel->backoff;
+			active_callback |= channel->has_callback && channel->callback_active;
+			limited_callback |= channel->has_callback && (channel->probe_budget_limited || channel->probe_burst_limited);
+		}
+	}
+	if (active_callback)
+		mode = 1 + (backoff != false);
+	else if (g_network_configuration.flag16fc && (backoff || limited_callback))
+		mode = 1;
+	if (g_4c9878.initialized)
+		g_4c9878.unknown04 = mode;
 }

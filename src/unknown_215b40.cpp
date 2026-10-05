@@ -323,7 +323,7 @@ bool function_19d650(s_game_variant *variant);
 // @retail 0x212bc0
 bool function_212bc0(long file_index, s_game_variant *variant)
 {
-	volatile bool result = false;
+	bool result = false;
 	if (file_index != NONE && function_2161d0(file_index, variant, sizeof(*variant)))
 	{
 		union
@@ -332,7 +332,46 @@ bool function_212bc0(long file_index, s_game_variant *variant)
 			unsigned __int64 words[0x130 / 8];
 		} copy;
 		copy.value = *variant;
-		return function_19d650(&copy.value);
+		result = function_19d650(&copy.value);
+	}
+	return result;
+}
+
+// @retail 0x212c20
+bool __stdcall function_212c20(word const *name, s_game_variant *variant, long *file_index)
+{
+	(void)&name;
+	(void)&variant;
+	(void)&file_index;
+	bool result = false;
+	if (file_index)
+		*file_index = NONE;
+	if (name[0])
+	{
+		for (long type = 1; type <= 9 && !result; type++)
+		{
+			long indices[0x1000];
+			long capacity = 0x1000;
+			word candidate[0x100];
+			function_215900(0xff, type, (word *)&capacity, indices, true);
+			for (long index = 0; index < (word)capacity; index++)
+			{
+				if (!_wcsicmp(function_215b50(indices[index], candidate), name))
+				{
+					result = true;
+					if (variant)
+						result = function_212bc0(indices[index], variant);
+					if (result && file_index)
+						*file_index = indices[index];
+					break;
+				}
+			}
+		}
+	}
+	else if (variant)
+	{
+		function_19d220(variant, 0);
+		result = true;
 	}
 	return result;
 }

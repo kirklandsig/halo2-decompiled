@@ -2,7 +2,7 @@
 #include "globals.h"
 #include "squads.h"
 
-// @flags /O2 /Gr
+// @flags /O2 /Gr /arch:SSE
 
 struct s_actor_limit_view
 {
@@ -261,4 +261,124 @@ bool function_2052d0(long squad_index, long group_index)
 		index = squad_group_get(index)->parent_index;
 	}
 	return result;
+}
+
+struct s_squad_record_iterator
+{
+	s_squad_datum *squad;
+	s_record_pool_iterator records;
+	long squad_index;
+};
+
+PRIVATE __forceinline s_squad_datum *next_squad_record(s_squad_record_iterator *iterator)
+{
+	s_squad_datum *result = NULL;
+	if (g_4f55d0->active)
+	{
+		s_record_pool *records = iterator->records.data;
+		long index = data_next_absolute_index_inlined(records, iterator->records.index + 1);
+		if (index != NONE)
+		{
+			result = (s_squad_datum *)(records->data + records->size * index);
+			iterator->records.index = index;
+		}
+		iterator->squad = result;
+	}
+	return result;
+}
+
+// @retail 0x205320
+void __stdcall function_205320(long group_index)
+{
+	long const *group_reference = &group_index;
+	s_squad_record_iterator iterator;
+	if (g_4f55d0->active)
+	{
+		iterator.records.data = g_51e9d8;
+		iterator.records.index = NONE;
+	}
+	s_squad_datum *squad;
+	while ((squad = next_squad_record(&iterator)) != NULL)
+	{
+		if (*(long *)((byte *)squad + 0x80) == *group_reference)
+			*(long *)((byte *)squad + 0x80) = NONE;
+	}
+}
+
+// @retail 0x201ad0
+void function_201ad0(long squad_index, long object_index)
+{
+	long const *object_reference = &object_index;
+	s_squad_vehicle_view *object = ((s_squad_vehicle_header *)g_4e0300->data)[*object_reference & 0xffff].object;
+	if (object->squad_index != NONE)
+		function_201a50(object->squad_index, *object_reference);
+	if (squad_index != NONE)
+	{
+		s_squad_datum *squad = (s_squad_datum *)(g_51e9d8->data + (squad_index & 0xffff) * sizeof(s_squad_datum));
+		((s_squad_vehicle_header *)g_4e0300->data)[*object_reference & 0xffff].object->next = squad->first_vehicle_index;
+		squad->first_vehicle_index = *object_reference;
+		if (!(squad_index & 0xffff0000))
+			object->squad_index = (*(short *)squad << 16) | squad_index;
+		else
+			object->squad_index = squad_index;
+	}
+}
+
+struct s_actor_position_state
+{
+	s_actor_position_state();
+	volatile long flags;
+	point3f position;
+	short field10;
+	byte unknown12[2];
+	real field14;
+	real field18;
+	long field1c;
+	short field20;
+	short field22;
+	short field24;
+	byte unknown26[2];
+	short field28;
+	short field2a;
+	short field2c;
+	short field2e;
+	long field30;
+	long field34;
+	real field38;
+	short field3c;
+	short field3e;
+	byte field40;
+	byte unknown41[0x60 - 0x41];
+	short field60;
+};
+
+PRIVATE __forceinline void reset_actor_position(s_actor_position_state *state)
+{
+	state->flags = 0;
+	state->position = *g_468788;
+}
+
+// @retail 0x200e60
+s_actor_position_state::s_actor_position_state() : flags(0)
+{
+	s_actor_position_state *state = this;
+	reset_actor_position(state);
+	state->field10 = NONE;
+	state->field14 = 0.0f;
+	state->field18 = 0.0f;
+	state->field1c = 0;
+	state->field20 = NONE;
+	state->field22 = NONE;
+	state->field24 = NONE;
+	state->field28 = NONE;
+	state->field2a = NONE;
+	state->field2c = NONE;
+	state->field2e = 0;
+	state->field30 = 0;
+	state->field34 = 0;
+	state->field38 = 0.0f;
+	state->field3e = 0;
+	state->field3c = NONE;
+	state->field60 = NONE;
+	state->field40 = 0;
 }

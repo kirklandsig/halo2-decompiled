@@ -192,7 +192,7 @@ void online_task_screen_end(c_online_task_screen *screen, bool show_error)
 
 	if (screen->task_index != NONE)
 	{
-		switch (online_task_get_status(screen->task_index))
+		switch (online_task_poll(screen->task_index))
 		{
 		case 2:
 			break;
@@ -223,7 +223,7 @@ void __stdcall function_1a2cb7(c_online_task_screen *screen)
 
 	if (screen->task_index != NONE)
 	{
-		switch (online_task_get_status(screen->task_index))
+		switch (online_task_poll(screen->task_index))
 		{
 		case 2:
 			break;
@@ -251,7 +251,7 @@ void __stdcall function_1a2d2f(c_online_task_screen *screen)
 
 	if (screen->task_index != NONE)
 	{
-		switch (online_task_get_status(screen->task_index))
+		switch (online_task_poll(screen->task_index))
 		{
 		case 2:
 			break;
@@ -395,7 +395,7 @@ bool friends_list_task_running()
 
 	if (g_global_4acf62.friends_task_index != NONE && g_global_4acf62.field_4_4)
 	{
-		long status = online_task_get_status(g_global_4acf62.friends_task_index);
+		long status = online_task_poll(g_global_4acf62.friends_task_index);
 
 		if (status == 1 || status == 2)
 			result = true;
@@ -1009,7 +1009,7 @@ void friends_list_update()
 	if (g_global_4acf62.friends_task_index == NONE || !g_global_4acf62.field_4_4)
 		return;
 
-	long status = online_task_get_status(g_global_4acf62.friends_task_index);
+	long status = online_task_poll(g_global_4acf62.friends_task_index);
 
 	if (status == 1 || status == 2)
 	{
@@ -1280,7 +1280,7 @@ void clan_members_update()
 
 	if (g_global_4acf62.clan_members_task_index != NONE)
 	{
-		long status = online_task_get_status(g_global_4acf62.clan_members_task_index);
+		long status = online_task_poll(g_global_4acf62.clan_members_task_index);
 
 		if (status == 1 || status == 2)
 		{
@@ -1402,7 +1402,7 @@ void friends_lists_update_presence()
 	if (g_global_4acf62.presence_task_index == NONE)
 		return;
 
-	long status = online_task_get_status(g_global_4acf62.presence_task_index);
+	long status = online_task_poll(g_global_4acf62.presence_task_index);
 
 	if (status == 1 || status == 2)
 	{

@@ -52,8 +52,6 @@ bool __stdcall function_1f4810(long actor_index, long prop_index, real distance,
 // @stub 0x265c30
 void function_265c30(long prop_index, long actor_index, bool unknown) { }
 
-// @stub 0x26fc80
-bool function_26fc80(long actor_index, long object_index, real distance, void *path) { return 0; }
 
 
 /* outside the region: callbacks */

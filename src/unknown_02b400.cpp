@@ -7,6 +7,61 @@
 
 #define k_real_epsilon 0.0001f
 
+// @retail 0x48e70
+long function_48e70(real value)
+{
+	long bits = *(long *)&value;
+	long exponent = (bits >> 23) & 255;
+	long shift = 150 - exponent;
+	long mantissa = ((bits & 0x7fffff) | 0x800000) >> shift;
+	long sign = bits >> 31;
+	long small = (exponent - 127) >> 31;
+	long result = ((mantissa ^ sign) - sign) & ~small;
+	long increment;
+	if (!sign && bits && (small || (((1 << shift) - 1) & bits & 0x7fffff)))
+		increment = 1;
+	else
+		increment = 0;
+	return result + increment;
+}
+
+struct s_sphere_plane_volume
+{
+	point3f center;
+	real radius;
+	long count;
+	plane3f *planes;
+};
+
+// @retail 0x38390
+bool function_38390(point3f const *point, s_sphere_plane_volume const *volume)
+{
+	vector3f delta;
+	delta.i = point->x - volume->center.x;
+	delta.j = point->y - volume->center.y;
+	delta.k = point->z - volume->center.z;
+	real distance = delta.i * delta.i;
+	distance += delta.k * delta.k;
+	distance += delta.j * delta.j;
+	bool result = false;
+	if (distance < volume->radius * volume->radius)
+	{
+		bool outside = false;
+		for (long i = 0; i < volume->count; ++i)
+		{
+			plane3f const *plane = &volume->planes[i];
+			real distance_to_plane = point->x * plane->i + plane->j * point->y + plane->k * point->z - plane->d;
+			if (distance_to_plane > k_real_epsilon)
+			{
+				outside = true;
+				break;
+			}
+		}
+		result = !outside;
+	}
+	return result;
+}
+
 // @retail 0x1c1a0
 double __cdecl function_1c1a0(real value)
 {

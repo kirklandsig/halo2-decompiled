@@ -1,22 +1,8 @@
+#include "unknown_246cd0.h"
 #include "unknown_11c920.h"
 #include "globals.h"
 
 // @flags /O2 /Ob1 /arch:SSE /Gr
-
-struct s_tag_data
-{
-	long size;
-	byte *address;
-};
-
-struct s_particle_property
-{
-	short input_index;
-	short range_index;
-	word modifier;
-	short modifier_index;
-	s_tag_data function;
-};
 
 struct s_particle_property_header
 {

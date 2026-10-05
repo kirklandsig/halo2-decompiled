@@ -8,6 +8,27 @@
 
 long log2_floor(dword value);
 
+// @retail 0x1d6f0
+dword function_1d6f0(bool linear, bool alternate, dword format, long width, long height)
+{
+	/* Both dimensions occupy stack slots in retail. */
+	long const *width_reference = &width;
+	long const *height_reference = &height;
+	dword type = linear ? (alternate ? 0x2e : 0x12) : (alternate ? 0x2e : 6);
+	format = (((format << 8) | type) << 8) | 0x29;
+	if (!linear)
+	{
+		long width_bits = 1;
+		long height_bits = 1;
+		while ((1 << width_bits) < *width_reference)
+			++width_bits;
+		while ((1 << height_bits) < *height_reference)
+			++height_bits;
+		format |= (width_bits | (height_bits << 4)) << 20;
+	}
+	return format;
+}
+
 word const g_450840[64] =
 {
 	0x000, 0x001, 0x004, 0x005, 0x010, 0x011, 0x014, 0x015,

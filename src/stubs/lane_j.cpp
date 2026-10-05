@@ -2,17 +2,6 @@
 // are not decompiled yet
 #include "unknown_11c920.h"
 
-// @stub 0x1e98e0
-void __stdcall function_1e98e0(void *statborg, long b, void *data)
-{
-}
-
-// @stub 0x1e9ad0
-bool __stdcall function_1e9ad0(void *statborg, long b, void *data)
-{
-	return false;
-}
-
 // @stub 0xa9120
 void __stdcall function_a9120(long unit_index, long trick)
 {
@@ -128,4 +117,3 @@ void __stdcall function_0785d0(void *unknown10, s_type_99af70 const *address, vo
 }
 
 class c_simulation_view;
-

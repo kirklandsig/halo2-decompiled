@@ -190,15 +190,19 @@ initial values.
 | `+0x4e01` | Use three quarters of the estimate rather than half (`unknown4e01`) |
 | `+0x4e04` | Total bandwidth estimate (`value4e04`) |
 | `+0x4e0c` | Smoothed total sent rate, -1 while unset (`value4e0c`) |
-| `+0x4f2c` | Time of the last `0x75af0` reset |
-| `+0x4f30` | Time of the last probe round |
-| `+0x4f34` | Time of the last cross-channel reduction (-1 initially) |
-| `+0x4f38` | Start of the current measurement cycle |
-| `+0x4f3c` | Rates changed: commit this frame |
-| `+0x4f3d` | A reduction happened: cancel running probes |
-| `+0x4f3e` | A reduction was passed to other channels: recompute `+0x4e0c` |
+| `+0x4f2c` | Time of the last `0x75af0` reset (`time4f2c`) |
+| `+0x4f30` | Time of the last probe round (`time4f30`) |
+| `+0x4f34` | Time of the last cross-channel reduction, -1 initially (`time4f34`) |
+| `+0x4f38` | Start of the current measurement cycle (`value4f38`) |
+| `+0x4f3c` | Rates changed: commit this frame (`flag4f3c`) |
+| `+0x4f3d` | A reduction happened: cancel running probes (`flag4f3d`) |
+| `+0x4f3e` | A reduction was passed to other channels: recompute `+0x4e0c` (`flag4f3e`) |
 | `+0x4f40` | Probes started this round |
 | `+0x4f44` | Probe limit this round |
+
+The names in parentheses are the fields of `s_network_observer` in
+`include/unknown_075870.h`. The declaration ends at `flag4f3e`, so
+`+0x4f40` and `+0x4f44` are not declared yet.
 
 ## Functions
 

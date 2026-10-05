@@ -47,7 +47,7 @@ static inline real falloff(real value, real maximum)
 }
 
 // @retail 0x1a4870
-real function_1a4870(real distance, real maximum_distance, real angle, real maximum_angle)
+inline real function_1a4870(real distance, real maximum_distance, real angle, real maximum_angle)
 {
 	real distance_scale = falloff(distance, maximum_distance);
 

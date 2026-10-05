@@ -275,56 +275,63 @@ bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_resul
 	return false;
 }
 
-// @retail 0x2461a0
-bool function_2461a0(
-	point3f const *point,
-	s_sphere const *sphere,
-	vector3f const *direction,
-	plane3f *plane,
-	real *t)
+PRIVATE inline real shape_dot_reverse(vector3f const *a, vector3f const *b)
 {
-	vector3f d;
-	vector3d_from_points3d(point, &sphere->center, &d);
-	bool result = false;
-	bool hit = true;
-	real c = length_sq3f(&d) - sphere->radius * sphere->radius;
-	if (c > 0.f)
+	return a->k * b->k + a->j * b->j + a->i * b->i;
+}
+
+PRIVATE __forceinline bool shape_sphere_ray_interval(vector3f const *d, vector3f const *direction, real radius, real *t)
+{
+	real c = length_sq3f(d) - radius * radius;
+	if (0.f >= c)
 	{
-		hit = false;
-		real b = dot3f(direction, &d);
-		if (b > 0.f)
+		*t = 0.f;
+		return true;
+	}
+	real b = dot3f(direction, d);
+	if (b > 0.f)
+	{
+		real a = length_sq3f(direction);
+		real discriminant = b * b - a * c;
+		if (discriminant >= g_45dbd8)
 		{
-			real a = length_sq3f(direction);
-			real discriminant = b * b - a * c;
-			if (discriminant >= g_45dbd8)
+			real root = b - (real)sqrt(discriminant);
+			if (a >= root)
 			{
-				real root = b - (real)sqrt(discriminant);
-				if (!(a < root))
-				{
-					*t = root / a;
-					hit = true;
-				}
+				*t = root / a;
+				return true;
 			}
 		}
 	}
-	else
-	{
-		*t = 0.f;
-	}
-	if (hit)
+	return false;
+}
+
+// @retail 0x2461a0
+bool function_2461a0(
+	real *t,
+	s_sphere const *sphere,
+	plane3f *plane,
+	vector3f const *direction,
+	point3f const *point)
+{
+	bool result = false;
+	vector3f d;
+	vector3d_from_points3d(point, &sphere->center, &d);
+	if (shape_sphere_ray_interval(&d, direction, sphere->radius, t))
 	{
 		result = true;
-		real time = *t;
-		plane->i = direction->i * time - d.i;
-		plane->j = direction->j * time - d.j;
-		plane->k = direction->k * time - d.k;
+		vector3f scaled;
+		shape_scale3d(direction, *t, &scaled);
+		plane->i = scaled.i - d.i;
+		plane->j = scaled.j - d.j;
+		plane->k = scaled.k - d.k;
 		if (function_30bf0(&plane->n) == 0.f)
 		{
 			plane->i = 0.f;
 			plane->j = 0.f;
 			plane->k = 1.f;
 		}
-		plane->d = sphere->center.z * plane->k + sphere->center.y * plane->j + sphere->center.x * plane->i + sphere->radius;
+		plane->d = dot3f((vector3f const *)&sphere->center, &plane->n) + sphere->radius;
 	}
 	return result;
 }
@@ -435,13 +442,13 @@ bool function_246360(
 
 // @retail 0x2466b0
 bool function_2466b0(
-	s_prism const *prism,
+	real *t,
+	plane3f *out,
 	point3f const *start,
 	vector3f const *direction,
-	real *t,
-	plane3f *out)
+	s_prism const *prism)
 {
-	real a = dot3f(&prism->plane.n, direction);
+	real a = shape_dot_reverse(&prism->plane.n, direction);
 	real b = plane_distance_to_point(&prism->plane, start);
 	real t0 = 0.f;
 	real t1 = 1.f;
@@ -508,10 +515,12 @@ bool function_2466b0(
 			}
 			point2f const *cur = &prism->points[i];
 			point2f const *nxt = &prism->points[next];
-			real ex = nxt->x - cur->x;
-			real ey = nxt->y - cur->y;
-			real denom = ey * d2.x - d2.y * ex;
-			real num = (s2.y - cur->y) * ex - ey * (s2.x - cur->x);
+			point2f offset;
+			shape_difference2d(&s2, cur, &offset);
+			point2f edge;
+			shape_difference2d(nxt, cur, &edge);
+			real denom = shape_cross2d(&d2, &edge);
+			real num = shape_cross2d(&edge, &offset);
 			if (!(fabs(denom) < k_real_epsilon))
 			{
 				real r = num / denom;
@@ -569,9 +578,9 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 		{
 			real time;
 			plane3f plane;
-			if (((type == 0 && function_2461a0(start, &shapes->spheres[index], direction, &plane, &time)) ||
+			if (((type == 0 && function_2461a0(&time, &shapes->spheres[index], &plane, direction, start)) ||
 				(type == 1 && function_246360(direction, &shapes->capsules[index], start, &time, &plane)) ||
-				(type == 2 && function_2466b0(&shapes->prisms[index], start, direction, &time, &plane))) &&
+				(type == 2 && function_2466b0(&time, &plane, start, direction, &shapes->prisms[index]))) &&
 				best_time > time && dot3f(direction, &plane.n) < -0.0001f)
 			{
 				best_time = time;
@@ -604,27 +613,6 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 }
 
 /* the object at 0x246eb0: clamp(|vector| - 0.5, 0, 1) of the vector at +0x28 */
-struct s_object_246eb0
-{
-	byte unknown00[0x28];
-	vector3f vector;
-};
-
-// @retail 0x246eb0
-real function_246eb0(s_object_246eb0 const *object)
-{
-	real r = (real)sqrt(object->vector.i * object->vector.i + object->vector.j * object->vector.j + object->vector.k * object->vector.k) - 0.5f;
-	if (r < 0.f)
-	{
-		return 0.f;
-	}
-	if (r > 1.f)
-	{
-		r = 1.f;
-	}
-	return r;
-}
-
 struct s_object_2470e0
 {
 	byte unknown00[0x9c];

@@ -66,6 +66,123 @@ struct s_ease_output
 
 real function_30bf0(vector3f *v);
 
+struct s_direction_rotation_input
+{
+	byte field_0[0x14];
+	dword flags;
+	byte field_18[0xac - 0x18];
+	vector3f direction;
+	byte field_b8[0xf4 - 0xb8];
+	vector3f forward;
+	vector3f up;
+};
+
+PRIVATE __forceinline void rotate_direction(vector3f *vector, const vector3f *axis, real sine, real cosine)
+{
+	real projected = dot3f(vector, axis) * (1.0f - cosine);
+	vector3f cross;
+	cross.i = vector->j * axis->k - vector->k * axis->j;
+	cross.j = vector->k * axis->i - vector->i * axis->k;
+	cross.k = vector->i * axis->j - vector->j * axis->i;
+	vector->i = vector->i * cosine + projected * axis->i - cross.i * sine;
+	vector->j = vector->j * cosine + projected * axis->j - cross.j * sine;
+	vector->k = vector->k * cosine + projected * axis->k - cross.k * sine;
+}
+
+// @retail 0x1ecf50
+void function_1ecf50(s_direction_rotation_input *input, vector3f *up, vector3f *forward)
+{
+	if (!(input->flags & 0x40))
+	{
+		real dot = dot3f(&input->up, &input->direction);
+		dot = PIN(dot, -1.0f, 1.0f);
+		if (!(fabs(dot - 1.0f) < 0.0001f))
+		{
+			real angle = (real)acos(PIN(dot, -1.0f, 1.0f));
+			if (angle != 0.0f)
+			{
+				vector3f axis;
+				axis.i = input->up.j * input->direction.k - input->up.k * input->direction.j;
+				axis.j = input->up.k * input->direction.i - input->up.i * input->direction.k;
+				axis.k = input->up.i * input->direction.j - input->up.j * input->direction.i;
+				if (function_30bf0(&axis) != 0.0f)
+				{
+					real sine = (real)sin(angle);
+					real cosine = (real)cos(angle);
+					*up = input->up;
+					*forward = input->forward;
+					rotate_direction(up, &axis, sine, cosine);
+					rotate_direction(forward, &axis, sine, cosine);
+					function_30bf0(up);
+					function_30bf0(forward);
+				}
+			}
+		}
+	}
+	else
+	{
+		*forward = input->forward;
+		*up = input->up;
+	}
+}
+
+struct s_ease_input
+{
+	byte field_0[0xc];
+	long object_index;
+	byte field_10[0xbc - 0x10];
+	bool update;
+	byte field_bd[3];
+	point3f target;
+	vector3f velocity;
+	real time;
+	byte field_dc[0xe8 - 0xdc];
+	point3f position;
+	byte field_f4[0x118 - 0xf4];
+	vector3f direction;
+	vector3f reference_velocity;
+};
+
+bool function_109fd0(long object_index, vector3f *velocity);
+long function_1eb8a0(bool update, vector3f *a, point3f *b, s_ease_state *s,
+	s_ease_output *out, real dt, vector3f *d, vector3f *q, point3f *pos);
+
+// @retail 0x1eb6f0
+void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *output)
+{
+	s_ease_state *const *state_reference = &state;
+	s_ease_output *const *output_reference = &output;
+	vector3f velocity = input->velocity;
+	vector3f reference = input->reference_velocity;
+	vector3f object_velocity;
+	bool relative = function_109fd0(input->object_index, &object_velocity);
+	if (relative == true)
+	{
+		reference.i -= object_velocity.i;
+		reference.j -= object_velocity.j;
+		reference.k -= object_velocity.k;
+		velocity.i -= object_velocity.i;
+		velocity.j -= object_velocity.j;
+		velocity.k -= object_velocity.k;
+	}
+	real squared = velocity.k * velocity.k + velocity.j * velocity.j + velocity.i * velocity.i;
+	if (squared > 6.25f)
+	{
+		real scale = 2.5f / (real)sqrt(squared);
+		velocity.i = (real)(velocity.i * scale);
+		velocity.j = (real)(velocity.j * scale);
+		velocity.k = (real)(velocity.k * scale);
+	}
+	function_1eb8a0(input->update, &velocity, &input->target, *state_reference,
+		*output_reference, input->time, &input->direction, &reference, &input->position);
+	if (relative)
+	{
+		(*output_reference)->position.i += object_velocity.i;
+		(*output_reference)->position.j += object_velocity.j;
+		(*output_reference)->position.k += object_velocity.k;
+	}
+}
+
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	bool update,

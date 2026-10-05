@@ -196,9 +196,9 @@ void online_teams_enumerate_get_results(long task_index, DWORD *count, XUID *tea
 
 	if (task && online_logon_connected())
 	{
-		long status = online_task_get_status(task_index);
+		long status = online_task_poll(task_index);
 
-		if (status == 1 || online_task_get_status(task_index) == 2)
+		if (status == 1 || online_task_poll(task_index) == 2)
 		{
 			result = *count;
 			XOnlineTeamEnumerateGetResults((XONLINETASK_HANDLE)task->handle, &result, teams);
@@ -216,9 +216,9 @@ void online_team_get_details(long task_index, XUID const *team, XONLINE_TEAM *de
 	memset(details, 0, sizeof(XONLINE_TEAM));
 	if (task && online_logon_connected())
 	{
-		long status = online_task_get_status(task_index);
+		long status = online_task_poll(task_index);
 
-		if (status == 1 || online_task_get_status(task_index) == 2)
+		if (status == 1 || online_task_poll(task_index) == 2)
 		{
 			XOnlineTeamGetDetails((XONLINETASK_HANDLE)task->handle, *team, details);
 		}
@@ -294,7 +294,7 @@ void online_team_members_enumerate_get_results(long task_index, DWORD *count, XU
 	s_type_9df9da *task = online_task_try_get_salted(task_index);
 	DWORD result = 0;
 
-	if (task && online_logon_connected() && online_task_get_status(task_index) == 2)
+	if (task && online_logon_connected() && online_task_poll(task_index) == 2)
 	{
 		result = *count;
 		XOnlineTeamMembersEnumerateGetResults((XONLINETASK_HANDLE)task->handle, &result, members);
@@ -310,7 +310,7 @@ void online_team_member_get_details(long task_index, XUID const *arg_9da427, XON
 	s_type_9df9da *task = online_task_try_get_salted(task_index);
 
 	memset(member, 0, sizeof(XONLINE_TEAM_MEMBER));
-	if (task && online_logon_connected() && online_task_get_status(task_index) == 2)
+	if (task && online_logon_connected() && online_task_poll(task_index) == 2)
 	{
 		if (SUCCEEDED(XOnlineTeamMemberGetDetails((XONLINETASK_HANDLE)task->handle, *arg_9da427, member)))
 		{

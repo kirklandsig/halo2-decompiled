@@ -23,9 +23,6 @@ void function_1e5a60(s_biped_physics_result *result, s_biped_physics_input const
 // @stub 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *state, real speed_scale, long havok_component_index, long arg_159e6d, void const *definition_physics, long a, bool b, bool turning, bool c, bool landing, bool d, bool grounded, bool e, bool f, real gravity, real boost, vector3f const *control, point3f const *position, vector3f const *forward, vector3f const *up, vector3f const *facing_goal, vector3f const *facing, vector3f const *ground_velocity, long material) { }
 
-// @stub 0x1e6120
-void function_1e6120(s_biped_physics_output *output, void *physics, real rate, bool airborne, bool b, bool c, real crouch) { }
-
 // @stub 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real height, long arg_159e6d, real crouch) { }
 

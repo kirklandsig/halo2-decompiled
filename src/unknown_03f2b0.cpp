@@ -3,8 +3,92 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "physical_memory.h"
 
 void *g_509438;
+
+// @retail 0x43990
+void function_43990(void)
+{
+	physical_memory_new_frame((s_physical_object *)g_509448);
+}
+
+struct s_unknown_13bf00;
+extern s_unknown_13bf00 *g_510c50;
+extern byte g_509415;
+
+// @retail 0x335c0
+byte function_335c0(void)
+{
+	if (g_510c50 && ((byte *)g_510c50)[5])
+		return g_509415;
+	return true;
+}
+
+// @retail 0x46220
+c_allocator *function_46220(void)
+{
+	return g_480118;
+}
+
+short g_4c1bd4;
+
+struct s_render_object_header
+{
+	byte unknown00[8];
+	long *object;
+};
+
+// @retail 0x3d3e0
+short function_3d3e0(long object_index, bool cached)
+{
+	if (cached)
+		return g_4c1bd4;
+	long tag = ((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object[0];
+	long next = *(long *)(g_4e3b44[tag & 0xffff].bytes + 0x38);
+	return *(long *)(g_4e3b44[next & 0xffff].bytes + 4) != NONE;
+}
+
+struct s_word_bit_iterator
+{
+	short count;
+	short index;
+	dword remaining;
+	dword const *words;
+};
+
+PRIVATE __forceinline long first_set_bit(dword mask)
+{
+	long result;
+	__asm
+	{
+		mov ecx, -1
+		bsf ecx, mask
+		mov result, ecx
+	}
+	return result;
+}
+
+// @retail 0x44690
+bool function_44690(s_word_bit_iterator *iterator, long *out)
+{
+	/* Retail keeps the output pointer on the stack. */
+	(void)&out;
+	while (!iterator->remaining)
+	{
+		if (++iterator->index >= iterator->count)
+			break;
+		iterator->remaining = iterator->words[iterator->index];
+	}
+	if (iterator->index < iterator->count)
+	{
+		long bit = first_set_bit(iterator->remaining);
+		*out = iterator->index * 32 + bit;
+		iterator->remaining &= ~(1 << bit);
+		return true;
+	}
+	return false;
+}
 
 // @retail 0x3f2b0
 void function_03f2b0(void)
@@ -25,7 +109,22 @@ struct s_visible_index_list
 	s_visible_index entries[1];
 };
 
-class c_entry_list;
+class c_entry_list
+{
+public:
+	c_entry_list(long maximum_count);
+	bool add(long a, short b, long c, short d);
+	short find(long a);
+	void swap(short index0, short index1);
+
+private:
+	long maximum_count;
+	word count;
+	short *shorts_b;
+	long *longs_a;
+	long *longs_c;
+	short *shorts_d;
+};
 struct s_bit_vector_pool_sizes
 {
 	short unknown0;
@@ -54,6 +153,36 @@ struct s_bit_vector_pool
 };
 extern s_bit_vector_pool g_547f88;
 extern dword g_4c56c0[64];
+
+struct s_parent_render_object
+{
+	byte unknown00[0x14];
+	long parent;
+	byte unknown18[0x92];
+	byte attached;
+};
+
+// @retail 0x31c20
+void function_31c20(s_bit_vector_pool *data, bool alternate, long object_index)
+{
+	s_bit_vector_pool *const *reference = &data;
+	long flags = alternate ? 0x3000 : 0x1000;
+	if (object_index != NONE)
+	{
+		bool again;
+		do
+		{
+			again = false;
+			s_parent_render_object *object = (s_parent_render_object *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
+			if (object->attached && object->parent != NONE)
+			{
+				object_index = object->parent;
+				again = true;
+			}
+		} while (again);
+		(*reference)->lists[2]->add(object_index, flags, 0, NONE);
+	}
+}
 
 // @retail 0x3f3f0
 void function_3f3f0(void)

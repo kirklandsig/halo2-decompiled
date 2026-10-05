@@ -34,19 +34,19 @@ bool function_182020(long component_index, vector3f *previous_velocity, point3f 
 			transform4x3f body_matrix;
 			transform4x3f inverse;
 			transform4x3f relative;
-			vector3f new_velocity;
+			vector3f velocity_sample;
 			havok_component_rigid_body_matrix_get(body_index, component, &body_matrix);
 			function_141590(&body_matrix, &inverse);
 			function_142a60(transform, &inverse, &relative);
 			function_141590(&relative, &relative);
 			*rotation = relative.rotation;
-			havok_component_rigid_body_point_velocity_get(body_index, component, point, &new_velocity);
-			*velocity = new_velocity;
+			havok_component_rigid_body_point_velocity_get(body_index, component, point, &velocity_sample);
+			*velocity = velocity_sample;
 			*rotation = g_4687d0->rotation;
-			delta_velocity->i = new_velocity.i - previous_velocity->i;
-			delta_velocity->j = new_velocity.j - previous_velocity->j;
-			delta_velocity->k = new_velocity.k - previous_velocity->k;
-			*previous_velocity = new_velocity;
+			delta_velocity->i = velocity_sample.i - previous_velocity->i;
+			delta_velocity->j = velocity_sample.j - previous_velocity->j;
+			delta_velocity->k = velocity_sample.k - previous_velocity->k;
+			*previous_velocity = velocity_sample;
 			*matrix = body_matrix;
 			result = true;
 		}
@@ -71,7 +71,7 @@ public:
 	virtual void slot2() {}
 	virtual void slot3() {}
 	virtual void slot4() {}
-	virtual long get_type() { return 0; }
+	virtual long shape_kind() { return 0; }
 	long unknown04;
 	s_shape_material *material;
 	byte unknown0c[0x30 - 0xc];
@@ -124,9 +124,9 @@ extern short g_54e898;
 void function_182b90(c_material_shape *shape, hkEntity const *entity,
 	real *friction, short *material, real *restitution)
 {
-	if (shape->get_type() == 0x17)
+	if (shape->shape_kind() == 0x17)
 		shape = shape->child;
-	if (shape->get_type() == 0x18)
+	if (shape->shape_kind() == 0x18)
 	{
 		short index;
 		function_1ee410((s_lookup_source *)shape, &index);
