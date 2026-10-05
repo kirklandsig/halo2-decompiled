@@ -9,6 +9,7 @@
 #include "sound_sources.h"
 #include "sound_records.h"
 #include <string.h>
+#include <stddef.h>
 
 /* the permutations a sound effect plays (0x2c..0x34 of a sound class or
    platform playback) */
@@ -16,6 +17,15 @@ struct s_sound_effect_definition
 {
 	byte unknown00[8];
 	long count;
+	struct s_sound_effect_entry *entries;
+};
+
+struct s_sound_effect_entry
+{
+	dword group;
+	long tag_index;
+	real gain;
+	dword flags;
 };
 
 struct s_sound_effect_definition_block
@@ -50,8 +60,19 @@ struct s_sound_effect
 	short salt;
 	byte unknown02;
 	char type;
-	byte flags;
-	byte unknown05;
+	union
+	{
+		struct { byte flags; byte unknown05; };
+		struct
+		{
+			word flag0 : 1;
+			word flag1 : 1;
+			word flag2 : 1;
+			word flag3 : 1;
+			word flag4 : 1;
+			word unknown_flags : 11;
+		};
+	};
 	short priority;
 	long record_index;
 	union
@@ -558,3 +579,121 @@ void __stdcall sound_effect_source_detach(long object_index, long sound_index)
 
 extern s_sound_source_callbacks const g_44a1c0 = { sound_effect_source_update, sound_effect_source_proc1, sound_effect_source_proc2, sound_effect_source_spatialize, sound_effect_source_stop, sound_effect_source_detach, NULL, NULL };
 extern s_sound_source_callbacks const g_44a1e0 = { sound_effect_only_update, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
+struct s_effect_controller_view
+{
+	long unknown00;
+	long definition_index;
+	byte unknown08[0x1c - 8];
+};
+
+struct s_effect_looping_view
+{
+	short salt;
+	char state;
+	byte unknown03;
+	byte flags;
+	byte unknown05[0x18 - 5];
+};
+
+typedef char check_sound_effect_size[sizeof(s_sound_effect) == 0x14 ? 1 : -1];
+typedef char check_effect_controller_size[sizeof(s_effect_controller_view) == 0x1c ? 1 : -1];
+typedef char check_effect_looping_size[sizeof(s_effect_looping_view) == 0x18 ? 1 : -1];
+typedef char check_effect_request_gain_offset[offsetof(s_sound_play_state, gain) == 0x94 ? 1 : -1];
+
+extern void *g_51ebdc;
+bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
+	s_type_99c531 *source, long state, dword flags, real fade_duration);
+
+PRIVATE long const g_44a200[] = { 0, 1, 2 };
+PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
+
+// @retail 0x21d630
+void __stdcall function_21d630(long effect_index, long mode)
+{
+	s_sound_effect *effect = sound_effect_get(effect_index);
+	s_effect_controller_view *controller = (s_effect_controller_view *)g_51ebdc;
+	if (effect->record_index != NONE)
+		controller = &((s_effect_controller_view *)((s_record_pool *)g_51ebd8)->data)[effect->record_index & 0xffff];
+	long controller_definition_index = controller->definition_index;
+	s_type_99c531 location;
+	location.flags = 0;
+	sound_effect_update_location(effect_index, &location);
+	struct { long state; bool alternate; } looping_state;
+	if (effect->type == 2)
+	{
+		s_effect_looping_view *looping = &((s_effect_looping_view *)g_4ed28c->data)[effect->sound_index & 0xffff];
+		looping_state.alternate = (bool)((looping->flags >> 4) & 1);
+		looping_state.state = looping->state;
+	}
+	s_sound_effect_definition *definition = effect->definition;
+	for (long i = 0; i < definition->count; i++)
+	{
+		s_sound_effect_entry *entry = &definition->entries[i];
+		long tag_index = entry->tag_index;
+		if (tag_index == NONE)
+			continue;
+		switch (entry->group)
+		{
+		case 0x736e6421:
+			if ((mode == 0 && !(entry->flags & 1)) || (mode == 2 && (entry->flags & 2)))
+			{
+				s_sound_play_state state;
+				state.flags = 0x15;
+				*(dword *)&state.priority = (word)effect->priority;
+				state.location = location;
+				if (mode != 2)
+				{
+					state.flags |= 0x20;
+					state.effect_index = controller_definition_index;
+					state.source = &g_44a1e0;
+					memset(state.source_data, 0, sizeof(state.source_data));
+					state.source_data_size = sizeof(state.source_data);
+					state.effect_marker.link.effect_index = effect_index;
+				}
+				state.flags |= 0x80;
+				*(long *)&state.gain = *(long *)&entry->gain;
+				if (sound_system_available())
+				{
+					long listener_index;
+					long rate_limit_stage;
+					if (function_126c30(&state, tag_index, &listener_index, NULL) &&
+						!sound_definition_rate_limited(tag_index, &rate_limit_stage))
+						function_126000(tag_index, listener_index, &state, rate_limit_stage);
+				}
+			}
+			break;
+		case 0x6c736e64:
+			{
+				dword entry_flags = entry->flags;
+				dword *tag_flags = (dword *)g_4e3b44[tag_index & 0xffff].bytes;
+				long state;
+				bool alternate;
+				if ((entry_flags & 0x20) && effect->type == 2)
+				{
+					state = g_44a20c[looping_state.state];
+					alternate = looping_state.alternate;
+				}
+				else
+				{
+					state = g_44a200[mode];
+					alternate = (entry_flags & 8) ||
+						((bool)effect->flag4 && (bool)effect->flag1 && (entry_flags & 0x10));
+				}
+				dword sound_flags = (word)effect->priority;
+				if (*tag_flags & 8)
+					sound_flags &= ~1;
+				if (*tag_flags & 0x40)
+					sound_flags &= ~2;
+				dword flags = 0;
+				SET_BIT(flags, 0, alternate);
+				SET_BIT(flags, 1, mode == 2);
+				s_type_99c531 source = location;
+				*(real *)&source.unknown08 += entry->gain;
+				function_21a250(tag_index, sound_flags, sound_effect_get_sound_index(effect_index, effect),
+					controller_definition_index, &source, state, flags, 0.0f);
+			}
+			break;
+		}
+	}
+}

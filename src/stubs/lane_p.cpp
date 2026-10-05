@@ -3,11 +3,6 @@
 
 #include "unknown_11c920.h"
 
-// @stub 0x22a648
-void function_22a648(void)
-{
-}
-
 // @stub 0x209f00
 long __stdcall function_209f00(char const *name)
 {
