@@ -168,14 +168,10 @@ static inline bool sound_bounds_contain(s_short_bounds const *bounds, real value
 	return PIN(value, (real)bounds->lower, (real)bounds->upper) == value;
 }
 
-/* 0x218f50 is written but does not match yet (the pitch range count goes to
-   the stack where retail keeps it in ebp), so @Banshee64's stub in
-   src/stubs/unknown_12a1b0.cpp stays in use */
-#if 0
 /* the pitch range a pitch plays in: the previous one while the pitch stays
    in its playback bounds, else the first whose bounds hold the pitch, else
    the nearest */
-/* retail 0x218f50 */
+// @retail 0x218f50
 short function_218f50(s_looping_playback_definition *playback_definition, short previous, real pitch)
 {
 	s_sound_definition *definition = (s_sound_definition *)playback_definition;
@@ -221,4 +217,3 @@ short function_218f50(s_looping_playback_definition *playback_definition, short 
 	}
 	return (short)best_index;
 }
-#endif

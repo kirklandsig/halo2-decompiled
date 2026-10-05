@@ -130,10 +130,11 @@ struct s_equipped_object_view
 	long objects[4];
 };
 
+/* The held-object lookup rereads the pool's data field. */
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
-	s_equipped_object_view *object = (s_equipped_object_view *)((s_object_header_view *)g_4e0300->data)[object_index & 0xffff].object;
+	s_equipped_object_view *object = (s_equipped_object_view *)((s_object_header_view *)((s_record_pool volatile *)g_4e0300)->data)[object_index & 0xffff].object;
 	long held_index = NONE;
 	short selected = object->selected;
 	if (selected != NONE)
@@ -142,7 +143,7 @@ bool function_2675f0(long object_index)
 	if (held_index != NONE && ((s_prop_threshold_table *)g_4e034c)->count > 0)
 	{
 		s_prop_thresholds *thresholds = ((s_prop_threshold_table *)g_4e034c)->entries;
-		s_equipped_object_view *held = (s_equipped_object_view *)((s_object_header_view *)g_4e0300->data)[held_index & 0xffff].object;
+		s_equipped_object_view *held = (s_equipped_object_view *)((s_object_header_view *)((s_record_pool volatile *)g_4e0300)->data)[held_index & 0xffff].object;
 		byte *definition = g_4e3b44[held->tag_index & 0xffff].bytes;
 		result = *(real *)(definition + 0x238) >= thresholds->object_threshold;
 	}
@@ -172,10 +173,12 @@ bool function_2675b0(long node_index)
 	return result;
 }
 
+/* These wrappers read the handle after resolving the complete record address. */
 // @retail 0x267680
 bool function_267680(long node_index)
 {
-	long object_index = prop_node_get(node_index)->object_index;
+	s_prop_node_view volatile *node = prop_node_get(node_index);
+	long object_index = node->object_index;
 	long type = ((s_object_header_view *)g_4e0300->data)[object_index & 0xffff].type;
 	bool result = false;
 	if ((1 << type) & 3)
@@ -186,7 +189,8 @@ bool function_267680(long node_index)
 // @retail 0x2676d0
 bool function_2676d0(long actor_index)
 {
-	long object_index = actor_get(actor_index)->unknown018;
+	s_actor_view volatile *actor = actor_get(actor_index);
+	long object_index = actor->unknown018;
 	bool result = false;
 	if (object_index != NONE)
 		result = function_2675f0(object_index);
@@ -214,4 +218,116 @@ void function_2672e0(s_type_f95cd3 *view, s_prop_node_view const *node)
 	if (!(value >= view->unknown54))
 		value = value * (1.0f - 0.995f) + view->unknown54 * 0.995f;
 	view->unknown54 = value;
+}
+
+
+PRIVATE inline s_type_f95cd3 *countdown_prop_view(s_prop_datum *node)
+{
+	s_type_f95cd3 *result = NULL;
+	if (node->tracking_index != NONE)
+	{
+		s_type_e5ff81 *tracking = tracking_get(node->tracking_index);
+		if (tracking)
+			result = &tracking->view;
+	}
+	return result;
+}
+
+// @retail 0x263670
+void function_263670(s_prop_datum *node)
+{
+	short *countdown = (short *)node->unknown1e;
+	if (*countdown > 0)
+	{
+		--*countdown;
+		if (*countdown == 0)
+			node->unknown1c = NONE;
+	}
+	s_type_5cfb45 *state = function_25d690(node);
+	s_type_f95cd3 *view = countdown_prop_view(node);
+	if (state->unknown5e)
+		++*(short *)((byte *)state + 0x5c);
+	else
+		*(short *)((byte *)state + 0x5c) = 0;
+	if (view)
+	{
+		short *age = (short *)((byte *)view + 0x28);
+		if (*age != NONE)
+		{
+			++*age;
+			if ((real)*age * g_510c54->rate >= 1.5f)
+			{
+				view->unknown2a = false;
+				*age = NONE;
+			}
+		}
+		short *remaining = (short *)view->unknowna0;
+		if (*remaining > 0)
+			--*remaining;
+		short *duration = (short *)view->unknown08;
+		if (node->unknown27 >= 1)
+		{
+			if (*duration < 0x7fff)
+				++*duration;
+		}
+		else
+			*duration = 0;
+	}
+}
+
+
+struct s_prop_object_links_view
+{
+	byte unknown00[0x10a];
+	word unknown10a_0 : 2;
+	word has_links : 1;
+	word unknown10a_3 : 13;
+	byte unknown10c[0x120 - 0x10c];
+	short size;
+	short offset;
+};
+
+struct s_prop_object_link
+{
+	byte unknown00[4];
+	word packed_index;
+	byte unknown06[2];
+};
+
+/* The optional output pointer stays on the stack until the scan is complete. */
+// @retail 0x2651e0
+bool function_2651e0(long object_index, short *volatile output_index)
+{
+	s_prop_object_links_view *object = (s_prop_object_links_view *)((s_object_header_view *)g_4e0300->data)[object_index & 0xffff].object;
+	bool result = false;
+	short index = NONE;
+	if (TEST_FIELD_BIT(object->has_links))
+	{
+		long count = (dword)(long)object->size >> 3;
+		s_prop_object_link *links = (s_prop_object_link *)((byte *)object + object->offset);
+		index = 0x7fff;
+		for (short i = 0; i < count; i++)
+		{
+			dword packed = links[i].packed_index;
+			if ((packed & 0xfff8) > 0)
+			{
+				word candidate = links[i].packed_index;
+				if ((word)(candidate >> 3) < (word)index)
+				{
+					index = candidate >> 3;
+					result = true;
+				}
+				break;
+			}
+		}
+	}
+	short *output = output_index;
+	if (output)
+	{
+		if (result)
+			*output = index;
+		else
+			*output = NONE;
+	}
+	return result;
 }

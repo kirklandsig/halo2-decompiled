@@ -204,7 +204,9 @@ struct s_game_options
 	long field_0_2;
 	byte unknown04;
 	bool flag05;
-	byte unknown06[0x264 - 6];
+	byte unknown06[0x1c - 6];
+	char scenario_path[0x104];
+	byte unknown120[0x264 - 0x120];
 	long difficulty;
 	byte unknown268[0x1118 - 0x268];
 };
@@ -243,4 +245,52 @@ void function_18e790(s_game_options const *options)
 		}
 		function_593e0();
 	}
+}
+
+struct s_session_options;
+void function_138110(s_game_options *options);
+void __stdcall function_138640(long count, s_session_options *options);
+void __stdcall function_1483c3(long value);
+
+// @retail 0x18f170
+void function_18f170(s_game_options *options, long value)
+{
+	function_138110(options);
+	options->field_0_2 = 3;
+	function_x91aa57(options->scenario_path, "scenarios\\ui\\mainmenu\\mainmenu", sizeof(options->scenario_path));
+	options->difficulty = value;
+	function_138640(1, (s_session_options *)options);
+}
+
+struct s_string_table;
+bool string_table_load(s_string_table *table);
+void function_1233a0(void);
+void geometry_cache_initialize_for_new_map(void);
+void texture_cache_load_shared_data(void);
+extern bool g_4e647b;
+extern bool g_4e6479;
+extern long g_4e6470;
+extern long g_4e6488;
+extern s_record_pool *g_502104;
+
+// @retail 0x18ec60
+void function_18ec60(bool keep, char const *map_name)
+{
+	if (!keep)
+	{
+		function_1233a0();
+		string_table_load((s_string_table *)&((s_main_game_string_tables *)g_4e034c)->tables[current_language()]);
+		geometry_cache_initialize_for_new_map();
+		g_4e647b = false;
+		g_4e6479 = false;
+		g_4e6470 = 0;
+		g_4e6488 = 4;
+		texture_cache_load_shared_data();
+		texture_cache_initialize_for_new_map();
+		s_record_pool *data = g_502104;
+		data->valid = true;
+		record_pool_release_all(data);
+	}
+	g_4ed294 = 2;
+	function_x91aa57(g_4ed298, map_name, sizeof(g_4ed298));
 }

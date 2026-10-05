@@ -2,6 +2,14 @@
 
 The newest entry comes first.
 
+## 2026-10-05: 5671 functions match
+
+```
+matched 5671 of 11318 game functions (568668 of 2784283 bytes, 20.42%)
+```
+
+**Codex lane V**, round 2: 9 new matches, none lost. They cover prop wrappers, hash tables, location entries and record-sector maps.
+
 ## 2026-10-05: 5662 functions match
 
 ```

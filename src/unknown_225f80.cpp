@@ -198,11 +198,15 @@ void function_226050(void)
 	{
 		if (g_4701ec.stage == 4)
 		{
-			bool blocked = g_4e6948->flag1121;
-
-			g_4701ec.stage = 0;
-			if (!blocked)
+			if (g_4e6948->flag1121)
+			{
+				g_4701ec.stage = 0;
+			}
+			else
+			{
+				g_4701ec.stage = 0;
 				function_12b790();
+			}
 		}
 	}
 	else if (g_4701ec.stage > 0)

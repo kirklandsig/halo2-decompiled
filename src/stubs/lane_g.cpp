@@ -79,11 +79,6 @@ void function_12360(s_bitmap_view *bitmap, real priority)
 {
 }
 
-/* lane K's 0x22387b */
-// @stub 0x22387b
-void function_22387b(void)
-{
-}
 
 /* UI lane round 2: the custom game profile list (unknown_2c9ddb.cpp) */
 
@@ -129,15 +124,6 @@ real __stdcall function_122dd0(byte *map_name, long unknown)
 /* UI lane round 5: callees of the press start screen */
 
 
-
-/* lane M */
-struct s_player_profile_settings;
-
-/* the open region 0x180000..0x18ffff (lane F, paused) */
-// @stub 0x18fb34
-void __stdcall function_18fb34(long player, s_player_profile_settings *settings, long profile_index)
-{
-}
 
 /* lane D */
 struct _XONLINE_USER;

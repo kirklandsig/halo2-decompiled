@@ -7,8 +7,6 @@ struct s_type_99c531;
 struct s_looping_track_sound;
 struct s_looping_playback_definition;
 
-// @stub 0x218f50
-short function_218f50(s_looping_playback_definition *definition, short previous, real pitch) { return NONE; }
 
 struct s_looping_voice_counts;
 
