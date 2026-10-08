@@ -129,6 +129,27 @@ def test_parse_claims_stops_at_a_level_three_heading():
     assert covers(claims, 0x100) and not covers(claims, 0x800)
 
 
+def test_main_rejects_partially_unreadable_claims(tmp_path, monkeypatch, capsys):
+    import pytest
+    import ready as module
+
+    inventory = tmp_path / 'functions.csv'
+    inventory.write_text('va,size,owner,status,name,calls\n00000018,10,game,todo,,\n',
+                         encoding='utf-8')
+    claims = tmp_path / 'claims.md'
+    claims.write_text('## Active claims\n' + TABLE_HEAD
+                      + '| lane | `0x10..0x20`, `0x30` | example |\n', encoding='utf-8')
+    monkeypatch.setattr(module, 'FUNCTIONS_CSV', str(inventory))
+    monkeypatch.setattr(module.sys, 'argv', ['ready.py', '--claims', str(claims)])
+
+    with pytest.raises(SystemExit) as stopped:
+        module.main()
+    assert stopped.value.code == 2
+    output = capsys.readouterr()
+    assert output.out == ''
+    assert 'not read as an address or range: `0x10..0x20`' in output.err
+
+
 def test_parse_claims_skips_the_issue_title_and_keeps_sub_headings():
     text = ('# Active claims: who is working on which address ranges\n\n'
             '## Active claims\n\n### Lanes\n' + TABLE_HEAD + '| a | `0x100`-`0x1ff` | x |\n\n'

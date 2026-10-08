@@ -214,7 +214,10 @@ def main():
     found = ready(rows)
     if args.claims:
         with open(args.claims, encoding='utf-8') as fh:
-            claims = parse_claims(fh.read(), warn=lambda msg: print(f'warning: {msg}', file=sys.stderr))
+            warnings = []
+            claims = parse_claims(fh.read(), warn=warnings.append)
+        if warnings:
+            ap.error('cannot safely filter incomplete claims: ' + '; '.join(warnings))
         if not claims:
             ap.error('no address claims found (expected the Active claims table from issue #9)')
         kept = without_claims(found, claims)
