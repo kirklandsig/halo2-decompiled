@@ -1,4 +1,4 @@
-// @flags /O2 /arch:SSE /Gr
+// @flags /O2 /Ob1 /arch:SSE /Gr
 /* VEHICLES.CPP: vehicles
 
 The vehicle object type's callbacks (its definition at 0x467b40) and the
@@ -24,6 +24,14 @@ helpers only they call. */
 
 #ifndef PIN
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
+#endif
+
+#ifndef FLAG
+#define FLAG(bit) (1 << (bit))
+#endif
+
+#ifndef SET_FLAG
+#define SET_FLAG(flags, bit, value) ((value) ? ((flags) |= FLAG(bit)) : ((flags) &= ~FLAG(bit)))
 #endif
 
 /* the vehicle (the unit fields, then the vehicle's own from +0x334; the
@@ -152,6 +160,68 @@ struct s_vehicle_header
 #define VEHICLE_HEADER_GET(index) (&((s_vehicle_header *)g_4e0300->data)[(index) & 0xffff])
 #define VEHICLE_DEFINITION_GET(vehicle) (g_4e3b44[(vehicle)->definition_index & 0xffff].bytes)
 
+/* a flags word read as bits */
+struct s_vehicle_word_flag_bits
+{
+	word bit0 : 1;
+	word bit1 : 1;
+	word bit2 : 1;
+	word bit3 : 1;
+	word bit4 : 1;
+	word bit5 : 1;
+	word bit6 : 1;
+	word bit7 : 1;
+	word bit8 : 1;
+	word bit9 : 1;
+	word bit10 : 1;
+	word bit11 : 1;
+	word bit12 : 1;
+	word bit13 : 1;
+	word bit14 : 1;
+	word bit15 : 1;
+};
+
+/* a flags dword read as bits */
+struct s_vehicle_flag_bits
+{
+	dword bit0 : 1;
+	dword bit1 : 1;
+	dword bit2 : 1;
+	dword bit3 : 1;
+	dword bit4 : 1;
+	dword bit5 : 1;
+	dword bit6 : 1;
+	dword bit7 : 1;
+	dword bit8 : 1;
+	dword bit9 : 1;
+	dword bit10 : 1;
+	dword bit11 : 1;
+	dword bit12 : 1;
+	dword bit13 : 1;
+	dword bit14 : 1;
+	dword bit15 : 1;
+	dword bit16 : 1;
+	dword bit17 : 1;
+	dword bit18 : 1;
+	dword bit19 : 1;
+	dword bit20 : 1;
+	dword bit21 : 1;
+	dword bit22 : 1;
+	dword bit23 : 1;
+	dword bit24 : 1;
+	dword bit25 : 1;
+	dword bit26 : 1;
+	dword bit27 : 1;
+	dword bit28 : 1;
+	dword bit29 : 1;
+	dword bit30 : 1;
+	dword bit31 : 1;
+};
+
+#define VEHICLE_DEFINITION_FLAGS(definition) ((s_vehicle_flag_bits const *)((definition) + 0x1ec))
+#define VEHICLE_WORD_BITS(field) ((s_vehicle_word_flag_bits const *)&(field))
+#define VEHICLE_DWORD_BITS(field) ((s_vehicle_flag_bits const *)&(field))
+
 void __stdcall function_c42e0(long unit_index, void const *placement);
 bool __stdcall function_10f430(long unit_index, long field_7c, long state_name, long weapon_name, long action_name,
 	real blend, bool flags, long mode);
@@ -279,10 +349,8 @@ void __stdcall function_ee9b0(long vehicle_index)
 	vehicle->unknown38c = (char)0xfe;
 	vehicle->unknown380 = 0.0f;
 	vehicle->gear = NONE;
-	vehicle->unknown398[0] = 0;
-	vehicle->unknown398[1] = 0;
-	vehicle->unknown390[0] = 0;
-	vehicle->unknown390[1] = 0;
+	memset(vehicle->unknown398, 0, sizeof(vehicle->unknown398));
+	memset(vehicle->unknown390, 0, sizeof(vehicle->unknown390));
 	vehicle->unknown3ac = 0;
 	vehicle->flags349 |= 1;
 	function_b9ef0(vehicle_index, &vehicle->unknown3d0);
@@ -309,26 +377,28 @@ bool __stdcall function_eeb80(long vehicle_index, void const *data, long unused)
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	bool result = false;
 
-	if (*(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24) == NONE)
-		return result;
-	vehicle->unknown3a0 = NONE;
-	vehicle->unknown3a4 = NONE;
-	vehicle->unknown3a8 = 0;
-	vehicle->unknown3b0 = 0;
-	vehicle->unknown3b4 = 0;
-	function_ee9b0(vehicle_index);
-	if (definition[0x2ac] & 1)
-		function_b9b90(vehicle_index, true);
-	if (VEHICLE_GET(vehicle_index)->animation_state_offset != NONE)
+	if (*(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24) != NONE)
 	{
-		if (function_10f430(vehicle_index, 0x7000001, 0x7000101, 0x7000101, 0x700005c, 0.0f, 0, 0))
+		vehicle->unknown3a0 = NONE;
+		vehicle->unknown3a4 = NONE;
+		vehicle->unknown3a8 = 0;
+		vehicle->unknown3b0 = 0;
+		vehicle->unknown3b4 = 0;
+		function_ee9b0(vehicle_index);
+		if (definition[0x2ac] & 1)
+			function_b9b90(vehicle_index, true);
+		if (VEHICLE_GET(vehicle_index)->animation_state_offset != NONE)
 		{
-			vehicle_animation_state_get(vehicle)->channels_finish();
-			return true;
+			if (function_10f430(vehicle_index, 0x7000001, 0x7000101, 0x7000101, 0x700005c, 0.0f, 0, 0))
+			{
+				vehicle_animation_state_get(vehicle)->channels_finish();
+				return true;
+			}
+			function_10f430(vehicle_index, 0x7000001, 0x7000101, 0x7000101, 0x400000c, 0.0f, 0, 0);
 		}
-		function_10f430(vehicle_index, 0x7000001, 0x7000101, 0x7000101, 0x400000c, 0.0f, 0, 0);
+		result = true;
 	}
-	return true;
+	return result;
 }
 
 bool function_f42f0(long vehicle_index);
@@ -350,7 +420,8 @@ void function_eec90(long vehicle_index, real *steering)
 	real angle = (real)atan2(left_j * velocity->j + left_k * velocity->k + left_i * velocity->i,
 		velocity->k * forward->k + velocity->j * forward->j + forward->i * velocity->i);
 
-	if (((vehicle->flags348 >> 3) & 1) && !function_f42f0(vehicle_index) && !(function_d1210(vehicle_index) > 0.0f))
+	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit3) &&
+		!function_f42f0(vehicle_index) && !(function_d1210(vehicle_index) > 0.0f))
 	{
 		function_2054b0(&vehicle->speed, (real const *)(definition + 0x1f4), 1.0f, dt, 0.0f);
 		function_2054b0(&vehicle->turn, (real const *)(definition + 0x22c), 1.0f, dt, 0.0f);
@@ -592,30 +663,17 @@ void __stdcall function_ef4f0(long vehicle_index, real *steering)
 			vehicle->throttle = g_4678d4;
 	}
 	*steering = 0.0f;
-	if ((vehicle->control_flags & 2) ||
-		((*(dword *)(definition + 0x1ec) >> 4) & 1) &&
-		(vehicle->throttle > 0.0f && 0.0f > vehicle->speed || 0.0f > vehicle->throttle && vehicle->speed > 0.0f))
+	SET_FLAG(*(word *)&vehicle->flags348, 3, (vehicle->control_flags & 2) ||
+		TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit4) &&
+		(vehicle->throttle > 0.0f && 0.0f > vehicle->speed || 0.0f > vehicle->throttle && vehicle->speed > 0.0f));
+	if (TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit17))
+		SET_FLAG(*(word *)&vehicle->flags348, 5,
+			TEST_FIELD_BIT(((s_vehicle_flag_bits const *)&vehicle->control_flags)->bit11));
+	*(word *)&vehicle->flags348 &= ~FLAG(4);
+	if (TEST_FIELD_BIT(((s_vehicle_flag_bits const *)(definition + 0xbc))->bit28) &&
+		(braking || vehicle->unknown334 > 0.0f))
 	{
-		vehicle->flags348 |= 8;
-	}
-	else
-	{
-		vehicle->flags348 &= ~8;
-	}
-	if ((*(dword *)(definition + 0x1ec) >> 17) & 1)
-	{
-		if ((vehicle->control_flags >> 11) & 1)
-			vehicle->flags348 |= 0x20;
-		else
-			vehicle->flags348 &= ~0x20;
-	}
-	*(word *)&vehicle->flags348 &= 0xffef;
-	if (((*(dword *)(definition + 0xbc) >> 28) & 1) && (braking || vehicle->unknown334 > 0.0f))
-	{
-		if (vehicle->unknown334 > vehicle->unknown338)
-			vehicle->flags348 |= 0x10;
-		else
-			*(word *)&vehicle->flags348 &= 0xffef;
+		SET_FLAG(*(word *)&vehicle->flags348, 4, vehicle->unknown334 > vehicle->unknown338);
 		if (braking)
 		{
 			vector3f *input = (vector3f *)&vehicle->throttle;
@@ -696,7 +754,7 @@ bool function_ef870(long vehicle_index)
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 
-	if (((vehicle->flags348 >> 6) & 1) && vehicle->unknown34d &&
+	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit6) && vehicle->unknown34d &&
 		(long)vehicle->unknown34e < vehicle_round((real)g_510c54->field_2_3 * 2.0f) &&
 		0.9f >= vehicle->up.k)
 	{
@@ -758,25 +816,20 @@ bool function_ef870(long vehicle_index)
 	return false;
 }
 
+
 /* whether a vehicle's controls are doing anything its definition reacts
    to */
 // @retail 0xefb60
 bool function_efb60(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
-	dword flags = *(dword *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1ec);
+	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 
-	if ((flags & 1) && (vehicle->speed != 0.0f || vehicle->gear != NONE))
-		return true;
-	if (((flags >> 1) & 1) && vehicle->steering_angle != 0.0f)
-		return true;
-	if (((flags >> 2) & 1) && vehicle->unknown25c != 0.0f)
-		return true;
-	if (((flags >> 3) & 1) && vehicle->unknown260 != 0.0f)
-		return true;
-	if (((flags >> 5) & 1) && vehicle->turn != 0.0f)
-		return true;
-	return false;
+	return TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit0) && (vehicle->speed != 0.0f || vehicle->gear != NONE) ||
+		TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit1) && vehicle->steering_angle != 0.0f ||
+		TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit2) && vehicle->unknown25c != 0.0f ||
+		TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit3) && vehicle->unknown260 != 0.0f ||
+		TEST_FIELD_BIT(VEHICLE_DEFINITION_FLAGS(definition)->bit5) && vehicle->turn != 0.0f;
 }
 
 /* a control value decayed toward zero, or zeroed when it's small */
@@ -794,11 +847,11 @@ PRIVATE inline void vehicle_decay(real *value, real scale)
 // @retail 0xefc30
 void function_efc30(long vehicle_index)
 {
-	real scale = g_510c54->rate * 10.0f;
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
+	real scale = g_510c54->rate * 10.0f;
 
+	((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit5 = false;
 	vehicle->gear = NONE;
-	vehicle->flags348 &= ~0x20;
 	vehicle_decay(&vehicle->unknown378, scale);
 	vehicle_decay(&vehicle->speed, scale);
 	vehicle_decay(&vehicle->steering_angle, scale);
@@ -948,7 +1001,7 @@ void function_f6010(long vehicle_index);
 void __stdcall function_f6bd0(long vehicle_index, s_vehicle_physics_state *state);
 bool function_cc380(long object_index);
 void function_d6660(s_type_1e6529 *data, long definition_index);
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14);
 void __stdcall function_ba7f0(long object_index, long a, long b, long mask);
 bool function_113e40(long unit_index);
@@ -966,7 +1019,7 @@ bool __stdcall function_efde0(long vehicle_index)
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	bool stopped = function_f1320(vehicle_index);
-	bool changed = false;
+	volatile bool changed = false;
 	word flags_c0 = vehicle->flags_c0;
 	vector3f linear_velocity;
 
@@ -1242,11 +1295,13 @@ bool __stdcall function_efde0(long vehicle_index)
 // @retail 0xf06c0
 void function_f06c0(s_vehicle_physics_state *state)
 {
-	long i;
+	s_vehicle_contact *contact = state->contacts;
+	short i;
 
-	for (i = 0; i < 16; i++)
+	for (i = 16; i; i--)
 	{
-		state->contacts[i].unknownb0 = NONE;
+		contact->unknownb0 = NONE;
+		contact++;
 	}
 }
 
@@ -1632,18 +1687,24 @@ bool function_f12e0(long vehicle_index)
 bool function_f1320(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
+	bool flagged = TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags_10a)->bit2);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
+	bool result = false;
 
-	if ((vehicle->flags_10a >> 2) & 1)
+	if (flagged)
 	{
 		short type = *(short *)(definition + 0x1f0);
 
-		if ((type == 4 && *(short *)(definition + 0x218) == 1) || type == 5)
+		if (type == 4 && *(short *)(definition + 0x218) == 1)
 		{
-			return true;
+			result = true;
+		}
+		else if (type == 5)
+		{
+			result = true;
 		}
 	}
-	return false;
+	return result;
 }
 
 /* a gear's torque curve over the engine's angular velocity */
@@ -1797,7 +1858,7 @@ short __stdcall function_f1740(long vehicle_index, real throttle_input)
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	s_game_time_globals *time = g_510c54;
-	bool braking;
+	volatile bool braking;
 	char current = vehicle->gear;
 	short gear = current;
 
@@ -1876,7 +1937,7 @@ short __stdcall function_f1740(long vehicle_index, real throttle_input)
 	return gear;
 }
 
-long function_f5d70(long vehicle_index);
+bool function_f5d70(long vehicle_index);
 
 /* runs the vehicle's engine for a tick: its load follows the throttle, a
    new gear engages after a delay (at once when it changes direction), the
@@ -2182,11 +2243,11 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 		{
 			contact->unknown83 = true;
 		}
-		if ((flags >> 2) & 1)
+		if (TEST_FIELD_BIT((flags >> 2) & 1))
 		{
 			vehicle_contact_steer(state, contact, sine, cosine);
 		}
-		else if ((flags >> 3) & 1)
+		else if (TEST_FIELD_BIT((flags >> 3) & 1))
 		{
 			vehicle_contact_steer(state, contact, 0.0f - sine, cosine);
 		}
@@ -2202,7 +2263,7 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	real spin = torque * dt;
 
 	vehicle->unknown360 = vehicle_wheel_spin_wrap(vehicle->unknown360 + spin, *(real *)(definition + 0x20c));
-	if (!((vehicle->flags348 >> 5) & 1))
+	if (!(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit5)))
 	{
 		vehicle->unknown364 = vehicle_wheel_spin_wrap(vehicle->unknown364 + spin, *(real *)(definition + 0x20c));
 	}
@@ -2213,7 +2274,7 @@ quaternionf *function_141f60(matrix3x3 const *matrix, quaternionf *out);
 void function_11d790(quaternionf const *q, vector3f *axis, real *angle);
 
 /* a damping force against a speed, at most what stops it within a tick */
-PRIVATE inline real vehicle_friction(real speed, real friction, real scale)
+PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scale)
 {
 	static real s_ticks = g_510c54->field_2_3 * 0.1f;
 	real direction = speed > 0.0f ? 1.0f : -1.0f;
@@ -2241,7 +2302,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	vector3f angular_velocity;
 	vector3f const *facing = &vehicle->local_velocity;
 
-	if ((vehicle->flags348 >> 4) & 1)
+	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
 		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
 	}
@@ -2251,7 +2312,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	}
 	maximum_speed = *(real *)(definition + 0x1f4) * boost;
 	function_ba1d0(vehicle_index, &linear_velocity, &angular_velocity);
-	if ((vehicle->flags_134 >> 23) & 1)
+	if (TEST_FIELD_BIT(VEHICLE_DWORD_BITS(vehicle->flags_134)->bit23))
 	{
 		vehicle->unknown1b8 = -1.0f;
 	}
@@ -2519,7 +2580,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 			word flags = *(word *)&vehicle->flags348;
 			real boost = 1.0f;
 
-			if ((flags >> 4) & 1)
+			if (TEST_FIELD_BIT((flags >> 4) & 1))
 			{
 				boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
 			}
@@ -2553,7 +2614,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 
 			real target_speed = side_speed_maximum * side_weight + forward_speed_maximum * forward_weight;
 
-			if ((flags >> 3) & 1)
+			if (TEST_FIELD_BIT((flags >> 3) & 1))
 			{
 				target_speed *= 0.8f;
 			}
@@ -2732,7 +2793,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 			torque.j += (left.j * pitch_torque + zero.j + vehicle->forward.j * roll_torque) * airborne;
 			torque.k += (left.k * pitch_torque + zero.k + vehicle->forward.k * roll_torque) * airborne;
 		}
-		if ((vehicle->flags348 >> 3) & 1)
+		if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit3))
 		{
 			real speed = (vehicle->forward.j * linear_velocity.j + vehicle->forward.k * linear_velocity.k +
 				linear_velocity.i * vehicle->forward.i) / *(real *)(definition + 0x1f4);
@@ -2841,17 +2902,20 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 
 /* the duration of the vehicle's current flip (+0x350: 1 and 2 to either
    side, 3 end over end) */
-PRIVATE inline real vehicle_flip_duration(byte flip)
+PRIVATE inline real vehicle_flip_duration(s_vehicle const *vehicle)
 {
-	if (flip > 0)
+	if (vehicle->unknown350 > 0)
 	{
-		if (flip <= 2)
+		if (vehicle->unknown350 > 2)
+		{
+			if (vehicle->unknown350 == 3)
+			{
+				return g_4678bc;
+			}
+		}
+		else
 		{
 			return g_4678c0;
-		}
-		if (flip == 3)
-		{
-			return g_4678bc;
 		}
 	}
 	return 0.0f;
@@ -2864,7 +2928,7 @@ real function_f4250(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	real elapsed = vehicle->unknown351 * g_510c54->rate;
-	real duration = vehicle_flip_duration(vehicle->unknown350);
+	real duration = vehicle_flip_duration(vehicle);
 
 	if (duration > elapsed)
 	{
@@ -2878,7 +2942,8 @@ real function_f4250(long vehicle_index)
 		{
 			real fraction = elapsed / duration;
 
-			return fraction * fraction;
+			fraction *= fraction;
+			return fraction;
 		}
 	}
 	return 0.0f;
@@ -2889,15 +2954,18 @@ real function_f4250(long vehicle_index)
 bool function_f42f0(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
+	bool result = false;
 
 	if (vehicle->unknown350)
 	{
-		if (vehicle_flip_duration(vehicle->unknown350) > vehicle->unknown351 * g_510c54->rate)
+		real elapsed = vehicle->unknown351 * g_510c54->rate;
+
+		if (vehicle_flip_duration(vehicle) > elapsed)
 		{
-			return true;
+			result = true;
 		}
 	}
-	return false;
+	return result;
 }
 
 /* the flip a boosting vehicle's controls ask for: none (0), to either side
@@ -2908,7 +2976,7 @@ long function_f4360(long vehicle_index)
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	long result = 0;
 
-	if (((vehicle->flags348 >> 3) & 1) && !(vehicle->control_flags & 0x800))
+	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit3) && !(vehicle->control_flags & 0x800))
 	{
 		real throttle = vehicle->throttle >= 0.0f ? vehicle->throttle : 0.0f - vehicle->throttle;
 		real steering = vehicle->steering >= 0.0f ? vehicle->steering : 0.0f - vehicle->steering;
@@ -2920,15 +2988,18 @@ long function_f4360(long vehicle_index)
 
 			if (PIN(direction, 2.5132742f, 3.7699113f) == direction)
 			{
-				return 3;
+				result = 3;
 			}
-			if (!(0.08726646f > direction) && !(direction > 6.195919f))
+			else if (!(0.08726646f > direction) && !(direction > 6.195919f))
 			{
 				if (PIN(direction, 0.0f, 2.5132742f) == direction)
 				{
-					return 1;
+					result = 1;
 				}
-				return 2;
+				else
+				{
+					result = 2;
+				}
 			}
 		}
 	}
@@ -3020,6 +3091,7 @@ void function_f5bf0(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
+	long count;
 
 	if (*(short *)(definition + 0x1f0) == 1)
 	{
@@ -3034,27 +3106,30 @@ void function_f5bf0(long vehicle_index)
 			function_ba1d0(vehicle_index, &velocity, NULL);
 			if (function_30bf0(&velocity) > 1.0f)
 			{
+				vector3f const *forward = &vehicle->forward;
+
 				if (0.0f > vehicle->throttle)
 				{
-					if (vehicle->forward.j * velocity.j + vehicle->forward.k * velocity.k +
-						vehicle->forward.i * velocity.i > 0.0f)
+					if (forward->i * velocity.i + forward->k * velocity.k + forward->j * velocity.j > 0.0f)
 					{
 						goto braking;
 					}
 				}
-				else if (vehicle->throttle > 0.0f && 0.0f > vehicle->forward.j * velocity.j +
-					vehicle->forward.k * velocity.k + velocity.i * vehicle->forward.i)
+				else if (vehicle->throttle > 0.0f &&
+					0.0f > velocity.i * forward->i + forward->k * velocity.k + forward->j * velocity.j)
 				{
 					goto braking;
 				}
 			}
 		}
 	}
-	vehicle->unknown384 = 0;
-	return;
+	count = 0;
+	goto done;
 
 braking:
-	vehicle->unknown384 = (byte)MIN(vehicle->unknown384 + 1, 0xfe);
+	count = MIN(vehicle->unknown384 + 1, 0xfe);
+done:
+	vehicle->unknown384 = (byte)count;
 }
 
 /* sets or clears one of the vehicle's 32 flags at +0x3b4 */
@@ -3062,6 +3137,7 @@ braking:
 bool __stdcall function_f5d10(long vehicle_index, long bit, bool set)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
+	bool result = false;
 
 	if (bit >= 0 && bit < 32)
 	{
@@ -3073,22 +3149,18 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set)
 		{
 			vehicle->unknown3b4 &= ~(1 << bit);
 		}
-		return true;
+		result = true;
 	}
-	return false;
+	return result;
 }
 
 /* whether the vehicle is braking: briefly, or while the brake is held */
 // @retail 0xf5d70
-long function_f5d70(long vehicle_index)
+bool function_f5d70(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 
-	if (vehicle->unknown384 && (0.5f > vehicle->unknown384 * g_510c54->rate || (vehicle->control_flags & 2)))
-	{
-		return true;
-	}
-	return false;
+	return vehicle->unknown384 && (0.5f > vehicle->unknown384 * g_510c54->rate || (vehicle->control_flags & 2));
 }
 
 /* how firmly the vehicle's parking brake holds, from the ticks it has sat
@@ -3100,7 +3172,7 @@ real function_f5e00(long vehicle_index)
 	s_game_time_globals *time = g_510c54;
 	long delay = vehicle_round(time->field_2_3 * 0.45f);
 
-	if (vehicle->unknown34a > delay &&
+	if ((char)vehicle->unknown34a > delay &&
 		(vehicle->unknown248 == NONE || 3.0625f > vehicle->linear_velocity.i * vehicle->linear_velocity.i +
 			vehicle->linear_velocity.j * vehicle->linear_velocity.j +
 			vehicle->linear_velocity.k * vehicle->linear_velocity.k))
@@ -3127,8 +3199,9 @@ void function_f5ee0(long vehicle_index)
 	}
 	else
 	{
-		pushed = vehicle->throttle * vehicle->throttle + vehicle->steering * vehicle->steering +
-			vehicle->unknown1b8 * vehicle->unknown1b8 > 0.001f * 0.001f;
+		vector3f const *input = (vector3f const *)&vehicle->throttle;
+
+		pushed = input->i * input->i + input->j * input->j + input->k * input->k > 0.001f * 0.001f;
 	}
 	if ((!pushed || function_f5d70(vehicle_index)) &&
 		vehicle->unknown38e != (1 << *(long *)(definition + 0x2f0)) - 1 &&
@@ -3512,7 +3585,7 @@ real __stdcall function_f78b0(real value, real maximum)
 }
 
 /* the larger of two magnitudes */
-PRIVATE inline real vehicle_larger(real a, real b)
+PRIVATE __forceinline real vehicle_larger(real a, real b)
 {
 	real magnitude_a = (real)fabs(a);
 	real magnitude_b = (real)fabs(b);
@@ -3526,6 +3599,7 @@ PRIVATE inline real vehicle_larger(real a, real b)
 // @retail 0xf78e0
 real __stdcall function_f78e0(long vehicle_index, long limit)
 {
+	long const *reference = &limit;
 	byte *definition = VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index));
 
 	switch (limit)
@@ -3549,8 +3623,9 @@ real __stdcall function_f78e0(long vehicle_index, long limit)
 	case 8:
 		return vehicle_larger(*(real *)(definition + 0x204) * 0.017453292f,
 			*(real *)(definition + 0x208) * 0.017453292f);
+	default:
+		__assume(0);
 	}
-	return 0.0f;
 }
 
 bool __stdcall function_f8070(long bit, word const *flags);
@@ -3562,7 +3637,6 @@ bool __stdcall function_f8070(long bit, word const *flags);
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
-	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	bool forced = false;
 	real result = 0.0f;
 
@@ -3577,7 +3651,8 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		result = function_d1210(vehicle_index);
 		break;
 	case 0x4000580:
-		if (function_f5d70(vehicle_index) || (vehicle->control_flags & 2) || ((vehicle->flags348 >> 5) & 1))
+		if (function_f5d70(vehicle_index) || (vehicle->control_flags & 2) ||
+			TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit5))
 		{
 			result = 1.0f;
 		}
@@ -3596,20 +3671,20 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		goto done;
 	case 0x900000e:
 		result = function_f78b0((real)fabs(vehicle->steering_angle),
-			(real)fabs(*(real *)(definition + 0x204) * 0.017453292f));
+			(real)fabs(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x204) * 0.017453292f));
 		break;
 	case 0xa00000f:
 		result = function_f78b0((real)fabs(vehicle->steering_angle),
-			(real)fabs(*(real *)(definition + 0x208) * 0.017453292f));
+			(real)fabs(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x208) * 0.017453292f));
 		break;
 	case 0xa00001a:
-		result = function_f78b0((real)fabs(vehicle->turn), (real)fabs(*(real *)(definition + 0x22c)));
+		result = function_f78b0((real)fabs(vehicle->turn), (real)fabs(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x22c)));
 		break;
 	case 0xa000598:
-		result = function_f78b0(vehicle->unknown378, VEHICLE_MAX_ANGULAR_VELOCITY(definition));
+		result = function_f78b0(vehicle->unknown378, VEHICLE_MAX_ANGULAR_VELOCITY(VEHICLE_DEFINITION_GET(vehicle)));
 		break;
 	case 0xb00001b:
-		result = function_f78b0((real)fabs(vehicle->turn), (real)fabs(*(real *)(definition + 0x230)));
+		result = function_f78b0((real)fabs(vehicle->turn), (real)fabs(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x230)));
 		break;
 	case 0xb000587:
 		result = function_f78b0((real)fabs(vehicle->linear_velocity.k * vehicle->up.k +
@@ -3622,18 +3697,18 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 			goto done;
 		}
 		result = function_f78b0((real)fabs(vehicle->turn),
-			vehicle_larger(*(real *)(definition + 0x22c), *(real *)(definition + 0x230)));
-		result = (result + function_f78b0(vehicle->unknown378, VEHICLE_MAX_ANGULAR_VELOCITY(definition))) * 0.5f;
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x22c), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x230)));
+		result = (result + function_f78b0(vehicle->unknown378, VEHICLE_MAX_ANGULAR_VELOCITY(VEHICLE_DEFINITION_GET(vehicle)))) * 0.5f;
 		break;
 	case 0xc000582:
 		result = function_f78b0(magnitude3d(&vehicle->linear_velocity),
-			vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f4), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8)));
 		break;
 	case 0xb000597:
 	case 0xc0005a5:
-		if (*(short *)(definition + 0x1f0) == 1 || *(short *)(definition + 0x1f0) == 0)
+		if (*(short *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f0) == 1 || *(short *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f0) == 0)
 		{
-			result = function_f78b0(vehicle->unknown378, VEHICLE_MAX_ANGULAR_VELOCITY(definition));
+			result = function_f78b0(vehicle->unknown378, VEHICLE_MAX_ANGULAR_VELOCITY(VEHICLE_DEFINITION_GET(vehicle)));
 		}
 		else
 		{
@@ -3660,7 +3735,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		break;
 	case 0xd00057f:
 		result = function_f78b0((real)fabs(vehicle->steering_angle),
-			vehicle_larger(*(real *)(definition + 0x204) * 0.017453292f, *(real *)(definition + 0x208) * 0.017453292f));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x204) * 0.017453292f, *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x208) * 0.017453292f));
 		break;
 	case 0xd000586:
 	{
@@ -3678,12 +3753,12 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 		break;
 	case 0xe00057a:
 		result = function_f78b0((real)fabs(vehicle->speed),
-			vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f4), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8)));
 		break;
 	case 0xe00057c:
 	{
 		real reverse = vehicle->speed > 0.0f ? 0.0f : vehicle->speed;
-		real maximum = (real)fabs(*(real *)(definition + 0x1f8));
+		real maximum = (real)fabs(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8));
 
 		if ((real)fabs(maximum) > 0.001f)
 		{
@@ -3693,7 +3768,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	}
 	case 0xe00057d:
 		result = function_f78b0((real)fabs(vehicle->turn),
-			vehicle_larger(*(real *)(definition + 0x22c), *(real *)(definition + 0x230)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x22c), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x230)));
 		break;
 	case 0xe000583:
 		if (!(vehicle->object_flags & 0xc))
@@ -3701,7 +3776,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 			goto done;
 		}
 		result = function_f78b0(magnitude3d(&vehicle->linear_velocity),
-			vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f4), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8)));
 		break;
 	case 0xf000584:
 		if (!(vehicle->unknown34f > 0))
@@ -3709,12 +3784,12 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 			goto done;
 		}
 		result = function_f78b0(magnitude3d(&vehicle->linear_velocity),
-			vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f4), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8)));
 		break;
 	case 0x10000585:
 		result = function_f78b0((real)fabs(vehicle->forward.k * vehicle->linear_velocity.k +
 			vehicle->forward.j * vehicle->linear_velocity.j + vehicle->linear_velocity.i * vehicle->forward.i),
-			vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f4), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8)));
 		break;
 	case 0x10000594:
 	{
@@ -3729,21 +3804,21 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	case 0x1300057e:
 	{
 		real driven = function_f78b0((real)fabs(vehicle->speed),
-			vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f4), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x1f8)));
 		real turning = function_f78b0((real)fabs(vehicle->turn),
-			vehicle_larger(*(real *)(definition + 0x22c), *(real *)(definition + 0x230)));
+			vehicle_larger(*(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x22c), *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x230)));
 
 		result = driven > turning ? driven : turning;
 		break;
 	}
 	case 0x13000588:
-		result = function_f78b0(vehicle->unknown368, *(real *)(definition + 0x20c));
+		result = function_f78b0(vehicle->unknown368, *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x20c));
 		break;
 	case 0x1300058a:
 		result = function_f78b0((real)fabs(vehicle->speed - vehicle->steering_angle), function_f78e0(vehicle_index, 2));
 		break;
 	case 0x14000589:
-		result = function_f78b0(vehicle->unknown36c, *(real *)(definition + 0x20c));
+		result = function_f78b0(vehicle->unknown36c, *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x20c));
 		break;
 	case 0x1400058b:
 		result = function_f78b0((real)fabs(vehicle->steering_angle + vehicle->speed), function_f78e0(vehicle_index, 2));
@@ -3752,7 +3827,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 	case 0x1800058c:
 	case 0x1800058f:
 	case 0x1900058d:
-		result = function_f78b0(vehicle->unknown360, *(real *)(definition + 0x20c));
+		result = function_f78b0(vehicle->unknown360, *(real *)(VEHICLE_DEFINITION_GET(vehicle) + 0x20c));
 		break;
 	case 0x14000599:
 		result = function_f78b0(magnitude3d(&vehicle->linear_velocity), function_f78e0(vehicle_index, 0));
@@ -3790,7 +3865,7 @@ bool __stdcall function_f8070(long bit, word const *flags)
 }
 
 /* the units of up to 16 players on foot and their centers */
-PRIVATE inline long vehicle_players_on_foot(long *unit_indices, point3f *centers)
+PRIVATE __forceinline long vehicle_players_on_foot(long *unit_indices, point3f *centers)
 {
 	s_record_pool_iterator iterator;
 	byte *player;
@@ -3891,7 +3966,7 @@ bool __stdcall function_f7ca0(long *vehicle_index)
 					real dy = vehicle->center.y - centers[i].y;
 					real dz = vehicle->center.z - centers[i].z;
 
-					if (100.0f > dz * dz + dy * dy + dx * dx && ((vehicle->flags_10a >> 2) & 1))
+					if (100.0f > dz * dz + dy * dy + dx * dx && TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags_10a)->bit2))
 					{
 						long seat_count = (unsigned long)vehicle->unknown120 >> 3;
 						word const *seat = (word const *)((byte *)vehicle + vehicle->unknown122 + 4);
@@ -3928,50 +4003,51 @@ void function_f7ed0(long vehicle_index, vector3f *impulse)
 	{
 		byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 		real scale = *(real *)(definition + 0x2e0);
-		short type;
 
 		impulse->i *= scale;
 		impulse->j *= scale;
 		impulse->k *= scale;
-		type = *(short *)(definition + 0x1f0);
-		if (type >= 0)
+		switch (*(short *)(definition + 0x1f0))
 		{
-			if (type <= 1)
+		case 0:
+		case 1:
+		{
+			long seat_count = *(long *)(definition + 0x2f0);
+
+			if (seat_count > 0)
 			{
-				long seat_count = *(long *)(definition + 0x2f0);
+				long empty = 0;
+				long i;
 
-				if (seat_count > 0)
+				for (i = 0; i < seat_count; i++)
 				{
-					long empty = 0;
-					long i;
-
-					for (i = 0; i < seat_count; i++)
+					if (!(vehicle->unknown38e & (1 << i)))
 					{
-						if (!(vehicle->unknown38e & (1 << i)))
-						{
-							empty++;
-						}
+						empty++;
 					}
-					if (empty > seat_count >> 1)
+				}
+				if (empty > seat_count >> 1)
+				{
+					vector3f const *up = &vehicle->up;
+					real dot = up->i * impulse->i + up->j * impulse->j + up->k * impulse->k;
+
+					if (0.0f > dot)
 					{
-						real dot = vehicle->up.k * impulse->k + vehicle->up.j * impulse->j +
-							impulse->i * vehicle->up.i;
+						vector3f into;
 
-						if (0.0f > dot)
-						{
-							vector3f into;
-
-							into.i = vehicle->up.i * dot;
-							into.j = vehicle->up.j * dot;
-							into.k = vehicle->up.k * dot;
-							impulse->i = (impulse->i - into.i) * 0.45f + into.i;
-							impulse->j = (impulse->j - into.j) * 0.45f + into.j;
-							impulse->k = (impulse->k - into.k) * 0.45f + into.k;
-						}
+						into.i = up->i * dot;
+						into.j = up->j * dot;
+						into.k = up->k * dot;
+						impulse->i = (impulse->i - into.i) * 0.45f + into.i;
+						impulse->j = (impulse->j - into.j) * 0.45f + into.j;
+						impulse->k = (impulse->k - into.k) * 0.45f + into.k;
 					}
 				}
 			}
-			else if (type == 5 && function_d1210(vehicle_index) > 0.0f)
+			break;
+		}
+		case 5:
+			if (function_d1210(vehicle_index) > 0.0f)
 			{
 				real damping = 1.0f - (vehicle->throttle >= 0.0f ? vehicle->throttle : 0.0f - vehicle->throttle);
 
@@ -3979,6 +4055,7 @@ void function_f7ed0(long vehicle_index, vector3f *impulse)
 				impulse->j *= damping;
 				impulse->k *= damping;
 			}
+			break;
 		}
 	}
 }
@@ -4047,7 +4124,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	real climb = PIN((real)fabs(pitch), 0.0f, 0.58904862f) * dive * g_4678d8 * 1.6976527f + 1.0f;
 	real boost = 1.0f;
 
-	if ((vehicle->flags348 >> 4) & 1)
+	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
 		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
 	}
@@ -4063,8 +4140,8 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	target.i = vehicle->forward.i * speed;
 	target.j = vehicle->forward.j * speed;
 	target.k = vehicle->forward.k * speed;
-	boosting = (vehicle->flags348 >> 4) & 1;
-	if (boosting && !flipping && !((vehicle->flags348 >> 3) & 1))
+	boosting = TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4);
+	if (boosting && !flipping && !(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit3)))
 	{
 		throttle = 1.0f;
 	}
@@ -4220,7 +4297,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 			desired.up = *g_4687a8;
 		}
 	}
-	if ((vehicle->flags_134 >> 1) & 1)
+	if (TEST_FIELD_BIT(VEHICLE_DWORD_BITS(vehicle->flags_134)->bit1))
 	{
 		s_vehicle *driver = VEHICLE_GET(vehicle_index);
 
@@ -4449,3 +4526,39 @@ void __stdcall function_f6bd0(long vehicle_index, s_vehicle_physics_state *state
 	}
 	vehicle->unknown34b = 0;
 }
+
+/* the vehicle object type's definition as its callbacks see it: the table
+   that takes their addresses (the type list after it ends with this type) */
+struct s_vehicle_type_definition_view
+{
+	char const *name;
+	long group_tag;
+	short datum_size;
+	short unknown0a;
+	long unknown0c;
+	void *functions[29];
+	void *types[3];
+	byte unknown90[0xc8 - 0x90];
+};
+
+extern s_vehicle_type_definition_view g_467b40;
+
+s_vehicle_type_definition_view g_467b40 =
+{
+	"vehicle",
+	'vehi',
+	0x428,
+	0x70,
+	0x540078,
+	{
+		NULL, NULL, NULL, NULL,
+		NULL, NULL, NULL, (void *)function_eeb80,
+		(void *)vehicle_place, NULL, NULL, NULL,
+		(void *)function_efde0, NULL, NULL, (void *)function_f6d10,
+		NULL, NULL, NULL, NULL,
+		NULL, NULL, NULL, (void *)function_f0f50,
+		NULL, NULL, (void *)function_ee9b0, NULL,
+		NULL
+	},
+	{ NULL, NULL, &g_467b40 }
+};

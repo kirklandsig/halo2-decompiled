@@ -391,7 +391,7 @@ void function_d0620(long object_index, s_object_child_iterator *iterator);
 void function_b7360(long object_index);
 void __stdcall function_b8540(long a);
 void function_b8b70(long object_index);
-void function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
+void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator);
 void function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator);
@@ -399,7 +399,7 @@ void function_d9d60(bool at_marker, long marker_name, long object_index, long ef
 void function_ba690(long object_index, byte **states, long *state_count, long *a, long *b);
 void function_a8360(long object_index, long region_index, long permutation_index, long a);
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c);
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14);
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b);
 void __stdcall function_e6460(long object_index);
@@ -407,7 +407,7 @@ long function_176780(long object_index, s_effect_owner const *owner, real scale_
 void __stdcall function_ba7f0(long object_index, long a, long b, long c);
 short __stdcall function_bb050(long a, dword type_mask, void const *location, point3f const *position, real radius,
 	long *objects, short maximum_count);
-void function_d74e0(s_type_1e6529 *data, long object_index, bool child);
+void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child);
 real function_30bf0(vector3f *v);
 void function_baff0(long object_index, point3f const *origin, point3f *arg_149545, vector3f *normal);
 bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const *data);
@@ -559,7 +559,7 @@ bool function_d6af0(long object_index)
 }
 
 // @retail 0xd6b60
-void function_d6b60(long object_index)
+void __stdcall function_d6b60(long object_index)
 {
 	long child_index = DAMAGE_OBJECT(object_index)->first_child_object_index;
 
@@ -575,7 +575,7 @@ void function_d6b60(long object_index)
 
 /* who an object's damage is credited to */
 // @retail 0xd66d0
-void object_get_damage_owner(long object_index, s_damage_owner *owner)
+void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 {
 	if (object_index == NONE)
 	{
@@ -832,7 +832,7 @@ bool function_d73c0(long object_index, s_type_1e6529 const *data, bool *instant_
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
 // @retail 0xd6c80
-long function_d6c80(s_type_1e6529 *data, long ignore_object_index)
+long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
 	s_damage_definition *definition = (s_damage_definition *)g_4e3b44[data->definition_index & 0xffff].bytes;
 	real radius = MAX(definition->radius04, MAX(definition->radius58, definition->radius68));
@@ -918,7 +918,7 @@ long function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 // @retail 0xd74e0
-void function_d74e0(s_type_1e6529 *data, long object_index, bool child)
+void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
 	for (;;)
 	{
@@ -1306,7 +1306,7 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 /* whether an object, or anything seated in or attached to it, is a unit (a
    player's unit, if players_only) */
 // @retail 0xdb110
-bool function_db110(long object_index, bool players_only, bool walk_siblings)
+bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
 	s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff];
 	s_damage_object *object = datum->object;
@@ -1393,7 +1393,7 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
    threshold allow it, and destroys each now or schedules it after its
    delay */
 // @retail 0xdae60
-void function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
+void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
@@ -2623,7 +2623,7 @@ enum
 /* damages an object's regions through the model's damage markers within
    the damage's radius and cone, then its attached children the same way */
 // @retail 0xd82e0
-void function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
+void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damage_region_accumulator *accumulator)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
 	byte *object_definition = g_4e3b44[object->tag_index & 0xffff].bytes;
@@ -2743,8 +2743,8 @@ void function_d82e0(s_type_1e6529 *data, real damage, long object_index, s_damag
 	}
 }
 
-bool function_cc010(long object_index, vector3f const *direction);
-void function_db210(s_type_1e6529 const *data, long vehicle_index);
+bool __stdcall function_cc010(long object_index, vector3f const *direction);
+void __stdcall function_db210(s_type_1e6529 const *data, long vehicle_index);
 void function_15cd90(long player_index, short identifier, long other_player_index);
 
 enum
@@ -2755,7 +2755,7 @@ enum
 /* damages an object, and the objects it rides in: for each, the shield
    first, then the body and regions, then the aftermath */
 // @retail 0xd7b80
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14)
 {
 	s_damage_effect_definition *definition =
@@ -2960,7 +2960,7 @@ void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, sh
 /* passes damage a vehicle takes on to its riders, scaled by their seats'
    entries in its damage info, and to the vehicles it carries */
 // @retail 0xdb210
-void function_db210(s_type_1e6529 const *data, long vehicle_index)
+void __stdcall function_db210(s_type_1e6529 const *data, long vehicle_index)
 {
 	s_damage_definition *definition = (s_damage_definition *)g_4e3b44[data->definition_index & 0xffff].bytes;
 	s_damage_object *vehicle = DAMAGE_OBJECT(vehicle_index);
@@ -3025,7 +3025,13 @@ void function_db210(s_type_1e6529 const *data, long vehicle_index)
 void function_d87e0(long list_index, bool can_take_damage)
 {
 	long reference_index;
-	long object_index = function_1dee50(list_index, &reference_index);
+	long object_index = list_index;
+
+	if (list_index != NONE)
+	{
+		reference_index = ((s_object_list_1dee50 *)g_4f55d8->data)[list_index & 0xffff].first_reference_index;
+		object_index = function_1dee80(&reference_index);
+	}
 
 	while (object_index != NONE)
 	{
@@ -3112,11 +3118,10 @@ void function_d8a40(long object_index, string_handle region_name, real damage)
 		if (info && region_name && region_name != NONE)
 		{
 			long region_index;
-			s_damage_info_region *region;
 
-			for (region_index = 0, region = info->regions; region_index < info->region_count; region_index++, region++)
+			for (region_index = 0; region_index < info->region_count; region_index++)
 			{
-				if (region->name == region_name)
+				if (info->regions[region_index].name == region_name)
 					break;
 			}
 			if (region_index != info->region_count)

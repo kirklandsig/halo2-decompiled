@@ -403,7 +403,7 @@ long __stdcall function_b7b40(void *creation);
 void function_1ca290(long tag_index, long ticks, long object_index, long node_index, real lower, real upper, transform4x3f const *matrix);
 struct s_type_1e6529;
 void function_d6660(s_type_1e6529 *data, long definition_index); /* damage.cpp */
-long function_d6c80(s_type_1e6529 *data, long ignore_object_index); /* damage.cpp */
+long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index); /* damage.cpp */
 void function_b7930(void *data, long tag_index, long object_index, s_effect_owner const *owner); /* stubs/lane_o.cpp */
 bool function_a7640(s_effect_object_placement *data);
 void __stdcall function_a7870(long object_index); /* stubs/lane_o.cpp */

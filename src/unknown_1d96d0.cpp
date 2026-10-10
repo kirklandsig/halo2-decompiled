@@ -40,7 +40,7 @@ bool function_1c58a0();
 bool function_e58e0(long arg_0);
 bool havok_component_unknown10_recent(s_havok_component const *arg_0);
 bool function_1da550(long arg_0, long arg_1, s_collision_damage_entry *arg_2);
-void object_get_damage_owner(long arg_0, s_damage_owner *arg_1);
+void __stdcall object_get_damage_owner(long arg_0, s_damage_owner *arg_1);
 bool function_1da6d0(long arg_0, long arg_1, real arg_2, real arg_3, real arg_4);
 bool function_1da9e0(long arg_0, point3f const *arg_1, real arg_2, real arg_3,
  real arg_4, bool arg_5, long arg_6);

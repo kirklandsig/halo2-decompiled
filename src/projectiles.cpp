@@ -66,11 +66,14 @@ struct s_projectile
 		dword unknown3 : 1;
 		dword unknown4 : 1;
 		dword unknown5 : 1;
-		dword unknown6 : 2;
+		dword unknown6 : 1;
+		dword unknown7 : 1;
 		dword unknown8 : 1;
-		dword unknown9 : 2;
+		dword unknown9 : 1;
+		dword unknown10 : 1;
 		dword unknown11 : 1;
-		dword unknown12 : 2;
+		dword unknown12 : 1;
+		dword unknown13 : 1;
 		dword unknown14 : 1;
 		dword unknown15 : 1;
 		dword : 16;
@@ -117,7 +120,10 @@ struct s_projectile_definition
 		struct
 		{
 			dword unknown0 : 1;
-			dword unknown1 : 4;
+			dword gravity : 1;
+			dword unknown2 : 1;
+			dword unknown3 : 1;
+			dword unknown4 : 1;
 			dword drifts : 1;
 			dword unknown6 : 1;
 			dword unknown7 : 1;
@@ -448,11 +454,10 @@ void function_f86f0(s_projectile_target const *target, point3f *point)
 {
 	long object_index = target->object_index;
 	s_projectile *object = PROJECTILE_GET(object_index);
+	s_object_marker marker;
 
 	if (target->node_index == NONE)
 	{
-		s_object_marker marker;
-
 		function_b8d30(object_index, 0x40000bd, &marker, 1, false);
 		*point = marker.matrix.position;
 		return;
@@ -467,8 +472,6 @@ void function_f86f0(s_projectile_target const *target, point3f *point)
 		*point = markers[0].matrix.position;
 		return;
 	}
-
-	s_object_marker marker;
 
 	function_b8d30(object_index, 0x40000bd, &marker, 1, false);
 	*point = marker.matrix.position;
@@ -550,13 +553,15 @@ s_projectile_material_response g_547660;
 s_projectile_material_response *__stdcall projectile_get_material_response(s_projectile_definition const *definition,
 	short material_index)
 {
+	short const *reference = &material_index;
 	long response_count = definition->material_response_count;
+	byte *materials = (byte *)g_4e034c;
 	s_projectile_material_response *result = NULL;
 
 	while (material_index != NONE && material_index >= 0 &&
-		material_index < *(long *)((byte *)g_4e034c + 0x150))
+		material_index < *(long *)(materials + 0x150))
 	{
-		byte *material = *(byte **)((byte *)g_4e034c + 0x154) + material_index * 0xb4;
+		byte *material = *(byte **)(materials + 0x154) + material_index * 0xb4;
 
 		if (!material)
 			break;
@@ -609,18 +614,19 @@ PRIVATE inline void projectile_effect_parameters_initialize(s_effect_parameters 
 	parameters->tag_index = NONE;
 	parameters->unknown18 = NONE;
 	parameters->object_index = NONE;
+	parameters->unknown34 = 0;
+	parameters->unknown38 = 0;
+	parameters->unknown3c = 0;
 	parameters->owner.unknown4 = NONE;
 	parameters->owner.unknown0 = NONE;
 	parameters->owner.unknown8 = NONE;
-	parameters->unknown34 = 0;
-	parameters->unknown38 = 0;
 	parameters->scale_a = 1.0f;
 	parameters->scale_b = 1.0f;
-	parameters->unknown3c = 0;
 	parameters->unknown30 = 0;
 	parameters->color_a = 0xff808080;
 	parameters->color_b = 0xff808080;
 	parameters->source = 0;
+	parameters->flags = 0;
 }
 
 /* pushes a projectile, and spins it at random by the push's strength */
@@ -652,19 +658,17 @@ void function_fa820(long projectile_index, vector3f const *impulse)
 void function_fcdd0(long definition_index, point3f const *point, vector3f const *forward)
 {
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(definition_index);
-	long sound_index = *(long *)((byte *)definition + 0x124);
-
-	if (sound_index != NONE)
+	if (*(long *)((byte *)definition + 0x124) != NONE)
 	{
-		s_location location = { 0 };
 		s_sound_position position = { 0 };
+		s_location location = { 0 };
 
 		function_11bed0(&location, point);
 		position.position = *point;
 		position.compressed_forward = vector3d_compress(forward);
 		position.velocity = *g_4687a4;
 		position.location = location;
-		function_1895f0(&position, 1.0f, sound_index);
+		function_1895f0(&position, 1.0f, *(long *)((byte *)definition + 0x124));
 	}
 }
 
@@ -679,10 +683,10 @@ void function_fcbc0(point3f const *point, vector3f const *normal, long definitio
 	s_effect_parameters parameters;
 	long effect_index;
 
-	markers[0].position = *point;
-	markers[1].position = *point;
-	markers[2].position = *point;
 	markers[3].position = *point;
+	markers[2].position = *point;
+	markers[1].position = *point;
+	markers[0].position = *point;
 	markers[0].forward = *normal;
 	markers[1].forward = *g_4687bc;
 	markers[2].forward = *g_4687b0;
@@ -702,8 +706,9 @@ void function_fcbc0(point3f const *point, vector3f const *normal, long definitio
 
 	projectile_effect_parameters_initialize(&parameters);
 	parameters.tag_index = effect_index;
-	parameters.markers = markers;
 	parameters.marker_count = 4;
+	parameters.markers = markers;
+	parameters.flags |= 4;
 	if (owner)
 		parameters.owner = *owner;
 	effect_new_from_parameters(&parameters);
@@ -783,7 +788,7 @@ void function_fd560(long projectile_index, long object_index, long node_index, p
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
 
-	if (object_index != NONE && (definition->flags & 8))
+	if (object_index != NONE && TEST_FIELD_BIT(definition->flag_bits.unknown3))
 	{
 		short attached_count = 0;
 
@@ -791,7 +796,7 @@ void function_fd560(long projectile_index, long object_index, long node_index, p
 		{
 			s_projectile *child = PROJECTILE_GET(child_index);
 
-			if (child->tag_index == projectile->tag_index && !((*(dword *)&child->flags >> 6) & 1))
+			if (child->tag_index == projectile->tag_index && !TEST_FIELD_BIT(child->flags.unknown6))
 			{
 				child->unknown160 = 0.0f;
 				child->unknown158 = 0.0f;
@@ -825,9 +830,9 @@ void function_fd560(long projectile_index, long object_index, long node_index, p
 
 	real seconds = 0.0f;
 
-	if ((*(dword *)&projectile->flags >> 10) & 1)
+	if (TEST_FIELD_BIT(projectile->flags.unknown10))
 		seconds = *(real *)((byte *)definition + 0x150);
-	else if (definition->flags & 4)
+	else if (TEST_FIELD_BIT(definition->flag_bits.unknown2))
 		seconds = *(real *)((byte *)definition + 0xd8);
 
 	real ticks = g_510c54->field_2_3 * seconds;
@@ -963,13 +968,18 @@ bool function_fa6a0(long definition_index, real const *speed_override, point3f c
 	real speed;
 	bool result;
 
-	if (speed_override)
-		speed = *speed_override;
-	else
-		speed = definition->unknown17c *
-			(TEST_FIELD_BIT(definition->flag_bits.difficulty_scaled) ? projectile_difficulty_scale() : 1.0f);
+	if (!speed_override)
+	{
+		real scale = TEST_FIELD_BIT(definition->flag_bits.difficulty_scaled) ? projectile_difficulty_scale() : 1.0f;
 
-	if ((definition->flags & 2) && definition->gravity_scale > 0.0f)
+		speed = definition->unknown17c * scale;
+	}
+	else
+	{
+		speed = *speed_override;
+	}
+
+	if (TEST_FIELD_BIT(definition->flag_bits.gravity) && definition->gravity_scale > 0.0f)
 	{
 		result = function_fa1a0(speed, definition->gravity_scale, origin, target, unknown2, unknown3, unknown4,
 			unknown5, direction, speed_out, time, distance, NULL, NULL);
@@ -1019,13 +1029,12 @@ bool function_fc030(long projectile_index, point3f const *point, s_collision_res
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
 	point3f *origin = (point3f *)((byte *)projectile + 0x64);
-	long ignore_object_index = *(long *)((byte *)projectile + 0x140);
 	vector3f vector;
 
 	vector.i = point->x - origin->x;
 	vector.j = point->y - origin->y;
 	vector.k = point->z - origin->z;
-	if (function_1697c0(0x2480000f, origin, &vector, ignore_object_index, projectile_index, collision))
+	if (function_1697c0(0x2480000f, origin, &vector, *(long *)((byte *)projectile + 0x140), projectile_index, collision))
 		return true;
 
 	real radius = *(real *)((byte *)definition + 0xc8);
@@ -1054,7 +1063,7 @@ bool function_fc030(long projectile_index, point3f const *point, s_collision_res
 		offset_vector.i = side.i * radius + point->x - start.x;
 		offset_vector.j = side.j * radius + point->y - start.y;
 		offset_vector.k = side.k * radius + point->z - start.z;
-		if (function_1697c0(0x4800008, &start, &offset_vector, ignore_object_index, NONE, collision))
+		if (function_1697c0(0x4800008, &start, &offset_vector, *(long *)((byte *)projectile + 0x140), NONE, collision))
 			return true;
 
 		start.x = (0.0f - radius) * side.i + origin->x;
@@ -1063,7 +1072,7 @@ bool function_fc030(long projectile_index, point3f const *point, s_collision_res
 		offset_vector.i = (0.0f - radius) * side.i + point->x - start.x;
 		offset_vector.j = side.j * (0.0f - radius) + point->y - start.y;
 		offset_vector.k = side.k * (0.0f - radius) + point->z - start.z;
-		if (function_1697c0(0x4800008, &start, &offset_vector, ignore_object_index, NONE, collision))
+		if (function_1697c0(0x4800008, &start, &offset_vector, *(long *)((byte *)projectile + 0x140), NONE, collision))
 			return true;
 	}
 	return false;
@@ -1080,9 +1089,9 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 	s_effect_owner const *owner, long index, vector3f const *normal)
 {
 	byte *effects = g_4e3b44[effects_index & 0xffff].bytes;
-	s_location location;
 	long sounds[3];
 	long effect_indices[3];
+	s_location location;
 	long i;
 
 	function_11bed0(&location, point);
@@ -1149,8 +1158,6 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 	long sounds[3];
 	long effect_indices[3];
 	s_location location;
-	s_effect_marker markers[6];
-	s_effect_parameters parameters;
 	long i;
 
 	effect_indices[0] = NONE;
@@ -1160,40 +1167,45 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
 	sounds[1] = NONE;
 	sounds[2] = NONE;
 	function_11bed0(&location, point);
-	function_1763a0(point, direction, markers, normal);
-	projectile_effect_parameters_initialize(&parameters);
-	if (attached)
 	{
-		parameters.flags = 1;
-		parameters.object_index = object_index;
-		parameters.unknown18 = node_index;
-	}
-	parameters.scale_a = scale_a;
-	parameters.markers = markers;
-	parameters.scale_b = scale_b;
-	parameters.marker_count = 6;
-	function_fd740(point, definition, 0xf, index, &effect_indices[0], &sounds[0], &effect_indices[1], &sounds[1],
-		&effect_indices[2], &sounds[2]);
-	if (alternate && *(long *)(definition + 0xec) != NONE)
-	{
-		parameters.flags |= 4;
-		parameters.tag_index = *(long *)(definition + 0xec);
-		effect_new_from_parameters(&parameters);
-		return;
-	}
-	for (i = 0; i < 3; i++)
-	{
-		if (effect_indices[i] != NONE)
+		s_effect_marker markers[6];
+		s_effect_parameters parameters;
+
+		function_1763a0(point, direction, markers, normal);
+		projectile_effect_parameters_initialize(&parameters);
+		if (attached)
 		{
-			parameters.tag_index = effect_indices[i];
+			parameters.flags = 1;
+			parameters.object_index = object_index;
+			parameters.unknown18 = node_index;
+		}
+		parameters.scale_a = scale_a;
+		parameters.markers = markers;
+		parameters.scale_b = scale_b;
+		parameters.marker_count = 6;
+		function_fd740(point, definition, 0xf, index, &effect_indices[0], &sounds[0], &effect_indices[1], &sounds[1],
+			&effect_indices[2], &sounds[2]);
+		if (alternate && *(long *)(definition + 0xec) != NONE)
+		{
+			parameters.flags |= 4;
+			parameters.tag_index = *(long *)(definition + 0xec);
+			effect_new_from_parameters(&parameters);
+			return;
+		}
+		for (i = 0; i < 3; i++)
+		{
+			if (effect_indices[i] != NONE)
+			{
+				parameters.tag_index = effect_indices[i];
+				effect_new_from_parameters(&parameters);
+			}
+		}
+		parameters.flags |= 4;
+		if (*(long *)(definition + 0x144) != NONE)
+		{
+			parameters.tag_index = *(long *)(definition + 0x144);
 			effect_new_from_parameters(&parameters);
 		}
-	}
-	parameters.flags |= 4;
-	if (*(long *)(definition + 0x144) != NONE)
-	{
-		parameters.tag_index = *(long *)(definition + 0x144);
-		effect_new_from_parameters(&parameters);
 	}
 	for (i = 0; i < 3; i++)
 	{
@@ -1229,7 +1241,7 @@ struct s_match_globals;
 extern s_match_globals *g_4e0348;
 
 /* a random real between two bounds */
-PRIVATE inline real projectile_random_range(real lower, real upper)
+PRIVATE __forceinline real projectile_random_range(real lower, real upper)
 {
 	real random = function_x82e52f(&g_4e7408->unknown0, __FILE__, __LINE__);
 
@@ -1433,7 +1445,7 @@ void function_f87f0(long projectile_index, point3f *aim_point)
 		}
 	}
 
-	if ((definition->flags & 0x200) && distance > 0.0001f)
+	if (TEST_FIELD_BIT(definition->flag_bits.unknown9) && distance > 0.0001f)
 	{
 		vector3f const *up = g_4687b0;
 		vector3f axis;
@@ -1460,7 +1472,7 @@ void function_f87f0(long projectile_index, point3f *aim_point)
 		return;
 	}
 
-	if (!(definition->flags & 0x80))
+	if (!TEST_FIELD_BIT(definition->flag_bits.unknown7))
 	{
 		vector3f offset;
 
@@ -1537,9 +1549,9 @@ struct s_type_1e6529
 };
 
 void function_d6660(s_type_1e6529 *data, long definition_index);
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14);
-long function_d6c80(s_type_1e6529 *data, long ignore_object_index);
+long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index);
 
 /* the down probe for a surface under a detonation (0x45326c) */
 vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
@@ -1552,7 +1564,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 
-	if ((*(dword *)&projectile->flags >> 12) & 1)
+	if (TEST_FIELD_BIT((*(dword *)&projectile->flags >> 12) & 1))
 		return;
 
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
@@ -1564,18 +1576,18 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	long parent_index = *(long *)((byte *)projectile + 0x14);
 
 	*(dword *)&projectile->flags |= 0x1000;
-	if ((definition->flags & 8) && !((*(dword *)&projectile->flags >> 6) & 1) && parent_index != NONE)
+	if ((definition->flags & 8) && !(TEST_FIELD_BIT((*(dword *)&projectile->flags >> 6) & 1)) && parent_index != NONE)
 	{
 		byte *parent = (byte *)PROJECTILE_GET(parent_index);
 		long stuck_count = 0;
 
-		if (!((*(byte *)(parent + 0x10a) >> 2) & 1))
+		if (!(TEST_FIELD_BIT((*(byte *)(parent + 0x10a) >> 2) & 1)))
 		{
 			for (long child_index = *(long *)(parent + 0x10); child_index != NONE; )
 			{
 				s_projectile *child = PROJECTILE_GET(child_index);
 
-				if (child->tag_index == projectile->tag_index && !((*(dword *)&child->flags >> 6) & 1))
+				if (child->tag_index == projectile->tag_index && !(TEST_FIELD_BIT((*(dword *)&child->flags >> 6) & 1)))
 					stuck_count++;
 				child_index = *(long *)((byte *)child + 0xc);
 			}
@@ -1592,7 +1604,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			{
 				s_projectile *child = PROJECTILE_GET(child_index);
 
-				if (child->tag_index == projectile->tag_index && !((*(dword *)&child->flags >> 6) & 1))
+				if (child->tag_index == projectile->tag_index && !(TEST_FIELD_BIT((*(dword *)&child->flags >> 6) & 1)))
 				{
 					if ((short)stuck_count <= *(short *)(definition_bytes + 0xe6))
 					{
@@ -1660,7 +1672,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	{
 		long damage_index;
 
-		if ((*(dword *)&projectile->flags >> 10) & 1)
+		if (TEST_FIELD_BIT((*(dword *)&projectile->flags >> 10) & 1))
 			damage_index = *(long *)(definition_bytes + 0x160);
 		else if (attached)
 			damage_index = *(long *)(definition_bytes + 0x130);
@@ -1731,7 +1743,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	owner.unknown4 = *(long *)((byte *)current + 0xc8);
 	owner.unknown0 = *(long *)((byte *)current + 0xc4);
 	owner.unknown8 = *(short *)((byte *)current + 0xc2);
-	if (material_index != NONE && !((*(dword *)&projectile->flags >> 9) & 1))
+	if (material_index != NONE && !(TEST_FIELD_BIT((*(dword *)&projectile->flags >> 9) & 1)))
 	{
 		*(dword *)&projectile->flags |= 0x200;
 		effect_flags = 4;
@@ -1754,7 +1766,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 
 		if (attached)
 			area_index = *(long *)(definition_bytes + 0x11c);
-		else if ((*(dword *)&projectile->flags >> 10) & 1)
+		else if (TEST_FIELD_BIT((*(dword *)&projectile->flags >> 10) & 1))
 			area_index = *(long *)(definition_bytes + 0x158);
 		else
 			area_index = *(long *)(definition_bytes + 0x104);
@@ -2190,7 +2202,7 @@ void function_a85c0(long projectile_index, s_collision_result_1697c0 const *coll
 
 /* the effect parameters of a projectile's impact effects: its owner, and
    the object it hit */
-PRIVATE inline void projectile_impact_effect_parameters(s_effect_parameters *parameters, long projectile_index,
+PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_parameters *parameters, long projectile_index,
 	long tag_index, s_collision_result_1697c0 const *collision)
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
@@ -2239,7 +2251,7 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 
 	real damage_scale = projectile->unknown188;
 
-	if ((definition->flags >> 4) & 1)
+	if (TEST_FIELD_BIT((definition->flags >> 4) & 1))
 	{
 		vector3f offset;
 
@@ -2253,7 +2265,7 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 	long mode = g_4e6948->mode;
 
 	if (mode >= 4 && mode <= 5 && collision_count == 1 && collision->type == 4 &&
-		TEST_FIELD_BIT(definition->flag_bits.drifts) && !((*(dword *)&projectile->flags >> 13) & 1) &&
+		TEST_FIELD_BIT(definition->flag_bits.drifts) && !(TEST_FIELD_BIT((*(dword *)&projectile->flags >> 13) & 1)) &&
 		collision->object_index != NONE && PROJECTILE_GET(collision->object_index)->unknownd4 != NONE)
 	{
 		*(long *)((byte *)projectile + 0x150) = collision->object_index;
@@ -2274,7 +2286,7 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 				byte *object = (byte *)PROJECTILE_GET(object_index);
 				real vitality = *(real *)(object + 0xf0);
 
-				if (vitality > 0.0f && !((object[0x10a] >> 2) & 1) && *(long *)((byte *)projectile + 0xc8) != object_index)
+				if (vitality > 0.0f && !(TEST_FIELD_BIT((object[0x10a] >> 2) & 1)) && *(long *)((byte *)projectile + 0xc8) != object_index)
 				{
 					long model_index = *(long *)(g_4e3b44[*(long *)object & 0xffff].bytes + 0x38);
 

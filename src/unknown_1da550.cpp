@@ -134,8 +134,8 @@ bool function_1da550(long object_index, long contact_index, s_collision_damage_e
 
 
 struct s_damage_owner;
-void object_get_damage_owner(long object_index, s_damage_owner *owner);
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_index, vector3f const *direction);
+void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner);
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_index, vector3f const *direction);
 long function_1dac00(long object_index);
 bool havok_component_unknown10_recent(s_havok_component const *component);
 void havok_component_unknown10_expire(s_havok_component *component);

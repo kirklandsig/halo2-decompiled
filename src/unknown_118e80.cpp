@@ -407,8 +407,8 @@ struct s_type_1e6529
 };
 
 void function_d6660(s_type_1e6529 *data, long definition_index);
-void object_get_damage_owner(long object_index, s_damage_owner *owner);
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index, vector3f const *unknown14);
+void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner);
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index, vector3f const *unknown14);
 
 struct s_parent_effect_definition_11a140
 {
@@ -781,8 +781,8 @@ bool function_1df560(short arg_0, short arg_1);
 bool function_1696d0(long arg_0, s_biped_ground_collision *arg_1, long arg_2,
     point3f const *arg_3, vector3f const *arg_4, long arg_5, long arg_6);
 void function_d6660(s_type_1e6529 *arg_0, long arg_1);
-void object_get_damage_owner(long arg_0, s_damage_owner *arg_1);
-void function_d7b80(s_type_1e6529 *arg_0, long arg_1, short arg_2, short arg_3, short arg_4, vector3f const *arg_5);
+void __stdcall object_get_damage_owner(long arg_0, s_damage_owner *arg_1);
+void __stdcall function_d7b80(s_type_1e6529 *arg_0, long arg_1, short arg_2, short arg_3, short arg_4, vector3f const *arg_5);
 void __stdcall function_d6bc0(long arg_0);
 void function_b75a0(long arg_0, point3f const *arg_1, vector3f const *arg_2, vector3f const *arg_3,
     s_location const *arg_4, bool arg_5);

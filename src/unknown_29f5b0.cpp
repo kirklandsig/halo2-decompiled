@@ -959,8 +959,8 @@ struct s_damage_data_view
 
 struct s_type_1e6529;
 void function_d6660(s_type_1e6529 *data, long definition_index); /* damage.cpp */
-long function_d6c80(s_type_1e6529 *data, long ignore_object_index); /* damage.cpp */
-void function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index, vector3f const *unknown14); /* damage.cpp */
+long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index); /* damage.cpp */
+void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index, vector3f const *unknown14); /* damage.cpp */
 
 /* causes damage at a cutscene flag */
 // @retail 0x2a06a0
