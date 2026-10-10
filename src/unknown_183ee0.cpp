@@ -252,7 +252,10 @@ PRIVATE inline long slot_identifier(long entry, long owner)
 	return result;
 }
 
-PRIVATE inline void slot_assign(long owner, long entry, long index, bool *used)
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
+
+__forceinline void slot_assign(long owner, long entry, long index, bool *used)
 {
 	long slot = index / 32;
 	if (owner == NONE) g_4ea960[entry] = (byte)index;
@@ -262,9 +265,14 @@ PRIVATE inline void slot_assign(long owner, long entry, long index, bool *used)
 	if (!used[slot])
 	{
 		function_a8e90(slot);
-		++g_4ea95c;
+		long count = g_4ea95c;
+		_ReadWriteBarrier();
+		s_game_options_view *options = g_4e6948;
+		g_4ea95c = count + 1;
+		_ReadWriteBarrier();
+		char mode = options->mode;
 		used[slot] = true;
-		if (g_4e6948->mode == 4 && slot >= 0 && slot < 8)
+		if (mode == 4 && slot >= 0 && slot < 8)
 			g_4eca60[slot] = slot;
 	}
 }

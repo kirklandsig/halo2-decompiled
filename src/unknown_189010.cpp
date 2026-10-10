@@ -77,8 +77,10 @@ void function_1892a0(s_sound_source_description *description, point3f const *pos
 {
 	description->position = *position;
 	description->direction = *direction;
-	description->value0 = value == NONE ? 0 : (char)value;
+	byte local_0 = value == NONE;
+	--local_0;
 	description->value24 = NONE;
+	description->value0 = (char)(local_0 & value);
 
 	if (object_index != NONE && function_189010(object_index, tag_index))
 	{
@@ -532,75 +534,86 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
-	s_local_camera *camera = local_camera_get(local_player_index);
-
-	if (!camera->active)
+	bool local_1 = false;
 	{
-		return false;
-	}
+		s_local_camera *camera = &((s_local_cameras *)g_4e6380)->cameras[local_player_index];
 
-	if ((1 << function_155760(local_player_index)) & 3)
-	{
-		long player_unit_index = local_player_index != NONE ? g_4e8c20->entries[local_player_index] : NONE;
-		if (unit_index == player_unit_index)
+		if (!camera->active)
 		{
-			return false;
+			goto local_2;
 		}
-	}
 
-	real maximum_distance = function_218d30(tag_index);
-	vector3f to_camera;
-	vector3f perpendicular;
-	vector3f projection;
-	real length_squared;
-
-	vector3d_from_points3d(origin, &camera->position, &to_camera);
-	length_squared = length_sq3f(direction);
-	if (length_squared != 0.0f)
-	{
-		real local_0 = direction->k * to_camera.k;
-		local_0 += direction->i * to_camera.i;
-		local_0 += direction->j * to_camera.j;
-		real t = local_0 / length_squared;
-
-		projection.i = direction->i * t;
-		projection.j = direction->j * t;
-		projection.k = direction->k * t;
-		perpendicular.i = to_camera.i - projection.i;
-		perpendicular.j = to_camera.j - projection.j;
-		perpendicular.k = to_camera.k - projection.k;
-	}
-	else
-	{
-		perpendicular = to_camera;
-		projection.i = 0.0f;
-		projection.j = 0.0f;
-		projection.k = 0.0f;
-	}
-
-	real along = dot3f(direction, &projection);
-	if (along >= 0.0f && length_sq3f(direction) > along)
-	{
-		real distance_squared = length_sq3f(&perpendicular);
-
-		if (maximum_distance * maximum_distance > distance_squared)
+		if ((1 << function_155760(local_player_index)) & 3)
 		{
-			s_sound_position position;
-			vector3f forward = *direction;
-			double distance = -sqrt(distance_squared);
-
-			position.position.x = (real)(perpendicular.i * distance + camera->position.x);
-			position.position.y = (real)(perpendicular.j * distance + camera->position.y);
-			position.position.z = (real)(perpendicular.k * distance + camera->position.z);
-			function_30bf0(&forward);
-			position.compressed_forward = vector3d_compress(&forward);
-			position.velocity = *g_4687a4;
-			position.location = *location;
-			function_1895f0(&position, 1.0f, tag_index);
-			return true;
+			long player_unit_index = NONE;
+			if (local_player_index != NONE)
+				player_unit_index = g_4e8c20->entries[local_player_index];
+			if (unit_index == player_unit_index)
+			{
+				goto local_2;
+			}
 		}
+
+		real maximum_distance = function_218d30(tag_index);
+		vector3f to_camera;
+		vector3f perpendicular;
+		vector3f projection;
+		real length_squared;
+
+		to_camera.i = camera->position.x - origin->x;
+		to_camera.j = camera->position.y - origin->y;
+		to_camera.k = camera->position.z - origin->z;
+		length_squared = (direction->j * direction->j + direction->k * direction->k + direction->i * direction->i);
+		if (length_squared != 0.0f)
+		{
+			real local_0 = direction->k * to_camera.k;
+			local_0 += direction->i * to_camera.i;
+			local_0 += direction->j * to_camera.j;
+			real t = local_0 / length_squared;
+
+			projection.i = direction->i * t;
+			projection.j = direction->j * t;
+			projection.k = direction->k * t;
+			perpendicular.i = to_camera.i - projection.i;
+			perpendicular.j = to_camera.j - projection.j;
+			perpendicular.k = to_camera.k - projection.k;
+		}
+		else
+		{
+			perpendicular = to_camera;
+			projection.i = 0.0f;
+			projection.j = 0.0f;
+			projection.k = 0.0f;
+		}
+
+		real along = (direction->k * projection.k + direction->j * projection.j + direction->i * projection.i);
+		if (along >= 0.0f && (direction->j * direction->j + direction->k * direction->k + direction->i * direction->i) > along)
+		{
+			real distance_squared = (perpendicular.k * perpendicular.k + perpendicular.j * perpendicular.j + perpendicular.i * perpendicular.i);
+
+			if (maximum_distance * maximum_distance > distance_squared)
+			{
+				s_sound_position position;
+				vector3f forward = *direction;
+				double distance = -sqrt((double)distance_squared);
+
+				position.position.x = (real)(perpendicular.i * distance + camera->position.x);
+				position.position.y = (real)(perpendicular.j * distance + camera->position.y);
+				position.position.z = (real)(perpendicular.k * distance + camera->position.z);
+				function_30bf0(&forward);
+				position.compressed_forward = vector3d_compress(&forward);
+				position.velocity = *g_4687a4;
+				position.location = *location;
+				function_1895f0(&position, 1.0f, tag_index);
+				local_1 = true;
+				goto local_2;
+			}
+		}
+		goto local_2;
+
 	}
-	return false;
+local_2:
+	return local_1;
 }
 #pragma inline_depth(255)
 

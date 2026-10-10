@@ -198,7 +198,9 @@ void __stdcall function_1821d0(long component_index, real scale,
 	s_query_batch_result *results, long count)
 {
 	s_query_component *component = &((s_query_component *)g_51e9b8->data)[component_index & 0xffff];
-	c_query_shape *shape = TEST_FIELD_BIT(component->flags.has_shape) ? component->shape : 0;
+	c_query_shape *shape = NULL;
+	if (TEST_FIELD_BIT(component->flags.has_shape))
+		shape = component->shape;
 	for (long i = 0; i < count; i++)
 	{
 		results[i].found = false;
@@ -390,11 +392,13 @@ bool __stdcall function_183670(long component_a, long component_b, point3f *a, p
 					collector.entries.count = 0;
 					s_distance_query_body *body_a = first->bodies[i].body;
 					s_distance_query_body *body_b = second->bodies[j].body;
-					c_distance_query_shape *body_a_shape = body_a->shape;
-					c_distance_query_shape *body_b_shape = body_b->shape;
+					c_distance_query_shape **local_0 = &body_a->shape;
+					c_distance_query_shape **local_1 = &body_b->shape;
+					c_distance_query_shape *body_a_shape = *local_0;
+					c_distance_query_shape *body_b_shape = *local_1;
 					long type_b = body_b_shape->shape_kind();
 					long type_a = body_a_shape->shape_kind();
-					context.dispatch->query[type_a][type_b](&body_a->shape, &body_b->shape, &context, &collector);
+					context.dispatch->query[type_a][type_b](local_0, local_1, &context, &collector);
 					s_distance_query_contact *contacts = (s_distance_query_contact *)collector.entries.data;
 					for (long k = 0; k < collector.entries.count; k++)
 					{
