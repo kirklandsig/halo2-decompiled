@@ -35,5 +35,15 @@ An independently written local control-flow model agreed with retail
 execution for 2,048 cases and 33,962 callback invocations, comparing callback
 order, arguments, persistent memory, and the return value. Cases included
 null callbacks, signed displacements, bit mutations, object/block replacement,
-and replacement of later callback definitions. This model test neither
-compiles the proposed C++ nor proves a byte match.
+and replacement of later callback definitions. The same cases also passed
+when executing the XDK-compiled function against retail in separate emulator
+memory backings, using the linked map to resolve the compiled globals.
+Neither behavioral comparison establishes a byte match.
+
+The current compiled function is 137 bytes, like retail. The checker finds
+three instruction differences: its bitmap accesses encode `[ebx + esi + 4]`
+where retail encodes `[esi + ebx + 4]`. Both address the same word. A full
+check against the baseline at `ecd4d2f3` retained all 7,477 existing matches,
+with none gained or lost. A bounded permutation search tried 15 variants
+without improving the three-instruction difference. The function remains
+unmatched.
