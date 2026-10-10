@@ -3,6 +3,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "unknown_123b30.h"
+#include "crc.h"
 // @flags /O2 /arch:SSE /Gr
 
 /* Light pool queries and the shapes copied from definitions and placements. */
@@ -1195,6 +1197,7 @@ void __stdcall function_c0c80(long light_index);
 long __stdcall function_c0520(long tag_index, long placement_index, bool force,
     s_light_placement_ab *placement)
 {
+    long result_value = 0;
     long const *placement_index_reference = &placement_index;
     bool const *force_reference = &force;
     s_light_placement_ab *const *placement_reference = &placement;
@@ -1239,14 +1242,14 @@ long __stdcall function_c0520(long tag_index, long placement_index, bool force,
             direction.j = *(real const *)(source + 0x50) - ((point3f const *)(source + 8))->y;
             direction.k = *(real const *)(source + 0x54) - ((point3f const *)(source + 8))->z;
             real length = function_30bf0(&direction);
-            if (length != 0.0f)
+            if (!(length != 0.0f))
+                direction = matrix.up;
+            else
             {
                 if ((short)shape.kind != 0 && forward->k * direction.k +
                     forward->j * direction.j + forward->i * direction.i < 0.5f)
                     direction = matrix.up;
             }
-            else
-                direction = matrix.up;
             real distance;
             if ((short)shape.kind != 0)
                 distance = (forward->k * direction.k + forward->j * direction.j +
@@ -1267,7 +1270,10 @@ long __stdcall function_c0520(long tag_index, long placement_index, bool force,
             *(long *)(light + 0x10c) = NONE;
         }
     }
-    return result;
+    { result_value = result; goto return_exit; }
+
+return_exit:
+    return result_value;
 }
 
 struct s_light_palette_setup_ab
@@ -1305,4 +1311,223 @@ void function_c09c0(long mode)
         }
         scenario = (s_light_setup_scenario_ab *)g_4e0350;
     }
+}
+
+
+bool __stdcall function_bab40(long object_index, long name, real *value);
+bool function_bad50(long object_index, long index, point3f *out);
+color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t,
+    color3f const *tint, color3f *result);
+long function_baf80(long object_index);
+bool object_or_parent_hidden(long object_index);
+bool function_b9d20(long object_index);
+struct s_object_list;
+extern s_object_list *g_4de2f4;
+
+PRIVATE __forceinline real clamp_light(real x, real low, real high)
+{
+    if (low > x) return low;
+    if (x > high) return high;
+    return x;
+}
+
+// @retail 0xc0c80
+void __stdcall function_c0c80(long light_index)
+{
+    struct s_light_dynamic
+    {
+        short salt;
+        word flags;
+        long tag_index;
+        byte unknown08[0x14 - 8];
+        long start_time;
+        byte unknown18[0x4c - 0x18];
+        long owner;
+        long name;
+        short function_index, colour_index;
+        long parent;
+        byte unknown5c[0xc4 - 0x5c];
+        real radius, fade, scale, fraction;
+        color3f colour, pair_colour;
+        real intensity;
+        real pair[2];
+        byte unknownf8[0x110 - 0xf8];
+    };
+    long const *light_reference = &light_index;
+    s_light_dynamic *light = &((s_light_dynamic *)g_4e030c->data)[light_index & 0xffff];
+    byte *definition = g_4e3b44[light->tag_index & 0xffff].bytes;
+    long object_index = NONE;
+    byte *object = NULL;
+    if (light->owner != NONE)
+    {
+        object_index = light->owner;
+        object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+    }
+    else if (light->parent != NONE)
+    {
+        object_index = light->parent;
+        object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+    }
+    if (light->function_index != NONE)
+    {
+        struct { color3f tint; color4f second, first, pair_second, pair_first; } colours;
+        color3f &tint = colours.tint;
+        color4f &first = colours.first;
+        color4f &second = colours.second;
+        color4f &pair_first = colours.pair_first;
+        color4f &pair_second = colours.pair_second;
+        tint = *(color3f *)g_468710;
+        *(color3f *)&first.red = *(color3f *)(definition + 0x58);
+        first.alpha = 1.0f;
+        *(color3f *)&second.red = *(color3f *)(definition + 0x64);
+        second.alpha = 1.0f;
+        *(color3f *)&pair_first.red = *(color3f *)(definition + 0x40);
+        pair_first.alpha = 1.0f;
+        *(color3f *)&pair_second.red = *(color3f *)(definition + 0x4c);
+        pair_second.alpha = 1.0f;
+        function_bab40(object_index, light->name, &light->fraction);
+        function_bad50(object_index, light->colour_index, (point3f *)&tint);
+        function_131d60(&first, &second, *(dword *)(definition + 0x34),
+            light->fraction, &tint, &light->colour);
+        function_131d60(&pair_first, &pair_second, *(dword *)(definition + 0x34),
+            light->fraction, &tint, &light->pair_colour);
+        light->intensity = (1.0f - light->fraction) *
+            *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * light->fraction;
+    }
+    else if (((byte *)&light->flags)[0] & 0x10)
+    {
+        real elapsed = (real)(g_510c54->game_time - light->start_time);
+        real duration = (real)g_510c54->field_2_3 * *(real *)(definition + 0xb0);
+        real fraction = function_17ca10(elapsed / duration, *(short *)(definition + 0xb6));
+        light->fraction = (1.0f - fraction) * light->scale;
+        function_131c20((color3f *)(definition + 0x58), (color3f *)(definition + 0x64),
+            *(dword *)(definition + 0x34), light->fraction, &light->colour);
+        function_131c20((color3f *)(definition + 0x40), (color3f *)(definition + 0x4c),
+            *(dword *)(definition + 0x34), light->fraction, &light->pair_colour);
+        light->intensity = (1.0f - light->fraction) *
+            *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * light->fraction;
+    }
+    else
+    {
+        light->fraction = light->scale;
+        *&light->colour = *(color3f *)(definition + 0x64);
+        *&light->pair_colour = *(color3f *)(definition + 0x4c);
+        light->intensity = *(real *)(definition + 0x74);
+    }
+    function_c0b00((s_light_animation_ab *)(definition + 0xc0), light_index,
+        light->fraction, &light->intensity, (vector3f *)&light->colour, light->pair);
+    light->fade = 0.0f;
+    if (object)
+    {
+        byte *parent = *(byte **)(g_4e0300->data + (function_baf80(object_index) & 0xffff) * 12 + 8);
+        if (((1 << parent[0xaa]) & 3) && *(real *)(parent + 0x2b0) > 0.0f &&
+            (signed char)g_4e3b44[light->tag_index & 0xffff].bytes[0] >= 0)
+        {
+            light->fade = clamp_light(*(real *)(parent + 0x2b0), 0.0f, 1.0f);
+            real scale = 1.0f - light->fade;
+            light->colour.red *= scale;
+            light->colour.green *= scale;
+            light->colour.blue *= scale;
+            light->pair_colour.red *= scale;
+            light->pair_colour.green *= scale;
+            light->pair_colour.blue *= scale;
+        }
+    }
+    real red = clamp_light(light->colour.red, 0.0f, 1.0f);
+    light->colour.red = red;
+    real green = clamp_light(light->colour.green, 0.0f, 1.0f);
+    light->colour.green = green;
+    real blue = clamp_light(light->colour.blue, 0.0f, 1.0f);
+    light->colour.blue = blue;
+    real pair_red = clamp_light(light->pair_colour.red, 0.0f, 1.0f);
+    light->pair_colour.red = pair_red;
+    real pair_green = clamp_light(light->pair_colour.green, 0.0f, 1.0f);
+    light->pair_colour.green = pair_green;
+    real pair_blue = clamp_light(light->pair_colour.blue, 0.0f, 1.0f);
+    light->pair_colour.blue = pair_blue;
+    light->intensity = clamp_light(light->intensity * 2.0f, 0.0f, 4.0f);
+    light->radius = (1.0f - light->fraction) * *(real *)(definition + 8) +
+        *(real *)(definition + 0xc) * light->fraction;
+    if ((((byte *)&light->flags)[0] & 1) && light->radius > 0.0f &&
+        (red != 0.0f || green != 0.0f || blue != 0.0f ||
+            pair_red != 0.0f || pair_green != 0.0f || pair_blue != 0.0f))
+    {
+        if (!(((byte *)&light->flags)[0] & 2))
+        {
+            light->flags |= 2;
+            if ((object_index == NONE || (!object_or_parent_hidden(object_index) && function_b9d20(object_index))) &&
+                g_4de2f4 && *(byte *)g_4de2f4)
+                function_c2d00(*light_reference);
+        }
+    }
+    else if (((byte *)&light->flags)[0] & 2)
+    {
+        if (((byte *)&light->flags)[0] & 8) function_c3220(light_index);
+        ((byte *)&light->flags)[0] &= ~2;
+    }
+}
+
+
+void function_1cabc0(s_cluster_partition *partition, char const *name, long payload_size);
+
+// @retail 0xbffa0
+void function_bffa0()
+{
+    s_record_pool *lights = data_new_inlined("lights", 0x15e, 0x110, 0, g_510c2c);
+    long size = 12;
+    byte *allocation = game_state_globals.base_address + game_state_globals.cpu_allocation_size;
+    game_state_globals.cpu_allocation_size += size;
+    g_4e030c = lights;
+    dword checksum = game_state_globals.allocation_size_checksum;
+    function_163ba0(&checksum, &size, sizeof(size));
+    game_state_globals.allocation_size_checksum = checksum;
+    g_5107e8 = (s_5107e8 *)allocation;
+    g_5107e8->flag8 = true;
+    if (lights)
+    {
+        s_cluster_partition partition;
+        function_1cabc0(&partition, "light", 0);
+        g_4e0310 = partition.cluster_first_data_references;
+        g_4e0314 = partition.data_references;
+        g_4e0318 = partition.cluster_references;
+    }
+}
+
+
+// @retail 0xc1720
+long __stdcall function_c1720(long object_index, long remove_from_partition, long update)
+{
+    s_record_pool *lights = g_4e030c;
+    s_record_pool_iterator iterator;
+    iterator.data = lights;
+    iterator.datum_index = NONE;
+    iterator.index = NONE;
+    long count = 0;
+    byte *entry;
+    while ((entry = (byte *)data_iterator_next_inlined(&iterator)) != NULL)
+    {
+        if (*(long *)(entry + 0x58) == object_index)
+        {
+            if (remove_from_partition)
+            {
+                byte *light = lights->data + (iterator.datum_index & 0xffff) * 0x110;
+                if (light[2] & 2)
+                {
+                    s_cluster_partition partition =
+                    {
+                        (long *)g_4e0310,
+                        (s_record_pool *)g_4e0314,
+                        (s_record_pool *)g_4e0318
+                    };
+                    function_1cae40(&partition, iterator.datum_index, (long *)(light + 0x10));
+                    light[2] &= ~8;
+                }
+            }
+            if (update)
+                function_c2d00(iterator.datum_index);
+            ++count;
+        }
+    }
+    return count;
 }

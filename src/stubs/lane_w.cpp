@@ -92,10 +92,7 @@ void __cdecl function_2ddbd0(void *data, s_visibility_sphere_query const *query,
 
 
 
-// @stub 0xd4cf0
-void __stdcall function_d4cf0(long object_index, short value)
-{
-}
+
 
 // @stub 0x52d40
 void function_52d40(long bitmap_index, unsigned char *shader, long count, bool mode)

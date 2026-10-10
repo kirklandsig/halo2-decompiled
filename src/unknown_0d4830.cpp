@@ -21,7 +21,7 @@ typedef bool (__stdcall *t_record_fill)(long, void *, long, long, long, void *, 
 typedef void (__stdcall *t_41490_callback)(void *);
 
 long function_15d70(long tag, long stage, long pass, bool first, bool second);
-void function_41490(long tag, short group, short kind, real distance, t_record_fill fill,
+void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
 	dword value, t_41490_callback callback, void *context, point3f const *position);
 
 // @flags /O2 /Gr
@@ -319,3 +319,31 @@ bool __stdcall function_d4bc0(long tag, long context, long pass, long stage,
 	return result;
 }
 
+
+
+// @retail 0xd4cf0
+void __stdcall function_d4cf0(long object_index, short group, dword flags)
+{
+    dword const *flags_reference = &flags;
+    s_widget_object_header *header = (s_widget_object_header *)(g_4e0300->data + (object_index & 0xffff) * 12);
+    s_widget_object *object = (s_widget_object *)header->object;
+    long index = object->widget_head;
+    while (index != NONE)
+    {
+        s_widget *widget = (s_widget *)(g_4e0320->data + (index & 0xffff) * 12);
+        s_widget_type *type = &g_467498[widget->type];
+        if ((group != 2 || (*flags_reference & 0x2000)) &&
+            (group != 1 || (*flags_reference & 0x1000)))
+        {
+            if (type->tag_index)
+            {
+                function_41490(group, type->get_kind(widget->handle), NONE, 640.0f,
+                    (t_record_fill)function_d4bc0, type->tag_index, type->callback,
+                    (void *)widget->handle, (point3f const *)((byte *)object + 0x30));
+            }
+            if (type->draw)
+                type->draw(group, widget->handle);
+        }
+        index = widget->next;
+    }
+}

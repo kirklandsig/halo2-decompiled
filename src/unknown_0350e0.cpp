@@ -1023,7 +1023,7 @@ void function_4b160(long first, s_4b160_entry *entries, long mode, long last)
 	(void)&entries;
 	(void)&mode;
 	long const volatile *last_reference = &last;
-	long begin = first + 1;
+	volatile long begin = first + 1;
 	{
     long i = first;
     if (i <= *last_reference)
@@ -1050,7 +1050,7 @@ void function_4b160(long first, s_4b160_entry *entries, long mode, long last)
             ++i;
         } while (i <= *last_reference);
     }
-}
+    }
 }
 
 real g_509418;
@@ -1197,6 +1197,7 @@ long g_4b9ed4;
 // @retail 0x2dba0
 bool function_2dba0(long tag, vector3f const *direction, long c, long d, long e, point3f const *position, color3f const *color, real alpha, real amount, real scale, bool alternate)
 {
+    bool result_value = 0;
     bool volatile result = false;
     if (g_4b9ed4 != NONE && tag != NONE && alpha > 0.0f)
     {
@@ -1237,7 +1238,10 @@ bool function_2dba0(long tag, vector3f const *direction, long c, long d, long e,
             }
         }
     }
-    return result;
+    { result_value = result; goto return_exit; }
+
+return_exit:
+    return result_value;
 }
 
 extern bool g_4ba019;
@@ -2567,22 +2571,25 @@ struct s_attached_render_entry
     byte unknown0e[10];
 };
 
-void __stdcall function_d4cf0(long object_index, short value);
+void __stdcall function_d4cf0(long object_index, short group, dword flags);
 void __stdcall function_41980(short type, long object_index);
 
 // @retail 0x41c20
-void __stdcall function_41c20(short type, long object_index, short value)
+void __stdcall function_41c20(short type, long object_index, long value)
 {
-    do
+    while (true)
     {
         byte *object = ((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-        function_d4cf0(object_index, value);
+        function_d4cf0(object_index, type, (dword)value);
         function_41980(type, object_index);
         long next = *(long *)(object + 0x10);
         if (next != NONE)
             function_41c20(type, next, value);
-        object_index = *(long *)(object + 0xc);
-    } while (object_index != NONE);
+        long sibling = *(long *)(object + 0xc);
+        if (sibling == NONE)
+            return;
+        object_index = sibling;
+    }
 }
 
 struct s_41c80_objects
@@ -2619,7 +2626,9 @@ void function_41c80(short type, s_41c80_state const *state)
 // @retail 0x41980
 void __stdcall function_41980(short type, long object_index)
 {
-    s_object_marker markers[65];
+    struct s_attachment_scratch_r16 { long count; color3f color; real amount; s_object_marker markers[65]; };
+    s_attachment_scratch_r16 scratch_r16;
+    
     if (type == 0)
     {
         byte *object = (byte *)((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object;
@@ -2630,21 +2639,21 @@ void __stdcall function_41980(short type, long object_index)
             s_attached_render_entry *entry = ((s_attached_render_entry *)*(byte **)(definition + 0x98)) + i;
             if ((entry->type == 0x6c656e73 || entry->type == 0x4d475332 || entry->type == 0x7464746c) && entry->tag != NONE)
             {
-                long count = function_b8d30(object_index, entry->marker, markers, 65, false);
-                real amount = function_be6d0(object_index, i);
-                color3f color = *(color3f const *)g_468710;
+                scratch_r16.count = function_b8d30(object_index, entry->marker, scratch_r16.markers, 65, false);
+                scratch_r16.amount = function_be6d0(object_index, i);
+                scratch_r16.color = *(color3f const *)g_468710;
                 if (entry->color_index)
-                    function_bad50(object_index, entry->color_index, (point3f *)&color);
-                for (long j = 0; j < count; ++j)
+                    function_bad50(object_index, entry->color_index, (point3f *)&scratch_r16.color);
+                for (long j = 0; j < scratch_r16.count; ++j)
                 {
-                    transform4x3f *matrix = &markers[j].matrix;
+                    transform4x3f *matrix = &scratch_r16.markers[j].matrix;
                     if (entry->type == 0x6c656e73)
                     {
                         if (added < 64)
                         {
                             byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                             real scale = (tag[0x28] & 0x40) ? matrix->scale : 1.0f;
-                            function_2dba0(entry->tag, &matrix->forward, 0, object_index & 0xffff, added, &matrix->position, &color, 1.0f, amount, scale, function_3e9c0(object_index));
+                            function_2dba0(entry->tag, &matrix->forward, 0, object_index & 0xffff, added, &matrix->position, &scratch_r16.color, 1.0f, scratch_r16.amount, scale, function_3e9c0(object_index));
                             ++added;
                         }
                         else if (!g_55e6c7)
@@ -2656,8 +2665,8 @@ void __stdcall function_41980(short type, long object_index)
                         real scale = 1.0f;
                         if (*(long *)(tag + 8) > 0 && (**(byte **)(tag + 12) & 0x20))
                             scale = matrix->scale;
-                        function_42850(object_index, entry->tag, &matrix->position, (vector3f *)&color,
-                            &matrix->forward, scale, amount, &matrix->up);
+                        function_42850(object_index, entry->tag, &matrix->position, (vector3f *)&scratch_r16.color,
+                            &matrix->forward, scale, scratch_r16.amount, &matrix->up);
                     }
                     else if (entry->type == 0x7464746c)
                         function_429a0(0, object_index, entry->tag, NONE, &matrix->position,

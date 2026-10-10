@@ -575,12 +575,19 @@ long g_485af4[4], g_485b04[4];
 struct s_bitmap_view;
 extern byte *g_485a80;
 
-PRIVATE __forceinline D3DTexture *fetch_bitmap_texture(s_bitmap_view *bitmap, dword flags, real priority)
+PRIVATE inline D3DTexture *cached_bitmap_texture(s_bitmap_view *bitmap)
 {
     s_bitmap_predict_view *view = (s_bitmap_predict_view *)bitmap;
     D3DTexture *texture = NULL;
     if (view->last_frame > g_4e6488)
         texture = view->texture;
+    return texture;
+}
+
+PRIVATE __forceinline D3DTexture *fetch_bitmap_texture(s_bitmap_view *bitmap, dword flags, real priority)
+{
+    s_bitmap_predict_view *view = (s_bitmap_predict_view *)bitmap;
+    D3DTexture *texture = cached_bitmap_texture(bitmap);
     if (!texture)
     {
         _mm_prefetch((char const *)&view->flags, _MM_HINT_T0);
@@ -684,7 +691,7 @@ bool function_14560(long tag, short stage, short fallback, short fallback_index,
     if (tag != NONE)
     {
         byte *group = g_4e3b44[tag & 0xffff].bytes;
-        long count = *(long *)(group + 0x44);
+        volatile long count = *(long *)(group + 0x44);
         if (count > 0)
         {
             bitmap = function_137550(tag, (short)(index % count));
@@ -2421,7 +2428,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
-    real divisor = maximum_25ca0(0.0001f, g_4b9fa4);
+    volatile real divisor = maximum_25ca0(0.0001f, g_4b9fa4);
     real value = g_4b9ff8;
     value *= 1.0f / divisor;
     value = 0.0f - value;
@@ -2429,14 +2436,14 @@ void function_25ca0(bool enabled)
     constants[0] = value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
     constants[1] = 0.0f;
     constants[2] = g_4b9f18;
-    if (enabled)
+    if (!(enabled))
     {
-        constants[3] = g_4b9f9c;
+        constants[3] = 0.0f;
         D3DDevice_SetVertexShaderConstant(-81, constants, 1);
     }
     else
     {
-        constants[3] = 0.0f;
+        constants[3] = g_4b9f9c;
         D3DDevice_SetVertexShaderConstant(-81, constants, 1);
     }
 }
@@ -3784,7 +3791,7 @@ bool function_45ce0(short index, byte *out, short part, short transform_index)
 
 long g_485870;
 real g_485874, g_485878, g_48587c, g_485880, g_485884;
-dword __cdecl pack_color4f(color4f const *color);
+__declspec(noinline) dword __cdecl pack_color4f(color4f const *color);
 
 // @retail 0x40890
 void function_40890(void)
@@ -6191,4 +6198,211 @@ bool __stdcall function_37a60(void *context)
         D3DDevice_SetPixelShader(0);
     }
     return true;
+}
+
+
+struct s_245c0_state
+{
+    real range[6];
+    real *histogram;
+    long index;
+    dword frame_count;
+};
+s_245c0_state *g_485890;
+real g_51ecf0[256];
+real g_4b9fd0, g_4b9fd4, g_4b9fd8;
+extern short g_485600;
+extern long g_485898;
+__declspec(noinline) void function_245c0(s_245c0_state *state, real *histogram, short mode);
+void __stdcall function_214f0(real passes, real distortion, real strength, real falloff,
+    real scale, bool blend, bool preserve);
+bool function_022710();
+real function_134fc0(long index);
+
+// @retail 0x13870
+void __stdcall function_13870(bool finish, bool blur)
+{
+    g_4670bc = true;
+    function_16b10((s_render_reset_state *)g_485b48);
+    if (g_485890)
+    {
+        g_485890->index = g_485600;
+        function_245c0(g_485890, g_51ecf0, 0);
+    }
+    s_245c0_state *state = g_485890;
+    if (blur)
+    {
+        real strength = 0.0f;
+        real extra = 0.0f;
+        real distortion = 0.9f;
+        function_137a0(&strength, &extra);
+        if (state)
+            distortion = (1.0f - (1.0f - state->range[4])) * 0.9f;
+        if (strength > 0.0f)
+        {
+            strength = (extra + 1.0f) * strength * 0.5f;
+            strength = 0.0f > strength ? 0.0f : strength > 1.0f ? 1.0f : strength;
+            if (g_4b9fd0 > 0.0f)
+            {
+                distortion = (g_4b9fd4 - distortion) * g_4b9fd0 + distortion;
+                strength = (g_4b9fd8 - strength) * g_4b9fd0 + strength;
+            }
+            function_214f0(3.992000102996826f, distortion, strength, 0.25f, 0.0f, true, g_485898 == 6);
+        }
+    }
+    if (g_4e0350 && !(g_485898 >= 5 && g_485898 <= 7) && !g_485607 && !g_4850c8 && function_022710())
+    {
+        struct { real weights[4]; s_filter_vector grid[4]; } scratch;
+        s_filter_vector *grid = scratch.grid;
+        real top = (real)g_4b9dd0;
+        real left = (real)g_4b9dd2;
+        real bottom = (real)g_4b9dd4;
+        real right = (real)g_4b9dd6;
+        grid[0].x = left; grid[0].y = top; grid[0].z = 0.0f; grid[0].w = 0.0f;
+        grid[1].x = right; grid[1].y = top; grid[1].z = 1.0f; grid[1].w = 0.0f;
+        grid[2].x = left; grid[2].y = bottom; grid[2].z = 0.0f; grid[2].w = 1.0f;
+        grid[3].x = right; grid[3].y = bottom; grid[3].z = 1.0f; grid[3].w = 1.0f;
+        for (long i = 0; i < *(long *)((byte *)g_4e0350 + 0x3d0); ++i)
+        {
+                byte *entry = *(byte **)((byte *)g_4e0350 + 0x3d4) + i * 0x24;
+                if (*(long *)(entry + 0x14) != NONE &&
+                    (*(short *)(entry + 0x20) != NONE || *(short *)(entry + 0x22) != NONE))
+                {
+                    real *weights = scratch.weights;
+                    weights[0] = weights[1] = weights[2] = weights[3] = 0.0f;
+                    if (*(short *)(entry + 0x20) != NONE)
+                        weights[0] = function_134fc0(*(short *)(entry + 0x20));
+                    if (*(short *)(entry + 0x22) != NONE)
+                        weights[1] = function_134fc0(*(short *)(entry + 0x22));
+                    if (weights[0] != 0.0f || weights[1] != 0.0f)
+                        function_2d140(*(long *)(entry + 0x14), weights, 2, 2, grid);
+                }
+        }
+    }
+    if (finish) function_2df00();
+}
+
+
+struct s_tag_data;
+real function_13b390(void const *function, real input, real range);
+real function_13bb90(s_tag_data const *function, real input, real range);
+dword function_13bc00(s_tag_data const *function, real input);
+color3f *unpack_color3f(dword pixel, color3f *color);
+dword __cdecl pack_color4f(color4f const *color);
+void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
+    real cosine, real *strength, real *horizontal, real *vertical, real *out);
+
+PRIVATE __forceinline real clamp_callback(real x, real low, real high)
+{
+    return low > x ? low : x > high ? high : x;
+}
+PRIVATE __forceinline real callback_curve(byte const *curve, real time, real range)
+{
+    if (!*(byte *const *)(curve + 4) || *(long const *)curve <= 0) return 0.0f;
+    real value = function_13b390(curve, time, range);
+    byte *data = *(byte **)(curve + 4);
+    if (!(data[1] & 0xf0))
+    {
+        real low = *(real *)(data + 4);
+        real high = *(real *)(data + 8);
+        value = low + (high - low) * clamp_callback(value, 0.0f, 1.0f);
+    }
+    return value;
+}
+
+// @retail 0x4f010
+void __stdcall function_4f010(void *payload)
+{
+    s_501e0 points[256];
+    s_42850_payload *state = (s_42850_payload *)payload;
+    if (state->b == NONE) return;
+    byte *definition = g_4e3b44[state->b & 0xffff].bytes;
+    if (*(long *)(definition + 8) <= 0) return;
+    real fade = 1.0f;
+    vector3f direction;
+    direction.i = g_4b9da0.x - state->position.x;
+    direction.j = g_4b9da0.y - state->position.y;
+    direction.k = g_4b9da0.z - state->position.z;
+    real distance = function_30bf0(&direction);
+    if (*(real *)(definition + 4) > *(real *)definition)
+        fade = clamp_callback((*(real *)(definition + 4) - distance) /
+            (*(real *)(definition + 4) - *(real *)definition), 0.0f, 1.0f);
+    fade *= state->width;
+    if (!(fade > 0.0f)) return;
+    g_46713c = true;
+    g_4670bc = true;
+    function_16b10((s_render_reset_state *)g_485b48);
+    for (long group = 0; group < *(long *)(definition + 8); ++group)
+    {
+        byte *entry = *(byte **)(definition + 0xc) + group * 0x98;
+        long count = *(long *)(entry + 0xc);
+        if (count > 0)
+        {
+            bool filtered = (bool)((*(dword *)entry >> 3) & 1);
+            real facing = (real)fabs((double)direction.k * state->first.k +
+                (double)direction.j * state->first.j + (double)direction.i * state->first.i);
+            real angle = clamp_callback(1.0f - facing, 0.0f, 1.0f);
+            real time = 1.0f - function_13b390(entry + 0x30, angle, 0.0f);
+            real step = 1.0f / (real)(count - 1);
+            real strength = 0.0f, horizontal = 1.0f, vertical = 0.0f;
+            real output[2] = {1.0f, 1.0f};
+            real start = 1.0f, multiplier = 1.0f, inverse = 1.0f, offset = 0.0f;
+            byte *positions = *(long *)(entry + 0x60) == count ? *(byte **)(entry + 0x64) : NULL;
+            if (*(dword *)(entry + 0x5c) & 1)
+            {
+                real first = function_13bb90((s_tag_data *)(entry + 0x18), 0.0f, time);
+                real second = function_13bb90((s_tag_data *)(entry + 0x18), 1.0f, time);
+                if (second > first)
+                {
+                    if (!(first > second * (1.0f / 256.0f))) first = second * (1.0f / 256.0f);
+                }
+                else if (!(second > first * (1.0f / 256.0f))) second = first * (1.0f / 256.0f);
+                if (!(fabs(first) < 0.0001f)) multiplier = (real)pow((double)second / first, (double)step);
+                start = first;
+                if (!(fabs(first - second) < 0.0001f)) inverse = 1.0f / (second - first);
+                offset = 0.0f - first * inverse;
+            }
+            for (long i = 0; i < *(long *)(entry + 0xc); ++i)
+            {
+                real position;
+                if (*(dword *)(entry + 0x5c) & 2) position = (real)i * step;
+                else if (*(dword *)(entry + 0x5c) & 1)
+                {
+                    position = inverse * start + offset;
+                    start *= multiplier;
+                }
+                else if (positions)
+                    position = (1.0f - time) * *(real *)(positions + i * 8) +
+                        *(real *)(positions + i * 8 + 4) * time;
+                else position = 0.0f;
+                real length = state->scale * callback_curve(entry + 0x10, position, time);
+                real width = state->scale * callback_curve(entry + 0x18, position, time);
+                real opacity = callback_curve(entry + 0x20, position, time);
+                function_4ff50(entry, (byte const *)state, i == 0, position, facing, &strength, &horizontal, &vertical, output);
+                real colour_time = function_13b390(entry + 0x28, position, time);
+                color4f colour;
+                if (*(byte **)(entry + 0x2c) && *(long *)(entry + 0x28) > 0)
+                    unpack_color3f(function_13bc00((s_tag_data *)(entry + 0x28), colour_time), (color3f *)&colour.red);
+                else *(color3f *)&colour.red = *(color3f *)&g_4686cc->red;
+                colour.red = clamp_callback(state->third.i * colour.red, 0.0f, 1.0f);
+                colour.green = clamp_callback(state->third.j * colour.green, 0.0f, 1.0f);
+                colour.blue = clamp_callback(state->third.k * colour.blue, 0.0f, 1.0f);
+                colour.alpha = clamp_callback(opacity * fade, 0.0f, 1.0f);
+                points[i].field_0.x = state->first.i * length + state->position.x;
+                points[i].field_0.y = state->first.j * length + state->position.y;
+                points[i].field_0.z = state->first.k * length + state->position.z;
+                points[i].field_c = width * output[0];
+                points[i].field_10 = width * output[1];
+                points[i].field_14 = pack_color4f(&colour);
+            }
+            function_4f7e0(*(long *)(entry + 8), points, *(long *)(entry + 0xc), 0,
+                horizontal, vertical, false, false, filtered);
+        }
+    }
+    if (!g_46713c)
+    {
+        g_4b8474 = 0;
+        D3DDevice_SetVertexShader(0);
+    }
+    g_46713c = true;
 }

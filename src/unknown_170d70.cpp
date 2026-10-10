@@ -945,7 +945,7 @@ void function_171d90(s_view_setup *view)
 	real dz = original.k * inv - view->forward.k;
 	real dy = original.j * inv - view->forward.j;
 	real dx = inv * original.i - view->forward.i;
-	view->deviation = (real)sqrt(dz * dz + dy * dy + dx * dx);
+	view->deviation = (real)sqrt((double)dz * dz + (double)dy * dy + (double)dx * dx);
 }
 
 void function_11bed0(s_location *location, point3f const *point);

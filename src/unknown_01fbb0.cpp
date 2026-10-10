@@ -173,7 +173,22 @@ s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
         }
 
         finished = false;
-        if (globals->unknowndc > 0.0f || globals->unknowne0 > 0.0f || globals->unknownec > 0.0f || globals->unknownf0 > 0.0f)
+        if (globals->unknowndc > 0.0f)
+        {
+            TIMED_FRACTION(fraction2, globals->unknowne4, globals->unknowne8, 1.0f)
+            TIMED_FRACTION(fraction3, globals->unknownf4, globals->unknownf8, 1.0f)
+
+            v1 = globals->unknowndc * (1.0f - fraction2) + globals->unknowne0 * fraction2;
+            v2 = globals->unknownec * (1.0f - fraction3) + globals->unknownf0 * fraction3;
+            if (v1 > 0.0f || v2 > 0.0f)
+            {
+                globals->unknown3c = 1;
+                globals->unknown40 = globals->unknownd8;
+                globals->unknown44 = v1;
+                globals->unknown48 = v2;
+            }
+        }
+        else if (globals->unknowne0 > 0.0f || globals->unknownec > 0.0f || globals->unknownf0 > 0.0f)
         {
             TIMED_FRACTION(fraction2, globals->unknowne4, globals->unknowne8, 1.0f)
             TIMED_FRACTION(fraction3, globals->unknownf4, globals->unknownf8, 1.0f)

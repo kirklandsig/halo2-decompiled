@@ -117,16 +117,22 @@ void function_b9890(long object_index)
 // @retail 0xb8ca0
 long function_b8ca0(long object_index)
 {
+    long const volatile *index_reference_r16 = &object_index;
+    object_index = *index_reference_r16;
+    long result_value = 0;
 	s_object_view *object = OBJECT_GET(object_index);
 
 	if (object->parent_index != NONE &&
 		TEST_FIELD_BIT(TAG_DATA(s_object_definition_view, object->definition_index)->flag4))
 	{
-		return function_b8ca0(object->parent_index);
+		{ result_value = function_b8ca0(object->parent_index); goto return_exit; }
 	}
 	if (TEST_FIELD_BIT(object->flag0) && ((1 << object->type) & 0x1c) && function_10cf50(object_index))
-		return object->unit_index;
-	return object_index;
+		{ result_value = object->unit_index; goto return_exit; }
+	{ result_value = object_index; goto return_exit; }
+
+return_exit:
+    return result_value;
 }
 
 // @retail 0xb8d30
@@ -776,4 +782,29 @@ bool __stdcall function_bdef0(long object_index)
     if (active)
         function_b8600(object_index, 0);
     return true;
+}
+
+
+void function_1091b0(long object_index);
+void __stdcall function_1c35f0(long object_index);
+
+// @retail 0xb73b0
+void function_b73b0(long object_index)
+{
+    vector3f const *velocity = g_4687a4;
+    function_b77d0(object_index, velocity, velocity);
+    function_b9b90(object_index, false);
+    bool active = TEST_FIELD_BIT(OBJECT_GET(object_index)->physics_active);
+    if (active) function_146bf0();
+    havok_object_detach(object_index);
+    if (active)
+    {
+        function_278f00();
+        function_146bf0();
+    }
+    function_1091b0(object_index);
+    function_146bf0();
+    function_1c35f0(object_index);
+    function_278f00();
+    function_146bf0();
 }

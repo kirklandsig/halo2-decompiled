@@ -196,3 +196,50 @@ void function_aa260(long selection, vector3f const *linear, long object_index, l
 	}
 }
 #endif
+
+
+bool function_a76b0(long object_index, long flag);
+struct s_location;
+void function_a96d0(long object_index, vector3f const *position);
+void function_a9770(long object_index, vector3f const *up, vector3f const *forward);
+void function_a9640(long object_index);
+void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
+    vector3f const *up, s_location const *location, bool unknown);
+
+// @retail 0xaab40
+void function_aab40(long object_index, point3f const *position, vector3f const *forward,
+    vector3f const *up, vector3f const *linear, vector3f const *angular)
+{
+    bool update = true;
+    vector3f const *const *angular_reference = &angular;
+    s_record_pool *objects = g_4e0300;
+    byte *header = objects->data + (object_index & 0xffff) * 12;
+    byte *object = *(byte **)(header + 8);
+    if (position)
+    {
+        vector3f delta;
+        vector3d_from_points3d((point3f *)(object + 0x64), position, &delta);
+        bool type_zero = header[3] == 0;
+        bool moved = delta.k * delta.k + delta.i * delta.i + delta.j * delta.j > 1.0f;
+        bool parent = *(long *)(object + 0x14) != NONE;
+        bool flag = function_a76b0(object_index, false);
+        update = !moved && !parent && !flag && type_zero;
+    }
+    function_aa9e0(object_index, position, linear);
+    if (update)
+    {
+        if (position)
+        {
+            byte *current = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+            function_a96d0(object_index, (vector3f *)(current + 0x64));
+        }
+        if (forward && up)
+        {
+            byte *current = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+            function_a9770(object_index, (vector3f *)(current + 0x70), (vector3f *)(current + 0x7c));
+        }
+    }
+    else function_a9640(object_index);
+    function_b75a0(object_index, position, forward, up, NULL, false);
+    function_b77d0(object_index, linear, *angular_reference);
+}

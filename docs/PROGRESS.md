@@ -2,6 +2,24 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7481 functions match
+
+```
+matched 7481 of 11318 game functions (876545 of 2784283 bytes, 31.48%)
+```
+
+3 new matches, none lost:
+- Deep lane 1, new code and mid-length tuning in lanes W, Z, AB and AD: 0xb9d70, 0x41c20 and 0xd4cf0; eight new bodies.
+
+## 2026-10-10: 7478 functions match
+
+```
+matched 7478 of 11318 game functions (876188 of 2784283 bytes, 31.47%)
+```
+
+1 new matches, none lost:
+- Deep lane 3, helpers first: 0x2be5d0 matches with no change to it, after its helpers were tuned.
+
 ## 2026-10-10: 7477 functions match
 
 ```
