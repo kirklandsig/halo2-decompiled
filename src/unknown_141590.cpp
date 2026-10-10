@@ -29,18 +29,18 @@ void function_141590(
 {
 	if (in->scale != 0.f)
 	{
-		vector3f v;
+		real z, y, x;
 		real t;
-		v.i = 0.f - in->position.x;
-		v.j = 0.f - in->position.y;
-		v.k = 0.f - in->position.z;
+		z = 0.f - in->position.z;
+		y = 0.f - in->position.y;
+		x = 0.f - in->position.x;
 		if (in->scale != 1.f)
 		{
 			real inverse = 1.f / in->scale;
 			out->scale = inverse;
-			v.i = inverse * v.i;
-			v.j = inverse * v.j;
-			v.k = inverse * v.k;
+			x = inverse * x;
+			y = inverse * y;
+			z = inverse * z;
 		}
 		else
 		{
@@ -52,9 +52,9 @@ void function_141590(
 		t = in->left.i; out->left.i = in->forward.j; out->forward.j = t;
 		t = in->up.i; out->up.i = in->forward.k; out->forward.k = t;
 		t = in->up.j; out->up.j = in->left.k; out->left.k = t;
-		out->position.x = out->forward.i * v.i + out->left.i * v.j + out->up.i * v.k;
-		out->position.y = out->forward.j * v.i + out->left.j * v.j + out->up.j * v.k;
-		out->position.z = out->forward.k * v.i + out->left.k * v.j + out->up.k * v.k;
+		out->position.x = out->up.i * z + out->forward.i * x + out->left.i * y;
+		out->position.y = out->forward.j * x + out->up.j * z + out->left.j * y;
+		out->position.z = out->forward.k * x + out->up.k * z + out->left.k * y;
 	}
 	else
 	{

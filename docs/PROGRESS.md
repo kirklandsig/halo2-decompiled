@@ -2,6 +2,24 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7436 functions match
+
+```
+matched 7436 of 11318 game functions (866949 of 2784283 bytes, 31.14%)
+```
+
+7 new matches, none lost:
+- Deep lane 3, helpers first: tuning the helpers at the first difference of close callers made seven callers match with no change to them: 0x1ada70, 0x1f5110, 0x1f90f0, 0x1f9490, 0x1fed70, 0x257a90 and 0x26c240.
+
+## 2026-10-10: 7429 functions match
+
+```
+matched 7429 of 11318 game functions (864966 of 2784283 bytes, 31.07%)
+```
+
+6 new matches, none lost:
+- Deep lane 1, helpers first: the helpers 0xa9440 and 0xb9c60 match, and with them their callers 0xd0d20, 0xd2bb0, 0x14e970 and 0x2a1610, with no change to those.
+
 ## 2026-10-10: 7423 functions match
 
 ```

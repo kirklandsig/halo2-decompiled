@@ -7,6 +7,13 @@
 #include "globals.h"
 #include "geometry_cache.h"
 
+struct s_collision_result_1697c0;
+bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
+    long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
+short function_10a0b0(long object_index);
+bool function_bf9a0(long object_index, long *render_index, long *animation_index);
+extern vector3f *g_4687bc;
+
 /* a range of a section's triangles: the cluster (or instance definition)
    it is in, and its first triangle reference (8 bytes) */
 struct s_structure_surface_range
@@ -144,6 +151,57 @@ struct s_structure_lightmap_triangle
 	real u;
 	real v;
 };
+
+bool structure_get_lightmap_triangle(s_structure_collision_result const *collision,
+    s_structure_lightmap_triangle *triangle);
+bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
+    long model_index, s_structure_lightmap_triangle *triangle);
+
+// @retail 0x14b120
+bool function_14b120(void *source, void *surface)
+{
+    void *const *source_reference = &source;
+    bool volatile result = false;
+    byte local_collision[0x5c];
+    *(short *)(local_collision + 0x24) = NONE;
+    if (!g_4e0344 || g_4e0344->count <= 0 || !g_4e0348)
+        return false;
+    byte const *bsp = (byte const *)g_4e0344->bsp;
+    if (*(long const *)(bsp + 0x1c) == NONE ||
+        *(long const *)(bsp + 4) != *(long const *)((byte const *)g_4e0348 + 8))
+        return false;
+    s_structure_collision_result const *collision = (s_structure_collision_result const *)*source_reference;
+    s_structure_lightmap_triangle *triangle = (s_structure_lightmap_triangle *)surface;
+    triangle->cluster_index = NONE;
+    triangle->instance_index = NONE;
+    *(long *)((byte *)triangle + 8) = NONE;
+    bool found = collision->type == 1 || collision->type == 3;
+    long object_index = *(long const *)((byte const *)collision + 0x40);
+    bool excluded = false;
+    if (object_index != NONE)
+    {
+        byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+        if (object[0xaa] == 6 && function_10a0b0(object_index) != 2)
+            excluded = true;
+        else if (function_bf9a0(object_index, (long *)((byte *)triangle + 0xc),
+            (long *)((byte *)triangle + 0x10)))
+        {
+            result = function_14a8e0((s_structure_collision_result const *)*source_reference,
+                *(long *)((byte *)triangle + 0xc), triangle);
+            return result;
+        }
+        if (!excluded)
+        {
+            found = function_1697c0(0x4800005, &collision->point, g_4687bc, NONE, NONE,
+                (s_collision_result_1697c0 *)local_collision);
+            source = local_collision;
+            collision = (s_structure_collision_result const *)*source_reference;
+        }
+    }
+    if (!excluded && found)
+        result = structure_get_lightmap_triangle(collision, triangle);
+    return result;
+}
 
 struct s_16e1b0_list;
 void function_16e1b0(long value, s_16e1b0_list const *list, long *unknown, long *range_index, long *offset);

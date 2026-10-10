@@ -1184,3 +1184,125 @@ void __stdcall function_c2d00(long light_index)
         *(real *)(light + 0x24), (s_partition_location *)location, 0, NULL, &overflow);
     light[2] |= 8;
 }
+
+#include "data_array.h"
+
+void function_141ce0(real a, real b, real c, transform4x3f *out);
+real function_30bf0(vector3f *vector);
+void __stdcall function_c0c80(long light_index);
+
+// @retail 0xc0520
+long __stdcall function_c0520(long tag_index, long placement_index, bool force,
+    s_light_placement_ab *placement)
+{
+    long const *placement_index_reference = &placement_index;
+    bool const *force_reference = &force;
+    s_light_placement_ab *const *placement_reference = &placement;
+    byte const *source = (byte const *)*placement_reference;
+    byte const *definition = g_4e3b44[tag_index & 0xffff].bytes;
+    long result = NONE;
+    bool create = true;
+    if ((definition[0] & 1) || (*(short const *)(source + 0x40) == 3 && !*force_reference))
+        create = false;
+    if (*(long const *)(definition + 0x94) != NONE || create)
+    {
+        result = record_pool_allocate(g_4e030c);
+        if (result != NONE)
+        {
+            byte *light = g_4e030c->data + (result & 0xffff) * 0x110;
+            *(long *)(light + 8) = *placement_index_reference;
+            *(long *)(light + 0x14) = NONE;
+            *(long *)(light + 0x4c) = NONE;
+            *(short *)(light + 0x54) = NONE;
+            *(long *)(light + 0x58) = NONE;
+            *(short *)(light + 0x5c) = NONE;
+            *(long *)(light + 0x50) = 0;
+            *(short *)(light + 0x56) = 0;
+            *(word *)(light + 2) = 5;
+            *(long *)(light + 4) = tag_index;
+            *(real *)(light + 0xd0) = 1.0f;
+            *(real *)(light + 0xcc) = 1.0f;
+            *(long *)(light + 0x10) = NONE;
+            *(word *)(light + 2) = ((word)(source[0x3e] & 4) << 3) | 5;
+            s_light_shape_ab shape;
+            function_c19f0(result, &shape);
+            transform4x3f matrix;
+            function_141ce0(*(real const *)(source + 0x14), *(real const *)(source + 0x18),
+                *(real const *)(source + 0x1c), &matrix);
+            point3f *position = (point3f *)(light + 0x84);
+            *position = *(point3f const *)(source + 8);
+            vector3f *forward = (vector3f *)(light + 0xac);
+            *forward = matrix.up;
+            *(vector3f *)(light + 0xb8) = matrix.left;
+            vector3f direction;
+            direction.i = *(real const *)(source + 0x4c) - *(real const *)(source + 8);
+            direction.j = *(real const *)(source + 0x50) - ((point3f const *)(source + 8))->y;
+            direction.k = *(real const *)(source + 0x54) - ((point3f const *)(source + 8))->z;
+            real length = function_30bf0(&direction);
+            if (length != 0.0f)
+            {
+                if ((short)shape.kind != 0 && forward->k * direction.k +
+                    forward->j * direction.j + forward->i * direction.i < 0.5f)
+                    direction = matrix.up;
+            }
+            else
+                direction = matrix.up;
+            real distance;
+            if ((short)shape.kind != 0)
+                distance = (forward->k * direction.k + forward->j * direction.j +
+                    forward->i * direction.i) * shape.cone.values[4];
+            else
+                distance = shape.sphere.radius_a > shape.sphere.radius_b ? shape.sphere.radius_a : shape.sphere.radius_b;
+            *(real *)(light + 0x90) = direction.i * distance + position->x;
+            *(real *)(light + 0x94) = direction.j * distance + position->y;
+            *(real *)(light + 0x98) = direction.k * distance + position->z;
+            if (!(definition[0] & 9))
+            {
+                position->x = direction.i * 0.001f + position->x;
+                position->y = direction.j * 0.001f + position->y;
+                position->z = direction.k * 0.001f + position->z;
+            }
+            function_c0c80(result);
+            *(long *)(light + 0xc) = g_4e0308 - 1;
+            *(long *)(light + 0x10c) = NONE;
+        }
+    }
+    return result;
+}
+
+struct s_light_palette_setup_ab
+{
+    byte unknown00[4];
+    long tag_index;
+    byte unknown08[0x20];
+};
+
+struct s_light_setup_scenario_ab
+{
+    byte unknown00[0xe8];
+    long placement_count;
+    s_light_placement_ab *placements;
+    long palette_count;
+    s_light_palette_setup_ab *palette;
+};
+
+// @retail 0xc09c0
+void function_c09c0(long mode)
+{
+    s_light_setup_scenario_ab *scenario = (s_light_setup_scenario_ab *)g_4e0350;
+    bool force = mode == 5 || mode == 4;
+    bool volatile const *force_reference = &force;
+    long *count = &scenario->placement_count;
+    for (long i = 0; i < *count; ++i)
+    {
+        s_light_placement_ab *placement = &scenario->placements[i];
+        long palette_index = placement->palette_index;
+        if (palette_index != NONE && palette_index >= 0 && palette_index < scenario->palette_count)
+        {
+            long tag_index = scenario->palette[palette_index].tag_index;
+            if (tag_index != NONE)
+                function_c0520(tag_index, i, *force_reference, placement);
+        }
+        scenario = (s_light_setup_scenario_ab *)g_4e0350;
+    }
+}

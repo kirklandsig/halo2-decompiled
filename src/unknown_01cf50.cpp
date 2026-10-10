@@ -5252,7 +5252,7 @@ extern dword g_4e6494;
 // @retail 0x4c690
 void function_4c690(long tag, transform4x3f const *nodes)
 {
-    byte context[0x74];
+    byte context[0x78];
     signed char indices[16];
     long node_count;
     byte *volatile definition = g_4e3b44[tag & 0xffff].bytes;

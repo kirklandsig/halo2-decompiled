@@ -315,24 +315,27 @@ const short g_445580[35] =
 real function_1e9720(long kind, short team)
 {
 	short row = (short)kind;
-	short difficulty;
-	if (g_4e6948->state == 1)
-		difficulty = g_4e6948->difficulty;
-	else
-		difficulty = 1;
-	if (g_4e6948->state == 2)
-		difficulty = 1;
-	else if (g_4e6948->state == 1 && team != NONE && team >= 0 && team < 16)
+	short difficulty = 1;
+	switch (g_4e6948->state)
 	{
-		bool enemy = !function_0bfe60(((s_allegiance_view *)g_4f55ec)->peace_bits, team + 16);
-		if (!enemy)
+	case 1:
+		difficulty = g_4e6948->difficulty;
+		if (team != NONE && team >= 0 && team < 16)
 		{
-			short alternate = g_445580[row];
-			if (alternate == NONE)
-				difficulty = 1;
-			else
-				row = alternate;
+			byte enemy = 1 - (byte)function_0bfe60(((s_allegiance_view *)g_4f55ec)->peace_bits, team + 16);
+			if (!enemy)
+			{
+				short alternate = g_445580[row];
+				if (alternate == NONE)
+					difficulty = 1;
+				else
+					row = alternate;
+			}
 		}
+		break;
+	case 2:
+		difficulty = 1;
+		break;
 	}
 	return function_1e96a0(difficulty, row);
 }

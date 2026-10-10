@@ -71,7 +71,7 @@ long *__stdcall function_209d50(long thread_index, short parameter_count, short 
 	long *arguments = (long *)function_xc5914d(thread_index, parameter_count * sizeof(long));
 	short *argument_index = (short *)function_xc5914d(thread_index, sizeof(short));
 	long *expression_index = (long *)function_xc5914d(thread_index, sizeof(long));
-	long *result = arguments;
+	long *volatile result = arguments;
 
 	if (initialize)
 	{

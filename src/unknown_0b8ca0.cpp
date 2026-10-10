@@ -321,6 +321,33 @@ bool function_b9d20(long object_index)
 	return (OBJECT_HEADER_GET(root_index)->flags >> 6) & 1;
 }
 
+void function_b8b70(long object_index);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+
+// @retail 0xb9c60
+void function_b9c60(long object_index, bool flag)
+{
+    bool const *flag_reference = &flag;
+    s_object_view *object = OBJECT_GET(object_index);
+    if (*flag_reference)
+    {
+        if (!TEST_FIELD_BIT(object->flag0))
+        {
+            if (function_b9d20(object_index))
+                function_bef30(object_index, 1, 0, 0, 0);
+            object->flag0 = true;
+            function_b8b70(object_index);
+        }
+    }
+    else if (TEST_FIELD_BIT(object->flag0))
+    {
+        object->flag0 = false;
+        if (function_b9d20(object_index))
+            function_bef30(object_index, 0, 1, 0, 0);
+        function_b8b70(object_index);
+    }
+}
+
 /* the list of objects that count (g_4de2f4, unknown_0bb760.cpp) */
 struct s_object_list_view
 {
@@ -668,4 +695,85 @@ bool function_bba80(long object_index)
         player_index = object_query_next_ab(players, player_index);
     }
     return result;
+}
+
+
+bool __stdcall function_1d44f0(s_havok_component *component, point3f *center, real *radius);
+void __stdcall function_b87b0(long object_index);
+void __stdcall function_b8600(long object_index, long unknown);
+
+// @retail 0xbdef0
+bool __stdcall function_bdef0(long object_index)
+{
+    byte *object = (byte *)OBJECT_GET(object_index);
+    byte const *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    bool active = (*(dword *)(object + 4) & 0x100) != 0;
+    bool from_physics = false;
+    long component_index = *(long *)(object + 0xb4);
+    if (component_index != NONE && ((1 << object[0xaa]) & 0x800) && (object[0xc0] & 0x40))
+    {
+        s_havok_component *component = (s_havok_component *)(g_51e9b8->data +
+            (component_index & 0xffff) * 0xa0);
+        from_physics = function_1d44f0(component, (point3f *)(object + 0x30), (real *)(object + 0x3c));
+    }
+    if (!from_physics)
+    {
+        byte *node_object = (byte *)OBJECT_GET(object_index);
+        transform4x3f const *matrix = (transform4x3f const *)(node_object + *(short *)(node_object + 0x116));
+        point3f center = *(point3f const *)(definition + 8);
+        if (matrix->scale != 1.0f)
+        {
+            center.x *= matrix->scale;
+            center.y *= matrix->scale;
+            center.z *= matrix->scale;
+        }
+        *(real *)(object + 0x30) = matrix->up.i * center.z + matrix->left.i * center.y +
+            matrix->forward.i * center.x + matrix->position.x;
+        *(real *)(object + 0x34) = matrix->up.j * center.z + matrix->left.j * center.y +
+            matrix->forward.j * center.x + matrix->position.y;
+        *(real *)(object + 0x38) = matrix->up.k * center.z + matrix->left.k * center.y +
+            matrix->forward.k * center.x + matrix->position.z;
+        *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * *(real const *)(definition + 4);
+    }
+    if (*(real const *)(definition + 0x20) > 0.0f)
+    {
+        *(real *)(object + 0x50) = *(real *)(object + 0x30) + *(real const *)(definition + 0x24);
+        *(real *)(object + 0x54) = *(real *)(object + 0x34) + *(real const *)(definition + 0x28);
+        *(real *)(object + 0x58) = *(real *)(object + 0x38) + *(real const *)(definition + 0x2c);
+        *(real *)(object + 0x5c) = *(real *)(object + 0xa0) * *(real const *)(definition + 0x20);
+    }
+    else
+    {
+        *(point3f *)(object + 0x50) = *(point3f *)(object + 0x30);
+        *(real *)(object + 0x5c) = *(real *)(object + 0x3c);
+    }
+    point3f center;
+    real radius;
+    if (*(word const *)(definition + 2) & 0x1000)
+    {
+        center = *(point3f *)(object + 0x50);
+        radius = *(real *)(object + 0x5c);
+    }
+    else
+    {
+        center = *(point3f *)(object + 0x30);
+        radius = *(real *)(object + 0x3c);
+    }
+    if (active)
+    {
+        vector3f delta;
+        delta.i = center.x - *(real *)(object + 0x40);
+        delta.j = center.y - *(real *)(object + 0x44);
+        delta.k = center.z - *(real *)(object + 0x48);
+        if (delta.k * delta.k + delta.i * delta.i + delta.j * delta.j > 0.01f ||
+            radius != *(real *)(object + 0x4c))
+            function_b87b0(object_index);
+        else
+            return false;
+    }
+    *(point3f *)(object + 0x40) = center;
+    *(real *)(object + 0x4c) = radius;
+    if (active)
+        function_b8600(object_index, 0);
+    return true;
 }

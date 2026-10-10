@@ -113,8 +113,12 @@ real __stdcall function_265d30(long actor_index, long prop_index)
 		(state->unknown5e && *(short *)((byte *)state + 0x5c) * g_510c54->rate >= 5.0f) ||
 		object_get(node->object_index)->type == 15 || (node->type != 1 && node->type != 6))
 		return 0.0f;
-	short range_score = 0, state_score = 0, special_score = 0;
-	real current_bonus = 0.0f, view_bonus = 0.0f, direction_bonus = 0.0f;
+	short state_score = 0;
+	short range_score = 0;
+	real current_bonus = 0.0f;
+	short special_score = 0;
+	real view_bonus = 0.0f;
+	real direction_bonus = 0.0f;
 	if (actor->unknown007)
 		range_score = 0;
 	else if (function_25d9b0(*prop_reference))
@@ -192,9 +196,8 @@ real __stdcall function_265d30(long actor_index, long prop_index)
 				delta.j = state->position.y - *(real *)((byte *)actor + 0x23c);
 				delta.k = state->position.z - *(real *)((byte *)actor + 0x240);
 			}
-			vector3f const *velocity = (vector3f *)((byte *)rider + 0x150);
-			direction_bonus = (velocity->k * delta.k + velocity->j * delta.j + velocity->i * delta.i) * 6.0f;
-			if (direction_bonus < 0.0f) direction_bonus = 0.0f;
+			vector3f const volatile *velocity = (vector3f const volatile *)((byte *)rider + 0x150);
+			direction_bonus = 0.0f > (velocity->k * delta.k + velocity->j * delta.j + velocity->i * delta.i) * 6.0f ? 0.0f : (velocity->k * delta.k + velocity->j * delta.j + velocity->i * delta.i) * 6.0f;
 		}
 	}
 	return (real)(range_score + state_score) + (real)special_score + direction_bonus + distance_bonus + view_bonus + current_bonus;

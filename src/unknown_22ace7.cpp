@@ -98,6 +98,7 @@ struct s_interface_function_context
 {
 	long index;
 	real (__stdcall *evaluate)(long context, long name);
+	byte unknown08[0x70];
 };
 
 s_interface_function_context g_5021d0;

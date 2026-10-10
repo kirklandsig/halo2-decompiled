@@ -15,3 +15,6 @@ void function_bf0f0(s_type_4f0dcc const *datum, long type, long index, s_scenari
 
 
 
+
+// @stub 0xc0c80
+void __stdcall function_c0c80(long light_index) { }

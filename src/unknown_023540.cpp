@@ -8,6 +8,63 @@
 #include "geometry_cache.h"
 #include "unknown_234c64.h"
 
+#if 0
+struct s_interface_function_context
+{
+    long index;
+    real (__stdcall *evaluate)(long context, long name);
+    long field_8;
+    byte unknown0c[4];
+    vector3f field_10;
+    vector3f field_1c;
+    real field_28, field_2c;
+    vector3f field_30;
+    vector3f field_3c;
+    vector3f field_48;
+    vector3f field_54;
+    short field_60;
+    byte unknown62[0x12];
+    bool field_74;
+    byte unknown75;
+    bool field_76, field_77;
+};
+
+// Retail initializer at 0x2c3b0; activation changes shared caller conventions.
+inline void function_2c3b0(s_interface_function_context *context)
+{
+    s_interface_function_context volatile *initialization = context;
+    initialization->field_74 = false;
+    initialization->evaluate = NULL;
+    initialization->field_77 = false;
+    initialization->field_76 = false;
+    initialization->index = NONE;
+    initialization->field_8 = NONE;
+    initialization->field_10.i = 0.09f;
+    initialization->field_48.i = 0.09f;
+    initialization->field_10.j = 0.09f;
+    initialization->field_48.j = 0.09f;
+    initialization->field_10.k = 0.09f;
+    initialization->field_48.k = 0.09f;
+    initialization->field_30.i = 0.12f;
+    initialization->field_30.j = 0.12f;
+    initialization->field_30.k = 0.12f;
+    initialization->field_28 = 0.4f;
+    initialization->field_2c = 0.4f;
+    double pitch = -1.2566370964050293;
+    double yaw = 0.0;
+    context->field_3c.i = (real)(cos(yaw) * cos(pitch));
+    context->field_3c.j = (real)(sin(yaw) * cos(pitch));
+    context->field_3c.k = (real)sin(pitch);
+    vector3f volatile const *direction = &context->field_3c;
+    context->field_54.i = 0.0f - direction->i;
+    context->field_54.j = 0.0f - direction->j;
+    context->field_54.k = 0.0f - direction->k;
+    context->field_1c = context->field_3c;
+    context->field_60 = NONE;
+}
+
+#endif
+
 struct s_render_view_2b790
 {
 	long mode, player_index, object_index;

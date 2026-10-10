@@ -654,3 +654,92 @@ void function_10c880(long item_index, s_item_impact const *impact, vector3f cons
 		function_1895f0(&sound, scale, definition->sound_index);
 	}
 }
+
+
+#include "slot_handler.h"
+static __forceinline long real_to_long(real value);
+
+void function_bfa40(long object_index, long a);
+bool function_b9d20(long object_index);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long flags);
+void function_b8b70(long object_index);
+void function_bb950(long object_index, bool add, long delta);
+void function_a7a60(long object_index);
+void __stdcall function_a7870(long object_index);
+bool function_100f00(long object_index);
+void function_15e250(long object_index, long other_index);
+void function_15e460(long object_index, long other_index);
+void function_1060a0(long weapon_index, long unit_index);
+
+// @retail 0x10ca80
+void function_10ca80(long object_index, long owner_index)
+{
+    long const *owner_reference = &owner_index;
+    s_record_pool *objects = g_4e0300;
+    byte *header = objects->data + (object_index & 0xffff) * 12;
+    s_item *item = *(s_item **)(header + 8);
+    byte *item_flags = (byte *)item + 0x12c;
+    struct s_node_flags { unsigned long : 29; unsigned long dirty : 1; unsigned long : 2; };
+    s_node_flags volatile *node_flags = (s_node_flags volatile *)((byte *)item + 4);
+    if (*owner_reference != NONE)
+    {
+        if (TEST_FIELD_BIT(node_flags->dirty) && object_index != NONE &&
+            *(short *)((byte *)item + 0x112) != NONE)
+        {
+            if (TEST_FIELD_BIT(node_flags->dirty))
+                function_bfa40(object_index, 0);
+            item->object_flags &= ~0x20000000;
+        }
+        *item_flags |= 5;
+        item->unit_index = *owner_reference;
+        byte *current = *(byte **)(objects->data + (object_index & 0xffff) * 12 + 8);
+        if (current[4] & 1)
+        {
+            *(dword *)(current + 4) &= ~1;
+            if (function_b9d20(object_index))
+                function_bef30(object_index, 0, 1, 0, 0);
+            function_b8b70(object_index);
+        }
+        item->flag1 = false;
+        function_bb950(object_index, false, NONE);
+        item->flag5 = false;
+        item->flag6 = false;
+        item->flag7 = false;
+        *(long *)((byte *)item + 0x28) = NONE;
+        *(short *)((byte *)item + 0x2c) = NONE;
+        *(short *)((byte *)item + 0x2e) = g_4686c4;
+        function_10dad0(object_index);
+        function_a7a60(object_index);
+        byte type = g_4e0300->data[(object_index & 0xffff) * 12 + 3];
+        if ((1 << type) & 4)
+        {
+            if (TEST_FIELD_BIT(item->flag16c_6))
+                function_15e250(object_index, *owner_reference);
+            function_1060a0(object_index, *owner_reference);
+            function_10ccc0(object_index);
+            return;
+        }
+    }
+    else
+    {
+        long old_owner = item->unit_index;
+        if (g_4e6948->state == 1)
+        {
+            bool add = true;
+            if ((*item_flags & 8) && header[3] == 2 && function_100f00(object_index) &&
+                !(((byte *)item)[0x12d] & 1))
+                add = false;
+            function_bb950(object_index, add, real_to_long((real)g_510c54->field_2_3 * 30.0f));
+        }
+        s_item *current = *(s_item **)(objects->data + (object_index & 0xffff) * 12 + 8);
+        current->creation_time = g_510c54->game_time;
+        *item_flags &= 0xf6;
+        item->unit_index = NONE;
+        function_10dad0(object_index);
+        function_a7870(object_index);
+        byte type = g_4e0300->data[(object_index & 0xffff) * 12 + 3];
+        if (((1 << type) & 4) && TEST_FIELD_BIT(item->flag16c_6) && g_55e4d0[g_4e9ae8->engine_index])
+            function_15e460(object_index, old_owner);
+    }
+    function_10ccc0(object_index);
+}

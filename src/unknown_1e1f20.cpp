@@ -228,6 +228,7 @@ struct s_actor_object_sample
 void function_1e3a00(long object_index, s_actor_object_sample *sample)
 {
 	s_actor_object_sample *const *sample_reference = &sample;
+	point3f *point_output = &(*sample_reference)->point;
 	s_actor_object_query *object = actor_query_object(object_index);
 	function_b9dd0(object_index, &(*sample_reference)->center);
 	(*sample_reference)->direction = object->direction;
@@ -235,10 +236,10 @@ void function_1e3a00(long object_index, s_actor_object_sample *sample)
 	{
 		s_object_marker marker;
 		function_b8d30(object_index, 0x4000095, &marker, 1, false);
-		memcpy(&(*sample_reference)->point, &marker.matrix.position, sizeof(point3f));
+		memcpy(point_output, &marker.matrix.position, sizeof(point3f));
 	}
 	else
-		memcpy(&(*sample_reference)->point, &(*sample_reference)->center, sizeof(point3f));
+		memcpy(point_output, &(*sample_reference)->center, sizeof(point3f));
 	function_ba1d0(object_index, &(*sample_reference)->velocity, NULL);
 	s_actor_object_query *root = actor_query_object(actor_query_root(object_index));
 	memcpy((*sample_reference)->location, root->location, sizeof(root->location));

@@ -10,8 +10,6 @@
 
 /* outside the unit range */
 
-// @stub 0xa9440
-void function_a9440(long unit_index, long player_index) { }
 
 
 
@@ -20,8 +18,6 @@ void function_a9440(long unit_index, long player_index) { }
 // @stub 0x10cdf0
 void function_10cdf0(long object_index) { }
 
-// @stub 0x10ca80
-void function_10ca80(long object_index, long a) { }
 
 /* outside the unit range */
 // @stub 0x10cec0

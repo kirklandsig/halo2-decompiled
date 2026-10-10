@@ -61,10 +61,9 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 	{
 	case 0:
 		function_dfdb0(root, 0, &query.index, &query.point, &query.a, &query.b);
-		result = query.index;
 		if (*location_reference)
 		{
-			if (result != NONE)
+			if (query.index != NONE)
 			{
 				function_210420(&query.point, query.a, query.b, &(*location_reference)->point);
 			}
@@ -74,13 +73,13 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 				(*location_reference)->point.output_index = NONE;
 			}
 		}
+		result = query.index;
 		break;
 	case 1:
 		function_f1070(root, 0, &query.index, &query.point, &query.a, &query.b);
-		result = query.index;
 		if (*location_reference)
 		{
-			if (result != NONE)
+			if (query.index != NONE)
 			{
 				function_210420(&query.point, query.a, query.b, &(*location_reference)->point);
 			}
@@ -90,6 +89,7 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 				(*location_reference)->point.output_index = NONE;
 			}
 		}
+		result = query.index;
 		break;
 	default:
 		{
@@ -97,11 +97,11 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 
 			if (structure->pathfinding_count > 0 && structure->pathfinding)
 			{
-				s_collision_result_1697c0 collision;
+				struct { s_collision_result_1697c0 collision; long field_4c, field_50, field_54, field_58; } contact;
 
 				query.point = object->center;
-				collision.unknown24 = NONE;
-				result = function_26d100(g_4687b0, (long *)*location_reference, &collision, &query.point);
+				contact.collision.unknown24 = NONE;
+				result = function_26d100(g_4687b0, (long *)*location_reference, &contact.collision, &query.point);
 			}
 		}
 		break;

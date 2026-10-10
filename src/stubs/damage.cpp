@@ -7,8 +7,6 @@ struct s_damage_info;
 struct s_damage_region_accumulator;
 struct s_damage_object;
 
-// @stub 0xb9c60
-void function_b9c60(long object_index, bool flag) { }
 // @stub 0xbef30
 void __stdcall function_bef30(long object_index, long a, long b, long c, long d) { }
 /* sets a region's permutation */

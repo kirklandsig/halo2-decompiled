@@ -24,8 +24,6 @@ struct s_game_options;
 void __stdcall function_137ca0(s_game_options const *arg_0) { }
 // @stub 0x137e40
 void function_137e40(void) { }
-// @stub 0xc09c0
-void function_c09c0(long arg_0) { }
 // @stub 0x158530
 void function_158530(void) { }
 

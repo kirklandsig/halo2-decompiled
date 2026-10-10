@@ -796,13 +796,29 @@ bool function_1e7ab0(long local_index, long type)
    byte *unit = request_unit(unit_index);
    switch (type)
    {
-   case 0: result = (state->field_194 & 1) != 0; break;
-   case 1: result = ((state->field_194 >> 1) & 1) != 0; break;
+   case 10:
+    if (!function_13cb40() && *(short *)(unit + 0x1fc) != NONE && *(long *)(unit + 0x14) != NONE && function_1e8eb0(unit_index, NONE, true))
+    { result = true; if (*(long *)(data + 0x80) != 10) data[0x1a0] = false; }
+    break;
+   case 11:
+    if (!function_13cb40() && *(short *)(unit + 0x1fc) != NONE && *(long *)(unit + 0x14) != NONE && function_1e8eb0(unit_index, NONE, true))
+    { result = true; if (*(long *)(data + 0x80) != 11) data[0x1a0] = false; }
+    break;
+   case 12:
+    if (!function_13cb40() && *(long *)(unit + 0x14) == NONE)
+    { result = true; if (*(long *)(data + 0x80) != 12) data[0x1a0] = false; }
+    break;
+   case 13:
+    if (!function_13cb40() && *(long *)(unit + 0x14) == NONE)
+    { result = true; if (*(long *)(data + 0x80) != 13) data[0x1a0] = false; }
+    break;
+   case 14:
+    if (function_1e7a60(local_index, 16) == 0 && function_c8860(unit_index) != NONE) result = true;
+    break;
    case 2:
     if (!function_13cb40() && function_1e7a10(local_index, 12) && *(long *)(unit + 0x14) == NONE)
     { result = true; if (*(long *)(data + 0x80) != 2) data[0x1a0] = false; }
     break;
-   case 3: break;
    case 4:
     if (!function_13cb40())
     {
@@ -829,6 +845,58 @@ bool function_1e7ab0(long local_index, long type)
      }
     }
     break;
+   case 15:
+    if (request_weapon(player, false) != NONE && !motion_sensor_enemy_nearby(local_index)) result = true;
+    break;
+   case 18:
+    if (request_weapon(player, false) != NONE && !motion_sensor_enemy_nearby(local_index) && function_1e7a10(local_index, 15)) result = true;
+    break;
+   case 0: result = (state->field_194 & 1) != 0; break;
+   case 1: result = ((state->field_194 >> 1) & 1) != 0; break;
+   case 31: result = ((state->field_194 >> 2) & 1) != 0; break;
+   case 17: if (state->field_19b > 0 && *(short *)(unit + 0x1fc) == NONE) result = true; break;
+   case 30:
+    if (g_4e6948->state == 2 && function_15eaf0() && function_162fd0(local_index) != NONE)
+    {
+     long gamepad = *(long *)((byte *)player + 0x24);
+     if (gamepad != NONE && voice_port_can_talk(gamepad)) result = true;
+    }
+    break;
+   case 16:
+    if (!motion_sensor_enemy_nearby(local_index) && request_weapon(player, false) != NONE &&
+     request_weapon(player, true) == NONE && function_100fd0(request_weapon(player, false)) &&
+     function_101010(request_weapon(player, false), 0) != NONE)
+    { result = true; if (*(long *)(data + 0x80) != 16) data[0x1a0] = false; }
+    break;
+   case 20:
+    if (motion_sensor_enemy_vehicle_ahead(local_index) && *(short *)(unit + 0x1fc) == NONE) result = true;
+    break;
+   case 23:
+    if (!motion_sensor_enemy_nearby(local_index) && request_weapon(player, false) != NONE)
+    {
+     s_weapon_status status;
+     function_100520(request_weapon(player, false), &status);
+     if (status.magazine_count > 0 && status.magazines[0].loaded_maximum != 0 &&
+      status.magazines[0].loaded * 2 <= status.magazines[0].loaded_maximum &&
+      status.magazines[0].total_maximum != 0 && status.magazines[0].unloaded > 0) result = true;
+    }
+    break;
+   case 9:
+    if (request_weapon(player, true) != NONE && function_100f00(request_weapon(player, true))) result = true;
+    break;
+   case 25: if (function_1e8eb0(unit_index, 3, false)) result = true; break;
+   case 28: if (function_1e8eb0(unit_index, 3, false)) result = true; break;
+   case 24: if (function_1e8eb0(unit_index, 1, false)) result = true; break;
+   case 26: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
+   case 27: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
+   case 29: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
+   case 22:
+    if (*(real *)(unit + 0xf0) < 0.25f || (*(long *)(data + 0x80) == 22 && function_1e7a10(local_index, 21))) result = true;
+    break;
+   case 21:
+    if ((bool)(((dword)*(word *)(unit + 0x10a) >> 9) & 1))
+     if (*(real *)(unit + 0xf0) < 0.25f || *(long *)(data + 0x80) == 21) result = true;
+    break;
    case 5:
     if (*(word *)(data + 0x140) == 3 && *(word *)(data + 0x148) >= 3) result = true;
     break;
@@ -845,76 +913,9 @@ bool function_1e7ab0(long local_index, long type)
    case 8:
     if (*(word *)(data + 0x140) == 1 && (data[0x14c] & 12) && state->field_197 >= 3) result = true;
     break;
-   case 9:
-    if (request_weapon(player, true) != NONE && function_100f00(request_weapon(player, true))) result = true;
-    break;
-   case 10:
-    if (!function_13cb40() && *(short *)(unit + 0x1fc) != NONE && *(long *)(unit + 0x14) != NONE && function_1e8eb0(unit_index, NONE, true))
-    { result = true; if (*(long *)(data + 0x80) != 10) data[0x1a0] = false; }
-    break;
-   case 11:
-    if (!function_13cb40() && *(short *)(unit + 0x1fc) != NONE && *(long *)(unit + 0x14) != NONE && function_1e8eb0(unit_index, NONE, true))
-    { result = true; if (*(long *)(data + 0x80) != 11) data[0x1a0] = false; }
-    break;
-   case 12:
-    if (!function_13cb40() && *(long *)(unit + 0x14) == NONE)
-    { result = true; if (*(long *)(data + 0x80) != 12) data[0x1a0] = false; }
-    break;
-   case 13:
-    if (!function_13cb40() && *(long *)(unit + 0x14) == NONE)
-    { result = true; if (*(long *)(data + 0x80) != 13) data[0x1a0] = false; }
-    break;
-   case 14:
-    if (function_1e7a60(local_index, 16) == 0 && function_c8860(unit_index) != NONE) result = true;
-    break;
-   case 15:
-    if (request_weapon(player, false) != NONE && !motion_sensor_enemy_nearby(local_index)) result = true;
-    break;
-   case 16:
-    if (!motion_sensor_enemy_nearby(local_index) && request_weapon(player, false) != NONE &&
-     request_weapon(player, true) == NONE && function_100fd0(request_weapon(player, false)) &&
-     function_101010(request_weapon(player, false), 0) != NONE)
-    { result = true; if (*(long *)(data + 0x80) != 16) data[0x1a0] = false; }
-    break;
-   case 17: if (state->field_19b > 0 && *(short *)(unit + 0x1fc) == NONE) result = true; break;
-   case 18:
-    if (request_weapon(player, false) != NONE && !motion_sensor_enemy_nearby(local_index) && function_1e7a10(local_index, 15)) result = true;
-    break;
+   case 3: break;
    case 19: break;
-   case 20:
-    if (motion_sensor_enemy_vehicle_ahead(local_index) && *(short *)(unit + 0x1fc) == NONE) result = true;
-    break;
-   case 21:
-    if ((bool)(((dword)*(word *)(unit + 0x10a) >> 9) & 1))
-     if (*(real *)(unit + 0xf0) < 0.25f || *(long *)(data + 0x80) == 21) result = true;
-    break;
-   case 22:
-    if (*(real *)(unit + 0xf0) < 0.25f || (*(long *)(data + 0x80) == 22 && function_1e7a10(local_index, 21))) result = true;
-    break;
-   case 23:
-    if (!motion_sensor_enemy_nearby(local_index) && request_weapon(player, false) != NONE)
-    {
-     s_weapon_status status;
-     function_100520(request_weapon(player, false), &status);
-     if (status.magazine_count > 0 && status.magazines[0].loaded_maximum != 0 &&
-      status.magazines[0].loaded * 2 <= status.magazines[0].loaded_maximum &&
-      status.magazines[0].total_maximum != 0 && status.magazines[0].unloaded > 0) result = true;
-    }
-    break;
-   case 24: if (function_1e8eb0(unit_index, 1, false)) result = true; break;
-   case 25: if (function_1e8eb0(unit_index, 3, false)) result = true; break;
-   case 26: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
-   case 27: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
-   case 28: if (function_1e8eb0(unit_index, 3, false)) result = true; break;
-   case 29: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
-   case 30:
-    if (g_4e6948->state == 2 && function_15eaf0() && function_162fd0(local_index) != NONE)
-    {
-     long gamepad = *(long *)((byte *)player + 0x24);
-     if (gamepad != NONE && voice_port_can_talk(gamepad)) result = true;
-    }
-    break;
-   case 31: result = ((state->field_194 >> 2) & 1) != 0; break;
+
    }
   }
  }

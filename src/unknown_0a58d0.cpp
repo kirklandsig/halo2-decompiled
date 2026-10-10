@@ -1252,3 +1252,23 @@ bool function_a6810(s_entity_info *info, s_bitstream *stream)
         valid = valid && (char)info->byte8 >= 0 && (char)info->byte8 < *(long *)(globals + 0x120);
     return valid;
 }
+
+
+bool __stdcall function_14f2e0(long player_index);
+
+// @retail 0xa9440
+bool function_a9440(long unit_index, long player_index)
+{
+    byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
+    bool result = false;
+    if (!(player[2] & 2) && *(long *)(player + 0x2c) == NONE)
+    {
+        byte *unit = *(byte **)(g_4e0300->data + (unit_index & 0xffff) * 12 + 8);
+        if (*(long *)(unit + 0x130) != NONE)
+            function_a7bc0(unit_index);
+        function_14cad0(player_index, unit_index);
+        function_14f2e0(player_index);
+        result = true;
+    }
+    return result;
+}
