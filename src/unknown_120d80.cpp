@@ -126,6 +126,15 @@ void function_120df0(long index, wchar_t const *name)
 	global_preferences_globals.dirty = true;
 }
 
+struct s_player_profile_settings;
+bool function_1a0560(wchar_t const *name, s_player_profile_settings *settings, long *file_index);
+
+// @retail 0x120e20
+void function_120e20(long *profile_index, long controller_index)
+{
+	function_1a0560(global_preferences_globals.current.names[controller_index], NULL, profile_index);
+}
+
 // @retail 0x120e40
 void function_120e40(wchar_t const *name)
 {

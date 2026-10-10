@@ -10,11 +10,6 @@ struct s_player_profile_settings;
 
 
 
-// @stub 0x120e20
-void function_120e20(long *profile_index, long controller_index)
-{
-}
-
 /* lane L: a map's time (unknown_235b46.cpp) */
 // @stub 0x122db0
 long function_122db0(char const *map_name, long mode)
