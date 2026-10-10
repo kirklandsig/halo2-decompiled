@@ -363,6 +363,16 @@ void network_session_member_state_initialize(c_class_58d20 *session, long member
 	state->unknown10 = network_session_time_now();
 }
 
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
+PRIVATE __forceinline void function_5f972(s_network_observer_channel *arg_0, long arg_1)
+{
+ byte local_0 = (byte)(1 << arg_1);
+ byte local_1 = arg_0->owner_mask;
+ local_0 = ~local_0;
+ arg_0->owner_mask = local_1 & local_0;
+}
+
 // @retail 0x5f970
 void network_session_member_state_dispose(c_class_58d20 *session, long member_index)
 {
@@ -370,20 +380,24 @@ void network_session_member_state_dispose(c_class_58d20 *session, long member_in
 
 	if (session_state_is_live(session) && session->function_058d20() && state->flag1 && state->flag2)
 	{
-		for (long i = 0; i < MAXIMUM_PLAYERS_PER_SESSION; i++)
+		long i = 0;
+		const byte *local_0 = (const byte *)session->member_states + 2;
+		for (; i < MAXIMUM_PLAYERS_PER_SESSION; i++, local_0 += sizeof(s_network_session_member_state))
 		{
-			if (i != member_index && session->member_states[i].unknown00 && session->member_states[i].flag1 && session->member_states[i].flag2)
+			_ReadWriteBarrier();
+			if (i != member_index && *(const bool *)(local_0 - 2) && *(const bool *)(local_0 - 1) && *local_0)
 				break;
 		}
 	}
 	if (state->unknown04 != NONE)
 	{
-		session->observer->channels[state->unknown04].owner_mask &= ~(1 << session->value10);
+		function_5f972(&session->observer->channels[state->unknown04], session->value10);
 		state->unknown04 = NONE;
 	}
 	memset(state, 0, sizeof(*state));
 	state->unknown04 = NONE;
 }
+#pragma function(_ReadWriteBarrier)
 
 /* ---- the session's secure key ---- */
 
@@ -673,11 +687,11 @@ void c_class_58d20::leave(bool immediately)
 	{
 		switch (state)
 		{
-		case 1:
-			network_session_leave_joining(session);
-			break;
 		case 3:
 			network_session_leave_join_request(session);
+			break;
+		case 1:
+			network_session_leave_joining(session);
 			break;
 		case 5:
 		case 7:
@@ -726,8 +740,9 @@ void network_session_close(c_class_58d20 *session)
 			if (session->member_states[i].unknown00)
 				network_session_member_state_dispose(session, i);
 		}
-		session->update7650++;
+		long local_0 = *(volatile long *)&session->update7650;
 		session->current_member = NONE;
+		session->update7650 = local_0 + 1;
 		memset(session->data761c, 0, sizeof(session->data761c));
 		session->value7654 = NONE;
 		session->value7658 = NONE;

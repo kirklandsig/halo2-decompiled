@@ -838,10 +838,10 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
  switch (g_4e6948->mode)
  {
  case 1: world->state = 1; break;
- case 2: world->state = 3; break;
  case 3: world->state = 2; break;
- case 4: world->state = 5; break;
+ case 2: world->state = 3; break;
  case 5: world->state = 4; break;
+ case 4: world->state = 5; break;
  default: __assume(0);
  }
  world->unknown18 = 0;

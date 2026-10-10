@@ -145,15 +145,8 @@ bool c_session_state_pre_game::update()
 				function_06df60(o, 0, 0, 0);
 			}
 			break;
-		case 1:
-			if (function_058d50(a))
-			{
-				result = function_06e360();
-			}
-			if (a->function_058d20())
-			{
-				result = function_06e410();
-			}
+		case 5:
+			function_06df60(o, 4, 0, 0);
 			break;
 		case 2:
 		case 3:
@@ -167,8 +160,18 @@ bool c_session_state_pre_game::update()
 				}
 			}
 			break;
-		case 5:
-			function_06df60(o, 4, 0, 0);
+		case 1:
+			if (function_058d50(a))
+			{
+				result = function_06e360();
+			}
+			if (a->function_058d20())
+			{
+				result = function_06e410();
+			}
+			break;
+		case 15:
+			function_06df60(o, 5, 0, 0);
 			break;
 		case 6:
 		case 7:
@@ -179,9 +182,6 @@ bool c_session_state_pre_game::update()
 		case 12:
 		case 13:
 			function_06df60(o, 6, 0, 0);
-			break;
-		case 15:
-			function_06df60(o, 5, 0, 0);
 			break;
 		default:
 			__assume(0);
@@ -807,6 +807,13 @@ static inline long session_time_get(void)
 	return time;
 }
 
+#pragma inline_depth(0)
+PRIVATE __forceinline void function_6dfa1(s_session_owner *arg_0)
+{
+ function_06df60(arg_0, 1, 0, 0);
+}
+#pragma inline_depth(255)
+
 // @retail 0x6dfa0 standard
 bool c_session_state::function_06dfa0()
 {
@@ -836,11 +843,11 @@ bool c_session_state::function_06dfa0()
 	{
 		if (b->state == 0)
 		{
-			function_06df60(o, 1, 0, 0);
+			function_06df60(owner, 1, 0, 0);
 		}
 		else if (function_058d90(b))
 		{
-			function_06df60(o, 1, 0, 0);
+			function_6dfa1(owner);
 		}
 	}
 	else
@@ -855,7 +862,7 @@ bool c_session_state::function_06dfa0()
 	{
 		if (a->state == 0 || function_058d90(a))
 		{
-			function_06df60(o, 0, 0, 0);
+			function_06df60(owner, 0, 0, 0);
 		}
 	}
 	return result;
@@ -881,11 +888,15 @@ bool c_session_state_pre_game::function_06e360()
 		unknown14 = session_time_get();
 		unknown18 = countdown;
 	}
-	if (countdown >= 0 && session_time_get() - unknown14 >= 1000 && countdown > 0)
+	if (countdown >= 0)
 	{
-		unknown14 = session_time_get();
-		unknown18 = --countdown;
-		network_session_start_countdown(session, countdown, true, 0, NULL);
+		long local_0 = unknown14;
+		if (session_time_get() - local_0 >= 1000 && countdown > 0)
+		{
+			unknown14 = session_time_get();
+			unknown18 = --countdown;
+			network_session_start_countdown(session, countdown, true, 0, NULL);
+		}
 	}
 	return false;
 }

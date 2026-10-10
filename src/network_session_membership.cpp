@@ -755,14 +755,16 @@ void __stdcall function_60400(c_class_58d20 *session, const byte *current, const
     byte *entry = update + 0x14 + (*(short *)(update + 0x10))++ * 0x104;
     *(short *)entry = (short)(*local_0);
     *(short *)(entry + 2) = (short)i;
-    memcpy(entry + 4, member, 0x24);
     if (changed)
     {
+     memcpy(entry + 4, member, 0x24);
      entry[0x28] = true;
      entry[0x29] = member[0x24];
      session_parameters_build_update((s_session_parameters_update *)(entry + 0x2c),
       (const s_session_parameters *)(member + 0x28), (const s_session_parameters *)(old_member + 0x28));
     }
+    else
+     memcpy(entry + 4, member, 0x24);
    }
   }
  }
@@ -795,7 +797,9 @@ void __stdcall function_60400(c_class_58d20 *session, const byte *current, const
   if (*(const dword *)(current + 0x10d0) & (1 << i))
   {
    const byte *player = current + 0x10d4 + i * 0x13c;
-   const byte *old_player = (retained & (1 << i)) ? previous + 0x10d4 + i * 0x13c : 0;
+   const byte *old_player = 0;
+   if (retained & (1 << i))
+    old_player = previous + 0x10d4 + i * 0x13c;
    if (old_player && *(const long *)(player + 0x14) == *(const long *)(old_player + 0x14) &&
     !memcmp(player + 0x18, old_player + 0x18, 0x90) && !memcmp(player + 0xa8, old_player + 0xa8, 0x90) &&
     *(const long *)(player + 0x138) == *(const long *)(old_player + 0x138))
