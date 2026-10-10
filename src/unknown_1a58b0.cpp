@@ -644,14 +644,14 @@ void function_1a6d80(void)
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
-	short const *local_0 = &id;
-	short local_1 = *local_0;
 	s_actor_view *owner = actor_get(owner_index);
+	short local_1 = *(short volatile *)&id;
+	short local_2 = g_46eeb8[local_1]->index;
 	s_action_table_entry *entry = &g_4f2cc0[local_1][owner->unknown004];
 	s_action_node **nodes = &g_4f0a60[entry->index];
 	short node_count = entry->count;
 
-	*valid = function_1a71f0(node_count, g_46eeb8[local_1]->index, nodes);
+	*valid = function_1a71f0(node_count, local_2, nodes);
 	*count = node_count;
 	return nodes;
 }
@@ -1434,13 +1434,16 @@ bool function_1a5b00(long object_index, short team, bool *has_hostile)
 			{
 				if (!(bool)((definition->seats[iterator.seat_index].flags >> 11) & 1))
 				{
-					return *has_hostile = true;
+					result = true;
+					*has_hostile = result;
+					goto local_0;
 				}
 			}
 			else
 				result = true;
 		}
 	}
+local_0:
 	return result;
 }
 

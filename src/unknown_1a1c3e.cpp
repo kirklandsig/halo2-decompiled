@@ -680,7 +680,7 @@ void motion_sensor_render(long local_player_index, short const *origin)
 			s_motion_sensor_sample *sample = &sensor->samples[(g_51e994->sample_index + i) % 10];
 			real fraction = (real)age * 0.1f;
 			real scale = fraction * fraction;
-			fraction = (real)(pow(1.0 - fraction, 3.5) * 7.0f + 1.0f);
+			fraction = pow(1.0f - fraction, 3.5f) * 7.0f + 1.0f;
 			for (long j = 0; j < sample->count; j++)
 			{
 				s_motion_sensor_blip *blip = &sample->blips[j];

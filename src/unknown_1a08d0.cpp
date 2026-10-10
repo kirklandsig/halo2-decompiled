@@ -251,18 +251,19 @@ long __stdcall function_1a0e70(s_async_task *task)
 {
 	s_read_position_task *read = &task->read_position;
 	LONG high = 0;
-	DWORD bytes_read = 0;
+	task = 0;
 	dword size = read->size - read->bytes_read > g_46e488 ? g_46e488 : read->size - read->bytes_read;
 
 	if (SetFilePointer(read->file.handle, read->offset, &high, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
 	{
-		ReadFile(read->file.handle, (byte *)read->buffer + read->bytes_read, size, &bytes_read, NULL);
-		read->bytes_read += bytes_read;
-		read->offset += bytes_read;
+		ReadFile(read->file.handle, (byte *)read->buffer + read->bytes_read, size, (DWORD *)&task, NULL);
+		dword local_0 = (dword)task;
+		read->bytes_read += local_0;
+		read->offset += local_0;
 		if (read->bytes_read_out)
 			*read->bytes_read_out = read->bytes_read;
 	}
-	if (read->size == read->bytes_read || bytes_read < size)
+	if (read->size == read->bytes_read || (dword)task < size)
 		return 1;
 	return 0;
 }
