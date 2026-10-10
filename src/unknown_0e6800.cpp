@@ -7,7 +7,8 @@
 // @retail 0xe6800
 bool function_0e6800(c_animation_channel const *channel)
 {
-	bool playing = (channel->flags & 1) && !(channel->unknown11 & 9);
+	// Retail materializes a full-width 0/1, then tests its low byte.
+	long playing = ((channel->flags & 1) && !(channel->unknown11 & 9)) ? 1 : 0;
 
-	return !playing;
+	return !(byte)playing;
 }
