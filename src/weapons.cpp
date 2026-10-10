@@ -2828,14 +2828,7 @@ bool __stdcall function_ffc60(long weapon_index, long other_index, long player_i
         s_weapon_magazine *source = NULL;
         if (available > 0)
         {
-            if (weapon->definition_index == other->definition_index)
-            {
-                source = &other->magazines[i];
-                long total = source->rounds_unloaded + source->rounds_loaded;
-                available = (short)(total < available ? total : available);
-                acquired = available > 0;
-            }
-            else
+            if (!(weapon->definition_index == other->definition_index))
             {
                 long count = *(long *)((byte *)magazine_definition + 0x54);
                 s_ammo_conversion_entry *entries = *(s_ammo_conversion_entry **)((byte *)magazine_definition + 0x58);
@@ -2844,6 +2837,13 @@ bool __stdcall function_ffc60(long weapon_index, long other_index, long player_i
                 if (j >= count) continue;
                 available = entries[j].count < available ? entries[j].count : available;
                 acquired = true;
+            }
+            else
+            {
+                source = &other->magazines[i];
+                long total = source->rounds_unloaded + source->rounds_loaded;
+                available = (short)(total < available ? total : available);
+                acquired = available > 0;
             }
             if (available > 0 && g_4e6948->mode != 4)
             {

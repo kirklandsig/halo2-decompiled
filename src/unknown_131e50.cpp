@@ -4,6 +4,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 
+__declspec(noinline) dword __cdecl pack_color4f(const color4f *color);
 // @retail 0x131e50
 dword __cdecl pack_color4f(const color4f *color)
 {

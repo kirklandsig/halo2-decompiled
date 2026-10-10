@@ -7,8 +7,7 @@ void __stdcall function_4d0b0(long a, long b, long c, long d, long e, long f, vo
 // @stub 0x423c0
 void __stdcall function_423c0(void *payload) {}
 
-// @stub 0x4f010
-void __stdcall function_4f010(void *payload) {}
+
 
 // @stub 0x508d0
 void __stdcall function_508d0(void *payload) {}

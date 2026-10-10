@@ -1199,14 +1199,21 @@ __declspec(noinline) void function_17aec0(s_effect_datum *effect, transform4x3f 
 // @retail 0x17aec0
 void function_17aec0(s_effect_datum *effect, transform4x3f *matrix, short node_index)
 {
-	if (node_index != NONE && (node_index & 0x8000) && effect->unknown58 != NONE)
-	{
-		function_1664da(effect->unknown58, effect->object_index, node_index & 0x7fff, matrix);
-	}
-	else
-	{
-		*matrix = *effect_object_node_matrix(effect->object_index, node_index == NONE ? NONE : (short)(node_index & 0x7fff));
-	}
+    long index;
+    if (node_index != NONE)
+    {
+        if ((node_index & 0x8000) && effect->unknown58 != NONE)
+        {
+            function_1664da(effect->unknown58, effect->object_index, node_index & 0x7fff, matrix);
+            return;
+        }
+        index = node_index & 0x7fff;
+    }
+    else
+        index = NONE;
+    s_effect_object *object = OBJECT_GET(effect->object_index);
+    transform4x3f const *nodes = (transform4x3f const *)((byte *)object + object->nodes_offset);
+    *matrix = nodes[(short)index];
 }
 
 // @retail 0x17af30
