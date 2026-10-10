@@ -489,7 +489,7 @@ void render_model_choose_permutations(long render_model_index, long variant_inde
 	}
 }
 
-void effect_parameters_initialize(s_effect_parameters *parameters);
+__declspec(noinline) void effect_parameters_initialize(s_effect_parameters *parameters);
 long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 void function_177260(long effect_index, bool flag);
 

@@ -30,11 +30,11 @@ void function_1eb5e0(void)
 // @retail 0x1eb5f0
 void function_1eb5f0(void)
 {
-	s_unknown_1eb550 *data = g_51e9c4;
+	s_unknown_1eb550 *reset_settings_block = g_51e9c4;
 
-	data->unknown0 = 4.1712594f;
-	data->unknown4 = 1.0f;
-	data->unknown8 = 0.0011f;
-	data->unknown18 = 0;
-	data->vector = *g_4687a4;
+	reset_settings_block->unknown0 = 4.1712594f;
+	reset_settings_block->unknown4 = 1.0f;
+	reset_settings_block->unknown8 = 0.0011f;
+	reset_settings_block->unknown18 = 0;
+	reset_settings_block->vector = *g_4687a4;
 }

@@ -37,7 +37,7 @@ struct s_type_d42621
 // @retail 0x16d180
 long function_16d180(long model_index, string_handle name)
 {
-	long result = NONE;
+	long variant_slot_found = NONE;
 
 	if (model_index != NONE)
 	{
@@ -47,7 +47,7 @@ long function_16d180(long model_index, string_handle name)
 		{
 			if (model->variant_count > 0)
 			{
-				result = 0;
+				variant_slot_found = 0;
 			}
 		}
 		else
@@ -56,14 +56,14 @@ long function_16d180(long model_index, string_handle name)
 			{
 				if (model->variants[i].name == name)
 				{
-					result = i;
+					variant_slot_found = i;
 					break;
 				}
 			}
 		}
 	}
 
-	return result;
+	return variant_slot_found;
 }
 
 // @retail 0x16d1d0

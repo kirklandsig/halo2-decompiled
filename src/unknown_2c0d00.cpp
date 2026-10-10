@@ -252,12 +252,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             }
         }
     }
-    s_location location;
+    struct { s_location location; point3f raised; } query;
+    s_location &location = query.location;
     if (unit_index != NONE)
         location = *(s_location *)((byte *)ai_object_get(unit_index) + 0x28);
     else
     {
-        point3f raised;
+        point3f &raised = query.raised;
         raised.x = g_4687b0->i * 0.05f + position->x;
         raised.y = g_4687b0->j * 0.05f + position->y;
         raised.z = g_4687b0->k * 0.05f + position->z;

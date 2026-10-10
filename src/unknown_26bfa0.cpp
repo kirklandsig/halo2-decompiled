@@ -99,7 +99,9 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 			{
 				struct { s_collision_result_1697c0 collision; long field_4c, field_50, field_54, field_58; } contact;
 
-				query.point = object->center;
+				query.point.x = object->center.x;
+				query.point.y = object->center.y;
+				query.point.z = object->center.z;
 				contact.collision.unknown24 = NONE;
 				result = function_26d100(g_4687b0, (long *)*location_reference, &contact.collision, &query.point);
 			}

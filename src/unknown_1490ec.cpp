@@ -39,33 +39,33 @@ struct s_screen_view
 // @retail 0x1490ec
 bool window_manager_channel_window_in_use(long channel, long index)
 {
-	bool result = false;
+	bool channel_slot_busy = false;
 
 	switch (channel)
 	{
 	case 0:
-		result = index == 4 && WINDOW_IN_USE(&g_54d598.window_0);
+		channel_slot_busy = index == 4 && WINDOW_IN_USE(&g_54d598.window_0);
 		break;
 	case 1:
-		result = WINDOW_IN_USE(&g_54d598.windows_1[index]);
+		channel_slot_busy = WINDOW_IN_USE(&g_54d598.windows_1[index]);
 		break;
 	case 2:
-		result = index == 4 && WINDOW_IN_USE(&g_54d598.window_2);
+		channel_slot_busy = index == 4 && WINDOW_IN_USE(&g_54d598.window_2);
 		break;
 	case 3:
-		result = WINDOW_IN_USE(&g_54d598.windows_3[index]);
+		channel_slot_busy = WINDOW_IN_USE(&g_54d598.windows_3[index]);
 		break;
 	case 4:
-		result = index == 4 && WINDOW_IN_USE(&g_54d598.window_4);
+		channel_slot_busy = index == 4 && WINDOW_IN_USE(&g_54d598.window_4);
 		break;
 	case 5:
-		result = WINDOW_IN_USE(&g_54d598.windows_5[index]);
+		channel_slot_busy = WINDOW_IN_USE(&g_54d598.windows_5[index]);
 		break;
 	default:
-		result = index == 4 && WINDOW_IN_USE(&g_54d598.default_window);
+		channel_slot_busy = index == 4 && WINDOW_IN_USE(&g_54d598.default_window);
 		break;
 	}
-	return result;
+	return channel_slot_busy;
 }
 
 // @retail 0x14917c

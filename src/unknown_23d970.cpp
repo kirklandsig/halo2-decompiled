@@ -506,7 +506,7 @@ void function_23dda0(s_observer_state *observer)
 }
 
 s_object *function_badc0(long object_index, dword type_mask);
-s_player_state *function_16f3a0(long index);
+__declspec(noinline) s_player_state *function_16f3a0(long index);
 real function_30bf0(vector3f *vector);
 vector3f *function_11d090(vector3f const *vector, vector3f *out);
 void function_172520(s_observer_command *command);
@@ -543,7 +543,6 @@ void __stdcall function_23de50(void *state, void *input, s_observer_command *out
 {
 	s_observer_state *observer = (s_observer_state *)state;
 	s_follow_output_23de50 *command = (s_follow_output_23de50 *)output;
-	bool advance = false;
 	if (observer->target_unit_index != NONE && !function_badc0(observer->target_unit_index, -1))
 		observer->target_unit_index = NONE;
 	if (observer->target_unit_index == NONE)
@@ -634,6 +633,7 @@ void __stdcall function_23de50(void *state, void *input, s_observer_command *out
 	real delta = ((real *)input)[2];
 	observer->timer -= delta;
 	observer->delay = 0.f > observer->delay - delta ? 0.f : observer->delay - delta;
+	bool advance = false;
 	if (observer->player_index != NONE)
 	{
 		s_player *player = PLAYER(g_4e8c24, observer->player_index & 0xffff);

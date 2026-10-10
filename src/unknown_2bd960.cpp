@@ -375,7 +375,7 @@ void function_2bde90(real t, point3f *out, point3f *points)
 // @retail 0x2be050
 void hill_build_polygon(s_polygon_2be *hill, long index)
 {
-	long half = hill->count / 2;
+	long half;
 	long vertex = 0;
 	long marker_ids[8];
 	point3f control[4];
@@ -384,7 +384,8 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 	long i;
 	long count;
 
-	function_2bdd20((s_spline_2bd *)hill, points);
+	half = hill->count / 2;
+ function_2bdd20((s_spline_2bd *)hill, points);
 	for (i = 0; i < half; i++)
 	{
 		long steps = hill->steps[i];
@@ -423,9 +424,8 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 		while (i < count);
 	}
 	real scale = 1.0f / (real)count;
-	hill->center_x *= scale;
-	hill->center_y *= scale;
-	hill->center_z *= scale;
+	point3f *center = (point3f *)&hill->center_x;
+ center->x = center->x * scale; center->y = center->y * scale; center->z = center->z * scale;
 	volatile real *radius = &hill->radius;
 	*radius = 0.0f;
 	if (count > 0)

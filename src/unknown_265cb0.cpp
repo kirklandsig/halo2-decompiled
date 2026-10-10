@@ -963,7 +963,9 @@ bool function_267840(long actor_index, long prop_index, vector3f *direction)
 					long rounded;
 					__asm { fld ticks }
 					__asm { fistp rounded }
-					result = g_510c54->game_time - player->unknown0c < rounded;
+					long elapsed = g_510c54->game_time - player->unknown0c;
+     result = false;
+     if (elapsed < rounded) result = true;
 				}
 				function_cb7e0(node->object_index, direction);
 				if (!result && *(char *)((byte *)actor + 0x324) > 0)

@@ -856,6 +856,8 @@ void __stdcall function_28e090(long actor_index, long perception_index);
 // @retail 0x1e02f0
 long __stdcall function_1e02f0(long squad_index, long entry_index, long unit_index, long perception_index, bool flag)
 {
+ long const volatile *entry_reference = &entry_index;
+
 	
 	
 	long const volatile *unit_reference = &unit_index;
@@ -864,9 +866,9 @@ long __stdcall function_1e02f0(long squad_index, long entry_index, long unit_ind
 	byte *squad = NULL;
 	if (squad_index != NONE)
 		squad = g_51e9d8->data + (squad_index & 0xffff) * 0x98;
-	if ((*unit_reference != NONE || *perception_reference != NONE) && entry_index != NONE)
+	if ((*unit_reference != NONE || *perception_reference != NONE) && *entry_reference != NONE)
 	{
-		long actor_index = function_1dfb90(entry_index);
+		long actor_index = function_1dfb90(*entry_reference);
 		if (actor_index != NONE)
 		{
 			s_actor_view *actor = actor_get(actor_index);
@@ -1011,98 +1013,4 @@ void __stdcall function_c6f80(long unit_index, long ticks, long flags);
 void function_101a10(long weapon_index, real fraction);
 void function_1018b0(long weapon_index, short const *rounds);
 
-// @retail 0x1e2a90
-void function_1e2a90(long actor_index)
-{
-	long const *index_reference = &actor_index;
-	s_actor_view *actor = actor_get(*index_reference);
-	byte *actor_bytes = (byte *)actor;
-	byte *weapon_options = NULL;
-	long weapon_index = function_1e1f20(*index_reference);
-	if (weapon_index != NONE)
-		weapon_options = (byte *)function_1e5280(*index_reference,
-			ai_object_get(weapon_index)->definition_index);
-	if (*(short *)(actor_bytes + 0x84) == 4 && *(short *)(actor_bytes + 0x86) >= 3 &&
-		actor->unknown018 != NONE)
-	{
-		byte *unit = (byte *)ai_object_get(actor->unknown018);
-		if ((unit[0x134] & 1) && *(signed char *)(unit + 0x1f5) > 0 &&
-			(function_cbd50(actor->unknown018, *(signed char *)(unit + 0x212)) != NONE ||
-			function_cbd50(actor->unknown018, *(signed char *)(unit + 0x213)) != NONE))
-		{
-			real probability = 0.1f;
-			if (weapon_options)
-			{
-				real value = *(real *)(weapon_options + 0x58);
-				probability = value < 0.1f ? 0.1f : (value > 0.6f ? 0.6f : value);
-			}
-			if (actor_bytes[0x225] || (*(short *)(actor_bytes + 0x722) > 0 &&
-				*(real *)(actor_bytes + 0x764) < 3.0f))
-			{
-				real increased = probability * 4.0f;
-				if (increased > 0.6f) increased = 0.6f;
-				if (probability <= increased) probability = increased;
-			}
-			if (probability > function_259a0(&g_4e7408->unknown0))
-			{
-				real delay;
-				if (weapon_options && *(real *)(weapon_options + 0x5c) != 0.0f)
-				{
-					real value = *(real *)(weapon_options + 0x5c);
-					delay = value < 0.8f ? 0.8f : (value > 1.3f ? 1.3f : value);
-				}
-				else
-					delay = function_259d0(&g_4e7408->unknown0, NULL, 0, 0.8f, 1.3f);
-				long ticks = function_1469f0(delay);
-				function_c6f80(actor->unknown018, (short)ticks, 0x210000);
-				unit[0x1f5] = (byte)ticks;
-			}
-		}
-	}
-	if (actor->unknown018 != NONE)
-	{
-		byte *unit = (byte *)ai_object_get(actor->unknown018);
-		byte *grenade_options = (byte *)function_1e53e0(actor->unknown054,
-			*(signed char *)(unit + 0x23c));
-		long weapons[2];
-		weapons[0] = unit_get_current_weapon(actor->unknown018);
-		weapons[1] = secondary_weapon_get(actor->unknown018);
-		if (!(g_4e6948->state == 1 && g_4f55e5) &&
-			(!*((byte *)g_4f55d0 + 0x340) || (grenade_options &&
-			*(real *)(grenade_options + 0x38) > function_x82e52f(&g_4e7408->unknown0, NULL, 0))))
-			*(short *)(unit + 0x23e) = 0;
-		if (weapon_options)
-		{
-			long i = 0;
-			do
-			{
-				if (weapons[i] != NONE)
-				{
-					real lower = *(real *)(weapon_options + 0x8c);
-					real upper = *(real *)(weapon_options + 0x90);
-					if (lower > 0.0f || upper > 0.0f)
-					{
-						real fraction = lower + (upper - lower) *
-							function_x82e52f(&g_4e7408->unknown0, NULL, 0);
-						if (g_4e6948->state == 1 && g_4f55e0) fraction *= 0.5f;
-						function_101a10(weapons[i], fraction);
-					}
-					short minimum = *(short *)(weapon_options + 0x94);
-					short maximum = *(short *)(weapon_options + 0x96);
-					if (minimum > 0 || maximum > 0)
-					{
-						dword random = _random(&g_4e7408->unknown0, NULL, 0);
-						long range = (short)(maximum + 1) - minimum;
-						short rounds[2] = { (short)(((random * range) >> 16) + minimum), 0 };
-						if (g_4e6948->state == 1 && g_4f55e0)
-							rounds[0] = (short)(rounds[0] * 0.5f);
-						function_1018b0(weapons[i], rounds);
-					}
-				}
-			} while (++i < 2);
-		}
-	}
-	if (actor->unknown07c != NONE)
-		++*(short *)(g_502420->data + (actor->unknown07c & 0xffff) * 0x50 + 0x3e);
-	function_1e1a00(*index_reference, 1);
-}
+

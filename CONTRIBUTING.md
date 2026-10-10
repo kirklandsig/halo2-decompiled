@@ -5,7 +5,8 @@ when the original compiler turns our source back into the retail XBE's exact
 bytes, and `tools/check.py` decides that automatically.
 
 Please read [LEGAL.md](LEGAL.md) and [PROVENANCE.md](PROVENANCE.md) before
-contributing.
+contributing. For a step-by-step start, including a prompt to paste into an AI
+coding agent, see [docs/START_HERE.md](docs/START_HERE.md).
 
 ## Contribution provenance
 
@@ -65,13 +66,20 @@ address range or by source file:
    [Active claims](https://github.com/kirklandsig/halo2-decompiled/issues/9)
    issue, which lists every range being worked on (contributors' and our
    own), and the open pull requests, each of which names its range.
-2. Pick something unclaimed. A group of related functions, for example one
-   object type's callbacks found through its type table in the executable,
-   is a good unit. Small leaf functions are the easiest start;
-   `python tools/ready.py` lists functions whose callees are already done.
-   Save this issue's Active claims table and pass it as
-   `python tools/ready.py --claims claims.md` to leave those addresses out.
-   That does not read GitHub, and it does not treat the Finished section as
+2. Pick something nobody else holds. The maintainers' automated lanes cover
+   the whole game, but **they make way for contributors**:
+   - You may claim one source file, or an address range of up to 0x2000
+     bytes, inside any maintainer lane, and the lanes then leave it alone.
+   - Only another person's claim (an `@user` row) is off limits.
+   - A claim with no activity for two weeks lapses.
+
+   `python tools/open_work.py --claims claims.md` lists what is open, with
+   the claim line to use. It takes a saved copy of the issue. A group of
+   related functions, for example one object type's callbacks found through
+   its type table in the executable, is a good unit. Small leaf functions
+   are the easiest start; `python tools/ready.py` lists functions whose
+   callees are already done, and `--claims` leaves every claimed address out.
+   Neither tool reads GitHub, and neither treats the Finished section as
    claimed.
 3. Open a **draft pull request** early with the range in its description,
    for example "Retail range claimed: `0xd5990`–`0xd9fff` (damage code)".

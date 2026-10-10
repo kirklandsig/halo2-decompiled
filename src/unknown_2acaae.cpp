@@ -121,10 +121,10 @@ void c_progress_screen::v3()
 // @retail 0x2acc8c
 bool c_progress_screen::v10(s_widget_event *event)
 {
-	bool result = false;
+	bool handled_event_flag = false;
 	if (event->type == 5)
-		result = true;
-	return result;
+		handled_event_flag = true;
+	return handled_event_flag;
 }
 
 // @retail 0x2acc9c

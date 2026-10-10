@@ -285,19 +285,19 @@ void function_1955d0(s_bitstream *stream, void const *source, long bits)
 // @retail 0x195720
 void function_195720(s_bitstream *stream, dword value, long count)
 {
-	long position = stream->bit_position;
-	long remaining = (stream->size_in_bytes << 3) - position;
+	long remaining = (stream->size_in_bytes << 3) - stream->bit_position;
 	long n;
 	if (remaining > count)
 		n = count;
 	else
 		n = remaining;
-	if (n > 0)
+	if (0 < n)
 	{
 		value &= 0xffffffff >> (32 - n);
-		long first = position >> 5;
-		long last = (position + n - 1) >> 5;
-		long offset = position & 0x1f;
+		long first;
+		first = stream->bit_position >> 5;
+		long last = (stream->bit_position + n - 1) >> 5;
+		long offset = stream->bit_position & 0x1f;
 		value &= 0xffffffff >> (32 - n);
 		if (first == last)
 			stream->buffer[first] |= value << offset;

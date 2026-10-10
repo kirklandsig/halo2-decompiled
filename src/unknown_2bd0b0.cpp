@@ -277,7 +277,9 @@ PRIVATE __forceinline long find_hill_team_player_2bd(word team_mask)
 // @retail 0x2bd460
 void function_2bd460(long before_players, long after_players)
 {
+ struct { long saved_before; s_event event; } frame;
     word before = (word)function_2bd330(before_players);
+ frame.saved_before = before;
     volatile word after = (word)function_2bd330(after_players);
     if (before != after && after != 0)
     {
@@ -285,7 +287,7 @@ void function_2bd460(long before_players, long after_players)
         if (!multiple)
         {
             long player = find_hill_team_player_2bd(after);
-            s_event event;
+            s_event &event = frame.event;
             game_engine_event_initialize_inline(&event, 6, function_15eaf0() ? 5 : 1);
             if (player != NONE)
             {
@@ -294,13 +296,14 @@ void function_2bd460(long before_players, long after_players)
             }
             game_engine_event_send_inline(&event);
         }
+        before = (word)frame.saved_before;
         if (multiple && before && !((before - 1) & before))
         {
             word added = before ^ after;
             if (added)
             {
                 long player = find_hill_team_player_2bd(added);
-                s_event event;
+                s_event &event = frame.event;
                 game_engine_event_initialize_inline(&event, 6, function_15eaf0() ? 6 : 2);
                 if (player != NONE)
                     game_engine_event_set_cause_player(&event, player);

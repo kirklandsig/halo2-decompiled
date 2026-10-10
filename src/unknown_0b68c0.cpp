@@ -426,7 +426,7 @@ s_object_lifecycle_ab g_4411a4 =
 
 bool object_or_parent_hidden(long object_index);
 bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
 void function_b8b70(long object_index);
 void function_bf090(long object_index);
 void __stdcall function_10a250(long object_index);

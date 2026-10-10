@@ -24,7 +24,7 @@ struct s_tag_view_d4
 // @retail 0x1e5300
 void *function_1e5300(long actor_index, long key)
 {
-	void *result = NULL;
+	void *matched_entry_ptr = NULL;
 	long index = actor_get(actor_index)->unknown054;
 	while (index != NONE)
 	{
@@ -35,7 +35,7 @@ void *function_1e5300(long actor_index, long key)
 			s_entry_d4 *entry = &tag->entries[i];
 			if (entry->key == key)
 			{
-				result = entry;
+				matched_entry_ptr = entry;
 				goto done;
 			}
 			i++;
@@ -43,7 +43,7 @@ void *function_1e5300(long actor_index, long key)
 		index = tag->parent_index;
 	}
 done:
-	return result;
+	return matched_entry_ptr;
 }
 
 /* an entry (0xcc bytes) of the character's block at +0xcc, keyed by the

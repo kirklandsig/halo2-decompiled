@@ -1272,7 +1272,7 @@ extern bool g_4ed39d;
 // @retail 0x19ae0f
 void function_19ae0f(long change, long pending, long error)
 {
-	long const *error_reference = &error;
+	long const volatile *error_reference = &error;
 
 	if (pending)
 	{
@@ -1287,7 +1287,7 @@ void function_19ae0f(long change, long pending, long error)
 	{
 		word user_flags = function_1901fc();
 		long mode = g_47ff90;
-		bool show_game_menu = false;
+		bool volatile show_game_menu = false;
 		bool show_lobby = false;
 		bool show_main_menu = false;
 		s_screen_parameters parameters;

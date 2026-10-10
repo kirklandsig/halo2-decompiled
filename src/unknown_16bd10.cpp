@@ -555,14 +555,13 @@ bool camera_scripting_animation_matrix_get(transform4x3f *matrix, real *seconds_
 	bool result = false;
 	s_camera_animation_state *camera_animation = &camera_scripting_state->animation;
 	s_animation_state state;
-	c_type_709360 animation_id;
 
 	state.initialize(camera_animation->graph_tag_index, NONE, true);
-	animation_id = function_1dd0b0(graph_tag_get(state.graph_tag_index), camera_animation->animation_name);
+	c_type_709360 animation_id = function_1dd0b0(graph_tag_get(state.graph_tag_index), camera_animation->animation_name);
 	if (animation_id.index != NONE)
 	{
 		long unit_index;
-		real seconds;
+		real seconds = 0.0f;
 		transform4x3f animation_matrix;
 
 		function_1daea0(graph_tag_get(state.graph_tag_index), animation_id);
@@ -572,7 +571,6 @@ bool camera_scripting_animation_matrix_get(transform4x3f *matrix, real *seconds_
 			s_camera_unit *unit = ((s_camera_unit_header *)g_4e0300->data)[unit_index & 0xffff].unit;
 			s_camera_unit_animation *unit_animation = (s_camera_unit_animation *)((byte *)unit + unit->animation_offset);
 
-			seconds = 0.0f;
 			if (unit_animation->graph_tag_index != NONE && unit_animation->animation_index != NONE)
 			{
 				seconds = unit_animation->frame * (1.0f / 30.0f);

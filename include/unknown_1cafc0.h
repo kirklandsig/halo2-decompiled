@@ -64,7 +64,7 @@ struct s_animation_state
 	void transition_offset_compute();
 	bool animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags);
 	bool initialize(long graph_tag_index, long model_tag_index, bool flag);
-	void channels_clear_partial();
+	__declspec(noinline) void channels_clear_partial();
 	short node_count_get();
 	long node_find(long name);
 	s_graph_entry *entry_get(long index);

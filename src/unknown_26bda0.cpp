@@ -160,7 +160,7 @@ bool function_26be90(long object_index)
 // @retail 0x26bf10
 bool function_26bf10(long object_index)
 {
-	bool result = false;
+	bool root_check_outcome = false;
     long root = NONE;
 
 	while (object_index != NONE)
@@ -176,16 +176,16 @@ bool function_26bf10(long object_index)
     {
     case 0:
         if (object->value354 != NONE || object->time350 == g_510c54->game_time)
-            result = true;
+            root_check_outcome = true;
         break;
     case 12:
         if (object->state17c == 1)
-            result = (bool)!object->flags12c.flag7;
+            root_check_outcome = (bool)!object->flags12c.flag7;
         else
-            result = true;
+            root_check_outcome = true;
         break;
     default:
         return false;
     }
-    return result;
+    return root_check_outcome;
 }

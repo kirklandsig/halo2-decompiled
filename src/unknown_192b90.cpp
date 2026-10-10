@@ -11,13 +11,13 @@ real function_12aff0(real a, real b, real c, bool flag);
 // @retail 0x192d70
 real function_192d70(real a, real b, real c)
 {
-	real value = function_12aff0(b, a, c, false);
+	real pre_ratio_scale = function_12aff0(b, a, c, false);
 	real maximum = c;
 
 	if (a > maximum)
 		maximum = a;
 
-	return value * (a / maximum);
+	return pre_ratio_scale * (a / maximum);
 }
 
 /* the five speaker directions: front left, front right, back left, back

@@ -1971,7 +1971,7 @@ void __stdcall function_b9b90(long object_index, bool disable);
 void function_b9c60(long object_index, bool flag);
 void __stdcall function_ba6f0(long object_index, long region_index, long state, bool flag);
 bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long a, long b, long c, long d);
+void __stdcall function_bef30(long object_index, long a, long b, long c, bool d);
 bool function_100390(long weapon_index, long barrel_index);
 bool function_1003e0(long weapon_index, long barrel_index);
 void function_10d4e0(long object_index);
@@ -2156,7 +2156,7 @@ void function_da110(long permutation_index, s_damage_info *info, long object_ind
 			if (!(current->unknown04[0] & 1))
 			{
 				if (function_b9d20(object_index))
-					function_bef30(object_index, 1, 0, 0, 0);
+					function_bef30(object_index, 1, 0, 0, false);
 				*(dword *)current->unknown04 |= 1;
 				function_b8b70(object_index);
 			}

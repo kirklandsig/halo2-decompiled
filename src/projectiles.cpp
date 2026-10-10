@@ -1802,7 +1802,7 @@ void function_1c4b00(long object_index, void *a, void *b, long c);
 void function_b7360(long object_index);
 void function_bba20(long object_index);
 bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long a, long b, long c, long d);
+void __stdcall function_bef30(long object_index, long a, long b, long c, bool d);
 void function_b8b70(long object_index);
 void __stdcall function_b8540(long object_index);
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
@@ -2166,7 +2166,7 @@ void function_f8eb0(long projectile_index, vector3f *displacement)
 			if (!(*(byte *)&object->object_flags & 1))
 			{
 				if (function_b9d20(projectile_index))
-					function_bef30(projectile_index, 1, 0, 0, 0);
+					function_bef30(projectile_index, 1, 0, 0, false);
 				*(dword *)&object->object_flags |= 1;
 				function_b8b70(projectile_index);
 			}

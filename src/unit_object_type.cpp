@@ -479,7 +479,7 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 	s_location const *location, bool unknown);
 void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity, vector3f const *angular_velocity);
 bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long a, long b, long c, long d);
+void __stdcall function_bef30(long object_index, long a, long b, long c, bool d);
 real function_30bf0(vector3f *v);
 void __stdcall function_def60(point3f *point, long arg_159e6d_2, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets);
@@ -3550,7 +3550,7 @@ void function_cc590(long unit_index)
 		again->object_flags &= ~1;
 		if (function_b9d20(unit_index))
 		{
-			function_bef30(unit_index, 0, 1, 0, 0);
+			function_bef30(unit_index, 0, 1, 0, false);
 		}
 		function_b8b70(unit_index);
 	}

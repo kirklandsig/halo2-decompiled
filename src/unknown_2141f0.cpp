@@ -242,7 +242,9 @@ bool function_2141f0(void)
 		break;
 	case 19:
 		{
-			s_cache_copy_request request = g_55be24[0];
+			char request_name[256];
+			long request_priority = g_55be24[0].priority;
+			memcpy(request_name, g_55be24[0].map_name, sizeof(request_name));
 			cache_copy_buffer_release();
 			g_55bd10 = NONE;
 			memset(&g_55b4f0, 0, sizeof(g_55b4f0));
@@ -252,12 +254,12 @@ bool function_2141f0(void)
 			switch (g_55bd08)
 			{
 			case 1:
-				cache_copy_forget(request.map_name);
+				cache_copy_forget(request_name);
 				break;
 			case 3:
-				if (!cache_copy_complete(request.map_name))
+				if (!cache_copy_complete(request_name))
 				{
-					map_copy_request(request.map_name, request.priority);
+					map_copy_request(request_name, request_priority);
 				}
 				break;
 			}

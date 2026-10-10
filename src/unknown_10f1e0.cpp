@@ -1914,7 +1914,7 @@ void (__stdcall *g_467a2c)(long, long, long) = function_114710;
 
 
 long players_first_active_local_player();
-s_player_state *function_16f3a0(long arg_0);
+__declspec(noinline) s_player_state *function_16f3a0(long arg_0);
 bool function_0bfe60(dword const *arg_0, long arg_1);
 
 // @retail 0x1132f0

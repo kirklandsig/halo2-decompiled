@@ -1392,9 +1392,10 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
     real radius, long ignore_object, long ignore_parent, s_shapes *shapes)
 {
     s_shape_counts *counts = (s_shape_counts *)shapes;
-    *(long *)&counts->count[0] = 0;
+    counts->count[0] = 0;
+    counts->count[1] = 0;
     counts->count[2] = 0;
-    long test_world = flags & 1;
+    bool test_world = (flags & 1) != 0;
     if (test_world || (flags & 0xc))
     {
         s_1de2c2 hits;

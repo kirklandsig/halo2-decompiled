@@ -322,7 +322,7 @@ bool function_b9d20(long object_index)
 }
 
 void function_b8b70(long object_index);
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
 
 // @retail 0xb9c60
 void function_b9c60(long object_index, bool flag)
@@ -334,7 +334,7 @@ void function_b9c60(long object_index, bool flag)
         if (!TEST_FIELD_BIT(object->flag0))
         {
             if (function_b9d20(object_index))
-                function_bef30(object_index, 1, 0, 0, 0);
+                function_bef30(object_index, 1, 0, 0, false);
             object->flag0 = true;
             function_b8b70(object_index);
         }
@@ -343,7 +343,7 @@ void function_b9c60(long object_index, bool flag)
     {
         object->flag0 = false;
         if (function_b9d20(object_index))
-            function_bef30(object_index, 0, 1, 0, 0);
+            function_bef30(object_index, 0, 1, 0, false);
         function_b8b70(object_index);
     }
 }
@@ -559,7 +559,7 @@ void __stdcall function_b8460(long object_index, bool detach)
 }
 
 
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
 void __stdcall function_b98e0(long object_index, transform4x3f const *matrix);
 void __stdcall function_b8600(long object_index, long location);
 void __stdcall function_b8890(long object_index);
@@ -575,7 +575,7 @@ void function_b9a90(long object_index)
     s_object_view *node_parent = ((s_object_header_view *)objects->data)[object->parent_index & 0xffff].object;
     transform4x3f const *matrix = (transform4x3f *)((byte *)node_parent + node_parent->node_matrices_offset) + *(char *)((byte *)object + 0x18);
     if (connected)
-        function_bef30(object_index, 1, 0, 0, 0);
+        function_bef30(object_index, 1, 0, 0, false);
     function_b9890(object_index);
     function_b98e0(object_index, matrix);
     if (connected)

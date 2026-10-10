@@ -57,7 +57,7 @@ void function_120d50(bool volatile *done, bool idle);
 unsigned long __stdcall async_thread_proc(void *parameter);
 
 /* unknown_1a08d0.cpp */
-long function_1a0b40(char const *path, dword access_flags, long disposition, dword file_flags, long category, long priority, s_file_handle *file, bool volatile *done);
+__declspec(noinline) long function_1a0b40(char const *path, dword access_flags, long disposition, dword file_flags, long category, long priority, s_file_handle *file, bool volatile *done);
 bool async_copy_file(s_file_handle source, s_file_handle destination, long category);
 long function_1a0f10(s_file_handle file, void *buffer, dword size, dword offset, long category, long priority, dword *bytes_read, bool volatile *done);
 long function_1a1050(s_file_handle file, void const *buffer, dword size, dword offset, dword flags, long category, long priority, dword *bytes_written, bool volatile *done);

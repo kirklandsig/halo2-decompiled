@@ -118,12 +118,12 @@ void __stdcall function_23f120(long a, long b, long c)
 }
 
 // @retail 0x23f140
-void function_23f140(long id, short value)
+void function_23f140(long id, short recent_entry_value)
 {
 	if (g_502350.count < 5)
 	{
 		g_502350.recent[g_502350.count].id = id;
-		g_502350.recent[g_502350.count].value = value;
+		g_502350.recent[g_502350.count].value = recent_entry_value;
 		g_502350.count++;
 	}
 }
