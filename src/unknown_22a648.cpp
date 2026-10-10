@@ -132,6 +132,8 @@ bool function_13ee20(word const *string, long font);
 bool function_22a9bc(s_text_widget const *widget, long unused,
 	s_text_widget_state const *state, color4f const *color)
 {
+	long const *local_0 = &unused;
+	(void)local_0;
 	volatile bool result = true;
 	if (widget->text && widget->font_tag != NONE)
 	{

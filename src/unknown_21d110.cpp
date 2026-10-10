@@ -272,8 +272,29 @@ void sound_effect_attach(long effect_index, s_sound_play_state *state)
 	}
 }
 
+#pragma inline_depth(0)
+PRIVATE __forceinline void function_21dcf2(long arg_0, s_record_pool *arg_1)
+{
+    s_sound_effect *local_0 = &((s_sound_effect *)arg_1->data)[arg_0 & 0xffff];
+    if (local_0->record_index != NONE)
+    {
+        looping_sound_controller_release(local_0->record_index);
+        local_0->record_index = NONE;
+    }
+    record_pool_release(arg_1, arg_0);
+}
+#pragma inline_depth(255)
+
+#pragma inline_depth(1)
 // @retail 0x21dcf0
-__forceinline void sound_effect_delete(long effect_index)
+void __cdecl sound_effect_delete(long effect_index)
+{
+    function_21dcf2(effect_index, (s_record_pool *)g_51ebe0);
+}
+#pragma inline_depth(255)
+
+
+PRIVATE __forceinline void function_21dcf1(long effect_index)
 {
 	s_record_pool *effects = function_x39bdd5();
 	s_sound_effect *effect = &((s_sound_effect *)effects->data)[effect_index & 0xffff];
@@ -285,6 +306,8 @@ __forceinline void sound_effect_delete(long effect_index)
 	}
 	record_pool_release(effects, effect_index);
 }
+
+#define sound_effect_delete function_21dcf1
 
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
@@ -384,23 +407,25 @@ bool function_21d5a0(long effect_index)
 	case 0:
 		result = !TEST_BIT(effect->flags, _sound_effect_stopped_bit);
 		break;
+	case 2:
+		return result;
 	case 1:
-		if (effect->flags & (FLAG(_sound_effect_unmanaged_bit) | FLAG(_sound_effect_stopped_bit)))
+		if (!(effect->flags & (FLAG(_sound_effect_unmanaged_bit) | FLAG(_sound_effect_stopped_bit))))
 		{
-			result = true;
+			long local_0 = effect->sound_index;
+			s_sound_source_callbacks const *local_1 = playing_sound_get(local_0)->marker.link.source;
+			s_sound_playback_flags flags;
+			*(volatile word *)&flags = 0;
+			result = sound_playback_update_source(local_0, local_1, &flags);
+			if (TEST_FIELD_BIT(flags.source_updated))
+				effect->flags |= FLAG(_sound_effect_unmanaged_bit);
 		}
 		else
 		{
-			s_sound_playback_flags flags = {0};
-			result = sound_playback_update_source(effect->sound_index, playing_sound_get(effect->sound_index)->marker.link.source, &flags);
-			if (TEST_FIELD_BIT(flags.source_updated))
-			{
-				effect->flags |= FLAG(_sound_effect_unmanaged_bit);
-			}
+			result = true;
 		}
 		break;
-	case 2:
-		break;
+
 	}
 	return result;
 }
@@ -716,3 +741,5 @@ void __stdcall function_21d630(long effect_index, long mode)
 		}
 	}
 }
+
+#undef sound_effect_delete
