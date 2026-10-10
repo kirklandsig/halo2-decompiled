@@ -166,7 +166,8 @@ short function_26e9c0(long actor_index, long joint_index)
 // @retail 0x26ed40
 bool joint_decline(long actor_index, short invitation_index)
 {
-	s_joint_invitation *invitation = &ACTOR_ENTRY(actor_index)->joint_invitations[invitation_index];
+	short const *reference = &invitation_index;
+	s_joint_invitation *invitation = &ACTOR_ENTRY(actor_index)->joint_invitations[*reference];
 	joint_state *joint = JOINT_STATE(invitation->joint_index);
 
 	joint->participants[invitation->participant_index].actor_index = NONE;
@@ -290,7 +291,8 @@ void function_26ec20(s_joint_header const *behavior, long leader_index)
 // @retail 0x26ecc0
 bool function_26ecc0(long actor_index, short invitation_index, s_joint_behavior_state *behavior)
 {
-	s_joint_invitation *invitation = &ACTOR_ENTRY(actor_index)->joint_invitations[invitation_index];
+	short const *reference = &invitation_index;
+	s_joint_invitation *invitation = &ACTOR_ENTRY(actor_index)->joint_invitations[*reference];
 	short participant_index = invitation->participant_index;
 	joint_state *joint = JOINT_STATE(invitation->joint_index);
 

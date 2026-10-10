@@ -67,9 +67,9 @@ void function_29ed00(const char *data, short *controller);
 PRIVATE void __stdcall function_29edc0(s_type_339e8b *controller,
     playback_unit_control_view *control, s_type_02a46c const *header, byte const **cursor)
 {
-    short mask = (header->type_and_time >> 2) - 7;
     char const *data = (char const *)*cursor;
-    short facing = mask & 1;
+    short mask = (header->type_and_time >> 2) - 7;
+    long facing = mask & 1;
     if (facing)
     {
         function_29ed00(data, (short *)&controller->facing);
@@ -118,9 +118,9 @@ PRIVATE void __stdcall function_29edc0(s_type_339e8b *controller,
 PRIVATE void __stdcall function_29ef20(s_type_339e8b *controller,
     playback_unit_control_view *control, s_type_02a46c const *header, byte const **cursor)
 {
-    short mask = (header->type_and_time >> 2) - 15;
     s_type_f72fa2 const *data = (s_type_f72fa2 const *)*cursor;
-    short facing = mask & 1;
+    short mask = (header->type_and_time >> 2) - 15;
+    long facing = mask & 1;
     if (facing)
     {
         function_29ed40(data, &controller->facing);

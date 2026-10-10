@@ -1,6 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "data_array.h"
 #include "object_markers.h"
 #include "effects.h"
 #include <math.h>
@@ -41,6 +42,7 @@ struct s_surface_definition
 	long link_count;
 	s_surface_link *links;
 };
+struct s_surface_object_flags { byte unknown0[0x10a]; word bit0 : 1, bit1 : 1, bit2 : 1; };
 struct s_surface_object_header { short salt; byte flags, inactive; long unknown4; byte *object; };
 
 static inline s_surface_record *surface_record(long index)
@@ -61,7 +63,7 @@ static inline bool surface_pinned(s_surface_record *record, long i)
 }
 static inline real surface_normalize(vector3f *v)
 {
-	real length = (real)sqrt(v->i*v->i + (v->j*v->j + v->k*v->k));
+	real length = (real)sqrt(v->i*v->i + v->j*v->j + v->k*v->k);
 	if (!(fabs(length) < 0.0001f))
 	{
 		real inverse = 1.0f / length;
@@ -69,6 +71,19 @@ static inline real surface_normalize(vector3f *v)
 		return length;
 	}
 	return 0.0f;
+}
+
+static inline real surface_normalize_horizontal(vector3f *v)
+{
+	real length = (real)sqrt(v->i*v->i + v->j*v->j);
+	if (!(fabs(length) < 0.0001f))
+	{
+		real inverse = 1.0f / length;
+		v->i *= inverse; v->j *= inverse;
+	}
+	else
+		length = 0.0f;
+	return length;
 }
 
 void function_ba1d0(long, vector3f *, vector3f *);
@@ -95,17 +110,18 @@ void function_117080(long);
 // @retail 0x1168a0
 void __stdcall function_1168a0(real elapsed)
 {
-	long slot = function_16bc00(g_4e0338, 0);
-	long index = slot == NONE ? NONE : (*(short *)(g_4e0338->data + slot * g_4e0338->size) << 16) | slot;
+	s_record_pool *pool = g_4e0338;
+	long index = data_datum_index(pool, function_16bc00(pool, 0));
 	while (index != NONE)
 	{
-		surface_record(index)->unknown_c = 0.0f;
+		long slot = index & 0xffff;
+		((s_surface_record *)pool->data + slot)->unknown_c = 0.0f;
 		function_117790(index);
 		function_118140(index);
 		function_117510(index);
 		function_117080(index);
-		slot = data_next_absolute_index_inlined(g_4e0338, index == NONE ? 0 : (index & 0xffff) + 1);
-		index = slot == NONE ? NONE : (*(short *)(g_4e0338->data + slot * g_4e0338->size) << 16) | slot;
+		pool = g_4e0338;
+		index = data_datum_index(pool, data_find_index(pool, index == NONE ? 0 : slot + 1));
 	}
 }
 
@@ -140,7 +156,7 @@ void function_117080(long index)
 	{
 		s_surface_object_header *header = surface_object_header(object_index);
 		byte *object = header->object;
-		if (!header->inactive && (object[0x10a] & 4) &&
+		if (!header->inactive && TEST_FIELD_BIT(((s_surface_object_flags *)object)->bit2) &&
 			(real)(g_510c54->game_time - *(long *)(object + 0xbc)) * g_510c54->rate > 10.0f)
 			object_widget_delete(object_index, index);
 	}
@@ -149,6 +165,7 @@ void function_117080(long index)
 // @retail 0x117100
 bool function_117100(long index)
 {
+	bool result = true;
 	long object_index = surface_record(index)->object_index;
 	long root = NONE;
 	while (object_index != NONE)
@@ -157,10 +174,12 @@ bool function_117100(long index)
 		object_index = *(long *)(surface_object_header(object_index)->object + 0x14);
 	}
 	s_surface_object_header *header = surface_object_header(root);
-	bool result = true;
-	if (!header->inactive && g_4b9ed8 != NONE && function_155760(g_4b9ed8) == 0 &&
-		g_4e8c20->entries[g_4b9ed8] == *(long *)(header->object + 0x13c))
-		result = false;
+	if (!header->inactive && g_4b9ed8 != NONE && function_155760(g_4b9ed8) == 0)
+	{
+		byte *object = header->object;
+		if (g_4e8c20->entries[g_4b9ed8] == *(long *)(object + 0x13c))
+			result = false;
+	}
 	return result;
 }
 
@@ -211,9 +230,11 @@ bool function_1173e0(long object_index, long index)
 		point3f origin = *(point3f *)(surface_object_header(object_index)->object + 0x30);
 		for (long i = 0; i < definition->vertex_count; ++i)
 		{
-			record->vertices[i].position.x = definition->vertices[i].position.x + origin.x;
-			record->vertices[i].position.y = definition->vertices[i].position.y + origin.y;
-			record->vertices[i].position.z = definition->vertices[i].position.z + origin.z;
+			s_surface_vertex *vertex = &record->vertices[i];
+			point3f *source = &definition->vertices[i].position;
+			vertex->position.x = source->x + origin.x;
+			vertex->position.y = source->y + origin.y;
+			vertex->position.z = source->z + origin.z;
 			record->pinned[i >> 5] &= ~(1 << (i & 31));
 		}
 		for (long iteration = 0; iteration < 5; ++iteration) function_117790(index);
@@ -231,8 +252,8 @@ void function_117510(long index)
 		s_surface_vertex *a = &record->vertices[definition->triangle_indices[i]];
 		s_surface_vertex *b = &record->vertices[definition->triangle_indices[i+1]];
 		s_surface_vertex *c = &record->vertices[definition->triangle_indices[i+2]];
-		vector3f u = {c->position.x-a->position.x, c->position.y-a->position.y, c->position.z-a->position.z};
 		vector3f v = {b->position.x-a->position.x, b->position.y-a->position.y, b->position.z-a->position.z};
+		vector3f u = {c->position.x-a->position.x, c->position.y-a->position.y, c->position.z-a->position.z};
 		vector3f normal = {u.k*v.j-u.j*v.k, u.i*v.k-u.k*v.i, u.j*v.i-u.i*v.j};
 		surface_normalize(&normal);
 		a->normal.i += normal.i; a->normal.j += normal.j; a->normal.k += normal.k;
@@ -259,16 +280,17 @@ void __stdcall function_117790(long index)
 			s_surface_link *link = &definition->links[i];
 			point3f *a = &record->vertices[link->a].position;
 			point3f *b = &record->vertices[link->b].position;
+			real rest_length = link->length;
 			vector3f delta = {b->x-a->x, b->y-a->y, b->z-a->z};
 			real squared = delta.k*delta.k + delta.j*delta.j + delta.i*delta.i;
-			long bits = (*(long *)&squared >> 1) + 0x1fc00000;
-			real length = *(real *)&bits;
+			real length;
+			*(long *)&length = (*(long *)&squared >> 1) + 0x1fc00000;
 			if (length < 0.0001f) length = 0.0001f;
 			real inverse = 1.0f / length;
 			delta.i *= inverse; delta.j *= inverse; delta.k *= inverse;
-			real rest_squared = link->length * link->length;
-			real correction = (rest_squared / (length*length + rest_squared) - 0.5f) * length;
-			delta.i *= correction; delta.j *= correction; delta.k *= correction;
+			real rest_squared = rest_length * rest_length;
+			length = (rest_squared / (length*length + rest_squared) - 0.5f) * length;
+			delta.i *= length; delta.j *= length; delta.k *= length;
 			if (!surface_pinned(record, link->a))
 			{
 				a->x -= delta.i; a->y -= delta.j; a->z -= delta.k;
@@ -279,7 +301,7 @@ void __stdcall function_117790(long index)
 				b->x += delta.i; b->y += delta.j; b->z += delta.k;
 				if (surface_pinned(record, link->a)) { b->x += delta.i; b->y += delta.j; b->z += delta.k; }
 			}
-			if (fabs(correction) > 2.0f) { function_118430(index); --iteration; }
+			if (fabs(length) > 2.0f) { function_118430(index); --iteration; }
 		}
 		function_117a80(index);
 	}
@@ -325,23 +347,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	real limit = (real)cos(angle);
 	*output = *input;
 	if (fabs(input->k) > limit) output->k = input->k < 0.0f ? -limit : limit;
-	real length;
-	if (fabs(output->i) < 0.01f && fabs(output->j) < 0.01f)
+	if (fabs(output->i) < 0.01f && fabs(output->j) < 0.01f || fabs(surface_normalize_horizontal(output)) < 0.0001f)
 	{
 		output->i = 1.0f; output->j = 0.0f;
 	}
-	else
-	{
-		length = (real)sqrt(output->i*output->i + output->j*output->j);
-		if (!(fabs(length) < 0.0001f)) { real inverse = 1.0f/length; output->i *= inverse; output->j *= inverse; }
-		else length = 0.0f;
-		if (fabs(length) < 0.0001f) { output->i = 1.0f; output->j = 0.0f; }
-	}
-	length = (real)sqrt(output->i*output->i + output->j*output->j);
-	if (!(fabs(length) < 0.0001f)) { real inverse = 1.0f/length; output->i *= inverse; output->j *= inverse; }
-	double horizontal = sqrt(1.0 - (double)output->k*output->k);
-	output->i = (real)(horizontal * output->i);
-	output->j = (real)(horizontal * output->j);
+	surface_normalize_horizontal(output);
+	real horizontal = (real)sqrt(1.0f - output->k*output->k);
+	output->i *= horizontal;
+	output->j *= horizontal;
 }
 
 static inline dword surface_random()
@@ -392,22 +405,28 @@ void function_118140(long index)
 	if (record->speed < 1.5f)
 	{
 		vector3f acceleration = *g_4687a4;
-		acceleration.k += definition->gravity * -3.2086613178253174f / (real)g_510c54->field_2_3 * 0.03125f;
+		real gravity = definition->gravity * -3.2086613178253174f;
+		acceleration.k += gravity / (real)g_510c54->field_2_3 * 0.03125f;
 		real current_weight = 2.0f - definition->damping;
 		real previous_weight = 1.0f - definition->damping;
 		for (long i = 0; i < definition->vertex_count; ++i)
 		{
+			vector3f force = wind;
 			if (!surface_pinned(record, i))
 			{
 				s_surface_vertex *vertex = &record->vertices[i];
 				point3f position = vertex->position;
-				position.x = position.x*current_weight - vertex->previous.x*previous_weight + acceleration.i;
-				position.y = position.y*current_weight - vertex->previous.y*previous_weight + acceleration.j;
-				position.z = position.z*current_weight - vertex->previous.z*previous_weight + acceleration.k;
-				real dot = vertex->normal.i*wind.i + vertex->normal.k*wind.k + vertex->normal.j*wind.j;
-				vector3f force = {wind.i-(wind.i-vertex->normal.i*dot)*definition->tangent_drag,
-					wind.j-(wind.j-vertex->normal.j*dot)*definition->tangent_drag,
-					wind.k-(wind.k-vertex->normal.k*dot)*definition->tangent_drag};
+				point3f previous = vertex->previous;
+				position.x *= current_weight; position.y *= current_weight; position.z *= current_weight;
+				previous.x *= previous_weight; previous.y *= previous_weight; previous.z *= previous_weight;
+				position.x = position.x - previous.x + acceleration.i;
+				position.y = position.y - previous.y + acceleration.j;
+				position.z = position.z - previous.z + acceleration.k;
+				real dot = vertex->normal.i*force.i + vertex->normal.k*force.k + vertex->normal.j*force.j;
+				vector3f tangent = { force.i - vertex->normal.i*dot, force.j - vertex->normal.j*dot, force.k - vertex->normal.k*dot };
+				real drag = definition->tangent_drag;
+				tangent.i *= drag; tangent.j *= drag; tangent.k *= drag;
+				force.i -= tangent.i; force.j -= tangent.j; force.k -= tangent.k;
 				vertex->previous = vertex->position;
 				position.x += force.i; position.y += force.j; position.z += force.k;
 				vertex->position = position;
@@ -424,9 +443,11 @@ void __stdcall function_118430(long index)
 	s_surface_definition *definition = surface_definition(record);
 	for (long i = 0; i < definition->vertex_count; ++i)
 	{
-		record->vertices[i].position = definition->vertices[i].position;
-		record->vertices[i].previous = definition->vertices[i].position;
-		record->vertices[i].normal = *g_4687ac;
+		s_surface_vertex *vertex = &record->vertices[i];
+		point3f *source = &definition->vertices[i].position;
+		vertex->position = *source;
+		vertex->previous = *source;
+		vertex->normal = *g_4687ac;
 	}
 	record->origin = *g_468788;
 	function_117a80(index);

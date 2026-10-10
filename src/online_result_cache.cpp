@@ -60,14 +60,21 @@ dword online_result_text_length(const char *text);
 // @retail 0xb36c0
 bool online_result_service_connected(void)
 {
-    if (g_467214 != NONE && online_task_get_logon_status(g_467214) == 1)
+    if (g_467214 != NONE)
     {
-        bool connected = false;
-        for (long i = 0; i < 13; i++)
-            if (g_467178[i].service_id == 0x4d530064)
-                connected = g_467178[i].connect;
-        if (connected)
-            return true;
+        switch (online_task_get_logon_status(g_467214))
+        {
+        case 1:
+        {
+            bool connected = false;
+            for (long i = 0; i < 13; i++)
+                if (g_467178[i].service_id == 0x4d530064)
+                    connected = g_467178[i].connect;
+            if (connected)
+                return true;
+            break;
+        }
+        }
     }
     return false;
 }

@@ -165,9 +165,9 @@ PRIVATE void function_297560(long actor_index)
 	}
 	actor->idle_aiming_timer = (short)rounded_ticks;
 	actor->idle_looking_timer = (short)rounded_ticks;
+	actor->idle_aiming_direction = actor->forward;
 	actor->idle_aiming_direction_type = 4;
 	actor->idle_looking_direction_type = 4;
-	actor->idle_aiming_direction = actor->forward;
 	actor->idle_looking_direction = actor->forward;
 }
 
@@ -335,8 +335,8 @@ struct s_actor_looking_unit_definition
 PRIVATE bool function_2973f0(long actor_index, real *looking_cosine, real *aiming_cosine, real *idle_aiming_cosine, real *idle_looking_cosine)
 {
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
-	s_actor_looking_properties *properties = function_1e5160(actor->character_definition_index);
 	bool result = false;
+	s_actor_looking_properties *properties = function_1e5160(actor->character_definition_index);
 	if (properties)
 	{
 		*aiming_cosine = properties->aiming_cosine;
@@ -357,8 +357,7 @@ PRIVATE bool function_2973f0(long actor_index, real *looking_cosine, real *aimin
 				s_actor_looking_unit_definition *definition = (s_actor_looking_unit_definition *)g_4e3b44[parent->definition_index & 0xffff].bytes;
 				s_actor_looking_seat *seat = &definition->seats[unit->seat_index];
 				real yaw = 0.f - seat->minimum_yaw;
-				yaw = yaw > seat->maximum_yaw ? yaw : seat->maximum_yaw;
-				*aiming_cosine = (real)cos(yaw);
+				*aiming_cosine = (real)cos(yaw > seat->maximum_yaw ? yaw : seat->maximum_yaw);
 			}
 		}
 		*looking_cosine = properties->looking_cosine;
@@ -419,11 +418,13 @@ PRIVATE long function_297c10(long actor_index, bool alternate_range, bool extend
 		   retail's store to real immediately before integer rounding. */
 		real random = (real)random_next(&g_4e7408->unknown0) * (1.f / 65535.f);
 		real ticks = (lower + (upper - lower) * random) * time->field_2_3;
+		long rounded;
 		__asm
 		{
 			fld ticks
-			fistp result
+			fistp rounded
 		}
+		result = rounded;
 	}
 	return result;
 }
@@ -463,26 +464,35 @@ static inline real actor_looking_normalize3d(vector3f *vector)
 	return 0.f;
 }
 
+static inline void actor_looking_rotate_in_place(vector3f *vector, vector3f const *axis, real sine, real cosine)
+{
+	real parallel = (axis->i * vector->i + axis->j * vector->j + axis->k * vector->k) * (1.f - cosine);
+	vector3f cross;
+	cross.i = vector->j * axis->k - vector->k * axis->j;
+	cross.j = vector->k * axis->i - vector->i * axis->k;
+	cross.k = vector->i * axis->j - vector->j * axis->i;
+	vector->i = vector->i * cosine + axis->i * parallel - cross.i * sine;
+	vector->j = vector->j * cosine + axis->j * parallel - cross.j * sine;
+	vector->k = vector->k * cosine + axis->k * parallel - cross.k * sine;
+}
+
 static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, real angle)
 {
 	real sine = (real)sin(angle);
 	real cosine = (real)cos(angle);
-	real parallel = (axis->i * vector->i + axis->j * vector->j + axis->k * vector->k) * (1.f - cosine);
-	vector3f result;
-	result.i = vector->i * cosine + axis->i * parallel - (vector->j * axis->k - vector->k * axis->j) * sine;
-	result.j = vector->j * cosine + axis->j * parallel - (vector->k * axis->i - vector->i * axis->k) * sine;
-	result.k = vector->k * cosine + axis->k * parallel - (vector->i * axis->j - vector->j * axis->i) * sine;
-	*vector = result;
+	actor_looking_rotate_in_place(vector, axis, sine, cosine);
 }
 
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
 {
+	bool const *test_collision_reference = &test_collision;
 	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
 	vector3f best_direction = *g_4687a8;
+	bool result = false;
 	real best_fraction = 0.f;
 	real yaw_range = yaw_upper - yaw_lower;
 	real arg_58ecd0 = pitch_upper - pitch_lower;
@@ -495,7 +505,7 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 		actor_looking_rotate(&candidate, &pitch_axis, pitch);
 		actor_looking_rotate(&candidate, g_4687b0, yaw);
 		clear = true;
-		if (test_collision)
+		if (*test_collision_reference)
 		{
 			vector3f ray = { candidate.i * 3.f, candidate.j * 3.f, candidate.k * 3.f };
 			s_collision_result_1697c0 collision;
@@ -505,7 +515,8 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 			{
 				actor_looking_normalize3d(&candidate);
 				*direction = candidate;
-				return true;
+				result = true;
+				break;
 			}
 			real fraction = *(real *)((byte *)&collision + 4);
 			if (fraction > best_fraction)
@@ -523,7 +534,7 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	}
 	/* Retail still draws ten samples when collision testing is disabled,
 	   then returns false without writing the output vector. */
-	return false;
+	return result;
 }
 
 /* The direction decoder has aiming and optional target-point outputs.
@@ -855,12 +866,20 @@ PRIVATE bool function_297660(long actor_index, bool use_aiming_direction, bool u
 						real pitch_maximum = pitch + g_55e5cc;
 						real yaw_limit = angles[0] * scale;
 						real negative_yaw_limit = 0.f - yaw_limit;
+						if (!(yaw_minimum > negative_yaw_limit))
+							yaw_minimum = negative_yaw_limit;
+						if (yaw_maximum > yaw_limit)
+							yaw_maximum = yaw_limit;
 						real pitch_lower_limit = scale * -0.17453292f;
+						if (!(pitch_minimum > pitch_lower_limit))
+							pitch_minimum = pitch_lower_limit;
 						real pitch_upper_limit = scale * 0.17453292f;
-						yaw_lower = (yaw_minimum > negative_yaw_limit ? yaw_minimum : negative_yaw_limit) - yaw;
-						yaw_upper = (yaw_maximum > yaw_limit ? yaw_limit : yaw_maximum) - yaw;
-						pitch_lower = (pitch_minimum > pitch_lower_limit ? pitch_minimum : pitch_lower_limit) - pitch;
-						pitch_upper = (pitch_maximum > pitch_upper_limit ? pitch_upper_limit : pitch_maximum) - pitch;
+						if (pitch_maximum > pitch_upper_limit)
+							pitch_maximum = pitch_upper_limit;
+						yaw_lower = yaw_minimum - yaw;
+						yaw_upper = yaw_maximum - yaw;
+						pitch_lower = pitch_minimum - pitch;
+						pitch_upper = pitch_maximum - pitch;
 					}
 				}
 			}
@@ -918,18 +937,14 @@ PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 					for (short i = 0; i < 8; i++, rotation_index++, direction++)
 					{
 						*direction = actor->forward;
+						real fraction = 1.f;
 						real sine = (real)sin((real)rotation_index * 0.785398185f);
 						real cosine = (real)cos((real)rotation_index * 0.785398185f);
-						vector3f const *axis = g_4687b0;
-						real parallel = (axis->i * direction->i + axis->j * direction->j + axis->k * direction->k) * (1.f - cosine);
-						vector3f rotated;
-						rotated.i = direction->i * cosine + axis->i * parallel - (direction->j * axis->k - direction->k * axis->j) * sine;
-						rotated.j = direction->j * cosine + axis->j * parallel - (direction->k * axis->i - direction->i * axis->k) * sine;
-						rotated.k = direction->k * cosine + axis->k * parallel - (direction->i * axis->j - direction->j * axis->i) * sine;
-						*direction = rotated;
+						actor_looking_rotate_in_place(direction, g_4687b0, sine, cosine);
 						function_26c590(actor->location.unknown10, NULL, &trace, pathfinding,
 							&actor->location.point.point, NONE, direction, 5.f, 0);
-						real fraction = *(byte *)&trace.unknown00 ? trace.distance * 0.2f : 1.f;
+						if (*(byte *)&trace.unknown00)
+							fraction = trace.distance * 0.2f;
 						real score = direction->i * forward.i + direction->k * forward.k + direction->j * forward.j;
 						score = (0.6f > score ? 0.6f : score) * fraction;
 						if (score > best_score)

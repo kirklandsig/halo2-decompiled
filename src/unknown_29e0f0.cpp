@@ -202,7 +202,7 @@ long function_baf80(long arg_0);
 long function_1e4990(long arg_0);
 bool function_2702a0(long arg_0, long arg_1, long arg_2, long arg_3, long arg_4,
     point3f const *arg_5, vector3f const *arg_6, point3f *arg_7,
-    vector3f *arg_8, long *arg_9, long *arg_10);
+    long *arg_8, vector3f *arg_9, long *arg_10);
 struct s_29db90;
 void function_29db90(short arg_1, short arg_0, s_29db90 *arg_2);
 bool function_29dd50(point3f const *arg_0, point3f const *arg_1, long arg_2, long arg_3);
@@ -241,7 +241,7 @@ bool __stdcall function_29e730(s_29e730 *arg_0, long arg_1, point3f const *arg_2
     {
         if (!function_262a90(arg_0->field_c, &local_5, &local_4)) goto local_20;
         if (!function_2702a0(arg_1, 0xf000545, 0x5000049, 0x6000542, 0x400000c,
-            &local_5, &local_4, &local_9, NULL, (long *)&local_8, NULL)) goto local_20;
+            &local_5, &local_4, &local_9, NULL, &local_8, NULL)) goto local_20;
         local_10 = function_262b40(arg_0->field_c);
         short local_11 = ((s_type_c3b527 *)local_10)->output_index;
         if (!function_210770(local_11, (vector3f *)&local_5, &local_8)) goto local_20;
@@ -270,7 +270,7 @@ bool __stdcall function_29e730(s_29e730 *arg_0, long arg_1, point3f const *arg_2
         if (!local_10 || !((byte)local_10->flags & 0x40)) goto local_20;
         if (!function_262af0(arg_0->field_c, &local_5, &local_8)) goto local_20;
         if (!function_2702a0(arg_1, 0x6000542, 0x400069d, 0x6000542, 0x400000c,
-            (point3f *)&local_8, (vector3f *)&local_5, &local_9, NULL, (long *)&local_4, NULL)) goto local_20;
+            (point3f *)&local_8, (vector3f *)&local_5, &local_9, NULL, &local_4, NULL)) goto local_20;
         local_3.output_index = ((s_type_c3b527 *)local_10)->output_index;
         if (!function_210690(local_3.output_index, &local_9, &local_3.point)) goto local_20;
         goto local_21;

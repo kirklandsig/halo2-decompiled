@@ -129,16 +129,17 @@ long __stdcall function_115da0(long tag_index, long object_index)
 			s_chain_record *record = (s_chain_record *)(g_4e0334->data + (result & 0xffff) * sizeof(s_chain_record));
 			record->unknown04 = 0;
 			record->fixed = definition->segment_count < 2;
-			record->origin.x = record->origin.y = record->origin.z = 0.f;
-			point3f position = record->origin;
+			point3f *origin = &record->origin;
+			origin->x = origin->y = origin->z = 0.f;
+			point3f position = *origin;
 			record->tag_index = tag_index;
 			record->object_index = object_index;
 			record->idle_ticks = 0;
 			short i;
 			for (i = 0; i < definition->segment_count; ++i)
 			{
-				s_chain_segment *segment = &definition->segments[i];
 				s_chain_node *node = &record->nodes[i];
+				s_chain_segment *segment = &definition->segments[i];
 				node->position = position;
 				node->velocity.i = node->velocity.j = node->velocity.k = 0.f;
 				node->ticks = 0;
@@ -242,13 +243,12 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 	function_116750(record, definition, &location, &origin, &forward);
 	if (!record->fixed && dt > 0.f)
 	{
-		real inverse_dt = 1.f / dt;
-		vector3f vertical = { 0.f, 0.f, 1.f };
 		point3f previous, predicted;
 		for (short i = 0; i < definition->segment_count + 1; ++i)
 		{
+			real inverse_dt = 1.f / dt;
 			s_chain_node *node = &record->nodes[i];
-			s_chain_segment *segment = &definition->segments[i == definition->segment_count ? i - 1 : i];
+			s_chain_segment *segment = &definition->segments[i == definition->segment_count ? definition->segment_count - 1 : i];
 			real stiffness = definition->stiffness * segment->stiffness;
 			++node->ticks;
 			point3f position;
@@ -265,25 +265,29 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 					function_211060(0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt, &node->velocity);
 				vector3f delta = { position.x - previous.x, position.y - previous.y, position.z - previous.z };
 				real scale = (real)(segment->length / sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i));
-				position.x = (1.f - stiffness) * (scale * delta.i + previous.x) + predicted.x * stiffness;
-				position.y = (1.f - stiffness) * (scale * delta.j + previous.y) + predicted.y * stiffness;
-				position.z = (1.f - stiffness) * (scale * delta.k + previous.z) + predicted.z * stiffness;
+				point3f target = { scale * delta.i + previous.x, scale * delta.j + previous.y, scale * delta.k + previous.z };
+				position.x = (1.f - stiffness) * target.x + predicted.x * stiffness;
+				position.y = (1.f - stiffness) * target.y + predicted.y * stiffness;
+				position.z = (1.f - stiffness) * target.z + predicted.z * stiffness;
 				direction.i = position.x - previous.x;
 				direction.j = position.y - previous.y;
 				direction.k = position.z - previous.z;
 			}
 			vector3f axis = { direction.k * 0.f - direction.j, direction.i - direction.k * 0.f, direction.j * 0.f - direction.i * 0.f };
 			real length = (real)sqrt(axis.k * axis.k + axis.j * axis.j + axis.i * axis.i);
-			if (!(.0001f > fabs(length)))
+			if (.0001f > fabs(length))
+				length = 0.f;
+			else
 			{
 				real inverse = 1.f / length;
 				axis.i = inverse * axis.i;
 				axis.j = axis.j * inverse;
 				axis.k = axis.k * inverse;
 			}
-			if (.0001f > fabs(length) || length == 0.f)
+			if (length == 0.f)
 				axis = *g_4687ac;
 			vector3f offset = segment->rest_offset;
+			vector3f vertical = { 0.f, 0.f, 1.f };
 			real angle = function_11ce20(&direction, &vertical);
 			real sine = (real)sin(angle);
 			real cosine = (real)cos(angle);

@@ -265,7 +265,7 @@ bool looping_sound_controllers_initialize(void)
 	{
 		CONTROLLERS->valid = true;
 		record_pool_release_all(CONTROLLERS);
-		byte phase = ((s_looping_sound_system *)g_4e6380)->source_update_phase;
+		byte phase = *((byte *)g_4e6380 + 0x7f);
 		dword seed = function_1462b0();
 		c_class_219e90 *controller = (c_class_219e90 *)g_51ebdc;
 		controller->definition_index = NONE;
@@ -699,8 +699,8 @@ void __stdcall looping_sound_track_notify(long looping_sound_index, long definit
 		if (sound)
 		{
 			s_looping_track_links const *tracking = (s_looping_track_links const *)arg_dc61a6;
-			s_type_06b94f *track = (s_type_06b94f *)sound->track_storage + tracking->track_index;
-			track->notify_completion();
+			byte *completed = &((s_type_06b94f *)sound->track_storage)[tracking->track_index].completed_count;
+			++*completed;
 		}
 	}
 }
@@ -1061,8 +1061,9 @@ struct s_looping_promotion_table
 };
 
 // @retail 0x21bd00
-void looping_sound_fade_out(real duration, long first_sound_index)
+void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 {
+	real const *reference = &duration;
 	if (first_sound_index != NONE)
 	{
 		long index = first_sound_index;
@@ -1074,7 +1075,7 @@ void looping_sound_fade_out(real duration, long first_sound_index)
 			s_tag_header *header = g_4e034c->header ? g_4e034c->header_alt : NULL;
 			s_looping_promotion_table *promotions = (s_looping_promotion_table *)g_4e3b44[header->datum_index & 0xffff].bytes;
 			s_looping_promotion *promotion = &promotions->entries[(short)(char)definition->unknown02[0]];
-			short curve = !(promotion->flags & 0x400);
+			bool curve = !(promotion->flags & 0x400);
 			playing->fade_gain_bits = function_12a810(index);
 			playing->fade_curve = curve;
 			playing->fade_start_time = (long)(duration * 1000.f);
@@ -1258,6 +1259,20 @@ void __stdcall function_127320(long datum, long count);
 void function_128500(long sound_index, s_looping_voice_counts *counts);
 short function_128a60(long sound_index, short count, short const *voice_indices);
 
+/* the body of looping_sound_get_permutations with clearing, as retail
+   expands it in function_21c190 */
+static inline dword looping_sound_take_permutations(s_type_5ef569 *sound, looping_sound_definition *definition, s_looping_playback_definition *playback, long track_index, short arg_58ecd0)
+{
+	if ((definition->flags & 0x30) && sound->controller_index != NONE)
+	{
+		dword *permutations = &((s_type_06b94f *)sound->track_storage)[track_index].permutations;
+		dword result = *permutations;
+		*permutations = 0;
+		return result;
+	}
+	return function_2194c0((s_packed_value *)&g_51ebd4->sets[playback->pitch_range_base + arg_58ecd0], (s_animation_ref *)playback);
+}
+
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1273,19 +1288,10 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 
 	/* Retail expands the permutation helpers here, but calls them from
 	   function_21b940. Keep the same shared/local mask rules. */
-	dword permutations;
-	if ((definition->flags & 0x30) && sound->controller_index != NONE)
-	{
-		dword *mask = &((s_type_06b94f *)sound->track_storage)[playing->loop.track_index].permutations;
-		permutations = *mask;
-		*mask = 0;
-	}
-	else
-		permutations = function_2194c0((s_packed_value *)&g_51ebd4->sets[playback->pitch_range_base + arg_58ecd0], (s_animation_ref *)playback);
+	dword permutations = looping_sound_take_permutations(sound, definition, playback, playing->loop.track_index, arg_58ecd0);
 
-	long previous = NONE;
-	if (!(definition->flags & 0x30))
-		previous = (short)function_219370((s_animation_state *)&g_51ebd4->sets[playback->pitch_range_base + playing->pitch_range_index], (s_animation_ref *)playback);
+	long previous = !(definition->flags & 0x30) ?
+		(short)function_219370((s_animation_state *)&g_51ebd4->sets[playback->pitch_range_base + playing->pitch_range_index], (s_animation_ref *)playback) : NONE;
 	short permutation = function_219110((s_set_ref *)playback, arg_58ecd0, &permutations, (short)previous, seed, NULL, false);
 	if ((definition->flags & 0x30) && sound->controller_index != NONE)
 		((s_type_06b94f *)sound->track_storage)[playing->loop.track_index].permutations = permutations;
@@ -1955,19 +1961,21 @@ bool function_21a250(long definition_index, dword sound_flags, long identifier, 
 			long next_definition = NONE;
 			long local_2e47c8 = NONE;
 			dword impulse_states = track_definition->flags & 1;
-			if (track_definition->flags & 2)
+			bool impulse_start = TEST_FIELD_BIT((track_definition->flags >> 1) & 1);
+			bool impulse_alternate = TEST_FIELD_BIT((track_definition->flags >> 2) & 1);
+			if (impulse_start)
 				impulse_states |= 4;
 			else
 				impulse_states &= ~4;
-			if (track_definition->flags & 2)
+			if (impulse_start)
 				impulse_states |= 0x40;
 			else
 				impulse_states &= ~0x40;
-			if (track_definition->flags & 4)
+			if (impulse_alternate)
 				impulse_states |= 8;
 			else
 				impulse_states &= ~8;
-			if (track_definition->flags & 4)
+			if (impulse_alternate)
 				impulse_states |= 0x20;
 			else
 				impulse_states &= ~0x20;
@@ -2047,10 +2055,22 @@ bool function_21a250(long definition_index, dword sound_flags, long identifier, 
 					looping_sound_fade_out(fade_duration, track->sound_index);
 				continue;
 			}
-			bool current_alternate = ((1 << track->field_c_4) & 0x58) != 0;
-			bool alternate_end = current_alternate && ((track_definition->flags & 0x10) || track_definition->alternate_end_sound_index != NONE);
-			long end_definition = alternate_end ? track_definition->alternate_end_sound_index : track_definition->end_sound_index;
-			bool impulse_end = (track_definition->flags & (alternate_end ? 0x10 : 2)) != 0;
+			dword current_alternate = (1 << track->field_c_4) & 0x58;
+			bool alternate_end;
+			long end_definition;
+			bool impulse_end;
+			if (current_alternate && ((track_definition->flags & 0x10) || track_definition->alternate_end_sound_index != NONE))
+			{
+				end_definition = track_definition->alternate_end_sound_index;
+				alternate_end = true;
+				impulse_end = TEST_FIELD_BIT((track_definition->flags >> 4) & 1);
+			}
+			else
+			{
+				end_definition = track_definition->end_sound_index;
+				alternate_end = false;
+				impulse_end = TEST_FIELD_BIT((track_definition->flags >> 1) & 1);
+			}
 			if (track->sound_index != NONE)
 			{
 				if (!impulse_end && end_definition == NONE && (definition->flags & 2))
