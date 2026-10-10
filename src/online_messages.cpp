@@ -678,16 +678,17 @@ HRESULT online_message_block_send_team_recruit(s_state_block *block, long contro
 				task->flags = 1;
 				task->controller_index = controller_index;
 				task->type = by_xuid ? 0x1b : 0x1c;
-				return result;
+				goto local_0;
 			}
 		failed:
 			function_6b640(block->unknown218);
 			block->unknown218 = NONE;
-			return result;
+			goto local_0;
 		}
 		function_6b640(task_index);
 	}
 	block->unknown218 = NONE;
+local_0:
 	return result;
 }
 
@@ -748,10 +749,10 @@ HRESULT online_message_block_send_message(long controller_index, s_state_block *
 void __stdcall online_message_block_send_finished(c_online_task_screen *screen)
 {
 	s_message_task_screen *view = (s_message_task_screen *)screen;
+	long task_index = view->task_index;
 	volatile byte *local_0 = (volatile byte *)&screen;
 	*local_0 = 0;
 	long error = 0x39;
-	long task_index = view->task_index;
 
 	if (task_index != NONE)
 	{

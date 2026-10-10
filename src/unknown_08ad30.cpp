@@ -437,6 +437,13 @@ static __forceinline void release_block(void *block, long *info)
 	globals->count--;
 }
 
+PRIVATE __forceinline void function_8a6f2(s_allocator_globals *arg_0, void *arg_1, long *arg_2)
+{
+ arg_0->allocator->get_info(arg_1, arg_2);
+ s_allocator_globals *local_0 = g_4d87f8;
+ local_0->allocator->release(arg_1, NONE);
+ local_0->count--;
+}
 // @retail 0x8a6f0
 long c_entry_table::read_creation(long a, long *handler_index_out, dword *mask_out, long b, long *count, s_update_block *blocks, s_bitstream *stream)
 {
@@ -483,9 +490,9 @@ long c_entry_table::read_creation(long a, long *handler_index_out, dword *mask_o
 			result = 3;
 		}
 		if (data)
-			release_block(data, (long *)&stream);
+			function_8a6f2(g_4d87f8, data, (long *)&stream);
 		if (state)
-			release_block(state, (long *)&stream);
+			function_8a6f2(g_4d87f8, state, (long *)&stream);
 		return result;
 	}
 	return 3;
@@ -722,6 +729,13 @@ static __forceinline void discard_block(void *block, long *size)
 
 /* makes a new entity of a handler, with its data and state; the identifier,
    or NONE */
+PRIVATE __forceinline void function_8a116(s_allocator_globals *arg_0, void *arg_1, long *arg_2)
+{
+ arg_0->allocator->get_info(arg_1, arg_2);
+ s_allocator_globals *local_0 = g_4d87f8;
+ local_0->allocator->release(arg_1, NONE);
+ local_0->count--;
+}
 // @retail 0x8a110
 long entity_table_new_entity(c_entry_table *table, long handler_index)
 {
@@ -749,9 +763,9 @@ long entity_table_new_entity(c_entry_table *table, long handler_index)
 		}
 	}
 	if (data)
-		release_block(data, &handler_index);
+		function_8a116(g_4d87f8, data, &handler_index);
 	if (state)
-		release_block(state, &handler_index);
+		function_8a116(g_4d87f8, state, &handler_index);
 local_3:
 	return result;
 }

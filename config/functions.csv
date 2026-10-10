@@ -1682,7 +1682,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0008cec0,60,game,speed,a16 pad,,,0008cf00,src/online_friends.cpp,matched
 0008cf00,120,game,speed,a16 pad,,,003a075e,src/online_friends.cpp,matched
 0008cf80,81,game,speed,a16 pad,,,,src/online_friends.cpp,matched
-0008cfe0,98,game,speed,a16 pad,,,0006cd50 003a07e5,src/online_friends.cpp,todo
+0008cfe0,98,game,speed,a16 pad,,,0006cd50 003a07e5,src/online_friends.cpp,matched
 0008d050,83,game,speed,a16 pad,,,0006cd50 003a0811,src/online_friends.cpp,matched
 0008d0b0,221,game,speed,a16 pad,,,0006b730 0006b910 0006cd50 001487c3 003203e0 003a834e,src/online_friends.cpp,matched
 0008d190,15,game,speed,a16 pad,,,003a075e,src/online_friends.cpp,matched
