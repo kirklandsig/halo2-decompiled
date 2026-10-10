@@ -36,11 +36,11 @@ void function_22c041(long index)
 // @retail 0x22c075
 long function_22c075(long index)
 {
-	long result = 0;
+	long stored_slot_flag = 0;
 
 	if (PIN(index, 0, 4) == index)
 	{
-		result = g_502248[index];
+		stored_slot_flag = g_502248[index];
 	}
-	return result;
+	return stored_slot_flag;
 }

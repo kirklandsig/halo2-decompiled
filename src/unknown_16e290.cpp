@@ -1438,7 +1438,10 @@ void function_16ebf0(long user_index)
 			{
 			case 0:
 			case 2:
-				function_1546f0(user_index, &adjustment);
+				{
+					void (__stdcall *const adjust_view)(long, transform4x3f *) = function_1546f0;
+					adjust_view(user_index, &adjustment);
+				}
 				break;
 			}
 		}
@@ -1446,8 +1449,14 @@ void function_16ebf0(long user_index)
 	vector3f *original_forward = (vector3f *)(state + 0xd8);
 	vector3f *original_up = (vector3f *)(state + 0xe4);
 	point3f *original_position = (point3f *)(state + 0xb8);
-	vector3f forward = *original_forward;
-	vector3f up = *original_up;
+	vector3f forward;
+	forward.i = original_forward->i;
+	forward.j = original_forward->j;
+	forward.k = original_forward->k;
+	vector3f up;
+	up.i = original_up->i;
+	up.j = original_up->j;
+	up.k = original_up->k;
 	transform4x3f matrix;
 	matrix.scale = 1.0f;
 	matrix.forward = *original_forward;

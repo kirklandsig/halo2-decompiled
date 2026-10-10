@@ -25,7 +25,7 @@ bool c_object_type_definition::v32(long a)
 // @retail 0xa45e0
 bool c_handler::handler2(long a, long b, long c, long d)
 {
-	bool result = false;
+	bool peer_dispatch_done = false;
 	c_engine_peer *manager = g_55e4d0[g_4e9ae8->engine_index];
 	long id = NONE;
 	if (manager)
@@ -33,9 +33,9 @@ bool c_handler::handler2(long a, long b, long c, long d)
 	if (function_xbc4d95() == id)
 	{
 		g_55e4d0[g_4e9ae8->engine_index]->p44(c, d);
-		result = true;
+		peer_dispatch_done = true;
 	}
-	return result;
+	return peer_dispatch_done;
 }
 
 // @retail 0xa4650

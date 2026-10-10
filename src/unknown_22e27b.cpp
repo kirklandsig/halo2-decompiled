@@ -703,7 +703,7 @@ c_class_1a2c81 *c_class_1a2c81::find_by_id(long id)
 }
 
 // @retail 0x22ee92
-void c_class_1a2c81::set_user_flags(word flags)
+void c_class_1a2c81::set_user_flags(short flags)
 {
 	user_flags = flags;
 	for (c_class_1a2c81 *widget = child; widget; widget = widget->next)
@@ -1466,8 +1466,10 @@ void function_22cd48(c_class_22cc8e *text, short_rectangle2d const *bounds,
 			long cursor = 0x3fe;
 			if (cursor_position <= (short)cursor)
 				cursor = cursor_position;
-			buffer[(short)cursor] = cursor_character;
-			buffer[(short)cursor + 1] = 0;
+			word &glyph = buffer[(short)cursor];
+			word &terminator = buffer[(short)cursor + 1];
+			glyph = cursor_character;
+			terminator = 0;
 			text->cursor = (short)cursor;
 			if (!text->value40)
 			{

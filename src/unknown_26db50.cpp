@@ -84,7 +84,7 @@ long function_26d3f0(long object_index, short type)
 			record->owner = object_index;
 			record->count = 0;
 			record->users = 0;
-			record->type = type;
+			*(volatile short *)&record->type = type;
 			record->active[0] = 0;
 			function_b9fc0(*object_reference, &forward, &up);
 			record->point = location;
@@ -125,6 +125,7 @@ PRIVATE inline real record_dot3f(vector3f const *a, vector3f const *b)
 bool function_26dc90(long record_index)
 {
 	s_location_record_view *record = (s_location_record_view *)(g_51eca4->data + (record_index & 0xffff) * sizeof(s_location_record_view));
+	bool result;
 	if (g_510c54->game_time > record->time)
 	{
 		long owner = record->owner;
@@ -142,13 +143,15 @@ bool function_26dc90(long record_index)
 				if (location_index != NONE && function_210a30(&location, &record->point) <= threshold)
 				{
 					record->valid = true;
-					record->time = g_510c54->game_time;
-					return true;
+					result = true;
+					goto update_time;
 				}
 			}
 		}
+		result = false;
+update_time:
 		record->time = g_510c54->game_time;
-		return false;
+		return result;
 	}
 	return record->valid;
 }

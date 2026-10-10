@@ -411,20 +411,11 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *volatile bounds)
 			alternate = state == 1 || state == 3;
 		}
 	}
-	if (alternate)
-	{
-		corner = *(long *)(definition + 0x47c);
-		diagonal = *(long *)(definition + 0x46c);
-		edge = *(long *)(definition + 0x474);
-		center = *(long *)(definition + 0x484);
-	}
-	else
-	{
-		corner = *(long *)(definition + 0x45c);
-		diagonal = *(long *)(definition + 0x44c);
-		edge = *(long *)(definition + 0x454);
-		center = *(long *)(definition + 0x464);
-	}
+byte *textures = definition + (alternate ? 0x20 : 0);
+ corner = *(long *)(textures + 0x45c);
+ diagonal = *(long *)(textures + 0x44c);
+ edge = *(long *)(textures + 0x454);
+ center = *(long *)(textures + 0x464);
 	if (color != NONE && corner != NONE && diagonal != NONE && edge != NONE && center != NONE)
 	{
 		s_bitmap_data *corner_bitmap = *(s_bitmap_data **)(g_4e3b44[corner & 0xffff].bytes + 0x48);
@@ -447,13 +438,15 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *volatile bounds)
 			inner.right = input->right - 8 + g_4b9dd2;
 			inner.bottom = input->bottom - 8 + g_4b9dd0;
 			inner.top = input->top + 8 + g_4b9dd0;
-			s_request_screen_bounds piece = inner;
-			real coordinates[4];
+			struct { s_request_screen_bounds piece; real coordinates[4]; point2f points[4]; } draw;
+ s_request_screen_bounds &piece = draw.piece;
+ piece = inner;
+			real (&coordinates)[4] = draw.coordinates;
 			_mm_store_ss(&coordinates[0], _mm_setzero_ps());
 			_mm_store_ss(&coordinates[1], _mm_set_ss(1.0f));
 			_mm_store_ss(&coordinates[2], _mm_setzero_ps());
 			_mm_store_ss(&coordinates[3], _mm_set_ss(1.0f));
-			point2f points[4];
+			point2f (&points)[4] = draw.points;
 			function_1e90b0(0, points, &piece);
 			function_22a664((s_widget_quad_2b11 const *)points, (s_float_rect const *)coordinates, center, 0, color);
 			short top = inner.top - 10;
@@ -568,6 +561,7 @@ public:
 // @retail 0x1e6fe0
 void function_1e6fe0(long local_player_index)
 {
+ union { long spectated_player; short_rectangle2d limits; } shared;
  byte *globals = (byte *)g_51e9c0;
  if (!globals[0x6c5])
   return;
@@ -578,12 +572,14 @@ void function_1e6fe0(long local_player_index)
  if (local_player_index != NONE)
  {
   long player_index = g_4e8c20->entries[local_player_index];
-  long spectated_player;
+  long &spectated_player = shared.spectated_player;
   if (player_index != NONE && function_162c50(player_index, &spectated_player))
   {
    *(long *)((byte *)g_510c4c + 0x1b8) = spectated_player;
    temporary[0] = 0;
-   long string_handle = *(long *)((byte *)g_510c94 + (0x43c - function_2259f0(player_index) * 4));
+   long string_handle;
+   if (function_2259f0(player_index)) string_handle = *(long *)((byte *)g_510c94 + 0x438);
+   else string_handle = *(long *)((byte *)g_510c94 + 0x43c);
    function_13925f(string_handle, temporary);
    wcsncpy((wchar_t *)text, (wchar_t const *)temporary, 255);
    text[255] = 0;
@@ -643,7 +639,7 @@ void function_1e6fe0(long local_player_index)
  default_color.alpha = g_4b9ed8 >= 0 && g_4b9ed8 < 4 ? g_4e69c0[g_4b9ed8] : 1.0f;
  function_13edb0(font, NONE, 2, 0, &color, &default_color);
  function_13ec70(&color);
- short_rectangle2d limits;
+ short_rectangle2d &limits = shared.limits;
  limits.top = -32768; limits.left = -32768; limits.bottom = 32767; limits.right = 32767;
  short_rectangle2d bounds, measured;
  function_13e9c0(text, &limits, &bounds, &measured, 1.0f);

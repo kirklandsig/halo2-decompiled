@@ -205,17 +205,17 @@ void c_legalese_acceptance_list::handle_item(s_controller_reference **controller
 // @retail 0x2305f5
 bool c_legalese_screen::v10(s_widget_event *event)
 {
-	bool result;
+	bool event_consumed_flag;
 	if (event->type == 6)
 	{
 		function_1483c3(0);
-		result = true;
+		event_consumed_flag = true;
 	}
 	else
 	{
-		result = c_class_1473c9::v10(event);
+		event_consumed_flag = c_class_1473c9::v10(event);
 	}
-	return result;
+	return event_consumed_flag;
 }
 
 // @retail 0x2307c8

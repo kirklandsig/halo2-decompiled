@@ -605,6 +605,7 @@ PRIVATE __forceinline void query_remap_keys(s_surface_key_array *keys, long firs
 void c_shape_owner::query_box(const c_query_transform *matrix, const __m128 *extent,
  real tolerance, s_surface_key_array *keys)
 {
+ void *volatile owner_home = this;
  ((c_surface_query_library *)this)->query_box(matrix, extent, tolerance, keys);
  function_1eece0(keys, this);
  for (long i = 0; i < keys->count; ++i)
@@ -626,7 +627,11 @@ void c_shape_owner::query_box(const c_query_transform *matrix, const __m128 *ext
     long first = keys->count;
     --i;
     ((c_instance_surface_query *)(shape + 0x50))->query_box(&local, extent, tolerance, keys);
-    query_remap_keys(keys, first, instance_index);
+    if (first < keys->count)
+    {
+     void *volatile filtered_owner = (byte *)owner_home + 0x14;
+     query_remap_keys(keys, first, instance_index);
+    }
    }
   }
  }
@@ -702,6 +707,7 @@ void c_shape_owner::query_bounds(const s_query_bounds *bounds, s_surface_key_arr
     query_remove_key(keys, i);
     long first = keys->count;
     --i;
+    query = (c_instance_surface_query *)(owner->shape + 0x50);
     query->query_box(&local, &extent, 0.0001f, keys);
     query_remap_keys(keys, first, instance_index);
    }

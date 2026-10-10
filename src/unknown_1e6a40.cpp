@@ -34,17 +34,17 @@ void function_1e6a40(void)
 // @retail 0x1e6a80
 void function_1e6a80(void)
 {
-	s_unknown_1e6a40 *data = g_51e9c0;
+	s_unknown_1e6a40 *slot_table_state = g_51e9c0;
 
-	memset(data, 0, sizeof(*data));
-	data->unknown6c5 = 1;
+	memset(slot_table_state, 0, sizeof(*slot_table_state));
+	slot_table_state->unknown6c5 = 1;
 	for (long i = 0; i < 4; i++)
 	{
-		data->slots[i].unknown080 = NONE;
-		data->slots[i].unknown190 = NONE;
+		slot_table_state->slots[i].unknown080 = NONE;
+		slot_table_state->slots[i].unknown190 = NONE;
 	}
-	data->unknown6c0 = 0;
-	data->unknown6c4 = 0;
+	slot_table_state->unknown6c0 = 0;
+	slot_table_state->unknown6c4 = 0;
 }
 
 void __stdcall function_1e75d0(dword flush);

@@ -92,8 +92,7 @@ s_object *function_badc0(long object_index, dword type_mask);
 // @retail 0x1061c0
 bool function_1061c0(long object_index, long *out_index, byte *out_entry)
 {
-	s_object *unit = (s_object *)OBJECT(object_index);
-	s_slot *slot = &unit->slot;
+	s_slot *slot = &((s_object *)OBJECT(object_index))->slot;
 	bool result = false;
 
 	*out_index = NONE;
@@ -105,14 +104,14 @@ bool function_1061c0(long object_index, long *out_index, byte *out_entry)
 
 		if (slot_object && slot->entry_index != NONE)
 		{
-			s_parent_tag_data *parent = (s_parent_tag_data *)TAG_DATA(slot_object->tag_index);
+			long tag_index = slot_object->tag_index;
+			s_parent_tag_data *parent = (s_parent_tag_data *)TAG_DATA(tag_index);
 
 			if (parent->entry_tag_index != NONE)
 			{
 				s_entry_tag_data *tag = (s_entry_tag_data *)TAG_DATA(parent->entry_tag_index);
-				long entry_index = slot->entry_index;
 
-				if (entry_index >= 0 && entry_index < tag->count && (tag->entries[entry_index].flags & 1))
+				if (slot->entry_index >= 0 && slot->entry_index < tag->count && (tag->entries[slot->entry_index].flags & 1))
 				{
 					*out_index = slot_object_index;
 					result = true;

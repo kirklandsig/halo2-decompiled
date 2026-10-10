@@ -77,9 +77,9 @@ long *function_2369b3(long id)
 
 				if (reference->index != NONE)
 				{
-					long *data = (long *)g_4e3b44[reference->index & 0xffff].bytes;
-					if (*data == id)
-						result = data;
+					long *referenced_tag_bytes = (long *)g_4e3b44[reference->index & 0xffff].bytes;
+					if (*referenced_tag_bytes == id)
+						result = referenced_tag_bytes;
 				}
 			}
 		}

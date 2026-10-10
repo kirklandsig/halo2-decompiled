@@ -609,7 +609,7 @@ long function_173fd0(s_effect_particle_system_definition *definition, long effec
 {
 	long particle_system_index = NONE;
 
-	if (!TEST_FIELD_BIT(definition->flag3) && definition->tag_index != NONE && function_137bd0(definition->tag_index) && definition->unknown30 > 0)
+	if ((bool)((~(((byte *)definition)[0x16] >> 3)) & 1) && definition->tag_index != NONE && function_137bd0(definition->tag_index) && definition->unknown30 > 0)
 	{
 		if (effect_index == NONE || function_178af0(effect_index))
 		{
@@ -620,10 +620,19 @@ long function_173fd0(s_effect_particle_system_definition *definition, long effec
 
 				*((word *)particle_system + 6) = 9;
 				particle_system->flag4 = definition->flag0;
-				particle_system->flag5 = definition->flag1;
-				particle_system->flag6 = definition->flag2;
-				particle_system->random_a = function_x82e52f(&g_4e7408->seed, __FILE__, __LINE__);
-				particle_system->random_b = function_x82e52f(&g_4e7408->seed, __FILE__, __LINE__);
+				byte &flags = ((byte *)particle_system)[0xc];
+				if (definition->flag1)
+					flags |= 0x20;
+				else
+					flags &= ~0x20;
+				if (definition->flag2)
+					flags |= 0x40;
+				else
+					flags &= ~0x40;
+				g_4e7408->seed = g_4e7408->seed * 1664525 + 1013904223;
+				particle_system->random_a = (real)(g_4e7408->seed >> 16) * (1.0f / 65535.0f);
+				g_4e7408->seed = g_4e7408->seed * 1664525 + 1013904223;
+				particle_system->random_b = (real)(g_4e7408->seed >> 16) * (1.0f / 65535.0f);
 				particle_system->tag_index = tag_index;
 				particle_system->effect_index = effect_index;
 				particle_system->next_index = NONE;

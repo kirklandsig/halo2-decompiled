@@ -11,6 +11,8 @@
 
 void *g_509438;
 
+__declspec(noinline) void function_43990(void);
+
 // @retail 0x43990
 void function_43990(void)
 {

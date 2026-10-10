@@ -86,7 +86,7 @@ void function_14cad0(long player_index, long unit_index);
 void function_152340(void);
 void function_b7300(long unit_index);
 bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool flags);
 void function_b8b70(long object_index);
 void __stdcall function_b9a50(long object_index);
 bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position,
@@ -124,7 +124,7 @@ void function_14ee20(long player_index, long target_index)
         if (!(current[4] & 1))
         {
             if (function_b9d20(unit_index))
-                function_bef30(unit_index, 1, 0, 0, 0);
+                function_bef30(unit_index, 1, 0, 0, false);
             *(dword *)(current + 4) |= 1;
             function_b8b70(unit_index);
         }

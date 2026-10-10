@@ -130,7 +130,7 @@ void record_pool_release_all(s_record_pool *data)
 // @retail 0x16b840
 long record_pool_allocate(s_record_pool *data)
 {
-	long result = NONE;
+	long new_datum_handle = NONE;
 	long index = data->first_free_index;
 	long high_water = data->high_water_index;
 	long new_index = NONE;
@@ -172,10 +172,10 @@ long record_pool_allocate(s_record_pool *data)
 			data->next_salt = 0x8000;
 		}
 
-		result = (*(short *)datum << 16) | new_index;
+		new_datum_handle = (*(short *)datum << 16) | new_index;
 	}
 
-	return result;
+	return new_datum_handle;
 }
 
 // @retail 0x16b910

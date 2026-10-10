@@ -78,14 +78,14 @@ struct s_user_interface_shared_globals
 // @retail 0x148350
 s_type_954545 *function_148350(void)
 {
-	s_type_954545 *result = 0;
+	s_type_954545 *ui_globals_tag_bytes = 0;
 	s_user_interface_shared_globals *shared = (s_user_interface_shared_globals *)function_1482e8();
 
 	if (shared && shared->user_interface_globals_tag_index != NONE)
 	{
-		result = (s_type_954545 *)g_4e3b44[shared->user_interface_globals_tag_index & 0xffff].bytes;
+		ui_globals_tag_bytes = (s_type_954545 *)g_4e3b44[shared->user_interface_globals_tag_index & 0xffff].bytes;
 	}
-	return result;
+	return ui_globals_tag_bytes;
 }
 
 /* a list skin of the user interface globals */

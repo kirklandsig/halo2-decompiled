@@ -163,25 +163,34 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 	side.j = -command->forward.i;
 	side.k = 0.f;
 	real length = (real)sqrt(side.j * side.j + side.i * side.i);
-	if (!(0.0001f > fabs(length)) && length != 0.f)
+	if (0.0001f > fabs(length))
+		goto side_default;
 	{
 		real inverse = 1.f / length;
+		if (length == 0.f)
+			goto side_default;
 		side.i *= inverse;
 		side.j *= inverse;
 		side.k *= inverse;
+		goto side_ready;
 	}
-	else
-	{
-		side.i = 1.f;
-		side.j = side.k = 0.f;
-	}
+side_default:
+	side.i = 1.f;
+	side.j = side.k = 0.f;
+side_ready: 
 	command->up.k = command->forward.j * side.i - side.j * command->forward.i;
 	command->up.j = side.k * command->forward.i - command->forward.k * side.i;
 	command->up.i = command->forward.k * side.j - command->forward.j * side.k;
 	real sine = (real)sin(camera->roll);
 	real cosine = (real)cos(camera->roll);
-	vector3f up = command->up;
-	vector3f forward = command->forward;
+	vector3f up;
+	up.i = command->up.i;
+	up.j = command->up.j;
+	up.k = command->up.k;
+	vector3f volatile forward;
+	forward.i = command->forward.i;
+	forward.j = command->forward.j;
+	forward.k = command->forward.k;
 	real projection = (forward.i * up.i + forward.j * up.j + forward.k * up.k) * (1.f - cosine);
 	command->up.i = forward.i * projection + cosine * up.i - (forward.k * up.j - forward.j * up.k) * sine;
 	command->up.j = forward.j * projection + cosine * up.j - (forward.i * up.k - forward.k * up.i) * sine;
@@ -228,8 +237,12 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 		position.y = g_470a24 * movement.j + camera->position.y;
 		position.z = g_470a24 * movement.k + camera->position.z;
 	}
-	camera->position = position;
-	command->position = position;
+	camera->position.x = position.x;
+	camera->position.y = position.y;
+	camera->position.z = position.z;
+	command->position.x = position.x;
+	command->position.y = position.y;
+	command->position.z = position.z;
 	command->offset = *g_4687a4;
 	command->distance = 0.f;
 	command->field_of_view = g_54e854;

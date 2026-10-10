@@ -375,10 +375,15 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
         cache.valid |= requested;
         next = particle->next;
         s_particle_2b96 *nearest = function_2b9670(particle, first);
-        real minimum_speed = function_246cd0(&properties[6].property, cache.values);
-        real maximum_speed = function_246cd0(&properties[7].property, cache.values);
-        real maximum_change = function_246cd0(&properties[8].property, cache.values);
-        vector3f change = { 0.0f, 0.0f, 0.0f };
+        struct { real minimum_speed, maximum_speed, maximum_change; vector3f change, delta, previous; } steering;
+        real &minimum_speed = steering.minimum_speed;
+        minimum_speed = function_246cd0(&properties[6].property, cache.values);
+        real &maximum_speed = steering.maximum_speed;
+        maximum_speed = function_246cd0(&properties[7].property, cache.values);
+        real &maximum_change = steering.maximum_change;
+        maximum_change = function_246cd0(&properties[8].property, cache.values);
+        vector3f &change = steering.change;
+        change.i = change.j = change.k = 0.0f;
         if (nearest)
         {
             function_2b9750(nearest, particle,
@@ -392,7 +397,7 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
         if (attraction_radius > 0.0f)
         {
             point3f const *center = (point3f const *)((byte const *)origin + 0x10);
-            vector3f delta;
+            vector3f &delta = steering.delta;
             delta.i = center->x - particle->position.x;
             delta.j = center->y - particle->position.y;
             delta.k = center->z - particle->position.z;
@@ -426,7 +431,8 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
             change.j *= maximum_change;
             change.k *= maximum_change;
         }
-        vector3f local_c01284 = particle->velocity;
+        vector3f &local_c01284 = steering.previous;
+        local_c01284 = particle->velocity;
         scale_particle_vector_2b(0.75f, &local_c01284);
         particle->velocity.i += change.i;
         particle->velocity.j += change.j;

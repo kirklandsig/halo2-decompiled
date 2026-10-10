@@ -137,15 +137,15 @@ def _active_section(lines):
     return lines[start:]
 
 
-def parse_claims(text, warn=None):
-    """Merged inclusive ranges from an issue #9 Active claims table.
+def claim_rows(text, warn=None):
+    """(who, spans) for each row of an issue #9 Active claims table: the row's
+    first cell and its inclusive address spans, holes removed.
 
     Stops at the next heading of the same or a higher level, so the Finished
-    section is ignored. Returns [] when the table has no addresses. warn, if
-    given, is called for each code span that mentions 0x but is not read as
-    an address or range."""
+    section is ignored. warn, if given, is called for each code span that
+    mentions 0x but is not read as an address or range."""
     text = text.replace('\r\n', '\n').replace('\r', '\n')
-    spans = []
+    rows = []
     for line in _active_section(text.split('\n')):
         raw = line.strip()
         if not raw.startswith('|'):
@@ -162,8 +162,14 @@ def parse_claims(text, warn=None):
             holes += _span_list(m.group(1), warn)
         # A hole applies only to this row. Another row may claim the same
         # addresses (lane I's "except the UI screens", which the UI lane lists).
-        spans += _subtract(_span_list(_EXCEPT.sub(' ', cell), warn), holes)
-    return _merge(spans)
+        rows.append((cells[0], _subtract(_span_list(_EXCEPT.sub(' ', cell), warn), holes)))
+    return rows
+
+
+def parse_claims(text, warn=None):
+    """Merged inclusive ranges from an issue #9 Active claims table (every
+    row; see claim_rows). Returns [] when the table has no addresses."""
+    return _merge([s for _, spans in claim_rows(text, warn) for s in spans])
 
 
 def covers(claims, va):

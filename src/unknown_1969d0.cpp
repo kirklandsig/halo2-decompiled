@@ -9,12 +9,12 @@ s_input_entry g_511a74[16];
 // @retail 0x001969d0
 long function_1969d0(long a, long b, long c)
 {
-	long result = -1;
+	long lookup_hit_value = -1;
 	if (g_510cb0 && g_510cb1)
 	{
-		result = g_511c90[a * 0x1b5 + b + c * 8].value;
+		lookup_hit_value = g_511c90[a * 0x1b5 + b + c * 8].value;
 	}
-	return result;
+	return lookup_hit_value;
 }
 
 // @retail 0x00196a10

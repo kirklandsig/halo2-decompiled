@@ -31,11 +31,14 @@ __forceinline long real_to_long(real value);
 // @retail 0x265050
 void function_265050(long actor_index, long prop_ref_index)
 {
+	struct { byte *definition; long volatile missing_owner; } scratch;
+	long const volatile *prop_reference = &prop_ref_index;
 	byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
 	byte *reference = g_502418->data + (prop_ref_index & 0xffff) * 0x3c;
 	long object_index = *(long *)(reference + 0x20);
 	byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-	byte *definition = *(byte **)((byte *)g_4e3b44 + (*(long *)object & 0xffff) * 16 + 8);
+	byte *&definition = scratch.definition;
+	definition = *(byte **)((byte *)g_4e3b44 + (*(long *)object & 0xffff) * 16 + 8);
 	if (*(real *)(definition + 0xd0) + 10.0f > *(real *)(reference + 0x28))
 	{
 		short state = *(short *)(actor + 0x358);
@@ -47,24 +50,27 @@ void function_265050(long actor_index, long prop_ref_index)
 			*(long *)(actor + 0x360) = *(long *)(reference + 0x20);
 			*(real *)(actor + 0x36c) = *(real *)(definition + 0xd0);
 			*(short *)(actor + 0x35a) = 0;
-			*(long *)(actor + 0x368) = prop_ref_index;
+			*(long *)(actor + 0x368) = *prop_reference;
 			long parent_index = *(long *)(object + 0xc8);
-			long selected = NONE;
-			if (parent_index != NONE)
-			{
-				byte *parent = (byte *)function_badc0(parent_index, NONE);
-				if (parent && ((1 << parent[0xaa]) & 3))
-				{
-					selected = parent_index;
-					long unit_index = *(long *)(actor + 0x18);
-					if (unit_index != NONE && selected == unit_index)
-						*(short *)(actor + 0x35a) = 2;
-					else if (!function_1df560(*(short *)(actor + 0x24), *(short *)(parent + 0x138)))
-						*(short *)(actor + 0x35a) = 1;
-				}
-			}
-			*(long *)(actor + 0x364) = selected;
-			function_25b910(actor_index, prop_ref_index);
+            scratch.missing_owner = NONE;
+            long selected;
+            if (parent_index == NONE) goto owner_missing;
+            {
+                byte *parent = (byte *)function_badc0(parent_index, NONE);
+                if (!parent || !((1 << parent[0xaa]) & 3)) goto owner_missing;
+                selected = parent_index;
+                long unit_index = *(long *)(actor + 0x18);
+                if (unit_index != NONE && selected == unit_index)
+                    *(short *)(actor + 0x35a) = 2;
+                else if (!function_1df560(*(short *)(actor + 0x24), *(short *)(parent + 0x138)))
+                    *(short *)(actor + 0x35a) = 1;
+            }
+            goto owner_selected;
+owner_missing:
+            selected = scratch.missing_owner;
+owner_selected:
+            *(long *)(actor + 0x364) = selected;
+			function_25b910(actor_index, *prop_reference);
 		}
 	}
 }
@@ -563,7 +569,7 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 		*(real *)((byte *)view + 0x3c) = function_265d30(actor_index, prop_ref_index);
 		*(real *)((byte *)view + 0x40) = function_296600(actor_index, prop_ref_index);
 	}
-	function_25d690(reference)->unknown64 = true;
+	function_25d690(reference)->unknown68 = 1;
 }
 
 

@@ -87,6 +87,8 @@ long __stdcall function_1a08f0(s_async_task *task)
 	return 1;
 }
 
+__declspec(noinline) long function_1a0b40(char const *path, dword access_flags, long disposition, dword file_flags, long category, long priority, s_file_handle *file, bool volatile *done);
+
 // @retail 0x1a0b40
 long function_1a0b40(
 	char const *path,

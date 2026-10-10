@@ -884,10 +884,11 @@ void function_232d77(void);
 // @retail 0x196390
 void function_196390(void)
 {
-	g_510cb1 = true;
-	if (g_4e6948->state == 2)
+	*(volatile bool *)&g_510cb1 = true;
+	if (2 == g_4e6948->state)
 	{
-		long index = function_199290(&g_510cb0);
+		long index;
+		index = function_199290(&g_510cb0);
 		bool local = false;
 
 		if (index != NONE)
@@ -903,9 +904,12 @@ void function_196390(void)
 			g_51051c = true;
 			g_51051d = false;
 		}
-		if (local && !g_510cb2)
+		if (local)
 		{
-			function_b3e90(&g_510cb0);
+			if (!g_510cb2)
+			{
+				function_b3e90(&g_510cb0);
+			}
 		}
 	}
 	function_232d77();

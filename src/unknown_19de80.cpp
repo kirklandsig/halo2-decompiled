@@ -280,7 +280,8 @@ void function_19e0f0(word const *string, long size, word *buffer, s_event *event
 			remaining -= prefix_length;
 			destination += prefix_length;
 
-			written = function_19e1c0(event, token_length, token, destination, remaining);
+			long (__fastcall *const expand_token)(s_event *, long, word const *, word *, long) = function_19e1c0;
+			written = expand_token(event, token_length, token, destination, remaining);
 			destination += written;
 			remaining -= written;
 			source = end;
@@ -302,7 +303,7 @@ void function_19e0f0(word const *string, long size, word *buffer, s_event *event
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
-	long result = 0;
+	long volatile result = 0;
 	word text[0x100];
 
 	if (!wcsncmp(L"#cause_player", token, token_length) && event && event->cause_player_index != NONE)

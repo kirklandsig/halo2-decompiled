@@ -33,7 +33,7 @@ struct s_166244_group
 // @retail 0x166244
 long function_166244(long key)
 {
-	long result = NONE;
+	long matching_group_index = NONE;
 
 	for (long i = 0; i < 4; i++)
 	{
@@ -41,12 +41,12 @@ long function_166244(long key)
 		{
 			if (key == GROUPS[i].entries[j].key)
 			{
-				result = i;
+				matching_group_index = i;
 				break;
 			}
 		}
 	}
-	return result;
+	return matching_group_index;
 }
 
 // @retail 0x166283

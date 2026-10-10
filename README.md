@@ -15,8 +15,10 @@ project's scope, what it does not contain, and its rules for contributions,
 and [PROVENANCE.md](PROVENANCE.md) for where its information comes from.
 
 **Contributors are welcome.** No prior decompilation experience is needed,
-only patience and some C. Read [How to help](#how-to-help) and
-[CONTRIBUTING.md](CONTRIBUTING.md).
+only patience and some C. **New here? Start with
+[docs/START_HERE.md](docs/START_HERE.md):** the setup checklist, how to claim
+a range, and a prompt you can paste into an AI coding agent. Then see
+[How to help](#how-to-help) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What this repository does not contain
 
@@ -46,12 +48,12 @@ Analysis, documentation and review do not need it.
 
 ## Status
 
-Decompilation is under way, and 7466 retail functions now match byte for
+Decompilation is under way, and 7477 retail functions now match byte for
 byte. The checker reports:
 
 ```
-matched 7466 of 11318 game functions (873311 of 2784283 bytes, 31.37%)
-matched 7466 of 17216 functions in scope (873311 of 3739273 bytes, 23.36%)
+matched 7477 of 11318 game functions (876062 of 2784283 bytes, 31.46%)
+matched 7477 of 17216 functions in scope (876062 of 3739273 bytes, 23.43%)
 ```
 
 Matched code so far includes:
@@ -146,6 +148,7 @@ So the work runs in stages:
 | `tools/build.py` | Builds the whole game as one LTCG image, with each source file's flags. |
 | `tools/check.py` | Compares our functions with retail and records progress. Needs the SDK and capstone. |
 | `tools/ready.py` | Lists the functions that are ready to decompile next. `--claims` drops addresses from a saved copy of the Active claims table. |
+| `tools/open_work.py` | Lists work a contributor can claim (source files with functions left, and functions ready to write) outside every person's claim, with the claim line to use. Takes a saved copy of issue #9. |
 | `tools/permute.py` | Searches variants of a source function for ones that turn a near-miss into a match. |
 | `tools/near.py` | Counts the near-misses in the csv by source file (functions, bytes). No XBE. `--list` prints each function. |
 | `tools/masked.py` | Lists what `check.py` cannot see because it masks address fields: float constants one step away from the source's literals, strings, and script function definitions that differ from retail. Needs the retail XBE and capstone. |
@@ -155,12 +158,15 @@ So the work runs in stages:
 ## How to help
 
 Halo 2 has about 11,300 game functions, so there is room for many people.
+[docs/START_HERE.md](docs/START_HERE.md) walks through these steps and has a
+ready-made prompt for AI coding agents.
 1. Get set up as in [Build and check](#build-and-check), with your own
    lawfully owned copy of Halo 2 (see [Requirements](#requirements)).
-2. Pick a source file or an address range nobody has claimed (the pinned
-   [Active claims](https://github.com/kirklandsig/halo2-decompiled/issues/9)
-   issue lists them), and open a draft pull request saying what you are
-   taking.
+2. Pick a source file or an address range that no other person holds (the
+   pinned [Active claims](https://github.com/kirklandsig/halo2-decompiled/issues/9)
+   issue lists claims; the maintainers' automated lanes make way for
+   contributors), and open a draft pull request saying what you are taking.
+   `python tools/open_work.py` lists what is open.
 3. Decompile, run `python tools/check.py`, and push as functions match.
    [docs/DECOMPILING.md](docs/DECOMPILING.md) explains the conventions and
    the compiler's quirks.

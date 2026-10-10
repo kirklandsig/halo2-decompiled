@@ -5,6 +5,8 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 
+__declspec(noinline) s_player_state *function_16f3a0(long index);
+
 // @retail 0x16f3a0
 s_player_state *function_16f3a0(long index)
 {

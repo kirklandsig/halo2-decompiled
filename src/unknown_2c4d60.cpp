@@ -40,7 +40,7 @@ void function_2c4da0()
 // @retail 0x2c4de0
 void function_2c4de0()
 {
-	s_animation_data *data = g_sampling_settings.field_30;
+	s_animation_data *scale_track_header = g_sampling_settings.field_30;
 
-	g_5044c0->scale = *(real *)((byte *)data + data->scale_stride * g_5044bc + g_sampling_settings.frame_index * 4 + data->scale_offset);
+	g_5044c0->scale = *(real *)((byte *)scale_track_header + scale_track_header->scale_stride * g_5044bc + g_sampling_settings.frame_index * 4 + scale_track_header->scale_offset);
 }

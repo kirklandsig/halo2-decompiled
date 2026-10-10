@@ -37,7 +37,7 @@ public:
 // @retail 0x2bc1b0
 bool function_2bc1b0(point3f *position, long index)
 {
-	bool result = false;
+	bool marker_found_flag = false;
 	long marker_index = ((s_state_2bc1 *)g_51ecc4)->markers[index];
 
 	if (marker_index != NONE)
@@ -48,9 +48,9 @@ bool function_2bc1b0(point3f *position, long index)
 		{
 			*position = marker->position;
 		}
-		result = true;
+		marker_found_flag = true;
 	}
-	return result;
+	return marker_found_flag;
 }
 
 // @retail 0x2bcc10
