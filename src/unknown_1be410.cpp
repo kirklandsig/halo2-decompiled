@@ -124,8 +124,8 @@ bool function_1be410(point3f *point, long object_index, long actor_index)
 // @retail 0x1be630
 bool __stdcall function_1be630(long actor_index, s_slot *slot)
 {
-	s_actor_view *actor = actor_get(actor_index);
 	bool result = false;
+	s_actor_view *actor = actor_get(actor_index);
 
 	if (actor->prop_index != NONE && actor->unknown348 != NONE)
 	{
@@ -136,7 +136,7 @@ bool __stdcall function_1be630(long actor_index, s_slot *slot)
 		{
 			state->unknown10 = actor->unknown348;
 			function_1f86a0(actor_index);
-			return true;
+			result = true;
 		}
 	}
 	return result;

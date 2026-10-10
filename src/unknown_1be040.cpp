@@ -61,8 +61,8 @@ short __stdcall function_1c8df0(long object_index, point3f const *point, short t
 // @retail 0x1be120
 bool __stdcall function_1be120(long actor_index, s_slot *slot)
 {
-	s_actor_view *actor = actor_get(actor_index);
 	bool result = true;
+	s_actor_view *actor = actor_get(actor_index);
 
 	if (actor->unknown040)
 	{

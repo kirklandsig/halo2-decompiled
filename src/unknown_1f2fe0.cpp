@@ -181,12 +181,13 @@ bool function_1f3430(long actor_index)
 	{
 		if (actor->path_index >= actor->path_count)
 		{
-			result = true;
 			function_1f8780(actor_index, true);
+			return true;
 		}
 		else
 		{
-			result = function_1f3230(actor_index, function_1e3920(actor_index));
+			real volatile local_0 = function_1e3920(actor_index);
+			result = function_1f3230(actor_index, local_0);
 			if (result)
 				function_1f8780(actor_index, true);
 		}

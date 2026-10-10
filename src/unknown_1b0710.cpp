@@ -57,8 +57,8 @@ bool __stdcall function_1b0ab0(long actor_index, s_slot *slot)
 			s_slot_object_view *object = object_get(element->unknown80);
 			s_2605d0_request request;
 			memset(&request, 0, sizeof(request));
-			request.type = 5;
-			*((bool *)&request + 0x20) = true;
+			*(short volatile *)&request.type = 5;
+			*((bool volatile *)&request + 0x20) = true;
 			function_b9dd0(((volatile s_51e9d8_element *)element)->unknown80, (point3f *)((byte *)&request + 0x24));
 			*(long *)((byte *)&request + 0x40) = NONE;
 			*(short *)((byte *)&request + 0x44) = *(short *)((byte *)object + 0x2c);

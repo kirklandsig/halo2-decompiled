@@ -46,8 +46,11 @@ bool __stdcall function_1b7770(long actor_index, s_slot *slot)
 		if (bounds->upper > 0.0f)
 		{
 			s_slot_80 *state = (s_slot_80 *)slot;
-			real ticks = (bounds->lower + (bounds->upper - bounds->lower) * slot_random() * actor->unknown3bc) *
-				g_510c54->field_2_3;
+			double local_0 = (double)bounds->upper - bounds->lower;
+			real local_1 = slot_random();
+			double local_2 = local_0 * local_1;
+			real local_3 = (real)(bounds->lower + local_2 * actor->unknown3bc);
+			real ticks = local_3 * g_510c54->field_2_3;
 			long rounded;
 
 			__asm
@@ -57,7 +60,7 @@ bool __stdcall function_1b7770(long actor_index, s_slot *slot)
 			}
 			state->ticks = (short)rounded;
 			state->vector = actor->unknown3c0;
-			return true;
+			result = true;
 		}
 	}
 	return result;

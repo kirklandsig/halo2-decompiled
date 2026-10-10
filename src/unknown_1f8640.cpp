@@ -103,7 +103,8 @@ void function_1f8780(long actor_index, bool unknown)
 		{
 			real radius = function_1e3920(actor_index);
 
-			if (function_210ac0((s_type_c3b527 *)function_262b40(actor->unknown4b8_reference), &actor->position) <= radius + 0.2)
+			s_type_c3b527 *local_1 = (s_type_c3b527 *)function_262b40(actor->unknown4b8_reference);
+			if (function_210ac0(local_1, &actor->position) <= radius + 0.2)
 				actor->unknown227 = true;
 		}
 		else if (actor->unknown4e8)
@@ -123,13 +124,13 @@ void function_1f8780(long actor_index, bool unknown)
 		case 2:
 		{
 			s_moving_unit_request request;
-			bool success = false;
 
 			if (actor->unknown4ac == 6)
 			{
 				request.type = 0x2d;
 				request.turn.unknown4 = 0;
-				success = function_262a90(actor->unknown4b8_reference, &request.turn.point, &request.turn.vector);
+				if (!function_262a90(actor->unknown4b8_reference, &request.turn.point, &request.turn.vector))
+					goto local_0;
 			}
 			else if (actor->unknown4ac == 4)
 			{
@@ -141,20 +142,21 @@ void function_1f8780(long actor_index, bool unknown)
 					break;
 				}
 				request.type = 0x2f;
-				success = function_262af0(actor->unknown4b8_reference, &request.face.point, &request.face.facing);
-				if (success)
-					request.face.facing = actor->unknown290;
+				if (!function_262af0(actor->unknown4b8_reference, &request.face.point, &request.face.facing))
+					goto local_0;
+				request.face.facing = actor->unknown290;
 			}
 			else
 			{
 				break;
 			}
 
-			if (success && function_e6900(actor->unit_index, (s_unit_request *)&request))
+			if (function_e6900(actor->unit_index, (s_unit_request *)&request))
 			{
 				actor->unknown227 = true;
+				break;
 			}
-			else
+local_0:
 			{
 				actor->unknown50c = false;
 				actor->unknown504 = 3;

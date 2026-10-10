@@ -508,9 +508,9 @@ void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *a
             real dot = (limited.k * axis.k + limited.j * axis.j + limited.i * axis.i) * (1.0f - cosine);
             vector3f cross;
             function_1f1461(&limited, &axis, &cross);
+            limited.k = axis.k * dot + limited.k * cosine - cross.k * sine;
             limited.i = dot * axis.i + limited.i * cosine - cross.i * sine;
             limited.j = axis.j * dot + limited.j * cosine - cross.j * sine;
-            limited.k = axis.k * dot + limited.k * cosine - cross.k * sine;
             function_1f1461(&limited, &up, &cross);
             if (cross.k * axis.k + cross.j * axis.j + cross.i * axis.i > 0.0f)
                 up = limited;
@@ -567,6 +567,15 @@ PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b)
 }
 
 #pragma optimize("s", on)
+PRIVATE __forceinline vector3f function_1f0873(vector3f const &arg_0, vector3f const &arg_1)
+{
+    vector3f local_0;
+    local_0.i = arg_0.j * arg_1.k - arg_0.k * arg_1.j;
+    local_0.j = arg_0.k * arg_1.i - arg_0.i * arg_1.k;
+    local_0.k = arg_0.i * arg_1.j - arg_0.j * arg_1.i;
+    return local_0;
+}
+
 // @retail 0x1f0870
 void function_1f0870(byte const *state, byte *out, byte *history, vector3f const *current)
 {
@@ -629,17 +638,17 @@ void function_1f0870(byte const *state, byte *out, byte *history, vector3f const
         vector3f desired;
         if (flying)
         {
-            vector3f left = contact_cross(normal, basis);
+            vector3f left = function_1f0873(normal, basis);
             if (function_30bf0(&left) == 0.0f)
             {
-                left = contact_cross(normal, *g_4687b0);
+                left = function_1f0873(normal, *g_4687b0);
                 if (function_30bf0(&left) == 0.0f)
                 {
-                    left = contact_cross(normal, *g_4687a8);
+                    left = function_1f0873(normal, *g_4687a8);
                     function_30bf0(&left);
                 }
             }
-            vector3f forward = contact_cross(left, normal);
+            vector3f forward = function_1f0873(left, normal);
             function_30bf0(&forward);
             desired.i = left.i * input.j + forward.i * input.i;
             desired.j = left.j * input.j + forward.j * input.i;
@@ -657,7 +666,7 @@ void function_1f0870(byte const *state, byte *out, byte *history, vector3f const
             }
             else
             {
-                vector3f left = contact_cross(*g_4687b0, basis);
+                vector3f left = function_1f0873(*g_4687b0, basis);
                 function_30bf0(&left);
                 real local_3 = -shape_dot(normal, basis);
                 vector3f forward;
