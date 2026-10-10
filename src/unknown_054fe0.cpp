@@ -554,6 +554,8 @@ static inline s_network_session_player *session_get_player(c_class_58d20 *sessio
 // @retail 0x64c70
 bool network_session_interface_has_user(const XUID *xuid)
 {
+	union { byte field_0; bool field_1; } local_0;
+ local_0.field_0 = 0;
 	c_class_58d20 *session = 0;
 	if (network_session_get(&session) && SESSION_STATE_IS_LIVE(session->state))
 	{
@@ -561,10 +563,11 @@ bool network_session_interface_has_user(const XUID *xuid)
 		{
 			s_network_session_player *player = session_get_player(session, i);
 			if (player && xuid && player->user_id == xuid->qwUserID && XOnlineUserGuestNumber(player->user_flags) == XOnlineUserGuestNumber(xuid->dwUserFlags))
-				return true;
+				{ local_0.field_0 = 1; goto local_1; }
 		}
 	}
-	return false;
+local_1:
+	return local_0.field_1;
 }
 
 static inline s_long_pair *session_get_data_4999(c_class_58d20 *session)
@@ -596,17 +599,24 @@ struct s_sort_key
 // @retail 0x64d30
 bool __stdcall sort_key_less_than(const s_sort_key *a, const s_sort_key *b, void *context)
 {
-	if (a->high < b->high)
-		return true;
-	if (a->high > b->high)
-		return false;
-	if (a->middle < b->middle)
-		return true;
-	if (a->middle > b->middle)
-		return false;
-	if (a->low < b->low)
-		return false;
-	return a->low > b->low;
+ if (a->high < b->high)
+  return true;
+ else if (a->high > b->high)
+  return false;
+ else
+ {
+  if (a->middle < b->middle)
+   return true;
+  else if (a->middle > b->middle)
+   return false;
+  else if (a->low < b->low)
+   return false;
+  else
+  {
+   byte local_0 = a->low > b->low;
+   return local_0;
+  }
+ }
 }
 
 // @retail 0x65280
@@ -800,6 +810,11 @@ static inline bool session_is_leader(c_class_58d20 *session)
 	return result;
 }
 
+PRIVATE __forceinline bool function_63f51(const char *arg_0, c_class_58d20 *arg_1, long arg_2, long arg_3)
+{
+ return network_session_parameters_set_value4d08(arg_1, arg_0, arg_2, arg_3);
+}
+
 // @retail 0x63f50
 bool network_session_interface_set_value4d08(long value4d08, long value4d0c, const char *string)
 {
@@ -808,9 +823,10 @@ bool network_session_interface_set_value4d08(long value4d08, long value4d0c, con
 	if (session && session_is_established(session))
 	{
 		if (session_is_leader(session))
-			return network_session_parameters_set_value4d08(session, string, value4d08, value4d0c);
+			{ result = function_63f51(string, session, value4d08, value4d0c); goto local_0; }
 		result = true;
 	}
+local_0:
 	return result;
 }
 
@@ -896,8 +912,8 @@ bool network_session_interface_set_value49c4(void)
 	if (g_527330.initialized && g_527330.state == 3)
 	{
 		c_class_58d20 *session = (c_class_58d20 *)g_527330.session_a;
-		if (session->state && session_is_established(session) && session_is_leader(session) && network_session_parameters_set_value49c4(session))
-			return true;
+		if (session->state && session_is_established(session) && session->current_member == session->value50 && network_session_parameters_set_value49c4(session))
+			result = true;
 	}
 	return result;
 }

@@ -129,14 +129,15 @@ short __stdcall function_257630(long actor_index)
 // @retail 0x2576c0
 short __stdcall function_2576c0(long actor_index, s_slot *slot, s_slot *next)
 {
-	short result = g_470c5c;
+	long result = g_470c5c;
 	s_actor_view *actor = actor_get(actor_index);
 	s_slot_7f_state *state = (s_slot_7f_state *)slot;
 	s_502424_element *joint = element_502424_get(state->joint_index);
 
 	if (joint->target.unknown0 == NONE || joint->target.unknown4 == NONE)
 	{
-		return g_470c58;
+		result = g_470c58;
+		goto local_9;
 	}
 
 	if (state->following)
@@ -147,8 +148,11 @@ short __stdcall function_2576c0(long actor_index, s_slot *slot, s_slot *next)
 
 			request->unknown20 = true;
 			request->target_index = joint->target.unknown4;
-			request->timer = g_510c54->field_2_3 * 3;
-			return 0x3a;
+			volatile long local_0 = g_510c54->field_2_3;
+			local_0 *= 3;
+			request->timer = (short)local_0;
+			result = 0x3a;
+			goto local_9;
 		}
 	}
 	else
@@ -171,11 +175,13 @@ short __stdcall function_2576c0(long actor_index, s_slot *slot, s_slot *next)
 			if (function_e6900(actor->unknown018, (s_unit_request *)&request))
 			{
 				((s_joint_7f_view *)joint)->started = true;
-				return g_470c58;
+				result = g_470c58;
+		goto local_9;
 			}
 		}
 	}
-	return result;
+local_9:
+	return (short)result;
 }
 
 // @retail 0x257870
@@ -330,9 +336,11 @@ void __stdcall function_257b60(long actor_index, s_slot *slot, s_slot_target_lis
 // @retail 0x257c60
 short __stdcall function_257c60(long actor_index, long joint_index, s_slot *slot, long unknown)
 {
+	s_record_pool *local_0 = g_502424;
+	byte *local_1 = ((s_record_pool volatile *)local_0)->data;
 	short result = 0;
 
-	if (function_26eae0(joint_index, element_502424_get(joint_index)->target.unknown4, 3, 1.0f))
+	if (function_26eae0(joint_index, ((s_502424_element *)(local_1 + (joint_index & 0xffff) * sizeof(s_502424_element)))->target.unknown4, 3, 1.0f))
 	{
 		result = 1;
 	}

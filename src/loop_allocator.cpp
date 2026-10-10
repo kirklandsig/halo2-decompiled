@@ -157,17 +157,17 @@ s_loop_block *loop_allocate_at_end(s_loop_allocator *loop, long size, char const
 // @retail 0x18e600
 s_loop_block *loop_allocate_at_start(s_loop_allocator *loop, long size, char const *file, long line)
 {
-	s_loop_block *first = loop->first;
 	s_loop_block *result = NULL;
 	byte *end;
 
-	if (!first)
+	if (!loop->first)
 	{
-		end = loop->base + loop->size;
+		dword tmp0 = loop->size;
+		end = loop->base + tmp0;
 	}
 	else
 	{
-		end = (byte *)first;
+		end = (byte *)loop->first;
 		if (loop->debug_headers)
 		{
 			end -= sizeof(s_loop_block_debug_header);
@@ -177,7 +177,7 @@ s_loop_block *loop_allocate_at_start(s_loop_allocator *loop, long size, char con
 	byte *address = loop->base;
 	if (address + size <= end)
 	{
-		result = loop_block_insert(loop, address, size, file, line, NULL, first);
+		result = loop_block_insert(loop, address, size, file, line, NULL, loop->first);
 	}
 	return result;
 }

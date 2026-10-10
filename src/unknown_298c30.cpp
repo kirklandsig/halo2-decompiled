@@ -672,15 +672,11 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		}
 		*(real *)(local_0 + 0x670) = 0.0f > local_38 ? 0.0f : local_38;
 		*arg_5 = local_38;
-		real local_41 = *(real *)((byte const *)local_2 + 0x50);
-		if (*arg_5 > local_41)
-			*arg_5 = local_41;
-		else if (-local_41 > *arg_5)
-			*arg_5 = -local_41;
-		if (*arg_5 > 1.0f)
-			*arg_5 = 1.0f;
-		else if (-1.0f > *arg_5)
-			*arg_5 = -1.0f;
+		*arg_5 = *arg_5 > *(real *)((byte const *)local_2 + 0x50) ?
+			*(real *)((byte const *)local_2 + 0x50) :
+			(-*(real *)((byte const *)local_2 + 0x50) > *arg_5 ?
+				-*(real *)((byte const *)local_2 + 0x50) : *arg_5);
+		*arg_5 = *arg_5 > 1.0f ? 1.0f : (-1.0f > *arg_5 ? -1.0f : *arg_5);
 		*arg_6 = false;
 		*arg_4 = 0;
 		*(real *)(local_0 + 0x668) = local_6;

@@ -110,6 +110,21 @@ void function_81050(long result, s_pending_message_header *header);
 void function_12d520(long memory);
 void __stdcall function_812d0(void *allocation, s_pending_message_header *header);
 
+void __stdcall function_8e0f0(long index, long result);
+#pragma optimize("g", off)
+PRIVATE __forceinline void function_8e0f1(s_pending_message_header *arg_0, long arg_1)
+{
+ if (arg_0->kind && arg_1 != NONE)
+  function_8e0f0(arg_1, 13);
+ void *local_0 = arg_0->data;
+ if (local_0)
+ {
+  function_12d520((long)local_0);
+  arg_0->data = 0;
+  arg_0->size = 0;
+ }
+}
+#pragma optimize("", on)
 // @retail 0x8e0f0
 void __stdcall function_8e0f0(long index, long result)
 {
@@ -119,9 +134,11 @@ void __stdcall function_8e0f0(long index, long result)
    function_6b640(g_4d8c28[index].task_index);
   function_81050(result, g_4d8c28[index].header);
   s_pending_message_header *header = g_4d8c28[index].header;
-  if (header->kind == 4 && header->pending_index == NONE)
+  if (header->kind == 4)
   {
-   function_812d0(header->data, header);
+   long local_0 = header->pending_index;
+   if (local_0 == NONE)
+    function_8e0f1(header, local_0);
   }
   g_4d8c28[index].header = 0;
   g_4d8c28[index].task_index = NONE;

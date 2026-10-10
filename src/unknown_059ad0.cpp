@@ -1,4 +1,4 @@
-// @flags /O2 /Gr
+// @flags /O2 /Gr /arch:SSE
 /* UNKNOWN_059AD0.CPP: the network session (lane D). Its members and their
    channels, the leave and disband paths, the session parameters and the
    requests a peer sends its host to change them. */
@@ -63,7 +63,7 @@ extern s_xnet_registry_entry g_4cf7d4[8];
 
 bool transport_security_create_key(long local, long index, bool online);
 bool transport_security_register_key(long index, long local, bool host, const XNKID *kid, const XNKEY *key);
-bool function_07ab60(const s_type_99af70 *address, bool local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out);
+bool function_07ab60(const s_type_99af70 *address, long local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out);
 
 /* the session states (0x7420, 0x1f8 bytes) */
 #define SESSION_STATE_DATA_SIZE 0x1f8
@@ -323,7 +323,7 @@ long network_session_find_member_by_address(c_class_58d20 *session, const s_type
 	if (session->state && session->flag24)
 	{
 		XNADDR xnaddr;
-		if (function_07ab60(address, session->value3c != 0, 0, 0, 0, &xnaddr))
+		if (function_07ab60(address, session->value3c, 0, 0, 0, &xnaddr))
 			result = network_session_find_member(session, (const s_session_member_identity *)&xnaddr);
 	}
 	return result;
@@ -1215,28 +1215,32 @@ bool network_session_parameters_set_value49a4(c_class_58d20 *session, long value
 	return result;
 }
 
+PRIVATE __forceinline bool function_5b3a1(c_class_58d20 *session)
+{
+	bool result = true;
+	if (session->function_058d20())
+	{
+		session->update_count++;
+		session->value49c4 = result;
+	}
+	else
+	{
+		s_network_message_parameters_request request;
+		parameters_request_initialize(session, &request);
+		request.change_value49c4 = result;
+		request.value49c4 = result;
+		network_session_send_to_host(session, _network_message_type_parameters_request, sizeof(request), &request);
+	}
+	return result;
+}
+
 // @retail 0x5b3a0
 bool network_session_parameters_set_value49c4(c_class_58d20 *session)
 {
 	bool result = false;
 
 	if (session_state_is_live(session) && function_058d50(session))
-	{
-		result = true;
-		if (session->function_058d20())
-		{
-			session->update_count++;
-			session->value49c4 = result;
-		}
-		else
-		{
-			s_network_message_parameters_request request;
-			parameters_request_initialize(session, &request);
-			request.change_value49c4 = result;
-			request.value49c4 = result;
-			network_session_send_to_host(session, _network_message_type_parameters_request, sizeof(request), &request);
-		}
-	}
+		result = function_5b3a1(session);
 	return result;
 }
 
@@ -2225,8 +2229,9 @@ void network_session_host_lost(c_class_58d20 *session)
 }
 
 // @retail 0x62eb0
-bool network_session_add_reservation(c_class_58d20 *session, const dword *identity, const s_session_id *id, long timeout, long unknown18)
+bool network_session_add_reservation(const dword *identity, c_class_58d20 *session, const s_session_id *id, long timeout, long unknown18)
 {
+	bool local_0 = false;
 	s_network_session_reservation *reservations = session->reservations;
 
 	for (s_network_session_reservation *reservation = reservations; reservation < reservations + MAXIMUM_PLAYERS_PER_SESSION; reservation++)
@@ -2240,19 +2245,21 @@ bool network_session_add_reservation(c_class_58d20 *session, const dword *identi
 			reservation->unknown18 = unknown18;
 			reservation->active = true;
 			reservation->joined = network_session_find_player(session, (const dword *)reservation->identity) != NONE;
-			return true;
+			local_0 = true;
+			goto local_1;
 		}
 	}
-	return false;
+local_1:
+	return local_0;
 }
 
 // @retail 0x62e70
-bool network_session_add_reservations(c_class_58d20 *session, const dword *identities, long count, const s_session_id *id, long timeout, const long *values)
+bool network_session_add_reservations(c_class_58d20 *session, const dword *identities, const s_session_id *id, long count, long timeout, const long *values)
 {
 	bool result = true;
 
-	for (long i = 0; result && i < count; i++)
-		result = network_session_add_reservation(session, &identities[i * 3], id, timeout, values[i]);
+	for (long i = 0; i < count && result; i++)
+		result = network_session_add_reservation(&identities[i * 3], session, id, timeout, values[i]);
 	return result;
 }
 
@@ -3292,7 +3299,7 @@ bool __stdcall network_session_host(c_class_58d20 *session, long mode, long loca
 	session->time78b4 = time(NULL);
 	network_session_enter_state_5(session);
 	if (timeout == NONE || timeout > 0)
-		network_session_add_reservations(session, identities, count, id, timeout, values);
+		network_session_add_reservations(session, identities, id, count, timeout, values);
 	return result;
 }
 /* sets a session up as owner owner_index of the observer */
@@ -3500,7 +3507,7 @@ bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_ide
 				if (function_062f40((s_reservation_session *)session, identities + i * 3, &reservation))
 					*(bool *)reservation = false;
 			}
-			network_session_add_reservation(session, identities + i * 3, id, timeout, values[i]);
+			network_session_add_reservation(identities + i * 3, session, id, timeout, values[i]);
 		}
 	}
 	network_session_add_member(session, session->member_count, identity, true, channel, id);

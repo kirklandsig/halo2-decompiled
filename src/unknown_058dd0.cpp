@@ -663,6 +663,7 @@ void c_session_state_joining::leave(long a)
 
 /* ---- post-game ---- */
 
+#pragma inline_depth(0)
 // @retail 0x6f050
 bool c_session_state_post_game::update()
 {
@@ -676,6 +677,8 @@ bool c_session_state_post_game::update()
 	}
 	return result;
 }
+#pragma inline_depth(255)
+
 
 /* ---- the session client ---- */
 
@@ -804,7 +807,7 @@ static inline long session_time_get(void)
 	return time;
 }
 
-// @retail 0x6dfa0
+// @retail 0x6dfa0 standard
 bool c_session_state::function_06dfa0()
 {
 	s_session_owner *o = owner;

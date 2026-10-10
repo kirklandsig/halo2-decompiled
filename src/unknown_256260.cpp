@@ -129,13 +129,14 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 	}
 }
 
+#pragma inline_depth(0)
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {
-	s_actor_view *actor = actor_get(actor_index);
+	s_actor_view *actor = ((s_actor_view *)(g_4f55f0->data + (actor_index & 0xffff) * sizeof(s_actor_view)));
 	s_slot_76_state *state = (s_slot_76_state *)slot;
 
-	if (actor->prop_index != NONE && actor_perception_index(actor_index) != NONE)
+	if (actor->prop_index != NONE && ((s_handler_actor_view *)actor)->perception_index != NONE)
 	{
 		s_character_76_view *character = (s_character_76_view *)function_1e4b50(actor_index);
 
@@ -144,10 +145,11 @@ short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 			if (state->started)
 			{
 				state->timer++;
-				if (state->timer * g_510c54->rate < character->duration)
+				if (!(state->timer * g_510c54->rate < character->duration))
 				{
-					return g_470bec;
+					return g_470be8;
 				}
+				return g_470bec;
 			}
 			else
 			{
@@ -156,16 +158,24 @@ short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 				s_ai_object_iterator iterator;
 				s_handler_object_view *object;
 
-				iterator.next_index = perception_get(actor_perception_index(actor_index))->object_index;
 				iterator.index = NONE;
+				iterator.next_index = ((s_perception_datum *)(g_5044c8->data + (((s_handler_actor_view *)actor)->perception_index & 0xffff) * sizeof(s_perception_datum)))->object_index;
 
 				while ((object = function_290c80(&iterator)) != NULL)
 				{
 					byte *data;
-					if (!object->flags134 && (data = (byte *)object + object->ai_offset) != NULL &&
-						range > distance3d(&prop->position, (point3f *)(data + 0x14)))
+					if (!object->flags134 && (data = (byte *)object + object->ai_offset) != NULL)
 					{
-						return g_470bec;
+						double local_0 = (double)prop->position.x - *(real *)(data + 0x14);
+						double local_1 = (double)prop->position.y - *(real *)(data + 0x18);
+						double local_2 = (double)prop->position.z - *(real *)(data + 0x1c);
+						double local_4 = local_2 * local_2;
+						local_4 += local_0 * local_0;
+						local_4 += local_1 * local_1;
+						if (range > (real)sqrt(local_4))
+						{
+							return g_470bec;
+						}
 					}
 				}
 
@@ -179,6 +189,7 @@ short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 
 	return g_470be8;
 }
+#pragma inline_depth(255)
 
 // @retail 0x256460
 void __stdcall function_256460(long actor_index, s_slot *slot)
@@ -389,14 +400,16 @@ short __stdcall function_256810(long actor_index, s_slot *slot)
 {
 	if (g_4f55d0->active && ((s_ai_globals_256810_view *)g_4f55d0)->unknown36a <= 0xd)
 	{
-		s_actor_view *actor = actor_get(actor_index);
 		long best_prop_ref_index = NONE;
-		real best_distance = 3.4028235e38f;
 		short front = 0;
+		s_actor_view *actor = actor_get(actor_index);
+		real best_distance = 3.4028235e38f;
 		long prop_ref_index = actor->first_prop_index;
 
-		while (prop_ref_index != NONE)
+		if (prop_ref_index != NONE)
 		{
+			do
+			{
 			s_prop_datum *prop_ref = prop_ref_get(prop_ref_index);
 			long index = prop_ref_index;
 			s_object_marker markers[1];
@@ -418,6 +431,8 @@ short __stdcall function_256810(long actor_index, s_slot *slot)
 					best_distance = distance;
 				}
 			}
+			}
+			while (prop_ref_index != NONE);
 		}
 
 		if (best_prop_ref_index != NONE)

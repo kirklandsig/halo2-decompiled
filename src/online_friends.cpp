@@ -243,12 +243,35 @@ static inline s_long_pair *online_session_get_data_4999(void)
 
 /* invites a friend to the current game session (retail reads the session
    id even when there is no session) */
+#pragma optimize("g", off)
+PRIVATE __forceinline s_long_pair *function_8cfe2(c_class_58d20 *arg_0, long arg_1)
+{
+ s_long_pair *local_0 = 0;
+ if (arg_1 > 2 && arg_1 <= 8)
+ {
+  bool local_1 = arg_0->flag4998;
+  if (local_1) local_0 = &arg_0->data4999;
+ }
+ return local_0;
+}
+#pragma optimize("", on)
+PRIVATE __forceinline s_long_pair *function_8cfe3(void)
+{
+ s_long_pair *local_0 = 0;
+ if (g_527330.initialized)
+ {
+  c_class_58d20 *local_1 = (c_class_58d20 *)g_527330.session_a;
+  long local_2 = local_1->state;
+  if (local_2) local_0 = function_8cfe2(local_1, local_2);
+ }
+ return local_0;
+}
 // @retail 0x8cfe0
 void online_friends_game_invite(DWORD controller_index, XONLINE_FRIEND *friend_)
 {
 	if (online_logon_connected())
 	{
-		XNKID *session_id = (XNKID *)online_session_get_data_4999();
+		XNKID *session_id = (XNKID *)function_8cfe3();
 		XOnlineFriendsGameInvite(controller_index, *session_id, 1, friend_);
 	}
 }

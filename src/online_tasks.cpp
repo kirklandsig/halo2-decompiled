@@ -100,6 +100,40 @@ long online_task_find(long type, long controller_index)
 
 /* counts the matching tasks, but stops at the first (callers compare the
    count with 2) */
+PRIVATE __forceinline long function_6b892(s_record_pool *arg_0, long arg_1)
+{
+ long local_0 = NONE;
+ if (arg_1 >= 0)
+ {
+  for (; arg_1 < *(const volatile long *)&arg_0->high_water_index; arg_1++)
+  {
+   if (arg_0->bitmap[arg_1 >> 5] & (1 << (arg_1 & 0x1f)))
+   { local_0 = arg_1; break; }
+  }
+ }
+ return local_0;
+}
+
+PRIVATE __forceinline byte *function_6b891(s_record_pool_iterator *arg_0)
+{
+ s_record_pool *local_0 = arg_0->data;
+ long local_1 = function_6b892(local_0, arg_0->index + 1);
+ byte *local_2;
+ if (local_1 != NONE)
+ {
+  local_2 = local_0->data + local_0->size * local_1;
+  arg_0->index = local_1;
+  arg_0->datum_index = (*(short *)local_2 << 16) | local_1;
+ }
+ else
+ {
+  arg_0->index = local_0->maximum_count;
+  arg_0->datum_index = NONE;
+  local_2 = 0;
+ }
+ return local_2;
+}
+
 // @retail 0x6b890
 long online_task_exists(long type, long controller_index)
 {
@@ -108,7 +142,7 @@ long online_task_exists(long type, long controller_index)
 	long count = 0;
 
 	online_task_iterator_new(&iterator);
-	while (count == 0 && (task = (s_type_9df9da *)data_iterator_next_inlined(&iterator)) != 0)
+	while (count == 0 && (task = (s_type_9df9da *)function_6b891(&iterator)) != 0)
 	{
 		if (task->type == type && (task->controller_index == controller_index || controller_index == NONE || controller_index == 0xff))
 			count++;
@@ -598,10 +632,18 @@ HRESULT online_task_update(s_type_9df9da *task)
 	HRESULT result = online_task_continue(task);
 	if (SUCCEEDED(result))
 	{
-		if (result == XONLINETASK_S_RESULTS_AVAIL)
+		switch (result)
+		{
+		case XONLINETASK_S_RUNNING:
+		case XONLINETASK_S_RUNNING_IDLE:
+			break;
+		case XONLINETASK_S_RESULTS_AVAIL:
 			task->flags |= 2;
-		else if (result != XONLINETASK_S_RUNNING && result != XONLINETASK_S_RUNNING_IDLE)
+			break;
+		default:
 			task->flags = (task->flags & ~1) | 4;
+			break;
+		}
 	}
 	else
 	{

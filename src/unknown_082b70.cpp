@@ -378,13 +378,12 @@ void function_82980(s_player_object_motion *motion, long player_index)
     (object->occupant != NONE && object_get_082b70(object->occupant)->controller == player_index)) &&
     object->parent == NONE)
    {
-    const vector3f *up = &motion->up;
-    const vector3f *forward = &motion->forward;
+    const vector3f *volatile local_0[2] = { &motion->up, &motion->forward };
     const vector3f *angular = &motion->angular;
     const vector3f *linear = &motion->linear;
     const point3f *position = &motion->position;
     function_a9f70(object_index, 2, position);
-    function_aa260(linear, object_index, 2, position, forward, up, angular);
+    function_aa260(linear, object_index, 2, position, local_0[1], local_0[0], angular);
    }
   }
  }

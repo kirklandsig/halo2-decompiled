@@ -2397,7 +2397,7 @@ void network_observer_retry_channel(s_network_observer *observer, long channel_i
 	}
 }
 
-bool function_07ab60(const s_type_99af70 *address, bool local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out);
+bool function_07ab60(const s_type_99af70 *address, long local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out);
 bool network_connection_flags_valid(dword flags);
 void network_connection_establish(s_network_connection *connection, long remote_sequence);
 

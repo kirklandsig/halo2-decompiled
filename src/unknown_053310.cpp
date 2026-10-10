@@ -3,6 +3,7 @@
 #include "loop_allocator.h"
 #include "network_voice.h"
 #include "unknown_12b400.h"
+#include <string.h>
 
 /* the memory source the voice pool is built from (0x476fbc, vtable 0x4508fc):
    whole pages from the top of the physical memory map; releasing does
@@ -84,13 +85,20 @@ void __stdcall function_53310(long stage)
 	}
 }
 
+PRIVATE __forceinline void function_533e1(s_loop_allocator *arg_0)
+{
+ c_memory_source *local_0 = arg_0->source;
+ memset(arg_0, 0, sizeof(*arg_0));
+ local_0->release(arg_0);
+}
+
 // @retail 0x533e0
 void function_533e0(void)
 {
 	if (g_4c9878.pool)
 	{
 		voice_xhv_dispose(&g_476fc8);
-		function_18e230(g_4c9878.pool);
+		function_533e1(g_4c9878.pool);
 		g_4c9878.pool = 0;
 	}
 }

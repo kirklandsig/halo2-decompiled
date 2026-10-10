@@ -39,19 +39,27 @@ public:
     char field_1a;
 };
 
+PRIVATE __forceinline void function_277b87(hkEntity *arg_0, long *arg_1, long *arg_2)
+{
+    *arg_1 = havok_entity_property_get(arg_0, 0x2001);
+    *arg_2 = havok_entity_property_get(arg_0, 0x2002);
+}
+
 // @retail 0x277b80
 long __stdcall function_277b80(void *arg_0, bool arg_1, real arg_2,
     c_1cf520 *arg_3, short arg_4, s_277ec0 *arg_5, s_277ec0 *arg_6,
     hkEntity *arg_7, hkEntity *arg_8, c_277b80 **arg_9)
 {
-    (void)&arg_0;
-    long local_0 = havok_entity_property_get(arg_7, 0x2001);
-    long local_1 = havok_entity_property_get(arg_7, 0x2002);
-    long local_2 = havok_entity_property_get(arg_8, 0x2001);
-    long local_3 = havok_entity_property_get(arg_8, 0x2002);
+    
+    long local_0;
+    long local_1;
+    long local_2;
+    long local_3;
+    function_277b87(arg_7, &local_0, &local_1);
+    function_277b87(arg_8, &local_2, &local_3);
     s_havok_component *local_4 = havok_component_get(local_0);
-    if (TEST_FIELD_BIT(local_4->flags12 & 1)) return NONE;
     long local_5 = NONE;
+    if (!TEST_FIELD_BIT(local_4->flags12 & 1))
     {
         s_havok_component *local_6 = local_2 == NONE ? NULL : havok_component_get(local_2);
         long local_7 = local_6 ? local_6->object_index : NONE;
@@ -104,5 +112,7 @@ long __stdcall function_277b80(void *arg_0, bool arg_1, real arg_2,
             }
         }
     }
+    void **local_20 = &arg_0;
+    (void)*(void *volatile *)local_20;
     return local_5;
 }

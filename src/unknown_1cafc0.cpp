@@ -384,7 +384,8 @@ bool s_animation_state::channel_start(c_animation_channel *channel, c_type_70936
 		{
 			animation_id = variant_get(animation_id);
 		}
-		if (channel->set(graph_tag_index, channel_flags, animation_id, unknown08, unknown0c, unknown0d, unknown0e))
+		long local_0 = graph_tag_index;
+		if (channel->set(local_0, channel_flags, animation_id, unknown08, unknown0c, unknown0d, unknown0e))
 		{
 			if (channel_flags & 4)
 			{

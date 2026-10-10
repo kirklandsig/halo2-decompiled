@@ -263,16 +263,16 @@ void function_137400(char *path, char **a, char **b, char **c, char **d, bool fl
 			{
 				if (flag && **a == 0 && **b == 0)
 				{
-					*b = p + 1;
 					*p = 0;
+					*b = p + 1;
 				}
 			}
 			else if (*p == '\\')
 			{
 				if (flag && **a == 0)
 				{
-					*a = p + 1;
 					*p = 0;
+					*a = p + 1;
 				}
 				else if (**d == 0)
 				{

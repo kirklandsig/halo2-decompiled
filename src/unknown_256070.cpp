@@ -41,12 +41,12 @@ PRIVATE __forceinline s_actor_view *function_256071(long arg_0)
 short __stdcall function_256070(long actor_index)
 {
 	short result = 0;
+	short count = 0;
+	short ready_count = 0;
 	s_actor_view *actor = function_256071(actor_index);
 
 	if (actor->unknown07c != NONE)
 	{
-		short count = 0;
-		short ready_count = 0;
 		long member_index = element_502420_get(actor->unknown07c)->first_actor_index;
 
 		while (member_index != NONE)
@@ -55,7 +55,7 @@ short __stdcall function_256070(long actor_index)
 			long current_index = member_index;
 			member_index = member->next_index;
 
-			if (member->unknown004 == *(volatile short *)&actor->unknown004)
+			if (*(volatile short *)&actor->unknown004 == member->unknown004)
 			{
 				count++;
 				if (function_1a6fe0(current_index, 0x1b) != NONE)
@@ -77,14 +77,12 @@ short __stdcall function_256070(long actor_index)
 // @retail 0x256150
 bool __stdcall function_256150(long actor_index, s_slot *slot)
 {
+	bool local_0 = false;
 	s_actor_view *actor = actor_get(actor_index);
 	s_slot_70_state *state = (s_slot_70_state *)slot;
 
-	if (actor->unknown07c == NONE)
+	if (actor->unknown07c != NONE)
 	{
-		return false;
-	}
-
 	state->timer = 0;
 
 	long member_index = element_502420_get(actor->unknown07c)->first_actor_index;
@@ -109,7 +107,9 @@ bool __stdcall function_256150(long actor_index, s_slot *slot)
 		}
 	}
 
-	return true;
+		local_0 = true;
+	}
+	return local_0;
 }
 
 // @retail 0x256210
