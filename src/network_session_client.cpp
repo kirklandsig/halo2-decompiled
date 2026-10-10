@@ -181,23 +181,33 @@ bool c_session_client::function_06de10(s_session_remote *remote)
 	return found;
 }
 
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x6de50
 void session_owner_initialize(s_session_owner *owner_, long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b, void *unknown3c)
 {
 	s_session_owner_view *owner = (s_session_owner_view *)owner_;
 	memset(owner->states, 0, sizeof(owner->states));
+	_ReadWriteBarrier();
 	owner->unknown40 = unknown40;
+	_ReadWriteBarrier();
 	owner->unknown44 = unknown44;
+	_ReadWriteBarrier();
 	owner->unknown2c = unknown2c;
+	_ReadWriteBarrier();
 	owner->session_a = session_a;
+	_ReadWriteBarrier();
 	owner->session_c = session_c;
+	_ReadWriteBarrier();
 	owner->session_b = session_b;
+	_ReadWriteBarrier();
 	owner->unknown3c = unknown3c;
 	owner->mode = 0;
 	owner->unknown49 = false;
 	owner->unknown48 = false;
 	owner->failed = false;
 }
+#pragma function(_ReadWriteBarrier)
 
 // @retail 0x6df60
 inline void function_06df60(s_session_owner *o, long a, long b, long c)

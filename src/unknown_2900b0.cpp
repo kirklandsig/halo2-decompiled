@@ -173,6 +173,19 @@ __forceinline void function_28f521(vector3f const *arg_0, vector3f const *arg_1,
 	arg_2->k = arg_0->k + arg_1->k;
 }
 
+PRIVATE __forceinline real function_28f5b8(real const volatile &arg_0)
+{
+    return arg_0 < -1.0f ? -1.0f : arg_0 > 1.0f ? 1.0f : arg_0;
+}
+
+PRIVATE __forceinline void function_28f5b7(vector3f *arg_0)
+{
+    vector3f volatile *local_0 = arg_0;
+    local_0->i = function_28f5b8(local_0->i);
+    local_0->j = function_28f5b8(local_0->j);
+    local_0->k = function_28f5b8(local_0->k);
+}
+
 // @retail 0x28f3b0
 void function_28f3b0(long arg_0, long arg_1)
 {
@@ -210,12 +223,7 @@ void function_28f3b0(long arg_0, long arg_1)
 					function_28f500(&local_3, local_2->field_14);
 					function_28f521(local_5, &local_3, local_5);
 				}
-				real local_6 = function_28f594(local_5->i);
-				real local_7 = function_28f594(local_5->j);
-				real local_8 = function_28f594(local_5->k);
-				local_5->i = local_6;
-				local_5->j = local_7;
-				local_5->k = local_8;
+				function_28f5b7(local_5);
 			}
 		}
 	}

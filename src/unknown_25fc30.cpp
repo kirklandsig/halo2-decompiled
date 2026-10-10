@@ -404,6 +404,7 @@ void __stdcall function_25dd50(
 	}
 }
 
+#pragma inline_depth(0)
 // @retail 0x25e430
 void __stdcall function_25e430(
 	long actor_index,
@@ -513,6 +514,7 @@ void __stdcall function_25e430(
 		}
 	}
 }
+#pragma inline_depth(255)
 
 // @retail 0x25e780
 void __stdcall function_25e780(
@@ -561,8 +563,8 @@ void __stdcall function_25e800(
 	short cached_sector = NONE;
 	short cached_area = NONE;
 	bool cached_result = false;
-	bool use_facing = false;
 	bool use_normal = false;
+	bool use_facing = false;
 
 	if (context->unknown668 && length_sq3f(&context->unknown66c) > 0.f)
 	{
@@ -587,7 +589,13 @@ void __stdcall function_25e800(
 			if (!(sector & 0x8000))
 			{
 				short area = NONE;
-				s_262b40_result *result = function_262b40(position->reference);
+				union
+				{
+					s_reference field_0;
+					long field_1;
+				} local_1;
+				local_1.field_1 = *(long const volatile *)&position->reference;
+				s_262b40_result *result = function_262b40(local_1.field_0);
 				if (result)
 				{
 					area = result->unknown10;
@@ -615,7 +623,11 @@ void __stdcall function_25e800(
 
 		if (position->unknown4c)
 		{
-			real value = context->unknown11 ? 1.f : 5.f;
+			real value = 5.f;
+			if (context->unknown11)
+			{
+				value = 1.f;
+			}
 
 			if (!(context->unknown18 * 0.5f > position->unknown18))
 			{
@@ -816,12 +828,11 @@ void __stdcall function_25ec90(
 		{
 			s_type_b36ac5 *position = &positions[i];
 
-			short unknown2 = position->reference.unknown2;
-
 			if (position->unknown4c)
 			{
-				if ((unknown2 & 0x8000) ||
-					unknown2 != context->unknown68e ||
+				short local_0 = ((s_type_b36ac5 volatile *)position)->reference.unknown2;
+				if ((local_0 & 0x8000) ||
+					local_0 != context->unknown68e ||
 					position->definition->unknown10 != context->unknown690)
 				{
 					position->unknown4d = true;
@@ -848,12 +859,13 @@ void __stdcall function_25ed60(
 
 		if (position->unknown4c)
 		{
-			real value = (1.f - position->unknown28 * 0.05f) * 8.f;
+			real value = position->unknown28 * 0.05f;
+			value = (1.f - value) * 8.f;
 			if (0.f > value)
 			{
 				value = 0.f;
 			}
-			position->score += value;
+			position->score = value + position->score;
 		}
 	}
 }
@@ -1073,6 +1085,7 @@ void __stdcall function_25eea0(
 	}
 }
 
+#pragma inline_depth(0)
 // @retail 0x25f290
 void __stdcall function_25f290(
 	long actor_index,
@@ -1080,7 +1093,7 @@ void __stdcall function_25f290(
 	short count,
 	s_type_b36ac5 *positions)
 {
-	s_actor_firing_view *actor = (s_actor_firing_view *)actor_get(actor_index);
+	s_actor_firing_view *actor = (s_actor_firing_view *)((s_actor_view *)(g_4f55f0->data + (actor_index & 0xffff) * sizeof(s_actor_view)));
 	bool scored = false;
 	short i;
 
@@ -1141,7 +1154,7 @@ void __stdcall function_25f290(
 
 			if (zone && ((zone->flags & 0x10) || ((zone->flags & 0x20) && zone->unknown4e != NONE)) &&
 				squad->leader_index != NONE &&
-				!function_1df560(actor->unknown024, ((s_unit_team_view *)unit_weapon_view_get(squad->leader_index))->team))
+				!function_1df560(actor->unknown024, ((s_unit_team_view *)((s_unit_weapon_view *)((s_object_header_weapon_view *)g_4e0300->data)[squad->leader_index & 0xffff].object))->team))
 			{
 				long leader_index = squad->leader_index;
 				real inner;
@@ -1162,8 +1175,10 @@ void __stdcall function_25f290(
 						real distance;
 						real bonus = 12.f;
 
-						vector3d_from_points3d(&origin, &position->position, &delta);
-						distance = (real)sqrt(length_sq3f(&delta));
+						delta.i = position->position.x - origin.x;
+						delta.j = position->position.y - origin.y;
+						delta.k = position->position.z - origin.z;
+						distance = (real)sqrt((delta.i * delta.i + delta.j * delta.j + delta.k * delta.k));
 						if (!(inner > distance) && outer > distance)
 						{
 							bonus = (1.f - (distance - inner) / (outer - inner)) * 12.f;
@@ -1282,6 +1297,7 @@ void __stdcall function_25f290(
 		}
 	}
 }
+#pragma inline_depth(255)
 
 PRIVATE __forceinline s_actor_view *function_25fb61(long arg_0)
 {
@@ -1731,6 +1747,7 @@ short __stdcall function_1c8df0(long arg_0, point3f const *arg_4, short arg_3, s
 	void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 real normalize2d(point2f *v);
 
+#pragma optimize("s", on)
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {
@@ -1835,3 +1852,4 @@ void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *
 		*(short *)((byte *)arg_1 + 0x660), local_23, &local_21, local_14, true,
 		local_0->unknown26c != NONE, local_22, NULL);
 }
+#pragma optimize("", on)

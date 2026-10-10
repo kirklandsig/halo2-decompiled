@@ -98,7 +98,7 @@ void game_state_cache_files_close(void)
 }
 
 /* the write from the texture cache block has finished: give the block back */
-static inline void game_state_cache_write_finish(void)
+static __forceinline void game_state_cache_write_finish(void)
 {
 	g_5020f2[g_5020f0] = g_5020ec == g_5020e0;
 	function_12d520(g_5020e4);
@@ -114,6 +114,7 @@ void __stdcall game_state_cache_lock_update(void *address, long user_data)
 	}
 }
 
+#pragma optimize("g", off)
 // @retail 0x215180
 void __stdcall game_state_cache_lock_release(void *address, long user_data)
 {
@@ -129,6 +130,8 @@ void __stdcall game_state_cache_lock_release(void *address, long user_data)
 		}
 	}
 }
+
+#pragma optimize("g", on)
 
 // @retail 0x2151f0
 void game_state_cache_write(short slot)

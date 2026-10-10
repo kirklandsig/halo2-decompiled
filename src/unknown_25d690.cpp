@@ -357,7 +357,10 @@ void function_25bf10(long actor_index, long other_index, long prop_ref_index)
 	vector3f delta;
 
 	vector3d_from_points3d(&other->position, &actor->position, &delta);
-	if (length_sq3f(&delta) < 64.f)
+	real local_0 = delta.k * delta.k;
+	local_0 += delta.i * delta.i;
+	local_0 += delta.j * delta.j;
+	if (64.f > local_0)
 	{
 		if (!other)
 		{
@@ -828,6 +831,7 @@ bool function_25db60()
 // @retail 0x25c570
 long function_25c570(long actor_index, long prop_ref_index, short priority)
 {
+	long tracking_index = NONE;
 	s_actor_prop_view *actor = actor_prop_view_get(actor_index);
 	short slot_index = NONE;
 	long best_time = NONE;
@@ -866,7 +870,6 @@ long function_25c570(long actor_index, long prop_ref_index, short priority)
 	}
 	if (slot_index != NONE)
 	{
-		long tracking_index;
 		long *tracked = &actor->tracked_prop_indices[slot_index];
 		long old_index = *tracked;
 
@@ -893,9 +896,8 @@ long function_25c570(long actor_index, long prop_ref_index, short priority)
 		{
 			*tracked = NONE;
 		}
-		return tracking_index;
 	}
-	return NONE;
+	return tracking_index;
 }
 
 // @retail 0x25b620
@@ -1111,17 +1113,17 @@ void function_25c050(long player_index, long actor_index)
 		}
 		else
 		{
-			short type;
+			volatile long local_0;
 
 			if (actor->unknown268)
 			{
-				type = 0x6b;
+				local_0 = 0x6b;
 			}
 			else
 			{
-				type = 0x6c;
+				local_0 = 0x6c;
 			}
-			function_1fb7e0(type, actor_index, NULL, target_index, NONE);
+			function_1fb7e0((short)local_0, actor_index, NULL, target_index, NONE);
 		}
 		memset(&request, 0, sizeof(request));
 		request.type = 0x1d;
@@ -1478,6 +1480,7 @@ void __stdcall function_25b440(long arg_0, long arg_1)
 long function_1fa7f0(void);
 long __stdcall function_26d0e0(point3f const *arg_0, s_type_c3b527 *arg_1, long arg_2);
 
+#pragma optimize("s", on)
 // @retail 0x25b6b0
 void function_25b6b0(long arg_0, long arg_1)
 {
@@ -1530,6 +1533,7 @@ void function_25b6b0(long arg_0, long arg_1)
 		}
 	}
 }
+#pragma optimize("", on)
 
 bool function_2675b0(long arg_0);
 bool function_267680(long arg_0);

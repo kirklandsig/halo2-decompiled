@@ -79,8 +79,8 @@ bool function_07a9b0(void)
 	return g_4cf791;
 }
 
-// @retail 0x7ab60
-bool function_07ab60(const s_type_99af70 *address, bool local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out)
+// @retail 0x7ab60 standard
+bool function_07ab60(const s_type_99af70 *address, long local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out)
 {
 	bool result = false;
 	long index = NONE;

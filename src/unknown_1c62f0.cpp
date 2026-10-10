@@ -82,6 +82,7 @@ bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 an
 {
 	if (graph_tag_index != NONE && animation_id.index != NONE)
 	{
+		this->graph_tag_index = graph_tag_index;
 		this->animation_id.graph_index = NONE;
 		this->animation_id.index = NONE;
 		this->unknown10 = 0;
@@ -95,7 +96,6 @@ bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 an
 		this->flags = flags;
 		this->unknown0d = unknown0d;
 		this->unknown0e = unknown0e;
-		this->graph_tag_index = graph_tag_index;
 		this->frame_position = 0.0f;
 		this->rate = 1.0f;
 		this->animation_id = animation_id;
@@ -184,7 +184,7 @@ bool c_animation_channel_frame_sample(c_animation_channel const *channel, real f
 		s_animation_data data;
 
 		c_animation_channel_data_get(channel, &data);
-		function_20ad40((s_anim_data *)&data, delta, position, frame_index);
+		function_20ad40((s_anim_data *)((dword)&data & ~3UL), delta, position, frame_index);
 		result = true;
 	}
 	return result;

@@ -577,6 +577,15 @@ void function_273900(long ai_index, bool flag)
 	}
 }
 
+PRIVATE __forceinline void function_2739d7(s_squad_datum *arg_0, bool arg_1)
+{
+    byte *local_0 = (byte *)arg_0 + 2;
+    if (arg_1)
+        *local_0 |= 1;
+    else
+        *local_0 &= 0xfe;
+}
+
 // @retail 0x2739d0
 void function_2739d0(long ai_index, bool flag)
 {
@@ -590,7 +599,10 @@ void function_2739d0(long ai_index, bool flag)
 			s_ai_squad_iterator iterator;
 			ai_squad_iterator_new(&iterator, ai_index);
 			while (ai_squad_iterator_next(&iterator))
-				squad_set_flag0(iterator.squad_index, flag);
+				{
+                if (g_4f55d0->active)
+                    function_2739d7(squad_get(iterator.squad_index), flag);
+            }
 			break;
 		}
 		case _ai_index_type_actor:
@@ -679,6 +691,14 @@ static inline s_actor_datum *squad_actor_iterator_next_inlined(s_squad_actor_ite
 
 /* sets the state of the props of an object the actors of a squad know (each
    clump once) */
+PRIVATE __forceinline void function_273d37(dword *arg_0, long arg_1)
+{
+    dword *local_0 = &arg_0[(dword)arg_1 >> 5];
+    dword local_1 = *local_0;
+    local_1 |= 1u << (arg_1 & 31);
+    *local_0 = local_1;
+}
+
 // @retail 0x273d30
 void function_273d30(long ai_index, long object_index)
 {
@@ -699,7 +719,7 @@ void function_273d30(long ai_index, long object_index)
 			clump_index &= 0xffff;
 			if (bit_vector_test(clump_bits, clump_index))
 				continue;
-			bit_vector_set(clump_bits, clump_index, true);
+			function_273d37(clump_bits, clump_index);
 
 			long prop_index = ((s_ai_clump_273d30 *)g_502420->data)[clump_index].first_prop_index;
 			while (prop_index != NONE)

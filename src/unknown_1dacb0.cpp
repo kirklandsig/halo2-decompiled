@@ -663,7 +663,7 @@ c_type_709360 function_1dd0b0(s_graph_tag *graph, long name)
 				{
 					animation = &current->animations[index];
 				}
-				if (animation->name == name)
+				if (animation->name == *(volatile long const *)&name)
 				{
 					animation_id.graph_index = (short)graph_index;
 					animation_id.index = (short)index;
@@ -691,7 +691,9 @@ c_type_709360 function_1dd0b0(s_graph_tag *graph, long name)
 		if (animation_id.index != NONE)
 		{
 			function_1dd9d0(graph, animation_id);
+			return animation_id;
 		}
+		return animation_id;
 	}
 	return animation_id;
 }
@@ -929,7 +931,7 @@ void function_1dd290(s_graph_tag *graph, transform4x3f *matrices, rigid_transfor
 {
 	long node_indices[255];
 	transform4x3f matrix;
-	long count;
+	volatile long count;
 	long i = 0;
 
 	if (graph->node_count > 0)
@@ -953,15 +955,15 @@ void function_1dd290(s_graph_tag *graph, transform4x3f *matrices, rigid_transfor
 			function_1421f0(&matrix, &orientations[node_index]);
 			if (mirrored_node_index == node_index)
 			{
+				parent = &matrices[mirror_parent_index];
 				vector3f forward = matrix.forward;
 				vector3f up = matrix.up;
 				point3f position = matrix.position;
 
-				parent = &matrices[mirror_parent_index];
+				matrix.scale = 1.0f;
+				position.y = 0.0f - position.y;
 				forward.j = 0.0f - forward.j;
 				up.j = 0.0f - up.j;
-				position.y = 0.0f - position.y;
-				matrix.scale = 1.0f;
 				matrix.forward = forward;
 				matrix.left.i = up.j * forward.k - up.k * forward.j;
 				matrix.left.j = up.k * forward.i - up.i * forward.k;

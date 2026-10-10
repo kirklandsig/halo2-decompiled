@@ -79,6 +79,7 @@ bool function_1368f0(s_type_acf665 *file)
 // @retail 0x136970
 bool function_136970(s_type_acf665 *file, dword flags, dword *error)
 {
+	bool local_1 = false;
 	char path[MAXIMUM_PATH_SIZE] = { 0 };
 	dword access = 0;
 	dword share = 0;
@@ -123,41 +124,37 @@ bool function_136970(s_type_acf665 *file, dword flags, dword *error)
 		{
 		case ERROR_FILE_NOT_FOUND: *error = 1; break;
 		case ERROR_PATH_NOT_FOUND: *error = 3; break;
-		case ERROR_TOO_MANY_OPEN_FILES: *error = 4; break;
+		case 15: *error = 4; break;
 		case ERROR_ACCESS_DENIED: *error = 2; break;
 		case ERROR_SHARING_VIOLATION: *error = 5; break;
 		case ERROR_INVALID_NAME: *error = 6; break;
 		default: *error = 6; break;
 		}
 	}
-	else
-	{
-		bool opened = true;
-		file->handle = handle;
-		file->position = 0;
-		if (flags & 4)
-		{
-			file->position = SetFilePointer(handle, 0, NULL, FILE_END);
-			if (file->position != INVALID_SET_FILE_POINTER)
-			{
-				return true;
-			}
-			CloseHandle(file->handle);
-			file->handle = 0;
-			file->position = 0;
-		}
-		else
-		{
-			return opened;
-		}
-	}
+    else
+    {
+        file->handle = handle;
+        file->position = 0;
+        local_1 = true;
+        if (flags & 4)
+        {
+            file->position = SetFilePointer(handle, 0, NULL, FILE_END);
+            if (file->position == INVALID_SET_FILE_POINTER)
+            {
+                CloseHandle(file->handle);
+                file->handle = 0;
+                file->position = 0;
+                local_1 = false;
+            }
+        }
+    }
 
-	if (!(flags & 0x10))
+	if (!local_1 && !(flags & 0x10))
 	{
 		GetLastError();
 		SetLastError(0);
 	}
-	return false;
+	return local_1;
 }
 
 // @retail 0x136bb0

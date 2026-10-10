@@ -51,7 +51,12 @@ void network_session_add_player(c_class_58d20 *session, long member_index, const
 	session->player_count++;
 
 	long state = session->state;
-	if (SESSION_STATE_IS_HOSTING(state))
+	if (!SESSION_STATE_IS_HOSTING(state))
+	{
+	 volatile long local_0 = state;
+	 return;
+	}
+	
 	{
 		s_network_session_reservation *reservation = 0;
 		if (session_find_reservation(session, player, &reservation))

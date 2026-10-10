@@ -801,7 +801,7 @@ void voice_start_engine(void)
 }
 
 // @retail 0x53550
-void voice_stop_engine(void)
+inline void voice_stop_engine(void)
 {
 	if (voice_available())
 	{
@@ -827,6 +827,13 @@ void voice_initialize_menu_pool(void)
 	}
 }
 
+PRIVATE __forceinline void function_534a1(s_loop_allocator *arg_0)
+{
+ c_memory_source *local_0 = arg_0->source;
+ memset(arg_0, 0, sizeof(*arg_0));
+ local_0->release(arg_0);
+}
+
 // @retail 0x534a0
 void voice_dispose_menu_pool(void)
 {
@@ -835,7 +842,7 @@ void voice_dispose_menu_pool(void)
 		if (g_4c9878.pool2)
 		{
 			voice_stop_engine();
-			function_18e230(g_4c9878.pool2);
+			function_534a1(g_4c9878.pool2);
 			g_4c9878.pool2 = NULL;
 		}
 		g_4c9878.use_pool2 = false;
@@ -1894,9 +1901,12 @@ void voice_update_mode(void)
 	{
 	case 3:
 		if (!function_138800() || !function_68250())
+		{
 			g_4c9878.mode = 2;
-		else
-			g_4c9878.mode = 1;
+			break;
+		}
+local_0:
+		g_4c9878.mode = 1;
 		break;
 	case 1:
 	case 2:
@@ -1909,8 +1919,7 @@ void voice_update_mode(void)
 	case 8:
 		if (function_138800() && function_68250())
 		{
-			g_4c9878.mode = 1;
-			break;
+			goto local_0;
 		}
 	case 7:
 		{
@@ -2352,9 +2361,10 @@ void function_56790(long *capacity, dword *remaining, dword allowed, word *selec
 // @retail 0x53b00
 long __stdcall function_53b00(long player, byte *output, long capacity)
 {
+ byte *const *local_0 = &output;
  long result = 0;
  if (voice_is_enabled())
-  result = function_56380(output, &g_525a00, player, capacity);
+  result = function_56380(*local_0, &g_525a00, player, capacity);
  return result;
 }
 

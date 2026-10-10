@@ -1164,15 +1164,19 @@ void function_69350(c_class_6a600 *world, bool value)
 	}
 }
 
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x680c0
 long function_680c0(bool *buffered)
 {
 	*buffered = false;
+	_ReadWriteBarrier();
 	long result = 0x7fffffff;
 	if (g_4cf770 && SIMULATION_WORLD->state)
 		result = function_69300(SIMULATION_WORLD, buffered);
 	return result;
 }
+#pragma function(_ReadWriteBarrier)
 
 static inline void world_reset_to_substate_1(c_class_6a600 *world)
 {

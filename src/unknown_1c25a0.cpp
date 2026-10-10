@@ -1426,7 +1426,7 @@ bool __stdcall function_1c4c50(long object_index, long node_index, point3f const
  (void)&angular;
  s_velocity_object_header *headers = (s_velocity_object_header *)g_4e0300->data;
  s_havok_object *object = headers[object_index & 0xffff].object;
- volatile bool result = false;
+ bool result = false;
  if (object->havok_component_index != NONE)
  {
   long root_index = function_baf80(object_index);
@@ -1475,11 +1475,14 @@ bool __stdcall function_1c4c50(long object_index, long node_index, point3f const
      goto selected;
     }
    }
-   count = component->rigid_bodies.size;
-   for (long i = 0; i < count; ++i)
+   long local_1;
+   local_1 = component->rigid_bodies.size;
+   for (long i = 0; i < local_1; ++i)
     indices[i] = i;
+   count = local_1;
 selected:
-   for (long i = 0; i < count; ++i)
+   volatile long local_0 = 0;
+   for (long i = 0; i < count;)
    {
     long index = indices[i];
     hkRigidBody *body = havok_component_rigid_body_get(index, component);
@@ -1490,7 +1493,10 @@ selected:
       if (change_a)
       {
        if (!TEST_FIELD_BIT(component->flag1))
+       {
         havok_component_rigid_body_point_impulse_apply(index, component, point, &a);
+        i = local_0;
+       }
        else
         havok_component_rigid_body_linear_velocity_change(index, component, &a);
       }
@@ -1515,6 +1521,8 @@ selected:
       result = true;
      }
     }
+    ++i;
+    local_0 = i;
    }
   }
  }
