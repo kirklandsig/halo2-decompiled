@@ -6,7 +6,45 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "slot_handler.h"
+#include "unknown_1cec30.h"
+#include "unknown_1946f0.h"
+#include "object_default_placement.h"
 #include <math.h>
+
+void function_1d4360(s_havok_component *component, transform4x3f *volatile result);
+void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity);
+
+static inline void local_vector3d_from_havok(vector3f *vector, hkVector4 const *havok)
+{
+	vector->i = (*havok)(0);
+	vector->j = (*havok)(1);
+	vector->k = (*havok)(2);
+}
+
+static inline void local_scale3d(vector3f const *vector, real scale, vector3f *result)
+{
+	result->i = vector->i;
+	result->j = vector->j;
+	result->k = vector->k;
+
+	result->i *= scale;
+	result->j *= scale;
+	result->k *= scale;
+}
+
+static inline void local_rigid_body_linear_velocity_get(long rigid_body_index, s_havok_component *component, vector3f *velocity)
+{
+	hkRigidBody *rigid_body = havok_component_rigid_body_get(rigid_body_index, component);
+
+	if (!rigid_body->m_fixed)
+	{
+		local_vector3d_from_havok(velocity, &rigid_body->m_motion->m_linear_velocity);
+	}
+	else
+	{
+		*velocity = *g_4687a4;
+	}
+}
 
 /* where a point lies: two indices that the tracking copies together */
 struct s_tracking_location
@@ -35,6 +73,54 @@ void function_1fc2f0(s_tracked_point *tracked, point3f const *point, bool unknow
 	*(volatile bool *)&tracked->unknown28 = unknown;
 	*(volatile short *)&tracked->location.unknown0 = NONE;
 	*(volatile short *)&tracked->location.unknown2 = NONE;
+}
+
+// @retail 0x1fc350
+void function_1fc350(long object_index, void *state)
+{
+	s_havok_object *havok_object = havok_object_get(object_index);
+	s_havok_component *component = havok_component_get(havok_object->havok_component_index);
+
+	transform4x3f matrix;
+	function_1d4360(component, &matrix);
+
+	s_slot_object_view *object = object_get(object_index);
+	if (object->parent_index == NONE)
+		function_b75a0(object_index, &matrix.position, NULL, NULL, NULL, false);
+
+	vector3f *velocity = &((s_tracked_point *)state)->velocity;
+	vector3f linear_velocity;
+	real magnitude = function_30bf0(velocity);
+
+	if (magnitude > 1.0f)
+	{
+		local_rigid_body_linear_velocity_get(0, component, &linear_velocity);
+
+		real linear_i = linear_velocity.i;
+		real linear_j = linear_velocity.j;
+		real linear_k = linear_velocity.k;
+
+		real dot =
+			((vector3f volatile *)velocity)->k * linear_velocity.k +
+			((vector3f volatile *)velocity)->j * linear_velocity.j +
+			((vector3f volatile *)velocity)->i * linear_velocity.i;
+
+		if (dot > 1.0f)
+		{
+			magnitude -= 1.0f;
+			if (dot > magnitude)
+				dot = magnitude;
+
+			vector3f correction;
+			local_scale3d(velocity, dot, &correction);
+
+			linear_velocity.i -= correction.i;
+			linear_velocity.j -= correction.j;
+			linear_velocity.k -= correction.k;
+
+			havok_component_rigid_body_linear_velocity_set(0, component, &linear_velocity);
+		}
+	}
 }
 
 struct s_tracking_source

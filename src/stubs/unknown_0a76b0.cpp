@@ -48,12 +48,3 @@ void __stdcall function_e56f0(long unit_index, point3f const *point) { }
 
 // @stub 0xe5750
 void function_e5750(long unit_index) { }
-
-
-// @stub 0x1e54d0
-void function_1e54d0(void *state, long a) { }
-
-
-
-// @stub 0xe5690
-void __stdcall function_e5690(long unit_index, point3f const *point) { }
