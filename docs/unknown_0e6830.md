@@ -43,7 +43,13 @@ Neither behavioral comparison establishes a byte match.
 The current compiled function is 137 bytes, like retail. The checker finds
 three instruction differences: its bitmap accesses encode `[ebx + esi + 4]`
 where retail encodes `[esi + ebx + 4]`. Both address the same word. A full
-check against the baseline at `ecd4d2f3` retained all 7,477 existing matches,
-with none gained or lost. A bounded permutation search tried 15 variants
+check against the baseline at `ecd4d2f3` retained all 7,477 existing matches.
+A bounded permutation search tried 15 variants
 without improving the three-instruction difference. The function remains
 unmatched.
+
+The adjacent animation-channel query at `0xe6800` now matches exactly (39
+bytes): it materializes its playing condition as a full-width 0/1 and tests
+the low byte when returning the negation. This preserves the boolean logic
+while reproducing retail's instruction widths. The final full check reports
+7,478 matches, with this one gain and zero losses relative to `ecd4d2f3`.
