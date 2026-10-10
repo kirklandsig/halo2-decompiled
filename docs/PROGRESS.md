@@ -2,6 +2,15 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7471 functions match
+
+```
+matched 7471 of 11318 game functions (874006 of 2784283 bytes, 31.39%)
+```
+
+5 new matches, none lost:
+- Our permuter lane: 0x1061c0 and 0x195720, written by the lane, and 0xbf890, 0x196390 and 0x19c120, which it held back because they call functions that don't match yet; each was checked by hand and confirmed by a full build.
+
 ## 2026-10-10: 7466 functions match
 
 ```

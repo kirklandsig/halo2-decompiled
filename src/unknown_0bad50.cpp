@@ -30,13 +30,17 @@ void __stdcall function_ba6f0(long object_index, long region_index, long state, 
 // @retail 0xbf890
 void function_bf890(long object_index, byte const *states)
 {
-	byte const *const *states_reference = &states;
-	s_object_blocks_ab *object = ((s_object_blocks_header_ab *)g_4e0300->data)[object_index & 0xffff].object;
-	long count = object->regions_size / 10;
-	byte const *values = *states_reference;
-	for (long i = 0; i < count; i++)
+	short regions_size;
+	byte *data = g_4e0300->data;
+	s_object_blocks_ab volatile *object = ((s_object_blocks_header_ab *)data)[(long)object_index & 0xffff].object;
+	regions_size = object->regions_size;
+	byte const *values;
+	long count = regions_size / 10;
+	values = *&states;
+	for (long i = 0; count > i; ++i)
 	{
-		long state = values[i];
+		long state;
+		state = values[i];
 		function_ba6f0(object_index, i, state, false);
 	}
 }

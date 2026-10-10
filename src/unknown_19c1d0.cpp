@@ -477,14 +477,14 @@ void function_19c120(void)
 
 		item.directory[0] = 0;
 		item.display_name[0] = 0;
-		if (content_find_first(&item, &handle))
+		if (content_find_first(&item, &handle) != 0)
 		{
 			do
 			{
 				if (!function_19bfd0(&item))
-					g_54e7f8 = true;
+					*(volatile bool *)&g_54e7f8 = true;
 			}
-			while (content_find_next(handle, &item));
+			while (content_find_next((void *)handle, &item));
 		}
 	}
 }
