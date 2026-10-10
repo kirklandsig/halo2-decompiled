@@ -589,10 +589,9 @@ bool impact_matches_data(
 	s_impact_data const *data,
 	bool check_position)
 {
-	long local_0 = data->component_b;
-	long component_a = data->component_a;
+	unsigned long local_0 = *(volatile long *)&data->component_b;
 
-	if (impacts_match(impact->component_a, impact->component_b, component_a, local_0,
+	if (impacts_match(impact->component_a, impact->component_b, data->component_a, local_0,
 		impact->material_a, impact->material_b, data->material_a, data->material_b,
 		impact->unknownd, data->type, impact->unknowne, data->unknown38, impact->shape.type, data->shape.type))
 	{
@@ -609,7 +608,7 @@ bool impact_matches_data(
 				return false;
 			}
 		}
-		if (impact_components_valid(component_a, local_0))
+		if (impact_components_valid(data->component_a, local_0))
 			return true;
 	}
 	return false;
@@ -634,7 +633,8 @@ PRIVATE __forceinline void function_227812(vector3f const *arg_0, vector3f *arg_
 {
 	real local_0 = function_227811(arg_0, arg_1);
 	vector3f local_1;
-	local_1.i = local_0 * arg_0->i;
+	local_1.i = local_0;
+	local_1.i *= arg_0->i;
 	local_1.j = arg_0->j * local_0;
 	local_1.k = arg_0->k * local_0;
 	arg_1->i -= local_1.i;
@@ -642,23 +642,23 @@ PRIVATE __forceinline void function_227812(vector3f const *arg_0, vector3f *arg_
 	arg_1->k -= local_1.k;
 }
 
-PRIVATE __forceinline vector3f const *function_227813(vector3f const *arg_0, s_impact_object *arg_1)
+PRIVATE __forceinline vector3f const *function_227813(s_impact_object *arg_0, vector3f const *arg_1)
 {
-	real local_0 = arg_1->unknown70.k * arg_0->k;
-	local_0 += arg_1->unknown70.j * arg_0->j;
-	vector3f const *local_1 = &arg_1->unknown70;
-	local_0 += local_1->i * arg_0->i;
+	vector3f const *local_1 = &arg_0->unknown70;
+	real local_0 = local_1->k * arg_1->k;
+	local_0 += arg_0->unknown70.j * arg_1->j;
+	local_0 += arg_1->i * local_1->i;
 	if (!(local_0 >= 0.0f))
 		local_0 = -local_0;
 	if (!(local_0 < 0.9f))
-		local_1 = &arg_1->unknown7c;
+		local_1 = &arg_0->unknown7c;
 	return local_1;
 }
 
 PRIVATE __forceinline void function_227814(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
 	real local_0 = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
-	real local_1 = arg_0->k * arg_1->i - arg_0->i * arg_1->k;
+	real local_1 = arg_1->i * arg_0->k - arg_0->i * arg_1->k;
 	real local_2 = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
 	arg_2->i = local_2;
 	arg_2->j = local_1;
@@ -674,7 +674,7 @@ void impact_build_matrix(
 	s_impact_object *object = impact_object_header_get(havok_component_get(component_index)->object_index)->object;
 
 	matrix->up = impact->normal;
-	vector3f const *forward = function_227813(&impact->normal, object);
+	vector3f const *forward = function_227813(object, &impact->normal);
 	matrix->forward = *forward;
 	function_227812(&matrix->up, &matrix->forward);
 	function_30bf0(&matrix->forward);

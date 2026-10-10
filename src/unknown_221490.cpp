@@ -95,37 +95,39 @@ s_sound_class_fade *g_502118;
 bool g_50211c;
 char const *g_470090[k_sound_class_count];
 
-// @retail 0x221490
-void function_221490(
-	LPDIRECTSOUNDBUFFER *buffer_reference)
+PRIVATE __forceinline void function_221491(long arg_0, long arg_1, LPDIRECTSOUNDBUFFER *arg_2)
 {
-	DSBUFFERDESC description = {0};
-	s_wave_format format = {0};
+	s_wave_format format;
+	DSBUFFERDESC description;
 	DSMIXBINVOLUMEPAIR pair;
 	DSMIXBINS mixbins;
-	LPDIRECTSOUNDBUFFER buffer = NULL;
 	long aligned_size;
 	byte *memory;
 	byte *top;
 
-	format.format_tag = WAVE_FORMAT_PCM;
-	format.channels = 1;
+	memset(&format, 0, 0x12);
+	memset(&description, 0, sizeof(description));
+
+	LPDIRECTSOUNDBUFFER buffer = (LPDIRECTSOUNDBUFFER)arg_1;
+
+	format.format_tag = (word)arg_0;
+	format.channels = (word)arg_0;
 	format.samples_per_second = k_silence_buffer_size;
 	format.average_bytes_per_second = k_silence_buffer_size;
-	format.block_align = 1;
+	format.block_align = (word)arg_0;
 	format.bits_per_sample = 8;
-	format.extra_size = 0;
+	format.extra_size = (word)arg_1;
 
 	description.dwSize = sizeof(description);
-	description.dwBufferBytes = 0;
+	description.dwBufferBytes = (DWORD)arg_1;
 	description.lpwfxFormat = (LPWAVEFORMATEX)&format;
 	description.lpMixBins = &mixbins;
-	description.dwInputMixBin = 0;
 
-	mixbins.dwMixBinCount = 1;
+	mixbins.dwMixBinCount = (DWORD)arg_0;
 	mixbins.lpMixBinVolumePairs = &pair;
 	pair.dwMixBin = 0xe;
-	pair.lVolume = 0;
+	pair.lVolume = arg_1;
+
 
 	DirectSoundCreateBuffer(&description, &buffer);
 
@@ -137,11 +139,18 @@ void function_221490(
 
 	memset(memory, 0, k_silence_buffer_size);
 	IDirectSoundBuffer_SetBufferData(buffer, memory, k_silence_buffer_size);
-	IDirectSoundBuffer_SetHeadroom(buffer, 0);
+	IDirectSoundBuffer_SetHeadroom(buffer, (DWORD)arg_1);
 	IDirectSoundBuffer_SetVolume(buffer, -10000);
-	IDirectSoundBuffer_Play(buffer, 0, 0, DSBPLAY_LOOPING);
+	IDirectSoundBuffer_Play(buffer, (DWORD)arg_1, (DWORD)arg_1, (DWORD)arg_0);
 
-	*buffer_reference = buffer;
+	*arg_2 = buffer;
+}
+
+// @retail 0x221490
+void function_221490(
+	LPDIRECTSOUNDBUFFER *buffer_reference)
+{
+    function_221491(1, 0, buffer_reference);
 }
 
 // @retail 0x2215d0

@@ -51,6 +51,24 @@ struct s_sound_transmission_view
 
 /* whether a listener may hear a sound: always without a listener, never
    when the sound is in another structure or cluster too far away */
+PRIVATE __forceinline bool function_221da1(s_local_camera *arg_0,
+    s_sound_transmission_view const *arg_1, real arg_2, byte arg_3)
+{
+    short local_0 = arg_1->cluster_index;
+    bool local_1 = arg_3;
+    if (local_0 != NONE)
+    {
+        short local_2 = arg_0->index;
+        if (local_2 != NONE &&
+            (*(long *)arg_0->unknown00 == arg_1->bsp_index || local_2 == local_0 ||
+             function_249d60((s_structure_bsp_view *)g_4e0348, local_2, local_0) * arg_2 < 256.0f))
+        {
+            local_1 = false;
+        }
+    }
+    return local_1;
+}
+
 // @retail 0x221da0
 bool function_221da0(long listener_index, s_sound_transmission_view const *sound, real scale)
 {
@@ -60,19 +78,7 @@ bool function_221da0(long listener_index, s_sound_transmission_view const *sound
 		byte type = sound->type;
 		if (type == 1)
 		{
-			s_local_camera *listener = local_camera_get(listener_index);
-			short sound_cluster = sound->cluster_index;
-			result = type;
-			if (sound_cluster != NONE)
-			{
-				short listener_cluster = listener->index;
-				if (listener_cluster != NONE &&
-					(*(long *)listener->unknown00 == sound->bsp_index || listener_cluster == sound_cluster ||
-					function_249d60((s_structure_bsp_view *)g_4e0348, listener_cluster, sound_cluster) * scale < 256.0f))
-				{
-					result = false;
-				}
-			}
+            result = function_221da1(local_camera_get(listener_index), sound, scale, type);
 		}
 	}
 	return result;
