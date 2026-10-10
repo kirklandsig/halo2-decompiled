@@ -360,6 +360,7 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
     point2f const *vertices, long count, point3f const *center, real radius,
     real perimeter, point3f const *color, real height)
 {
+    long const volatile *variant_reference = &variant;
     double delta_x = (double)center->x - (double)g_4b9da0.x;
     double delta_y = (double)center->y - (double)g_4b9da0.y;
     real distance = (real)(sqrt(delta_x * delta_x + delta_y * delta_y) - radius);
@@ -371,7 +372,7 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
         real maximum_distance = radius - 0.0001f + spread;
         function_1bd50(0);
         function_1cdd0(0, 0);
-        function_4b2d0(tag, group, variant, ((byte *)context)[4], pass);
+        function_4b2d0(tag, group, (*variant_reference), ((byte *)context)[4], pass);
         long material = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
         byte *reference;
         dword kind = *(dword *)&g_4e3b44[(short)material];
@@ -381,7 +382,7 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
             reference = polygon_pointer_19f(polygon_tag_19f(material), 0x24);
         byte *groups = polygon_pointer_19f(polygon_tag_19f(*(long *)reference), 0x5c);
         long group_offset = *(word *)(polygon_pointer_19f(groups, 4) + group * 10) & 0x1ff;
-        long variant_offset = *(word *)(polygon_pointer_19f(groups, 0xc) + (group_offset + variant) * 2) & 0x1ff;
+        long variant_offset = *(word *)(polygon_pointer_19f(groups, 0xc) + (group_offset + (*variant_reference)) * 2) & 0x1ff;
         long shader = *(long *)(polygon_pointer_19f(groups, 0x14) + (variant_offset + pass) * 10 + 4);
         byte *attributes = polygon_pointer_19f(polygon_tag_19f(*(long *)(polygon_pointer_19f(
             polygon_pointer_19f(polygon_tag_19f(shader), 0x20), 4) + 0x100)), 8);
@@ -410,8 +411,10 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
         for (long step = 0; step <= count; ++step)
         {
             long index = step == count ? 0 : step;
-            real alpha = (maximum_distance - polygon_distance_19f(vertices[index].x - g_4b9da0.x,
-                vertices[index].y - g_4b9da0.y)) / (maximum_distance - spread);
+            double vertex_x = (double)vertices[index].x - (double)g_4b9da0.x;
+            double vertex_y = (double)vertices[index].y - (double)g_4b9da0.y;
+            real alpha = (real)((maximum_distance - sqrt(vertex_x * vertex_x + vertex_y * vertex_y)) /
+                (maximum_distance - spread));
             alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
             point3f bottom = { vertices[index].x, vertices[index].y, center->z };
             point3f top = bottom;
@@ -424,8 +427,9 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
                 D3DDevice_SetVertexData2f(uv, texture_position, 0.0f);
             D3DDevice_SetVertexData4f(0, top.x, top.y, top.z, 1.0f);
             long previous = index == 0 ? count - 1 : step - 1;
-            texture_position -= polygon_distance_19f(vertices[previous].x - vertices[index].x,
-                vertices[previous].y - vertices[index].y) * texture_scale;
+            double edge_x = (double)vertices[previous].x - (double)vertices[index].x;
+            double edge_y = (double)vertices[previous].y - (double)vertices[index].y;
+            texture_position = (real)(texture_position - sqrt(edge_x * edge_x + edge_y * edge_y) * texture_scale);
         }
         D3DDevice_End();
         D3DDevice_SetRenderState(D3DRS_CULLMODE, old_cull);

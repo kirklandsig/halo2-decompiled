@@ -2,6 +2,15 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7478 functions match
+
+```
+matched 7478 of 11318 game functions (876188 of 2784283 bytes, 31.47%)
+```
+
+1 new matches, none lost:
+- Deep lane 3, helpers first: 0x2be5d0 matches with no change to it, after its helpers were tuned.
+
 ## 2026-10-10: 7477 functions match
 
 ```
