@@ -114,6 +114,7 @@ bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker
 			location->spatial.position = *(point3f *)g_4687a8;
 			function_x84d9e8((vector3f *)&location->spatial.position, g_4687b0, (real)sin(class_spatialization->angle), (real)cos(class_spatialization->angle));
 		}
+		result = true;
 	}
 	return result;
 }
