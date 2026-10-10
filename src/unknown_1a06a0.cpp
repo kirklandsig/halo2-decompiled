@@ -130,14 +130,14 @@ void function_1a07b0(s_player_profile *profile, long type)
 	*(volatile byte *)&profile->unknown11b = 10;
 	*(volatile byte *)&profile->unknown11d = 0;
 	*(volatile byte *)&profile->unknown11e = 0;
-	profile->flags_0 = true;
+	((volatile s_player_profile *)profile)->flags_0 = true;
 	profile->unknown102 = 3;
 	profile->unknownfc = 0;
 	switch (type)
 	{
 	case 0:
-		profile->unknown100 = 0;
-		profile->unknown101 = 0;
+		*(volatile byte *)&profile->unknown100 = 0;
+		*(volatile byte *)&profile->unknown101 = 0;
 		break;
 	case 1:
 		*(volatile byte *)&profile->unknown100 = 0;

@@ -244,12 +244,17 @@ short __stdcall function_1af0a0(long actor_index, s_slot *slot, s_slot *arg_2)
 			local_0->unknown0c = true;
 			result = 5;
 		}
-		else if (prop->unknown27 >= 2 ||
-			!REFERENCE_EQUAL(actor->unknown418, g_470fa0) && function_1f8660(actor_index) && !state->unknown13)
+		else
 		{
+			if (prop->unknown27 >= 2)
+				goto local_1;
+			if (REFERENCE_EQUAL(actor->unknown418, g_470fa0) || !function_1f8660(actor_index) || state->unknown13)
+				goto local_2;
+local_1:
 			result = other;
 		}
 	}
+local_2:
 	return result;
 }
 

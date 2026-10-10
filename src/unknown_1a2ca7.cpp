@@ -1053,9 +1053,9 @@ void friends_list_update()
 					unicode_string_snprintf(friend_->name, NUMBEROF(friend_->name), format, gamertag, name);
 				}
 			}
+			if (friend_count != previous_count)
+				friends_lists_request_presence();
 		}
-		if (friend_count != previous_count)
-			friends_lists_request_presence();
 
 		long last_index = record_pool_allocate(g_global_4acf62.field_4_4);
 		s_friend *last = (s_friend *)(g_global_4acf62.field_4_4->data + (last_index & 0xffff) * sizeof(s_friend));
