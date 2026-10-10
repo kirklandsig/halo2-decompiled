@@ -22,9 +22,8 @@ void function_13e3e0(dword const *a, dword const *b, dword *destination, long bi
 long camera_scripting_cluster_get(void);
 
 #pragma inline_depth(0)
-#pragma optimize("s", on)
 // @retail 0x138b30
-void function_138b30(dword *arg_1, bool arg_2)
+void function_138b30(dword *arg_1, bool arg_2, long arg_3)
 {
 	s_138b30 *local_1 = (s_138b30 *)g_4e0348;
 	memset(arg_1, 0, 0x40);
@@ -44,19 +43,21 @@ void function_138b30(dword *arg_1, bool arg_2)
 				break;
 			}
 		}
-		s_138b31 local_5;
-		s_138b31 const *local_6 = 0;
-		if (local_3 != NONE && g_4686c4 != NONE)
-		{
-			local_5.field_10 = (short)(g_4e9bd4[local_3].state.unknown0c[4]
-				| (g_4e9bd4[local_3].state.unknown0c[5] << 8));
-			local_6 = &local_5;
-		}
-		short local_7 = *(short const *)((byte const *)local_6 + 0x10);
+        short local_7;
+        if (local_3 != NONE && g_4686c4 != NONE)
+        {
+            local_7 = (short)(g_4e9bd4[local_3].state.unknown0c[4]
+                | (g_4e9bd4[local_3].state.unknown0c[5] << 8));
+        }
+        else
+        {
+            s_138b31 const *local_6 = 0;
+            local_7 = local_6->field_10;
+        }
 		if (local_7 != NONE)
 		{
-			function_13e3e0(local_1->field_58 + ((local_1->field_9c + 31) >> 5) * local_7,
-				arg_1, arg_1, local_1->field_9c);
+			function_13e3e0(arg_1,
+				local_1->field_58 + ((local_1->field_9c + 31) >> 5) * local_7, arg_1, local_1->field_9c);
 		}
 	}
 	if (local_2->flag11f8 && *g_4e8c34)
@@ -64,8 +65,8 @@ void function_138b30(dword *arg_1, bool arg_2)
 		short local_8 = (short)camera_scripting_cluster_get();
 		if (local_8 != NONE)
 		{
-			function_13e3e0(local_1->field_58 + ((local_1->field_9c + 31) >> 5) * local_8,
-				arg_1, arg_1, local_1->field_9c);
+			function_13e3e0(arg_1,
+				local_1->field_58 + ((local_1->field_9c + 31) >> 5) * local_8, arg_1, local_1->field_9c);
 		}
 	}
 }

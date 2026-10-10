@@ -482,8 +482,8 @@ real function_134c50(real value);
 // @retail 0x1353a0
 real function_1353a0(long name)
 {
-	s_interpolator_state *state = interpolator_find(name);
 	real result = 0.0f;
+	s_interpolator_state *state = interpolator_find_flagged(name);
 	if (state && state->end_time > state->time10)
 	{
 		result = 0.0f > (state->start_time - state->time10) / (state->end_time - state->time10) ?

@@ -1427,7 +1427,7 @@ real function_210970(s_type_c3b527 const *a, s_type_c3b527 const *b)
 	{
 		vector3f v;
 		vector3d_from_points3d(&a->point, &b->point, &v);
-		return function_210ac1(v.j * v.j + (v.i * v.i + v.k * v.k));
+		return function_210ac1((v.k * v.k + v.i * v.i) + v.j * v.j);
 	}
 	else
 	{
@@ -1438,7 +1438,7 @@ real function_210970(s_type_c3b527 const *a, s_type_c3b527 const *b)
 		function_210850(a, &pa);
 		function_210850(b, &pb);
 		vector3d_from_points3d(&pa, &pb, &v);
-		return function_210ac1(v.j * v.j + (v.i * v.i + v.k * v.k));
+		return function_210ac1((v.j * v.j + v.k * v.k) + v.i * v.i);
 	}
 
 }
@@ -1448,20 +1448,20 @@ real function_210970(s_type_c3b527 const *a, s_type_c3b527 const *b)
 real function_210ac0(s_type_c3b527 const *a, point3f const *b)
 {
 	vector3f v;
-
+	real local_0;
 	if (a->output_index == NONE)
 	{
 		vector3d_from_points3d(&a->point, b, &v);
+		local_0 = v.k * v.k + v.i * v.i;
 	}
 	else
 	{
 		point3f point;
-
 		function_210850(a, &point);
 		vector3d_from_points3d(&point, b, &v);
+		local_0 = v.i * v.i + v.k * v.k;
 	}
-
-	return node_point_magnitude3d(&v);
+	return function_210ac1(local_0 + v.j * v.j);
 }
 
 

@@ -579,10 +579,10 @@ static inline bool session_search_version_allowed(long type, long lower, long up
 // @retail 0x90d90
 bool __stdcall session_search_result_allowed(s_session_search *search, s_search_result *entry)
 {
-	volatile bool result = true;
-	long mask;
+	bool result = true;
 	long minimum;
-	long maximum;
+	long mask;
+	volatile long maximum;
 	if (SEARCH_FLAG(entry, 0xa4))
 	{
 		mask = SEARCH_LONG(entry, 0x110);
@@ -599,7 +599,7 @@ bool __stdcall session_search_result_allowed(s_session_search *search, s_search_
 	{
 		long local_0 = SEARCH_LONG(entry, 0xac);
 		long upper = *(volatile long *)((byte *)entry + 0xb4);
-		long lower = *(volatile long *)((byte *)entry + 0xb0);
+		dword lower = *(volatile long *)((byte *)entry + 0xb0);
 		if (!session_search_version_allowed(local_0, lower, upper))
 			return false;
 	}
@@ -609,14 +609,14 @@ bool __stdcall session_search_result_allowed(s_session_search *search, s_search_
 	XNADDR address = g_4cf793;
 	if (address_valid && memcmp(&address, (byte *)entry + 0x24, sizeof(address)) == 0)
 		return false;
-	if (SEARCH_FLAG(entry, 0xa4) && SEARCH_FLAG(search, 0x15))
+	if (SEARCH_FLAG(entry, 0xa4) && SEARCH_FLAG(search, 0x15) != 0)
 	{
 		long count = SEARCH_LONG(entry, 0x130);
 		if (count > 0)
 		{
 			for (long i = 0; i < count; i++)
 			{
-				if (memcmp((byte *)entry + 0x134 + i * 12, (byte *)search + 0x3d, 12) == 0)
+				if (memcmp((byte *)entry + 0x134 + i * 12, 0x3d + (byte *)search, 12) == 0)
 					result = false;
 			}
 			if (!result)

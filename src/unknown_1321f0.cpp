@@ -189,7 +189,8 @@ void function_132a30(s_bit_vector_pool *data, long index, long section_index, bo
 	if (function_c3140(index))
 	{
 		s_132a30_light *light = &((s_132a30_light *)g_4e030c->data)[index & 0xffff];
-		if (light->stamp != g_4e0308)
+		long local_1 = *(long volatile const *)&light->stamp;
+		if (local_1 != g_4e0308)
 		{
 			if (!visible)
 			{
@@ -201,7 +202,7 @@ void function_132a30(s_bit_vector_pool *data, long index, long section_index, bo
 					intersects = function_165010((s_frustum_set_view *)data->context, section_index, &center, radius, &visible);
 				else if (data->query_type == 1)
 					intersects = (char)function_461c0(&data->center, &center, data->radius + radius);
-				if (!(char)intersects && (char)data->flags2a60 >= 0)
+				if (!(char)intersects && ((char)data->flags2a60 >> 7) == 0)
 					return;
 			}
 			if (data->lists[1]->add(index, 0, 0, NONE))
@@ -582,9 +583,11 @@ bool g_4ba004;
 // @retail 0x1332f0
 dword function_1332f0(s_bit_vector_pool const *data, word flags)
 {
-	dword result = ((((flags >> 2) & 0x2c00) | (flags & 0x4000)) >> 9) | ((flags & 0x200) << 5);
+	union { word field_0; byte field_1[2]; } local_1;
+	local_1.field_0 = flags;
+	dword result = ((((local_1.field_0 >> 2) & 0x2c00) | (local_1.field_0 & 0x4000)) >> 9) | ((local_1.field_0 & 0x200) << 5);
 
-	if ((char)data->flags2a60 < 0)
+	if (((char)data->flags2a60 >> 7) != 0)
 	{
 		result |= 1;
 	}
@@ -592,11 +595,11 @@ dword function_1332f0(s_bit_vector_pool const *data, word flags)
 	{
 		long tag_index = g_4b9f8c;
 
-		if (tag_index != NONE && g_4b9ffc == 0.0f && !(flags & 0x400) && !(*g_4e3b44[tag_index & 0xffff].bytes & 2))
+		if (tag_index != NONE && g_4b9ffc == 0.0f && !(local_1.field_1[1] & 4) && !(*g_4e3b44[tag_index & 0xffff].bytes & 2))
 		{
 			result |= 0x100;
 		}
-		if (!g_4ba004 || !(flags & 0x400))
+		if (!g_4ba004 || (local_1.field_1[1] & 4))
 		{
 			result |= 0x80;
 		}

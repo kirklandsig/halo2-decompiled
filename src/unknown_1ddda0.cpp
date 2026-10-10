@@ -410,11 +410,12 @@ void function_1de2c0(s_1de2c0 *arg_0, long arg_1)
  } while (local_3 != local_0->field_2);
  if (!local_1)
  {
+  long local_14 = local_0->field_2;
   s_1ddda2 const *local_12 = arg_0->field_0->field_34;
   s_1ddda3 const *local_13 = arg_0->field_0->field_3c;
-  long local_14 = local_0->field_2;
   long local_15 = local_14;
-  long local_16 = arg_0->field_21c * 2 + arg_0->field_21e;
+  bool local_28 = *(bool const volatile *)&arg_0->field_21e;
+  long local_16 = local_28 + arg_0->field_21c * 2;
   long local_17 = g_440b94[local_16][0] * sizeof(real), local_18 = g_440b94[local_16][1] * sizeof(real);
   do
   {

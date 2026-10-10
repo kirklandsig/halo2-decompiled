@@ -7,6 +7,7 @@
 #include "unknown_07f720.h"
 #include <string.h>
 #include <math.h>
+#include <xmmintrin.h>
 
 struct s_player_view
 {
@@ -147,11 +148,11 @@ void function_13a720(long user_index, s_13a720_status const *status)
 {
 	s_new_hud_user *user = &((s_new_hud_globals *)g_510c4c)->users[user_index];
 	dword flags = 0;
-	if (!(status->flags & 4) && status->value28 > 0.0f && !function_13cb40())
+	if (!(status->flags & 4) && !(0.0f >= status->value28) && !function_13cb40())
 	{
 		if (user->value00 != -1.0f && function_15eb20(function_14de70(user_index)))
 		{
-			flags = (status->flags >> 9) & 1;
+			flags = (*(word volatile const *)&status->flags >> 9) & 1;
 			if (user->value00 > status->value2c)
 				flags |= 2;
 			else
@@ -777,6 +778,12 @@ struct s_ammunition_definition
 };
 
 /* the state an ammunition counter shows */
+static __forceinline long function_13b084(s_ammunition_state const *arg_1)
+{
+    real volatile local_1 = *(real volatile const *)&arg_1->charge * 100.0f;
+    return _mm_cvtt_ss2si(_mm_set_ss(local_1));
+}
+
 // @retail 0x13b083
 long function_13b083(s_ammunition_state const *state, long definition_index)
 {
@@ -784,23 +791,24 @@ long function_13b083(s_ammunition_state const *state, long definition_index)
 	if (definition_index != NONE)
 	{
 		s_ammunition_definition *definition = (s_ammunition_definition *)g_4e3b44[definition_index & 0xffff].bytes;
-		if (state->magazine == 0 && 100 - PIN((long)(state->charge * 100.0f), 0, 100) == 0)
+		if (*(short volatile const *)&state->magazine == 0 && 100 - PIN(function_13b084(state), 0, 100) == 0)
 		{
-			return 4;
+			result = 4;
 		}
-		if (state->magazine == 0 && definition->minimum_charge >= (1.0f - state->charge) * 100.0f)
+		else if (*(short volatile const *)&state->magazine == 0 && definition->minimum_charge >= (1.0f - state->charge) * 100.0f)
 		{
-			return 3;
+			result = 3;
 		}
-		if (state->rounds == 0)
+		else if (state->rounds == 0)
 		{
-			return 2;
+			result = 2;
 		}
-		if (state->rounds > definition->maximum_rounds || state->flag21)
+		else if (state->rounds > definition->maximum_rounds || state->flag21)
 		{
-			return 7;
+			result = 7;
 		}
-		return 1;
+		else
+			result = 1;
 	}
 	return result;
 }
@@ -1005,10 +1013,11 @@ void function_13a532(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 	s_13a532 const *local_2 = (s_13a532 const *)g_4e3b44[arg_1 & 0xffff].bytes;
     word local_3 = 0;
     word local_4 = 0;
-    word local_5 = 0;
+    union s_13a533 { dword field_0; word field_1; };
+    s_13a533 local_5;
+    local_5.field_0 = 0;
     word local_6 = 0;
-    s_13ad48_item const *local_7;
-    function_13a050(arg_3, arg_2, arg_4, &local_7, &local_3, &local_4, &local_5, &local_6);
+    function_13a050(arg_3, arg_2, arg_4, (s_13ad48_item const **)&arg_4, &local_3, &local_4, &local_5.field_1, &local_6);
     if (local_2->field_20 > 0)
     {
         long local_8 = 0;
@@ -1016,11 +1025,13 @@ void function_13a532(long arg_1, long arg_2, byte const *arg_3, long arg_4)
         do
         {
             byte const *local_9 = local_2->field_24 + local_8;
+            word local_12 = (word)*(dword volatile *)&local_5.field_0;
+            s_condition_subject const *local_13 = (s_condition_subject const *)*(long volatile *)&arg_4;
             if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
-                local_6, local_5, (s_condition_subject const *)local_7))
+                local_6, local_12, local_13))
             {
                 real local_10[4];
-                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
+                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, (s_13ad48_item const *)arg_4);
                 function_22b8e2((s_22b8e2 const *)local_9, arg_2, (color4f const *)local_10);
             }
             local_8 += 0x50;
@@ -1034,11 +1045,13 @@ void function_13a532(long arg_1, long arg_2, byte const *arg_3, long arg_4)
         do
         {
             byte const *local_9 = local_2->field_c + local_8;
+            word local_12 = (word)*(dword volatile *)&local_5.field_0;
+            s_condition_subject const *local_13 = (s_condition_subject const *)*(long volatile *)&arg_4;
             if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
-                local_6, local_5, (s_condition_subject const *)local_7))
+                local_6, local_12, local_13))
             {
                 real local_10[4];
-                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
+                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, (s_13ad48_item const *)arg_4);
                 function_22aff1(arg_2, arg_3, local_9, local_10);
             }
             local_8 += 0x64;
@@ -1052,11 +1065,13 @@ void function_13a532(long arg_1, long arg_2, byte const *arg_3, long arg_4)
         do
         {
             byte const *local_9 = local_2->field_14 + local_8;
+            word local_12 = (word)*(dword volatile *)&local_5.field_0;
+            s_condition_subject const *local_13 = (s_condition_subject const *)*(long volatile *)&arg_4;
             if (function_13ac87((s_condition_masks const *)(local_9 + 8), local_3, local_4,
-                local_6, local_5, (s_condition_subject const *)local_7))
+                local_6, local_12, local_13))
             {
                 real local_10[4];
-                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, local_7);
+                function_13ad48(arg_2, local_9 + 4, local_10, arg_3, (s_13ad48_item const *)arg_4);
                 function_22aa16(arg_2, arg_3, local_9, local_10);
             }
             local_8 += 0x54;

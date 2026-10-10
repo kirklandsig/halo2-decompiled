@@ -95,11 +95,11 @@ long function_130de0(s_fog_state *fog)
 
 		if (fog->value10c != 1.0f)
 		{
-			return result;
+			goto local_1;
 		}
 		if (fog->value118 != 0.0f)
 		{
-			return result;
+			goto local_1;
 		}
 
 		if (fog->layers[0].intensity == 0.0f)
@@ -112,7 +112,7 @@ long function_130de0(s_fog_state *fog)
 		}
 		if (fog->pending.intensity != 1.0f)
 		{
-			return result;
+			goto local_1;
 		}
 		distance = fog->pending.distance > fog->pending.height ? fog->pending.distance : fog->pending.height;
 		if (fog->layers[0].distance >= distance)
@@ -135,11 +135,12 @@ use_layer1:
 		}
 		else
 		{
-			return result;
+			goto local_1;
 		}
 		fog->pending.intensity = 0.0f;
 		fog->value10c = 0.0f;
 		fog->value118 = 1.0f;
+local_1:
 		return result;
 	}
 	if (fog->layers[0].intensity > 0.0f || fog->layers[1].intensity > 0.0f)

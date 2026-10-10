@@ -871,8 +871,8 @@ bool function_201400(long squad_index, short entry_index)
 	bool result = true;
 	if (entry_index >= 0 && entry_index < squad->count)
 	{
-		word placement_index = squad_placement_entry(squad, entry_index)->placement_index;
-		if (placement_index != (word)NONE)
+		dword placement_index = squad_placement_entry(squad, entry_index)->placement_index;
+		if ((word)placement_index != (word)NONE)
 		{
 			long object_index = function_201330((short)placement_index);
 			if (object_index != NONE)

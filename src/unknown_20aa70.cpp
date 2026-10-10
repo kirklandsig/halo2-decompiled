@@ -82,6 +82,13 @@ struct real_vector2d_copy
 };
 
 
+PRIVATE __forceinline void function_20aa71(vector3f *arg_0, byte const *arg_1)
+{
+	((dword *)arg_0)[0] = ((dword const *)arg_1)[0];
+	((dword *)arg_0)[1] = ((dword const *)arg_1)[1];
+	((dword *)arg_0)[2] = ((dword const *)arg_1)[2];
+}
+
 // @retail 0x20aa70
 void function_20aa70(vector3f *out, s_anim_data *data, long index_, real *w)
 {
@@ -96,18 +103,20 @@ void function_20aa70(vector3f *out, s_anim_data *data, long index_, real *w)
 	case 1:
 		h = data->header;
 		p = data->base + h->unknown6 + h->unknown1 + index * 8 + h->unknownc + h->unknown0;
-		*(real_vector2d_copy *)out = *(real_vector2d_copy *)p;
+		((dword *)out)[0] = ((dword *)p)[0];
+		((dword *)out)[1] = ((dword *)p)[1];
 		break;
 	case 2:
 		h = data->header;
 		p = data->base + h->unknown6 + h->unknown1 + index * 12 + h->unknownc + h->unknown0;
-		*(real_vector2d_copy *)out = *(real_vector2d_copy *)p;
+		((dword *)out)[0] = ((dword *)p)[0];
+		((dword *)out)[1] = ((dword *)p)[1];
 		*w = ((real *)p)[2];
 		break;
 	case 3:
 		h = data->header;
 		p = data->base + h->unknown6 + h->unknown1 + index * 16 + h->unknownc + h->unknown0;
-		*out = *(vector3f *)p;
+		function_20aa71(out, p);
 		*w = ((real *)p)[3];
 		break;
 	}

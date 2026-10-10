@@ -270,13 +270,13 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // @retail 0x255d60
 bool function_255d60(long arg_0, point3f const *arg_1, real arg_2, real arg_3, short *arg_4)
 {
+	bool local_3 = false;
+	long local_4 = 0;
+	s_record_pool_iterator local_5;
 	real local_20 = arg_2 > arg_3 ? arg_2 : arg_3;
 	s_actor_view *local_0 = actor_get(arg_0);
 	real local_1 = local_20 * local_20;
 	real local_2 = arg_2 * arg_2;
-	bool local_3 = false;
-	long local_4 = 0;
-	s_record_pool_iterator local_5;
 	if (g_4f55d0->active)
 	{
 		local_5.data = g_502420;
@@ -448,6 +448,14 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const *arg_1)
+{
+	real local_0 = arg_0->i * arg_1->i;
+	local_0 += arg_0->j * arg_1->j;
+	local_0 += arg_0->k * arg_1->k;
+	return local_0;
+}
+
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
@@ -467,7 +475,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 			real local_6 = *(real *)((byte *)function_1e4a50(local_0->unknown054) + 4);
 			vector3f local_7;
 			vector3d_from_points3d(&local_0->position, &local_2->unknown030, &local_7);
-			real local_8 = local_7.i * local_3.i + local_7.j * local_3.j + local_7.k * local_3.k;
+			real local_8 = function_255741(&local_7, &local_3);
 			if (local_8 > 0.f)
 			{
 				real local_9 = local_2->unknown03c + local_6;
@@ -494,7 +502,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 							local_4.i = local_10.i * -1.f;
 							local_4.j = local_10.j * -1.f;
 							local_4.k = -0.f;
-							short local_17;
+							volatile short local_17;
 							if (function_2556b0(&local_16.point.point, &local_10, local_15, &local_13) && local_11 > 0.f)
 								local_17 = 1;
 							else if (function_2556b0(&local_16.point.point, &local_4, local_15, &local_14) && local_11 < 0.f)

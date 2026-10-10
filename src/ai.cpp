@@ -1246,7 +1246,8 @@ long __stdcall function_1dfb90(long definition_index)
             *(long *)(actor + 0x58) = NONE;
             for (long i = 0; i < 8; ++i)
                 ((long *)(actor + 0x5c))[i] = NONE;
-            *(short *)(actor + 0x3e) = g_4686c4;
+            volatile short local_1 = g_4686c4;
+            *(short *)(actor + 0x3e) = local_1;
             *(long *)(actor + 0x7c) = NONE;
             *(long *)(actor + 0x32c) = NONE;
             *(s_reference *)(actor + 0x418) = g_470fa0;
@@ -1256,12 +1257,13 @@ long __stdcall function_1dfb90(long definition_index)
             *(short *)(actor + 0x3fc) = NONE;
             s_actor_view *actor_view = (s_actor_view *)(pool->data + (result & 0xffff) * 0x888);
             actor_view->unknown3fe = 3;
-            long reference_index = 0;
+            long local_2 = 4;
+            s_reference *local_3 = &actor_view->unknown400[0].reference;
             do
             {
-                actor_view->unknown400[reference_index].reference = g_470fa0;
-                ++reference_index;
-            } while (reference_index < 4);
+                *local_3 = g_470fa0;
+                local_3 = (s_reference *)((byte *)local_3 + sizeof(actor_view->unknown400[0]));
+            } while (--local_2);
             *(short *)(actor + 0x84) = 3;
             *(short *)(actor + 0x86) = 1;
             *(long *)(actor + 0x88) = 0;
@@ -1285,7 +1287,10 @@ long __stdcall function_1dfb90(long definition_index)
                 ++slot_index;
             } while (slot_index < 4);
             *(short *)(actor + 0x190) = NONE;
-            function_1a80e0(result, *(bool *)(actor + 7) ? 0x72 : 1, NULL, 0);
+            if (!*(bool *)(actor + 7))
+                function_1a80e0(result, 1, NULL, 0);
+            else
+                function_1a80e0(result, 0x72, NULL, 0);
             for (long i = 0; i < 14; ++i)
                 ((long *)(actor + 0x1e8))[i] = NONE;
             long memory_index = 0;

@@ -2,6 +2,18 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7466 functions match
+
+```
+matched 7466 of 11318 game functions (873311 of 2784283 bytes, 31.37%)
+```
+
+30 new matches, none lost:
+- Machine 2's lane D lower half, deep round 12 (#300): 0x533e0, 0x534a0, 0x544e0, 0x58b00, 0x5f6a0, 0x600f0, 0x62e70, 0x62eb0, 0x64c70, 0x64d30, 0x680c0, 0x6f050, 0x765c0 and 0x8fa80.
+- Lane I, deep round 10 (#301): 0x258480, 0x25bf10, 0x25c570, 0x25e800, 0x25ed60. Lane C, deep round 45 (#303): 0x1cb410, 0x1d70d0, and 0x1086e0 and 0x1087c0 as side effects.
+- Lane P, deep round 14 (#297): 0x136970, and 0x2abd80 as a side effect. Lane AC (#298): 0x277a00. Lane D upper (#302): 0x8cfe0. Lane U (#304): 0x20aa70.
+- Machine 2's permuter lane: 0x18e600 (#299) and 0x90d90 (#305).
+
 ## 2026-10-10: 7436 functions match
 
 ```

@@ -2013,7 +2013,8 @@ bool __stdcall function_1d44f0(s_havok_component *component, point3f *center, re
             s_component_collision_model_link *model = (s_component_collision_model_link *)g_4e3b44[definition->model_index & 0xffff].bytes;
             s_component_bounds_model *physics = (s_component_bounds_model *)g_4e3b44[model->physics_model_index & 0xffff].bytes;
             s_component_bounds combined;
-            for (long i = 0; i < (*component_reference)->rigid_bodies.size; ++i)
+            volatile long local_0 = 0;
+            for (long i = 0; i < (*component_reference)->rigid_bodies.size;)
             {
                 s_havok_component_rigid_body *body = &(*component_reference)->rigid_bodies.data[i];
                 void *shape = (byte *)body->rigid_body + 0xc;
@@ -2033,6 +2034,7 @@ bool __stdcall function_1d44f0(s_havok_component *component, point3f *center, re
                     bounds.lower.m128_f32[2] -= padding;
                     bounds.upper.m128_f32[2] += padding;
                 }
+                i = local_0;
                 if (i == 0)
                 {
                     combined.lower = bounds.lower;
@@ -2043,6 +2045,8 @@ bool __stdcall function_1d44f0(s_havok_component *component, point3f *center, re
                     combined.lower = _mm_min_ps(combined.lower, bounds.lower);
                     combined.upper = _mm_max_ps(combined.upper, bounds.upper);
                 }
+                ++i;
+                local_0 = i;
             }
             __m128 half = _mm_set1_ps(0.5f);
             __m128 middle = _mm_mul_ps(half, _mm_add_ps(combined.lower, combined.upper));
