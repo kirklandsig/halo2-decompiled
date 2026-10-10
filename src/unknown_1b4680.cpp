@@ -190,9 +190,8 @@ short __stdcall function_1b4e70(long actor_index, long leader_index, long a, lon
 	s_actor_view *actor = actor_get(actor_index);
 	long count = 0;
 
-	if (actor->unknown07c == NONE)
-		return 0;
-
+	if (actor->unknown07c != NONE)
+	{
 	long index = element_502420_get(actor->unknown07c)->first_actor_index;
 
 	while (index != NONE)
@@ -203,6 +202,7 @@ short __stdcall function_1b4e70(long actor_index, long leader_index, long a, lon
 		index = other->next_index;
 		if (actor != other && function_26eae0(leader_index, other_index, 3, 1.0f))
 			count++;
+	}
 	}
 	return (short)count;
 }

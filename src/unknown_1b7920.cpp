@@ -39,6 +39,12 @@ void __stdcall function_1b7c70(long actor_index, s_slot *slot);
 void __stdcall function_1b7cc0(long actor_index, s_slot *slot);
 
 /* whether the actor's prop is in state 3 within 3 of where it should be */
+PRIVATE __forceinline real function_1b7921(s_prop_node_view *arg_0, s_prop_view_fields *arg_1)
+{
+    s_prop_state_view *local_0 = prop_node_state(arg_0);
+    return function_210970(&local_0->unknown48, &arg_1->unknown18);
+}
+
 // @retail 0x1b7920
 short __stdcall function_1b7920(long actor_index)
 {
@@ -51,7 +57,7 @@ short __stdcall function_1b7920(long actor_index)
 		s_prop_view_fields *view = prop_node_view(node);
 
 		if (view && view->unknown06 == 3 &&
-			function_210970(&prop_node_state(node)->unknown48, &view->unknown18) < 3.0f)
+			function_1b7921(node, view) < 3.0f)
 		{
 			result = 1;
 		}

@@ -360,7 +360,7 @@ bool function_1b9200(long object_index, long prop_index)
 bool function_1b9420(long actor_index)
 {
 	s_actor_view *actor = actor_get(actor_index);
-	bool result = false;
+	bool volatile result = false;
 
 	if (actor->unknown086 >= 3)
 		return true;

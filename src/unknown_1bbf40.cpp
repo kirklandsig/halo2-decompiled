@@ -133,7 +133,7 @@ bool __stdcall function_1bc4f0(long actor_index, s_slot *slot)
 	if (team == 1 || !team_is_enemy(team, 1))
 	{
 		function_1f86a0(actor_index);
-		return true;
+		result = true;
 	}
 	return result;
 }

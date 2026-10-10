@@ -57,12 +57,11 @@ bool function_1fba10(long actor_index, long source_index, s_location const *loca
 {
 	s_actor_view *actor = actor_get(actor_index);
 	bool result = false;
-	short cluster_index = *(short *)((byte *)actor + 0x254);
 
-	if (actor_index != source_index && actor->unknown009 && cluster_index != NONE &&
+	if (actor_index != source_index && actor->unknown009 && (*(short *)((byte *)actor + 0x254)) != NONE &&
 		*(short *)((byte *)actor + 0x3e) == g_4686c4)
 	{
-		if (!clusters || (clusters[cluster_index >> 5] & (1 << (cluster_index & 31))))
+		if (!clusters || (clusters[(*(short *)((byte *)actor + 0x254)) >> 5] & (1 << ((*(short *)((byte *)actor + 0x254)) & 31))))
 		{
 			s_2641c0 origin;
 			if (function_2641c0(actor_index, &origin, point))
