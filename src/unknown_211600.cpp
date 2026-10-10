@@ -4,6 +4,8 @@
 
 void function_295210(long arg_0);
 void function_28fc50(long arg_0, word arg_1);
+void function_28fd00(long object_index);
+void function_2952e0(long object_index);
 
 // @retail 0x211600
 void function_211600(long arg_0, long arg_1)
@@ -17,6 +19,21 @@ void function_211600(long arg_0, long arg_1)
         break;
     case 1:
         function_295210(arg_0);
+        break;
+    }
+}
+
+// @retail 0x211640
+void function_211640(long object_index)
+{
+    byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+    switch (*(long *)(object + 0x134))
+    {
+    case 0:
+        function_28fd00(object_index);
+        break;
+    case 1:
+        function_2952e0(object_index);
         break;
     }
 }
