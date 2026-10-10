@@ -440,3 +440,9 @@ done:
 	if (location == 4) progress = 0.0f;
 	return progress;
 }
+
+// @retail 0x122db0
+long function_122db0(char const *map_name, long type)
+{
+	return ((long)function_122dd0((byte *)map_name, 1, type) / 4) * 1000;
+}
