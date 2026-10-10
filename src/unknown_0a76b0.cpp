@@ -3617,6 +3617,7 @@ bool __stdcall function_ec9a0(long unit_index, s_unit_request *request)
 
 void function_1e54d0(void *state, long a);
 
+/* Resets the unit action state, switches it to mode 4, and updates the supplied point. */
 // @retail 0xe5690
 void __stdcall function_e5690(long unit_index, point3f const *point)
 {
@@ -4580,6 +4581,7 @@ void __stdcall function_fff40(long weapon_index, bool silent, bool immediate)
 }
 #endif
 
+/* Cleans up the previous state mode, initializes the new mode, and handles mode-transition updates. */
 // @retail 0x1e54d0
 void function_1e54d0(void *state, long mode)
 {

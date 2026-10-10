@@ -75,6 +75,7 @@ void function_1fc2f0(s_tracked_point *tracked, point3f const *point, bool unknow
 	*(volatile short *)&tracked->location.unknown2 = NONE;
 }
 
+/* Updates an object's position from Havok state and adjusts its rigid-body linear velocity. */
 // @retail 0x1fc350
 void function_1fc350(long object_index, void *state)
 {
