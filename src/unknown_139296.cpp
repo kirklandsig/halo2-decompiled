@@ -1176,25 +1176,30 @@ void __stdcall function_13a838(long arg_1)
 {
     long local_13 = function_13a839(&arg_1);
     byte *local_1 = (byte *)g_510c4c + local_13 * 0x6c;
-    byte local_2[0x270];
+    struct { byte field_0[0x270]; byte *field_270; } local_14;
+    byte *local_2 = local_14.field_0;
+    byte *volatile *local_16 = &local_14.field_270;
+    *local_16 = local_1;
     function_2003dc(local_13);
     function_13992a(local_2, local_13);
     function_13a720(local_13, (s_13a720_status const *)local_2);
     if (local_2[0x130])
     {
         real local_3 = local_2[0x133] ? 1.0f : 0.0f;
-        if (*(real *)(local_1 + 0x28) != local_3)
+        real volatile *local_15 = (real *)(local_1 + 0x28);
+        if (*local_15 != local_3)
         {
-            real local_4 = 2.0f / g_510c54->field_2_3;
-            if (local_3 > *(real *)(local_1 + 0x28))
+            if (local_3 > *local_15)
             {
-                real local_5 = *(real *)(local_1 + 0x28) + local_4;
-                *(real *)(local_1 + 0x28) = local_5 > 1.0f ? 1.0f : local_5;
+                real local_4 = 2.0f / g_510c54->field_2_3;
+                real local_5 = *local_15 + local_4;
+                *local_15 = local_5 > 1.0f ? 1.0f : local_5;
             }
             else
             {
-                real local_5 = *(real *)(local_1 + 0x28) - local_4;
-                *(real *)(local_1 + 0x28) = local_5 > 0.0f ? local_5 : 0.0f;
+                real local_4 = 2.0f / g_510c54->field_2_3;
+                real local_5 = *local_15 - local_4;
+                *local_15 = local_5 > 0.0f ? local_5 : 0.0f;
             }
         }
     }

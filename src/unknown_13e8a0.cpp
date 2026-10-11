@@ -508,7 +508,7 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 	real width = 0.0f;
 	volatile long index = 0;
 	volatile long count = 0;
-	long break_index = 0;
+	volatile long break_index = 0;
 	real break_width;
 	bool done = false;
 	do

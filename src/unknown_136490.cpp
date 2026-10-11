@@ -424,9 +424,18 @@ void DecodeBlockRGBA_interpolated__single_pixel(S3TCBlockRGBA_interpolated const
 void function_358d0(short width, short x, short y, short height, dword *out);
 bool g_55e72c;
 
-// @retail 0x136140
-dword function_136140(void const *base, long size, void const *pixels, short x, short height, short format, word flags, short width, short y)
+union s_136141
 {
+	void const *field_0;
+	dword field_1;
+};
+
+// @retail 0x136140
+dword __fastcall function_136140(long arg_1, long arg_2, s_136141 arg_3, long size, void const *pixels, short x, short height, short format, word flags)
+{
+	void const *base = arg_3.field_0;
+	short y = (short)arg_1;
+	short width = (short)arg_2;
 	short const *x_reference = &x;
 	x = *x_reference;
 	if (flags & 2)
@@ -505,5 +514,7 @@ dword function_1362b0(s_type_7ba8e9 const *bitmap, point2f const *uv, real detai
 	case 1: pixels = function_135af0(bitmap, 0, 0, 0, (short)mipmap); break;
 	default: pixels = function_135c00(bitmap, 0, 0, 0, (short)mipmap); break;
 	}
-	return function_136140(bitmap->base_address, *(long *)((byte *)bitmap + 0x34), pixels, (short)x, height, bitmap->format, bitmap->flags, width, (short)y);
+	s_136141 local_1;
+	local_1.field_0 = bitmap->base_address;
+	return function_136140((short)y, width, local_1, *(long *)((byte *)bitmap + 0x34), pixels, (short)x, height, bitmap->format, bitmap->flags);
 }
