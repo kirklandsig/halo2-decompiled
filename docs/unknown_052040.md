@@ -23,6 +23,30 @@ same program, and its draw is a different one. Ten callees (all Direct3D
 library routines) have no source and are described only as far as this function
 needs them.
 
+## Implementation follow-up
+
+`src/unknown_052020.cpp` now contains source for this renderer and its copy
+callback. The inventory/status statements in the original analysis above
+record the state when that analysis was written. The callback matches all
+24 retail bytes with its real registration caller present; the renderer
+remains unmatched (the current local build is 3,360 bytes, versus 3,316 in
+retail). Equal behavior in isolated tests does not establish an exact match.
+
+Local instruction comparisons cover shader construction, viewport/constants
+preparation, texture-state setup, descriptor selection and the final draw
+sequence. The texture and draw-boundary tests substitute external callees;
+the descriptor test runs the real cache-reset helper but substitutes binding
+calls. Those tests do not verify GPU rendering or whole-function equivalence.
+Their reports identify the executable tested; results from an older build
+must be rechecked after changes.
+
+The initial descriptor selection is expanded in this renderer, as in retail;
+the final draw sequence calls `function_1ccb0(36)`. Both use the existing
+descriptor table, whose definition now has external linkage so the pointer
+identity is preserved across source files. The optional-record alpha path
+keeps the reciprocal as a float, multiplies by 255 on x87, then uses `FISTP`;
+rounding that product to float first changes some integer results.
+
 ## Boundary
 
 - `0x516d0`, just before, is `todo` with source in `src/unknown_050690.cpp` and
