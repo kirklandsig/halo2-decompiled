@@ -16,7 +16,9 @@ The declaration in `src/unknown_0497a0.cpp` now uses `dword flags`; the caller
 continues to pass zero.
 
 The function returns immediately unless the signed short at shader `+0x24`
-is 1. Otherwise it selects a bitmap through `0x143c0` and configures stage 0:
+is 1. A one-case switch reproduces retail's signed load, decrement and
+branch at entry, including its register-save order. Otherwise it selects a
+bitmap through `0x143c0` and configures stage 0:
 
 - Shader byte `+0x2e` bits 1 and 2 select U and V address modes; bit 0 selects
   filter value 1 instead of 2 for magnification, minification and mip filtering.

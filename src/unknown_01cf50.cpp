@@ -6710,8 +6710,13 @@ extern real g_4856c4[9];
 // @retail 0x52d40
 void function_52d40(long bitmap_index, byte *shader, long tag, dword flags)
 {
-    if (*(short *)(shader + 0x24) != 1)
+    switch (*(short *)(shader + 0x24))
+    {
+    case 1:
+        break;
+    default:
         return;
+    }
     bool extra_combiners = (shader[0x28] & 2) != 0;
     function_143c0(tag, (short)bitmap_index, 0, 0.0f);
     D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSU, (shader[0x2e] & 2) | 1);
