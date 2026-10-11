@@ -643,3 +643,55 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 		} while (remaining > 0);
 	}
 }
+
+/* The preparation buffer includes the projection prefix consumed by 17fd20.
+   The remaining fields and the persistent chain state await recovery of 17ef10. */
+struct s_decal_preparation_17ef10
+{
+    s_decal_projection_17fd20 projection;
+    byte unknown_ec[0x24];
+};
+
+struct s_decal_chain_state_17ee20
+{
+    byte unknown00[0x1c];
+};
+
+struct s_180d84;
+struct s_cluster_query;
+struct s_180d81;
+struct s_180d83;
+long __stdcall function_180d80(s_180d84 const *preparation,
+    transform4x3f const *transform, long tag_index,
+    s_cluster_query const *placement, bool unknown0,
+    s_180d81 const *output, s_180d83 *state);
+bool function_17ef10(transform4x3f const *transform, long tag_index,
+    s_decal_placement const *placement, vector3f const *direction, real radius,
+    bool unknown0, long unknown1, long unknown2,
+    s_decal_preparation_17ef10 *preparation, s_decal_chain_state_17ee20 *state);
+
+// @retail 0x17ee20
+bool function_17ee20(s_decal_mesh_view const *mesh,
+    transform4x3f const *transform, long tag_index,
+    s_decal_placement const *placement, vector3f const *direction, real radius,
+    bool unknown0, long unknown1, long unknown2)
+{
+    s_decal_chain_state_17ee20 state = {0};
+    bool result = false;
+    while (tag_index != -1 && (short)placement->unknown20 != -1)
+    {
+        s_decal_preparation_17ef10 preparation = {0};
+        s_decal_output_17dd80 output;
+        if (!function_17ef10(transform, tag_index, placement, direction, radius,
+            unknown0, unknown1, unknown2, &preparation, &state))
+            break;
+        output.polygon_count = 0;
+        function_17fd20(mesh, tag_index, &output, &preparation.projection, placement);
+        tag_index = function_180d80((s_180d84 const *)&preparation,
+            transform, tag_index, (s_cluster_query const *)placement, unknown0,
+            (s_180d81 const *)&output, (s_180d83 *)&state);
+        if (output.polygon_count > 0)
+            result = true;
+    }
+    return result;
+}

@@ -26,6 +26,19 @@ void function_c0350(long tag_index, long object_index, long node_index, vector3f
 // @stub 0x17e670
 void function_17e670(s_effect_source *source, point3f const *point, long tag_index, vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2) { }
 
+struct s_decal_placement;
+struct s_decal_preparation_17ef10;
+struct s_decal_chain_state_17ee20;
+
+// @stub 0x17ef10
+bool function_17ef10(transform4x3f const *transform, long tag_index,
+    s_decal_placement const *placement, vector3f const *direction, real radius,
+    bool unknown0, long unknown1, long unknown2,
+    s_decal_preparation_17ef10 *preparation, s_decal_chain_state_17ee20 *state)
+{
+    return false;
+}
+
 // @stub 0x211060
 void function_211060(long unknown0, void *physics, s_location *location, long unknown3, point3f *position, long unknown5, long unknown6, long unknown7, real radius, real dt, vector3f *velocity) { }
 
