@@ -23,13 +23,76 @@ same program, and its draw is a different one. Ten callees (all Direct3D
 library routines) have no source and are described only as far as this function
 needs them.
 
+## Implementation follow-up
+
+`src/unknown_01cf50.cpp` now contains this renderer beside the related
+rendering code; `src/unknown_052020.cpp` contains its copy callback. The
+inventory/status statements in the original analysis above
+record the state when that analysis was written. The callback matches all
+24 retail bytes with its real registration caller present; the renderer
+remains unmatched (the current local build is 3,368 bytes, versus 3,316 in
+retail). Equal behavior in isolated tests does not establish an exact match.
+
+Local instruction comparisons cover shader construction, viewport/constants
+preparation, texture-state setup, descriptor selection and the final draw
+sequence. The texture and draw-boundary tests substitute external callees;
+the descriptor test runs the real cache-reset helper but substitutes binding
+calls. Those tests do not verify GPU rendering or whole-function equivalence.
+Their reports identify the executable tested; results from an older build
+must be rechecked after changes.
+
+The initial descriptor selection is expanded in this renderer, as in retail;
+the final draw sequence calls `function_1ccb0(36)`. Both use the existing
+private descriptor table in the same translation unit, preserving pointer
+identity without exporting the table. Grouping this renderer with its related
+code also avoids adding another Direct3D-header translation unit, which
+changed the matched player-count parser under LTCG in an isolated reproducer.
+The optional-record alpha path
+keeps the reciprocal as a float, multiplies by 255 on x87, then uses `FISTP`;
+rounding that product to float first changes some integer results.
+
+## Bitmap fallback dependency
+
+The bitmap loader at `0x12310` calls `0x12ce00` when its first cache lookup
+fails. That fallback now has source in `src/unknown_12c0d0.cpp`, replacing its
+empty stub. It chooses shared, requested, resident, or default textures and
+propagates cache-failure state. Its level-selection bias is accumulated in
+retail's float-operation order; the early shared-texture comparison uses the
+original bias instead.
+
+The fallback remains unmatched (645 compiled bytes versus 658 retail).
+The resident-level scan uses an advancing pointer and a three-iteration
+countdown, retaining a loop like retail instead of three unrolled copies.
+Default texture selection uses a switch, reproducing retail's signed type
+load and decrement-based branches.
+A const pointer to its bitmap parameter's own slot, read into a local view,
+keeps that argument on the stack as in retail without changing its value.
+This makes `0x12310` match all 77 retail bytes, and also enables exact
+`0x12360`, `0x1cfb0`, `0x3bcb0`, `0xd15e0`, `0xd1630`, `0xd1680`, and
+`0x2a04f0`, without editing those callers. Replacing the stub previously
+enabled `0x42b20`, `0x23625d`, and `0x2b1179`. Full checks retain every
+previous match.
+A 4,096-case actual-instruction comparison covers the fallback's return
+paths, cache timestamps, failure state, arguments and stack cleanup. Format
+and level helpers execute their real bodies; the shared-header builder and
+cache loader are explicit stand-ins. This does not validate loading,
+allocation, or GPU behavior.
+
+A separate 16,384-case integration comparison executes the renderer texture
+loop, the complete bitmap loader at `0x12310`, and the raw-texture path of
+`0x12ce00`. It covers frame-cache hits, initial-lookup hits, raw fallback
+textures and null returns across all three bitmap slots. Only the initial
+cache lookup is replaced by a stand-in. State/cache writes, call routes,
+request preservation and stack balance agree; streamed loading and GPU
+execution remain outside this test.
+
 ## Boundary
 
-- `0x516d0`, just before, is `todo` with source in `src/unknown_050690.cpp` and
-  ends at `0x52020`. `0x52d40`, just after (1,136 bytes), is `todo` with no
-  source; it calls `function_142f0`, `function_15180`, `function_1c590` and
-  several of the same Direct3D routines, so it looks like a sibling (inferred;
-  it was not analysed). Both are excluded.
+- `0x516d0`, just before, is `todo` with source in `src/unknown_050690.cpp`
+  and ends at `0x52020`; it is excluded.
+- The adjacent shader-setup routine `0x52d40` now has source alongside this
+  renderer in `src/unknown_01cf50.cpp`. Its separate analysis and validation
+  are in [unknown_052d40.md](unknown_052d40.md).
 - This function has nothing to do with the liquid draw callback `0x508d0` or
   the noise points of `0x516d0`: neither calls it, it calls neither, and it
   only neighbours them by address. It belongs with the interface drawing code
@@ -667,5 +730,7 @@ void __stdcall function_52040(s_interface_draw_request const *request,
   and the default colour (three 1.0 reals) at `0x4409e4` behind the pointer at
   `0x468710`. The state values, masks and combiner words are immediates.
 - No document covered this range before. Source line numbers are at `ad1dab2`.
-- No emulator, runtime testing, SDK or outside dataset was used. Names are the
-  repository's own, or describe behaviour.
+- The original analysis below the recovery notes used no emulator, runtime
+  testing, SDK or outside dataset. The later source recovery and behavioral
+  checks are described above. Names are the repository's own, or describe
+  behaviour.

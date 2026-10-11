@@ -87,14 +87,3 @@ void __cdecl function_2ddbd0(void *data, s_visibility_sphere_query const *query,
     s_visibility_query_list *second, s_visibility_query_list *first)
 {
 }
-
-
-
-
-
-
-
-// @stub 0x52d40
-void function_52d40(long bitmap_index, unsigned char *shader, long count, bool mode)
-{
-}

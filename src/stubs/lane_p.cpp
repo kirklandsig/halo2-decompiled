@@ -3,10 +3,6 @@
 
 #include "unknown_11c920.h"
 
-// @stub 0x52040
-void __stdcall function_52040(void const *arg_1, void const *arg_2)
-{
-}
 
 struct transform4x3f;
 // @stub 0xbd610

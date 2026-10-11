@@ -1142,3 +1142,112 @@ void function_12c450(void)
 		}
 	}
 }
+
+
+bool g_46883c;
+bool g_46883d;
+extern long g_4e6470, g_4e6474;
+extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
+
+// @retail 0x12ce00
+D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
+{
+    s_bitmap_data *const *bitmap_reference = &bitmap;
+    s_bitmap_data *view = *bitmap_reference;
+    bool wait = (flags & 1) != 0;
+    bool request = (flags & 2) != 0;
+    bool unscaled = (flags & 4) != 0;
+    D3DTexture *result = NULL;
+    real scale = bias;
+    if (g_468841)
+    {
+        scale = (real)view->level_bias * 0.01f;
+        scale += bias;
+        scale += g_4e647c;
+    }
+    bool restricted = false;
+    bool failed = false;
+    if (g_46883d)
+        scale = 0.0f;
+    if (g_46883c)
+        scale = 1.0f;
+    if (!(view->flags & 0x200))
+        return view->texture;
+
+    if (!unscaled)
+    {
+        result = texture_cache_bitmap_get_shared_texture(view);
+        if (g_4e6470 > 0 && (g_4e6474 == 0 ||
+            (g_4e6474 == 1 && view->cache_format == 3)))
+        {
+            restricted = true;
+            wait = g_4e6470 == 1;
+        }
+        else if (result && !(view->flags & 0x80))
+            wait = false;
+    }
+    if (((g_4e647b && texture_cache_format_scalable(view->cache_format)) ||
+        bias >= view->minimum_scale) && result)
+        return result;
+
+    long level = unscaled ? 0 : texture_cache_bitmap_level(view, scale);
+    long priority = 2;
+    if (!restricted)
+    {
+        if (wait)
+            priority = 7;
+        else if (flags & 8)
+            priority = 5;
+        else if (flags & 16)
+            priority = 1;
+    }
+    bool waited;
+    D3DTexture *loaded = function_12c990(view, level, request, wait,
+        restricted, priority, &waited, &failed);
+    if (loaded)
+        result = loaded;
+    else if (!unscaled)
+    {
+        long remaining = 3;
+        long const *block_indices = view->block_indices;
+        do
+        {
+            long block_index = *block_indices;
+            if (block_index != NONE)
+            {
+                s_texture_cache_entry *entry = texture_cache_entry_get(block_index);
+                ((s_physical_block *)g_4e6464->blocks->data)[block_index & 0xffff].time = g_4e6464->time;
+                if (entry->resident)
+                {
+                    D3DTexture *candidate = (D3DTexture *)&entry->resource;
+                    if (candidate)
+                    {
+                        result = candidate;
+                        wait = false;
+                    }
+                }
+            }
+            ++block_indices;
+        } while (--remaining);
+        if (wait && !result)
+        {
+            switch (view->type)
+            {
+            case 0:
+                result = (D3DTexture *)g_485ae4;
+                break;
+            case 1:
+                result = (D3DTexture *)g_485ae8;
+                break;
+            default:
+                result = (D3DTexture *)g_485aec;
+                break;
+            }
+            g_4e647a = true;
+            return result;
+        }
+    }
+    if (failed)
+        g_4e647a = true;
+    return result;
+}
