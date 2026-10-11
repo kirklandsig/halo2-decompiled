@@ -135,9 +135,10 @@ retail contract. That separate probe mocks preparation, projection, and commit;
 it checks forwarding, zeroed preparation, persistent state, signed polygon
 counts, sticky success, early exits, stack balance, and saved registers.
 
-The full byte check on base `4e084bdf` preserves all 7,490 existing game matches,
-including placement copy `0x17ed70`, with no gains or losses. None of the three new bodies
-is exact: traversal is 259 compiled bytes versus 240 retail; preparation is
+After merging main `588746a4`, the full byte check preserves all 7,500 existing
+game matches,
+including placement copy `0x17ed70`, with no gains or losses. All three probe
+suites above pass on this merged image. None of the three new bodies is exact: traversal is 259 compiled bytes versus 240 retail; preparation is
 3,453 versus 3,591. Placement is 1,752 compiled bytes versus 1,787 retail.
 Both temporary stubs have been removed. No outside helper bodies or flags changed.
 
