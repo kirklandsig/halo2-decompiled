@@ -13,7 +13,7 @@
 #include "online_friends.h"
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 c_class_1473c9 *__stdcall function_2b7212(s_screen_parameters *parameters);
 void unicode_string_to_ascii(const word *source, char *destination, long maximum_count);
 

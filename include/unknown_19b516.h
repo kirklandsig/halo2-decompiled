@@ -23,7 +23,7 @@ struct s_message
 	void (__stdcall *callback)(s_message *message);
 };
 
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 
 struct s_event
 {

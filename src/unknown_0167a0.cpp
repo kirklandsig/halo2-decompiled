@@ -6,6 +6,13 @@
 #include <math.h>
 #include "effects.h"
 
+struct s_packed_shader_range
+{
+    word packed;
+    __forceinline dword count() const { return (dword)packed >> 9; }
+    __forceinline long index() const { return packed & 0x1ff; }
+};
+
 struct input_mapping_entry
 {
 	byte type;
@@ -53,8 +60,8 @@ void function_17420(byte *state, long stage, long group, long pass, long variant
 void function_1ae70(byte *state);
 void __stdcall function_19be0(byte *state, word const *range);
 void function_19ca0(byte *state, word const *range);
-void __stdcall function_1a170(byte *state, word const *range);
-void __stdcall function_1ab50(byte *state, word const *range);
+void __stdcall function_1a170(byte *state, s_packed_shader_range const *range);
+void __stdcall function_1ab50(byte *state, s_packed_shader_range const *range);
 void __stdcall function_18ee0(byte *state);
 
 PRIVATE inline byte const *material_parameters(long tag)
@@ -144,8 +151,8 @@ void __stdcall function_16b90(byte *state, long tag, long first, long second,
     function_18a90(state, (word const *)record);
     function_19be0(state, (word const *)(record + 0x124));
     function_19ca0(state, (word const *)(record + 0x122));
-    function_1a170(state, (word const *)(record + 0x11e));
-    function_1ab50(state, (word const *)(record + 0x120));
+    function_1a170(state, (s_packed_shader_range const *)(record + 0x11e));
+    function_1ab50(state, (s_packed_shader_range const *)(record + 0x120));
     function_17420(state, first, second, third, fourth);
     function_18d70((s_18d70_state *)state);
     function_18e80((s_shader_constant_state *)state);
@@ -751,12 +758,12 @@ void function_17170(byte *state, word const *range)
 dword __cdecl pack_color4f(color4f const *color);
 
 // @retail 0x176a0
-void function_176a0(byte *state, word const *range)
+void function_176a0(byte *state, s_packed_shader_range const *range)
 {
-    if (*range & 0xfe00)
+    if (range->count() > 0)
     {
-        byte const *entry = *(byte **)(*(byte **)(state + 0xc) + 0x58) + (*range & 0x1ff) * 4;
-        for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+        byte const *entry = *(byte **)(*(byte **)(state + 0xc) + 0x58) + range->index() * 4;
+        for (long i = 0; i < (long)range->count(); ++i, entry += 4)
         {
             byte const *definition = *(byte **)(state + 0xc);
             long range_index = ((word const *)*(byte **)(definition + 0x50))[entry[3]] & 0x1ff;
@@ -899,11 +906,11 @@ const s_texture_stage_parameter g_467020[7] = {
 };
 
 // @retail 0x1a170
-void __stdcall function_1a170(byte *state, word const *range)
+void __stdcall function_1a170(byte *state, s_packed_shader_range const *range)
 {
-    if ((*range & 0xfe00) == 0) return;
-    byte const *entry = *(byte **)(*(byte **)(state + 0x20) + 0x3c) + (*range & 0x1ff) * 4;
-    for (long volatile i = 0; i < (*range >> 9); ++i, entry += 4)
+    if (range->count() <= 0) return;
+    byte const *entry = *(byte **)(*(byte **)(state + 0x20) + 0x3c) + range->index() * 4;
+    for (long volatile i = 0; i < (long)range->count(); ++i, entry += 4)
     {
         s_texture_stage_parameter const *volatile parameter = &g_467020[entry[0]];
         D3DRENDERSTATETYPE volatile setting = (D3DRENDERSTATETYPE)parameter->state;
@@ -935,12 +942,12 @@ void __stdcall function_1a170(byte *state, word const *range)
 }
 
 // @retail 0x17b60
-void __stdcall function_17b60(byte *context, word const *range)
+void __stdcall function_17b60(byte *context, s_packed_shader_range const *range)
 {
-    if ((*range & 0xfe00) == 0) return;
+    if (range->count() <= 0) return;
     byte *definition = *(byte **)(context + 0xc);
-    byte const *entry = *(byte **)(definition + 0x58) + (*range & 0x1ff) * 4;
-    for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+    byte const *entry = *(byte **)(definition + 0x58) + range->index() * 4;
+    for (long i = 0; i < (long)range->count(); ++i, entry += 4)
     {
         definition = *(byte **)(context + 0xc);
         word selection = (*(word **)(definition + 0x50))[entry[3]];
@@ -986,12 +993,12 @@ void __stdcall function_17b60(byte *context, word const *range)
 }
 
 // @retail 0x1ab50
-void __stdcall function_1ab50(byte *state, word const *range)
+void __stdcall function_1ab50(byte *state, s_packed_shader_range const *range)
 {
-    if ((*range & 0xfe00) == 0)
+    if (range->count() <= 0)
         return;
-    byte *entry = *(byte **)(*(byte **)(state + 0x20) + 0x3c) + (*range & 0x1ff) * 4;
-    for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+    byte *entry = *(byte **)(*(byte **)(state + 0x20) + 0x3c) + range->index() * 4;
+    for (long i = 0; i < (long)range->count(); ++i, entry += 4)
     {
         s_texture_stage_parameter const *parameter = &g_46703c[entry[1]];
         D3DTEXTURESTAGESTATETYPE setting = (D3DTEXTURESTAGESTATETYPE)parameter->state;
@@ -1043,12 +1050,12 @@ void __stdcall function_19be0(byte *state, word const *range)
 
 
 // @retail 0x18560
-void __stdcall function_18560(byte *context, word const *range)
+void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 {
-    if ((*range & 0xfe00) == 0) return;
+    if (range->count() <= 0) return;
     byte *definition = *(byte **)(context + 0xc);
-    byte *entry = *(byte **)(definition + 0x58) + (*range & 0x1ff) * 4;
-    for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+    byte *entry = *(byte **)(definition + 0x58) + range->index() * 4;
+    for (long i = 0; i < (long)range->count(); ++i, entry += 4)
     {
         definition = *(byte **)(context + 0xc);
         volatile word selection = (*(word **)(definition + 0x50))[entry[3]];
@@ -1194,10 +1201,10 @@ void function_17420(byte *state, long stage, long group, long pass, long variant
                 {
                     word const *entry = (word const *)(*(byte **)(definition + 0x38) +
                         ((packed & 0x1ff) + variant) * 10);
-                    function_176a0(state, entry + 3);
+                    function_176a0(state, (s_packed_shader_range const *)(entry + 3));
                     function_17960(state, entry + 4);
-                    function_17b60(state, entry + 1);
-                    function_18560(state, entry + 2);
+                    function_17b60(state, (s_packed_shader_range const *)(entry + 1));
+                    function_18560(state, (s_packed_shader_range const *)(entry + 2));
                 }
             }
         }

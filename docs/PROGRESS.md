@@ -2,6 +2,15 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7490 functions match
+
+```
+matched 7490 of 11318 game functions (877610 of 2784283 bytes, 31.52%)
+```
+
+2 new matches, none lost:
+- Deep lane 3, shared root causes across this machine's ranges: 0x24b1bf and 0x25d770, from fixes to three shared declarations that also cut the surveyed functions' differences by 54 instructions.
+
 ## 2026-10-10: 7488 functions match
 
 ```
