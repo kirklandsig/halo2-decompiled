@@ -47,14 +47,15 @@ long function_cbd50(long unit_index, short weapon_index);
 // @retail 0x82b70
 void function_82b70(long object_index, long *weapons)
 {
-	if (object_index != NONE)
+	if (*(volatile long *)&object_index != NONE)
 	{
+		s_record_pool *local_2 = g_4e0300;
 		long root;
 		long index = object_index;
 		do
 		{
 			root = index;
-			index = object_get_082b70(root)->parent;
+			index = ((s_082b70_object_header *)local_2->data)[root & 0xffff].object->parent;
 		} while (index != NONE);
 		if (root != NONE)
 		{
@@ -366,7 +367,7 @@ void __fastcall function_aa260(const vector3f *linear, long object_index, long m
  const point3f *position, const vector3f *forward, const vector3f *up, const vector3f *angular);
 
 // @retail 0x82980
-void function_82980(s_player_object_motion *motion, long player_index)
+void function_82980(long player_index, s_player_object_motion *motion)
 {
  long object_index = function_a58d0(motion->object_index);
  if (object_index != NONE)

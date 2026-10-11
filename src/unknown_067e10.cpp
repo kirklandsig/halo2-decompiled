@@ -26,6 +26,10 @@ struct s_connection_quality_members
 	long count;
 };
 
+real g_45dc68 = 0.1f;
+
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x68a90
 bool function_68a90(s_68a90_entry *entry, long *quality)
 {
@@ -43,14 +47,15 @@ bool function_68a90(s_68a90_entry *entry, long *quality)
 				result = true;
 		}
 	}
+	real local_0 = g_45dc68;
 	for (dword i = 0; i < 4; i++)
 	{
 		real value;
 		switch (i)
 		{
 		case 0: value = (real)entry->values[0]; break;
-		case 1: value = (real)entry->values[1] * 0.1f; break;
-		case 2: value = (real)entry->values[2] * 0.1f * 1024.0f; break;
+		case 1: value = (real)entry->values[1] * local_0; break;
+		case 2: value = (real)entry->values[2] * local_0 * 1024.0f; break;
 		case 3: value = (real)entry->values[3]; break;
 		default: __assume(0);
 		}
@@ -61,13 +66,13 @@ bool function_68a90(s_68a90_entry *entry, long *quality)
 		{
 			if (value >= (real)best) fraction = 1.0f;
 			else if (value <= (real)worst) fraction = 0.0f;
-			else fraction = (value - (real)worst) / (real)(best - worst);
+			else { _ReadWriteBarrier(); worst = g_network_configuration.quality_ranges[i][1]; fraction = (value - (real)worst) / (real)(best - worst); }
 		}
 		else
 		{
 			if (value <= (real)best) fraction = 1.0f;
 			else if (value >= (real)worst) fraction = 0.0f;
-			else fraction = ((real)worst - value) / (real)(worst - best);
+			else { _ReadWriteBarrier(); worst = g_network_configuration.quality_ranges[i][1]; fraction = ((real)worst - value) / (real)(worst - best); }
 		}
 		real scaled = (real)(g_network_configuration.valuecdc - 1) * fraction;
 		long rounded;
@@ -83,6 +88,8 @@ bool function_68a90(s_68a90_entry *entry, long *quality)
 	*quality = minimum;
 	return result;
 }
+#pragma function(_ReadWriteBarrier)
+
 
 #define SIMULATION_WORLD ((c_class_6a600 *)g_4cf77c)
 #define NUMBEROF(array) (sizeof(array) / sizeof((array)[0]))
@@ -2013,7 +2020,7 @@ struct s_player_object_motion
 };
 struct s_z_transform_state;
 bool function_ab9f0(const s_z_transform_state *state);
-void function_82980(s_player_object_motion *motion, long player_index);
+void function_82980(long player_index, s_player_object_motion *motion);
 bool __stdcall function_84990(s_simulation_controller *controller, s_player_action *output);
 bool __stdcall function_8b660(s_simulation_world_actor *actor, long *index, s_unit_state_c6ef0 *state);
 c_simulation_view *function_6ad40(c_class_6a600 *world, const s_machine_address *address);
@@ -2060,7 +2067,7 @@ void __stdcall function_69110(c_class_6a600 *world, s_simulation_input_69110 *in
       source->mask71c &= ~bit;
       bool (*validate)(const s_z_transform_state *) = function_ab9f0;
       if (validate((const s_z_transform_state *)&motion))
-       function_82980(&motion, player->unknown04);
+       function_82980(player->unknown04, &motion);
      }
     }
    }

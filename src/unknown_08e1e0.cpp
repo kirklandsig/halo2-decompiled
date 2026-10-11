@@ -97,9 +97,10 @@ long pending_message_add_received(s_pending_message_header *header, void *data, 
 		slot = g_4d8ba8[1][i] == NONE ? i : slot;
 		i++;
 	} while (slot == NONE);
+	s_pending_message_header *local_0 = *(s_pending_message_header *volatile *)&header;
 	g_4d8c28[index].task_index = NONE;
 	g_4d8c28[index].size = size;
-	g_4d8c28[index].header = header;
+	g_4d8c28[index].header = local_0;
 	g_4d8c28[index].data = data;
 	g_4d8ba8[1][slot] = index;
 	return index;
