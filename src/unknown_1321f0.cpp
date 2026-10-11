@@ -211,6 +211,14 @@ void function_132a30(s_bit_vector_pool *data, long index, long section_index, bo
 	}
 }
 
+PRIVATE __forceinline double function_132e61(point3f const *arg_1, point3f const *arg_2)
+{
+	double local_1 = (double)arg_1->x - arg_2->x;
+	double local_2 = (double)arg_1->y - arg_2->y;
+	double local_3 = (double)arg_1->z - arg_2->z;
+	return sqrt(local_3 * local_3 + local_2 * local_2 + local_1 * local_1);
+}
+
 // @retail 0x132e60
 bool function_132e60(s_bit_vector_pool *data, point3f const *center, real radius,
 	c_entry_list *list, long index, short section, bool visible, bool *contained, bool *first, bool *second)
@@ -233,10 +241,7 @@ bool function_132e60(s_bit_vector_pool *data, point3f const *center, real radius
 		real sum = radius + data->radius;
 		if (!(sum * sum >= delta.k * delta.k + delta.i * delta.i + delta.j * delta.j))
 			return false;
-		double x = (double)data->center.x - center->x;
-		double y = (double)data->center.y - center->y;
-		double z = (double)data->center.z - center->z;
-		*contained = sqrt(z * z + y * y + x * x) + radius <= data->radius;
+		*contained = function_132e61(&data->center, center) + radius <= data->radius;
 	}
 	if (result && list && (data->flags2a60 & 1))
 	{
@@ -258,7 +263,7 @@ void function_11bed0(s_location *location, point3f const *point);
 
 // @retail 0x132b80
 long function_132b80(s_bit_vector_pool *data, long mode, s_132b80_frustum const *frusta,
-	short cluster, void *filter, point3f const *center, real radius, bool use_plane,
+	long cluster, void *filter, point3f const *center, real radius, bool use_plane,
 	real plane_offset, long count, dword flags)
 {
 	data->location.cluster_index = cluster;
@@ -293,7 +298,7 @@ long function_132b80(s_bit_vector_pool *data, long mode, s_132b80_frustum const 
 	}
 	if (data->mode == 0 && (char)data->flags2a60 < 0)
 		data->query_type = 2;
-	else if (count && (radius >= 3.0f || (data->flags2a60 & 0x100)))
+	else if (count && (!(3.0f > radius) || (data->flags2a60 & 0x100)))
 		data->query_type = 0;
 	else
 		data->query_type = 1;
@@ -583,7 +588,7 @@ bool g_4ba004;
 // @retail 0x1332f0
 dword function_1332f0(s_bit_vector_pool const *data, word flags)
 {
-	union { word field_0; byte field_1[2]; } local_1;
+	union { dword field_0; byte field_1[4]; } local_1;
 	local_1.field_0 = flags;
 	dword result = ((((local_1.field_0 >> 2) & 0x2c00) | (local_1.field_0 & 0x4000)) >> 9) | ((local_1.field_0 & 0x200) << 5);
 
@@ -773,9 +778,12 @@ void function_133390(s_bit_vector_pool const *arg_1)
 		local_6.y = (local_5->bounds[1][0] + local_5->bounds[1][1]) * 0.5f;
 		local_6.z = (local_5->bounds[2][0] + local_5->bounds[2][1]) * 0.5f;
 		volatile real local_7 = local_5->bounds[0][1] - local_6.x;
+		real local_14 = (real)((double)local_7 * local_7);
 		volatile real local_8 = local_5->bounds[1][1] - local_6.y;
+		local_14 += (double)local_8 * local_8;
 		volatile real local_9 = local_5->bounds[2][1] - local_6.z;
-		real local_10 = (real)sqrt((double)local_7 * local_7 + (double)local_8 * local_8 + (double)local_9 * local_9);
+		local_14 += (double)local_9 * local_9;
+		real local_10 = (real)sqrt(local_14);
 		real local_11 = local_6.z * g_4b9e38 + local_6.x * g_4b9e20 + local_6.y * g_4b9e2c + g_4b9e44;
 		if (!(local_11 >= 0.0f))
 			local_11 = 0.0f - local_11;
@@ -811,7 +819,15 @@ void __stdcall function_133520(s_bit_vector_pool *arg_1)
 		if (local_5->radius < 0.13f)
 			local_9 *= 1.75f;
 		real local_10 = (local_9 - 25.0f) * (1.0f / 7.0f);
-		local_10 = 0.0f > local_10 ? 0.0f : (local_10 > 1.0f ? 1.0f : local_10);
+		if (0.0f > local_10)
+			local_10 = 0.0f;
+		else
+		{
+			real local_13 = local_10;
+			local_10 = 1.0f;
+			if (!(local_13 > 1.0f))
+				local_10 = local_13;
+		}
 		byte local_11 = (byte)(long)(local_10 * 255.0f);
 		if (!(arg_1->lists[3]->shorts_b[(short)local_2] & 0x800))
 			local_6 |= 0x40;

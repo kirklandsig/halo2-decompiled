@@ -65,7 +65,7 @@ short function_2cbf0(long arg_1, byte arg_2, long arg_3, dword arg_4,
 // @retail 0x133f70
 void function_133f70(s_133f70 const *arg_1, bool arg_2)
 {
-	long local_1 = 0;
+	volatile long local_1 = 0;
 	s_133f70 const *local_12 = arg_1;
 	if (local_12->field_166 > 0)
 	{
@@ -77,7 +77,8 @@ void function_133f70(s_133f70 const *arg_1, bool arg_2)
 			s_133f70 const *local_2 = local_12;
 			if (local_13 <= 0x18 || !arg_2 || *(long *)local_12->field_48[local_1] == *(long *)local_12->field_48[0])
 			{
-				s_133f70 local_3;
+				struct { long field_0[4]; s_133f70 field_10; } local_16;
+				s_133f70 &local_3 = local_16.field_10;
 				if (local_2->field_1c4 == 1)
 				{
 					long local_4 = *(long *)*(byte *const *)((byte const *)local_2 + local_13 + 0x30);

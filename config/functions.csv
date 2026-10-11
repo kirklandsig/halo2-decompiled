@@ -304,7 +304,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0002c8a0,349,game,speed,a16 pad ebp,,,00012a50 000132d0 00013c20 00013cd0 0002fd90 00147af1 00156040 00213f10 00214940,src/unknown_02c560.cpp,todo
 0002ca00,290,game,speed,a16 pad ebp,,,00012a50 000132d0 00013c20 00013cd0 0002f800 0002fd90,src/unknown_02c560.cpp,todo
 0002cb30,133,game,speed,a16 pad,,,,src/unknown_03f2b0.cpp,matched
-0002cbc0,39,game,speed,a16 pad,,,0002cb30 00133390 00133520 00133720,src/unknown_03f2b0.cpp,todo
+0002cbc0,39,game,speed,a16 pad,,,0002cb30 00133390 00133520 00133720,src/unknown_03f2b0.cpp,matched
 0002cbf0,1033,game,speed,a16 pad,,,00016ae0 0002d000 00030290 00044940 000449e0 001332b0,src/unknown_03f2b0.cpp,todo
 0002d000,308,game,speed,a16 pad,,,000badc0 0012de70,src/unknown_03f2b0.cpp,todo
 0002d140,2652,game,speed,a16 pad,,,00016610 00016b10 0001dd60 0001ddd0 000211a0 00021360 00137bd0 00322b0c 003faae0 003fb480 00400fa0,src/unknown_01cf50.cpp,todo
