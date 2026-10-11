@@ -336,23 +336,25 @@ void function_290b90(long key)
 	}
 }
 
+/*	Detaches an actor from its perception entry and clears the
+	corresponding AI-data link on associated objects. */
 // @retail 0x28e160
 void function_28e160(long actor_index)
 {
 	s_handler_actor_view *actor = (s_handler_actor_view *)actor_get(actor_index);
 	if (actor->perception_index != NONE)
 	{
+		s_perception_datum *perception = perception_get(actor->perception_index);
 		long perception_index = actor->perception_index;
-		s_perception_datum *perception = perception_get(perception_index);
 		actor->perception_index = NONE;
 		*(long *)((byte *)perception + 4) = NONE;
-		long object_index = perception_get(perception_index)->object_index;
-		while (object_index != NONE)
+		s_ai_object_iterator iterator;
+		iterator.next_index = perception_get(perception_index)->object_index;
+
+		s_handler_object_view *object;
+		while ((object = next_object_290040(&iterator)) != NULL)
 		{
-			s_handler_object_view *object = handler_object_get(object_index);
-			s_object_ai_data *data = object_ai_data(object);
-			object_index = data ? data->next_object_index : NONE;
-			data = object_ai_data(object);
+			s_object_ai_data *data = object_ai_data_checked(object);
 			if (data)
 				data->index04 = NONE;
 		}
