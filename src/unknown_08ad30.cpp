@@ -478,7 +478,7 @@ long c_entry_table::read_creation(long a, long *handler_index_out, dword *mask_o
 					*handler_index_out = handler_index;
 					*mask_out = result;
 					blocks[*count].type = 0xc;
-					blocks[*count].size = (short)data_size;
+					blocks[*count].size = (short)*(volatile long *)&data_size;
 					blocks[*count].block = data;
 					blocks[*count + 1].type = 0xd;
 					blocks[*count + 1].size = (short)state_size;
@@ -740,7 +740,7 @@ PRIVATE __forceinline void function_8a116(s_allocator_globals *arg_0, void *arg_
 long entity_table_new_entity(c_entry_table *table, long handler_index)
 {
 	c_entry_table *local_2 = table;
-	long local_1 = handler_index;
+	long local_1 = *(volatile long *)&handler_index;
 	long result = NONE;
 	c_entry_table *const *local_0 = &table;
 	long data_size;

@@ -2020,7 +2020,7 @@ struct s_player_object_motion
 };
 struct s_z_transform_state;
 bool function_ab9f0(const s_z_transform_state *state);
-void function_82980(s_player_object_motion *motion, long player_index);
+void function_82980(long player_index, s_player_object_motion *motion);
 bool __stdcall function_84990(s_simulation_controller *controller, s_player_action *output);
 bool __stdcall function_8b660(s_simulation_world_actor *actor, long *index, s_unit_state_c6ef0 *state);
 c_simulation_view *function_6ad40(c_class_6a600 *world, const s_machine_address *address);
@@ -2067,7 +2067,7 @@ void __stdcall function_69110(c_class_6a600 *world, s_simulation_input_69110 *in
       source->mask71c &= ~bit;
       bool (*validate)(const s_z_transform_state *) = function_ab9f0;
       if (validate((const s_z_transform_state *)&motion))
-       function_82980(&motion, player->unknown04);
+       function_82980(player->unknown04, &motion);
      }
     }
    }

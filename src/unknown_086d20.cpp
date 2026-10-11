@@ -146,6 +146,7 @@ void simulation_write_relative_position(s_bitstream *stream, long bits, real con
 }
 
 /* reads a position relative to something */
+#pragma optimize("s", on)
 // @retail 0x86f50
 void simulation_read_relative_position(long bits, real *position, s_bitstream *stream)
 {
@@ -154,6 +155,8 @@ void simulation_read_relative_position(long bits, real *position, s_bitstream *s
 		quantized[i] = function_1959c0(stream, bits);
 	function_11f580(bits, position, (real const *)g_440214, quantized);
 }
+#pragma optimize("", on)
+
 
 /* the machines of a game: a mask and their addresses */
 struct s_simulation_machine_list

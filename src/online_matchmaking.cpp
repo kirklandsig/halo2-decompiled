@@ -138,11 +138,10 @@ long online_match_search(const s_range_input *input)
 // @retail 0x8fcc0
 long online_match_session_create(const s_online_match_session *session)
 {
-	long task_index = NONE;
-
+	long local_0 = NONE;
 	if (online_task_exists(7, 0xff) <= 2)
 	{
-		task_index = online_task_new_if_logged_on();
+		long task_index = online_task_new_if_logged_on();
 		s_type_9df9da *task = function_6b910(task_index);
 		if (task)
 		{
@@ -154,15 +153,14 @@ long online_match_session_create(const s_online_match_session *session)
 				task->flags = 1;
 				task->type = 7;
 				task->controller_index = NONE;
+				return task_index;
 			}
-			else
-			{
-				function_6b640(task_index);
-				return NONE;
-			}
+			function_6b640(task_index);
+			return NONE;
 		}
+		return task_index;
 	}
-	return task_index;
+	return local_0;
 }
 
 // @retail 0x8fd90

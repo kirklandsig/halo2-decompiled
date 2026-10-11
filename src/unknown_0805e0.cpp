@@ -770,9 +770,16 @@ void function_80390(void)
  unsigned __int64 local_1 = 0;
  GetSystemTimeAsFileTime((FILETIME *)&local_1);
  dword local_2 = (dword)(local_1 / 3600000000ULL);
- for (long local_3 = 0; local_3 < g_4cf978; ++local_3)
+ long local_3 = 0;
+ s_player_configuration_cache_entry *local_4 = g_4cf98c;
+ if (g_4cf978 > 0)
  {
-  if (local_2 - g_4cf98c[local_3].field_64 > 72)
-   g_4cf98c[local_3].flags |= 2;
+  do
+  {
+   if (local_2 - local_4->field_64 > 72)
+    local_4->flags |= 2;
+   local_3++;
+   local_4++;
+  } while (local_3 < g_4cf978);
  }
 }
