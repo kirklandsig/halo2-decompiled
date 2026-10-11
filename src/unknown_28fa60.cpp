@@ -50,10 +50,12 @@ __forceinline s_handler_object_view *function_28fa62(s_ai_object_iterator *arg_0
 // @retail 0x28fa60
 bool function_28fa60(long arg_0, point3f const *arg_1, s_actor_object_sample *arg_2)
 {
-	s_ai_object_iterator local_0;
-	local_0.next_index = perception_get(arg_0)->object_index;
-	real local_1 = 3.4028234663852886e+38f;
 	long local_2 = NONE;
+	s_ai_object_iterator local_0;
+	s_perception_datum *local_10 = perception_get(arg_0);
+	local_0.next_index = local_10->object_index;
+	s_perception_datum *volatile local_11 = local_10;
+	real local_1 = 3.4028234663852886e+38f;
 	s_handler_object_view *local_3;
 	while ((local_3 = function_28fa62(&local_0)) != NULL)
 	{

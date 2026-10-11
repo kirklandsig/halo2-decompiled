@@ -44,6 +44,21 @@ void function_141590(transform4x3f const *arg_0, transform4x3f *arg_1);
 bool function_14e970(long arg_0, point3f const *arg_1, long arg_2);
 void function_1874b0(long arg_0, vector3f const *arg_1);
 
+PRIVATE __forceinline real function_29ffb1(real arg_0, real arg_1, real arg_2, real arg_3, real arg_4, real arg_5)
+{
+	real local_0 = arg_0 * arg_1;
+	local_0 += arg_2 * arg_3;
+	local_0 += arg_4 * arg_5;
+	return local_0;
+}
+
+PRIVATE __forceinline word function_29ffb2(long arg_0)
+{
+	s_record_pool *local_0 = g_4e8c24;
+	byte *local_1 = local_0->data + (arg_0 & 0xffff) * 0x21c;
+	return *(word *)(local_1 + 0x28);
+}
+
 // @retail 0x29ffb0
 void __stdcall function_29ffb0(long arg_0, short arg_1, bool arg_2, bool arg_3)
 {
@@ -59,7 +74,8 @@ void __stdcall function_29ffb0(long arg_0, short arg_1, bool arg_2, bool arg_3)
 			else
 			{
 				s_object_default_placement_view *local_2 = (s_object_default_placement_view *)local_0;
-				if (TEST_FIELD_BIT(local_2->hidden))
+				s_object_default_placement_view const volatile *local_14 = local_2;
+				if (TEST_FIELD_BIT(local_14->hidden))
 				{
 					local_2->hidden = false;
 					if (!TEST_FIELD_BIT(local_2->flag8) && g_4de2f4 && *(byte *)g_4de2f4)
@@ -89,9 +105,9 @@ void __stdcall function_29ffb0(long arg_0, short arg_1, bool arg_2, bool arg_3)
 				s_29ffb0 *local_10 = (s_29ffb0 *)object_get(local_7->field_14);
 				transform4x3f local_11;
 				function_141590((transform4x3f *)((byte *)local_10 + local_10->field_116) + local_7->field_18, &local_11);
-				local_5.i = local_11.left.i * local_3.j + local_11.up.i * local_3.k + local_11.forward.i * local_3.i;
-				local_5.j = local_11.left.j * local_3.j + local_11.up.j * local_3.k + local_11.forward.j * local_3.i;
-				local_5.k = local_11.left.k * local_3.j + local_11.up.k * local_3.k + local_11.forward.k * local_3.i;
+				local_5.i = function_29ffb1(local_11.left.i, local_3.j, local_11.up.i, local_3.k, local_11.forward.i, local_3.i);
+				local_5.j = function_29ffb1(local_11.left.j, local_3.j, local_11.up.j, local_3.k, local_11.forward.j, local_3.i);
+				local_5.k = function_29ffb1(local_11.left.k, local_3.j, local_11.up.k, local_3.k, local_11.forward.k, local_3.i);
 			}
 			else
 				local_5 = local_3;
@@ -110,9 +126,9 @@ void __stdcall function_29ffb0(long arg_0, short arg_1, bool arg_2, bool arg_3)
 				}
 				if (arg_3)
 				{
-					short local_12 = *(short *)(g_4e8c24->data + (local_8 & 0xffff) * 0x21c + 0x28);
-					if (local_12 != NONE)
-						function_1874b0(local_12, &local_5);
+					word local_12 = function_29ffb2(local_8);
+					if (local_12 != (word)NONE)
+						function_1874b0((short)local_12, &local_5);
 				}
 			}
 		}

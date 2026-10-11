@@ -782,6 +782,28 @@ void function_204010(long squad_index, long other_squad_index);
 
 /* for every squad an ai index names (or the squad of a starting location),
    calls 201520 and remembers the ai index in the ai globals */
+PRIVATE __forceinline s_squad_datum *function_273481(s_ai_squad_iterator *arg_0)
+{
+	s_squad_datum *local_0 = NULL;
+	if (arg_0->squad_group_index == NONE)
+	{
+		long const volatile *local_1 = &arg_0->next_squad_index;
+		long local_2 = *local_1;
+		if (local_2 != NONE)
+		{
+			arg_0->squad_index = local_2;
+			arg_0->next_squad_index = NONE;
+			local_0 = squad_get(arg_0->squad_index);
+		}
+	}
+	else
+	{
+		local_0 = function_204e10(&arg_0->group_iterator);
+		arg_0->squad_index = arg_0->group_iterator.squad_index;
+	}
+	return local_0;
+}
+
 // @retail 0x273480
 void function_273480(long ai_index)
 {
@@ -792,7 +814,7 @@ void function_273480(long ai_index)
 		{
 			s_ai_squad_iterator iterator;
 			ai_squad_iterator_new_inline(&iterator, ai_index);
-			while (ai_squad_iterator_next(&iterator))
+			while (function_273481(&iterator))
 				function_201520(NONE, (word)iterator.squad_index, NONE, 0, 1);
 			g_4f55d0->unknown364 = ai_index;
 		}
@@ -1431,6 +1453,16 @@ PRIVATE int __cdecl vehicle_load_candidate_compare(void const *a, void const *b)
 	return 0;
 }
 
+PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_1, s_unit_request *arg_2)
+{
+	arg_2->type = 0x1c;
+	arg_2->type1c.object_index = arg_1->object_index;
+	arg_2->type1c.seat_index = arg_1->seat_index;
+	arg_2->type1c.unknowna = true;
+	arg_2->type1c.unknownb = false;
+	return function_e6900(arg_0, arg_2);
+}
+
 /* puts the actors an ai index names into the free seats of a vehicle (or
    makes them walk to them), nearest first, best seat first */
 // @retail 0x274a50
@@ -1507,8 +1539,8 @@ void function_274a50(long ai_index, long vehicle_index, long filter_range, bool 
 
 				if (best_seat_index != NONE)
 				{
-					s_slot_object_view *unit = object_get(candidate_actor->unit_index);
 					s_object_seat *seat = &seats[best_seat_index];
+					s_slot_object_view *unit = object_get(candidate_actor->unit_index);
 					bool success;
 
 					if (unit->parent_index != NONE && unit->unknown1fc != NONE && unit->parent_index != seat->object_index)
@@ -1516,12 +1548,7 @@ void function_274a50(long ai_index, long vehicle_index, long filter_range, bool 
 
 					if (load)
 					{
-						request.type = 0x1c;
-						request.type1c.object_index = seat->object_index;
-						request.type1c.seat_index = seat->seat_index;
-						request.type1c.unknowna = true;
-						request.type1c.unknownb = false;
-						success = function_e6900(candidate_actor->unit_index, &request);
+						success = function_274a51(candidate_actor->unit_index, seat, &request);
 					}
 					else
 					{
@@ -2586,11 +2613,12 @@ void function_2769d0(long point_reference)
 		s_scenario_scripting_view *scenario = (s_scenario_scripting_view *)g_4e0350;
 		if (scenario->scripting_data_count > 0)
 		{
+			s_scenario_scripting_data *local_0 = scenario->scripting_data;
 			s_actor_datum *actor = actor_datum_get(g_50240c);
 			short point_set_index = (short)(point_reference >> 16);
-			if (point_set_index >= 0 && point_set_index < scenario->scripting_data->point_set_count)
+			if (point_set_index >= 0 && point_set_index < local_0->point_set_count)
 			{
-				s_scenario_point_set *point_set = &scenario->scripting_data->point_sets[point_set_index];
+				s_scenario_point_set *point_set = &local_0->point_sets[point_set_index];
 				volatile real best_distance = 3.4028235e38f;
 				short best_index = NONE;
 				for (short point_index = 0; point_index < point_set->point_count; point_index++)

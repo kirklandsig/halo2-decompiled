@@ -362,6 +362,21 @@ inline void flock_move_point(point3f *point, vector3f const *axis, real distance
 
 real function_30bf0(vector3f *vector);
 
+PRIVATE __forceinline real function_293d31(vector3f const *arg_0, vector3f const *arg_1)
+{
+	real local_0 = arg_0->k * arg_1->k;
+	local_0 += arg_0->j * arg_1->j;
+	local_0 += arg_0->i * arg_1->i;
+	return local_0;
+}
+
+struct s_293d32
+{
+	real field_0;
+	real field_4;
+	long field_8;
+};
+
 /* steers a flock member away from its volume's faces, optionally moving
    an outside point back into the volume */
 // @retail 0x293d30
@@ -369,14 +384,15 @@ void function_293d30(s_scenario_flock const *definition, point3f *point, real *s
 {
 	/* Taking the address preserves retail's stack-passed horizontal flag. */
 	bool const *horizontal_reference = &horizontal_only;
-	real boundary_distance = 1.0f;
+	s_293d32 local_0;
+	local_0.field_4 = 1.0f;
 	s_scenario_flock_volumes_view *scenario = (s_scenario_flock_volumes_view *)g_4e0350;
 	bool clamp_position = (definition->flags & 1) != 0;
 	*strength = 0.0f;
 	*direction = *g_4687a4;
 	*moved = false;
 	if (definition->boundary_distance > 0.0f)
-		boundary_distance = definition->boundary_distance;
+		local_0.field_4 = definition->boundary_distance;
 	if (definition->trigger_volume_index >= 0 && definition->trigger_volume_index < scenario->trigger_volume_count)
 	{
 		transform4x3f matrix;
@@ -384,41 +400,41 @@ void function_293d30(s_scenario_flock const *definition, point3f *point, real *s
 		{
 			s_flock_trigger_volume *volume = &((s_scenario_flock_volumes_view *)g_4e0350)->trigger_volumes[definition->trigger_volume_index];
 			real const *extents = volume->extents;
-			real maximum_strength = 0.0f;
+			local_0.field_0 = 0.0f;
 			vector3f relative;
 			vector3d_from_points3d(&matrix.position, point, &relative);
 			long axis_count = *horizontal_reference ? 2 : 3;
-			for (short i = 0; i < axis_count; i++)
+			for (local_0.field_8 = 0; (short)local_0.field_8 < axis_count; local_0.field_8++)
 			{
-				vector3f const *axis = &(&matrix.forward)[i];
-				real distance = axis->k * relative.k + axis->j * relative.j + axis->i * relative.i;
-				if (boundary_distance >= distance)
+				vector3f const *axis = &(&matrix.forward)[(short)local_0.field_8];
+				real distance = function_293d31(axis, &relative);
+				if (local_0.field_4 >= distance)
 				{
-					real value = flock_boundary_clip(boundary_distance - distance, boundary_distance) / boundary_distance * 3.0f;
+					real value = flock_boundary_clip(local_0.field_4 - distance, local_0.field_4) / local_0.field_4 * 3.0f;
 					flock_add_direction(direction, axis, value);
-					if (value > maximum_strength)
-						maximum_strength = value;
+					if (value > local_0.field_0)
+						local_0.field_0 = value;
 					if (clamp_position && distance < 0.0f)
 					{
 						flock_move_point(point, axis, 0.0f - distance);
 						*moved = true;
 					}
 				}
-				if (distance >= extents[i] - boundary_distance)
+				if (distance >= extents[(short)local_0.field_8] - local_0.field_4)
 				{
-					real value = (1.0f - flock_boundary_clip(extents[i] - distance, boundary_distance) / boundary_distance) * 3.0f;
+					real value = (1.0f - flock_boundary_clip(extents[(short)local_0.field_8] - distance, local_0.field_4) / local_0.field_4) * 3.0f;
 					flock_add_direction(direction, axis, 0.0f - value);
-					if (value > maximum_strength)
-						maximum_strength = value;
-					if (clamp_position && distance > extents[i])
+					if (value > local_0.field_0)
+						local_0.field_0 = value;
+					if (clamp_position && distance > extents[(short)local_0.field_8])
 					{
-						flock_move_point(point, axis, extents[i] - distance);
+						flock_move_point(point, axis, extents[(short)local_0.field_8] - distance);
 						*moved = true;
 					}
 				}
 			}
 			function_30bf0(direction);
-			*strength = maximum_strength;
+			*strength = local_0.field_0;
 		}
 	}
 }
@@ -508,12 +524,24 @@ void function_293a20(long flock_index)
 	}
 }
 
+PRIVATE __forceinline s_flock *function_295321(s_active_flock_iterator *arg_0, bool arg_1)
+{
+	s_flock *local_0 = NULL;
+	if (arg_1)
+	{
+		local_0 = (s_flock *)data_iterator_next_inlined(&arg_0->iterator);
+		arg_0->flock_index = arg_0->iterator.datum_index;
+	}
+	arg_0->flock = local_0;
+	return local_0;
+}
+
 // @retail 0x295320
 void function_295320(point3f const *point)
 {
 	s_active_flock_iterator iterator;
 	flock_iterator_begin(&iterator, g_4f55d0->active);
-	while (flock_iterator_next(&iterator, g_4f55d0->active))
+	while (function_295321(&iterator, g_4f55d0->active))
 	{
 		if (iterator.flock->unknown0c && iterator.flock->definition_index >= 0 &&
 			iterator.flock->definition_index < ((s_scenario_flocks_view *)g_4e0350)->flock_count)
