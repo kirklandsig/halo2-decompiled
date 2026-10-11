@@ -25,8 +25,9 @@ needs them.
 
 ## Implementation follow-up
 
-`src/unknown_052020.cpp` now contains source for this renderer and its copy
-callback. The inventory/status statements in the original analysis above
+`src/unknown_01cf50.cpp` now contains this renderer beside the related
+rendering code; `src/unknown_052020.cpp` contains its copy callback. The
+inventory/status statements in the original analysis above
 record the state when that analysis was written. The callback matches all
 24 retail bytes with its real registration caller present; the renderer
 remains unmatched (the current local build is 3,360 bytes, versus 3,316 in
@@ -42,8 +43,11 @@ must be rechecked after changes.
 
 The initial descriptor selection is expanded in this renderer, as in retail;
 the final draw sequence calls `function_1ccb0(36)`. Both use the existing
-descriptor table, whose definition now has external linkage so the pointer
-identity is preserved across source files. The optional-record alpha path
+private descriptor table in the same translation unit, preserving pointer
+identity without exporting the table. Grouping this renderer with its related
+code also avoids adding another Direct3D-header translation unit, which
+changed the matched player-count parser under LTCG in an isolated reproducer.
+The optional-record alpha path
 keeps the reciprocal as a float, multiplies by 255 on x87, then uses `FISTP`;
 rounding that product to float first changes some integer results.
 
