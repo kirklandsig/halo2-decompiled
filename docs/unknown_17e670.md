@@ -8,12 +8,12 @@ the range are dependencies, not claimed for edits.
 | --- | ---: | --- |
 | `0x17e670` | 1,787 | Placement entry called by effect and decal-related source |
 | `0x17ee20` | 240 | Iterates a decal chain, preparing and submitting projection work |
-| `0x17ef10` | 3,591 | Preparation routine called by `0x17ee20`; detailed recovery pending |
+| `0x17ef10` | 3,591 | Preparation body recovered; behavior checked, byte matching pending |
 
 The intervening placement-copy helper `0x17ed70` already has matching source
 in `src/unknown_17d9a0.cpp`; preserve it. The three missing bodies total 5,618
-retail bytes. A first traversal implementation is present; preparation
-is still an explicit stub. No new exact matches are claimed.
+retail bytes. Traversal and preparation implementations are present. The
+placement entry remains stubbed. No new exact matches are claimed.
 
 ## Independently observed flow at `0x17ee20`
 
@@ -60,24 +60,60 @@ uses float `+4` for radius interpolation, float `+0x14` as an angle passed to
 sine/cosine, and dword `+0x18` for a sequence choice. The existing commit helper
 uses floats `+8`, `+0xc`, and `+0x10` and updates the first byte. These accesses
 explain the full 28-byte allocation despite the commit helper's shorter type.
-The traversal currently leaves these layouts opaque until preparation recovery.
+The traversal and preparation now share explicit layouts for these fields.
+
+## Preparation behavior
+
+The preparation routine transforms the placement point for its nearby-decal
+check, but uses the original point when constructing the projection matrix.
+When the definition's nearby limit is nonzero and the final option is zero,
+it scans 24 records at decal globals `+0x380c`, each `0x2c` bytes. It rejects
+placements that reach the limit of overlapping, nonexpired records with the
+same tag. Otherwise it records the placement in the first empty or expired
+slot, or selects the oldest frame value. A zero lifetime keeps expiry zero.
+At the exact expiry time, a record is neither counted as active nor immediately
+reused: counting uses `expiry > now`, replacement uses `now > expiry`.
+
+Orientation follows the definition flags and incoming direction. It either
+uses a persistent random angle, projects the direction against the plane, or
+selects from eight directions in the plane basis. Both resulting tangent vectors
+are normalized. The random angle retains intermediate precision through both
+multiplications before its single-precision store, as retail does; rounding the
+random fraction first changed matrix bytes in the initial candidate.
+
+Preparation then selects the sequence and first frame, samples the radius,
+obtains sprite bounds or builds rectangular fallback bounds, and optionally
+checks texture availability. A failed lookup and failed fallback reject the
+placement. Successful preparation calls the existing quad helper and initializes
+the orientation bounds. Persistent random choices are reused when the state
+flag is set. The matrix's scale field is not written here; it retains its
+incoming value, including the zero supplied by the traversal's cleared buffer.
 
 ## Scope and validation
 
-The first compiled traversal passes the same 216 helper-boundary cases as
-retail: argument forwarding, preparation-buffer clearing, persistent state,
-signed polygon counts, sticky success, early exits, stack balance, and saved
-registers. Preparation, projection, and commit are mocked in both runs; their
-implementations, graphics output, and gameplay are outside this probe's scope.
+The compiled preparation passes 2,048 differential cases against retail,
+comparing return value, the entire synthetic input/output memory region,
+random state, recent-placement cache, and helper-call order. The stronger run
+executes the actual plane-basis, sprite-bound and quad-preparation helpers on
+both sides. Texture lookup and fallback are mocked in this run. Coverage
+includes 1,221 successful preparations, 827 failures, 163 plane-basis calls,
+639 sprite-bound calls, 528 texture lookups, 263 fallbacks, and 702 cache updates.
+Inputs vary flags, retained random state, transformed points, normals, radius,
+sequence counts and selection, sprite type, aspect handling, cache expiry,
+texture residency, and lookup/fallback results. A separate run with geometry
+helpers also mocked passes the same 2,048 cases. Neither establishes GPU,
+streamed texture, or gameplay behavior.
+
+The compiled traversal still passes its 216 helper-boundary cases against the
+retail contract. That separate probe mocks preparation, projection, and commit;
+it checks forwarding, zeroed preparation, persistent state, signed polygon
+counts, sticky success, early exits, stack balance, and saved registers.
 
 The full byte check on base `4e084bdf` preserves all 7,490 existing game matches,
-including placement copy `0x17ed70`, with no gains or losses. The traversal is
-not an exact match: 260 compiled bytes against retail's 240. Preparation remains
-an explicit `@stub` in `src/stubs/lane_r.cpp`, built without LTCG as required
-by the repository. Its calling convention therefore differs from the retail
-internal helper. Further byte tuning should wait for preparation recovery.
-The placement entry `0x17e670` also remains stubbed. No outside helper bodies
-or flags were changed.
+including placement copy `0x17ed70`, with no gains or losses. Neither new body
+is exact: traversal is 259 compiled bytes versus 240 retail; preparation is
+3,453 versus 3,591. Preparation's temporary stub has been removed. The placement
+entry `0x17e670` remains stubbed. No outside helper bodies or flags changed.
 
 Sources: independent disassembly of the project's SHA-256-pinned retail
 executable and the existing CC0 repository source and inventory. No leaked
