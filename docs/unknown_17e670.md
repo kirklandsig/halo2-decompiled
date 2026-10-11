@@ -146,6 +146,48 @@ dwords. The remaining traversal differences include register/instruction order
 and the existing projection helper's stack argument convention; equal extents
 do not mean an exact or near match. Both temporary stubs have been removed. No outside helper bodies or flags changed.
 
+## Integration finding: neighboring faces
+
+A stronger integration probe executes the actual traversal, preparation,
+projection (`0x17fd20`), face clipping (`0x17dd80`) and their math helpers on
+synthetic mesh data. Final commit is mocked; texture availability is bypassed
+by the caller flag. The single-face sweep passes 324 scenarios, producing
+288 polygons and 1,280 vertices identically on both sides. This is generated
+geometry evidence, not GPU or gameplay verification.
+
+Adding a second coplanar face exposes an existing dependency discrepancy. With
+a unit square split at x=0, a decal centered at the origin, radius 0.25, flags
+zero, and one chain link, retail emits two polygons/eight vertices while the
+compiled image emits one polygon/four vertices. The first polygon, preparation
+buffer and random state agree. The missing work is traversal onto the neighboring
+face, not preparation of the initial decal.
+
+At the calls from retail `0x17e087` and `0x17e3ad` to `0x11e5e0`, EAX contains
+the decal center, ECX the edge start, and EDX the edge direction. The predicate
+subtracts EAX's point from ECX's point. The compiled predicate performs the same
+subtraction, but the existing `decal_add_adjacent_17dd80` call supplies those two
+points in reverse. Its generated stand-in confirms the first declared point
+argument enters ECX and the second EAX. For an edge from (0,1,0) to (0,-1,0)
+around a sphere at the origin, this reverses the sign of the direction/delta dot
+product and incorrectly rejects the intersection.
+
+An explicitly labeled emulator diagnostic swaps only those two compiled
+register arguments at calls originating in `0x17dd80`. With that intervention,
+all 648 single/two-face scenarios agree: 720 polygons and 3,208 vertices across
+1,296 commit boundaries. This is evidence for the proposed correction, **not a
+passing test of the current source**. The unmodified image still fails the
+neighboring-face case. Bent surfaces and the secondary-face grouping path have
+not been established by this probe.
+
+No dependency source was changed. The predicate is itself unmatched, and
+[the false-match rule](DECOMPILING.md#near-functions-the-permuter) says:
+“Never keep an argument swap at a call to a function that doesn't match, unless
+you change that function's parameters at its definition and every call site the
+same way.” A repair therefore needs the predicate's declaration/caller audit
+and coordination for the additional addresses; a local swap must not be
+published as a byte-matching improvement. This finding does not invalidate the
+narrower tests above, but limits the end-to-end decal claim.
+
 Sources: independent disassembly of the project's SHA-256-pinned retail
 executable and the existing CC0 repository source and inventory. No leaked
 symbols or proprietary SDK implementation is used. AI assistance: Codex.
