@@ -30,7 +30,7 @@ rendering code; `src/unknown_052020.cpp` contains its copy callback. The
 inventory/status statements in the original analysis above
 record the state when that analysis was written. The callback matches all
 24 retail bytes with its real registration caller present; the renderer
-remains unmatched (the current local build is 3,360 bytes, versus 3,316 in
+remains unmatched (the current local build is 3,368 bytes, versus 3,316 in
 retail). Equal behavior in isolated tests does not establish an exact match.
 
 Local instruction comparisons cover shader construction, viewport/constants
@@ -50,6 +50,25 @@ changed the matched player-count parser under LTCG in an isolated reproducer.
 The optional-record alpha path
 keeps the reciprocal as a float, multiplies by 255 on x87, then uses `FISTP`;
 rounding that product to float first changes some integer results.
+
+## Bitmap fallback dependency
+
+The bitmap loader at `0x12310` calls `0x12ce00` when its first cache lookup
+fails. That fallback now has source in `src/unknown_12c0d0.cpp`, replacing its
+empty stub. It chooses shared, requested, resident, or default textures and
+propagates cache-failure state. Its level-selection bias is accumulated in
+retail's float-operation order; the early shared-texture comparison uses the
+original bias instead.
+
+The fallback remains unmatched (718 compiled bytes versus 658 retail), as
+does `0x12310` (78 versus 77). Replacing the stub enables three existing
+caller matches at `0x42b20`, `0x23625d`, and `0x2b1179`, with no previous
+matches lost in the full check against the prior contribution build.
+A 4,096-case actual-instruction comparison covers the fallback's return
+paths, cache timestamps, failure state, arguments and stack cleanup. Format
+and level helpers execute their real bodies; the shared-header builder and
+cache loader are explicit stand-ins. This does not validate loading,
+allocation, or GPU behavior.
 
 ## Boundary
 
