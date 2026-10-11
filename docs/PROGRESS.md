@@ -2,6 +2,15 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7487 functions match
+
+```
+matched 7487 of 11318 game functions (877360 of 2784283 bytes, 31.51%)
+```
+
+6 new matches, none lost:
+- Deep lane 2, helpers first in 0x160000 to 0x16ffff: the helpers 0x16c4f0 and 0x16c5f0, and their callers 0x2a89b0, 0x2a8a00, 0x2a8c70 and 0x2a8cc0, unchanged.
+
 ## 2026-10-10: 7481 functions match
 
 ```
