@@ -20,7 +20,7 @@
    checks before a squad is made */
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 void function_14887e(s_screen_settings_54dc6c *settings);
 void function_1487c3(long controller_index, long task_index, long callback, long value, long context);
 class c_online_task_screen;

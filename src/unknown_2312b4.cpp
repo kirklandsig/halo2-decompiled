@@ -16,7 +16,7 @@
 #pragma intrinsic(memcpy)
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 void function_236299(long sound);
 void function_148523();
 void voice_initialize_menu_pool(void);

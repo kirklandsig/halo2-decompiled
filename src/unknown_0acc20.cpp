@@ -438,10 +438,8 @@ bool __stdcall time_synchronize_decode(s_bitstream *stream, long unknown, s_time
 // @retail 0xada90
 bool __stdcall time_synchronize_clear(s_bitstream *stream, long unknown, s_time_synchronize_message *message)
 {
-	message->unknown08 = NONE;
-	message->unknown0c = NONE;
-	message->unknown10 = NONE;
-	message->unknown14 = NONE;
+	memset(&message->unknown08, 0xff, 8);
+	memset(&message->unknown10, 0xff, 8);
 	return true;
 }
 

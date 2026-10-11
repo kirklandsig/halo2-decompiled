@@ -43,7 +43,7 @@ bool function_10a660(long volatile object_index, long animation_name, short fram
 	if (object_index != NONE && animation_graph_index != NONE && animation_name)
 	{
 		s_object_10a660 *object = ((s_object_header_10a660 *)g_4e0300->data)[object_index & 0xffff].object;
-		if (object->animation_state_offset != NONE)
+		if (*(short const volatile *)&object->animation_state_offset != NONE)
 		{
 			s_object_definition_10a660 *definition = (s_object_definition_10a660 *)g_4e3b44[object->tag_index & 0xffff].bytes;
 			s_animation_state *state = (s_animation_state *)((byte *)object + object->animation_state_offset);
@@ -62,7 +62,7 @@ bool function_10a660(long volatile object_index, long animation_name, short fram
 					if (state->play(animation_id, channel_flags))
 					{
 						function_1ccb80(&state->channels[0], (real)frame * (1.0f / 30.0f));
-						object->flags_12c &= ~1;
+						*(dword volatile *)&object->flags_12c &= ~1;
 						function_b7290(object_index);
 						object->attached_object_index = attached_object_index;
 						if (attached_object_index != NONE)

@@ -453,9 +453,6 @@ extern real g_5476c4;
    (26bda0), g_4e8c24 (the players; 0699a0, 072c70, 096e90) and the arrays of
    03d380 */
 extern s_record_pool *g_4cf78c;
-extern s_record_pool *g_502418;
-extern s_record_pool *g_50241c;
-
 /* g_4e8c24: the players (elements of 0x21c bytes) */
 extern s_record_pool *g_4e8c24;
 
@@ -1281,5 +1278,14 @@ struct s_voice_routing
 };
 
 extern s_voice_routing g_527104;
+
+struct s_prop_pool_storage
+{
+	s_record_pool *field_2418;
+	s_record_pool *field_241c;
+};
+extern s_prop_pool_storage g_prop_pool_storage;
+#define g_502418 (g_prop_pool_storage.field_2418)
+#define g_50241c (g_prop_pool_storage.field_241c)
 
 #endif

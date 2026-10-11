@@ -29,7 +29,9 @@ struct s_object_definition_0b9d70
 void function_b9d70(long object_index, bool flag)
 {
 	s_object_0b9d70 *object = ((s_object_header_0b9d70 *)g_4e0300->data)[object_index & 0xffff].object;
-	if (flag || (((s_object_definition_0b9d70 *)g_4e3b44[object->definition_index & 0xffff].bytes)->flags & 1))
+	if (flag)
+		object->flags = object->flags | 0x10000;
+	else if ((((s_object_definition_0b9d70 *)g_4e3b44[object->definition_index & 0xffff].bytes)->flags & 1))
 		object->flags = object->flags | 0x10000;
 	else
 		object->flags = object->flags & ~0x10000;

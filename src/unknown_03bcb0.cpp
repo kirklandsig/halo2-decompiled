@@ -739,7 +739,7 @@ struct s_41490_record
 };
 
 // @retail 0x41490
-void function_41490(long tag, short group, short kind, real distance, t_record_fill fill,
+void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
 {
     byte *definition = g_4e3b44[tag & 0xffff].bytes;

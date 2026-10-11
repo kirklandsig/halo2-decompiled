@@ -236,7 +236,7 @@ hkMemory *function_146e30(void)
 {
 	if (!g_4798a0)
 	{
-		long size = 0x800000;
+		long volatile size = 0x800000;
 		byte *block;
 		long adjustment;
 
@@ -275,7 +275,7 @@ hkMemory *function_146e30(void)
 			}
 			g_47988c = (long)block;
 		}
-		while (!block && (size >>= 1) >= 0x100000);
+		while (!block && ((size = size / 2) >= 0x100000));
 
 		adjustment = (((dword)block + 0xf) & ~0xf) - (dword)block;
 		g_4798a0 = new ((byte *)g_479888 + 0x105440) c_havok_fixed_memory(block, size - adjustment);

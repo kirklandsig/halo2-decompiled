@@ -18,7 +18,7 @@ struct s_message_view
 };
 
 // @retail 0x149f49
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e)
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e)
 {
 	s_message_view *view = (s_message_view *)message;
 

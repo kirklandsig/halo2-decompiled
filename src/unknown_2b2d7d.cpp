@@ -12,7 +12,7 @@
 #include "unknown_2312b4.h"
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 void function_238c21(long controller, long type, word *name, long maximum_count);
 struct s_friend;
 void friend_get_online_friend(s_friend const *player, XONLINE_FRIEND *result);

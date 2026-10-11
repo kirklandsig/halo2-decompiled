@@ -21,8 +21,6 @@ vector3f *g_4687b0;
 c_data_allocator *g_46875c;
 real g_5476c4;
 s_record_pool *g_4cf78c;
-s_record_pool *g_502418;
-s_record_pool *g_50241c;
 long g_4eca60[8];
 s_record_pool *g_4e8c24;
 s_mp_globals *g_4e9ae8;
@@ -88,3 +86,5 @@ s_record_pool *g_51e9b8;
 long *g_51e9a0;
 bool g_47f058;
 long g_47ff38 = NONE;
+
+s_prop_pool_storage g_prop_pool_storage;

@@ -410,9 +410,10 @@ struct s_168b40_result
 
 static inline vector3f *transform4x3f_apply_normal(transform4x3f const *matrix, vector3f const *vector, vector3f *out)
 {
-	out->i = matrix->up.i * vector->k + matrix->left.i * vector->j + matrix->forward.i * vector->i;
-	out->j = matrix->up.j * vector->k + matrix->left.j * vector->j + matrix->forward.j * vector->i;
-	out->k = matrix->up.k * vector->k + matrix->left.k * vector->j + matrix->forward.k * vector->i;
+	real x = vector->i, y = vector->j, z = vector->k;
+	out->i = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x;
+	out->j = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x;
+	out->k = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x;
 	return out;
 }
 
@@ -802,11 +803,12 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 	vector3f const * *vector_reference = &vector;
 	point3f const * *point_reference = &point;
 	long *flags_reference = &flags;
-	s_1697c0_bsp *bsp = (s_1697c0_bsp *)g_4e0348;
+	s_1697c0_bsp *bsp;
 	bool result = false;
 	short bsp_index;
 	dword test_flags;
 	s_collision_bsp_test_vector_result bsp_result;
+	bsp = (s_1697c0_bsp *)g_4e0348;
 
 	if (!((*flags_reference) & 0x1800000))
 	{
@@ -1272,6 +1274,7 @@ void function_16a0a0(long instance_index, dword flags, point3f const *point, rea
 bool function_1691a0(long instance_index, dword flags, dword test_flags, point3f const *point,
     vector3f const *vector, s_collision_result_1697c0 *collision)
 {
+    bool found = false;
     s_168d60_bsp_view *bsp = (s_168d60_bsp_view *)g_4e0348;
     s_168d60_instance *instance = &bsp->instances[instance_index];
     byte *section = bsp->sections + instance->section_index * 0xc8;
@@ -1290,16 +1293,17 @@ bool function_1691a0(long instance_index, dword flags, dword test_flags, point3f
         {
             collision->type = 3;
             short surface_index = hit.surface_index;
-            collision->material_type = surface_index != NONE ?
+            short material = surface_index != NONE ?
                 ((s_1697c0_bsp *)g_4e0348)->materials[surface_index].material_type : g_47d8e0;
+            collision->material_type = material;
             collision->instance_index = NONE;
             collision->unknown3c = instance_index;
             collision->unknown40 = NONE;
             function_168b40((s_168b40_result *)collision, (s_168b40_surface const *)&hit, &instance->matrix);
-            return true;
+            found = true;
         }
     }
-    return false;
+    return found;
 }
 
 void __stdcall function_df5f0(long object_index, point3f *center, real *height, real *radius);

@@ -608,7 +608,7 @@ short __stdcall function_bb050(long mask, dword type_mask, void const *location,
     short volatile count = 0;
     if (!type_mask) type_mask = 0xffffffff;
     if (!mask) mask = NONE;
-    short cluster = *(short *)((byte const *)location + 4);
+    volatile short cluster = *(short *)((byte const *)location + 4);
     short cluster_count = 0;
     short clusters[0x200];
     if (cluster != NONE)

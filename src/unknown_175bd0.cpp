@@ -1199,14 +1199,21 @@ __declspec(noinline) void function_17aec0(s_effect_datum *effect, transform4x3f 
 // @retail 0x17aec0
 void function_17aec0(s_effect_datum *effect, transform4x3f *matrix, short node_index)
 {
-	if (node_index != NONE && (node_index & 0x8000) && effect->unknown58 != NONE)
-	{
-		function_1664da(effect->unknown58, effect->object_index, node_index & 0x7fff, matrix);
-	}
-	else
-	{
-		*matrix = *effect_object_node_matrix(effect->object_index, node_index == NONE ? NONE : (short)(node_index & 0x7fff));
-	}
+    long index;
+    if (node_index != NONE)
+    {
+        if ((node_index & 0x8000) && effect->unknown58 != NONE)
+        {
+            function_1664da(effect->unknown58, effect->object_index, node_index & 0x7fff, matrix);
+            return;
+        }
+        index = node_index & 0x7fff;
+    }
+    else
+        index = NONE;
+    s_effect_object *object = OBJECT_GET(effect->object_index);
+    transform4x3f const *nodes = (transform4x3f const *)((byte *)object + object->nodes_offset);
+    *matrix = nodes[(short)index];
 }
 
 // @retail 0x17af30
@@ -1312,7 +1319,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters)
 			else
 			{
 				effect->object_index = NONE;
-				effect->velocity = parameters->velocity;
+				effect->velocity.i = parameters->velocity.i;
+				effect->velocity.j = parameters->velocity.j;
+				effect->velocity.k = parameters->velocity.k;
 			}
 			if (TEST_FIELD_BIT(parameters->flag1))
 			{
@@ -1335,14 +1344,18 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters)
 				function_1789f0(effect);
 			if (TEST_FIELD_BIT(definition->flag3) || TEST_FIELD_BIT(definition->flag4))
 				function_17b5d0(effect, parameters->object_index, parameters, true);
-			if (parameters->unknown50)
+			long const *scales = parameters->unknown50;
+			if (scales)
 			{
-				*(long *)&effect->unknown74 = parameters->unknown50[0];
-				*(long *)&effect->unknown78 = parameters->unknown50[1];
+				*(long *)&effect->unknown74 = scales[0];
+				*(long *)&effect->unknown78 = scales[1];
 			}
 			function_177310(effect_index);
 			g_510c78 = parameters->source;
-			function_179850(effect_index, (TEST_FIELD_BIT(definition->flag1) && !TEST_FIELD_BIT(effect->flag1) && !TEST_FIELD_BIT(effect->flag9)) ? 1.0f : 0.0f);
+			if (TEST_FIELD_BIT(definition->flag1) && !TEST_FIELD_BIT(effect->flag1) && !TEST_FIELD_BIT(effect->flag9))
+				function_179850(effect_index, 1.0f);
+			else
+				function_179850(effect_index, 0.0f);
 			g_510c78 = 0;
 			if (!record_pool_lookup(g_4ea93c, effect_index))
 				return NONE;
