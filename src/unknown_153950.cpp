@@ -494,7 +494,7 @@ struct s_object;
 s_object *function_badc0(long index, dword mask);
 point3f *function_b9dd0(long index, point3f *point);
 void function_caf60(long index, point3f *point);
-s_player_state *function_16f3a0(long index);
+__declspec(noinline) s_player_state *function_16f3a0(long index);
 long function_189fe0(s_sound_request const *request, long tag_index);
 void rumble_player_play_effect(long player_index, long definition_index, long effect_index, real scale);
 void function_225df0(long tag_index, long entry_index);

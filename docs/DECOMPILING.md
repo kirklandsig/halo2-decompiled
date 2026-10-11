@@ -184,6 +184,26 @@ Read the diff before you keep it: a changed local type, a swapped argument or
 a `volatile` access can change what the function means, and a variant that
 matches by accident still has to read like Bungie's code.
 
+For near misses, the fast search is usually the better choice:
+
+    python tools/permute.py <va> --fast --anneal --jobs 1 --time-limit 600 --write-only-match
+
+- `--fast` scores each variant on a reduced image (the function, its callees
+  and what it needs), which takes seconds instead of a full build. Every
+  improvement is confirmed by a full build.
+- `--anneal` lets the search accept some worse variants and restart, so it
+  can get past a local minimum.
+- `--write-only-match` writes a variant back only when a full build finds an
+  exact match and every decompiled function it calls matches too. Any other
+  match is reported for you to check by hand.
+
+**False matches.** Under LTCG a function that doesn't match yet takes its
+argument registers from its own body. So swapping the arguments at a call to
+such a function can reproduce retail's bytes while passing the wrong values,
+and the checker counts it as a gain. Never keep an argument swap at a call to
+a function that doesn't match, unless you change that function's parameters at
+its definition and every call site the same way.
+
 ## What a match means
 
 A match compares the bytes, and for each address field only its kind: whether

@@ -230,18 +230,21 @@ short_rect_pair g_485a8a;
 void function_17000(byte *context, word const *range)
 {
 	word const *const *range_reference = &range;
-	dword *banks[2] = { (dword *)(context + 0x1530), (dword *)(context + 0x1630) };
-	dword *masks[2] = { (dword *)(context + 0x1730), (dword *)(context + 0x1734) };
+	struct { dword *banks[2]; dword *masks[2]; } tables_r16 = {
+        { (dword *)(context + 0x1530), (dword *)(context + 0x1630) },
+        { (dword *)(context + 0x1730), (dword *)(context + 0x1734) }
+    };
+	
 	byte *definition = *(byte **)(context + 0xc);
 	byte *instance = *(byte **)(context + 0x10);
 	dword *values = *(dword **)(definition + 0x18);
 	byte *record = *(byte **)(instance + 0x24) + (**range_reference & 0x1ff) * 4;
 	for (long i = 0; i < (**range_reference >> 9); ++i, record += 4)
 	{
-		word packed = *(word *)record;
+		volatile word packed = *(word *)record;
 		long bank = (packed >> 4) & 1;
-		dword *base = banks[bank];
-		dword *mask = masks[bank];
+		dword *base = tables_r16.banks[bank];
+		dword *mask = tables_r16.masks[bank];
 		long slot = packed & 15;
 		dword *out = base + slot * 4;
 		*mask |= 1 << slot;
@@ -285,7 +288,7 @@ void function_2f6b0(s_2f6b0_point const *position, s_2f6b0_point const *grid,
 	s_2f6b0_point step;
 	step.x = (bounds.v3 - bounds.v1) / grid->x;
 	step.y = (bounds.v2 - bounds.v0) / grid->y;
-	short x = bounds.v1;
+	volatile short x = bounds.v1;
 	short y = bounds.v0;
 	bounds.v1 = x + (word)position->x * step.x;
 	bounds.v3 = x + (word)(span->x + position->x) * step.x;

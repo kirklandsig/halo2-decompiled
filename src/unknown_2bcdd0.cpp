@@ -25,12 +25,12 @@ void c_engine_peer_derived::q0(long, s_stats *stats)
 // @retail 0x2bce00
 void c_engine_peer_derived::q1(dword *value, long, long c)
 {
-	long result = 0;
+	long decoded_peer_bits = 0;
 	dword m = *value & 0x1f;
 
 	if (m)
-		p42(m, &result, c);
-	*value = result;
+		p42(m, &decoded_peer_bits, c);
+	*value = decoded_peer_bits;
 }
 
 // @retail 0x2bce40

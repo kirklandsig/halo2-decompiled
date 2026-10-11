@@ -138,15 +138,15 @@ void function_1939f0(long scale, long first, long last, long *points)
 {
 	for (long place = 1; place <= 16; place++)
 	{
-		long value;
+		long place_points_share;
 
 		if (place < first || place > last)
-			value = 0x7fffffff;
+			place_points_share = 0x7fffffff;
 		else if (place == last)
-			value = 0;
+			place_points_share = 0;
 		else
-			value = scale * (last - place) / (last - first);
-		points[place - 1] = value;
+			place_points_share = scale * (last - place) / (last - first);
+		points[place - 1] = place_points_share;
 	}
 }
 

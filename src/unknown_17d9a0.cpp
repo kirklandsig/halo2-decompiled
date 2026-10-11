@@ -478,8 +478,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 }
 
 // @retail 0x17fd20
-void function_17fd20(s_decal_placement const *placement, s_decal_mesh_view const *mesh,
-	long tag_index, s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection)
+void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
+	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
 {
 	s_decal_mesh_view const *const *mesh_reference = &mesh;
 	long const *tag_index_alias = &tag_index;
@@ -508,15 +508,15 @@ void function_17fd20(s_decal_placement const *placement, s_decal_mesh_view const
 		short remaining = secondary_count;
 		do
 		{
-			short group_count = 0;
-			for (short i = 0; i < secondary_count && !group_count; ++i)
+			long group_count = 0;
+			for (short i = 0; i < secondary_count && !(short)group_count; ++i)
 			{
 				long first_face = secondary[i];
 				if (first_face == NONE)
 					continue;
 				plane3f first_plane;
 				decal_face_plane_17fd20(mesh, first_face, &first_plane);
-				faces[group_count++] = first_face;
+				faces[(short)group_count++] = first_face;
 				secondary[i] = NONE;
 				for (short j = i + 1; j < secondary_count; ++j)
 				{
@@ -529,7 +529,7 @@ void function_17fd20(s_decal_placement const *placement, s_decal_mesh_view const
 							projection->radius * 0.05f > function_17d900(mesh, face, &first_plane) &&
 							projection->radius * 0.05f > function_17d900(mesh, first_face, &plane))
 						{
-							faces[group_count++] = face;
+							faces[(short)group_count++] = face;
 							secondary[j] = NONE;
 						}
 					}
@@ -538,7 +538,7 @@ void function_17fd20(s_decal_placement const *placement, s_decal_mesh_view const
 				real selected_minimum, selected_maximum;
 				point3f start, end;
 				plane3f selected_plane;
-				for (short j = 0; j < group_count; ++j)
+				for (short j = 0; j < (short)group_count; ++j)
 				{
 					long face = faces[j];
 					long edge_index = mesh->faces[face].first_edge;
@@ -633,12 +633,12 @@ void function_17fd20(s_decal_placement const *placement, s_decal_mesh_view const
 				}
 				else
 					quad = projection->quad;
-				for (short j = 0; j < group_count; ++j)
+				for (short j = 0; j < (short)group_count; ++j)
 				{
 					function_17dd80(mesh, &quad, output, faces[j], false, projection->radius,
 						mode, 0, 0, 0, 0);
 				}
-				remaining -= group_count;
+				remaining -= (short)group_count;
 			}
 		} while (remaining > 0);
 	}

@@ -32,17 +32,17 @@ s_screen_definition *function_22f871(c_class_1473c9 *screen)
 s_screen_pane *c_class_1473c9::get_current_pane()
 {
 	short *pane_index = &value5f0;
-	s_screen_pane *result = 0;
+	s_screen_pane *active_pane_ptr = 0;
 
 	if (*pane_index != NONE)
 	{
 		s_screen_definition *definition = function_22f871(this);
 		if (definition && *pane_index < definition->pane_count)
 		{
-			result = &definition->panes[*pane_index];
+			active_pane_ptr = &definition->panes[*pane_index];
 		}
 	}
-	return result;
+	return active_pane_ptr;
 }
 
 // @retail 0x22f8c7

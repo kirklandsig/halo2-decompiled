@@ -13,15 +13,15 @@ long __stdcall function_cbd80(long object_index, long *holder_index);
 long function_e5280(long unit_index)
 {
 	s_unit_weapon_view *unit = unit_weapon_view_get(unit_index);
-	long parent_index = unit->parent_index;
 
-	if (parent_index != NONE)
+	if (unit->parent_index != NONE)
 	{
-		s_unit_weapon_view *parent = unit_weapon_view_get(parent_index);
+		s_unit_weapon_view *parent = unit_weapon_view_get(unit->parent_index);
 
-		if (((1 << parent->type) & 3) && parent->driver_index == unit_index)
+		char parent_type = parent->type;
+		if (((1 << parent_type) & 3) && parent->driver_index == unit_index)
 		{
-			long weapon_index = function_cbd80(parent_index, 0);
+			long weapon_index = function_cbd80(unit->parent_index, 0);
 
 			if (weapon_index != NONE)
 			{

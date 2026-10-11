@@ -1438,7 +1438,10 @@ void function_16ebf0(long user_index)
 			{
 			case 0:
 			case 2:
-				function_1546f0(user_index, &adjustment);
+				{
+					void (__stdcall *const adjust_view)(long, transform4x3f *) = function_1546f0;
+					adjust_view(user_index, &adjustment);
+				}
 				break;
 			}
 		}
@@ -1446,8 +1449,14 @@ void function_16ebf0(long user_index)
 	vector3f *original_forward = (vector3f *)(state + 0xd8);
 	vector3f *original_up = (vector3f *)(state + 0xe4);
 	point3f *original_position = (point3f *)(state + 0xb8);
-	vector3f forward = *original_forward;
-	vector3f up = *original_up;
+	vector3f forward;
+	forward.i = original_forward->i;
+	forward.j = original_forward->j;
+	forward.k = original_forward->k;
+	vector3f up;
+	up.i = original_up->i;
+	up.j = original_up->j;
+	up.k = original_up->k;
 	transform4x3f matrix;
 	matrix.scale = 1.0f;
 	matrix.forward = *original_forward;
@@ -1527,13 +1536,13 @@ struct s_16f280_flags
 	bool active;
 };
 
-static inline s_16f190_observer *function_xd356b3(long user_index)
+static inline s_16f190_observer *function_xd356b3(long byte_offset)
 {
 	s_16f190_observer *result = NULL;
 
-	if (user_index != NONE)
+	if (byte_offset != -(long)sizeof(s_16f190_observer))
 	{
-		result = &((s_16f190_observer *)g_4e9bd4)[user_index];
+		result = (s_16f190_observer *)((byte *)g_4e9bd4 + byte_offset);
 	}
 	return result;
 }
@@ -1550,15 +1559,19 @@ void __stdcall function_16f280(real dt)
 	long user_index;
 
 	g_4e9bd0 = g_468d28 * dt;
-	for (user_index = 0; user_index < 4; user_index++)
+	s_16f190_observer *cursor = (s_16f190_observer *)g_4e9bd4;
+	for (user_index = 0; user_index < 4; user_index++, cursor++)
 	{
-		s_16f190_observer *observer = function_xd356b3(user_index);
+		long byte_offset = user_index * sizeof(s_16f190_observer);
+		s_16f190_observer *observer = function_xd356b3(byte_offset);
 
-		if (observer && local_user_exists(user_index))
+		bool available = false;
+		if (byte_offset != -(long)sizeof(s_16f190_observer)) available = local_user_exists(user_index);
+		if (available)
 		{
-			short cluster_index;
+			word cluster_index;
 
-			observer->unknown0b4 = true;
+			cursor->unknown0b4 = available;
 			function_16f570(user_index);
 			if (g_4e9bd0 != 0.0f)
 			{
@@ -1566,10 +1579,10 @@ void __stdcall function_16f280(real dt)
 			}
 			function_170fd0(user_index);
 			function_16ebf0(user_index);
-			cluster_index = NONE;
+			cluster_index = (word)NONE;
 			if (g_4686c4 != NONE)
 			{
-				long leaf_index = function_14a280(g_4e033c, 0, &g_4e9bd4[user_index].state.position);
+				long leaf_index = function_14a280(g_4e033c, 0, (point3f *)((byte *)cursor + 0xb8));
 
 				if (leaf_index != NONE)
 				{
@@ -1577,21 +1590,21 @@ void __stdcall function_16f280(real dt)
 				}
 				else
 				{
-					cluster_index = NONE;
+					cluster_index = (word)NONE;
 				}
 			}
 			if (!g_510c50 || !((s_16f280_flags *)g_510c50)->active)
 			{
-				if (!(g_4ea934))
+				if (g_4ea934)
 				{
-					function_3f500(cluster_index);
+					if (cluster_index != (word)NONE)
+					{
+						function_3f450((short)cluster_index);
+					}
 				}
 				else
 				{
-					if (cluster_index != NONE)
-					{
-						function_3f450(cluster_index);
-					}
+					function_3f500((short)cluster_index);
 				}
 			}
 		}

@@ -159,10 +159,10 @@ static inline void cross3f(vector3f const *a, vector3f const *b, vector3f *out)
 bool camera_velocity_profile_new(s_camera_velocity_profile *profile, real total_seconds, real acceleration_seconds,
 	real deceleration_seconds, real start_rate, real end_rate)
 {
+	bool result = false;
 	short total_ticks = (short)camera_seconds_to_ticks_round(total_seconds);
 	short acceleration_ticks = (short)camera_seconds_to_ticks_round(acceleration_seconds);
 	short deceleration_ticks = (short)camera_seconds_to_ticks_round(deceleration_seconds);
-	bool result = false;
 
 	profile->valid = false;
 	if (total_ticks > 0)
@@ -353,8 +353,9 @@ void function_16c2f0(short camera_point_index, short ticks, long object_index)
 		camera->mode = _camera_scripting_mode_point;
 		camera->active = true;
 		seconds = (real)ticks * (1.0f / 30.0f);
-		camera->point.type = point->type;
-		camera->point.point_index = camera_point_index;
+		long point_type = point->type;
+		*(volatile short *)&camera->point.type = (short)point_type;
+		*(volatile short *)&camera->point.point_index = camera_point_index;
 		camera->position = point->position;
 		function_11df60((vector3f const *)point->orientation, &camera->forward, &camera->up);
 		camera->ticks = camera_seconds_to_ticks_round(seconds);
@@ -362,7 +363,8 @@ void function_16c2f0(short camera_point_index, short ticks, long object_index)
 		{
 			transform4x3f matrix;
 
-			switch (camera->point.type)
+			point_type = camera->point.type;
+			switch (point_type)
 			{
 			case 0:
 				break;
@@ -372,6 +374,13 @@ void function_16c2f0(short camera_point_index, short ticks, long object_index)
 				function_142640(&matrix, &camera->up, &camera->up);
 				function_142640(&matrix, (vector3f *)&camera->position, (vector3f *)&camera->position);
 				break;
+			case 3:
+				function_16c6f0(object_index, &matrix);
+				transform4x3f_apply_point(&matrix, &camera->position, &camera->position);
+				function_142640(&matrix, &camera->forward, &camera->forward);
+				function_142640(&matrix, &camera->up, &camera->up);
+				object_index = NONE;
+				break;
 			case 2:
 				function_16c6f0(object_index, &matrix);
 				function_142640(&matrix, &camera->forward, &camera->forward);
@@ -380,13 +389,6 @@ void function_16c2f0(short camera_point_index, short ticks, long object_index)
 				camera->point.offset = *(vector3f *)&matrix.position;
 				cross3f(&camera->forward, &camera->up, &camera->point.left);
 				function_30bf0(&camera->point.left);
-				break;
-			case 3:
-				function_16c6f0(object_index, &matrix);
-				transform4x3f_apply_point(&matrix, &camera->position, &camera->position);
-				function_142640(&matrix, &camera->forward, &camera->forward);
-				function_142640(&matrix, &camera->up, &camera->up);
-				object_index = NONE;
 				break;
 			default:
 				__assume(0);
@@ -555,14 +557,13 @@ bool camera_scripting_animation_matrix_get(transform4x3f *matrix, real *seconds_
 	bool result = false;
 	s_camera_animation_state *camera_animation = &camera_scripting_state->animation;
 	s_animation_state state;
-	c_type_709360 animation_id;
 
 	state.initialize(camera_animation->graph_tag_index, NONE, true);
-	animation_id = function_1dd0b0(graph_tag_get(state.graph_tag_index), camera_animation->animation_name);
+	c_type_709360 animation_id = function_1dd0b0(graph_tag_get(state.graph_tag_index), camera_animation->animation_name);
 	if (animation_id.index != NONE)
 	{
 		long unit_index;
-		real seconds;
+		real seconds = 0.0f;
 		transform4x3f animation_matrix;
 
 		function_1daea0(graph_tag_get(state.graph_tag_index), animation_id);
@@ -572,7 +573,6 @@ bool camera_scripting_animation_matrix_get(transform4x3f *matrix, real *seconds_
 			s_camera_unit *unit = ((s_camera_unit_header *)g_4e0300->data)[unit_index & 0xffff].unit;
 			s_camera_unit_animation *unit_animation = (s_camera_unit_animation *)((byte *)unit + unit->animation_offset);
 
-			seconds = 0.0f;
 			if (unit_animation->graph_tag_index != NONE && unit_animation->animation_index != NONE)
 			{
 				seconds = unit_animation->frame * (1.0f / 30.0f);

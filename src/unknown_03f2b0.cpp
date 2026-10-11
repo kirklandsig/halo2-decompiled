@@ -11,6 +11,8 @@
 
 void *g_509438;
 
+__declspec(noinline) void function_43990(void);
+
 // @retail 0x43990
 void function_43990(void)
 {
@@ -1904,7 +1906,7 @@ short function_4bcc0(byte *output, long object_index, real distance, long overri
 {
     (void)&object_index; (void)&distance; (void)&override;
     (void)&cached; (void)&force; (void)&level;
-    short result = 0;
+    volatile short result = 0;
     *(dword *)(output + 0x16c) = 0;
     bool volatile eligible = false;
     bool current = false;

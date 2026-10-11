@@ -13,9 +13,9 @@ extern char g_509344[256];
 bool function_12200(void)
 {
     DWORD type;
-    LAUNCH_DATA data;
-    if (XGetLaunchInfo(&type, &data) == ERROR_SUCCESS && type == LDT_TITLE &&
-        strcmp((char const *)&data, "XDEMOS") == 0)
+    LAUNCH_DATA launch_payload_blob;
+    if (XGetLaunchInfo(&type, &launch_payload_blob) == ERROR_SUCCESS && type == LDT_TITLE &&
+        strcmp((char const *)&launch_payload_blob, "XDEMOS") == 0)
     {
         char const *cursor = g_509344;
         unsigned long length = 0;

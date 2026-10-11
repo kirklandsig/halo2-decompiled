@@ -807,9 +807,9 @@ void c_sound_effects::add_sends(s_sound_send_parameters *parameters, long unused
 	bool alternate = TEST_FLAG(parameters->flags, 3) != 0;
 	real volatile level = parameters->level_offset + parameters->level;
 
-	sound_stream_append_mixbin(mixbins, alternate ? 0 : 6, parameters->left_gain);
-	sound_stream_append_mixbin(mixbins, alternate ? 1 : 7, parameters->right_gain);
-	sound_stream_append_mixbin(mixbins, alternate ? 4 : 8, parameters->rear_left_gain);
-	sound_stream_append_mixbin(mixbins, alternate ? 5 : 9, parameters->rear_right_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 0 : 6, *(real const volatile *)&parameters->left_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 1 : 7, *(real const volatile *)&parameters->right_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 4 : 8, *(real const volatile *)&parameters->rear_left_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 5 : 9, *(real const volatile *)&parameters->rear_right_gain);
 	c_sound_effects::add_send(10, mode, level, mixbins);
 }

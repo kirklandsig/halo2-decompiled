@@ -117,16 +117,22 @@ void function_b9890(long object_index)
 // @retail 0xb8ca0
 long function_b8ca0(long object_index)
 {
+    long const volatile *index_reference_r16 = &object_index;
+    object_index = *index_reference_r16;
+    long result_value = 0;
 	s_object_view *object = OBJECT_GET(object_index);
 
 	if (object->parent_index != NONE &&
 		TEST_FIELD_BIT(TAG_DATA(s_object_definition_view, object->definition_index)->flag4))
 	{
-		return function_b8ca0(object->parent_index);
+		{ result_value = function_b8ca0(object->parent_index); goto return_exit; }
 	}
 	if (TEST_FIELD_BIT(object->flag0) && ((1 << object->type) & 0x1c) && function_10cf50(object_index))
-		return object->unit_index;
-	return object_index;
+		{ result_value = object->unit_index; goto return_exit; }
+	{ result_value = object_index; goto return_exit; }
+
+return_exit:
+    return result_value;
 }
 
 // @retail 0xb8d30
@@ -322,7 +328,7 @@ bool function_b9d20(long object_index)
 }
 
 void function_b8b70(long object_index);
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
 
 // @retail 0xb9c60
 void function_b9c60(long object_index, bool flag)
@@ -334,7 +340,7 @@ void function_b9c60(long object_index, bool flag)
         if (!TEST_FIELD_BIT(object->flag0))
         {
             if (function_b9d20(object_index))
-                function_bef30(object_index, 1, 0, 0, 0);
+                function_bef30(object_index, 1, 0, 0, false);
             object->flag0 = true;
             function_b8b70(object_index);
         }
@@ -343,7 +349,7 @@ void function_b9c60(long object_index, bool flag)
     {
         object->flag0 = false;
         if (function_b9d20(object_index))
-            function_bef30(object_index, 0, 1, 0, 0);
+            function_bef30(object_index, 0, 1, 0, false);
         function_b8b70(object_index);
     }
 }
@@ -559,7 +565,7 @@ void __stdcall function_b8460(long object_index, bool detach)
 }
 
 
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
 void __stdcall function_b98e0(long object_index, transform4x3f const *matrix);
 void __stdcall function_b8600(long object_index, long location);
 void __stdcall function_b8890(long object_index);
@@ -575,7 +581,7 @@ void function_b9a90(long object_index)
     s_object_view *node_parent = ((s_object_header_view *)objects->data)[object->parent_index & 0xffff].object;
     transform4x3f const *matrix = (transform4x3f *)((byte *)node_parent + node_parent->node_matrices_offset) + *(char *)((byte *)object + 0x18);
     if (connected)
-        function_bef30(object_index, 1, 0, 0, 0);
+        function_bef30(object_index, 1, 0, 0, false);
     function_b9890(object_index);
     function_b98e0(object_index, matrix);
     if (connected)
@@ -776,4 +782,29 @@ bool __stdcall function_bdef0(long object_index)
     if (active)
         function_b8600(object_index, 0);
     return true;
+}
+
+
+void function_1091b0(long object_index);
+void __stdcall function_1c35f0(long object_index);
+
+// @retail 0xb73b0
+void function_b73b0(long object_index)
+{
+    vector3f const *velocity = g_4687a4;
+    function_b77d0(object_index, velocity, velocity);
+    function_b9b90(object_index, false);
+    bool active = TEST_FIELD_BIT(OBJECT_GET(object_index)->physics_active);
+    if (active) function_146bf0();
+    havok_object_detach(object_index);
+    if (active)
+    {
+        function_278f00();
+        function_146bf0();
+    }
+    function_1091b0(object_index);
+    function_146bf0();
+    function_1c35f0(object_index);
+    function_278f00();
+    function_146bf0();
 }

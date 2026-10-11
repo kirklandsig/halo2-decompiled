@@ -133,13 +133,15 @@ void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_
 {
     /* Retail passes the output pointer on the stack. */
     s_camera_command_23bd70 **command_reference = &command;
+	vector3f &command_forward = command->forward;
+	vector3f &command_up = command->up;
 	command->timer = 0.f;
 	command->flags = 0;
 	command->offset = *g_4687a4;
 	command->distance = 0.f;
-	command->forward = *forward;
+	command_forward = *forward;
 	command->field_of_view = g_54e854;
-	function_11d090(&command->forward, &command->up);
+	function_11d090(&command_forward, &command_up);
 	if (unit_index != NONE)
 	{
 		s_camera_unit_view *unit = ((s_camera_object_header_view *)g_4e0300->data)[unit_index & 0xffff].object;
@@ -158,8 +160,8 @@ void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_
 					if (function_b8d30(parent_index, 0xf0000db, &marker, 1, false))
 					{
 						command->position = marker.matrix.position;
-						command->forward = marker.matrix.forward;
-						command->up = marker.matrix.up;
+						command_forward = marker.matrix.forward;
+						command_up = marker.matrix.up;
 					}
 				}
 				else
@@ -168,15 +170,17 @@ void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_
 					transform4x3f matrix;
 					function_b9dd0(parent_index, &position);
 					function_1420f0(&matrix, &position, (vector3f *)((byte *)parent + 0x70), (vector3f *)((byte *)parent + 0x7c));
-					real x = command->forward.i;
-					real y = command->forward.j;
-					real z = command->forward.k;
-					command->forward.i = matrix.forward.k * z + matrix.forward.j * y + matrix.forward.i * x;
-					command->forward.j = matrix.left.k * z + matrix.left.j * y + matrix.left.i * x;
-					command->forward.k = matrix.up.k * z + matrix.up.j * y + matrix.up.i * x;
-					function_11d090(&command->forward, &command->up);
-					camera_rotate_23bd70(&matrix, &command->forward);
-					camera_rotate_23bd70(&matrix, &command->up);
+					real x = command_forward.i;
+					real y = command_forward.j;
+					real z = command_forward.k;
+					command_forward.i = matrix.forward.k * z + matrix.forward.j * y + matrix.forward.i * x;
+					command_forward.j = matrix.left.k * z + matrix.left.j * y + matrix.left.i * x;
+					command_forward.k = matrix.up.k * z + matrix.up.j * y + matrix.up.i * x;
+					function_11d090(&command_forward, &command_up);
+					transform4x3f const *const volatile matrix_cursor = &matrix;
+					transform4x3f const *reached_matrix = matrix_cursor;
+					camera_rotate_23bd70(reached_matrix, &command_forward);
+					camera_rotate_23bd70(reached_matrix, &command_up);
 				}
 			}
 		}

@@ -96,7 +96,7 @@ void function_1537f0(s_profile_record *record)
 // @retail 0x153850
 bool function_153850(byte *model)
 {
-	char value = (char)*model;
+	char signed_model_code = (char)*model;
 
-	return value >= -1 && value < 4;
+	return signed_model_code >= -1 && signed_model_code < 4;
 }

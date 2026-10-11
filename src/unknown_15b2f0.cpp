@@ -21,12 +21,12 @@ struct s_engine_state_globals
 bool function_15b2f0()
 {
 	s_engine_state_globals *g = (s_engine_state_globals *)g_4e9ae8;
-	bool result = false;
+	bool mode_gate_open = false;
 
 	if (g_55e4d0[g->engine_index] && g->w6c == 1 && (g_4e6948->mode == 4 || g->lc04 == 1))
-		result = true;
+		mode_gate_open = true;
 
-	return result;
+	return mode_gate_open;
 }
 
 /* true when the game has teams */

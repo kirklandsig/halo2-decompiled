@@ -581,7 +581,7 @@ void __stdcall function_237397(long *type, long *offset, field_param *param)
 }
 
 // @retail 0x2373be
-void function_2373be(long index, void *base, long value)
+void function_2373be(long index, void *base, long field_store_amount)
 {
 	field_info_proc proc;
 	long type;
@@ -596,19 +596,19 @@ void function_2373be(long index, void *base, long value)
 		switch (type)
 		{
 		case 0:
-			if (value)
+			if (field_store_amount)
 				*(word *)((byte *)base + offset) |= (word)(1 << param.i);
 			else
 				*(word *)((byte *)base + offset) &= ~(word)(1 << param.i);
 			break;
 		case 1:
-			if (value)
+			if (field_store_amount)
 				*(dword *)((byte *)base + offset) |= (1 << param.i);
 			else
 				*(dword *)((byte *)base + offset) &= ~(1 << param.i);
 			break;
 		case 2:
-			*(byte *)((byte *)base + offset) = (value != 0);
+			*(byte *)((byte *)base + offset) = (field_store_amount != 0);
 			break;
 		case 3:
 		{
@@ -619,8 +619,8 @@ void function_2373be(long index, void *base, long value)
 				fld v
 				fistp r
 			}
-			value *= r;
-			*(byte *)((byte *)base + offset) = (byte)value;
+			field_store_amount *= r;
+			*(byte *)((byte *)base + offset) = (byte)field_store_amount;
 			break;
 		}
 		case 4:
@@ -632,8 +632,8 @@ void function_2373be(long index, void *base, long value)
 				fld v
 				fistp r
 			}
-			value *= r;
-			*(word *)((byte *)base + offset) = (word)value;
+			field_store_amount *= r;
+			*(word *)((byte *)base + offset) = (word)field_store_amount;
 			break;
 		}
 		case 5:
@@ -645,12 +645,12 @@ void function_2373be(long index, void *base, long value)
 				fld v
 				fistp r
 			}
-			value *= r;
-			*(long *)((byte *)base + offset) = value;
+			field_store_amount *= r;
+			*(long *)((byte *)base + offset) = field_store_amount;
 			break;
 		}
 		case 6:
-			*(real *)((byte *)base + offset) = (1.0f / param.r) * (real)value;
+			*(real *)((byte *)base + offset) = (1.0f / param.r) * (real)field_store_amount;
 			break;
 		}
 	}

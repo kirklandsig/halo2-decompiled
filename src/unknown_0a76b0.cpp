@@ -2474,7 +2474,7 @@ bool __stdcall unit_action_vehicle_entry(long unit_index, s_unit_request *reques
 long function_10eef0(long object_index, bool alternate, bool no_request);
 void function_d12b0(long vehicle_index, long seat_index, bool a, bool b);
 bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long a, long b, long c, long d);
+void __stdcall function_bef30(long object_index, long a, long b, long c, bool d);
 void function_b8b70(long object_index);
 long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
 bool __stdcall function_ee460(long unit_index, long state_name, long action_name);
@@ -2518,7 +2518,7 @@ void __stdcall function_ea8e0(long unit_index, bool hurried)
 	{
 		current->object_flags &= ~1;
 		if (function_b9d20(unit_index))
-			function_bef30(unit_index, 0, 1, 0, 0);
+			function_bef30(unit_index, 0, 1, 0, false);
 		function_b8b70(unit_index);
 	}
 	if (UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4 != NONE)

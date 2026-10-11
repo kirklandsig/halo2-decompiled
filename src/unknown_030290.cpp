@@ -512,7 +512,10 @@ void function_31660(long index, long tag, s_index_state_31660 *state,
             {
                 word *value = &state->second->values[(short)i];
                 long flags = *value;
-                if (flag13) flags |= 0x2000; else flags &= ~0x2000;
+                if (!(flag13))
+                    flags &= ~0x2000;
+                else
+                    flags |= 0x2000;
                 if (flag12) flags |= 0x1000; else flags &= ~0x1000;
                 *value = (word)flags;
             }

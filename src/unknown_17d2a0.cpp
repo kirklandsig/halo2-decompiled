@@ -66,7 +66,7 @@ extern dword g_4c8798[256];
 
 void function_163ba0(dword *crc_reference, void const *buffer, long buffer_size);
 void function_43890(void);
-void function_43990(void);
+__declspec(noinline) void function_43990(void);
 void function_23aa70(void);
 void __stdcall function_23aad0(long a, long b, long c);
 void function_17d5f0(bool permanent);

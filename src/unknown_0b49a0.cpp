@@ -37,10 +37,10 @@ bool function_0b49a0(long index, real *result)
 			s_record_header *datum = (s_record_header *)(array->data + array->size * absolute_index);
 			if (datum->salt != 0 && datum->salt == (index >> 16))
 			{
-				long value;
-				if (function_3ad1a6(datum->handle, &value, 0, 0) >= 0)
+				long raw_hundredths_count;
+				if (function_3ad1a6(datum->handle, &raw_hundredths_count, 0, 0) >= 0)
 				{
-					*result = (real)(dword)value * 0.01f;
+					*result = (real)(dword)raw_hundredths_count * 0.01f;
 					success = true;
 				}
 			}

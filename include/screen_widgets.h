@@ -523,7 +523,7 @@ public:
 	c_class_1a2c81 *find_model(short index);
 	void set_child_value6e(long type, short index, bool value);
 	c_class_1a2c81 *find_by_id(long id);
-	void set_user_flags(word user_flags);
+	void set_user_flags(short user_flags);
 	c_class_1473c9 *find_window_screen();
 	long new_widget_id();
 	/* the first controller of the widget's user flags (unknown_1a2c81.cpp) */

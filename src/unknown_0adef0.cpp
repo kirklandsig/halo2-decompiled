@@ -407,16 +407,16 @@ void __stdcall function_0aedb0(s_bitstream *stream, long unused, s_message_peer_
 	word *words;
 	for (i = 0, words = message->words1; i < 16; i++, words++)
 	{
-		word value = *words;
-		function_195720(stream, value, 16);
-		if (value == 0)
+		word wide_char_unit = *words;
+		function_195720(stream, wide_char_unit, 16);
+		if (wide_char_unit == 0)
 			break;
 	}
 	for (i = 0, words = message->words2; i < 32; i++, words++)
 	{
-		word value = *words;
-		function_195720(stream, value, 16);
-		if (value == 0)
+		word wide_char_unit = *words;
+		function_195720(stream, wide_char_unit, 16);
+		if (wide_char_unit == 0)
 			break;
 	}
 	stream_write_checked(stream, message->value1, 3);

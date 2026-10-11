@@ -84,20 +84,20 @@ void function_25600(long object_index, long string_handle, real seconds)
 			caption->name[sizeof(caption->name) - 1] = 0;
 			caption->string_handle = string_handle;
 			caption->object_index = object_index;
-			real value = seconds;
+			real name_caption_dwell = seconds;
 			real limit;
-			if (value != 0.0f)
+			if (name_caption_dwell != 0.0f)
 			{
 				limit = 10.0f;
-				if (!(value < limit))
+				if (!(name_caption_dwell < limit))
 				{
 					limit = 160.0f;
-					if (value > limit)
+					if (name_caption_dwell > limit)
 					{
 						caption->seconds = limit;
 						return;
 					}
-					caption->seconds = value;
+					caption->seconds = name_caption_dwell;
 					return;
 				}
 			}

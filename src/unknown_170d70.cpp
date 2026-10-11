@@ -368,7 +368,7 @@ struct s_observer_command;
 struct s_16f460;
 void function_16f460(s_16f460 *state);
 
-PRIVATE inline real placement_clamp_172520(real value, real minimum, real maximum)
+PRIVATE inline real placement_clamp_172520(real const &value, real minimum, real maximum)
 {
 	return value < minimum ? minimum : value > maximum ? maximum : value;
 }
@@ -945,7 +945,7 @@ void function_171d90(s_view_setup *view)
 	real dz = original.k * inv - view->forward.k;
 	real dy = original.j * inv - view->forward.j;
 	real dx = inv * original.i - view->forward.i;
-	view->deviation = (real)sqrt(dz * dz + dy * dy + dx * dx);
+	view->deviation = (real)sqrt((double)dz * dz + (double)dy * dy + (double)dx * dx);
 }
 
 void function_11bed0(s_location *location, point3f const *point);
@@ -996,7 +996,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
 	long axis = function_120850(&plane->n);
-	bool positive = ((real const *)plane)[axis] > 0.0f;
+	long positive = ((real const *)plane)[axis] > 0.0f ? 1L : 0L;
 	point3f const *origin = &context->origin->position;
 	real distance = 0.0f - plane_distance_to_point(plane, origin);
 	point3f projected;
@@ -1091,73 +1091,78 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 	long word_index = polygon_index >> 5;
 	if (!(cache->visited[word_index] & bit))
 	{
-		if (5120 - cache->point_count < 64)
-			return 0;
-		s_polygon_173910 const *polygon = &cache->geometry->polygons[polygon_index];
-		function_1429d0((transform4x3f const *)(cache->view + 4), polygon->count, polygon->points, transformed);
-		long count = function_11fc80(&cache->field_c_8, true, 0.0078125f, polygon->count, transformed, 64, clipped);
-		bool inside;
-		result->state = (byte)function_173890((s_polygon_context_173910 const *)cache, polygon, count, &inside);
-		result->field_6 = ((short const *)polygon)[0];
-		result->field_8 = ((short const *)polygon)[1];
-		result->distance = FLT_MAX;
-		result->bounds = *g_4687dc;
-		result->points = cache->points + cache->point_count;
-		cache->point_count += 64;
-		result->count = (short)count;
-		result->field_0 = *(long const *)((byte const *)polygon + 0x18);
-		if (result->state)
+		if (5120 - cache->point_count >= 64)
 		{
-			long index = result->state == 1 ? count - 1 : 0;
-			long step = result->state == 1 ? -1 : 1;
-			for (long i = 0; i < count; ++i, index += step)
+			s_polygon_173910 const *polygon = &cache->geometry->polygons[polygon_index];
+			function_1429d0((transform4x3f const *)(cache->view + 4), polygon->count, polygon->points, transformed);
+			long count = function_11fc80(&cache->field_c_8, true, 0.0078125f, polygon->count, transformed, 64, clipped);
+			bool inside;
+			result->state = (byte)function_173890((s_polygon_context_173910 const *)cache, polygon, count, &inside);
+			result->field_6 = ((short const *)polygon)[0];
+			result->field_8 = ((short const *)polygon)[1];
+			result->distance = FLT_MAX;
+			box2f &bounds = result->bounds;
+			bounds = *g_4687dc;
+			result->points = cache->points + cache->point_count;
+			cache->point_count += 64;
+			result->count = (short)count;
+			result->field_0 = *(long const *)((byte const *)polygon + 0x18);
+			if (result->state)
 			{
-				point2f *point = &result->points[index];
-				real inverse = -1.0f / clipped[i].z;
-				point->x = clipped[i].x * inverse;
-				point->y = clipped[i].y * inverse;
-				if (result->bounds.x0 > point->x)
-					result->bounds.x0 = point->x;
-				if (point->x > result->bounds.x1)
-					result->bounds.x1 = point->x;
-				if (result->bounds.y0 > point->y)
-					result->bounds.y0 = point->y;
-				if (point->y > result->bounds.y1)
-					result->bounds.y1 = point->y;
-				real distance = 0.0f - clipped[i].z;
-				result->distance = result->distance > distance ? distance : result->distance;
-			}
-			if (result->state == 3)
-			{
-				if (inside)
+				long index = (result->state == 1 ? count - 1 : 0) * (long)sizeof(point2f);
+				long volatile step = (result->state == 1 ? -1 : 1) * (long)sizeof(point2f);
+				point3f const *local_cb4759 = clipped;
+				for (long remaining = count; remaining > 0; --remaining, ++local_cb4759, index += step)
 				{
-					result->distance = (real)(result->distance > 0.015625 ? 0.015625 : result->distance);
-					result->bounds = *(box2f *)(cache->view + 0xa0);
-					result->count = *(short *)(cache->view + 0x198);
-					memcpy(result->points, cache->view + 0x19c, *(long *)(cache->view + 0x198) * sizeof(point2f));
+					point2f *point = (point2f *)((byte *)result->points + index);
+					real inverse = -1.0f / local_cb4759->z;
+					point->x = local_cb4759->x * inverse;
+					point->y = local_cb4759->y * inverse;
+					if (bounds.x0 > point->x)
+						bounds.x0 = point->x;
+					if (point->x > bounds.x1)
+						bounds.x1 = point->x;
+					if (bounds.y0 > point->y)
+						bounds.y0 = point->y;
+					if (point->y > bounds.y1)
+						bounds.y1 = point->y;
+					real distance = 0.0f - local_cb4759->z;
+					result->distance = result->distance > distance ? distance : result->distance;
 				}
-				else
+				if (result->state == 3)
 				{
-					result->bounds.x0 -= 0.00390625f;
-					result->bounds.x1 += 0.00390625f;
-					result->bounds.y0 -= 0.00390625f;
-					result->bounds.y1 += 0.00390625f;
-					result->points[0].x = result->bounds.x0;
-					result->points[0].y = result->bounds.y0;
-					result->points[1].x = result->bounds.x1;
-					result->points[1].y = result->bounds.y0;
-					result->points[2].x = result->bounds.x1;
-					result->points[2].y = result->bounds.y1;
-					result->points[3].x = result->bounds.x0;
-					result->points[3].y = result->bounds.y1;
-					result->count = 4;
+					if (inside)
+					{
+						result->distance = (real)(result->distance > 0.015625 ? 0.015625 : result->distance);
+						bounds = *(box2f *)(cache->view + 0xa0);
+						result->count = *(short *)(cache->view + 0x198);
+						memcpy(result->points, cache->view + 0x19c, *(long *)(cache->view + 0x198) * sizeof(point2f));
+					}
+					else
+					{
+						bounds.x0 -= 0.00390625f;
+						bounds.x1 += 0.00390625f;
+						bounds.y0 -= 0.00390625f;
+						bounds.y1 += 0.00390625f;
+						result->points[0].x = bounds.x0;
+						result->points[0].y = bounds.y0;
+						result->points[1].x = bounds.x1;
+						result->points[1].y = bounds.y0;
+						result->points[2].x = bounds.x1;
+						result->points[2].y = bounds.y1;
+						result->points[3].x = bounds.x0;
+						result->points[3].y = bounds.y1;
+						result->count = 4;
+					}
 				}
+				if (cache->view[0x84] && result->distance > *(real *)(cache->view + 0x88))
+					result->state = 0;
+				cache->point_count = (result->points - cache->points) + result->count;
 			}
-			if (cache->view[0x84] && result->distance > *(real *)(cache->view + 0x88))
-				result->state = 0;
-			cache->point_count = (result->points - cache->points) + result->count;
+			cache->visited[word_index] |= bit;
 		}
-		cache->visited[word_index] |= bit;
+		else
+			return 0;
 	}
 	return result;
 }
@@ -1493,15 +1498,20 @@ void __stdcall function_170fd0(long user_index)
 	s_motion_channels_1701f0 *state = (s_motion_channels_1701f0 *)g_4e9bd4 + user_index;
 	s_view_setup *view = (s_view_setup *)((byte *)state + 0xb8);
 	point3f position = *(point3f *)&state->current[0];
-	real distance = state->current[8];
-	if (0.0f > distance) distance = 0.0f;
-	else if (distance > 1.0f) distance = 1.0f;
+	real distance;
+	if (0.0f > state->current[8]) distance = 0.0f;
+	else if (state->current[8] > 3.4028235e38f) distance = 3.4028235e38f;
+	else distance = state->current[8];
 	vector3f *forward = (vector3f *)&state->current[10];
 	vector3f *up = (vector3f *)&state->current[13];
 	if (!function_a74c0(forward, up))
 	{
-		*forward = *g_4687a8;
-		*up = *g_4687b0;
+		forward->i = g_4687a8->i;
+		forward->j = g_4687a8->j;
+		forward->k = g_4687a8->k;
+		up->i = g_4687b0->i;
+		up->j = g_4687b0->j;
+		up->k = g_4687b0->k;
 	}
 	real field_of_view = state->current[9];
 	if (g_54e858 > field_of_view) field_of_view = g_54e858;
@@ -1527,8 +1537,12 @@ void __stdcall function_170fd0(long user_index)
 	position.x += state->current[4] * direction_y + state->current[3] * direction_x;
 	position.y = state->current[3] * direction_y - state->current[4] * direction_x + position.y;
 	position.z = state->current[5] + position.z;
-	view->forward = *forward;
-	view->up = *up;
+	view->forward.i = forward->i;
+	view->forward.j = forward->j;
+	view->forward.k = forward->k;
+	view->up.i = up->i;
+	view->up.j = up->j;
+	view->up.k = up->k;
 	vector3f *offset = (vector3f *)((byte *)state + 0xcc);
 	offset->i = 0.0f - state->first_derivative[0];
 	offset->j = 0.0f - state->first_derivative[1];
@@ -1551,7 +1565,8 @@ void __stdcall function_170fd0(long user_index)
 		position.x = matrix->up.i * scaled.z + matrix->left.i * scaled.y + matrix->forward.i * scaled.x + matrix->position.x;
 		position.y = matrix->up.j * scaled.z + matrix->left.j * scaled.y + matrix->forward.j * scaled.x + matrix->position.y;
 		position.z = matrix->up.k * scaled.z + matrix->left.k * scaled.y + matrix->forward.k * scaled.x + matrix->position.z;
-		vector3f source = *offset;
+		vector3f source;
+		source.i = offset->i; source.j = offset->j; source.k = offset->k;
 		if (matrix->scale != 1.0f)
 		{
 			source.i *= matrix->scale; source.j *= matrix->scale; source.k *= matrix->scale;
@@ -1559,7 +1574,7 @@ void __stdcall function_170fd0(long user_index)
 		offset->i = matrix->up.i * source.k + matrix->left.i * source.j + matrix->forward.i * source.i;
 		offset->j = matrix->up.j * source.k + matrix->left.j * source.j + matrix->forward.j * source.i;
 		offset->k = matrix->up.k * source.k + matrix->left.k * source.j + matrix->forward.k * source.i;
-		source = view->forward;
+		source.i = view->forward.i; source.j = view->forward.j; source.k = view->forward.k;
 		if (matrix->scale != 1.0f)
 		{
 			source.i *= matrix->scale; source.j *= matrix->scale; source.k *= matrix->scale;
@@ -1567,7 +1582,7 @@ void __stdcall function_170fd0(long user_index)
 		view->forward.i = matrix->up.i * source.k + matrix->left.i * source.j + matrix->forward.i * source.i;
 		view->forward.j = matrix->up.j * source.k + matrix->left.j * source.j + matrix->forward.j * source.i;
 		view->forward.k = matrix->up.k * source.k + matrix->left.k * source.j + matrix->forward.k * source.i;
-		source = view->up;
+		source.i = view->up.i; source.j = view->up.j; source.k = view->up.k;
 		if (matrix->scale != 1.0f)
 		{
 			source.i *= matrix->scale; source.j *= matrix->scale; source.k *= matrix->scale;
@@ -1609,5 +1624,5 @@ void __stdcall function_170fd0(long user_index)
 			function_3f500(cluster_index);
 	}
 	if (fabs(g_45e4c8) < 0.05f)
-		view->position.z -= 1.0f;
+		view->position.z -= 3.4028235e38f;
 }

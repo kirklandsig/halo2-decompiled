@@ -12,8 +12,7 @@ struct s_262b40_result;
 struct s_261d20_entry;
 struct s_2605d0_request;
 
-// @stub 0x261510
-void __stdcall function_261510(long actor_index, s_2605d0_request const *request) { }
+
 
 // @stub 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request, s_261d20_entry *entries, short count, long unknown, long unknown2, byte *scratch, bool *unknown3) { s_reference r = {0, 0}; return r; }

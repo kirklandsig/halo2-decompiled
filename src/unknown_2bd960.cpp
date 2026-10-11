@@ -375,7 +375,7 @@ void function_2bde90(real t, point3f *out, point3f *points)
 // @retail 0x2be050
 void hill_build_polygon(s_polygon_2be *hill, long index)
 {
-	long half = hill->count / 2;
+	long half;
 	long vertex = 0;
 	long marker_ids[8];
 	point3f control[4];
@@ -384,7 +384,8 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 	long i;
 	long count;
 
-	function_2bdd20((s_spline_2bd *)hill, points);
+	half = hill->count / 2;
+ function_2bdd20((s_spline_2bd *)hill, points);
 	for (i = 0; i < half; i++)
 	{
 		long steps = hill->steps[i];
@@ -423,9 +424,8 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 		while (i < count);
 	}
 	real scale = 1.0f / (real)count;
-	hill->center_x *= scale;
-	hill->center_y *= scale;
-	hill->center_z *= scale;
+	point3f *center = (point3f *)&hill->center_x;
+ center->x = center->x * scale; center->y = center->y * scale; center->z = center->z * scale;
 	volatile real *radius = &hill->radius;
 	*radius = 0.0f;
 	if (count > 0)
@@ -1786,7 +1786,7 @@ bool c_engine_peer_b::q2(dword mask, long unused, s_settings_2c0 *settings)
 #include "flexible_surface_calls.h"
 struct s_sort_record;
 typedef bool (__stdcall *t_record_fill_2be)(long, void *, long, long, long, void *, s_sort_record *);
-void function_41490(long tag, short group, short kind, real distance, t_record_fill_2be fill,
+void function_41490(short group, long tag, short kind, real distance, t_record_fill_2be fill,
     dword value, void (__stdcall *callback)(void *), void *context, point3f const *position);
 void __stdcall function_2be5d0(long, long, long, long, long, long, void *);
 
@@ -1802,7 +1802,7 @@ void function_2be670(s_polygon_2be *hill)
     byte *definition = g_4e3b44[g_4e034c->index & 0xffff].bytes;
     byte *data = *(byte **)(definition + 0xc);
     byte *item = *(byte **)(data + 0x534);
-    function_41490(*(long *)(item + 0xc4), 0, NONE, 640.f,
+    function_41490(0, *(long *)(item + 0xc4), NONE, 640.f,
         (t_record_fill_2be)function_d4bc0, (dword)function_2be5d0,
         function_2be650, (void *)NONE, (point3f *)&hill->center_x);
 }

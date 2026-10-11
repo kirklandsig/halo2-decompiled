@@ -174,7 +174,8 @@ struct s_reference_filter_view
 // @retail 0x2623a0
 bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_actor_view *actor, s_reference reference)
 {
- bool volatile result = true;
+ if (!filter) return true;
+ bool result;
 	if (filter)
 	{
 		s_262b40_result *entry = function_262b40(reference);
@@ -205,7 +206,7 @@ bool function_2623a0(s_reference_filter_view const *filter, long actor_index, s_
 		}
 		return result;
 	}
-	return result;
+ return true;
 }
 
 struct s_candidate_range
@@ -253,9 +254,10 @@ short __stdcall function_262180(long actor_index, long block_index, long range_i
             if (block->structure_index == g_4686c4)
             {
                 s_candidate_range *range = &block->ranges[*range_reference];
-                if (special == (bool)(range->flags & 1))
+                dword flags = range->flags;
+                if (special == (bool)(flags & 1))
                 {
-                    bool allowed = (bool)((range->flags >> 1) & 1);
+                    bool allowed = (bool)((flags >> 1) & 1);
                     if (context)
                     {
                         if (!special && (context->unknown57 || context->unknown59))
@@ -266,6 +268,7 @@ short __stdcall function_262180(long actor_index, long block_index, long range_i
                         else if (allowed)
                             goto done;
                     }
+                    if (*count < *maximum_reference)
                     for (long volatile index = (word)range->first; *count < *maximum_reference && (short)index < range->first + range->count; ++index)
                     {
                         s_reference reference;
@@ -276,10 +279,11 @@ short __stdcall function_262180(long actor_index, long block_index, long range_i
                             s_reference_candidate_view *entry = (s_reference_candidate_view *)&(*entries_reference)[*count];
                             if (function_2624d0((s_261d20_entry *)entry, reference))
                             {
-                                if (*type_reference == 1)
-                                    ((s_reference_candidate_view *)&(*entries_reference)[*count])->flag5b = true;
-                                else if (*type_reference == 2)
-                                    ((s_reference_candidate_view *)&(*entries_reference)[*count])->flag5a = true;
+                                switch (*type_reference)
+                                {
+                                case 2: ((s_reference_candidate_view *)&(*entries_reference)[*count])->flag5a = true; break;
+                                case 1: ((s_reference_candidate_view *)&(*entries_reference)[*count])->flag5b = true; break;
+                                }
                                 ((s_reference_candidate_view *)&(*entries_reference)[*count])->flag58 =
                                     (bool)(((dword)*(char *)((byte *)((s_reference_candidate_view *)&(*entries_reference)[*count])->location + 0xe) >> 5) & 1);
                                 ((s_reference_candidate_view *)&(*entries_reference)[*count])->flag59 =
@@ -360,7 +364,7 @@ short function_205010(s_squad_iterator *iterator);
 struct s_candidate_position
 {
     s_type_c3b527 point;
-    byte unknown0e[6];
+    byte unknown10[4];
     long sector;
     byte unknown18[8];
 };
@@ -919,3 +923,195 @@ done:
 }
 
 #endif
+
+#include "props.h"
+void function_1caa40(long object_index, point3f *position);
+void function_1e3b00(long object_index, long mode, point3f const *reference, void const *unknown0, void const *unknown1, point3f *position);
+void __stdcall function_26c2d0(long prop_index);
+long function_baf80(long object_index);
+long function_1e4a10(long index);
+long function_1e4990(long index);
+void *function_1e5280(long actor_index, long key);
+long function_1e1f20(long actor_index);
+bool function_1e1e50(long actor_index, vector3f *direction);
+bool function_267840(long actor_index, long prop_index, vector3f *direction);
+struct s_bsp3d;
+extern s_bsp3d *g_4e033c;
+long function_14a280(s_bsp3d *bsp, long index, point3f *point);
+
+// @retail 0x261510
+void __stdcall function_261510(long actor_index, s_2605d0_request const *request)
+{
+ byte *actor = (byte *)actor_get(actor_index);
+ byte *parameters = (byte *)request;
+ short type = request->type;
+ *(real *)(parameters + 0x18) = *(short *)(actor + 0x270) > 0 ? 80.0f : actor[0x229] ? 30.0f : 15.0f;
+ if (*(real *)(parameters + 0x1c) == 0.0f) *(real *)(parameters + 0x1c) = *(real *)(parameters + 0x18);
+ long unit_index = *(long *)(actor + 0x26c);
+ if (unit_index == NONE) unit_index = *(long *)(actor + 0x18);
+ function_1caa40(unit_index, (point3f *)(parameters + 0x60c));
+ type = request->type;
+ parameters[0x53] = type == 5 || type == 8 || type == 3;
+ parameters[0x618] = 0;
+ if (type == 4) parameters[0x618] = 0;
+ else if (parameters[0x20])
+ {
+  *(point3f *)(parameters + 0x620) = *(point3f *)(parameters + 0x24);
+  memcpy(parameters + 0x650, parameters + 0x30, 0x10);
+  *(long *)(parameters + 0x64c) = *(long *)(parameters + 0x40);
+  parameters[0x618] = 1;
+  *(short *)(parameters + 0x660) = *(short *)(parameters + 0x44);
+  double x = (double)*(real *)(parameters + 0x620) - *(real *)(actor + 0x238);
+  double y = (double)*(real *)(parameters + 0x624) - *(real *)(actor + 0x23c);
+  double z = (double)*(real *)(parameters + 0x628) - *(real *)(actor + 0x240);
+  *(long *)(parameters + 0x664) = NONE;
+  *(long *)(parameters + 0x648) = NONE;
+  *(real *)(parameters + 0x678) = 0.0f;
+  *(real *)(parameters + 0x61c) = (real)sqrt(z * z + y * y + x * x);
+  function_1e3b00(*(long *)(actor + 0x18), 1, (point3f *)(parameters + 0x620), NULL, NULL, (point3f *)(parameters + 0x62c));
+  *(point3f *)(parameters + 0x638) = *(point3f *)(parameters + 0x62c);
+ }
+ else
+ {
+  long prop_index = *(long *)(actor + (type == 1 ? 0x344 : 0x338));
+  if (prop_index != NONE)
+  {
+   s_prop_node *node = (s_prop_node *)(g_502418->data + (prop_index & 0xffff) * 0x3c);
+   s_type_5cfb45 *state = function_25d690(node);
+   s_type_f95cd3 *tracking = function_25d740(node);
+   byte *object = *(byte **)(g_4e0300->data + (node->object_index & 0xffff) * 12 + 8);
+   function_26c2d0(prop_index);
+   parameters[0x618] = 1;
+   *(point3f *)(parameters + 0x620) = state->position;
+   memcpy(parameters + 0x650, &state->unknown48, 0x10);
+   *(long *)(parameters + 0x64c) = state->unknown44;
+   *(short *)(parameters + 0x660) = *(short *)((byte *)state + 0x2c);
+   *(real *)(parameters + 0x61c) = node->unknown28;
+   *(long *)(parameters + 0x664) = prop_index;
+   *(point3f *)(parameters + 0x62c) = *(point3f *)((byte *)state + 0x30);
+   *(long *)(parameters + 0x648) = NONE;
+   long root = node->object_index;
+   if (!object[0xaa] && *(long *)(object + 0x14) != NONE) root = *(long *)(object + 0x14);
+   *(long *)(parameters + 0x648) = function_baf80(root);
+   if (type == 2 && ((1 << object[0xaa]) & 3) && node->unknown27 < 1 && tracking && tracking->unknown10 >= 0)
+   {
+    point3f point;
+    function_210850((s_type_c3b527 *)((byte *)tracking + 0x18), &point);
+    function_1e3b00(node->object_index, 1, &point, NULL, NULL, (point3f *)(parameters + 0x638));
+    long leaf = function_14a280(g_4e033c, 0, (point3f *)(parameters + 0x638));
+    if (leaf != NONE) *(short *)(parameters + 0x660) = *(short *)(*(byte **)((byte *)g_4e0348 + 0x30) + leaf * 8);
+   }
+   else *(point3f *)(parameters + 0x638) = *(point3f *)((byte *)state + 0x10);
+   byte *definition = (byte *)function_1e4a10(*(long *)(actor + 0x54));
+   *(real *)(parameters + 0x678) = 0.0f;
+   if (definition) *(real *)(parameters + 0x678) = *(real *)(definition + 0x64);
+   if (node->state >= 3 && !parameters[0x668])
+   {
+    parameters[0x668] = 1;
+    *(vector3f *)(parameters + 0x66c) = tracking->unknown94;
+   }
+   parameters[0x644] = type == 4 || type == 6;
+  }
+ }
+ if (parameters[0x618] && (type == 0 || type == 3 || type == 2 || type == 6)) parameters[0x55] = 1;
+ long weapon = function_1e1f20(actor_index);
+ byte *local_67e06b_2 = NULL;
+ if (weapon != NONE)
+ {
+  byte *object = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
+  local_67e06b_2 = (byte *)function_1e5280(actor_index, *(long *)object);
+ }
+ if (local_67e06b_2)
+ {
+  vector3f *direction = (vector3f *)(local_67e06b_2 + 0x60);
+  if (direction->i * direction->i + direction->j * direction->j + direction->k * direction->k > 0.0001f)
+  {
+   parameters[0x5fc] = 1;
+   *(vector3f *)(parameters + 0x600) = *direction;
+   goto weapon_done;
+  }
+ }
+ parameters[0x5fc] = 0;
+weapon_done:
+ if (*(short *)(actor + 0x358) > 0)
+ {
+  long index = *(long *)(actor + 0x368);
+  byte *node = g_502418->data + (index & 0xffff) * 0x3c;
+  if (*(short *)(node + 0x24) >= 1 && *(real *)(actor + 0x39c) + 3.0f > *(real *)(actor + 0x394)) parameters[0x51] = 1;
+ }
+ if (*(short *)(actor + 0x270) == 4) { parameters[0x5b] = 1; parameters[0x5c] = 1; }
+ parameters[0x56] |= actor[0x229];
+ byte *movement = (byte *)function_1e4a50(*(long *)(actor + 0x54));
+ if (movement)
+ {
+  dword flags = *(dword *)movement;
+  if (flags & 0x20)
+  {
+   parameters[0x59] &= (byte)((flags >> 4) & 1);
+   if (parameters[0x59]) parameters[0x5a] = 1;
+   parameters[0x58] = 1;
+  }
+  else parameters[0x59] = 0;
+  byte *object = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
+  if (*(short *)(object + *(short *)(object + 0x346) + 0x36) == 5)
+  {
+   byte *definition = (byte *)function_1e4990(*(long *)(actor + 0x54));
+   if (definition && !(definition[0] & 2) && (movement[0] & 0x20)) parameters[0x56] = 1;
+  }
+ }
+ else { parameters[0x59] = 0; parameters[0x58] = 0; parameters[0x5a] = 0; }
+ *(short *)(parameters + 0x274) = 0;
+ *(short *)(parameters + 0x276) = 0;
+ *(short *)(parameters + 0x278) = 0;
+ bool group = false;
+ long group_index = *(long *)(actor + 0x7c);
+ if (*(short *)(actor + 0x86) >= 5 && group_index != NONE)
+  group = *(short *)(g_502420->data + (group_index & 0xffff) * 0x50 + 0x10) > 1;
+ switch (type)
+ {
+ case 0: case 2: case 3: case 6:
+  if (group)
+  {
+   long index = *(long *)(actor + 0x58);
+   while (index != NONE && *(short *)(parameters + 0x274) < 32)
+   {
+    s_prop_node *node = (s_prop_node *)(g_502418->data + (index & 0xffff) * 0x3c);
+    long current = index;
+    index = node->next_index;
+    s_type_5cfb45 *state = function_25d690(node);
+    s_type_76cf92 *prop = prop_get(node->prop_index);
+    vector3f direction;
+    if (node->state >= 1 && !state->unknown5e && !prop->unknown23 && prop->unknown25 && function_267840(actor_index, current, &direction))
+    {
+     *(short *)(parameters + 0x27c + *(short *)(parameters + 0x274) * 0x1c) = 1;
+     *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = state->position;
+     *(vector3f *)(parameters + 0x28c + *(short *)(parameters + 0x274) * 0x1c) = direction;
+     ++*(short *)(parameters + 0x274);
+     ++*(short *)(parameters + 0x276);
+    }
+   }
+   group_index = *(long *)(actor + 0x7c);
+   if (group_index != NONE)
+   {
+    index = *(long *)(g_502420->data + (group_index & 0xffff) * 0x50 + 0x18);
+    while (*(short *)(parameters + 0x274) < 32 && index != NONE)
+    {
+     byte *other = g_4f55f0->data + (index & 0xffff) * 0x888;
+     long current = index;
+     index = *(long *)(other + 0x80);
+     vector3f direction;
+     if (other != actor && function_1e1e50(current, &direction))
+     {
+      *(short *)(parameters + 0x27c + *(short *)(parameters + 0x274) * 0x1c) = 0;
+      *(point3f *)(parameters + 0x280 + *(short *)(parameters + 0x274) * 0x1c) = *(point3f *)(other + 0x238);
+      *(vector3f *)(parameters + 0x28c + *(short *)(parameters + 0x274) * 0x1c) = direction;
+      ++*(short *)(parameters + 0x274);
+      ++*(short *)(parameters + 0x276);
+     }
+    }
+   }
+  }
+  break;
+ }
+ *(short *)(parameters + 0x754) = 0;
+}

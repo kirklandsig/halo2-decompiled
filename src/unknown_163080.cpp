@@ -13,6 +13,8 @@ struct s_163080_globals
 	byte : 7;
 };
 
+__declspec(noinline) bool function_163080(void);
+
 // @retail 0x163080
 bool function_163080(void)
 {

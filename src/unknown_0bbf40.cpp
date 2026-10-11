@@ -867,7 +867,94 @@ struct s_post_physics_header_ab
 void __stdcall function_bc5e0(long object_index);
 void __stdcall function_1d3920(byte *component, dword *mask, real value);
 void function_108cd0(long object_index);
-void __stdcall function_bef30(long object_index, long remove, long add, long siblings, long own_flags);
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags);
+
+struct s_light_link_ab
+{
+    byte kind;
+    byte unknown01[3];
+    long light_index;
+};
+
+struct s_light_tree_object_ab
+{
+    long definition;
+    dword flag0 : 1;
+    dword : 3;
+    dword flag4 : 1;
+    dword : 1;
+    dword flag6 : 1;
+    dword : 25;
+    long unknown08;
+    long sibling;
+    long child;
+    byte unknown14[0x11c - 0x14];
+    short links_size;
+    short links_offset;
+};
+
+struct s_light_tree_header_ab
+{
+    word identifier;
+    byte flags;
+    byte type;
+    dword unknown04;
+    s_light_tree_object_ab *object;
+};
+
+void function_c3220(long light_index);
+void __stdcall function_c2d00(long light_index);
+long __stdcall function_c1720(long object_index, long remove, long add);
+
+// @retail 0xbef30
+void __stdcall function_bef30(long object_index, long remove, long add, long siblings, bool own_flags)
+{
+    (void)&object_index;
+    (void)&remove;
+    (void)&add;
+    (void)&siblings;
+    (void)&own_flags;
+    do
+    {
+        s_light_tree_header_ab *header = &((s_light_tree_header_ab *)g_4e0300->data)[object_index & 0xffff];
+        s_light_tree_object_ab *object = header->object;
+        bool hidden;
+        if ((byte)own_flags)
+        {
+            if ((header->flags & 0x10) || TEST_FIELD_BIT(object->flag0))
+                return;
+            hidden = false;
+        }
+        else
+        {
+            hidden = object_or_parent_hidden(object_index);
+            if (hidden)
+                return;
+        }
+        if (TEST_FIELD_BIT(object->flag4))
+        {
+            long count = (dword)(long)object->links_size / sizeof(s_light_link_ab);
+            s_light_link_ab *links = (s_light_link_ab *)((byte *)object + object->links_offset);
+            for (long i = 0; i < count; ++i)
+            {
+                if (!links[i].kind && links[i].light_index != NONE && !hidden)
+                {
+                    if ((byte)remove)
+                        function_c3220(links[i].light_index);
+                    if ((byte)add)
+                        function_c2d00(links[i].light_index);
+                }
+            }
+        }
+        if (TEST_FIELD_BIT(object->flag6))
+            function_c1720(object_index, remove, add);
+        if (object->child != NONE)
+            function_bef30(object->child, remove, add, 1, !hidden);
+        if (!(byte)siblings || object->sibling == NONE)
+            return;
+        object_index = object->sibling;
+    } while (true);
+}
 
 // @retail 0xbc820
 void __stdcall function_bc820(long object_index)
@@ -898,7 +985,7 @@ void __stdcall function_bc820(long object_index)
     object->flag2 = false;
     bool moved = function_bdef0(object_index);
     if ((header->flags & 0x40) && !moved)
-        function_bef30(object_index, 1, 1, 0, 0);
+        function_bef30(object_index, 1, 1, 0, false);
     long child = object->child;
     while (child != NONE)
     {

@@ -2,6 +2,78 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7488 functions match
+
+```
+matched 7488 of 11318 game functions (877391 of 2784283 bytes, 31.51%)
+```
+
+1 new matches, none lost:
+- Deep lane 1, closest first in lanes W, Z, AB and AD: 0xada90.
+
+## 2026-10-10: 7487 functions match
+
+```
+matched 7487 of 11318 game functions (877360 of 2784283 bytes, 31.51%)
+```
+
+6 new matches, none lost:
+- Deep lane 2, helpers first in 0x160000 to 0x16ffff: the helpers 0x16c4f0 and 0x16c5f0, and their callers 0x2a89b0, 0x2a8a00, 0x2a8c70 and 0x2a8cc0, unchanged.
+
+## 2026-10-10: 7481 functions match
+
+```
+matched 7481 of 11318 game functions (876545 of 2784283 bytes, 31.48%)
+```
+
+3 new matches, none lost:
+- Deep lane 1, new code and mid-length tuning in lanes W, Z, AB and AD: 0xb9d70, 0x41c20 and 0xd4cf0; eight new bodies.
+
+## 2026-10-10: 7478 functions match
+
+```
+matched 7478 of 11318 game functions (876188 of 2784283 bytes, 31.47%)
+```
+
+1 new matches, none lost:
+- Deep lane 3, helpers first: 0x2be5d0 matches with no change to it, after its helpers were tuned.
+
+## 2026-10-10: 7477 functions match
+
+```
+matched 7477 of 11318 game functions (876062 of 2784283 bytes, 31.46%)
+```
+
+1 new matches, none lost:
+- Our permuter lane: 0xe5280, held back because it calls a function that doesn't match yet, then checked by hand and confirmed by a full build.
+
+## 2026-10-10: 7476 functions match
+
+```
+matched 7476 of 11318 game functions (875935 of 2784283 bytes, 31.46%)
+```
+
+3 new matches, none lost:
+- Deep lane 2, closest first in lanes T, R, H and the UI core: 0x176210, 0x17d690 and 0x22cd48.
+
+## 2026-10-10: 7473 functions match
+
+```
+matched 7473 of 11318 game functions (874621 of 2784283 bytes, 31.41%)
+```
+
+1 new matches, none lost:
+- Deep lane 3, second-level blockers: 0xbef30 (281 bytes, newly written); its fifth parameter is a bool, as retail's callers pass it.
+
+## 2026-10-10: 7472 functions match
+
+```
+matched 7472 of 11318 game functions (874340 of 2784283 bytes, 31.40%)
+```
+
+1 new matches, none lost:
+- Deep lane 3, closest first in lanes V, X, A and the UI screens: 0x26dc90 (334 bytes).
+
 ## 2026-10-10: 7471 functions match
 
 ```

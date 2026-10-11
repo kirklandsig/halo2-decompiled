@@ -2217,7 +2217,7 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
 	real perimeter, point3f const *color, real height);
 struct s_sort_record;
 typedef bool (__stdcall *t_record_fill)(long, void *, long, long, long, void *, s_sort_record *);
-void function_41490(long tag, short group, short kind, real distance, t_record_fill fill,
+void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
 	dword value, void (__stdcall *callback)(void *), void *context, point3f const *position);
 
 // @retail 0x244470
@@ -2271,7 +2271,7 @@ void function_244630(point3f const *arg_0, long arg_1)
 	byte *local_0 = (byte *)g_4e3b44[g_4e034c->index & 0xffff].data;
 	byte *local_1 = *(byte **)(local_0 + 0xc);
 	byte *local_2 = *(byte **)(local_1 + 0x534);
-	function_41490(*(long *)(local_2 + 0xc4), 0, NONE, 640.f,
+	function_41490(0, *(long *)(local_2 + 0xc4), NONE, 640.f,
 		(t_record_fill)function_d4bc0, (dword)function_244470, function_244610, (void *)arg_1, arg_0);
 }
 

@@ -73,7 +73,7 @@ struct s_animation_state
 	bool animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long unknown);
 	void reset();
 	bool initialize(long graph_tag_index, long model_tag_index, bool flag);
-	void channels_clear_partial();
+	__declspec(noinline) void channels_clear_partial();
 	s_graph_entry *entry_get(long index);
 	long node_find(long name);
 	bool node_map_build(long render_model_tag_index, long *node_count, long *node_map);
@@ -1696,7 +1696,7 @@ long function_100b40(long magazine_index, long weapon_index, bool weapon_only);
 void function_1416c0(point3f const *position, transform4x3f *out);
 real function_1d9370(s_1d9240 const *p);
 
-static inline void first_person_orientations_from_model(s_16760c_render_model const *render_model, long const *node_map,
+static __forceinline void first_person_orientations_from_model(s_16760c_render_model const *render_model, long const *node_map,
 	s_16760c_orientation *orientations)
 {
 	short node_index;
@@ -1717,7 +1717,7 @@ static inline void first_person_orientations_from_model(s_16760c_render_model co
 	}
 }
 
-static inline void first_person_channel_sample_sway(c_animation_channel *channel, real value, real positive_frame,
+static __forceinline void first_person_channel_sample_sway(c_animation_channel *channel, real value, real positive_frame,
 	real negative_frame, real weight, long node_count, byte *orientations)
 {
 	if (value > 0.0f)
@@ -1751,8 +1751,8 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 			g_4e3b44[definition->interfaces[interface_index].render_model_index & 0xffff].bytes;
 		s_16760c_render_model *arms_model = (s_16760c_render_model *)
 			g_4e3b44[((s_first_person_globals_view *)g_4e034c)->representations[user->character_index].arms_render_model_index & 0xffff].bytes;
-		c_animation_channel channel;
 		s_animation_state *state = &weapon->animation;
+		c_animation_channel channel;
 		byte *orientations;
 		transform4x3f root;
 		long node_index;
