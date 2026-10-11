@@ -37,14 +37,15 @@ struct s_actor_position_state
 
 __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
+	transform4x3f const volatile *local_3 = arg_0;
 	real local_0 = arg_1->i;
 	real local_1 = arg_1->j;
 	real local_2 = arg_1->k;
 	if (arg_0->scale != 1.0f)
 	{
 		local_0 = arg_0->scale * local_0;
-		local_1 = arg_0->scale * local_1;
-		local_2 = arg_0->scale * local_2;
+		local_1 = local_3->scale * local_1;
+		local_2 = local_3->scale * local_2;
 	}
 	arg_2->i = arg_0->up.i * local_2 + arg_0->left.i * local_1 + arg_0->forward.i * local_0;
 	arg_2->j = arg_0->up.j * local_2 + arg_0->left.j * local_1 + arg_0->forward.j * local_0;
@@ -55,6 +56,7 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
 	transform4x3f const *const *local_4 = &arg_2;
+	s_actor_position_state volatile *local_5 = arg_3;
 	point3f local_0 = *g_468788;
 	vector3f local_1;
 	if (arg_0 != NONE)
@@ -74,9 +76,9 @@ bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_acto
 	arg_3->s_actor_position_state::s_actor_position_state();
 	arg_3->position = local_0;
 	arg_3->field10 = NONE;
-	arg_3->field14 = (real)atan2(local_1.j, local_1.i);
-	arg_3->field18 = (real)atan2(local_1.k, sqrt(local_1.j * local_1.j + local_1.i * local_1.i));
-	arg_3->field1c = 4;
-	arg_3->field2e = 1;
+	local_5->field14 = (real)atan2(local_1.j, local_1.i);
+	local_5->field18 = (real)atan2(local_1.k, sqrt(local_1.j * local_1.j + local_1.i * local_1.i));
+	local_5->field1c = 4;
+	local_5->field2e = 1;
 	return true;
 }

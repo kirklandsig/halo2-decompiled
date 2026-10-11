@@ -9723,7 +9723,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0028f290,275,game,speed,a16 pad,,,00030bf0 000b9dd0 00210c90,src/unknown_2900b0.cpp,matched
 0028f3b0,588,game,speed,a16 pad,,,00030bf0 001e4b50 0028e600 00295600,src/unknown_2900b0.cpp,todo
 0028f600,243,game,speed,a16 pad,,,00118f90,src/unknown_290c80.cpp,matched
-0028f700,393,game,speed,a16 pad,,,0028e770 0028f3b0 0028f600,src/unknown_28f700.cpp,todo
+0028f700,393,game,speed,a16 pad,,,0028e770 0028f3b0 0028f600,src/unknown_28f700.cpp,matched
 0028f890,55,game,speed,a16 pad,,,000b9dd0,src/unknown_290c80.cpp,matched
 0028f8d0,390,game,speed,a16 pad,,,000b9dd0 001e3a00,src/unknown_2900b0.cpp,todo
 0028fa60,237,game,speed,a16 pad,,,001e3a00,src/unknown_28fa60.cpp,todo

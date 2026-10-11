@@ -13,6 +13,7 @@ bool __stdcall function_29da40(long arg_0, s_type_c3b527 const *arg_1, long arg_
 	short arg_3, bool arg_4, point3f const *arg_5, vector3f const *arg_6,
 	s_type_c3b527 *arg_7, long *arg_8)
 {
+	vector3f const *const volatile *local_6 = &arg_6;
 	bool local_0 = false;
 	long local_1;
 	switch (arg_3)
@@ -28,7 +29,7 @@ bool __stdcall function_29da40(long arg_0, s_type_c3b527 const *arg_1, long arg_
 		transform4x3f local_3;
 		if (arg_0 != NONE)
 		{
-			if (!function_270240(actor_get(arg_0)->unknown018, local_1, 0x5000049, arg_5, arg_6, &local_3))
+			if (!function_270240(actor_get(arg_0)->unknown018, local_1, 0x5000049, arg_5, *local_6, &local_3))
 				goto local_5;
 			local_2 = local_3.position;
 		}

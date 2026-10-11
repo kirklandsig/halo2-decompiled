@@ -26,14 +26,15 @@ __forceinline real function_29c8b1(real arg_0)
 
 __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1, real arg_2, vector3f *arg_3)
 {
+	vector3f const *local_4 = arg_1;
 	real local_0 = (real)sin(arg_2);
 	real local_1 = (real)cos(arg_2);
-	real local_2 = (arg_1->i * arg_0->i + arg_0->j * arg_1->j + arg_1->k * arg_0->k) * (1.0f - local_1);
+	real local_2 = (local_4->i * arg_0->i + arg_0->j * arg_1->j + arg_1->k * arg_0->k) * (1.0f - local_1);
 	vector3f local_3;
+	local_3.j = local_4->i * arg_0->k - arg_1->k * arg_0->i;
+	local_3.k = arg_0->i * arg_1->j - local_4->i * arg_0->j;
 	local_3.i = arg_1->k * arg_0->j - arg_1->j * arg_0->k;
-	local_3.j = arg_1->i * arg_0->k - arg_1->k * arg_0->i;
-	local_3.k = arg_0->i * arg_1->j - arg_1->i * arg_0->j;
-	arg_3->i = arg_1->i * local_2 + local_1 * arg_0->i - local_3.i * local_0;
+	arg_3->i = local_4->i * local_2 + local_1 * arg_0->i - local_3.i * local_0;
 	arg_3->j = local_1 * arg_0->j + local_2 * arg_1->j - local_3.j * local_0;
 	arg_3->k = arg_1->k * local_2 + local_1 * arg_0->k - local_3.k * local_0;
 }
