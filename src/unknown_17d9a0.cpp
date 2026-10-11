@@ -6,6 +6,7 @@
 #include <float.h>
 #include "globals.h"
 #include "unknown_03bcb0.h"
+#include "unknown_1428b0.h"
 #include <string.h>
 #include <math.h>
 
@@ -1059,4 +1060,158 @@ bool function_17ef10(transform4x3f const *transform, long tag_index,
     preparation->projection.orientation_bounds[2] = preparation->projection.orientation_bounds[3] = normal.j;
     preparation->projection.orientation_bounds[4] = preparation->projection.orientation_bounds[5] = normal.k;
     return true;
+}
+
+struct s_effect_source;
+struct s_collision_result_1697c0;
+struct s_slot_entry_list;
+extern s_slot_entry_list *g_4e0340;
+bool g_46dd48 = true;
+real function_30bf0(vector3f *vector);
+bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
+    long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
+plane3f *function_1428b0(transform4x3f const *matrix, plane3f const *plane, plane3f *out);
+int __stdcall function_1429d0(transform4x3f const *matrix, long count,
+    point3f const *source, point3f *destination);
+
+// @retail 0x17e670
+void function_17e670(s_effect_source *source, point3f const *point, long tag_index,
+    vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2)
+{
+    if (!g_46dd48)
+        return;
+    s_decal_definition_17ef10 const *definition =
+        (s_decal_definition_17ef10 const *)g_4e3b44[tag_index & 0xffff].bytes;
+    dword saved_seed = g_4e7408->seed;
+    bool deterministic = (byte)unknown0 != 0;
+    if (deterministic)
+    {
+        dword const *bits = (dword const *)point;
+        g_4e7408->seed = bits[0] ^ bits[1] ^ bits[2] ^ 0xdeadc0de;
+    }
+    long excluded = -1;
+    short cluster = -1;
+    bool world_hit = false;
+    point3f center;
+    vector3f direction = *vector;
+    function_30bf0(&direction);
+    point3f start;
+    start.x = point->x - direction.i * 0.01f;
+    start.y = point->y - direction.j * 0.01f;
+    start.z = point->z - direction.k * 0.01f;
+    s_decal_placement collision;
+    collision.unknown24 = -1;
+    s_decal_placement *placement = (s_decal_placement *)source;
+    bool found = true;
+    if (!placement || placement->unknown00 == 4)
+    {
+        found = function_1697c0(0x20800007, &start, vector, -1, -1,
+            (s_collision_result_1697c0 *)&collision);
+        placement = &collision;
+    }
+    if (found)
+    {
+        cluster = (short)placement->unknown20;
+        if (placement->unknown00 == 1)
+        {
+            world_hit = true;
+            center = placement->position;
+            g_510c80 = placement->position;
+            g_46dd4c = 0;
+            function_17ee20((s_decal_mesh_view const *)g_4e0340, 0, tag_index,
+                placement, vector, radius, deterministic, unknown1, unknown2);
+        }
+        else if (placement->unknown00 == 3)
+        {
+            s_decal_bound_17e490 *bound = &((s_decal_bsp_17e490 *)g_4e0348)->bounds[placement->unknown3c];
+            short mesh_index = *(short *)((byte *)bound + 0x34);
+            byte *meshes = *(byte **)((byte *)g_4e0348 + 0x13c);
+            s_decal_mesh_view const *mesh = (s_decal_mesh_view const *)(meshes + mesh_index * 0xc8 + 0x70);
+            transform4x3f const *matrix = (transform4x3f const *)bound;
+            if (placement != &collision)
+                decal_placement_copy(placement, &collision);
+            excluded = placement->unknown3c;
+            center = placement->position;
+            function_142700(matrix, &collision.position, &collision.position);
+            function_1428b0(matrix, &collision.plane, &collision.plane);
+            vector3f local_direction;
+            function_1427f0(matrix, vector, &local_direction);
+            g_510c80 = center;
+            g_46dd4c = 1;
+            if (function_17ee20(mesh, matrix, tag_index, &collision, &local_direction,
+                radius, deterministic, unknown1, unknown2) && unknown2)
+                function_1429d0(matrix, 4, (point3f const *)unknown2, (point3f *)unknown2);
+        }
+    }
+    if (deterministic)
+    {
+        g_4e7408->seed = saved_seed;
+        return;
+    }
+    if (!(definition->maximum_radius * 2.0f > 0.2f) || (!world_hit && excluded == -1))
+        return;
+    real search_radius = (real)((double)radius * (double)definition->maximum_radius * 0.25);
+    s_decal_bound_17e490 *nearby[1024];
+    long count = function_17e490(excluded, cluster, &center, search_radius, 1024, nearby);
+    for (long i = 0; i < count; ++i)
+    {
+        s_decal_bound_17e490 *bound = nearby[i];
+        short mesh_index = *(short *)((byte *)bound + 0x34);
+        byte *meshes = *(byte **)((byte *)g_4e0348 + 0x13c);
+        s_decal_mesh_view const *mesh = (s_decal_mesh_view const *)(meshes + mesh_index * 0xc8 + 0x70);
+        s_decal_placement adjacent;
+        adjacent.unknown24 = -1;
+        direction.i = bound->center.x - center.x;
+        direction.j = bound->center.y - center.y;
+        direction.k = bound->center.z - center.z;
+        if (function_30bf0(&direction) >= 0.0001f)
+        {
+            point3f origin;
+            origin.x = direction.i * 0.01f + center.x;
+            origin.y = direction.j * 0.01f + center.y;
+            origin.z = direction.k * 0.01f + center.z;
+            real length = search_radius * 2.0f;
+            direction.i *= length;
+            direction.j *= length;
+            direction.k *= length;
+            if (function_1697c0(0x800005, &origin, &direction, -1, -1,
+                (s_collision_result_1697c0 *)&adjacent) && adjacent.unknown00 == 3
+                && &((s_decal_bsp_17e490 *)g_4e0348)->bounds[adjacent.unknown3c] == bound)
+            {
+                transform4x3f const *matrix = (transform4x3f const *)bound;
+                function_142700(matrix, &adjacent.position, &adjacent.position);
+                function_1428b0(matrix, &adjacent.plane, &adjacent.plane);
+                function_1427f0(matrix, &direction, &direction);
+                g_46dd4c = 2;
+                function_17ee20(mesh, matrix, tag_index, &adjacent, &direction,
+                    radius, false, unknown1, 0);
+            }
+        }
+    }
+    if (!world_hit)
+    {
+        vector3f axes[6] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}};
+        real length = search_radius * 2.0f;
+        for (long j = 0; j < 6; ++j)
+        {
+            point3f origin;
+            origin.x = axes[j].i * 0.01f + center.x;
+            origin.y = axes[j].j * 0.01f + center.y;
+            origin.z = axes[j].k * 0.01f + center.z;
+            vector3f ray;
+            ray.i = axes[j].i * length;
+            ray.j = axes[j].j * length;
+            ray.k = axes[j].k * length;
+            s_decal_placement world;
+            world.unknown24 = -1;
+            if (function_1697c0(0x20800007, &origin, &ray, -1, -1,
+                (s_collision_result_1697c0 *)&world) && world.unknown00 == 1)
+            {
+                g_46dd4c = 3;
+                if (function_17ee20((s_decal_mesh_view const *)g_4e0340, 0, tag_index,
+                    &world, &ray, radius, false, unknown1, 0))
+                    break;
+            }
+        }
+    }
 }

@@ -6,14 +6,14 @@ the range are dependencies, not claimed for edits.
 
 | Retail entry | Bytes | Current evidence |
 | --- | ---: | --- |
-| `0x17e670` | 1,787 | Placement entry called by effect and decal-related source |
+| `0x17e670` | 1,787 | Placement body recovered; behavior checked, byte matching pending |
 | `0x17ee20` | 240 | Iterates a decal chain, preparing and submitting projection work |
 | `0x17ef10` | 3,591 | Preparation body recovered; behavior checked, byte matching pending |
 
 The intervening placement-copy helper `0x17ed70` already has matching source
 in `src/unknown_17d9a0.cpp`; preserve it. The three missing bodies total 5,618
-retail bytes. Traversal and preparation implementations are present. The
-placement entry remains stubbed. No new exact matches are claimed.
+retail bytes. All three bodies are implemented and their temporary stubs
+removed. No new exact matches are claimed.
 
 ## Independently observed flow at `0x17ee20`
 
@@ -89,6 +89,23 @@ the orientation bounds. Persistent random choices are reused when the state
 flag is set. The matrix's scale field is not written here; it retains its
 incoming value, including the zero supplied by the traversal's cleared buffer.
 
+## Placement entry
+
+The entry respects the enable byte at `0x46dd48`. It normalizes a copy of the
+incoming direction and offsets the collision-query origin by `0.01` along it.
+A supplied collision record is reused unless its type is 4; otherwise it queries
+for a hit. Type 1 uses the world mesh, while type 3 converts point, plane and
+direction into the hit instance's local coordinates. Successful instance
+placement can transform four caller-supplied output points back to world space.
+
+The low byte of `unknown0` selects deterministic random seeding from the point's
+three float bit patterns XOR `0xdeadc0de`. This mode restores the previous seed
+and skips the additional searches. For sufficiently large decals, ordinary
+placement searches nearby instance bounds, checks that ray hits belong to each
+candidate, and places in their local coordinates. An initial instance hit also
+tries six world-axis rays, stopping after successful world placement. These
+four submission paths set the mode at `0x46dd4c` to 0, 1, 2, or 3.
+
 ## Scope and validation
 
 The compiled preparation passes 2,048 differential cases against retail,
@@ -104,16 +121,25 @@ texture residency, and lookup/fallback results. A separate run with geometry
 helpers also mocked passes the same 2,048 cases. Neither establishes GPU,
 streamed texture, or gameplay behavior.
 
+Placement passes 1,024 differential cases using actual normalization, point,
+vector and plane transforms, placement copying, and output-point transformation.
+Collision, nearby-bound search and chain execution are mocked in this probe.
+It compares helper order/arguments, input memory, random seed, output points and
+placement globals. Coverage includes 1,060 collision queries, 133 nearby-bound
+searches, and 711 chain submissions across all four modes (278/283/13/137).
+The chain flag is compared as a byte, consistent with the callee's bool argument;
+unused high bytes in its stack slot are not semantic inputs.
+
 The compiled traversal still passes its 216 helper-boundary cases against the
 retail contract. That separate probe mocks preparation, projection, and commit;
 it checks forwarding, zeroed preparation, persistent state, signed polygon
 counts, sticky success, early exits, stack balance, and saved registers.
 
 The full byte check on base `4e084bdf` preserves all 7,490 existing game matches,
-including placement copy `0x17ed70`, with no gains or losses. Neither new body
+including placement copy `0x17ed70`, with no gains or losses. None of the three new bodies
 is exact: traversal is 259 compiled bytes versus 240 retail; preparation is
-3,453 versus 3,591. Preparation's temporary stub has been removed. The placement
-entry `0x17e670` remains stubbed. No outside helper bodies or flags changed.
+3,453 versus 3,591. Placement is 1,752 compiled bytes versus 1,787 retail.
+Both temporary stubs have been removed. No outside helper bodies or flags changed.
 
 Sources: independent disassembly of the project's SHA-256-pinned retail
 executable and the existing CC0 repository source and inventory. No leaked
