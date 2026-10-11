@@ -172,7 +172,7 @@ void __stdcall function_b87b0(long object_index);
 void __stdcall function_b83b0(long object_index, bool a);
 void __stdcall function_b8460(long object_index, bool a);
 bool function_11c470(long cluster_index, point3f const *point);
-void function_bf0f0(s_type_4f0dcc const *datum, long type, long index, s_scenario_block *palette, bool a, bool b);
+long function_bf0f0(s_type_4f0dcc const *datum, long type, long index, s_scenario_block *palette, bool a, bool b);
 void function_bf380();
 long function_bf760(long const *unique_id);
 void loop_compact(s_loop_allocator *loop);
@@ -598,8 +598,8 @@ void function_d4e60(short bsp_index)
 
 /* fills in the data a scenario object is made from */
 // @retail 0xd5060
-bool function_d5060(long type, long unknown10, bool unknown,
-	s_type_4f0dcc const *datum, s_scenario_block *palette, s_object_placement_data *data)
+bool function_d5060(s_scenario_block *palette, volatile long type, long unknown10,
+	s_type_4f0dcc const *datum, bool unknown, s_object_placement_data *data)
 {
 	bool create = !((datum->flags >> 6) & 1);
 	s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);

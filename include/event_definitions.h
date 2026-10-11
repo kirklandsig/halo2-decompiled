@@ -207,6 +207,7 @@ public:
 class c_projectile_object_impact_effect_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual real v7(long a, long b, long c);
 	virtual void v9(long a, void const *data, s_bitstream *stream);
 	virtual bool v10(long a, void *data, s_bitstream *stream);
@@ -219,6 +220,7 @@ public:
 class c_projectile_attached_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual const char *v1();
 	virtual void v6(void *a, long b, long *size);
 	virtual void v8(long a, long b, long c, long size, char *buffer);
@@ -229,6 +231,7 @@ public:
 class c_weapon_put_away_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual const char *v1();
 	virtual void v6(void *a, long b, long *size);
 	virtual void v8(long a, long b, long c, long size, char *buffer);
@@ -237,6 +240,7 @@ public:
 class c_weapon_fire_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual void v9(long a, void const *data, s_bitstream *stream);
 	virtual bool v10(long a, void *data, s_bitstream *stream);
 	virtual const char *v1();
@@ -248,6 +252,7 @@ public:
 class c_weapon_pickup_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual const char *v1();
 	virtual void v6(void *a, long b, long *size);
 	virtual void v8(long a, long b, long c, long size, char *buffer);
@@ -258,6 +263,7 @@ public:
 class c_weapon_effect_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual const char *v1();
 	virtual void v6(void *a, long b, long *size);
 	virtual void v8(long a, long b, long c, long size, char *buffer);
@@ -268,6 +274,7 @@ public:
 class c_weapon_drop_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual long v0();
 	virtual const char *v1();
 	virtual void v8(long a, long b, long c, long size, char *buffer);
@@ -278,6 +285,7 @@ public:
 class c_weapon_reload_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual const char *v1();
 	virtual void v8(long a, long b, long c, long size, char *buffer);
 };

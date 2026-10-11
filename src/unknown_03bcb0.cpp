@@ -1310,3 +1310,243 @@ bool __stdcall function_3bd00(real height, dword color)
     return true;
 }
 #endif
+
+
+// Disabled: passing the shared source-list address violates the shared-global rule.
+#if 0
+// Retail 0x40e30
+void function_40e30(short group, long tag, real distance, long level, word kind,
+    dword and_mask, dword or_mask, t_record_fill fill, dword value, void *context)
+{
+    if (group != NONE && function_1bf50(tag, level, distance, &level))
+        function_3b9d0(&g_4c1a48[group], tag, level, and_mask, or_mask, fill, value, context, 0);
+}
+#endif
+
+
+
+// Disabled: retail passes shared render-table and reset-state addresses; their canonical declarations remain split.
+#if 0
+struct s_render_transform_record;
+struct s_primitive_definition;
+struct s_primitive_header;
+struct s_24490_definition;
+struct s_1c8c0_stream;
+void function_1c0d0(long tag, long stage);
+void function_4d830(s_render_transform_record const *record);
+void function_4d7c0(dword const *record, word const *kind);
+void function_24040(long key, long slot, s_24490_definition *definition);
+void *function_24490(long key, s_24490_definition *definition, long entry);
+s_primitive_header *function_4dc60(s_primitive_definition *, long, bool, long);
+void function_15c90(long stage, long index, long element);
+bool function_1caa0(long, byte const *, word const *, byte const *,
+    s_1c8c0_stream const *, s_1c8c0_stream const *, s_1c8c0_stream const *);
+void function_4d9c0(byte const *, long, byte, short, long, long, long, long);
+void __stdcall function_4d640(short, long, bool);
+void function_4d720(short, long);
+extern long g_485a60;
+
+// Retail 0x4d0b0
+void __stdcall function_4d0b0(long tag, long first, long second, long mode,
+    long packed, long fourth, void *record_address)
+{
+    byte *definition = g_4e3b44[tag & 0xffff].bytes;
+    long part_index = packed & 0xff;
+    short index = (short)(packed >> 8);
+    byte value = (byte)(packed >> 24);
+    *(long *)(g_485b48 + 8) = tag;
+    if ((mode == 18 || mode == 19) && !(definition[0x16] & 4))
+    {
+        tag = *(long *)(g_485a80 + 0xd0);
+        second = 0;
+    }
+    bool compound = (definition[0x16] & 1) != 0;
+    s_44940_entry *entry = &g_4ba138[index];
+    if ((entry->unknown00 & 0x4000) && mode == 16) return;
+    long section = (entry->flags >> 9) & 0x1ff;
+    long primitive = (entry->flags >> 18) & 0x7ff;
+    byte *geometry;
+    if (entry->tag != NONE)
+        geometry = *(byte **)(*(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x28) + section * 0x5c + 0x34);
+    else if (!(entry->unknown00 & 0x1000))
+        geometry = *(byte **)(*(byte **)((byte *)g_4e0348 + 0xa0) + section * 0xb0 + 0x50);
+    else
+    {
+        short cluster = *(short *)(*(byte **)((byte *)g_4e0348 + 0x144) + primitive * 0x58 + 0x34);
+        geometry = *(byte **)(*(byte **)((byte *)g_4e0348 + 0x13c) + cluster * 0xc8 + 0x50);
+    }
+    byte *part = *(byte **)(geometry + 4) + part_index * 0x48;
+    function_1c0d0(tag, mode);
+    function_4d830((s_render_transform_record *)entry);
+    function_4d7c0((dword *)entry, (word *)part);
+    byte const *selection = (byte const *)function_44940(index, (entry->unknown00 & 0x1000) != 0);
+    void *extra = 0, *stream = 0, *mask = 0;
+    if (mode == 5 && entry->tag != NONE && !compound)
+    {
+        byte *model = g_4e3b44[entry->tag & 0xffff].bytes;
+        if (*(long *)(model + 0x74) > 0)
+        {
+            s_24490_definition *resource = *(s_24490_definition **)(model + 0x78);
+            long key = **(long **)entry->unknown10;
+            function_24040(key, entry->flags & 15, resource);
+            extra = function_24490(key, resource, section);
+        }
+    }
+    bool setup = false;
+    if (mode == 3 && (entry->unknown00 >> 29) != 3 && !compound)
+    {
+        long bitmap = NONE;
+        long texture = NONE;
+        byte *data = *(byte **)((byte *)g_4e0344 + 0x84);
+        if (primitive != 0x7ff)
+        {
+            if (entry->tag != NONE)
+            {
+                if ((entry->unknown00 >> 29) != 2)
+                {
+                    byte *group = *(byte **)(data + 0x64) + primitive * 12;
+                    byte *buffer = *(byte **)(data + 0x44) + *(word *)(group + 2) * 0x38;
+                    long size = ((word *)*(byte **)(group + 8))[section] * 4;
+                    if (buffer[0] & 1)
+                    {
+                        mask = *(void **)(*(byte **)(buffer + 0x34) + 4);
+                        ((long *)mask)[1] = size;
+                        ((long *)mask)[2] = size;
+                    }
+                    stream = function_4dc60((s_primitive_definition *)data, primitive, false, section);
+                }
+            }
+            else
+            {
+                byte *group = *(byte **)(data + 0x54) + primitive * 12;
+                byte *buffer = *(byte **)(data + 0x44) + *(word *)(group + 2) * 0x38;
+                long size = **(word **)(group + 8) * 4;
+                if (buffer[0] & 1)
+                {
+                    mask = *(void **)(*(byte **)(buffer + 0x34) + 4);
+                    ((long *)mask)[1] = size;
+                    ((long *)mask)[2] = size;
+                }
+                stream = function_4dc60((s_primitive_definition *)data, primitive, true, NONE);
+                byte *mapping = *(byte **)(data + 0x4c) + primitive * 4;
+                bitmap = *(short *)mapping;
+                texture = *(signed char *)(mapping + 2);
+            }
+        }
+        else if (entry->tag == NONE)
+        {
+            byte *mapping = *(byte **)(data + 0x2c) + section * 4;
+            bitmap = *(short *)mapping;
+            texture = *(signed char *)(mapping + 2);
+        }
+        if (texture != NONE)
+        {
+            function_15c90(3, texture, bitmap);
+            setup = true;
+        }
+        g_485a60 = bitmap;
+    }
+    for (short i = 0; i < *(long *)(geometry + 0x38); ++i)
+        _mm_prefetch((char *)(geometry + 0x3c + i * 32), _MM_HINT_T0);
+    _mm_prefetch((char *)selection, _MM_HINT_T0);
+    _mm_prefetch((char *)mask, _MM_HINT_T0);
+    _mm_prefetch((char *)part, _MM_HINT_T0);
+    _mm_prefetch((char *)geometry, _MM_HINT_T0);
+    _mm_prefetch((char *)extra, _MM_HINT_T0);
+    _mm_prefetch((char *)stream, _MM_HINT_T0);
+    byte *record = (byte *)record_address;
+    if (compound)
+    {
+        byte *references = *(byte **)(definition + 0x24);
+        for (long i = 0; i < *(long *)(references + 4); ++i)
+        {
+            long bitmap_tag = *(long *)(*(byte **)(references + 8) + i * 12);
+            if (bitmap_tag == NONE) continue;
+            byte *bitmap_definition = g_4e3b44[bitmap_tag & 0xffff].bytes;
+            for (long j = 0; j < *(long *)(bitmap_definition + 0x44); ++j)
+            {
+                s_bitmap_predict_view *bitmap = (s_bitmap_predict_view *)(*(byte **)(bitmap_definition + 0x48) + j * 0x74);
+                if (bitmap) bitmap_predict_inline(bitmap, 14);
+            }
+        }
+        if (*(dword *)(*(byte **)(record + 0x10) + 0x118) & 0x100000)
+            function_3bea0();
+    }
+    long shader = *(long *)(*(byte **)(record + 0x10) + 0x100);
+    if (function_1caa0(shader, selection, (word *)part, geometry,
+        (s_1c8c0_stream *)extra, (s_1c8c0_stream *)mask, (s_1c8c0_stream *)stream))
+    {
+        function_4d9c0(part, mode, value, index, first, second, fourth, record[4]);
+        function_4d640(index, mode, setup);
+        bool filtered = (entry->unknown00 & 0x200) && !(part[2] & 8);
+        bool strip = (entry->unknown00 & 0x40) && *(long *)(entry->unknown10 + 4) && *(long *)(geometry + 8);
+        function_4daa0(filtered, strip, (s_4daa0_geometry *)geometry,
+            (s_4daa0_part *)part, *(dword **)(entry->unknown10 + 4));
+        function_4d720(index, mode);
+    }
+}
+#endif
+
+
+
+// Disabled: retail passes shared shader state addresses and needs the blocked 14b60/3bd00 interfaces.
+#if 0
+// Retail 0x3c3c0
+bool __stdcall function_3c3c0(bool render, bool clear)
+{
+    byte *structure = (byte *)g_4e0348;
+    if (*(long *)(structure + 0x214) <= 0) return true;
+    byte *state = *(byte **)(structure + 0x218);
+    if (*(real *)(state + 0x7c) == 0.0f || !render) return true;
+    function_3ca90(state);
+    long tag = *(long *)(state + 4);
+    if (function_3c270(state) && function_12de70(3, state + 0x10) && tag != NONE)
+    {
+        s_tag_instance *instance = g_4e3b44 + (short)tag;
+        byte *material_reference;
+        if (instance->group_tag == 0x5052544d || instance->group_tag == 0x70727433)
+            material_reference = (byte *)function_137bd0(tag)->v10();
+        else material_reference = *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
+        byte *material = g_4e3b44[*(long *)material_reference & 0xffff].bytes;
+        byte *table = *(byte **)(material + 0x5c);
+        long first = **(word **)(table + 4) & 0x1ff;
+        long second = ((word *)(*(byte **)(table + 0xc) + 6))[first] & 0x1ff;
+        long shader_tag = *(long *)(*(byte **)(table + 0x14) + second * 10 + 4);
+        byte *shader = *(byte **)(*(byte **)(g_4e3b44[shader_tag & 0xffff].bytes + 0x20) + 4);
+        long shader_index = *(long *)(shader + 0x100);
+        dword flags = *(dword *)(shader + 0x118);
+        if (flags & 0x100000) function_3bea0();
+        if (flags & 0x80000) function_3bd00(*(real *)(state + 0x84), pack_color3f((color3f const *)(state + 0x58)));
+        if (clear) function_14b60(0x10, 0xffffff, 0.0f, 0);
+        byte *geometry = *(byte **)(state + 0xc);
+        function_1cbb0(1, 1, shader_index);
+        function_151c0((s_render_data *)&g_4c1b38);
+        function_1cda0(*(void **)(geometry + 0x3c));
+        function_1c710(g_51f0f0);
+        memset(g_4c1a90, 0, 0x78);
+        function_1bd50(g_4c1a90);
+        function_1cdd0(0, 0);
+        function_1bbf0(tag, 0, 3, 0, 0, 100000.0f);
+        function_12d50(0, false, 0);
+        function_3bf00(state);
+        function_1c8a0(8, *(long *)(geometry + 0x24), *(long *)(geometry + 0x20));
+    }
+    if (tag != NONE)
+    {
+        byte *references = *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
+        for (long i = 0; i < *(long *)(references + 4); ++i)
+        {
+            long bitmap_tag = *(long *)(*(byte **)(references + 8) + i * 12);
+            if (bitmap_tag == NONE) continue;
+            byte *definition = g_4e3b44[bitmap_tag & 0xffff].bytes;
+            for (long j = 0; j < *(long *)(definition + 0x44); ++j)
+            {
+                byte *bitmap = *(byte **)(definition + 0x48) + j * 0x74;
+                if (bitmap) function_3bcb0(bitmap);
+            }
+        }
+    }
+    return true;
+}
+#endif
+

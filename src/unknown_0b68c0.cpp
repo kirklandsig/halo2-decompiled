@@ -463,3 +463,35 @@ struct s_remove_object_header
     byte *object;
 };
 
+
+
+// Disabled: retail initializes shared partition aggregates through their persistent addresses.
+#if 0
+void function_d4830();
+void function_1088e0();
+void function_bffa0();
+void *function_123dd0(long size, char const *name);
+void *game_state_malloc_aligned(long size, long alignment);
+struct s_cluster_partition;
+void function_1cabc0(s_cluster_partition *partition, char const *name, long payload_size);
+extern byte g_4de2f8[0x2008];
+
+// Retail 0xb67c0
+void function_b67c0()
+{
+    function_d4830();
+    function_1088e0();
+    function_bffa0();
+    g_4e0300 = record_pool_new_dynamic("object", 0x800, 12, 0, g_510c2c);
+    g_4de2ec = (s_data_header_40 *)function_123dd0(0x100000, "objects");
+    byte *state = (byte *)game_state_malloc_aligned(0x84, 4);
+    g_4de2f0 = false;
+    memset(state, 0, 0x84);
+    memset(g_4de2f8, 0, 0x2008);
+    g_4de2f4 = (s_object_list *)state;
+    g_4de2d0 = (long *)game_state_malloc_aligned(0xa00, 4);
+    function_1cabc0((s_cluster_partition *)&g_4de2e0, "collideable object", 0x14);
+    function_1cabc0((s_cluster_partition *)&g_4de2d4, "noncollideable object", 0x14);
+}
+#endif
+

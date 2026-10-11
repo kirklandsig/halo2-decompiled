@@ -1042,3 +1042,143 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
         function_bba20(object_index);
     }
 }
+
+
+// Disabled: retail passes persistent shared orientation/mask storage and reaches 0x142a60's unbound inputs.
+#if 0
+extern dword g_55eed4, g_55eeb4[8];
+extern rigid_transform_scaled *g_4687d8;
+void __stdcall function_1d3920(void *component, dword *mask, real amount);
+real function_e1670(long object_index);
+void function_16d940(void *render_model, void *orientations);
+bool function_bf5a0(long object_index);
+bool function_bfc90(long object_index);
+bool function_bff10(dword const *mask);
+void function_bfe80(dword *mask);
+void function_bfed0(dword *mask, long node_count);
+bool function_b6780(s_animation_state *state);
+void *function_1c6440(s_animation_state *state);
+void function_1090d0(long object_index, long matrices);
+
+// Retail 0xbd090
+void __stdcall function_bd090(long object_index)
+{
+    s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[object_index & 0xffff];
+    byte *object = (byte *)header->object;
+    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    long node_count = (word)*(short *)(object + 0x114) / sizeof(transform4x3f);
+    transform4x3f *matrices = (transform4x3f *)(object + *(short *)(object + 0x116));
+    *(dword *)(object + 4) &= ~0x40000000;
+    if (((1 << definition[0]) & 1) && ((byte *)header->object)[0x34b] == 2) return;
+    dword mask[8];
+    memset(mask, 0, ((node_count + 31) >> 5) * sizeof(dword));
+    long component_index = *(long *)(object + 0xb4);
+    if (component_index != NONE && (bool)(((dword)object[0xc0] >> 6) & 1))
+    {
+        byte *component = g_51e9b8->data + (component_index & 0xffff) * 0xa0;
+        real amount = ((1 << definition[0]) & 1) ? function_e1670(object_index) : 0.0f;
+        function_1d3920(component, mask, amount);
+    }
+    byte *current = (byte *)header->object;
+    bool stored = *(short *)(current + 0x112) != NONE;
+    rigid_transform_scaled *orientations = stored
+        ? (rigid_transform_scaled *)(object + *(short *)(object + 0x112)) : g_4dc2f0;
+    long model_index = *(long *)(definition + 0x38);
+    byte *model = model_index == NONE ? 0 : g_4e3b44[model_index & 0xffff].bytes;
+    long render_index = model ? *(long *)(model + 4) : NONE;
+    if (render_index != NONE)
+    {
+        byte *render_model = g_4e3b44[render_index & 0xffff].bytes;
+        transform4x3f const *parent = 0;
+        bool parent_mirrored = false;
+        bool root_absolute = false;
+        long parent_index = *(long *)(object + 0x14);
+        if (parent_index != NONE)
+        {
+            parent = function_b8bd0(parent_index, *(signed char *)(object + 0x18));
+            byte *local_be682a_3 = (byte *)((s_object_transform_header *)g_4e0300->data)[parent_index & 0xffff].object;
+            parent_mirrored = (bool)((*(dword *)(local_be682a_3 + 4) >> 10) & 1);
+        }
+        if (!((bool)((*(dword *)(current + 4) >> 29) & 1))
+            && (!((1 << definition[0]) & 1) || !current[0x34b]))
+        {
+            function_16d940(render_model, orientations);
+            if (function_bf5a0(object_index) && !function_bfc90(object_index))
+            {
+                s_animation_state *state = (s_animation_state *)(object + *(short *)(object + 0x12a));
+                if (*(long *)((byte *)state + 0x68) != NONE)
+                {
+                    if (!(g_55eed4 & 1)) g_55eed4 |= 1;
+                    dword *sample_mask = 0;
+                    if (stored && !function_bff10((dword *)(model + 0xa4)))
+                    {
+                        memcpy(g_55eeb4, model + 0xa4, sizeof(g_55eeb4));
+                        function_bfe80(g_55eeb4);
+                        function_bfed0(g_55eeb4, node_count);
+                        sample_mask = g_55eeb4;
+                    }
+                    function_bdb60(object_index, (s_16760c_render_model *)render_model, state,
+                        (long)sample_mask, node_count, (byte *)orientations);
+                    if (sample_mask) *(dword *)(object + 4) |= 0x40000000;
+                    else *(dword *)(object + 4) &= ~0x40000000;
+                    if (*(long *)((byte *)state + 0x68) != NONE && function_b6780(state))
+                        root_absolute = (bool)((*(byte *)((byte *)function_1c6440(state) + 0x16) >> 1) & 1);
+                }
+            }
+        }
+        if (!*(long *)(render_model + 0x48)) orientations[0] = *g_4687d8;
+        if (!(mask[0] & 1))
+        {
+            if (root_absolute)
+                function_1421f0(matrices, &orientations[0]);
+            else
+            {
+                point3f position = *(point3f *)(object + 0x64);
+                vector3f forward = *(vector3f *)(object + 0x70);
+                vector3f up = *(vector3f *)(object + 0x7c);
+                if (*(long *)(object + 0xd4) != NONE && (object[0xd8] & 1))
+                {
+                    point3f position_result;
+                    if (function_a98b0(object_index, &position_result)) position = position_result;
+                    vector3f forward_result, up_result;
+                    if (function_a9940(object_index, &forward_result, &up_result))
+                    {
+                        forward = forward_result;
+                        up = up_result;
+                    }
+                }
+                transform4x3f base, root;
+                function_bdc40(&position, &forward, &up, *(real *)(object + 0xa0),
+                    (bool)((*(dword *)(object + 4) >> 10) & 1), parent, parent_mirrored, &base);
+                function_1421f0(&root, &orientations[0]);
+                function_142a60(&base, &root, matrices);
+            }
+            function_1090d0(object_index, (long)matrices);
+        }
+        for (long node = 1; node < *(long *)(render_model + 0x48); node++)
+        {
+            byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
+            if (!(mask[node >> 5] & (1 << (node & 31))))
+            {
+                function_1421f0(&matrices[node], &orientations[node]);
+                function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);
+            }
+        }
+    }
+    else
+    {
+        transform4x3f const *parent = 0;
+        bool parent_mirrored = false;
+        long parent_index = *(long *)(object + 0x14);
+        if (parent_index != NONE)
+        {
+            byte *local_be682a_3 = (byte *)((s_object_transform_header *)g_4e0300->data)[parent_index & 0xffff].object;
+            parent = (transform4x3f *)(local_be682a_3 + *(short *)(local_be682a_3 + 0x116)) + *(signed char *)(object + 0x18);
+            parent_mirrored = (bool)((*(dword *)(local_be682a_3 + 4) >> 10) & 1);
+        }
+        function_bdc40((point3f *)(object + 0x64), (vector3f *)(object + 0x70), (vector3f *)(object + 0x7c),
+            *(real *)(object + 0xa0), (bool)((*(dword *)(object + 4) >> 10) & 1), parent, parent_mirrored, matrices);
+    }
+}
+#endif
+

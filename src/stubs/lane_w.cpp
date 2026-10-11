@@ -2,6 +2,9 @@
 // decompiled yet
 
 #include "unknown_11c920.h"
+
+// @stub 0x1f2b0
+void function_1f2b0() {}
 #include "unknown_0259d0.h"
 
 struct s_frame_view_2c560;
@@ -98,3 +101,32 @@ void __cdecl function_2ddbd0(void *data, s_visibility_sphere_query const *query,
 void function_52d40(long bitmap_index, unsigned char *shader, long count, bool mode)
 {
 }
+
+
+// @stub 0x176cb0
+void function_176cb0() {}
+
+// @stub 0x391f0
+bool __stdcall function_391f0(void *state) { return false; }
+
+// @stub 0x12560
+void function_12560() {  }
+
+// @stub 0x32350
+bool __stdcall function_32350(long index, real alpha) { return false; }
+
+struct transform4x3f;
+// @stub 0xb92d0
+void function_b92d0(long index, transform4x3f const *old_parent, transform4x3f const *new_parent) {}
+
+class __declspec(align(16)) c_z_capsule_temp
+{
+public:
+    c_z_capsule_temp(void const *first, void const *second, real radius);
+    ~c_z_capsule_temp();
+    byte unknown00[0x30];
+};
+
+// @stub 0xdc370
+c_z_capsule_temp::~c_z_capsule_temp() {}
+

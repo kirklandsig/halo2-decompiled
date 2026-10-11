@@ -2,6 +2,15 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7500 functions match
+
+```
+matched 7500 of 11318 game functions (879080 of 2784283 bytes, 31.57%)
+```
+
+10 new matches, none lost:
+- Deep lane 1, new code callees first in lanes W, Z, AB and AD: 0x12000, 0x141c0, 0x226c0, 0x40e90, 0xa0350, 0xa2120, 0xa3eb0, 0xbe760, 0xbf0f0, and 0x10af20 as a side effect; 36 new bodies active.
+
 ## 2026-10-10: 7490 functions match
 
 ```

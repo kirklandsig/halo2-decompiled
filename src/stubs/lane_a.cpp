@@ -18,10 +18,7 @@ void function_159ac0(void)
 
 
 
-// @stub 0xbb670
-void __stdcall function_bb670(short name_index, bool flag)
-{
-}
+
 
 
 

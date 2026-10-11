@@ -9,6 +9,10 @@ struct s_animation_frame_event;
 
 /* moves a Havok component's bodies to a device position */
 /* a device's animation event callback */
-// @stub 0xbf600
-void __stdcall function_bf600(long user, float frame, s_animation_frame_event const *event) { }
+
 /* an object's forward and up vectors */
+
+
+// @stub 0xe5040
+void __stdcall function_e5040(long object_index, s_animation_frame_event const *event) {}
+

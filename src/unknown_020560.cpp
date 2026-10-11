@@ -692,6 +692,7 @@ struct s_0226d0_structure
 	long checksum;
 };
 
+__declspec(noinline)
 // @retail 0x226d0
 bool function_0226d0(void)
 {

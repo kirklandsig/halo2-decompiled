@@ -1,3 +1,5 @@
+#include "unit_requests.h"
+#include "effects.h"
 // @flags /O2 /Gr
 /* UNKNOWN_09B910.CPP: the item, projectile, weapon and device object types
    and the small projectile, weapon and game engine event definitions */
@@ -630,6 +632,7 @@ void c_game_engine_event::v8(long a, long b, long c, long size, char *buffer)
 class c_device_touch_event : public c_event_definition
 {
 public:
+	virtual bool v11(long a, long const *entities, long c, void const *data);
 	virtual real v7(long a, long b, long c);
 	virtual const char *v1();
 	virtual void v8(long a, long b, long c, long size, char *buffer);
@@ -1152,4 +1155,345 @@ bool c_weapon_fire_event::v10(long a, void *data, s_bitstream *stream)
  return result;
 }
 
+
+
+
+bool function_e68c0(long type, long unit_index);
+void function_a8dd0(long unit_index);
+void function_107840(long device_index, long unit_index);
+bool __stdcall function_cd4e0(long unit_index, short hand, bool flag);
+void *function_122c10(long group_tag, long tag_index);
+void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
+    point3f const *point, vector3f const *normal, long index, bool attached, long object_index,
+    short node_index, bool alternate);
+void function_fd560(long projectile_index, long object_index, long node_index,
+    point3f const *point, vector3f const *forward);
+
+struct s_z_event_header
+{
+    word identifier;
+    byte flags, type;
+    dword unknown04;
+    byte *object;
+};
+
+struct s_z_event_unit_bits { byte unknown000[0x10a]; byte flags; };
+
+// @retail 0xa2e90
+bool c_weapon_reload_event::v11(long a, long const *entities, long c, void const *data)
+{
+    bool result = false;
+    long index = function_a58d0(entities[0]);
+    if (index != NONE)
+    {
+        s_z_event_header *header = (s_z_event_header *)g_4e0300->data + (index & 0xffff);
+        if (((1 << header->type) & 3) && !(bool)((((s_z_event_unit_bits *)header->object)->flags >> 2) & 1))
+        {
+            function_e68c0(0, index);
+            function_e68c0(10, index);
+            function_a8dd0(index);
+            result = true;
+        }
+    }
+    return result;
+}
+
+// @retail 0xa4540
+bool c_device_touch_event::v11(long a, long const *entities, long c, void const *data)
+{
+    long device = function_a58d0(entities[0]);
+    long unit = function_a58d0(entities[1]);
+    if (device != NONE && unit != NONE)
+    {
+        s_z_event_header *headers = (s_z_event_header *)g_4e0300->data;
+        if (((1 << headers[device & 0xffff].type) & 0x380) &&
+            ((1 << headers[unit & 0xffff].type) & 3) && !(bool)((((s_z_event_unit_bits *)headers[unit & 0xffff].object)->flags >> 2) & 1))
+            function_107840(device, unit);
+    }
+    return false;
+}
+
+// @retail 0xa1df0
+bool c_projectile_object_impact_effect_event::v11(long a, long const *entities, long c, void const *data)
+{
+    long object = function_a58d0(entities[0]);
+    if (object != NONE)
+    {
+        byte const *event = (byte const *)data;
+        long tag = *(long const *)event;
+        if (tag != NONE && function_122c10(0x70726f6a, tag) &&
+            !(0.0f > *(real const *)(event + 4) || *(real const *)(event + 4) > 1.0f ||
+            0.0f > *(real const *)(event + 8) || *(real const *)(event + 8) > 1.0f))
+            function_fd0e0(tag, *(real const *)(event + 4), *(real const *)(event + 8),
+                (vector3f const *)(event + 0xc), (point3f const *)(event + 0x18),
+                (vector3f const *)(event + 0x24), *(word const *)(event + 0x30), true,
+                object, (short)*(long const *)(event + 0x38), *(bool const *)(event + 0x34));
+    }
+    return true;
+}
+
+// @retail 0xa1520
+bool c_projectile_attached_event::v11(long a, long const *entities, long c, void const *data)
+{
+    bool result = false;
+    long projectile = function_a58d0(entities[0]);
+    long target = function_a58d0(entities[1]);
+    if (projectile != NONE)
+    {
+        s_z_event_header *header = (s_z_event_header *)g_4e0300->data + (projectile & 0xffff);
+        if (header->type == 5 && *(long *)(header->object + 0x14) == NONE)
+        {
+            byte const *event = (byte const *)data;
+            vector3f const *forward = (vector3f const *)(event + 0x10);
+            if (*(short const *)(event + 0x14) == NONE && *(long const *)(event + 0x10) == NONE) forward = 0;
+            word node = *(word const *)(event + 2);
+            if ((event[0] && node != 0xffff) || (!event[0] && node == 0xffff))
+            {
+                function_fd560(projectile, target, node, (point3f const *)(event + 4), forward);
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+// @retail 0xa31c0
+bool c_weapon_put_away_event::v11(long a, long const *entities, long c, void const *data)
+{
+    long unit = function_a58d0(entities[0]);
+    if (unit != NONE)
+    {
+        s_z_event_header *headers = (s_z_event_header *)g_4e0300->data;
+        s_z_event_header *header = headers + (unit & 0xffff);
+        if (((1 << header->type) & 3) && !(bool)((((s_z_event_unit_bits *)header->object)->flags >> 2) & 1))
+        {
+            byte const *event = (byte const *)data;
+            short hand = *(short const *)event, slot = *(short const *)(event + 2);
+            if (slot == ((signed char *)header->object)[0x212 + hand])
+            {
+                long weapon = *(long *)(header->object + 0x218 + slot * 4);
+                if (weapon != NONE && *(long *)(event + 4) == *(long *)headers[weapon & 0xffff].object)
+                    function_cd4e0(unit, hand, false);
+            }
+        }
+    }
+    return false;
+}
+
+// @retail 0xa30b0
+bool c_weapon_drop_event::v11(long a, long const *entities, long c, void const *data)
+{
+    long unit = function_a58d0(entities[0]);
+    if (unit != NONE)
+    {
+        s_z_event_header *headers = (s_z_event_header *)g_4e0300->data;
+        s_z_event_header *header = headers + (unit & 0xffff);
+        if (((1 << header->type) & 3) && !(bool)((((s_z_event_unit_bits *)header->object)->flags >> 2) & 1))
+        {
+            byte const *event = (byte const *)data;
+            short hand = *(short const *)event, slot = *(short const *)(event + 2);
+            if (slot == ((signed char *)header->object)[0x212 + hand])
+            {
+                long weapon = *(long *)(header->object + 0x218 + slot * 4);
+                if (weapon != NONE && *(long *)(event + 4) == *(long *)headers[weapon & 0xffff].object)
+                    function_e68c0(hand ? 19 : 9, unit);
+            }
+        }
+    }
+    return false;
+}
+
+
+
+bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);
+void function_d0930(long unit_index, vector3f *direction);
+void __stdcall function_102fb0(long weapon_index, short barrel);
+void function_103e60(long weapon_index, short barrel);
+void __stdcall function_fd980(long weapon_index);
+transform4x3f *function_b8c00(long object_index, long *count);
+point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *point, point3f *result);
+long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
+extern vector3f *g_4687b0;
+extern vector3f *g_4687bc;
+struct s_object_relevance_source
+{
+    long object_index, identifier;
+    byte unknown08[0x1c - 8];
+    real first, second;
+};
+struct s_object_relevance_result
+{
+    real first, second;
+    long object_index, identifier;
+};
+void function_82b30(s_object_relevance_result const *source, s_object_relevance_source *result);
+
+// @retail 0xa3420
+bool c_weapon_pickup_event::v11(long a, long const *entities, long c, void const *data)
+{
+    bool result = false;
+    long unit = function_a58d0(entities[0]);
+    long weapon = function_a58d0(entities[1]);
+    if (unit != NONE && weapon != NONE)
+    {
+        s_z_event_header *headers = (s_z_event_header *)g_4e0300->data;
+        s_z_event_header *unit_header = headers + (unit & 0xffff);
+        s_z_event_header *weapon_header = headers + (weapon & 0xffff);
+        if (((1 << unit_header->type) & 3) && ((1 << weapon_header->type) & 4))
+        {
+            byte *unit_object = unit_header->object, *weapon_object = weapon_header->object;
+            long const *event = (long const *)data;
+            if (!(bool)((((s_z_event_unit_bits *)unit_object)->flags >> 2) & 1) && *(long *)(weapon_object + 0x14c) != unit &&
+                !(weapon_object[0x12c] & 1) && *(long *)(unit_object + 0x210) == event[0])
+            {
+                bool modes[4];
+                if (function_cd7b0(unit, weapon, modes))
+                {
+                    bool allowed = false;
+                    switch (event[1])
+                    {
+                    case 3: allowed = modes[0]; break;
+                    case 4: allowed = modes[2]; break;
+                    case 5: allowed = modes[1]; break;
+                    case 6: allowed = modes[3]; break;
+                    }
+                    if (allowed)
+                    {
+                        s_unit_request request = {0};
+                        request.type = 0x14;
+                        *(long *)request.arguments = weapon;
+                        *(short *)(request.arguments + 4) = (short)event[1];
+                        if (function_e6900(unit, &request)) result = true;
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
+// @retail 0xa2ba0
+bool c_weapon_fire_event::v11(long a, long const *entities, long c, void const *data)
+{
+    volatile bool result = false;
+    long entity = function_a58d0(entities[0]);
+    if (entity == NONE) return result;
+    s_z_event_header *headers = (s_z_event_header *)g_4e0300->data;
+    s_z_event_header *header = headers + (entity & 0xffff);
+    byte const *event = (byte const *)data;
+    long unit = NONE, weapon;
+    if (header->type == 2) weapon = entity;
+    else
+    {
+        long slot = *(long const *)event;
+        if (!((1 << header->type) & 3) || slot < 0 || slot >= 4 || (header->object[0x10a] & 4)) return result;
+        weapon = *(long *)(header->object + 0x218 + slot * 4);
+        unit = *(long *)(header->object + 0x24c);
+        if (unit == NONE) unit = entity;
+    }
+    if (weapon == NONE) return result;
+    byte *weapon_object = headers[weapon & 0xffff].object;
+    long tag = *(long *)weapon_object;
+    byte *definition = g_4e3b44[tag & 0xffff].bytes;
+    long barrel = *(long const *)(event + 8);
+    if (*(long const *)(event + 4) != tag || barrel < 0 || barrel >= *(long *)(definition + 0x2d0)) return result;
+    if (unit != NONE)
+    {
+        byte *unit_object = headers[unit & 0xffff].object;
+        s_object_relevance_source source;
+        source.object_index = source.identifier = *(long *)source.unknown08 = NONE;
+        *(word *)(source.unknown08 + 0x10) = 0;
+        source.first = source.second = 0.0f;
+        function_82b30((s_object_relevance_result const *)(event + 0x28), &source);
+        if ((source.first > 0.0f || source.second > 0.0f) && source.object_index != NONE)
+            memcpy(unit_object + 0x1c8, &source, sizeof(source));
+        byte *barrel_definition = *(byte **)(definition + 0x2d4) + barrel * 0xec;
+        if ((*(dword *)barrel_definition & 0x2000) && event[0x38])
+        {
+            long target = function_a58d0(*(long const *)(event + 0x3c));
+            long attachment = *(long const *)(event + 0x40);
+            if (target != NONE && attachment != NONE)
+            {
+                weapon_object[0x177] = (byte)attachment;
+                *(long *)(weapon_object + 0x194) = target;
+            }
+        }
+        if (event[0xc] && entities[1] != NONE)
+        {
+            long target = function_a58d0(entities[1]);
+            if (target != NONE)
+            {
+                long count = 0;
+                transform4x3f *matrices = function_b8c00(target, &count);
+                short node = *(short const *)(event + 0xe);
+                if (node >= 0 && node < count)
+                {
+                    transform4x3f_apply_point(matrices + node, (point3f const *)(event + 0x10),
+                        (point3f *)(unit_object + 0x1d4));
+                    unit_object[0x1e0] |= 2;
+                }
+            }
+        }
+        function_d0930(unit, (vector3f *)(event + 0x1c));
+    }
+    function_102fb0(weapon, (short)barrel);
+    function_103e60(weapon, (short)barrel);
+    function_fd980(weapon);
+    if (unit != NONE && event[0xc]) headers[unit & 0xffff].object[0x1e0] &= ~2;
+    result = true;
+    return result;
+}
+
+// @retail 0xa36a0
+bool c_weapon_effect_event::v11(long a, long const *entities, long c, void const *data)
+{
+    long object = function_a58d0(entities[0]);
+    if (object != NONE)
+    {
+        byte *object_data = ((s_z_event_header *)g_4e0300->data)[object & 0xffff].object;
+        byte *definition = g_4e3b44[*(long *)object_data & 0xffff].bytes;
+        if (*(short *)(definition + 0x290) == 1)
+        {
+            long global_tag = *(long *)((byte *)g_4e034c + 0x16c);
+            byte *settings = *(byte **)(*(byte **)(g_4e3b44[global_tag & 0xffff].bytes + 0xc) + 0x534);
+            byte const *event = (byte const *)data;
+            long mode = *(long const *)event, effect;
+            if (mode == 0) effect = *(long *)(settings + 0xe0);
+            else if (mode == 1) effect = *(long *)(settings + 0xf0);
+            else return false;
+            if (effect != NONE)
+            {
+                vector3f up = *g_4687b0;
+                s_effect_marker markers[5];
+                markers[4].position = markers[3].position = markers[2].position =
+                    markers[1].position = markers[0].position = *(point3f const *)(event + 4);
+                markers[0].forward = up;
+                markers[1].forward = *g_4687bc;
+                markers[2].forward = up;
+                markers[3].forward.i = 0.0f - up.i;
+                markers[3].forward.j = 0.0f - up.j;
+                markers[3].forward.k = 0.0f - up.k;
+                markers[4].forward = up;
+                markers[0].name = 0x700054c;
+                markers[1].name = 0x70000c0;
+                markers[2].name = 0x20000ca;
+                markers[3].name = 0x8000550;
+                markers[4].name = 0x400054f;
+                s_effect_parameters parameters;
+                memset(&parameters, 0, sizeof(parameters));
+                parameters.flags = 4;
+                parameters.tag_index = effect;
+                parameters.object_index = NONE;
+                parameters.owner.unknown0 = parameters.owner.unknown4 = NONE;
+                parameters.owner.unknown8 = parameters.unknown18 = NONE;
+                parameters.markers = markers;
+                parameters.marker_count = 5;
+                parameters.scale_a = parameters.scale_b = 1.0f;
+                parameters.color_a = parameters.color_b = 0xff808080;
+                effect_new_from_parameters(&parameters);
+            }
+        }
+    }
+    return false;
+}
 

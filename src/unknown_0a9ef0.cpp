@@ -56,6 +56,7 @@ public:
 
 extern real g_47f05c;
 
+// Retail 0xa9f70
 long __stdcall function_a9f70(long object_index, long mode, point3f const *position)
 {
 	byte *header = g_4e0300->data + (object_index & 0xffff) * 12;
@@ -139,6 +140,7 @@ collision:
 // The selection result must be supplied by the caller in addition to mode.
 // Keep this candidate disabled until the caller's interface supplies it.
 #if 0
+// Retail 0xaa260
 void function_aa260(long selection, vector3f const *linear, long object_index, long mode,
 	point3f const *position, vector3f const *forward, vector3f const *up, vector3f const *angular)
 {
@@ -243,3 +245,42 @@ void function_aab40(long object_index, point3f const *position, vector3f const *
     function_b75a0(object_index, position, forward, up, NULL, false);
     function_b77d0(object_index, linear, *angular_reference);
 }
+
+
+// Disabled: allocator-backed virtual destruction remains a foreign library interface.
+#if 0
+class c_reference_a9ef0
+{
+public:
+    virtual ~c_reference_a9ef0();
+    word allocation_size;
+    byte unknown06[10];
+    static void operator delete(void *block)
+    {
+        g_480118->allocate((long)block, ((c_reference_a9ef0 *)block)->allocation_size, 0x10);
+    }
+};
+
+// Retail 0xa9ef0 deleting
+c_reference_a9ef0::~c_reference_a9ef0()
+{
+}
+
+void __stdcall function_2d7240(void *reference, long value);
+class c_reference_a9f20 : public c_reference_a9ef0
+{
+public:
+    virtual ~c_reference_a9f20();
+};
+
+// Retail 0xa9f20 deleting
+c_reference_a9f20::~c_reference_a9f20()
+{
+    if (allocation_size & 0x8000)
+    {
+        allocation_size &= 0x7fff;
+        function_2d7240(this, 0);
+    }
+}
+#endif
+

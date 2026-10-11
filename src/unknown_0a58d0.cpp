@@ -151,7 +151,9 @@ s_simulation_entity *simulation_entity_try_get(s_simulation_entity_table *table,
    0xa3a20. With simulation_entity_try_get as it is now, the body is otherwise
    the same as retail's (the null test after the identifier comparison
    included). */
+// Disabled: round 18 reactivation after new event callers still breaks a3a20 and other matched entity callers; EDX input versus retail ECX
 #if 0
+// Retail 0xa58d0
 long function_a58d0(long entity_index)
 {
 	long object_index = NONE;
@@ -652,6 +654,7 @@ void function_b5920(long identifier);
 void function_108e80(long object_index);
 struct s_effect_object_placement;
 
+__declspec(noinline)
 // @retail 0xa7640
 bool function_a7640(s_effect_object_placement *data)
 {

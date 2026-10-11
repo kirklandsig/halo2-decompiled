@@ -1531,3 +1531,148 @@ long __stdcall function_c1720(long object_index, long remove_from_partition, lon
     }
     return count;
 }
+
+
+// @retail 0xc0230
+long __stdcall function_c0230(long tag_index, long object_index, short node_index, long name, short value)
+{
+    byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
+    long result = NONE;
+    bool permitted = g_4e6948->state == 5 || g_4e6948->state == 4;
+    bool limited = *(short *)(definition + 0xa4) == 2;
+    if ((definition[0] & 1) && *(long *)(definition + 0x94) == NONE)
+        goto done;
+    if (!permitted && limited)
+        goto done;
+    result = record_pool_allocate(g_4e030c);
+    if (result != NONE)
+    {
+        byte *light = g_4e030c->data + (result & 0xffff) * 0x110;
+        *(long *)(light + 4) = tag_index;
+        *(long *)(light + 0x4c) = object_index;
+        *(word volatile *)(light + 2) = 0;
+        *(short *)(light + 0x54) = node_index;
+        *(long *)(light + 0x50) = name;
+        *(long *)(light + 0x14) = NONE;
+        *(long *)(light + 8) = NONE;
+        *(short *)(light + 0x56) = value;
+        *(long *)(light + 0x58) = NONE;
+        *(short *)(light + 0x5c) = (short)NONE;
+        *(real *)(light + 0xd0) = 1.0f;
+        *(real *)(light + 0xcc) = 1.0f;
+        byte flag = (byte)((~definition[0]) & 1);
+        *(word volatile *)(light + 2) = (word)flag;
+        light[2] &= ~0x10;
+        *(long *)(light + 0x10) = NONE;
+        function_c0c80(result);
+        *(long *)(light + 0xc) = g_4e0308 - 1;
+        *(long *)(light + 0x10c) = NONE;
+    }
+done:
+    return result;
+}
+
+
+
+// @retail 0xc1400
+void function_c1400()
+{
+    volatile long time = g_510c54->game_time;
+    s_record_pool *pool = g_4e030c;
+    long absolute = function_16bc00(pool, 0);
+    long index = NONE;
+    if (absolute != NONE)
+        index = ((long)*(short *)(pool->data + absolute * pool->size) << 16) | absolute;
+    while (index != NONE)
+    {
+        volatile long current_absolute = index & 0xffff;
+        byte *light = g_4e030c->data + current_absolute * 0x110;
+        byte *definition = g_4e3b44[*(long *)(light + 4) & 0xffff].bytes;
+        function_c0c80(index);
+        if (light[2] & 8)
+        {
+            long object = *(long *)(light + 0x4c);
+            if (object == NONE) object = *(long *)(light + 0x58);
+            if (object != NONE)
+            {
+                byte *header = g_4e0300->data + (object & 0xffff) * 12;
+                if ((bool)(((dword)header[2] >> 2) & 1))
+                {
+                    byte *current = g_4e030c->data + current_absolute * 0x110;
+                    if (current[2] & 2)
+                    {
+                        s_cluster_partition partition =
+                        {
+                            (long *)g_4e0310,
+                            (s_record_pool *)g_4e0314,
+                            (s_record_pool *)g_4e0318
+                        };
+                        function_1cae40(&partition, index, (long *)(current + 0x10));
+                        current[2] &= ~8;
+                    }
+                    function_c2d00(index);
+                }
+            }
+        }
+        if ((light[2] & 0x10) && (real)(time - *(long *)(light + 0x14))
+            > (real)*(short *)((byte *)g_510c54 + 2) * *(real *)(definition + 0xb0))
+            function_c3260(index, true);
+        pool = g_4e030c;
+        absolute = data_next_absolute_index_inlined(pool, current_absolute + 1);
+        index = NONE;
+        if (absolute != NONE)
+            index = ((long)*(short *)(pool->data + absolute * pool->size) << 16) | absolute;
+    }
+}
+
+
+
+// @retail 0xc0350
+long function_c0350(long tag_index, long object_index, long node_index, vector3f const *up,
+    vector3f const *forward, point3f const *position, real scale)
+{
+    long result = record_pool_allocate(g_4e030c);
+    if (result != NONE)
+    {
+        byte *light = g_4e030c->data + (result & 0xffff) * 0x110;
+        byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
+        *(long *)(light + 4) = tag_index;
+        *(word *)(light + 2) = 0;
+        *(long *)(light + 0x14) = g_510c54->game_time;
+        *(long *)(light + 0x50) = 0;
+        *(short *)(light + 0x56) = 0;
+        *(long *)(light + 8) = NONE;
+        *(long *)(light + 0x4c) = NONE;
+        *(short *)(light + 0x54) = NONE;
+        *(real *)(light + 0xd0) = scale;
+        *(real *)(light + 0xcc) = scale;
+        *(word *)(light + 2) = 1;
+        *(word *)(light + 2) = *(real *)(definition + 0xb0) > 0.0f ? 0x11 : 1;
+        *(long *)(light + 0x10) = NONE;
+        if (object_index == NONE)
+        {
+            *(point3f *)(light + 0x84) = *position;
+            ((point3f *)(light + 0x90))->x = position->x + forward->i;
+            ((point3f *)(light + 0x90))->y = position->y + forward->j;
+            ((point3f *)(light + 0x90))->z = position->z + forward->k;
+            *(vector3f *)(light + 0xac) = *forward;
+            *(vector3f *)(light + 0xb8) = *up;
+            *(long *)(light + 0x58) = NONE;
+            *(short *)(light + 0x5c) = NONE;
+        }
+        else
+        {
+            byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+            *(point3f *)(light + 0x60) = *position;
+            *(vector3f *)(light + 0x6c) = *forward;
+            *(vector3f *)(light + 0x78) = *up;
+            *(short *)(light + 0x5c) = (short)node_index;
+            *(long *)(light + 0x58) = object_index;
+            *(dword *)(object + 4) |= 0x40;
+        }
+        function_c0c80(result);
+        *(long *)(light + 0xc) = g_4e0308 - 1;
+        *(long *)(light + 0x10c) = NONE;
+    }
+    return result;
+}

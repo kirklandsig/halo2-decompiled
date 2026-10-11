@@ -1222,3 +1222,197 @@ bool c_projectile_type::v13(long a, s_entity_info *info, s_bitstream *stream)
         return true;
     return false;
 }
+
+
+// Disabled: serialization/initial-state callees still omit the required stream/output in protected callers.
+#if 0
+struct s_z_initial_state;
+void __stdcall function_a6660(s_entity_info const *, s_bitstream *);
+bool function_a5bd0(s_entity_info const *, s_z_initial_state *);
+
+// Retail 0xa2380
+void c_item_type::v12(long a, s_entity_info *info, long c, s_bitstream *stream)
+{
+    c_item_type *volatile self = this;
+    function_a6660(info, stream);
+}
+
+// Retail 0xa3db0
+bool c_device_type::v19(long a, long info, long c, s_entity_data *data)
+{
+    c_device_type *volatile self = this;
+    memset(data, 0, 0x98);
+    bool result = false;
+    if (function_a5bd0((s_entity_info *)info, (s_z_initial_state *)data)) result = true;
+    return result;
+}
+
+// Retail 0xa02a0
+bool c_item_type::v19(long a, long info, long c, s_entity_data *data)
+{
+    c_item_type *volatile self = this;
+    memset(data, 0, 0x94);
+    bool result = false;
+    if (function_a5bd0((s_entity_info *)info, (s_z_initial_state *)data))
+    {
+        ((byte *)data)[0x90] = 0;
+        result = true;
+    }
+    return result;
+}
+
+// Retail 0xa1f10
+bool c_weapon_type::v19(long a, long info, long c, s_entity_data *data)
+{
+    c_weapon_type *volatile self = this;
+    memset(data, 0, 0xa0);
+    memset(data, 0, 0x94);
+    bool result = false;
+    if (function_a5bd0((s_entity_info *)info, (s_z_initial_state *)data))
+    {
+        ((byte *)data)[0x90] = 0;
+        ((byte *)data)[0x94] = 0;
+        *(short *)((byte *)data + 0x96) = NONE;
+        result = true;
+    }
+    return result;
+}
+#endif
+
+
+
+// Disabled: required stream cannot be supplied through a6660's current protected one-argument interface.
+#if 0
+// Retail 0xa0f50
+void c_projectile_type::v12(long a, s_entity_info *info, long c, s_bitstream *stream)
+{
+    c_projectile_type *volatile self = this;
+    function_a6660(info, stream);
+    byte const *data = (byte const *)info;
+    long first = *(long const *)(data + 0x10);
+    stream_write_bit(stream, first != NONE);
+    if (first != NONE) stream_write_checked(stream, first, 4);
+    long second = *(long const *)(data + 0x14);
+    stream_write_bit(stream, second != NONE);
+    if (second != NONE)
+    {
+        function_b5650(second, stream);
+        long third = *(long const *)(data + 0x18);
+        stream_write_bit(stream, third != NONE);
+        if (third != NONE) stream_write_checked(stream, third, 5);
+    }
+    stream_write_bit(stream, data[0x1c] != 0);
+    stream_write_bit(stream, data[0x1d] != 0);
+}
+#endif
+
+
+
+// @retail 0xa0350
+long c_item_type::v29(long a, s_entity_info *info, long *flags, long size, long state)
+{
+    c_item_type *volatile self = this;
+    byte creation[0xc4];
+    function_a5d90(creation, info, flags, state);
+    long index;
+    if (info->field0 != NONE) index = function_a73b0(info);
+    else index = function_b7b40(creation);
+    if (index != NONE) ((byte *)((s_object_header *)g_4e0300->data)[index & 0xffff].object)[0xaf] = info->byte8;
+    return index;
+}
+
+// @retail 0xa3eb0
+long c_device_type::v29(long a, s_entity_info *info, long *flags, long size, long state)
+{
+    c_device_type *volatile self = this;
+    byte creation[0xc4];
+    function_a5d90(creation, info, flags, state);
+    long index;
+    if (info->field0 != NONE) index = function_a73b0(info);
+    else index = function_b7b40(creation);
+    if (index != NONE)
+    {
+        ((byte *)((s_object_header *)g_4e0300->data)[index & 0xffff].object)[0xaf] = info->byte8;
+        if (*flags & 0xc00)
+        {
+            function_a3fd0(index, true, (*flags & 0x400) != 0, *(real *)(state + 0x90),
+                (*flags & 0x800) != 0, *(real *)(state + 0x94));
+            *flags &= ~0xc00;
+        }
+    }
+    return index;
+}
+
+struct s_projectile_target
+{
+    long object_index;
+    short node_index;
+    byte unknown06[2];
+};
+void projectile_set_target(long index, s_projectile_target const *target);
+
+// @retail 0xa0c50
+long c_projectile_type::v29(long a, s_entity_info *info, long *flags, long size, long state)
+{
+    c_projectile_type *volatile self = this;
+    byte creation[0xc4];
+    function_a5d90(creation, info, flags, state);
+    byte *fields = (byte *)info;
+    long player = *(long *)(fields + 0x10);
+    if (player != NONE && player >= 0 && player < g_4e8c24->high_water_index)
+    {
+        s_record_pool *players = g_4e8c24;
+        byte *records = players->data;
+        byte *record = records + player * players->size;
+        if (*(short *)record)
+        {
+            long player_index = player | (*(short volatile *)(records + player * players->size) << 16);
+            *(long *)(creation + 0x60) = *(long *)(record + 0x2c);
+            *(long *)(creation + 0x5c) = player_index;
+            *(long *)(creation + 0x64) = (signed char)record[0xc0];
+            *(long *)(creation + 0x6c) = *(long *)(record + 0x2c);
+            *(long *)(creation + 0x68) = player_index;
+            *(short *)(creation + 0x70) = (signed char)record[0xc0];
+        }
+    }
+    long index;
+    if (info->field0 != NONE) index = function_a73b0(info);
+    else index = function_b7b40(creation);
+    if (index != NONE)
+    {
+        s_record_pool *objects = g_4e0300;
+        long offset = (index & 0xffff) * 12;
+        byte *object = *(byte **)(objects->data + offset + 8);
+        object[0xaf] = info->byte8;
+        if (fields[0x1d])
+        {
+            object = *(byte **)(objects->data + offset + 8);
+            *(dword *)(object + 0x12c) |= 0x100;
+        }
+        long target = *(long *)(fields + 0x14);
+        if (target != NONE)
+        {
+            byte *entry = *(byte **)((byte *)g_4cf77c + 4) + 0x2098 + (target & 0x3ff) * 0x20 + 0x14;
+            if (*(long *)entry == target && *(long *)(entry + 8) != NONE)
+            {
+                s_projectile_target request;
+                request.object_index = *(long *)(entry + 8);
+                request.node_index = *(short *)(fields + 0x18);
+                projectile_set_target(index, &request);
+            }
+        }
+        if (!fields[0x1c])
+        {
+            object = *(byte **)(objects->data + offset + 8);
+            *(dword *)(object + 0x12c) &= ~2;
+        }
+    }
+    return index;
+}
+
+// @retail 0xa2120
+long c_weapon_type::v29(long a, s_entity_info *info, long *flags, long size, long state)
+{
+    return ((c_item_type *)this)->c_item_type::v29(0x10, info, flags, 0x94, state);
+}
+

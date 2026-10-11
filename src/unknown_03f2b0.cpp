@@ -62,6 +62,7 @@ struct s_unknown_13bf00;
 extern s_unknown_13bf00 *g_510c50;
 extern byte g_509415;
 
+__declspec(noinline)
 // @retail 0x335c0
 byte function_335c0(void)
 {

@@ -38,7 +38,7 @@ short __stdcall function_d88f0(long object_index, long name);
 void __stdcall function_bbfc0(real a, real b, real c, real d, real e);
 void __stdcall function_bc070(real a, real b, real c, real d, real e);
 void __stdcall function_29ffb0(long object_index, short cutscene_flag_index, bool a, bool b);
-void __stdcall function_bb670(short name_index, bool flag);
+long __stdcall function_bb670(short name_index, bool flag);
 void __stdcall function_ba6f0(long object_index, long region_index, long state, bool flag);
 bool __stdcall function_bbec0(long object_index, bool value);
 void __stdcall function_ba410(long object_index, long a, long b);

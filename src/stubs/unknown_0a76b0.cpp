@@ -28,8 +28,7 @@ bool __stdcall function_bc1d0(long object_index, point3f *point) { return 0; }
 void function_e5930(long unit_index) { }
 
 
-// @stub 0xb8ee0
-void __stdcall function_b8ee0(long parent_index, long marker_name, long object_index, long a) { }
+
 
 
 // @stub 0xe5300

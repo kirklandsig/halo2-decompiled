@@ -34,10 +34,7 @@ long function_59570(void)
 
 
 
-// @stub 0xb3e90
-void __stdcall function_b3e90(unsigned char *results)
-{
-}
+
 
 
 struct s_network_session_player;

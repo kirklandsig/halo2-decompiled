@@ -445,3 +445,57 @@ long function_b42b0(long kind, long controller, struct _XUID owner, wchar_t cons
     }
     return result;
 }
+
+
+// Disabled: retail passes shared upload-state addresses to the serializer and publisher.
+#if 0
+extern byte g_546a88;
+extern long g_546abc;
+extern dword g_5473f0;
+extern long g_5473f8, g_547624;
+extern char g_5470cc[32];
+bool __stdcall function_1995a0(void const *data, void *buffer, long *size, long capacity, long mode, long kind);
+void function_b6570(long *state);
+
+// Retail 0xb3ed0
+bool __stdcall function_b3ed0(s_packed_clc const *data, long kind, char const *name)
+{
+    bool result = false;
+    if (g_547610 && !g_54761c && !g_546a88)
+    {
+        if (function_1995a0(data, (void *)(g_547610 + 8), &g_547618, g_547614 - 8, 3, kind))
+        {
+            *(long *)g_547610 = g_547618 + 8;
+            *(long *)(g_547610 + 4) = 1;
+            g_547618 += 8;
+            g_546abc = 1;
+            g_5473f0 = g_547610;
+            g_5473f8 = g_547618;
+            function_b6570(&g_546abc);
+            strncpy(g_5470cc, name, 32);
+            g_5470cc[31] = 0;
+            g_547620 = 0;
+            g_547624 = GetTickCount() + 120000;
+            g_54761c = true;
+            result = true;
+        }
+    }
+    return result;
+}
+#endif
+
+
+
+struct s_grs_source;
+struct s_packed_grs;
+struct s_packed_clc;
+void packed_grs_write(s_grs_source const *source, s_packed_grs *packed);
+void __stdcall function_b3ed0(s_packed_clc const *data, long kind, char const *name);
+
+// @retail 0xb3e90
+void __stdcall function_b3e90(byte *results)
+{
+    byte packed[0x150bc];
+    packed_grs_write((s_grs_source const *)results, (s_packed_grs *)packed);
+    function_b3ed0((s_packed_clc const *)packed, sizeof(packed), "application/x-halo2pcr");
+}

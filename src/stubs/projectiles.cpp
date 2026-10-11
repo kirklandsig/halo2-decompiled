@@ -5,8 +5,7 @@
 struct s_location;
 
 /* attaches an object to a parent's node */
-// @stub 0xb93b0
-void __stdcall function_b93b0(long parent_index, long object_index, long node_index) { }
+
 // @stub 0x1e2930
 void __stdcall function_1e2930(long object_index, long actor_index) { }
 struct s_damage_owner;

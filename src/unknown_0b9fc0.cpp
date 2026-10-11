@@ -694,3 +694,49 @@ s_machine_type_definition g_468310 =
 	function_115a40,
 	function_11bd60
 };
+
+
+#include "effects.h"
+struct s_object;
+s_object *function_badc0(long object_index, dword mask);
+long function_189060(long object_index, short node, real scale, point3f const *position,
+    vector3f const *direction, long tag_index);
+void __stdcall function_e5040(long object_index, s_animation_frame_event const *event);
+
+// @retail 0xbf600
+void __stdcall function_bf600(long user, real frame, s_animation_frame_event const *event)
+{
+    if (event->category == 1 && event->tag_index != NONE)
+    {
+        byte *header = g_4e0300->data + (user & 0xffff) * 12;
+        byte *object = *(byte **)(header + 8);
+        dword type_mask = 1u << object[0xaa];
+        long player = NONE;
+        if (type_mask & 3)
+        {
+            byte *unit = (byte *)function_badc0(user, 3);
+            if (unit) player = *(long *)(unit + 0x13c);
+        }
+        if ((event->flags & 1) || player == NONE)
+        {
+            s_object_marker marker;
+            if (event->marker_name == NONE || event->marker_name == 0x0600008a
+                || !function_b8d30(user, event->marker_name, &marker, 1, false))
+            {
+                marker.node_index = 0;
+                marker.node_matrix.position = *g_468788;
+                marker.node_matrix.forward = *g_4687a8;
+            }
+            function_189060(user, marker.node_index, 1.0f, &marker.node_matrix.position,
+                &marker.node_matrix.forward, event->tag_index);
+        }
+    }
+    else if (event->category == 2 && event->tag_index != NONE)
+        function_176780(user, 0, 0.0f, event->tag_index, 0.0f, 0, 0);
+    else
+    {
+        byte *header = g_4e0300->data + (user & 0xffff) * 12;
+        if (!header[3]) function_e5040(user, event);
+    }
+}
+
