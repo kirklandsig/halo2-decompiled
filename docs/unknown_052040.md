@@ -78,6 +78,14 @@ and level helpers execute their real bodies; the shared-header builder and
 cache loader are explicit stand-ins. This does not validate loading,
 allocation, or GPU behavior.
 
+A separate 16,384-case integration comparison executes the renderer texture
+loop, the complete bitmap loader at `0x12310`, and the raw-texture path of
+`0x12ce00`. It covers frame-cache hits, initial-lookup hits, raw fallback
+textures and null returns across all three bitmap slots. Only the initial
+cache lookup is replaced by a stand-in. State/cache writes, call routes,
+request preservation and stack balance agree; streamed loading and GPU
+execution remain outside this test.
+
 ## Boundary
 
 - `0x516d0`, just before, is `todo` with source in `src/unknown_050690.cpp` and
