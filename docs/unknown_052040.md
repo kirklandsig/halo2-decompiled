@@ -60,7 +60,9 @@ propagates cache-failure state. Its level-selection bias is accumulated in
 retail's float-operation order; the early shared-texture comparison uses the
 original bias instead.
 
-The fallback remains unmatched (720 compiled bytes versus 658 retail).
+The fallback remains unmatched (631 compiled bytes versus 658 retail).
+The resident-level scan uses an advancing pointer and a three-iteration
+countdown, retaining a loop like retail instead of three unrolled copies.
 A const pointer to its bitmap parameter's own slot, read into a local view,
 keeps that argument on the stack as in retail without changing its value.
 This makes `0x12310` match all 77 retail bytes, and also enables exact

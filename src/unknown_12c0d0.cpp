@@ -1208,9 +1208,11 @@ D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
         result = loaded;
     else if (!unscaled)
     {
-        for (long i = 0; i < 3; ++i)
+        long remaining = 3;
+        long const *block_indices = view->block_indices;
+        do
         {
-            long block_index = view->block_indices[i];
+            long block_index = *block_indices;
             if (block_index != NONE)
             {
                 s_texture_cache_entry *entry = texture_cache_entry_get(block_index);
@@ -1225,7 +1227,8 @@ D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
                     }
                 }
             }
-        }
+            ++block_indices;
+        } while (--remaining);
         if (wait && !result)
         {
             if (view->type == 0)
