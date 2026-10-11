@@ -76,10 +76,7 @@ struct s_ai_trigger_condition;
 
 
 
-// @stub 0xb73b0
-void function_b73b0(long object_index)
-{
-}
+
 
 struct s_ai_scene;
 struct s_ai_scene_assignment;

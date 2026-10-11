@@ -1059,10 +1059,10 @@ void function_1ba00(byte *state)
         state[0x1520 + i] = (byte)output;
         long block_index = (word)entry[1] & 0x1ff;
         byte *block;
-        if (entry[0] == NONE)
-            block = blocks + block_index * 6;
-        else
+        if (!(entry[0] == NONE))
             block = blocks + (block_index + *(long *)(state + 0x300 + entry[0] * 4)) * 6;
+        else
+            block = blocks + block_index * 6;
         dword *value = values + (*(word *)(block + 4) & 0x1ff) * 8;
         for (long j = 0; j < (*(word *)(block + 4) >> 9); ++j, value += 8)
         {
@@ -1519,7 +1519,7 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     strength = PIN(strength, 0.0f, 1.0f);
     falloff = PIN(falloff, 0.0f, 1.0f);
     scale = PIN(scale, 0.0f, 1.0f);
-    real first_input = values.first;
+    volatile real first_input = values.first;
     if (first_input < 0.0f) *(volatile real *)&values.first = 0.0f;
     else if (first_input > 1.0f) *(volatile real *)&values.first = 1.0f;
     values.second = PIN(values.second, 0.0f, 1.0f);

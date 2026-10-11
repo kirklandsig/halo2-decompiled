@@ -278,7 +278,7 @@ struct s_type_f83fc7
    alternative of each */
 // @retail 0x16dad0
 void model_variant_region_get_choices(s_type_f83fc7 const *region, long permutation_index, long name, long value,
-	bool random, long maximum_count, s_16dce0_choice *choices, long *count)
+	bool random, long maximum_count, long *count, s_16dce0_choice *choices)
 {
 	long passes = 1;
 
@@ -452,7 +452,7 @@ void render_model_choose_permutations(long render_model_index, long variant_inde
 			if (variant_region_index != NONE)
 			{
 				model_variant_region_get_choices(&definition->variants[variant_index].regions[variant_region_index], NONE, 0, 0,
-					true, NUMBEROF(choices), choices, &count);
+					true, NUMBEROF(choices), &count, choices);
 			}
 		}
 		if (count == 0)
@@ -546,7 +546,7 @@ bool object_change_region_permutations(long object_index, long render_model_inde
 			if (variant_region_index != NONE)
 			{
 				model_variant_region_get_choices(&definition->variants[variant_index].regions[variant_region_index],
-					region_choice->permutation_index, wanted_name, value, false, NUMBEROF(choices), choices, &count);
+					region_choice->permutation_index, wanted_name, value, false, NUMBEROF(choices), &count, choices);
 			}
 			choice_index = function_16dce0(count, choices);
 			if (choice_index != NONE)

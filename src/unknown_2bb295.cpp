@@ -12,7 +12,7 @@
    and its list of what the squad's leader can change */
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 byte *network_session_interface_get_data_4db0(void);
 long function_19989d(void);
 long function_1480ff(long screen_id);

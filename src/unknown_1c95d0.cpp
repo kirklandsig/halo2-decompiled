@@ -33,8 +33,6 @@ void __stdcall function_210180(long value);
 void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, long unknown3, s_1fbac0_event *event);
 long function_26b230(long clump_index, long prop_index);
 extern s_record_pool *g_502420;
-extern s_record_pool *g_50241c;
-
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {

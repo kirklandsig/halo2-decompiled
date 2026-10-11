@@ -13,7 +13,7 @@
 #include "unknown_2312b4.h"
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 void function_236299(long sound);
 long function_1480ff(long screen_id);
 s_screen_definition *function_22f871(c_class_1473c9 *screen);

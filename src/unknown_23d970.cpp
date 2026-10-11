@@ -206,8 +206,8 @@ void function_23cea0(s_view_state *state, long temporary)
 		g_44ab84[g_51ec3c].report_state(state);
 	g_51ec11 = g_470a20;
 	/* Clear by value so this shared global's address does not escape. */
-	s_director_camera cleared = {0};
-	g_5022f8 = cleared;
+	static const s_director_camera cleared_23cea0 = {0};
+	g_5022f8 = cleared_23cea0;
 	g_5022f8.forward = *g_4687a8;
 	g_5022f8.up = *g_4687b0;
 }

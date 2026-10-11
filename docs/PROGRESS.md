@@ -2,6 +2,51 @@
 
 The newest entry comes first.
 
+## 2026-10-10: 7490 functions match
+
+```
+matched 7490 of 11318 game functions (877610 of 2784283 bytes, 31.52%)
+```
+
+2 new matches, none lost:
+- Deep lane 3, shared root causes across this machine's ranges: 0x24b1bf and 0x25d770, from fixes to three shared declarations that also cut the surveyed functions' differences by 54 instructions.
+
+## 2026-10-10: 7488 functions match
+
+```
+matched 7488 of 11318 game functions (877391 of 2784283 bytes, 31.51%)
+```
+
+1 new matches, none lost:
+- Deep lane 1, closest first in lanes W, Z, AB and AD: 0xada90.
+
+## 2026-10-10: 7487 functions match
+
+```
+matched 7487 of 11318 game functions (877360 of 2784283 bytes, 31.51%)
+```
+
+6 new matches, none lost:
+- Deep lane 2, helpers first in 0x160000 to 0x16ffff: the helpers 0x16c4f0 and 0x16c5f0, and their callers 0x2a89b0, 0x2a8a00, 0x2a8c70 and 0x2a8cc0, unchanged.
+
+## 2026-10-10: 7481 functions match
+
+```
+matched 7481 of 11318 game functions (876545 of 2784283 bytes, 31.48%)
+```
+
+3 new matches, none lost:
+- Deep lane 1, new code and mid-length tuning in lanes W, Z, AB and AD: 0xb9d70, 0x41c20 and 0xd4cf0; eight new bodies.
+
+## 2026-10-10: 7478 functions match
+
+```
+matched 7478 of 11318 game functions (876188 of 2784283 bytes, 31.47%)
+```
+
+1 new matches, none lost:
+- Deep lane 3, helpers first: 0x2be5d0 matches with no change to it, after its helpers were tuned.
+
 ## 2026-10-10: 7477 functions match
 
 ```

@@ -34,7 +34,7 @@ c_class_1473c9 *__stdcall function_2bbacb(s_screen_parameters *parameters);
 /* ---- opening screens ---- */
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 
 /* the screens 0x2c7dc3/0x2c7e0f and 0x2c8362/0x2c83a4 load */
 struct s_screen_view_2c83

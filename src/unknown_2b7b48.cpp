@@ -14,7 +14,7 @@
    and voice) and sends it to the chosen players */
 
 struct s_message;
-void function_149f49(s_message *message, word a, dword *id, word b, long c, long d, long e);
+void function_149f49(s_message *message, word a, dword *id, short b, long c, long d, long e);
 void function_14887e(s_screen_settings_54dc6c *settings);
 struct s_window_manager_text;
 const char *function_148956(s_window_manager_text *text);

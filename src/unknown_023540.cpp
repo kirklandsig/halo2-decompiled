@@ -2002,13 +2002,14 @@ void function_24ee0(s_24ee0_state const *state, short mode)
         real value = (real)i * (1.0f / 255.0f);
         real result;
         if (value <= low) result = 0.0f;
-        else if (value >= high) result = 1.0f;
-        else
+        else if (!(value >= high))
         {
             result = (real)pow(((double)value - low) / ((double)high - low), (double)gamma);
             if (result < 0.0f) result = 0.0f;
             else if (result > 1.0f) result = 1.0f;
         }
+        else
+            result = 1.0f;
         byte mapped = (byte)(long)((double)result * 255.0 + 0.5);
         curve[i] = mapped;
         if (mode == 1 && g_4ba04c == 1)
@@ -2159,19 +2160,19 @@ void function_34d90(long target, real const *weights, short blend, dword color_w
     long width = 0, height = 0;
     function_01dd60(target != NONE ? target : g_4858b8, &width, &height);
     real bounds[4];
-    if (full_surface)
-    {
-        bounds[0] = 0.0f;
-        bounds[1] = (real)width;
-        bounds[2] = 0.0f;
-        bounds[3] = (real)height;
-    }
-    else
+    if (!(full_surface))
     {
         bounds[0] = (real)g_4b9dd2;
         bounds[1] = (real)g_4b9dd6;
         bounds[2] = (real)g_4b9dd0;
         bounds[3] = (real)g_4b9dd4;
+    }
+    else
+    {
+        bounds[0] = 0.0f;
+        bounds[1] = (real)width;
+        bounds[2] = 0.0f;
+        bounds[3] = (real)height;
     }
     real inverse_x = 1.0f / width;
     real inverse_y = 1.0f / height;
@@ -2201,6 +2202,7 @@ struct s_245c0_state
     dword frame_count;
 };
 
+__declspec(noinline) void function_245c0(s_245c0_state *state, real *histogram, short mode);
 // @retail 0x245c0
 void function_245c0(s_245c0_state *state, real *histogram, short mode)
 {
