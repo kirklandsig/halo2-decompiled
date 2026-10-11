@@ -18,6 +18,19 @@ The handlers of the unit request table at 0x467564
 #include <math.h>
 #include <string.h>
 
+void function_1fc350(long object_index, void *state);
+
+struct s_shape_state;
+struct s_state_c570;
+struct s_tracked_point;
+struct s_ease_state;
+
+void function_1f03e0(s_shape_state *state);
+void function_1ec570(s_state_c570 *state);
+void function_1fc2f0(s_tracked_point *tracked, point3f const *point, bool unknown);
+void function_1eb640(s_ease_state *state);
+void __stdcall function_1c3770(long object_index, dword flags);
+
 /* a unit's actions: a bit per request type being performed, after a header
    dword (the block at the offset in the unit at +0x346) */
 struct s_unit_actions
@@ -3604,6 +3617,20 @@ bool __stdcall function_ec9a0(long unit_index, s_unit_request *request)
 
 void function_1e54d0(void *state, long a);
 
+/* Resets the unit action state, switches it to mode 4, and updates the supplied point. */
+// @retail 0xe5690
+void __stdcall function_e5690(long unit_index, point3f const *point)
+{
+	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+
+	*(short *)((byte *)unit + 0x34c) = NONE;
+	*((byte *)unit + 0x34e) = 0;
+	*((byte *)unit + 0x34f) = 0;
+
+	function_1e54d0((byte *)unit + 0x3dc, 4);
+	function_b75a0(unit_index, point, NULL, NULL, NULL, false);
+}
+
 // @retail 0xecb20
 void __stdcall function_ecb20(long unit_index, long type)
 {
@@ -4554,3 +4581,82 @@ void __stdcall function_fff40(long weapon_index, bool silent, bool immediate)
 }
 #endif
 
+/* Cleans up the previous state mode, initializes the new mode, and handles mode-transition updates. */
+// @retail 0x1e54d0
+void function_1e54d0(void *state, long mode)
+{
+	byte *physics_state = (byte *)state;
+	byte old_mode_byte = physics_state[0];
+	long old_mode = old_mode_byte;
+
+	if (old_mode_byte != 0)
+	{
+		switch (old_mode)
+		{
+		case 1:
+			break;
+
+		case 2:
+			break;
+
+		case 3:
+			break;
+
+		case 4:
+		case 5:
+			function_1fc350(*(long *)(physics_state + 4), physics_state + 0x10);
+			break;
+
+		case 6:
+			break;
+
+		default:
+			__assume(0);
+		}
+	}
+
+	byte new_mode = (byte)mode;
+	physics_state[0] = new_mode;
+
+	switch (new_mode)
+	{
+	case 1:
+		function_1f03e0((s_shape_state *)(physics_state + 0x10));
+		break;
+
+	case 2:
+		*(long *)(physics_state + 0x10) = 0;
+		*(vector3f *)(physics_state + 0x14) = *g_4687a4;
+		break;
+
+	case 3:
+		function_1ec570((s_state_c570 *)(physics_state + 0x10));
+		break;
+
+	case 6:
+		function_1eb640((s_ease_state *)(physics_state + 0x10));
+		break;
+
+	case 4:
+	case 5:
+	{
+		point3f point;
+		function_b9dd0(*(long *)(physics_state + 4), &point);
+		function_1fc2f0((s_tracked_point *)(physics_state + 0x10), &point, new_mode == 5);
+		break;
+	}
+
+	default:
+		__assume(0);
+	}
+
+	byte current_mode = physics_state[0];
+
+	if (old_mode != current_mode &&
+		(old_mode == 3 || current_mode == 3 ||
+		 old_mode == 4 || old_mode == 5 ||
+		 current_mode == 4 || current_mode == 5))
+	{
+		function_1c3770(*(long *)(physics_state + 4), 0);
+	}
+}
