@@ -695,11 +695,13 @@ bool function_17ee20(s_decal_mesh_view const *mesh,
     s_decal_placement const *placement, vector3f const *direction, real radius,
     bool unknown0, long unknown1, long unknown2)
 {
-    s_decal_chain_state_17ee20 state = {0};
+    s_decal_chain_state_17ee20 state;
+    memset(&state, 0, sizeof(state));
     bool result = false;
     while (tag_index != -1 && (short)placement->unknown20 != -1)
     {
-        s_decal_preparation_17ef10 preparation = {0};
+        s_decal_preparation_17ef10 preparation;
+        memset(&preparation, 0, sizeof(preparation));
         s_decal_output_17dd80 output;
         if (!function_17ef10(transform, tag_index, placement, direction, radius,
             unknown0, unknown1, unknown2, &preparation, &state))

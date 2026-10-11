@@ -138,9 +138,13 @@ counts, sticky success, early exits, stack balance, and saved registers.
 After merging main `588746a4`, the full byte check preserves all 7,500 existing
 game matches,
 including placement copy `0x17ed70`, with no gains or losses. All three probe
-suites above pass on this merged image. None of the three new bodies is exact: traversal is 259 compiled bytes versus 240 retail; preparation is
+suites above pass on this merged image. None of the three new bodies is exact: traversal has a 240-byte checker extent versus 240 retail (including alignment
+padding in the compiled extent); preparation is
 3,453 versus 3,591. Placement is 1,752 compiled bytes versus 1,787 retail.
-Both temporary stubs have been removed. No outside helper bodies or flags changed.
+Explicit whole-buffer clearing reproduces the retail preparation clear of 68
+dwords. The remaining traversal differences include register/instruction order
+and the existing projection helper's stack argument convention; equal extents
+do not mean an exact or near match. Both temporary stubs have been removed. No outside helper bodies or flags changed.
 
 Sources: independent disassembly of the project's SHA-256-pinned retail
 executable and the existing CC0 repository source and inventory. No leaked
