@@ -22,8 +22,6 @@ struct s_effect_source;
 
 /* in region */
 /* in region */
-// @stub 0x17e670
-void function_17e670(s_effect_source *source, point3f const *point, long tag_index, vector3f const *vector, real radius, long unknown0, long unknown1, long unknown2) { }
 
 // @stub 0x211060
 void function_211060(long unknown0, void *physics, s_location *location, long unknown3, point3f *position, long unknown5, long unknown6, long unknown7, real radius, real dt, vector3f *velocity) { }
