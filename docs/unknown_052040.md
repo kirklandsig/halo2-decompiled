@@ -88,11 +88,11 @@ execution remain outside this test.
 
 ## Boundary
 
-- `0x516d0`, just before, is `todo` with source in `src/unknown_050690.cpp` and
-  ends at `0x52020`. `0x52d40`, just after (1,136 bytes), is `todo` with no
-  source; it calls `function_142f0`, `function_15180`, `function_1c590` and
-  several of the same Direct3D routines, so it looks like a sibling (inferred;
-  it was not analysed). Both are excluded.
+- `0x516d0`, just before, is `todo` with source in `src/unknown_050690.cpp`
+  and ends at `0x52020`; it is excluded.
+- The adjacent shader-setup routine `0x52d40` now has source alongside this
+  renderer in `src/unknown_01cf50.cpp`. Its separate analysis and validation
+  are in [unknown_052d40.md](unknown_052d40.md).
 - This function has nothing to do with the liquid draw callback `0x508d0` or
   the noise points of `0x516d0`: neither calls it, it calls neither, and it
   only neighbours them by address. It belongs with the interface drawing code
@@ -730,5 +730,7 @@ void __stdcall function_52040(s_interface_draw_request const *request,
   and the default colour (three 1.0 reals) at `0x4409e4` behind the pointer at
   `0x468710`. The state values, masks and combiner words are immediates.
 - No document covered this range before. Source line numbers are at `ad1dab2`.
-- No emulator, runtime testing, SDK or outside dataset was used. Names are the
-  repository's own, or describe behaviour.
+- The original analysis below the recovery notes used no emulator, runtime
+  testing, SDK or outside dataset. The later source recovery and behavioral
+  checks are described above. Names are the repository's own, or describe
+  behaviour.

@@ -520,7 +520,7 @@ long function_137590(long group_index, short frame_index, short sequence_index);
 struct D3DTexture;
 struct s_bitmap_view;
 D3DTexture *function_12360(s_bitmap_view *bitmap, real priority);
-void function_52d40(long bitmap_index, byte *shader, long count, bool mode);
+void function_52d40(long bitmap_index, byte *shader, long tag, dword flags);
 bool function_1e5e0(point3f const *position, long size, long a, long b, long c,
     long d, long e, long f, long g, void const *data);
 
