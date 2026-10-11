@@ -60,10 +60,14 @@ propagates cache-failure state. Its level-selection bias is accumulated in
 retail's float-operation order; the early shared-texture comparison uses the
 original bias instead.
 
-The fallback remains unmatched (718 compiled bytes versus 658 retail), as
-does `0x12310` (78 versus 77). Replacing the stub enables three existing
-caller matches at `0x42b20`, `0x23625d`, and `0x2b1179`, with no previous
-matches lost in the full check against the prior contribution build.
+The fallback remains unmatched (720 compiled bytes versus 658 retail).
+A const pointer to its bitmap parameter's own slot, read into a local view,
+keeps that argument on the stack as in retail without changing its value.
+This makes `0x12310` match all 77 retail bytes, and also enables exact
+`0x12360`, `0x1cfb0`, `0x3bcb0`, `0xd15e0`, `0xd1630`, `0xd1680`, and
+`0x2a04f0`, without editing those callers. Replacing the stub previously
+enabled `0x42b20`, `0x23625d`, and `0x2b1179`. Full checks retain every
+previous match.
 A 4,096-case actual-instruction comparison covers the fallback's return
 paths, cache timestamps, failure state, arguments and stack cleanup. Format
 and level helpers execute their real bodies; the shared-header builder and
