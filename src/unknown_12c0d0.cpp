@@ -1231,12 +1231,18 @@ D3DTexture *function_12ce00(s_bitmap_data *bitmap, dword flags, real bias)
         } while (--remaining);
         if (wait && !result)
         {
-            if (view->type == 0)
+            switch (view->type)
+            {
+            case 0:
                 result = (D3DTexture *)g_485ae4;
-            else if (view->type == 1)
+                break;
+            case 1:
                 result = (D3DTexture *)g_485ae8;
-            else
+                break;
+            default:
                 result = (D3DTexture *)g_485aec;
+                break;
+            }
             g_4e647a = true;
             return result;
         }
