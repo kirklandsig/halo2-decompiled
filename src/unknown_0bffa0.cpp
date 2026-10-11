@@ -1296,8 +1296,8 @@ struct s_light_setup_scenario_ab
 void function_c09c0(long mode)
 {
     s_light_setup_scenario_ab *scenario = (s_light_setup_scenario_ab *)g_4e0350;
-    bool force = mode == 5 || mode == 4;
-    bool volatile const *force_reference = &force;
+    long force = mode == 5 || mode == 4;
+    long const *force_reference = &force;
     long *count = &scenario->placement_count;
     for (long i = 0; i < *count; ++i)
     {
