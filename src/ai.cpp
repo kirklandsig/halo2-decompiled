@@ -1223,10 +1223,12 @@ long __stdcall function_1dfb90(long definition_index)
         result = record_pool_allocate(pool);
         if (result != NONE)
         {
-            byte *actor = pool->data + (result & 0xffff) * 0x888;
-            s_actor_creation_definition *definition = (s_actor_creation_definition *)function_1e4990(*definition_reference);
-            *(long *)(actor + 0x54) = *definition_reference;
-            *(bool *)(actor + 7) = (bool)(definition->flags & 1);
+			long actor_offset = (result & 0xffff) * 0x888;
+			byte *actor = pool->data + actor_offset;
+			s_actor_creation_definition *definition = (s_actor_creation_definition *)function_1e4990(*definition_reference);
+			*(long *)(actor + 0x54) = *definition_reference;
+            dword tmp2 = definition->flags & 1;
+			*(bool *)(actor + 7) = (bool)tmp2;
             *(short *)(actor + 4) = definition->type;
             *(long *)(actor + 0x18) = NONE;
             *(long *)(actor + 0x1c) = NONE;
@@ -1245,10 +1247,11 @@ long __stdcall function_1dfb90(long definition_index)
             *(short *)(actor + 0x42) = 0;
             *(short *)(actor + 0x46) = 0;
             *(long *)(actor + 0x58) = NONE;
-            for (long i = 0; i < 8; ++i)
-                ((long *)(actor + 0x5c))[i] = NONE;
-            volatile short local_1 = g_4686c4;
-            *(short *)(actor + 0x3e) = local_1;
+
+            for (long i = 0; i < 16; ++i)
+            	((short *)((s_actor_view *)actor)->unknown05c)[i] = NONE;
+				
+            *(short *)(actor + 0x3e) = g_4686c4;
             *(long *)(actor + 0x7c) = NONE;
             *(long *)(actor + 0x32c) = NONE;
             *(s_reference *)(actor + 0x418) = g_470fa0;
@@ -1256,7 +1259,7 @@ long __stdcall function_1dfb90(long definition_index)
             *(long *)(actor + 0x3f4) = NONE;
             *(long *)(actor + 0x3f8) = NONE;
             *(short *)(actor + 0x3fc) = NONE;
-            s_actor_view *actor_view = (s_actor_view *)(pool->data + (result & 0xffff) * 0x888);
+            s_actor_view *actor_view = (s_actor_view *)(pool->data + actor_offset);
             actor_view->unknown3fe = 3;
             long local_2 = 4;
             s_reference *local_3 = &actor_view->unknown400[0].reference;
@@ -1314,19 +1317,22 @@ long __stdcall function_1dfb90(long definition_index)
             *(byte *)(actor + 0x2e0) = 0;
             *(byte *)(actor + 0x266) = 0;
             *(byte *)(actor + 0x268) = 0;
-            *(byte *)(actor + 0x267) = 0;
+			*(byte *)(actor + 0x267) = 0;
             *(short *)(actor + 0x270) = 0;
+
             memset(actor + 0x3d4, 0, 0x1c);
-            *(long *)(actor + 0x3e8) = NONE;
-            *(byte *)(actor + 0x3e4) = 0;
-            actor_view = (s_actor_view *)(g_4f55f0->data + (result & 0xffff) * 0x888);
-            actor_view->unknown50c = false;
-            actor_view->unknown5ac = NONE;
-            actor_view->unknown5b0 = NONE;
-            actor_view->unknown5b4 = 0;
-            actor_view->unknown5b6 = 0;
-            actor_view->unknown4ac = 0;
-            actor_view->unknown504 = 0;
+			*(long *)(actor + 0x3e8) = NONE;
+			*(byte *)(actor + 0x3e4) = 0;
+
+			s_actor_view *reset_actor = actor_get(result);
+			reset_actor->unknown50c = false;
+			reset_actor->unknown5ac = NONE;
+			reset_actor->unknown5b0 = NONE;
+			reset_actor->unknown5b4 = 0;
+			reset_actor->unknown5b6 = 0;
+			reset_actor->unknown4ac = 0;
+			reset_actor->unknown504 = 0;
+
             *(short *)(actor + 0x6fe) = 1;
             *(byte *)(actor + 0x714) = 1;
             *(byte *)(actor + 0x5d0) = 0;
@@ -1402,9 +1408,9 @@ long __stdcall function_1dfb90(long definition_index)
                 {
                     if (tag->flags)
                     {
-                        byte *local_0 = (byte *)&definition_index;
-                        *(volatile byte *)local_0 = (byte)((*tag->flags >> 3) & 1);
-                        if (*local_0)
+                        byte &tag_flag = *(byte *)&definition_index;
+                        tag_flag = (byte)((*tag->flags >> 3) & 1);
+                        if (tag_flag)
                             ++*(short *)((byte *)g_5047f4 + 6);
                     }
                     break;
