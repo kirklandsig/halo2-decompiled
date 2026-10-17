@@ -27,7 +27,7 @@ real function_30bf0(vector3f *v);
 // @retail 0xcc2b0
 bool function_cc2b0(long unit_index, point3f const *point, real angle)
 {
-	volatile bool result = false;
+	bool result = false;
 
 	if (unit_index != NONE)
 	{
@@ -43,7 +43,7 @@ bool function_cc2b0(long unit_index, point3f const *point, real angle)
 		vector.k = point->z - head.z;
 		function_30bf0(&vector);
 		if (vector.k * unit->facing.k + vector.j * unit->facing.j + vector.i * unit->facing.i > cos(angle))
-			return true;
+			result = true;
 	}
 	return result;
 }
