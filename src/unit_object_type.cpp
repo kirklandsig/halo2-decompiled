@@ -345,7 +345,7 @@ bool function_c9040(long vehicle_index, long unit_index, short seat_index, vecto
 long function_1e4a10(long index);
 void function_c5740(long unit_index, bool start);
 void function_1520f0(long player_index);
-long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
+short __stdcall function_cdeb0(long unit_index, long state_name, short slot, short direction);
 bool function_100f00(long weapon_index);
 bool function_1e3370(long actor_index, void *unknown);
 void function_10cec0(long weapon_index, long unit_index, long parent_marker_name, long marker_name);
@@ -1031,17 +1031,19 @@ void function_cea00(long unit_index)
 {
 	if (g_4e6948->mode != 4)
 	{
-		short counter = (UNIT_GET(unit_index)->unknown210 + 1) & 0xf;
+		s_unit *unit = UNIT_GET(unit_index);
+		word counter = ((byte)unit->unknown210 + 1) & 0xf;
 
-		if (counter == NONE)
+		if (counter == (word)NONE)
 		{
 			counter = 0;
 		}
-		UNIT_GET(unit_index)->unknown210 = counter;
-		UNIT_GET(unit_index)->unknown214 = counter;
-		if (UNIT_GET(unit_index)->unknown0d4 != NONE)
+		unit->unknown210 = counter;
+		unit->unknown214 = counter;
+		long index = UNIT_GET(unit_index)->unknown0d4;
+		if (index != NONE)
 		{
-			function_b58c0(UNIT_GET(unit_index)->unknown0d4, 0x2000);
+			function_b58c0(index, 0x2000);
 		}
 	}
 }
@@ -1440,11 +1442,11 @@ bool function_cc0c0(long unit_index)
    unit or the object's definition asks) or has 0xce6b0 drop it with an
    animation by mode */
 // @retail 0xce470
-void function_ce470(long mode, long object_index, long unit_index)
+void function_ce470(long mode, long unit_index, long object_index)
 {
 	byte *definition = UNIT_DEFINITION_GET(UNIT_GET(object_index));
 
-	if (UNIT_GET(unit_index)->flags_134 & 0x10000)
+	if (TEST_FIELD_BIT((UNIT_GET(unit_index)->flags_134 >> 16) & 1))
 	{
 		mode = 1;
 	}
@@ -1457,19 +1459,21 @@ void function_ce470(long mode, long object_index, long unit_index)
 	if (mode == 1)
 	{
 		function_b8540(object_index);
-		return;
 	}
-	switch (mode)
+	else
 	{
-	case 2:
-		function_ce6b0(unit_index, 0xa0005ad, object_index, 1.0f);
-		break;
-	case 3:
-		function_ce6b0(unit_index, 0x9000536, object_index, 1.0f);
-		break;
-	default:
-		function_ce6b0(unit_index, 0, object_index, 1.0f);
-		break;
+		long name = 0;
+
+		switch (mode)
+		{
+		case 2:
+			name = 0xa0005ad;
+			break;
+		case 3:
+			name = 0x9000536;
+			break;
+		}
+		function_ce6b0(unit_index, name, object_index, 1.0f);
 	}
 }
 
@@ -1690,7 +1694,7 @@ static void unit_weapon_slot_changed(long unit_index, long slot_index)
 /* puts a weapon in the unit's slot, or empties the slot and gets rid of
    the weapon there by mode (mode 4 keeps it) */
 // @retail 0xcea70
-void __stdcall function_cea70(long mode, long weapon_index, short slot_index, long unit_index)
+void __stdcall function_cea70(long mode, short slot_index, long weapon_index, long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 
@@ -1708,10 +1712,15 @@ void __stdcall function_cea70(long mode, long weapon_index, short slot_index, lo
 		unit->weapon_object_indices[slot_index] = NONE;
 		if (mode != 4)
 		{
-			function_ce470(mode, old_weapon_index, unit_index);
+			function_ce470(mode, unit_index, old_weapon_index);
 		}
 	}
-	unit_weapon_slot_changed(unit_index, slot_index);
+	unit = UNIT_GET(unit_index);
+	if (unit->unknown0d4 != NONE)
+	{
+		function_b58c0(unit->unknown0d4, (1 << (slot_index + 0x12)) | (1 << (slot_index + 0xe)));
+	}
+	function_cea00(unit_index);
 }
 
 /* attaches the weapon to the unit at its hand's marker (the unit
@@ -1763,7 +1772,7 @@ void function_ccf20(long unit_index)
 			long weapon_index = unit->weapon_object_indices[(short)i];
 
 			unit->weapon_object_indices[(short)i] = NONE;
-			function_ce470(1, weapon_index, unit_index);
+			function_ce470(1, unit_index, weapon_index);
 			unit_weapon_slot_changed(unit_index, (short)i);
 		}
 	}
@@ -2068,7 +2077,7 @@ void function_ce920(long unit_index, long slot_index, long mode, bool flag)
 		{
 			mode = 1;
 		}
-		function_cea70(mode, NONE, (short)slot_index, unit_index);
+		function_cea70(mode, (short)slot_index, NONE, unit_index);
 		for (long hand = 0; hand < 2; hand++)
 		{
 			if ((short)slot_index == (&unit->unknown216)[hand])
@@ -2561,28 +2570,46 @@ bool __stdcall function_cc170(long *value)
    unit may ready in the state (0xcd6a0), not its second hand's; prefers
    weapons with bit 3 at +0x12c, then (direction 0) the newest */
 // @retail 0xcdeb0
-long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b)
+short __stdcall function_cdeb0(long unit_index, long state_name, short slot, short direction)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	short slot = (short)a;
-	short direction = (short)b;
 	short result = NONE;
 	bool result_flag = false;
 	long best = 0;
-	short first = slot == NONE ? 0 : (slot + direction + 4) % 4;
-	short i = first;
+	slot = slot != NONE ? (slot + direction + 4) % 4 : 0;
+	short i = slot;
 
 	do
 	{
-		long weapon_index = unit->weapon_object_indices[i];
-
-		if (weapon_index != NONE && function_cd6a0(unit_index, state_name, weapon_index) &&
-			i != unit->next_weapon_index)
+		if (unit->weapon_object_indices[i] != NONE &&
+			function_cd6a0(unit_index, state_name, unit->weapon_object_indices[i]) && i != unit->next_weapon_index)
 		{
+			long weapon_index = unit->weapon_object_indices[i];
 			long time = unit->unknown228[i];
 			bool flag = (*(dword *)(UNIT_DEFINITION_GET(UNIT_GET(weapon_index)) + 0x12c) >> 3) & 1;
+			bool better;
 
-			if (result == NONE || (!result_flag && (flag || (direction == 0 && time > best))))
+			if (result == NONE)
+			{
+				better = true;
+			}
+			else if (result_flag)
+			{
+				better = false;
+			}
+			else if (flag)
+			{
+				better = true;
+			}
+			else if (direction == 0)
+			{
+				better = time > best;
+			}
+			else
+			{
+				better = false;
+			}
+			if (better)
 			{
 				result = i;
 				best = time;
@@ -2590,7 +2617,7 @@ long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b)
 			}
 		}
 		i = direction < 0 ? (i + 3) % 4 : (i + 1) % 4;
-	} while (i != first);
+	} while (i != slot);
 	return result;
 }
 
@@ -2699,8 +2726,10 @@ void __stdcall function_ced30(long unit_index, long object_index)
 	{
 		unit->unknown24c = NONE;
 	}
-	long *slot = unit->weapon_object_indices;
-	for (long i = 0; i < 4; i++, slot++)
+	long *slot;
+	long i;
+
+	for (i = 0, slot = unit->weapon_object_indices; i < 4; i++, slot++)
 	{
 		if (*slot == object_index)
 		{
@@ -2712,8 +2741,7 @@ void __stdcall function_ced30(long unit_index, long object_index)
 			{
 				unit->next_weapon_index = NONE;
 			}
-			UNIT_GET(unit_index)->weapon_object_indices[(short)i] = NONE;
-			unit_weapon_slot_changed(unit_index, (short)i);
+			function_cea70(4, (short)i, NONE, unit_index);
 		}
 	}
 	if (unit->current_weapon_index == NONE)
@@ -2944,9 +2972,9 @@ void function_c6810(long unit_index)
 	}
 }
 
-/* drops a weapon of the unit: from its first hand at once (request 9's
-   handler, then the player's controller hears of it), from its second
-   hand by request 0x13, else from its slot (0xce920) */
+/* drops a weapon of the unit: from its first hand by request 9, from its
+   second hand by request 0x13 (both through 0xe6900), else from its slot
+   (0xce920) */
 // @retail 0xce520
 void function_ce520(long weapon_index, long unit_index, bool flag)
 {
@@ -2968,23 +2996,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 		memset(&request, 0, sizeof(request));
 		request.type = 9;
 		request.type17.unknown4 = !flag;
-		function_b7360(unit_index);
-		bool result = g_4677c8[9]->perform(unit_index, &request);
-		if (unit_index != NONE)
-		{
-			long player_index = UNIT_GET(unit_index)->unknown13c;
-
-			if (player_index != NONE)
-			{
-				short controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
-
-				if (controller != NONE)
-				{
-					function_1e6980((s_time_entry *)((byte *)g_51e9c0 + controller * 0x1b0 + 0x150),
-						(short)request.type, result);
-				}
-			}
-		}
+		function_e6900(unit_index, &request);
 	}
 	else if (slot == unit->next_weapon_index)
 	{
@@ -2993,7 +3005,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 		memset(&request, 0, sizeof(request));
 		request.type = 0x13;
 		request.type17.unknown4 = !flag;
+		/* retail calls 0xe6900 out of line here */
+#pragma inline_depth(0)
 		function_e6900(unit_index, &request);
+#pragma inline_depth()
 	}
 	else
 	{
@@ -3270,7 +3285,7 @@ void __stdcall function_ceb30(long unit_index)
 						{
 							function_10ca80(grenade_index, unit_index);
 							function_10cd50(grenade_index);
-							function_ce470(0, grenade_index, unit_index);
+							function_ce470(0, unit_index, grenade_index);
 						}
 					}
 				} while (--*count > 0);
@@ -3335,7 +3350,7 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 			{
 				function_15e050(weapon_index, value);
 			}
-			function_cea70(NONE, weapon_index, (short)slot_index, unit_index);
+			function_cea70(NONE, (short)slot_index, weapon_index, unit_index);
 			if (unit->unknown13c != NONE)
 			{
 				function_1520f0(unit->unknown13c);
@@ -3914,11 +3929,13 @@ store:
 
 /* drops an object the unit held: detaches it (at a marker, 0x4000023 when
    the unit has it, else 0xa000798, unless named), throws it at a random
-   speed in a cone around the unit's aim, and deletes it in state 1 when
-   it has nowhere to go */
+   speed in a cone around the unit's aim on top of the unit's velocity
+   (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
+   state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
+	s_unit *unit = UNIT_GET(unit_index);
 	s_unit *object = UNIT_GET(object_index);
 
 	if (name == NONE || name == 0)
@@ -3930,42 +3947,48 @@ void function_ce6b0(long unit_index, long name, long object_index, real scale)
 	function_b8ee0(unit_index, name, object_index, 0);
 	function_b9a90(object_index);
 	function_10b360(object_index);
-	real speed = (real)random_next(&g_4e7408->unknown0) * (1.0f / 65535.0f) * (1.2f - 0.8f) + 0.8f;
+	dword *seed = &g_4e7408->unknown0;
+	real speed = 0.8f + (1.2f - 0.8f) * ((real)random_next(seed) * (1.0f / 65535.0f));
 	object->linear_velocity = *g_4687a4;
 	*(vector3f *)((byte *)object + 0x94) = *g_4687a4;
 	vector3f direction;
-	random_vector_in_cone(&UNIT_GET(unit_index)->unknown168, &direction, &g_4e7408->unknown0, 0.0f, scale * 0.3926991f);
+	random_vector_in_cone(&unit->unknown168, &direction, seed, 0.0f, scale * 0.3926991f);
 	speed *= scale;
-	vector3f velocity;
-	function_ba1d0(unit_index, &velocity, 0);
-	velocity.i += direction.i * speed;
-	velocity.j += direction.j * speed;
-	velocity.k += direction.k * speed;
-	if (!((object->unknownc0 >> 1) & 1))
+	direction.i *= speed;
+	direction.j *= speed;
+	direction.k *= speed;
 	{
-		real length_squared = velocity.k * velocity.k + velocity.j * velocity.j + velocity.i * velocity.i;
+		vector3f velocity;
+
+		function_ba1d0(unit_index, &velocity, 0);
+		direction.i = velocity.i + direction.i;
+		direction.j = velocity.j + direction.j;
+		direction.k = velocity.k + direction.k;
+	}
+	if (!TEST_FIELD_BIT((unit->unknownc0 >> 1) & 1))
+	{
+		real length_squared = direction.i * direction.i + direction.j * direction.j + direction.k * direction.k;
 
 		if (length_squared > 16.0f)
 		{
 			real factor = 4.0f / (real)sqrt(length_squared);
 
-			velocity.i *= factor;
-			velocity.j *= factor;
-			velocity.k *= factor;
+			direction.i *= factor;
+			direction.j *= factor;
+			direction.k *= factor;
 		}
 	}
 	object->unknown14c = unit_index;
-	function_10cf80(&velocity, object_index, false);
-	point3f point;
-	if (!function_bc1d0(object_index, function_b9ef0(unit_index, &point), unit_index))
+	function_10cf80(&direction, object_index, false);
 	{
-		if (g_4e6948->mode == 4 && UNIT_GET(object_index)->unknown0d4 != NONE)
+		point3f point;
+
+		if (!function_bc1d0(object_index, function_b9ef0(unit_index, &point), unit_index))
 		{
-			return;
-		}
-		if (g_4e6948->state == 1)
-		{
-			function_b8540(object_index);
+			if (!function_a7670(object_index) && g_4e6948->state == 1)
+			{
+				function_b8540(object_index);
+			}
 		}
 	}
 }
@@ -4860,16 +4883,13 @@ void __stdcall function_ca700(long unit_index, real amount, short type, bool not
 void function_ce0c0(long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	bool still = false;
 	transform4x3f matrix;
 	s_unit_camera_data camera;
 
 	unit->flags_134 &= ~0x4000000;
 	unit->flags_134 &= ~0x2000000;
-	if (TEST_FIELD_BIT((unit->flags_10a >> 2) & 1) && (UNIT_GET(unit_index)->type != 0 || !function_e4050(unit_index)))
-	{
-		still = true;
-	}
+	bool still = TEST_FIELD_BIT((unit->flags_10a >> 2) & 1) &&
+		(UNIT_GET(unit_index)->type != 0 || !function_e4050(unit_index));
 	if (function_d1080(unit_index, &matrix, &camera) && !still)
 	{
 		real ticks = g_510c54->field_2_3;
@@ -5033,28 +5053,30 @@ void function_cf040(long unit_index, short type)
 		point = unit->unknown030;
 		break;
 	}
-	s_type_1e6529 damage;
-
-	function_d6660(&damage, damage_definition_index);
-	damage.material_index = NONE;
-	object_get_root_location(unit_index, (s_location *)&damage.unknown1c);
-	object_get_damage_owner(unit_index, &damage.owner);
-	damage.position = point;
-	damage.origin = unit->unknown030;
-	damage.cone_direction = forward;
-	*(byte *)&damage.unknown84 = 3;
-	damage.unknown18 = unit_index;
-	long hit_index = function_d6c80(&damage, unit_index);
-	if (hit_index != NONE)
 	{
-		short material_type;
+		s_type_1e6529 damage;
 
-		damage.material_index = *function_1886d0(hit_index, &material_type);
-	}
-	long material_index = *(long *)&damage.material_index;
-	if (function_188690((short)material_index))
-	{
-		function_ceee0(unit_index, damage_definition_index, (short)material_index, &point, g_4687b0);
+		function_d6660(&damage, damage_definition_index);
+		damage.material_index = NONE;
+		object_get_root_location(unit_index, (s_location *)&damage.unknown1c);
+		object_get_damage_owner(unit_index, &damage.owner);
+		damage.position = point;
+		damage.origin = unit->unknown030;
+		damage.cone_direction = forward;
+		*(byte *)&damage.unknown84 = 3;
+		damage.unknown18 = unit_index;
+		long hit_index = function_d6c80(&damage, unit_index);
+		if (hit_index != NONE)
+		{
+			short material_type;
+
+			damage.material_index = *function_1886d0(hit_index, &material_type);
+		}
+		long material_index = *(long *)&damage.material_index;
+		if (function_188690((short)material_index))
+		{
+			function_ceee0(unit_index, damage_definition_index, (short)material_index, &point, g_4687b0);
+		}
 	}
 }
 
@@ -5447,7 +5469,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	{
 		function_b9a90(weapon_index);
 	}
-	function_cea70(NONE, weapon_index, slot_index, unit_index);
+	function_cea70(NONE, slot_index, weapon_index, unit_index);
 	switch (mode)
 	{
 	case 0:
@@ -5748,7 +5770,7 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 	s_unit *holder = UNIT_GET(unit_index);
 	if (holder->unknown238 != NONE && g_4e6948->mode != 4)
 	{
-		function_ce470(0, holder->unknown238, unit_index);
+		function_ce470(0, unit_index, holder->unknown238);
 		holder->unknown238 = NONE;
 	}
 	function_ceb30(unit_index);
