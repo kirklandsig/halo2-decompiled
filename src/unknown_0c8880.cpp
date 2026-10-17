@@ -61,7 +61,11 @@ real function_c8880(long unit_index, short field_240)
 				return function_101090(weapon_index, field_240);
 			}
 
-			volatile bool unzoomed = (((s_zoom_weapon_definition *)g_4e3b44[ZOOM_UNIT(weapon_index)->definition_index & 0xffff].data)->flags12e & 1) != 0;
+			bool unzoomed = (((s_zoom_weapon_definition *)g_4e3b44[ZOOM_UNIT(weapon_index)->definition_index & 0xffff].data)->flags12e & 1) != 0;
+			/* retail stores the flag in its stack slot (and never reads it
+			   back there): its address is taken */
+			bool const *unzoomed_reference = &unzoomed;
+
 			if (unzoomed)
 			{
 				return result;
