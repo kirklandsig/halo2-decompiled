@@ -70,7 +70,14 @@ void function_12ba90(void)
 	}
 }
 
-/* retail's only caller (0x12b450, still a stub) ignores the result */
+/* retail's only caller (0x12b450) ignores the result; 0x12bad0 is near: the
+   register pattern matches (bl enregistered for the comparisons and the false
+   stores, mov al,1 doubling as result=true), but our build materializes
+   result for the return on the false paths (mov al, bl) where retail's
+   shared epilogue returns the loaded revert value already in al. Returning
+   revert instead kills the bl register entirely (test al, al and immediate
+   stores), so the two constraints can't both be met from this source shape;
+   the permuter's floor is this one instruction. */
 // @retail 0x12bad0
 bool function_12bad0(void)
 {
