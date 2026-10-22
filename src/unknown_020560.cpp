@@ -816,6 +816,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// score 627 (was 627): retail's frame is 0x2c (ours 0x1c) and it keeps count in ebx, source in esi and the
+// nearest index in edi; ours keeps the index in memory. Retail also places the g_5093f4 copies after the
+// main body (before the count <= 0 fallback) rather than at the top, tests a second-sample pointer for NULL
+// before calling function_022c30, then branches on fraction <= 0 and >= 1, and computes the nearest distance
+// as distance_sq3f does (z*z, then += x*x, then += y*y). Writing those shapes brings the structure much
+// closer to retail's, but the prologue's register choice stays different and the score rises to 634-640.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
