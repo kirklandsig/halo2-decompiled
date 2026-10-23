@@ -161,15 +161,18 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 	out->color.red += color->red * weight;
 	out->color.green += color->green * weight;
 	out->color.blue += color->blue * weight;
-	out->intensity += intensity * weight;
-	out->distance += distance * weight;
 	out->height += height * weight;
 	out->weight += weight;
+	out->intensity += intensity * weight;
+	out->distance += distance * weight;
 	out->remaining *= 1.0f - weight;
 }
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
+// score 308 (was 444): retail saves esi only around the outer loop (ours at entry, shifting the
+// first block by one instruction), copies the clamped weight (movaps) before multiplying the
+// green and blue fields, and orders the accumulator loads and stores differently after the loop.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
@@ -202,7 +205,7 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt((double)opposite.j * opposite.j + (double)opposite.i * opposite.i);
+			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
 			if (!(0.0001f > fabs(magnitude)))
 			{
 				real reciprocal = 1.0f / magnitude;
@@ -223,7 +226,7 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 				case 1: sample = source->opposite_count > 0 ? source->opposite : NULL; axis = &opposite; break;
 				default: continue;
 				}
-				real angle = function_11ce20(view_direction, axis);
+				real angle = function_11ce20(axis, view_direction);
 				if (sample && sample->angle_end > sample->angle_start)
 				{
 					real weight = PIN((angle - sample->angle_end) / (sample->angle_start - sample->angle_end), 0.0f, 1.0f);
