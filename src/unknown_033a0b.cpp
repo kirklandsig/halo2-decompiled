@@ -66,6 +66,11 @@ struct s_4e6950
 };
 extern s_4e6950 g_4e6950;
 
+// score 393 (was 393): retail reads g_485a6c and g_485a70 from memory for each component in cases 23, 35
+// and 24, as if the stores through out could change them; ours keeps them in registers. A full test build
+// in which another function in this file returned their addresses matched retail, which is consistent with
+// different alias assumptions in the original program (the cause is unknown). That is not repeated here
+// (docs/DECOMPILING.md). Writing the cases as a loop over the components scores 401.
 // @retail 0x33980
 void function_33980(long selector, vector3f *out)
 {
