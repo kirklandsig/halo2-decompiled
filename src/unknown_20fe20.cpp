@@ -1826,6 +1826,21 @@ PRIVATE __forceinline bool audio_target_is_known(long actor_index, long object_i
     return false;
 }
 
+PRIVATE __forceinline bool audio_target_is_known(byte const *object, long object_index)
+{
+    if (object_index != NONE)
+    {
+        long index = function_25d770(*(long const *)(object + 0x12c), object_index);
+        if (index != NONE)
+        {
+            short state = *(short *)(g_502418->data + (index & 0xffff) * 0x3c + 0x24);
+            if (state >= 1 && state <= 2)
+                return true;
+        }
+    }
+    return false;
+}
+
 PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_index)
 {
     if (object_index != NONE)
@@ -1837,6 +1852,10 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
     return false;
 }
 
+// score 289 (was 527): retail shares the flags 0x40 rejection tails; ours emits a separate
+// tail. Our nonzero required exit shares the mask-rejection tail, versus the flags 0x10 tail
+// in retail. Retail also materializes both audio_target_is_known record addresses with
+// add eax, edx, zero-extends request[0xa] for require_friendly, and places success after failure.
 // @retail 0x20d8c0
 short function_20d8c0(long source_index, s_audio_priority_table *table, byte const *request,
     long object_index, long target_index, long previous_index, long *tag_index, real *weight)
@@ -1851,11 +1870,11 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
     byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
     byte *actor = NULL;
     byte *source = NULL;
-    byte *target = NULL;
     short type = *(short const *)(request + 2);
     bool eligible = true;
     real scale = 1.0f;
     long source_unit_index = NONE;
+    byte *target = NULL;
     if (target_index != NONE)
         target = *(byte **)(g_4e0300->data + (target_index & 0xffff) * 12 + 8);
     if (source_index != NONE)
@@ -1884,7 +1903,7 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
         }
         if ((bool)((*(dword *)(object + 0x134) >> 3) & 1))
             eligible = false;
-        if ((!object[0xaa] && object[0x39d]) || !eligible)
+        if ((!object[0xaa] && object[0x39d] > 0) || !eligible)
             goto failed;
         if (previous_index != NONE && function_114440(object_index) ==
             *(long *)(g_4f9398->data + (previous_index & 0xffff) * 0x54 + 0x4c))
@@ -1906,23 +1925,37 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
             goto checked;
         if ((request[0xa] & 1) && object_index != target_index && actor &&
             !audio_target_is_known(actor_index, target_index))
-            goto invalid;
-        if ((request[0xa] & 2) && object_index != source_unit_index && actor &&
-            !audio_target_is_known(*(long *)(object + 0x12c), source_unit_index))
-            goto invalid;
         {
+            type = NONE;
+            eligible = false;
+            goto checked;
+        }
+        if ((request[0xa] & 2) && object_index != source_unit_index && actor &&
+            !audio_target_is_known(object, source_unit_index))
+        {
+            type = NONE;
+            eligible = false;
+            goto checked;
+        }
+        {
+            bool require_friendly = (bool)(((dword)request[0xa] >> 2) & 1);
             bool friendly = false;
             if (!audio_team_is_hostile(*(short *)(object + 0x138)))
                 friendly = true;
             else if (actor && *(long *)(actor + 0x7c) != NONE)
             {
                 long clump = *(long *)(actor + 0x7c);
-                friendly = *(short *)(g_502420->data + (clump & 0xffff) * 0x50 + 0x10) > 1;
+                if (*(short *)(g_502420->data + (clump & 0xffff) * 0x50 + 0x10) > 1)
+                    friendly = true;
             }
-            if ((bool)(((dword)request[0xa] >> 2) & 1))
+            if (require_friendly)
             {
                 if (!friendly)
-                    goto invalid;
+                {
+                    type = NONE;
+                    eligible = false;
+                    goto checked;
+                }
             }
             else if (friendly)
                 scale = 0.6f;
@@ -1932,23 +1965,37 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
             if ((flags & 8) && actor)
             {
                 if (!audio_target_is_current(actor, target_index))
-                    goto invalid;
+                {
+                    type = NONE;
+                    eligible = false;
+                    goto checked;
+                }
                 scale *= 1.1f;
             }
             if ((flags & 0x10) && actor)
             {
                 if (!audio_target_is_current(actor, source_unit_index))
-                    goto invalid;
+                {
+                    type = NONE;
+                    eligible = false;
+                    goto checked;
+                }
                 scale *= 1.1f;
             }
             if ((flags & 0x20) && (!source || *(long *)(source + 0x13c) == NONE) &&
                 audio_team_is_hostile(*(short *)(object + 0x138)))
-                goto ineligible;
+            {
+                eligible = false;
+                goto checked;
+            }
             flags = *(word const *)(request + 0xa);
             if ((flags & 0x40) && (!actor ||
                 (actor_behavior_find_level(*(long *)(object + 0x12c), 0x22) == NONE &&
                  actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE)))
-                goto ineligible;
+            {
+                eligible = false;
+                goto checked;
+            }
             if (flags & 0x80)
             {
                 eligible = false;
@@ -1966,15 +2013,14 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
                 eligible = false;
                 if (!source || *(long *)(source + 0x13c) == NONE)
                     goto checked;
-                team = *(short *)(object + 0x138);
-                if (team == 1)
+                if (*(short *)(object + 0x138) == 1)
                     eligible = true;
                 else
                 {
-                    if (audio_team_is_hostile(team))
+                    if (audio_team_is_hostile(*(short *)(object + 0x138)))
                         goto checked;
                     byte *player = g_4e8c24->data + (*(long *)(source + 0x13c) & 0xffff) * 0x21c;
-                    switch (team)
+                    switch (*(short *)(object + 0x138))
                     {
                     case 2: eligible = player[0x88] == 0; break;
                     case 3: case 7: eligible = player[0x88] == 1; break;
@@ -1986,25 +2032,33 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
         }
         if (*(short const *)(request + 0x18) > 0 &&
             function_1c9e50(*(short const *)(request + 0x18)) > *(real *)(actor + 0x3d8))
-            goto invalid;
+        {
+            type = NONE;
+            eligible = false;
+            goto checked;
+        }
         if (actor)
         {
             short current = function_272ab0(*(long *)(object + 0x12c));
             short required = *(short const *)(request + 0x1a);
             if (required != current)
             {
-                if (required)
-                    goto invalid;
-                scale *= 0.6f;
+                if (!required)
+                    scale *= 0.6f;
+                else
+                {
+                    type = NONE;
+                    eligible = false;
+                    goto checked;
+                }
             }
         }
         else if (*(short const *)(request + 0x1a))
-            goto invalid;
-        goto checked;
-invalid:
-        type = NONE;
-ineligible:
-        eligible = false;
+        {
+            type = NONE;
+            eligible = false;
+            goto checked;
+        }
 checked:
         actor_index = *(long *)(object + 0x12c);
         if (actor_index != NONE &&
