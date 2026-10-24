@@ -1464,33 +1464,73 @@ long function_26bc60(long clump_index)
 	return 2;
 }
 
-// score 127 (was 127): frame 0x1c versus 0x20; result register, iterator null join and center copy differ.
-// Plain oldest-time/index storage separately 136/126; byte activity 127; native pool step 160; activity while 136.
+/* the clump pool walk 0x269040 makes: like s_clump_pool_iterator with a trailing index slot,
+   as s_ai_importance_squad_iterator (ai.cpp) has; retail's frame keeps the slot */
+struct s_clump_walk_269040
+{
+	s_clump *clump;
+	s_record_pool_iterator pool;
+	long clump_index;
+};
+
+/* record_pool_iterator_step with its result cleared before the search */
+PRIVATE __forceinline byte *clump_walk_step_269040(s_record_pool_iterator *iterator)
+{
+	byte *result = NULL;
+	s_record_pool *data = iterator->data;
+	long index = function_16bc00(data, iterator->index + 1);
+	if (index != NONE)
+	{
+		result = data->data + data->size * index;
+		iterator->index = index;
+		iterator->datum_index = (*(short *)result << 16) | index;
+	}
+	else
+	{
+		iterator->index = data->maximum_count;
+		iterator->datum_index = NONE;
+	}
+	return result;
+}
+
+PRIVATE __forceinline s_clump *clump_walk_advance_269040(s_clump_walk_269040 *walk)
+{
+	s_clump *clump = NULL;
+	if (g_4f55d0->active)
+		clump = (s_clump *)clump_walk_step_269040(&walk->pool);
+	walk->clump = clump;
+	return clump;
+}
+
+// score 106 (was 127): the frame and the walk's slots now match; retail clears the clump
+// register (ebp) before testing the active flag and keeps the result in ebx, the pool in esi
+// and the index in edi; ours clears it just before the search call and keeps the result in
+// ebp, NONE in ebx and the pool in edi. Tried: the stock data_iterator_next_calling in the
+// loop body (139, the empty search jumps straight out), next_clump_in_pool (125),
+// record_pool_iterator_step (164, not inlined), the step written into one helper with the
+// clump cleared first (139), the stock step under this walk (124). Tried at 127 (lane): plain
+// oldest-time/index storage separately 136/126; byte activity 127; native pool step 160; activity while 136.
 // @retail 0x269040
 long function_269040(point3f const *center, short team)
 {
 	long result = record_pool_allocate(g_502420);
 	if (result == NONE)
 	{
-		s_clump_pool_iterator iterator;
+		s_clump_walk_269040 walk;
 		if (g_4f55d0->active)
 		{
-			iterator.pool.data = g_502420;
-			iterator.pool.index = NONE;
+			walk.pool.data = g_502420;
+			walk.pool.index = NONE;
 		}
-		bool active = g_4f55d0->active;
-  long volatile oldest_time = 0x7fffffff;
-		long volatile oldest = NONE;
-		for (;;)
+		long oldest = NONE;
+		long oldest_time = 0x7fffffff;
+		s_clump_activity_view *clump;
+		while ((clump = (s_clump_activity_view *)clump_walk_advance_269040(&walk)) != NULL)
 		{
-			iterator.current = NULL;
-			if (active) iterator.current = (s_clump *)data_iterator_next_calling(&iterator.pool);
-			if (!iterator.current) break;
-			long time = ((s_clump_activity_view *)iterator.current)->active_time;
-			if (time < oldest_time)
+			if (clump->active_time < oldest_time)
 			{
-				oldest_time = time;
-				oldest = iterator.pool.datum_index;
+				oldest_time = clump->active_time;
+				oldest = walk.pool.datum_index;
 			}
 		}
 		if (oldest != NONE)

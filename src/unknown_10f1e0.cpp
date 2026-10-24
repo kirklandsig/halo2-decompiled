@@ -242,9 +242,16 @@ PRIVATE __forceinline real function_112e21(real arg_0)
     return local_0;
 }
 
-// score 133 (was 133): frame 0x80 versus 0x84 and squared/yaw/pitch homes differ;
-// shared normalization scale 133, relative scale 136, both scales 136,
-// reciprocal-root intrinsic 168, two-angle helper precision probe 119 (rejected).
+// score 64 (was 133): the frame, the offset's arithmetic and the direction's registers (i, j, k
+// in xmm3, xmm1, xmm2) now match. Retail clears and stores the direction in i, j, k order (ours
+// j, k, i), and its normalisation scales j and k in place where ours copies the factor first
+// (3 bytes longer), so every later address is shifted. Tried: relative.i = inverse * relative.i
+// with vector3d_from_points3d (133, the compiler commutes it); the offset as a vector3f (71,
+// the j row regrouped as (left.j * y + left.i * x) + left.k * z); the direction as three
+// scalars (105); the clearing in i, j, k order (91, i, j, k land in xmm1, xmm2, xmm3); the
+// normalisation written i = inverse * i, j = j * inverse, k = k * inverse (no change). Tried at
+// 133 (lane): shared normalization scale 133, relative scale 136, both scales 136, reciprocal-root
+// intrinsic 168, two-angle helper precision probe 119 (rejected).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -256,22 +263,28 @@ void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f
 	vector3f direction;
 	if (frame.scale != 0.0f)
 	{
-		vector3f relative;
-		vector3d_from_points3d(&frame.position, target, &relative);
+		real x = target->x - frame.position.x;
+		real y = target->y - frame.position.y;
+		real z = target->z - frame.position.z;
 		if (frame.scale != 1.0f)
 		{
 			real inverse = 1.0f / frame.scale;
-			relative.i *= inverse;
-			relative.j *= inverse;
-			relative.k *= inverse;
+			x = inverse * x;
+			y = inverse * y;
+			z = inverse * z;
 		}
 		// summed k, j, i as retail does
-		direction.i = frame.forward.k * relative.k + frame.forward.j * relative.j + frame.forward.i * relative.i;
-		direction.j = frame.left.k * relative.k + frame.left.j * relative.j + frame.left.i * relative.i;
-		direction.k = frame.up.k * relative.k + frame.up.j * relative.j + frame.up.i * relative.i;
+		direction.i = frame.forward.k * z + frame.forward.j * y + frame.forward.i * x;
+		direction.j = frame.left.k * z + frame.left.j * y + frame.left.i * x;
+		direction.k = frame.up.k * z + frame.up.j * y + frame.up.i * x;
 	}
 	else
-		direction.i = direction.j = direction.k = 0.0f;
+	{
+		// cleared j, k, i: the order that gives retail's registers
+		direction.j = 0.0f;
+		direction.k = 0.0f;
+		direction.i = 0.0f;
+	}
 	real squared = direction.k * direction.k + direction.j * direction.j + direction.i * direction.i;
 	if (squared != 0.0f)
 	{
@@ -281,19 +294,20 @@ void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f
 		direction.j *= inverse;
 		direction.k *= inverse;
 	}
-	real yaw = (real)atan2(direction.j, direction.i);
-	// retail keeps the planar length on the x87 stack: fsqrt and fpatan see it unrounded
-	real pitch = (real)atan2((double)direction.k, sqrt((double)direction.j * direction.j + (double)direction.i * direction.i));
-	if (0.0f - yaw_limit > yaw)
-		yaw = 0.0f - yaw_limit;
-	else if (yaw > yaw_limit)
-		yaw = yaw_limit;
-	if (0.0f - pitch_limit > pitch)
-		pitch = 0.0f - pitch_limit;
-	else if (pitch > pitch_limit)
-		pitch = pitch_limit;
+	s_view_angles angles;
+	angles.yaw = (real)atan2(direction.j, direction.i);
+	// the planar length stays on the x87 stack: fsqrt and fpatan see it unrounded
+	angles.pitch = (real)atan2(direction.k, sqrt(direction.j * direction.j + direction.i * direction.i));
+	if (0.0f - yaw_limit > angles.yaw)
+		angles.yaw = 0.0f - yaw_limit;
+	else if (angles.yaw > yaw_limit)
+		angles.yaw = yaw_limit;
+	if (0.0f - pitch_limit > angles.pitch)
+		angles.pitch = 0.0f - pitch_limit;
+	else if (angles.pitch > pitch_limit)
+		angles.pitch = pitch_limit;
 	transform4x3f rotation;
-	function_141ce0(yaw, pitch, 0.0f, &rotation);
+	function_141ce0(angles.yaw, angles.pitch, 0.0f, &rotation);
 	function_142a60(&frame, &rotation, matrix);
 	matrix->scale = scale;
 }
