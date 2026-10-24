@@ -2085,13 +2085,25 @@ bool function_39a80(byte *state)
 
 
 
+#ifndef PIN
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+#endif
+
+// score 193 (was 324): the target's length is clamped with PIN, which
+// reevaluates the square root as retail does, and summed k, j, i without the
+// double promotions, as retail's mixed SSE/x87 evaluation does. What still
+// differs: retail's frame is four bytes larger; it keeps the current length
+// apart from its clamped value and keeps the cosine in memory, subtracting it
+// from its stack slot, so its later slots and registers differ. A plain
+// local for the current length, separate or reference-bound sine, cosine and
+// angle, a separate cross product vector, reordered products and a clamp
+// helper score 193 to 245.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
     real const &name_734d0c = (real)sqrt((double)current->i * current->i + (double)current->j * current->j + (double)current->k * current->k);
     real a = name_734d0c < 0.0001f ? 0.0001f : name_734d0c > 10.0f ? 10.0f : name_734d0c;
-    real target_size = (real)sqrt((double)target->i * target->i + (double)target->j * target->j + (double)target->k * target->k);
-    real b = target_size < 0.0001f ? 0.0001f : target_size > 10.0f ? 10.0f : target_size;
+    real b = PIN((real)sqrt(target->k * target->k + target->j * target->j + target->i * target->i), 0.0001f, 10.0f);
     vector3f first, second;
     real inverse = 1.0f / a;
     first.i = current->i * inverse;
