@@ -1186,7 +1186,7 @@ bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_soun
 			source->spatial.position.x = camera->position.x + offset.i;
 			source->spatial.position.y = camera->position.y + offset.j;
 			source->spatial.position.z = camera->position.z + offset.k;
-			function_11bed0(&source->spatial.location, &source->spatial.position);
+			function_11bed0(&source->spatial.location, &camera->position);
 			source->spatial.compressed_forward = vector3d_compress(g_4687a8);
 			source->spatial.velocity = *g_4687a4;
 			request->flags = 7;
