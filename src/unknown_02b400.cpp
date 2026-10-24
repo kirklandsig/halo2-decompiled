@@ -725,7 +725,8 @@ void function_27aa0(void)
     byte *bitmap = g_4e3b44[*(long *)(definition + 0x18) & 0xffff].bytes;
     g_4b9a00 = g_485600;
     if (g_485607) g_4b9a00 = 4;
-    real blend = (cosf(g_485618.forward.k * 3.1415927410125732f) + 1.0f) * 0.5f;
+    /* retail takes the cosine of the unrounded product */
+    real blend = (real)((cos(g_485618.forward.k * 3.1415927410125732) + 1.0f) * 0.5f);
     g_4b9d8c = 19;
     g_4b9d90 = 0.5f;
     g_4b9d94 = *(real *)(definition + 0x20) * (1.0f - blend) + *(real *)(definition + 0x1c) * blend;
@@ -764,12 +765,14 @@ void function_27aa0(void)
     real largest_distance = 0.0001f > far_distance ? 0.0001f : far_distance;
     real radius = (real)(*(real *)(definition + 0x10) * 0.5f /
         (tan(g_485640 * 0.5f) * largest_distance * aspect));
-    real angle_delta = (real)atan2(relative.forward.j + (relative.left.j + relative.up.j) * 0.0f,
+    double angle_delta = atan2(relative.forward.j + (relative.left.j + relative.up.j) * 0.0f,
         relative.forward.i + (relative.left.i + relative.up.i) * 0.0f);
     real *angle = (real *)(state->field_00 + 0x3c);
-    *angle -= -(angle_delta * *(real *)(definition + 4));
-    real cosine = (real)cos((double)*angle);
-    real sine = (real)sin((double)*angle);
+    /* retail keeps the turned angle unrounded for the cosine and sine */
+    double turned = *angle - -(angle_delta * *(real *)(definition + 4));
+    *angle = (real)turned;
+    real cosine = (real)cos(turned);
+    real sine = (real)sin(turned);
     real volatile *phase_reference = (real volatile *)(state->field_00 + 0x40);
     real stepped_phase = *phase_reference - *(real *)(definition + 0xc) / (step < 0.0001f ? 0.0001f : step) * relative.position.z;
     *phase_reference = stepped_phase;
@@ -812,8 +815,9 @@ void function_27aa0(void)
         real fraction = (distance - g_4857dc) * inverse_span;
         real centered = fraction * 2.0f - 1.0f;
         real offset_from_center = centered >= 0.0f ? centered : 0.0f - centered;
-        real cubed_offset = (real)pow((double)offset_from_center, 3.0);
-        real weight = (real)(pow((double)(1.0f - cubed_offset), 2.0) * g_4b9d98);
+        /* retail subtracts the cube from 1 before rounding it to a float */
+        double cubed_offset = pow((double)offset_from_center, 3.0);
+        real weight = (real)(pow(1.0f - cubed_offset, 2.0) * g_4b9d98);
         real size = *(real *)(definition + 0x10) / (g_4857e0 < 0.0001f ? 0.0001f : g_4857e0) * distance;
         real x = 0.0f, y = 0.0f, z = 0.0f - distance;
         if (relative.scale != 1.0f) { x *= relative.scale; y *= relative.scale; z *= relative.scale; }
