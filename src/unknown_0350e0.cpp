@@ -2020,9 +2020,10 @@ void c_octree_radius_view_ab::function_3f970(short index, plane3f const *planes,
 
 
 
-PRIVATE __forceinline real random_unit_fraction(s_random_globals *random)
+/* retail keeps the fraction on the x87 stack, unrounded */
+PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 {
-    return (real)random_next(&random->seed) * (1.0f / 65535.0f);
+    return (double)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
 // @retail 0x39a80
@@ -2049,8 +2050,10 @@ bool function_39a80(byte *state)
                 random_unit_fraction(random) + *(real *)(state + 0x1c));
             motion[0] = (real)(random_unit_fraction(random) * *(real *)(state + 0x30));
             motion[1] = (real)(random_unit_fraction(random) * *(real *)(state + 0x34));
-            motion[2] = (real)(random_unit_fraction(random) * *(real *)(state + 0x38));
-            real magnitude = (real)sqrt((double)motion[0] * motion[0] + (double)motion[1] * motion[1] + (double)motion[2] * motion[2]);
+            /* retail squares the unrounded z, not the stored float */
+            double z = random_unit_fraction(random) * *(real *)(state + 0x38);
+            motion[2] = (real)z;
+            real magnitude = (real)sqrt((double)motion[0] * motion[0] + (double)motion[1] * motion[1] + z * z);
             if (!(fabs(magnitude) < 0.0001f))
             {
                 real inverse = 1.0f / magnitude;
