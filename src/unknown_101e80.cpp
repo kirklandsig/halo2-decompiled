@@ -216,6 +216,27 @@ long function_101fb0(long object_index)
 	return result;
 }
 
+/* an object, with its header's address formed as well although nothing
+   reads it: that keeps a later lookup of the same object from reusing this
+   one, so g_4e0300's data pointer and the object are read again for each
+   lookup, as in retail (the idiom of 0xe5470's e5470_object_get) */
+PRIVATE inline s_object *object_get_102100(long object_index)
+{
+	s_object *object = OBJECT_HEADER(object_index)->object;
+	s_object_header *local_header = OBJECT_HEADER(object_index);
+
+	return object;
+}
+
+// score 87 (was 110): the two lookups of the holder's child now read the
+// pool's data pointer again as retail does. Left: retail keeps the object
+// index times 12 in esi and the link offset in edx (ours swaps them), forms
+// the tag link's address once in ecx, and loads the object's tag index
+// into a register before comparing it with the other object's.
+// Tried: the getter also for the holder or the other object (92), the
+// child read through a local copy of the pool pointer (110), a forced-inline
+// slot-to-object helper (110), tag and tag link declared before the link
+// (179, 209, 211), the tag index comparison reversed (87).
 // @retail 0x102100
 bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
@@ -280,13 +301,13 @@ bool function_102100(short link_index, long object_index, bool *out_a, bool *out
 		s_object *holder = OBJECT_HEADER(object_index)->object;
 		if ((holder->flags12c & 1) && holder->child_index != NONE)
 		{
-			s_object *child = OBJECT_HEADER(holder->child_index)->object;
+			s_object *child = object_get_102100(holder->child_index);
 			short first = child->attachments.first;
 			long first_index = NONE;
 			if (first != NONE)
 				first_index = child->attachments.objects[first];
 
-			child = OBJECT_HEADER(holder->child_index)->object;
+			child = object_get_102100(holder->child_index);
 			short second = child->attachments.second;
 			long second_index = NONE;
 			if (second != NONE)

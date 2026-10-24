@@ -312,10 +312,17 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// score 112 (was 112): retail takes the object index in eax and the entry
+// index in ecx (ours the other way round, which is also 0xb7060's last
+// difference), and orders the dot product's terms k, j, i (ours k, i, j;
+// the source order of the terms does not change the code). Retail copies the
+// center with carrier_vector_from_havok like the velocities (movss), but that
+// alone makes ours pass the entry index on the stack and swap ebx and ebp
+// (149; as three field copies 140, through a motion local 129). Tried:
+// parameters swapped at both ends (no change), entry declared before the
+// object or after the component index (113, 128), inline object and entry
+// getters (no change).
 // @retail 0x109660
-// score 112 (was 112): retail keeps the record index multiplied by the record
-// size in ebx and the object lookup in eax, ours has the index in eax and the
-// entry pointer in ebx, and the two are computed in the other order
 void function_109660(long object_index, long entry_index)
 {
 	s_carried_object *object = ((s_carried_object_header *)g_4e0300->data)[object_index & 0xffff].object;
