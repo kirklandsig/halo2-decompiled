@@ -3293,12 +3293,21 @@ void function_19e0f0(word const *string, long size, word *buffer, s_event *event
 
 int unicode_string_vsnprintf(word *buffer, long maximum_count, const word *format, ...);
 
+// score 148 (was 214): setting result on each success instead of returning
+// gives retail's convention (buffer arrives in esi; ret 8) and its two
+// buffer-clearing exits. What still differs: retail keeps a separate
+// formatting call, return and epilogue in each of the three message branches;
+// ours shares one tail between them (453 bytes against 516), and the
+// registers and order of the early loads differ. Returning true directly in
+// those branches, one text buffer per branch, a const reference to the
+// buffer and a reordered parameter list score 148 to 218; the 600 s
+// permutation runs found nothing that keeps the same calls.
 // @retail 0x15f120
 bool function_15f120(long player_index, word *buffer, long size, long suppress_score)
 {
+	long user_index = engine_player_get(player_index)->local_index;
 	long const *size_reference = &size;
 	long const *suppress_reference = &suppress_score;
-	long user_index = engine_player_get(player_index)->local_index;
 	bool result = false;
 	if (game_engine_get())
 	{
@@ -3317,31 +3326,39 @@ bool function_15f120(long player_index, word *buffer, long size, long suppress_s
 					text[0] = 0;
 					function_1a0180(settings->string_list, string_handle, text);
 					function_19e0f0(text, *size_reference, buffer, 0);
-					return true;
+					result = true;
+				}
+				else
+				{
+					buffer[0] = 0;
+					return false;
 				}
 			}
-			buffer[0] = 0;
+			else
+			{
+				buffer[0] = 0;
+			}
 		}
 		else if (g_4e6948->flag1128)
 		{
 			text[0] = 0;
 			function_161ef0(0x0c000108, text);
 			unicode_string_vsnprintf(buffer, *size_reference, text);
-			return true;
+			result = true;
 		}
 		else if (state == 2)
 		{
 			text[0] = 0;
 			function_161ef0(0x0d000109, text);
 			unicode_string_vsnprintf(buffer, *size_reference, text);
-			return true;
+			result = true;
 		}
 		else if (state == 3)
 		{
 			text[0] = 0;
 			function_161ef0(0x1900010a, text);
 			unicode_string_vsnprintf(buffer, *size_reference, text);
-			return true;
+			result = true;
 		}
 	}
 	return result;
