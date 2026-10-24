@@ -1837,6 +1837,11 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// score 339 (was 339): retail spills session+0x4c and &session->value18 and loads member_index
+// before get_values_4d08; our build folds every pointer form tried back into session (396-397).
+// An /arch:SSE experiment (this function would need its own SSE file) with the state select as an
+// if, a __forceinline session_get_id and a player pointer loop emits retail's cmovne and raises
+// the structural ratio from 0.848 to 0.914, but scores 359 (fast; 1292 bytes against retail's 1291).
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {
