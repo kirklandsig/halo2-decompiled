@@ -338,6 +338,7 @@ void function_10cdf0(long object_index);
 void function_10ca80(long object_index, long a);
 void function_ce6b0(long unit_index, long name, long object_index, real scale);
 short function_101010(long weapon_index, short field_240);
+bool function_100fd0(long weapon_index);
 bool function_10f630(long object_index, long *first, long *second);
 void function_b7360(long object_index);
 bool function_c9040(long vehicle_index, long unit_index, short seat_index, vector3f const *forward,
@@ -695,20 +696,26 @@ void __stdcall function_c6f80(long unit_index, long a, long b)
 // @retail 0xc70b0
 bool function_c70b0(long unit_index)
 {
-	if (function_0c7070(unit_index))
+	bool result = function_0c7070(unit_index);
+
+	if (!result)
 	{
-		return true;
+		long name = UNIT_ANIMATION(UNIT_GET(unit_index))->name;
+
+		if (name == 0x80000c4 || name == 0x400004a || name == 0x50000c3)
+		{
+			result = true;
+		}
 	}
-	long name = UNIT_ANIMATION(UNIT_GET(unit_index))->name;
-	return name == 0x80000c4 || name == 0x400004a || name == 0x50000c3;
+	return result;
 }
 
 /* the last object of the chain the units' +0x24c links */
 // @retail 0xc7100
 long function_c7100(long unit_index)
 {
-	long *next = &UNIT_GET(unit_index)->unknown24c;
 	long result = NONE;
+	long *next = &UNIT_GET(unit_index)->unknown24c;
 
 	while (*next != NONE)
 	{
@@ -728,8 +735,8 @@ short function_c8860(long unit_index)
 // @retail 0xc8a10
 bool function_c8a10(long unit_index)
 {
-	s_unit *unit = UNIT_GET(unit_index);
 	bool result = false;
+	s_unit *unit = UNIT_GET(unit_index);
 
 	if (unit->type == 0)
 	{
@@ -1051,9 +1058,9 @@ void function_cea00(long unit_index)
 // @retail 0xc8ef0
 short __stdcall function_c8ef0(long unit_index, long a, long *object_index, short *seat_index)
 {
+	short result = 0;
 	long found_object_index = NONE;
 	short found_seat_index = NONE;
-	short result = 0;
 	real distance = 3.4028235e38f;
 	bool flag = false;
 
@@ -1219,6 +1226,7 @@ real function_d1410(long unit_index)
 // @retail 0xc8fc0
 s_unit_seat_definition *function_c8fc0(long unit_index)
 {
+	s_unit_seat_definition *result = 0;
 	s_unit *unit = UNIT_GET(unit_index);
 
 	if (unit->parent_index != NONE)
@@ -1231,11 +1239,11 @@ s_unit_seat_definition *function_c8fc0(long unit_index)
 
 			if ((1 << parent->type) & 3)
 			{
-				return &UNIT_SEATS(UNIT_DEFINITION_GET(parent))[seat_index];
+				result = &UNIT_SEATS(UNIT_DEFINITION_GET(parent))[seat_index];
 			}
 		}
 	}
-	return 0;
+	return result;
 }
 
 /* stops five of the unit's request types, sends request 0x13 and runs
@@ -1473,34 +1481,37 @@ void function_ce470(long mode, long object_index, long unit_index)
 	}
 }
 
-/* the unit's next weapon state: its weapon's when it has rounds (+0x1fe),
-   else the next of the globals' count after the given one */
+/* the unit's next zoom level after the given one: its weapon's (0x101010)
+   when the weapon has zoom levels (0x100fd0), else, unless the weapon's
+   flag 0 at +0x12e forbids it, the next of the globals' count (NONE past
+   the last) */
 // @retail 0xc8960
 short function_c8960(long unit_index, short value)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	short index = unit->current_weapon_index;
-	long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
 	short result = NONE;
+	bool flag = false;
+	long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
 
 	if (weapon_index != NONE)
 	{
 		byte *definition = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
-		bool flag = *(definition + 0x12e) & 1;
 
-		if (*(short *)(definition + 0x1fe) > 0)
+		flag = *(definition + 0x12e) & 1;
+		if (function_100fd0(weapon_index))
 		{
 			return function_101010(weapon_index, value);
 		}
-		if (flag)
-		{
-			return result;
-		}
 	}
-	long count = *(long *)(*(byte **)((byte *)g_4e034c + 0x134) + 0xb8);
-	if (count > 0 && value + 1 < count)
+	if (!flag)
 	{
-		result = value + 1;
+		long count = *(long *)(*(byte **)((byte *)g_4e034c + 0x134) + 0xb8);
+
+		if (count > 0 && value + 1 < count)
+		{
+			result = value + 1;
+		}
 	}
 	return result;
 }
@@ -2107,46 +2118,38 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 	real *out_position)
 {
 	bool result = motion->done;
+	real new_position = position;
+	real new_velocity = velocity;
 
 	if (!result && time > 0.0f)
 	{
-		real step = motion->field_10_4;
-
-		if (step > 0.0f)
+		if (motion->field_10_4 > 0.0f)
 		{
-			if (time <= step)
-			{
-				step = time;
-			}
+			real step = time > motion->field_10_4 ? motion->field_10_4 : time;
 			real change = motion->acceleration * step;
-			position = (change * 0.5f + velocity) * step + position;
-			velocity = change + velocity;
+
+			new_position = (change * 0.5f + new_velocity) * step + new_position;
+			new_velocity = change + new_velocity;
 			time -= step;
 		}
 		if (time > 0.0f)
 		{
-			step = motion->coast_time;
-			if (step > 0.0f)
+			if (motion->coast_time > 0.0f)
 			{
-				if (time <= step)
-				{
-					step = time;
-				}
-				position = step * velocity + position;
+				real step = time > motion->coast_time ? motion->coast_time : time;
+
+				new_position = step * new_velocity + new_position;
 				time -= step;
 			}
 			if (time > 0.0f)
 			{
-				step = motion->s_type_8c87de;
-				if (step > 0.0f)
+				if (motion->s_type_8c87de > 0.0f)
 				{
-					if (time <= step)
-					{
-						step = time;
-					}
+					real step = time > motion->s_type_8c87de ? motion->s_type_8c87de : time;
 					real change = motion->deceleration * step;
-					position = (change * 0.5f + velocity) * step + position;
-					velocity = change + velocity;
+
+					new_position = (change * 0.5f + new_velocity) * step + new_position;
+					new_velocity = change + new_velocity;
 					time -= step;
 				}
 				if (time > 0.0f)
@@ -2156,8 +2159,8 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 			}
 		}
 	}
-	*out_position = position;
-	*out_velocity = velocity;
+	*out_position = new_position;
+	*out_velocity = new_velocity;
 	return result;
 }
 
@@ -2408,24 +2411,28 @@ bool function_c85c0(long unit_index)
 	bool result = true;
 
 	if (unit->parent_index != NONE ||
-		(*(dword *)((byte *)unit + unit->unknown346 + 4) >> 26) & 1 ||
-		(*(dword *)((byte *)unit + unit->unknown346 + 4) >> 27) & 1 ||
+		TEST_FIELD_BIT((*(dword *)((byte *)unit + unit->unknown346 + 4) >> 26) & 1) ||
+		TEST_FIELD_BIT((*(dword *)((byte *)unit + unit->unknown346 + 4) >> 27) & 1) ||
 		unit_action_active(unit_index, 0x16) || unit_action_active(unit_index, 8) ||
 		unit_action_active(unit_index, 0x12) || unit_action_active(unit_index, 0) ||
 		unit_action_active(unit_index, 1) || unit_action_active(unit_index, 0xa) ||
 		unit_action_active(unit_index, 0xb))
 	{
-		return false;
+		result = false;
 	}
-	unit = UNIT_GET(unit_index);
-	for (long hand = 0; hand < 2; hand++)
+	else
 	{
-		short index = (&unit->current_weapon_index)[hand];
-
-		if (index != NONE && unit->weapon_object_indices[index] != NONE &&
-			function_100880(unit->weapon_object_indices[index], NONE))
+		unit = UNIT_GET(unit_index);
+		for (long hand = 0; hand < 2; hand++)
 		{
-			return false;
+			short index = (&unit->current_weapon_index)[hand];
+
+			if (index != NONE && unit->weapon_object_indices[index] != NONE &&
+				function_100880(unit->weapon_object_indices[index], NONE))
+			{
+				result = false;
+				break;
+			}
 		}
 	}
 	return result;
@@ -2842,8 +2849,8 @@ void function_c75d0(s_unit_motion *a, s_unit_motion *b, real scale)
 		}
 		else if (b->field_10_4 > 0.0f && total_a > total_b)
 		{
-			difference = total_a - total_b;
 			motion = b;
+			difference = total_a - total_b;
 		}
 		else
 		{
@@ -2853,7 +2860,7 @@ void function_c75d0(s_unit_motion *a, s_unit_motion *b, real scale)
 		{
 			real x = (difference + motion->coast_time) * scale;
 			real speed = (real)fabs(motion->field_10_4 * motion->acceleration + motion->velocity);
-			real step = ((real)sqrt(x * x + 4.0f * speed * difference * scale) - x) / (scale + scale);
+			real step = ((real)sqrt(x * x - (0.0f - speed * difference) * scale * 4.0f) - x) / (scale + scale);
 			real limit = motion->field_10_4 > motion->s_type_8c87de ? motion->s_type_8c87de :
 				motion->field_10_4;
 
@@ -2864,8 +2871,7 @@ void function_c75d0(s_unit_motion *a, s_unit_motion *b, real scale)
 			}
 			if (step > 0.0f)
 			{
-				real time = motion->field_10_4 - step;
-				real velocity = time * motion->acceleration + motion->velocity;
+				real velocity = (motion->field_10_4 - step) * motion->acceleration + motion->velocity;
 
 				if (0.0001f > (real)fabs(velocity))
 				{
@@ -2875,9 +2881,9 @@ void function_c75d0(s_unit_motion *a, s_unit_motion *b, real scale)
 					motion->coast_time = 0.0f;
 					return;
 				}
-				motion->field_10_4 = time;
+				motion->field_10_4 -= step;
 				motion->s_type_8c87de -= step;
-				motion->coast_time = (motion->acceleration * step + velocity * 2.0f) * step / velocity;
+				motion->coast_time = ((motion->acceleration * step + velocity * 2.0f) * step) / velocity;
 			}
 		}
 	}
@@ -3212,23 +3218,25 @@ long __stdcall function_c7160(long unit_index, short seat_index, long a, long ve
 		{
 			*marker_position = marker.matrix.position;
 		}
-		for (long const *name = g_467430; name < g_467430 + 5; name++)
+		for (long i = 0; i < 5; i++)
 		{
 			transform4x3f offset;
 
-			if (function_10f9b0(unit_index, seat->label, *name, 1, &offset, blocks))
+			if (function_10f9b0(unit_index, seat->label, g_467430[i], 1, &offset, blocks))
 			{
 				transform4x3f matrix;
 
+				vector3f delta;
+
 				function_142a60(&marker.matrix, &offset, &matrix);
-				real dx = matrix.position.x - unit->unknown030.x;
-				real dy = matrix.position.y - unit->unknown030.y;
-				real dz = matrix.position.z - unit->unknown030.z;
-				real distance = dz * dz + dx * dx + dy * dy;
+				delta.i = matrix.position.x - unit->unknown030.x;
+				delta.j = matrix.position.y - unit->unknown030.y;
+				delta.k = matrix.position.z - unit->unknown030.z;
+				real distance = (delta.k * delta.k + delta.i * delta.i) + delta.j * delta.j;
 
 				if (best_distance > distance || result == NONE)
 				{
-					result = *name;
+					result = g_467430[i];
 					best_distance = distance;
 					if (position)
 					{
@@ -6592,8 +6600,10 @@ void function_c7840(vector3f const *desired, vector3f *current, transform4x3f co
 	function_c7300(yaw_offset, yaw_speed, max_speed, acceleration, &yaw_motion);
 	function_c7300(pitch_offset, pitch_speed, max_speed, acceleration, &pitch_motion);
 	function_c75d0(&yaw_motion, &pitch_motion, acceleration);
+#pragma inline_depth(0)
 	bool yaw_done = function_c7750(&yaw_motion, yaw_offset, yaw_speed, rate, &yaw_speed, &yaw_offset);
 	bool pitch_done = function_c7750(&pitch_motion, pitch_offset, pitch_speed, rate, &pitch_speed, &pitch_offset);
+#pragma inline_depth()
 	if (yaw_done && pitch_done)
 	{
 		*current = target;
