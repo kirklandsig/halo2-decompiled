@@ -5031,11 +5031,11 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
                 direction = rotation.up;
             }
             alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
-            D3DDevice::SetVertexData4f(7, packed_vector.i, packed_vector.j, packed_vector.k, alpha);
-            D3DDevice::SetVertexData4f(8, horizontal.i * size, vertical.i * size, direction.i * size, position.x);
-            D3DDevice::SetVertexData4f(9, horizontal.j * size, vertical.j * size, direction.j * size, position.y);
-            D3DDevice::SetVertexData4f(10, horizontal.k * size, vertical.k * size, direction.k * size, position.z);
-            D3DDevice::SetVertexData4f(11, light.red, light.green, light.blue, 1.0f);
+            D3DDevice::SetVertexData4f(11, packed_vector.i, packed_vector.j, packed_vector.k, alpha);
+            D3DDevice::SetVertexData4f(12, horizontal.i * size, vertical.i * size, direction.i * size, position.x);
+            D3DDevice::SetVertexData4f(13, horizontal.j * size, vertical.j * size, direction.j * size, position.y);
+            D3DDevice::SetVertexData4f(14, horizontal.k * size, vertical.k * size, direction.k * size, position.z);
+            D3DDevice::SetVertexData4f(15, light.red, light.green, light.blue, 1.0f);
             long count = *(word *)(draw + 6);
             word const *vertices = indices + *(word *)(draw + 4);
             function_1cf50();
