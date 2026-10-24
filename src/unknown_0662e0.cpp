@@ -509,9 +509,18 @@ __forceinline void network_configuration_levels_initialize(s_network_configurati
 	}
 }
 
-// score 363 (was 363): constant-five lifetime and first-table induction differ;
-// initial real stores first 363; outer word index 469 signed or unsigned;
-// column word index 464; both signed-word indices 512. Original kept.
+// score 363 (was 363): register allocation differs from the first loop on. Retail keeps i
+// in ebp and walks a pointer in esi over value84 (value40 at [esi - 0x44]), comparing it
+// with &value84[1] and &value84[4]; the inlined levels loops walk pointers the same way.
+// Ours keeps i in esi with scaled addressing and holds 0 (ebp) and 1 (edx) in registers,
+// where retail holds only 5 (edx, from the value28 store to the value1b0 store) and later
+// 2000 (ebp) and 5000 (esi) for the value774 adds. Retail's forms, which score higher
+// here only through that allocation: flags as memset then flags[1], [6], [7] = true
+// (dword, dword, byte, then three byte stores; 449); the value774 loop as i <= 39
+// (jle against [39]; 449); value1b0 and value368 as literal 5 (388), with 65536 for the
+// value2c copies too (420); all of these 419. Tried: i < 2 (454), its own loop variable
+// for the first loop (363); initial real stores first 363; outer word index 469 signed
+// or unsigned; column word index 464; both signed-word indices 512. Original kept.
 // @retail 0x66330
 void network_configuration_set_defaults()
 {
