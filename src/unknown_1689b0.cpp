@@ -602,8 +602,12 @@ struct s_lookup_ray_result
 
 bool function_1eff40(s_lookup *lookup, long flags, point3f const *point,
 	vector3f const *direction, s_lookup_ray_result *result);
-void function_d8ae0(long object_index, long region_index, short *material);
+short *function_d8ae0(long object_index, long region_index, short *material);
 
+// score 12 (was 26): the material local sits at esp+0x18 where retail has
+// esp+0x1a, and the material store is scheduled after the hit copies; tried
+// the local declared first, between found and lookup, in the inner block and
+// as a one-element array, all 12.
 // @retail 0x169510
 bool __stdcall function_169510(long object_index, bool a, dword flags, dword test_flags, point3f const *point,
 	vector3f const *vector, long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result)
@@ -624,8 +628,7 @@ bool __stdcall function_169510(long object_index, bool a, dword flags, dword tes
 			if (lookup_pointer->initialize(object_index) && function_1eff40(lookup_pointer, test_flags, point, vector, &hit) && result->t > hit.hit.t)
 			{
 				result->type = 4;
-				function_d8ae0(lookup.handle, hit.hit.surface_index, &material);
-				result->material_type = material;
+				result->material_type = *function_d8ae0(lookup.handle, hit.hit.surface_index, &material);
 				result->instance_index = NONE;
 				result->unknown3c = NONE;
 				*(short *)result->unknown44 = hit.item;

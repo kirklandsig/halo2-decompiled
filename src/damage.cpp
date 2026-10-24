@@ -1087,9 +1087,13 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 
 /* the material of one of an object's model regions */
 // @retail 0xd8ae0
-void function_d8ae0(long object_index, long region_index, short *material)
+short *function_d8ae0(long object_index, long region_index, short *material)
 {
-	short result = g_47d8e0;
+	/* a 16-bit bit-field, as in 0x1886d0: retail loads the default with a
+	   16-bit move, where a plain short local is loaded as a dword */
+	struct s_default_material { signed short value : 16; };
+	s_default_material result;
+	result.value = g_47d8e0;
 
 	if (object_index != NONE)
 	{
@@ -1100,10 +1104,11 @@ void function_d8ae0(long object_index, long region_index, short *material)
 			byte *regions = *(byte **)(g_4e3b44[model_index & 0xffff].bytes + 0x5c);
 
 			*material = *(short *)(regions + region_index * 0x14 + 0x10);
-			return;
+			return material;
 		}
 	}
-	*material = result;
+	*material = result.value;
+	return material;
 }
 
 /* the bits of the entries (0x14 bytes, at +0xe4, counted at +0xe0) that
