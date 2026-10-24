@@ -23,8 +23,6 @@ struct s_effect_source;
 /* in region */
 /* in region */
 
-// @stub 0x211060
-void function_211060(long unknown0, void *physics, s_location *location, long unknown3, point3f *position, long unknown5, long unknown6, long unknown7, real radius, real dt, vector3f *velocity) { }
 
 
 

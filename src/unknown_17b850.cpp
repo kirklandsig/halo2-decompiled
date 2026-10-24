@@ -6,6 +6,7 @@
 #include "data_array.h"
 #include "object_markers.h"
 #include "object_queries.h"
+#include "unknown_211060.h"
 #include <string.h>
 
 s_record_pool *g_4ea940;
@@ -17,7 +18,6 @@ long function_14a280(s_bsp3d *bsp, long index, point3f *point);
 bool __stdcall function_bab40(long object_index, long name, real *value);
 void function_17c0e0(long contrail_index, short count, bool force);
 void __stdcall function_17c540(long contrail_index, real dt);
-void function_211060(long unknown0, void *physics, s_location *location, long unknown3, point3f *position, long unknown5, long unknown6, long unknown7, real radius, real dt, vector3f *velocity);
 
 /* a contrail (g_4ea944, 0x48 bytes) */
 struct s_contrail_datum
@@ -701,7 +701,7 @@ void __stdcall function_17c540(long contrail_index, real dt)
 				s_contrail_point_state *state = &definition->states[point->state_index];
 
 				if (state->physics_tag_index != NONE)
-					function_211060(0, g_4e3b44[state->physics_tag_index & 0xffff].bytes, &point->location, NONE, &point->position, 0, 0, 0, state->width * 0.5f, dt, &point->velocity);
+					function_211060(&point->velocity, 0, g_4e3b44[state->physics_tag_index & 0xffff].bytes, &point->location, NONE, &point->position, 0, 0, 0, state->width * 0.5f, dt);
 			}
 			point_list[count++] = point_index;
 			point_index = point->next_index;

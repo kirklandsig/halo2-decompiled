@@ -5,6 +5,7 @@
 #include "data_array.h"
 #include "object_markers.h"
 #include "object_queries.h"
+#include "unknown_211060.h"
 #include <math.h>
 
 // Layouts follow the pool and tag accesses in the retail callback group.
@@ -83,7 +84,6 @@ struct s_type_7ba8e9;
 s_type_7ba8e9 *function_137550(long group_index, short bitmap_index);
 void function_11bed0(s_location *location, point3f const *point);
 real function_11ce20(vector3f const *a, vector3f const *b);
-void function_211060(long unknown0, void *physics, s_location *location, long unknown3, point3f *position, long unknown5, long unknown6, long unknown7, real radius, real dt, vector3f *velocity);
 typedef void (__stdcall *chain_draw_callback)(long, long);
 void function_47870(long object_index, long chain_index, point3f const *origin, chain_draw_callback draw);
 
@@ -260,7 +260,7 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 			{
 				position = node->position;
 				if (definition->physics_index != NONE)
-					function_211060(0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt, &node->velocity);
+					function_211060(&node->velocity, 0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt);
 				vector3f delta = { position.x - previous.x, position.y - previous.y, position.z - previous.z };
 				real scale = (real)(segment->length / sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i));
 				point3f target = { scale * delta.i + previous.x, scale * delta.j + previous.y, scale * delta.k + previous.z };
