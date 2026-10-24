@@ -344,7 +344,7 @@ long class_309b50::function_309b50(long arg_0)
 			__m128 const along = _mm_sub_ps(differences[0], differences[1]);
 			float length_squared;
 			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(along, along)));
-			if (!(length_squared <= 1e-06f))
+			if (!(length_squared <= 0.001f * 0.001f))
 			{
 				goto grow_segment;
 			}
@@ -358,7 +358,7 @@ long class_309b50::function_309b50(long arg_0)
 		{
 			float length_squared;
 			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(differences[0], differences[0])));
-			if (!(length_squared <= 1e-06f))
+			if (!(length_squared <= 0.001f * 0.001f))
 			{
 				goto grow_point;
 			}
