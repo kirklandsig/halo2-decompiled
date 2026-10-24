@@ -262,10 +262,9 @@ real magnitude3d(vector3f const *vector);
 long function_1dac40(long object_index, long other_object_index);
 void function_e3f00(long object_index);
 
-// score 90 (was 142): object_get_damage_owner (0xd66d0, unmatched) takes its
-// object index in eax here but on the stack in retail, which shifts the tail;
-// retail also swaps the stack slots of speed and body_speed, keeps scale in
-// xmm1 and the speed in xmm3, and copies the velocity through other registers
+// score 62 (was 90): retail swaps the stack slots of speed and body_speed,
+// keeps scale in xmm1 and the speed in xmm3, and copies the velocity through
+// other registers
 // @retail 0x1da6d0
 bool function_1da6d0(long object_index, long other_object_index, real speed_a, real speed_b, real impulse)
 {

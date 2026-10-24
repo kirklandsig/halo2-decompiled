@@ -577,32 +577,39 @@ void __stdcall function_d6b60(long object_index)
 // @retail 0xd66d0
 void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 {
-	if (object_index == NONE)
+	if (object_index != NONE)
+	{
+		s_damage_object *object = DAMAGE_OBJECT(object_index);
+
+		if ((1 << object->type) & 3)
+		{
+			if (object->unknown248 != NONE)
+			{
+				object_get_damage_owner(object->unknown248, owner);
+				/* always true here, so it compiles to nothing; without a test
+				   after the call the compiler turns this tail call into a loop,
+				   where retail jumps back to its own entry (and so keeps the
+				   stack convention its callers use) */
+				if (object->unknown248 != NONE)
+					return;
+				return;
+			}
+			if (object->unknown12c != NONE || object->player_index != NONE)
+			{
+				owner->object_index = object_index;
+				owner->player_index = object->player_index;
+				owner->team = object->team;
+				return;
+			}
+		}
+		owner->object_index = object->owner_object_index;
+		owner->player_index = object->owner_player_index;
+		owner->team = object->owner_team;
+	}
+	else
 	{
 		*owner = *g_467420;
-		return;
 	}
-
-	s_damage_object *object = DAMAGE_OBJECT(object_index);
-
-	if ((1 << object->type) & 3)
-	{
-		if (object->unknown248 != NONE)
-		{
-			object_get_damage_owner(object->unknown248, owner);
-			return;
-		}
-		if (object->unknown12c != NONE || object->player_index != NONE)
-		{
-			owner->object_index = object_index;
-			owner->player_index = object->player_index;
-			owner->team = object->team;
-			return;
-		}
-	}
-	owner->object_index = object->owner_object_index;
-	owner->player_index = object->owner_player_index;
-	owner->team = object->owner_team;
 }
 
 // @retail 0xd6a70

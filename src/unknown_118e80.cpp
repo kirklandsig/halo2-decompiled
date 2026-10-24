@@ -425,8 +425,6 @@ struct s_parent_effect_definition_11a140
 	long alternate_effect_index;
 };
 
-// score 5 (was 5): the call to object_get_damage_owner gets its first argument in a register here,
-// while retail passes both arguments on the stack.
 // @retail 0x11a140
 void function_11a140(long object_index)
 {
