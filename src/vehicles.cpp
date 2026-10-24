@@ -1508,7 +1508,8 @@ void __stdcall function_f0f50(long vehicle_index, dword const *node_mask, long n
 // @retail 0xf0f90
 bool function_f0f90(long vehicle_index)
 {
-	return (*(dword *)(VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index)) + 0x1ec) >> 7) & 1;
+	bool result = (*(dword *)(VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index)) + 0x1ec) >> 7) & 1;
+	return result;
 }
 
 void function_1d1260(s_havok_component *component);
