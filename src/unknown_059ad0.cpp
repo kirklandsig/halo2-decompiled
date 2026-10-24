@@ -4616,10 +4616,14 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
+// score 723 (was 777): the frame size and the two member loops' top-tested shape now follow retail,
+// though some stack slots still differ. Retail places the stale-update exit (network_session_host_lost)
+// out of line after the epilogue, where ours compiles it right after the check; every shape tried for it
+// compiles the same. Because that block comes first in ours, most of the function is offset from retail.
+// Retail places the shared failure block within the host check; ours places it before the player loop.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
-	bool result = true;
 	const byte *update = (const byte *)message;
 	if (*(const long *)(update + 0xc) != NONE && *(const long *)(update + 0xc) != session->value4c)
 		goto stale_update;
@@ -4635,14 +4639,15 @@ bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 	dword retained = 0;
 	long old_to_new[16];
 	memset(old_to_new, NONE, sizeof(old_to_new));
+	bool result = true;
 	if (*(const long *)(update + 0xc) != NONE)
 		for (long i = 0; i < session->member_count; i++)
 			old_to_new[i] = i;
-	for (long i = 0; i < *(const short *)(update + 0x10); i++)
+	for (long i = 0; result && i < *(const short *)(update + 0x10); i++)
 	{
 		const byte *entry = update + 0x14 + i * 0x104;
-		short from = *(const short *)entry;
-		short to = *(const short *)(entry + 2);
+		const short &from = *(const short *)entry;
+		const short &to = *(const short *)(entry + 2);
 		if (from == NONE)
 		{
 			if (to < 0 || to >= 16 || !entry[0x28]) goto failed;
@@ -4664,11 +4669,11 @@ bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 	}
 	if (*(const long *)(update + 0xc) != NONE)
 		retained = (1 << previous.member_count) - 1;
-	for (long i = 0; i < *(const short *)(update + 0x10); i++)
+	for (long i = 0; result && i < *(const short *)(update + 0x10); i++)
 	{
 		const byte *entry = update + 0x14 + i * 0x104;
-		short from = *(const short *)entry;
-		short to = *(const short *)(entry + 2);
+		const short &from = *(const short *)entry;
+		const short &to = *(const short *)(entry + 2);
 		if (from == NONE)
 		{
 			if (to < 0 || to >= 16 || !entry[0x28]) goto failed;
