@@ -856,6 +856,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// score 121 (was 121): retail takes initial_velocity in xmm6 (ret 0x14; its callers 0x108600 and
+// 0x108670 set xmm6 before the call), ours on the stack (ret 0x18). Storing the motion fields
+// before the half ramp times also gives ret 0x14, but passes ramp_down_time in a register and
+// keeps initial_velocity on the stack (131-144).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
