@@ -3376,6 +3376,19 @@ real function_50650(real cosine);
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
     point2f const *scale, bool perspective, bool negate, point2f *out);
 
+#ifndef PIN
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+#endif
+
+// score 43 (was 270): the three clamps use PIN, which reevaluates the
+// clamped expression as retail does (for the angle, function_50650 inlined
+// twice and then called), and the curve's base value is read where it is
+// used. What still differs: retail pushes ebx and edi after the first test and
+// keeps the state pointer in esi (ours ebx); it stores the pow result straight
+// to *strength and rereads it, comparing with a zeroed register; and it tests
+// function_30830's result as a byte. A pow on *strength or in double, and a
+// bool return for function_30830 (195 -> 189 for that function, 81 -> 80
+// here, across four files) were tried.
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
@@ -3385,15 +3398,9 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
         byte const *curve = *(byte **)(definition + 0x3c);
         if (facing)
         {
-            real angle = function_50650(cosine) * 0.6366197466850281f;
-            if (angle < 0.0f) angle = 0.0f;
-            else if (angle > 1.0f) angle = 1.0f;
-            real lower = curve ? *(real const *)(curve + 0x14) * 0.6366197466850281f : 0.0f;
-            if (0.0f > lower) lower = 0.0f;
-            else if (lower > 0.9998999834060669f) lower = 0.9998999834060669f;
-            real value = (angle - lower) / (1.0f - lower);
-            if (0.0f > value) value = 0.0f;
-            else if (value > 1.0f) value = 1.0f;
+            real angle = PIN(function_50650(cosine) * 0.6366197466850281f, 0.0f, 1.0f);
+            real lower = PIN(curve ? *(real const *)(curve + 0x14) * 0.6366197466850281f : 0.0f, 0.0f, 0.9998999834060669f);
+            real value = PIN((angle - lower) / (1.0f - lower), 0.0f, 1.0f);
             *strength = value;
             if (value > 0.0f)
             {
@@ -3416,18 +3423,17 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
         }
         if (curve)
         {
-            real base = *(real const *)(curve + 0x10);
             if (*strength > 0.0f)
             {
                 real value = function_13bb90((s_tag_data const *)curve, time, 0.0f);
-                out[0] = base - (base - value) * *strength;
+                out[0] = *(real const *)(curve + 0x10) - (*(real const *)(curve + 0x10) - value) * *strength;
                 value = function_13bb90((s_tag_data const *)(curve + 8), time, 0.0f);
-                out[1] = base - (base - value) * *strength;
+                out[1] = *(real const *)(curve + 0x10) - (*(real const *)(curve + 0x10) - value) * *strength;
             }
             else
             {
-                out[0] = base;
-                out[1] = base;
+                out[0] = *(real const *)(curve + 0x10);
+                out[1] = *(real const *)(curve + 0x10);
             }
         }
     }
