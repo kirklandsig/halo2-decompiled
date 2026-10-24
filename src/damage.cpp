@@ -533,8 +533,9 @@ bool function_d6790(long object_index)
 	if (!TEST_FIELD_BIT(object->damage_flags.body_depleted) && object->body_vitality < 1.0f)
 	{
 		object->body_vitality = 1.0f;
-		if (DAMAGE_OBJECT(object_index)->unknownd4 != NONE)
-			function_b58c0(DAMAGE_OBJECT(object_index)->unknownd4, 0x40);
+		s_damage_object *damage = DAMAGE_OBJECT(object_index);
+		if (damage->unknownd4 != NONE)
+			function_b58c0(damage->unknownd4, 0x40);
 		result = true;
 	}
 	return result;
