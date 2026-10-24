@@ -793,7 +793,7 @@ bool __stdcall function_bdef0(long object_index)
         delta.i = center.x - *(real *)(object + 0x40);
         delta.j = center.y - *(real *)(object + 0x44);
         delta.k = center.z - *(real *)(object + 0x48);
-        if (delta.k * delta.k + delta.i * delta.i + delta.j * delta.j > 0.01f ||
+        if (delta.k * delta.k + delta.i * delta.i + delta.j * delta.j > 0.1f * 0.1f ||
             radius != *(real *)(object + 0x4c))
             function_b87b0(object_index);
         else
