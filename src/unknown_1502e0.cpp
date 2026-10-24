@@ -540,7 +540,7 @@ void __stdcall function_152cf0(long object_index)
 	function_187a60(object_index);
 }
 
-long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
+short __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
 long function_cbe60(long unit_index);
 bool function_cd660(long unit_index);
 

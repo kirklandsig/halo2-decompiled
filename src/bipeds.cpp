@@ -557,7 +557,7 @@ struct s_biped_physics_output
 	short unknown52;
 	byte unknown54[0xf0 - 0x54];
 	real unknownf0;
-	byte unknownf4[0x140 - 0xf4];
+	byte unknownf4[0x150 - 0xf4];
 };
 
 long function_baf40(long object_index);

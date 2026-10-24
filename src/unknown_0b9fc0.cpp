@@ -603,7 +603,9 @@ PRIVATE void machine_keyframe_rigid_bodies(long machine_index, bool keyframed)
 		if (havok_component_rigid_body_get(i, component)->m_motion->kind_code() == 6 &&
 			component->rigid_bodies[i].node_count > 0)
 		{
-			short const *node_index = &matrices.node_indices[component->rigid_bodies[i].nodes[0] * 0x48];
+			byte *physics = (byte *)matrices.node_indices;
+			short const *node_index =
+				(short const *)(*(byte **)(physics + 0x3c) + component->rigid_bodies[i].nodes[0] * 0x90);
 
 			if (keyframed)
 			{

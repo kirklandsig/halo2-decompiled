@@ -1025,10 +1025,12 @@ bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 
 	if (!grenade || function_cdff0(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->current_grenade_index) <= 0)
 	{
-		if (animate && unit_get_player_index(unit_index) != NONE &&
-			*(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28) != NONE)
+		if (animate && unit_get_player_index(unit_index) != NONE)
 		{
-			function_2007b3(*(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28), 0, 1, NONE);
+			short player_value = *(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28);
+
+			if (player_value != NONE)
+				function_2007b3(player_value, 0, 1, NONE);
 		}
 		return result;
 	}
@@ -2493,7 +2495,7 @@ void function_d12b0(long vehicle_index, long seat_index, bool a, bool b);
 bool function_b9d20(long object_index);
 void __stdcall function_bef30(long object_index, long a, long b, long c, bool d);
 void function_b8b70(long object_index);
-long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
+short __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
 bool __stdcall function_ee460(long unit_index, long state_name, long action_name);
 void function_e0070(long unit_index, long vehicle_index);
 void function_1bba70(long actor_index, long vehicle_index, long seat_index);

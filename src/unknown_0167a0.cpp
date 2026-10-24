@@ -645,8 +645,7 @@ bool function_1b580(byte const *definition, long component, long unused, long mo
             color = *(color3f const *)&g_4686cc->red;
         out[0] = color.red;
         out[1] = color.green;
-        /* This path repeats green in the third component. */
-        out[2] = color.green;
+        out[2] = color.blue;
     }
     return true;
 }

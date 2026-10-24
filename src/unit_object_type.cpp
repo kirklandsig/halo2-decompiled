@@ -345,7 +345,7 @@ bool function_c9040(long vehicle_index, long unit_index, short seat_index, vecto
 long function_1e4a10(long index);
 void function_c5740(long unit_index, bool start);
 void function_1520f0(long player_index);
-long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
+short __stdcall function_cdeb0(long unit_index, long state_name, long a, long b);
 bool function_100f00(long weapon_index);
 bool function_1e3370(long actor_index, void *unknown);
 void function_10cec0(long weapon_index, long unit_index, long parent_marker_name, long marker_name);
@@ -2561,7 +2561,7 @@ bool __stdcall function_cc170(long *value)
    unit may ready in the state (0xcd6a0), not its second hand's; prefers
    weapons with bit 3 at +0x12c, then (direction 0) the newest */
 // @retail 0xcdeb0
-long __stdcall function_cdeb0(long unit_index, long state_name, long a, long b)
+short __stdcall function_cdeb0(long unit_index, long state_name, long a, long b)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	short slot = (short)a;
@@ -3038,7 +3038,7 @@ bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *
    past the definition's limit at +0x114, else 3; otherwise 0xc96b0's
    range (2 when forced, at most 1 when asked), held to 1 for players */
 // @retail 0xc9770
-long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, long unused, bool force, real c, real d)
+long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool held, bool force, real c, real d)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	byte *definition = UNIT_DEFINITION_GET(unit);

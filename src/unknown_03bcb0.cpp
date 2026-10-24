@@ -1638,7 +1638,7 @@ extern long g_485a60;
 
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
-    long packed, long fourth, void *record_address)
+    long fourth, long packed, void *record_address)
 {
     byte *definition = g_4e3b44[tag & 0xffff].bytes;
     long part_index = packed & 0xff;
