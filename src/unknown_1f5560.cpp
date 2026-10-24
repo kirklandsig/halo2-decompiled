@@ -1214,7 +1214,7 @@ real normalize2d(point2f *v);
 
 PRIVATE inline real movement_normalize2d(point2f *v)
 {
-    real length = (real)sqrt(v->x * v->x + v->y * v->y);
+    real length = (real)sqrt((double)v->x * v->x + (double)v->y * v->y); // retail sums on the x87 stack
     if (!(fabs(length) < 0.0001f))
     {
         real inverse = 1.0f / length;
@@ -1229,7 +1229,7 @@ PRIVATE __forceinline real function_1f99d1(point2f *arg_0)
 {
     real local_0 = arg_0->x;
     real local_1 = arg_0->y;
-    real local_2 = (real)sqrt(local_0 * local_0 + local_1 * local_1);
+    real local_2 = (real)sqrt((double)local_0 * local_0 + (double)local_1 * local_1); // retail sums on the x87 stack
     if (!(fabs(local_2) < 0.0001f))
     {
         real local_3 = 1.0f / local_2;
