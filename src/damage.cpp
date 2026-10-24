@@ -2386,7 +2386,43 @@ struct s_damage_report
 };
 
 void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_damage_report const *report);
-void function_119280(long object_index, dword flags);
+void function_211600(long arg_0, word arg_1, long arg_2);
+void function_119280(long object_index, dword flags, s_damage_report const *report);
+
+/* the creature branch of the damage report: when the damage has depleted the
+   creature's body, starts its death timer (a random time in the tag's range)
+   and tells its controller the damage's category; see
+   docs/unknown_119280.md */
+#pragma inline_depth(0)
+// @retail 0x119280
+void function_119280(long object_index, dword flags, s_damage_report const *report)
+{
+	s_damage_object *creature = DAMAGE_OBJECT(object_index);
+	if (flags & 1)
+	{
+		byte *tag = g_4e3b44[creature->tag_index & 0xffff].bytes;
+
+		if ((*(real *)(tag + 0x178) > *(real *)(tag + 0x17c) ? *(real *)(tag + 0x178) : *(real *)(tag + 0x17c)) > 0.0f)
+		{
+			real b = *(real *)(tag + 0x17c);
+			real a = *(real *)(tag + 0x178);
+			real ticks = ((b - a) * ((real)((g_4e7408->unknown0 = g_4e7408->unknown0 * 0x19660d + 0x3c6ef35f) >> 16) * (1.f / 65535.f)) + a) * g_510c54->field_2_3;
+			long countdown;
+			__asm
+			{
+				fld ticks
+				fistp countdown
+			}
+			*(short *)((byte *)creature + 0x206) = (short)countdown;
+		}
+		if (*(long *)((byte *)creature + 0x134) != NONE)
+		{
+			byte *damage_effect_tag = g_4e3b44[report->definition_index & 0xffff].bytes;
+			function_211600(object_index, *(word *)(damage_effect_tag + 0x12), report->owner.object_index);
+		}
+	}
+}
+#pragma inline_depth(255)
 
 /* reports damage to the object it hit (units and type 12 objects) */
 // @retail 0xd9490
@@ -2441,7 +2477,7 @@ void function_d9490(s_damage_report *report, s_type_1e6529 const *data, s_damage
 	if ((1 << object->type) & 3)
 		function_c9e70(object_index, accumulator->flags, data, report);
 	else if ((1 << object->type) & 0x1000)
-		function_119280(object_index, accumulator->flags);
+		function_119280(object_index, accumulator->flags, report);
 }
 
 long function_cbd50(long unit_index, short field_x11c898);

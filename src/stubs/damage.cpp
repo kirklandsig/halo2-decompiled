@@ -13,8 +13,6 @@ struct s_type_1e6529;
 /* damage.cpp's own, not written yet (temporary) */
 /* the closest point of an object to an origin, and the surface normal there */
 struct s_damage_report;
-// @stub 0x119280
-void function_119280(long object_index, unsigned long flags) { }
 /* called by function_d7b80 (0xd7b80) */
 /* called by function_d5de0 (0xd5de0) */
 /* the physics model constraint iterator and the model node search (for

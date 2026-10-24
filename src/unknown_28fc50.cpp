@@ -24,7 +24,7 @@ long function_1c9580(long arg_0, bool arg_1);
 void __stdcall function_1e2570(long arg_0, word arg_1, long arg_2, real arg_3, long arg_4);
 
 // @retail 0x28fc50
-void function_28fc50(long arg_0, word arg_1)
+void function_28fc50(long arg_0, word arg_1, long arg_2)
 {
 	word const *local_4 = &arg_1;
 	s_handler_object_view *local_0 = handler_object_get(arg_0);
@@ -32,7 +32,7 @@ void function_28fc50(long arg_0, word arg_1)
 	if (local_1 && local_1->field_4 != NONE && local_1->field_8 != NONE)
 	{
 		s_28fc51 *local_2 = (s_28fc51 *)perception_get(local_1->field_8);
-		long local_3 = function_1c9580((long)local_2, *local_4 != 9);
+		long local_3 = function_1c9580(arg_2, *local_4 != 9);
 		local_2->field_1c++;
 		local_2->field_20 = g_510c54->game_time;
 		function_1e2570(local_1->field_4, *local_4, local_3, 1.0f / local_2->field_14, (long)g_4687a4);
