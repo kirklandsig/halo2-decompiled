@@ -917,33 +917,33 @@ long __stdcall function_3bf20(s_slot *slot, byte *data)
     D3DDevice_SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
     D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
     D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0);
-    D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
+    D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
     D3DDevice_SetRenderState(D3DRS_STENCILENABLE, 1);
     D3DDevice_SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
     D3DDevice_SetRenderState(D3DRS_STENCILREF, 0);
     D3DDevice_SetRenderState(D3DRS_STENCILMASK, 0xffffffff);
     D3DDevice_SetRenderState(D3DRS_STENCILWRITEMASK, 0xffffffff);
-    D3DDevice_SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
-    D3DDevice_SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_ZERO);
-    D3DDevice_SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
-    D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
-    D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
+    D3DDevice_SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+    D3DDevice_SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_REPLACE);
+    D3DDevice_SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
     D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
+    D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
+    D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
     D3DDevice_SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
     #pragma inline_depth(0)
     D3DDevice_Begin(D3DPT_QUADLIST);
     D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(0, g_4c1b08[0].x, g_4c1b08[0].y, g_4c1b08[0].z, 1.0f);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[0].x, g_4c1b08[0].y, g_4c1b08[0].z, 1.0f);
     D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(0, g_4c1b08[3].x, g_4c1b08[3].y, g_4c1b08[3].z, 1.0f);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[3].x, g_4c1b08[3].y, g_4c1b08[3].z, 1.0f);
     D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(0, g_4c1b08[2].x, g_4c1b08[2].y, g_4c1b08[2].z, 1.0f);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[2].x, g_4c1b08[2].y, g_4c1b08[2].z, 1.0f);
     D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(0, g_4c1b08[1].x, g_4c1b08[1].y, g_4c1b08[1].z, 1.0f);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[1].x, g_4c1b08[1].y, g_4c1b08[1].z, 1.0f);
     D3DDevice_End();
     #pragma inline_depth()
     D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x1010101);
-    D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
+    D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
     D3DDevice_SetRenderState(D3DRS_STENCILENABLE, 0);
     return 0x4b000;
 }
