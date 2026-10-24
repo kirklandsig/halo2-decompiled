@@ -341,7 +341,7 @@ void __stdcall function_81780(long stage)
 	size = sizeof(s_record_pool) + g_4d87e0 * 0xb4 + ((g_4d87e0 + 31) >> 5) * 4;
 	g_4d87ec = (s_flagged *)physical_memory_malloc_fixed(size, PAGE_READWRITE);
 	network_memory_track(g_4d87ec, size);
-	network_data_array_new((s_record_pool *)g_4d87ec, "", g_4d87e0, 0xb4, g_46875c);
+	network_data_array_new((s_record_pool *)g_4d87ec, "simulation view", g_4d87e0, 0xb4, g_46875c);
 	((s_record_pool *)g_4d87ec)->valid = 1;
 	record_pool_release_all((s_record_pool *)g_4d87ec);
 
@@ -354,7 +354,7 @@ void __stdcall function_81780(long stage)
 		size = sizeof(s_record_pool) + g_4d87e0 * 0xad30 + ((g_4d87e0 + 31) >> 5) * 4;
 		g_4d87f0 = (s_flagged *)physical_memory_malloc_fixed(size, PAGE_READWRITE);
 		network_memory_track(g_4d87f0, size);
-		network_data_array_new((s_record_pool *)g_4d87f0, "", g_4d87e0, 0xad30, g_46875c);
+		network_data_array_new((s_record_pool *)g_4d87f0, "simulation distributed view", g_4d87e0, 0xad30, g_46875c);
 		((s_record_pool *)g_4d87f0)->valid = 1;
 		record_pool_release_all((s_record_pool *)g_4d87f0);
 	}
