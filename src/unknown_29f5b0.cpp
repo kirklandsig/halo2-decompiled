@@ -8917,8 +8917,6 @@ s_type_f4462a const g_44e044 = { _hs_type_void, 0, function_2aa430, NULL, 2, { _
 void function_f0fd0(long vehicle_index, bool set);
 
 /* 621: void (vehicle, boolean) */
-// score 1 (was 1): ours loads the byte into dl, retail into cl; the callee function_f0fd0 lives in another
-// file.
 // @retail 0x2aa480
 void __stdcall function_2aa480(short function_index, long thread_index, bool initialize)
 {

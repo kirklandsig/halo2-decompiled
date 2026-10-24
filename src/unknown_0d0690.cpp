@@ -914,8 +914,8 @@ struct s_surface_query_source
 
 bool function_14b120(s_surface_query_source source, void *surface);
 
-PRIVATE vector3f const g_4406e4 = { 0.0f, 0.0f, -10.0f };
-PRIVATE vector3f const g_4406f0[5] =
+extern vector3f const g_4406e4 = { 0.0f, 0.0f, -10.0f };
+extern vector3f const g_4406f0[5] =
 {
     { -10.0f, 0.0f, 0.0f }, { 10.0f, 0.0f, 0.0f },
     { 0.0f, -10.0f, 0.0f }, { 0.0f, 10.0f, 0.0f }, { 0.0f, 0.0f, -40.0f }
