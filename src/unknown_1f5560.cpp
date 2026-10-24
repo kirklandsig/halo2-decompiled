@@ -1100,7 +1100,7 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
     s_object_marker marker;
     point3f target;
     real minimum;
-    switch (type)
+    switch (*(short const volatile *)&type)
     {
     case 5:
         if (!function_10f9b0(actor->unknown018, 0x5000534, 0x5000049, 3, &animation, false) ||
@@ -1135,7 +1135,7 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
                 function_1f9240(actor_index, &settings);
                 s_unit_request request;
                 bool can_move = false;
-                switch (type)
+                switch (*(short const volatile *)&type)
                 {
                 case 5:
                     if (function_26f2d0(&settings, &actor->position, &target))
