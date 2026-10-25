@@ -2410,9 +2410,13 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 
 PRIVATE __forceinline real motion_random_step(real value, real step)
 {
-    double random = (double)random_next(&g_4e7408->seed) * (1.0f / 65535.0f);
-    real next = (real)((random + random - 1.0f) * step + value);
-    return next < -1.0f ? -1.0f : next > 1.0f ? 1.0f : next;
+    real random = function_x82e52f(&g_4e7408->seed, NULL, 0);
+    real next = (random + random - 1.0f) * step + value;
+    if (next < -1.0f)
+        next = -1.0f;
+    else if (next > 1.0f)
+        next = 1.0f;
+    return next;
 }
 
 PRIVATE __forceinline point2f motion_project_point(point3f const *point)
@@ -2430,14 +2434,19 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 495 (was 561): ours keeps a 0x64 byte frame where retail has 0x38: our build copies
+// the two projected points through stack temporaries, stores the velocity components to the
+// stack for the x87 square roots where retail reloads them from the state, and gives the old
+// position its own slot where retail reuses the previous position's. Retail also reads the
+// position delta back from the view after storing it.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
     byte *view = state + g_485600 * 0xb8;
     *(real *)(view + 0x14c) = g_4670fc;
-    dword flags = *(dword *)(state + 0x94);
-    bool cycle = (flags & 1) != 0;
-    bool scale_size = (flags & 4) != 0;
+    bool cycle = (*(dword *)(state + 0x94) & 1) != 0;
+    bool reset = ((*(dword *)(state + 0x94) >> 1) & 1) != 0;
+    bool scale_size = ((*(dword *)(state + 0x94) >> 2) & 1) != 0;
     point3f previous = *(point3f *)(view + 0x110);
     *(point3f *)(view + 0x110) = g_485618.position;
     real dz = g_485618.position.z - previous.z;
@@ -2445,7 +2454,7 @@ bool __stdcall function_37260(byte *state, real step, byte const *parameters)
     real dx = g_485618.position.x - previous.x;
     real delta = g_485618.forward.k * dz + g_485618.forward.j * dy + g_485618.forward.i * dx;
     real range = *(real *)(state + 0x7c) - *(real *)(state + 0x78);
-    if (flags & 2)
+    if (reset)
     {
         *(real *)(state + 0x18) = 0.25f;
         *(real *)(state + 0x1c) = 0.5f;
