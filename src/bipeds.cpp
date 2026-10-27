@@ -7084,6 +7084,10 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	{
 		function_b75a0(arg_159e6d, &move.position, NULL, NULL, NULL, false);
 	}
+	/* the moving class is the requested animation's (retail keeps it in ebx),
+	   not the kept moving one's: otherwise a biped asked to idle while it
+	   moves keeps its moving animation forever */
+	long const requested = names[1];
 	if (names[1] == 0x400000c && biped->unknown34a == 1)
 	{
 		byte *idle = (byte *)biped + 0x3a8;
@@ -7108,7 +7112,7 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 			}
 		}
 	}
-	*((byte *)biped + 0x3a9) = function_dd300(names[1]);
+	*((byte *)biped + 0x3a9) = function_dd300(requested);
 	if (state->graph_tag_index != NONE && state->channels[0].graph_tag_index != NONE &&
 		state->channels[0].animation_id.index != NONE && state->unknown7c != 0xe0000c2 &&
 		(arg_159e6d == NONE || !(*((byte *)BIPED_GET(arg_159e6d) + 0xb3) > 0)))
