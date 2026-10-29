@@ -2711,8 +2711,8 @@ void __stdcall function_41980(short type, long object_index)
                         real scale = 1.0f;
                         if (*(long *)(tag + 8) > 0 && (**(byte **)(tag + 12) & 0x20))
                             scale = matrix->scale;
-                        function_42850(object_index, entry->tag, &matrix->position, (vector3f *)&scratch_r16.color,
-                            &matrix->forward, scale, scratch_r16.amount, &matrix->up);
+                        function_42850(object_index, entry->tag, &matrix->position, &matrix->forward,
+                            &matrix->up, scale, scratch_r16.amount, (vector3f *)&scratch_r16.color);
                     }
                     else if (entry->type == 0x7464746c)
                         function_429a0(0, object_index, entry->tag, NONE, &matrix->position,
