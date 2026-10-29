@@ -6003,7 +6003,8 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 		byte *player = (byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c;
 
 		*(long *)(player + 0x30) = *(long *)(player + 0x2c);
-		function_14cad0(player_index, unit_index);
+		/* the player lets go of its unit: retail passes NONE in ebx */
+		function_14cad0(player_index, NONE);
 		function_152340();
 	}
 	if (unit->unknown130 != NONE)
