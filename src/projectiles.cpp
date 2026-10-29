@@ -1879,7 +1879,9 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			center.y *= inverse;
 			center.z *= inverse;
 			attached_parent = *(long *)((byte *)projectile + 0x14);
-			function_b9a90(attached_parent);
+			/* the projectile leaves its parent: retail passes the projectile
+			   index in ebx (0xfc5a6 loads it from the first argument) */
+			function_b9a90(projectile_index);
 			position = *(point3f *)((byte *)projectile + 0x64);
 			function_b75a0(projectile_index, &center, NULL, NULL, NULL, false);
 			function_bc1d0(projectile_index, &position, *(long *)((byte *)projectile + 0x14));
