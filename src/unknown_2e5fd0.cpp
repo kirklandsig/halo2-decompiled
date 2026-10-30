@@ -7,10 +7,7 @@
 #include "reference_counted_2d88a0.h"
 
 // the tables 0x2e5990 resets
-struct table_2e5990
-{
-	void reset();
-};
+#include "dispatcher_views_2e5990.h"
 
 // an array that starts empty, without storage of its own
 struct array_2e5fd0

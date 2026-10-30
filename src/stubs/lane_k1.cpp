@@ -208,25 +208,10 @@ public:
 };
 
 
-// motion objects 0x311940 builds
-class class_31ad80 { public: class_31ad80(void const *position, void const *orientation); };
-
-
-// @stub 0x31ad80
-class_31ad80::class_31ad80(void const *position, void const *orientation)
-{
-}
 
 
 
 // Havok round 23: callees of the functions this round writes
-
-// the islands' step handed on (925 bytes, not decompiled)
-// @stub 0x31c100
-void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *world_info,
-	void *simulation, void *islands, long island_count, long field_58, long field_5c)
-{
-}
 
 // frees a block too large for Havok's pool (library code, called through g_461ddc)
 // @stub 0x2d6fb0

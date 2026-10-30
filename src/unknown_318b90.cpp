@@ -3,6 +3,7 @@
 // was made for, with one reference.
 #include "owned_reference_318b90.h"
 #include "lane_a_contact_manager.h"
+#include "contact_manager_318c10.h"
 
 // @retail 0x318b90
 class_318b90::class_318b90(void *owner)
@@ -13,35 +14,11 @@ class_318b90::class_318b90(void *owner)
 #include "lane_b_constraint_leaves.h"
 #include "lane_a_contact_manager.h"
 
-class hkBool
-{
-public:
-	hkBool() {}
-	char m_bool;
-};
-
-class c_1d1261
-{
-public:
-	char unknown0[0x12c];
-	char field_12c;
-	hkBool function_30ca30(void *entry);
-};
-
-class class_318e60 : public reference_base_318970
-{
-public:
-	c_1d1261 *world;
-	long unknownc;
-	lane_b_contact_constraint_prefix constraint;
-	void remove(unsigned short id);
-};
-
 // @retail 0x318e60
 void class_318e60::remove(unsigned short id)
 {
-	listener_world_315d20 *first = constraint.first_body;
-	listener_world_315d20 *second = constraint.second_body;
+	listener_world_315d20 *first = contacts().first_body;
+	listener_world_315d20 *second = contacts().second_body;
 	event_315d20 event;
 	lane_a_contact_removed_payload payload;
 	payload.id = id;
@@ -55,8 +32,8 @@ void class_318e60::remove(unsigned short id)
 		function_315d90(first, &event);
 	if (second->listeners_60.size)
 		function_315d90(second, &event);
-	constraint.remove(id);
-	if (constraint.property_count == 0)
+	contacts().remove(id);
+	if (contacts().property_count == 0)
 	{
 		long previous_flag = world->field_12c;
 		world->field_12c = 0;

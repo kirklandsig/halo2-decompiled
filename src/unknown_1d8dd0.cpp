@@ -63,8 +63,8 @@ public:
 	long field_60;
 	long field_64;
 	c_1d19d0(hkEntity *arg_0, long arg_1);
-	virtual s_1d1870 function_1d1870(void *arg_0);
-	virtual s_1d1870 function_1d18c0(void *arg_0);
+	virtual s_1d1870 function_3144b0(void *arg_0);
+	virtual s_1d1870 function_314580(void *arg_0);
 	static void operator delete(void *arg_0)
 	{
 		g_480118->allocate((long)arg_0, ((c_1d19d0 *)arg_0)->flags, 0x26);
@@ -119,13 +119,13 @@ char function_1d1910(c_1d19d0 *arg_0)
 }
 
 // @retail 0x1d1870
-s_1d1870 c_1d19d0::function_1d1870(void *arg_0)
+s_1d1870 c_1d19d0::function_3144b0(void *arg_0)
 {
- return function_1d1910(this) ? s_1d1870(false) : function_3144b0(arg_0);
+ return function_1d1910(this) ? s_1d1870(false) : c_314710::function_3144b0(arg_0);
 }
 
 // @retail 0x1d18c0
-s_1d1870 c_1d19d0::function_1d18c0(void *arg_0)
+s_1d1870 c_1d19d0::function_314580(void *arg_0)
 {
- return function_1d1910(this) ? s_1d1870(false) : function_314580(arg_0);
+ return function_1d1910(this) ? s_1d1870(false) : c_314710::function_314580(arg_0);
 }
