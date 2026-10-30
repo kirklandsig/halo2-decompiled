@@ -73,6 +73,8 @@ public:
 
 	bounded_2e9530(long value_);
 	~bounded_2e9530();
+	// Releases each kept child, then destroys this object through its table.
+	void function_2e90b0();
 
 	// brings the objects kept for the shape's children up to date, with the
 	// two sides the other way round (0x2e9210)
