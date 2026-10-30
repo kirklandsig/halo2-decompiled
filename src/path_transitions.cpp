@@ -267,138 +267,89 @@ bool function_26fc80(long actor_index, long object_index, real distance, void *p
     return result;
 }
 
+/* point-to-segment squared distance; retail inlines the same helper in 0x1a83e0 (twice)
+   and 0x260670 (at 0x260c73), so whoever matches those should try this body */
+static __forceinline void scale_vector3d_bx(vector3f const *vector, real scale, vector3f *result)
+{
+    result->i = vector->i * scale;
+    result->j = vector->j * scale;
+    result->k = vector->k * scale;
+}
+
+static __forceinline real distance_squared_segment_bx(point3f const *start, vector3f const *segment, point3f const *point)
+{
+    real squared_distance;
+    real length_squared = segment->k * segment->k + segment->j * segment->j + segment->i * segment->i;
+    if (length_squared > 0.0001f)
+    {
+        /* delta is read and written only through a pointer, as segment is through the
+           helpers: that keeps the projection's operands in retail's order (delta first)
+           while the residual still updates the segment components in place */
+        vector3f delta;
+        vector3f *d = &delta;
+        d->i = point->x - start->x;
+        d->j = point->y - start->y;
+        d->k = point->z - start->z;
+        real t = (d->k * segment->k + d->j * segment->j + d->i * segment->i) / length_squared;
+        real clamped;
+        if (t < 0.f)
+            clamped = 0.f;
+        else if (t > 1.f)
+            clamped = 1.f;
+        else
+            clamped = t;
+        t = 0.f - clamped;
+        d->i += segment->i * t;
+        d->j += segment->j * t;
+        d->k += segment->k * t;
+        squared_distance = d->k * d->k + d->j * d->j + d->i * d->i;
+    }
+    else
+    {
+        vector3f offset;
+        offset.i = start->x - point->x;
+        offset.j = start->y - point->y;
+        offset.k = start->z - point->z;
+        squared_distance = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+    }
+    return squared_distance;
+}
+
 // @retail 0x26fe90
 bool function_26fe90(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point)
 {
-	bool result = false;
-
-	s_actor_view *actor = actor_get(actor_index);
-	s_transition_character *character =
-		(s_transition_character *)function_1e4a50(actor->unknown054);
-
-	if (character)
+    bool result = false;
+    s_actor_view *actor = actor_get(actor_index);
+    s_transition_character *character = (s_transition_character *)function_1e4a50(actor->unknown054);
+    if (character)
     {
         s_object_marker markers[32];
-
         real best_distance = FLT_MAX;
         short best = NONE;
-        short count;
-
-        count = function_26fe20(
-            object_index,
-            markers,
-            32,
-            character->marker_flags);
-
-        short i = 0;
-        s_object_marker *marker = markers;
-
-        if (count <= 0)
-            goto no_markers;
-
-        do
+        short count = function_26fe20(object_index, markers, 32, character->marker_flags);
+        for (short i = 0; i < count; i++)
         {
-            real alignment =
-                marker->matrix.forward.i * g_4687b0->i +
-                marker->matrix.forward.k * g_4687b0->k +
-                g_4687b0->j * marker->matrix.forward.j;
-
-            if (alignment > 0.95f)
+            if (dot3f(&markers[i].matrix.forward, g_4687b0) > 0.95f)
             {
-                point3f const *position = &actor->position;
-                real squared;
-
-                real scale = marker->unknown6c;
-
                 vector3f segment;
-                segment.i = marker->matrix.up.i * scale;
-                segment.j = marker->matrix.up.j * scale;
-                segment.k = marker->matrix.up.k * scale;
-
-                real squared_length =
-                    segment.i * segment.i +
-                    segment.j * segment.j +
-                    segment.k * segment.k;
-
-                if (squared_length > 0.0001f)
-                {
-                    vector3f delta;
-                    delta.j = position->y - marker->matrix.position.y;
-                    delta.k = position->z - marker->matrix.position.z;
-                    delta.i = position->x - marker->matrix.position.x;
-
-                    real projection_z = delta.k * segment.k;
-                    real projection_y = delta.j * segment.j;
-                    real projection = projection_z + projection_y;
-                    real projection_x = delta.i * segment.i;
-                    projection += projection_x;
-
-                    real t = projection / squared_length;
-
-                    real clamped;
-                    if (t < 0.f)
-                        clamped = 0.f;
-                    else if (t > 1.f)
-                        clamped = 1.f;
-                    else
-                        clamped = t;
-
-                    real negative = 0.f - clamped;
-                    segment.j *= negative;
-                    segment.j += delta.j;
-                    segment.k *= negative;
-                    segment.k += delta.k;
-                    segment.i *= negative;
-                    squared = segment.k * segment.k + segment.j * segment.j;
-                    segment.i += delta.i;
-                    squared += segment.i * segment.i;
-                }
-                else
-                {
-                    vector3f delta;
-                    delta.i = marker->matrix.position.x - position->x;
-                    delta.j = marker->matrix.position.y - position->y;
-                    delta.k = marker->matrix.position.z - position->z;
-
-                    squared =
-                        delta.k * delta.k +
-                        delta.j * delta.j;
-
-                    squared += delta.i * delta.i;
-                }
-
+                scale_vector3d_bx(&markers[i].matrix.up, markers[i].unknown6c, &segment);
+                real squared = distance_squared_segment_bx(&markers[i].matrix.position, &segment, &actor->position);
                 if (best_distance > squared)
                 {
                     best_distance = squared;
                     best = i;
                 }
             }
-
-            ++i;
-            ++marker;
         }
-        while (i < count);
-
-    no_markers:
         if (best != NONE)
-		{
-			*out = markers[best];
-
-			if (point &&
-				!function_270130(
-					out,
-					&actor->position,
-					distance,
-					point))
-			{
-				*point = out->matrix.position;
-			}
-
-			result = true;
-		}
-	}
-
-	return result;
+        {
+            *out = markers[best];
+            if (point && !function_270130(out, &actor->position, distance, point))
+                *point = out->matrix.position;
+            result = true;
+        }
+    }
+    return result;
 }
 
 // @retail 0x26f990
