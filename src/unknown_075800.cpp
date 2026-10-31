@@ -1163,6 +1163,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Round 442: Four-family residual interleaves 191/188/195/195/190/199/187/196 fast, versus
 // control 191 and full 193. Best four-point lead rejected; all exact cases, phases, caller and
 // declarations restored.
+// Round 255: non-connection cases before final connection classifier, first groups
+// D(2,4,0,3), Q(8,9,10), S(12,13,14,18,11), P(22,23,24) in orders
+// DSQP/DPQS/QSDP/QPDS/SDQP/SQDP/PDSQ/PSDQ: 298/281/300/280/302/300/299/287.
+// Added byte remapping and stacked selector regress; original phases restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
