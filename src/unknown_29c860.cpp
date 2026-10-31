@@ -245,6 +245,9 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// score 645 (was 645), coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
+// locals (the 0x44 setting read early, the 0x11cd20 result held until after the side test), kept only with a match;
+// without them the sum splits and store reorders below score 643 (fast), under the 8-point bar. Its tried forms:
 // score 268 (was 271): the left vector is built before the forward copy, so the three stores
 // land where retail puts them; left: the second normalize's j product keeps the other operand
 // order, the avoidance vector and the left vector still swap their 12-byte slots, the 0x5d0
@@ -344,9 +347,9 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		*(bool *)(local_0 + 0x5d0) = false;
 	real local_10 = (real)sqrt(arg_2->i * arg_2->i + arg_2->j * arg_2->j + arg_2->k * arg_2->k);
 	vector3f local_12 = *g_4687a4;
+	vector3f local_11 = local_8;
 	real left_i = -local_8.j;
 	vector3f local_13 = {-local_8.j, local_8.i, 0.0f};
-	vector3f local_11 = local_8;
 	if (!local_2)
 		*(real *)(local_0 + 0x660) = 0.0f;
 	else if (!*(bool *)(local_0 + 0x5d0) || *(bool *)(local_0 + 0x5d2))
@@ -370,12 +373,11 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			if (function_30bf0(&local_14) == 0.0f)
 				local_4 = false;
 		}
-		real field_44 = *(real *)(local_2 + 0x44);
 		bool local_16 = *(bool *)(local_0 + 0x5d1);
 		if (local_16 && (((vector3f *)(local_0 + 0x5f8))->j * arg_2->j + arg_2->i * ((vector3f *)(local_0 + 0x5f8))->i) / local_10 > 0.5)
 			local_16 = false;
 		short local_17;
-		if (!local_16 && !(field_44 > local_10 && *(bool *)(local_0 + 0x4d5)))
+		if (!local_16 && !(*(real *)(local_2 + 0x44) > local_10 && *(bool *)(local_0 + 0x4d5)))
 		{
 			local_11 = *arg_2;
 			local_11.k = 0.0f;
@@ -397,10 +399,8 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 				local_11 = *(vector3f *)(local_0 + 0x290);
 			if (function_30bf0(&direction) == 0.0f)
 				direction = local_11;
-			real local_19 = direction.j * local_8.j;
-			real local_20 = left_i * direction.i;
-			local_19 += direction.i * local_8.i;
-			local_20 += direction.j * local_8.i;
+			real local_19 = direction.j * local_8.j + direction.i * local_8.i;
+			real local_20 = left_i * direction.i + direction.j * local_8.i;
 			direction.i = local_19;
 			direction.j = local_20;
 			direction.k = 0.0f;
@@ -431,10 +431,9 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			function_26c180(arg_0);
 			if (*(bool *)(local_0 + 0x278) && *(long *)(local_0 + 0x28c) != NONE)
 			{
-				real local_32 = function_11cd20((vector2f *)&local_8, (vector2f *)&local_9);
+				local_24.field_4 = function_11cd20((vector2f *)&local_8, (vector2f *)&local_9);
 				real local_25 = local_9.j * local_8.i;
 				local_24.field_0 = local_9.i * local_13.i + local_25 > 0.0f;
-				local_24.field_4 = local_32;
 				local_24.field_1 = false;
 				local_24.field_8 = 1.0f;
 				local_24.field_1a[10] = true;
@@ -442,9 +441,8 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 					*(real *)(local_2 + 0x20), (s_29946c const *)local_22);
 				if (0.9f > local_24.field_8)
 				{
-					direction.i = local_9.j * local_8.j;
-					direction.i += local_9.i * local_8.i;
-					direction.j = local_9.i * left_i + local_25;
+					direction.j = left_i * local_9.i + local_25;
+					direction.i = local_9.j * local_8.j + local_9.i * local_8.i;
 					direction.k = 0.0f;
 					local_17 = 0;
 					function_30bf0(&direction);
@@ -465,9 +463,7 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		{
 			real local_28 = function_1f9e70(arg_0, arg_1, (point2f *)&local_7, (vector2f *)&local_9,
 				(vector2f *)&local_11, (vector2f *)&local_8, local_4 ? (vector2f *)&local_14 : NULL, local_10, local_17 != 1);
-			real local_29 = *(real *)((byte *)local_1 + 0x90) * local_11.k;
-			local_29 += *(real *)((byte *)local_1 + 0x8c) * local_11.j;
-			local_29 += *(real *)((byte *)local_1 + 0x88) * local_11.i;
+			real local_29 = *(real *)((byte *)local_1 + 0x90) * local_11.k + *(real *)((byte *)local_1 + 0x8c) * local_11.j + *(real *)((byte *)local_1 + 0x88) * local_11.i;
 			real local_30 = *(real *)(local_2 + 0x68);
 			real local_31;
 			if (local_30 > 0.0f)
