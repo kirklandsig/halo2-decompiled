@@ -51,12 +51,12 @@ void hkRigidBody::pose_write(hkTransform const &transform)
 	transform_312630 const &placement = (transform_312630 const &)transform;
 	((hkTransform &)self->transform).set(transform);
 	bounds_312800 bounds;
-	((shape_312800 *)self->object)->get_bounds(placement, ((world_312590 *)self->field_8)->tolerance->value, &bounds);
+	((shape_312800 *)self->body.shape)->get_bounds(placement, ((world_312590 *)self->field_8)->tolerance->value, &bounds);
 	self->function_315a10(&bounds);
 }
 
 // @retail 0x312760
 void placed_shape_312800::function_312760(bounds_312800 *bounds_out) const
 {
-	((shape_312800 *)object)->get_bounds(transform, ((world_312590 *)field_8)->tolerance->value, bounds_out);
+	((shape_312800 *)body.shape)->get_bounds(transform, ((world_312590 *)field_8)->tolerance->value, bounds_out);
 }

@@ -105,12 +105,12 @@ public:
 	virtual flag_2d8e70 function_2d7fe0(long id);
 	// counts a silenced location up, or down (forgotten at zero)
 	virtual void count_location(char const *file, long line);
-	virtual void slot_7() = 0;
-	virtual void slot_8() = 0;
+	virtual void slot_7(char const *file, long line) = 0;
+	virtual void slot_8(char const *file, long line) = 0;
 	virtual void uncount_location(char const *file, long line);
-	virtual void slot_10() = 0;
-	virtual void slot_11() = 0;
-	virtual void slot_12() = 0;
+	virtual void slot_10(char const *file, long line) = 0;
+	virtual void slot_11(char const *file, long line) = 0;
+	virtual void slot_12(char const *text) const = 0;
 	// the name kept for a source file
 	virtual char const *file_name(char const *path) const = 0;
 

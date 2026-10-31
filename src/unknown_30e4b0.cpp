@@ -56,11 +56,11 @@ void *c_contact_query_world::add(void *volume)
 	pairs_30d870 added(pair_capacity_234);
 	bounds_312800 bounds;
 	object->get_bounds(&bounds);
-	collidable_315a10 *collidable = (collidable_315a10 *)&object->object;
+	collidable_315a10 *collidable = (collidable_315a10 *)&object->body.shape;
 	handle_315a10 *handle = collidable;
 	pair_finder->slot_1(handle, &bounds, &added);
 	long id = next_id++;
-	object->field_20 = id;
+	object->handle.field_4 = id;
 	if (added.size != 0)
 	{
 		function_372b50(added.data, added.size);
@@ -77,7 +77,7 @@ void c_contact_query_world::remove(void *volume)
 {
 	added_30e4b0 *object = (added_30e4b0 *)volume;
 	pairs_30d870 removed(pair_capacity_234);
-	collidable_315a10 *collidable = (collidable_315a10 *)&object->object;
+	collidable_315a10 *collidable = (collidable_315a10 *)&object->body.shape;
 	handle_315a10 *handle = collidable;
 	pair_finder->slot_3(handle, &removed);
 	if (removed.size != 0)

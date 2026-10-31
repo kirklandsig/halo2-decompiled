@@ -16,7 +16,7 @@ placed_shape_312800::placed_shape_312800(description_315ba0 const *description)
 {
 	bounds.clear_312800();
 	list.field_0 = description->field_0;
-	field_14 = (long)&bounds;
-	field_54 = ((shape_312800 *)object)->slot_5();
+	body.field_8 = (long)&bounds;
+	field_54 = ((shape_312800 *)body.shape)->slot_5();
 	((hkTransform &)transform).set((hkTransform const &)description->transform);
 }

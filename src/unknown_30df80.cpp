@@ -75,32 +75,8 @@ public:
 	void function_30df80(member_30c8e0 *member);
 };
 
-// score 17 (was 29): the collidable's address is now a local of its own, so
-// retail's ebx and edi hold the member and the collidable as retail has them;
-// the dispatcher and the pair's data still swap registers, and the motion is
-// still read through the member instead of the collidable
-// an external object reference with direct array reads 15; inherited array
-// storage 15; early pointer declarations with either form 15; a count saved
-// before the branch 131, with an inline float argument 134; inline depth one 15.
-// Further trials: common pair type 17; that type with the motion read
-// through the embedded record 35; shared shape/transform types 17, with that
-// motion read 35; a count sampled after the handler store 17; an external
-// reference for restoration 17; a receiver base of its own type 17, with that motion
-// read 35. The original body remains; frame 0x68 and length 442 agree.
-// further trials: bounds first 17; pending data/count through the group 19;
-// listener conversion 17, before the handler 24; tolerance argument 34;
-// member group directly 36; pending member receiver 19; empty-pair guard 17.
-// scoped bounds/array and initial pointers 127; inline tolerance and shape
-// reread 34; motion through collidable 53; direct pending operands 55;
-// object names or mutable pointers 55; placed after array/recorder helpers
-// 55, with original body 17
-// separate receiver snapshots 3; direct group fields with those snapshots 1;
-// motion through the pointer then 19 (the last receiver moves to ecx);
-// outer receiver declaration, shared shape types, first pointer declaration,
-// renamed last receiver or reference receiver 19; early shape snapshot 64;
-// second receiver use 15, two multiple-use receivers 63, restore-only receiver 15;
-// scaled float local 133; inline factor or combined outer scope 68;
-// 1/3 forms require one-use field pointers and remain rejected
+// Install the recorder on the current dispatcher, then reload the dispatcher
+// after callbacks before restoring its normal handler.
 // @retail 0x30df80
 void owner_30c8e0::function_30df80(member_30c8e0 *member)
 {
@@ -120,15 +96,16 @@ void owner_30c8e0::function_30df80(member_30c8e0 *member)
 		if (member->fixed)
 		{
 			holder_30dc80 recorder(collidable);
-			dispatcher->handler = (pair_handler_3173f0 *)&recorder;
+			dispatcher_3728c0 *receiver_store = dispatcher;
+			receiver_store->handler = (pair_handler_3173f0 *)&recorder;
 			dispatcher->function_3728c0(added.data, added.size, 0, 0, pair_listener);
-			dispatcher->handler = &dispatcher->own_handler;
+			dispatcher_3728c0 *receiver_restore = dispatcher;
+			receiver_restore->handler = &receiver_restore->own_handler;
 			for (int i = 0; i < recorder.values.size; i++)
 			{
 				group_30dc80 *group = recorder.values.data[i];
 				pairs_30df80 *pending = &group->pending;
-				long const pending_count = pending->size;
-				((collector_3173f0 *)group)->function_3173f0((pair_30d870 *)pending->data, pending_count, 0, 0);
+				((collector_3173f0 *)group)->function_3173f0((pair_30d870 *)group->pending.data, group->pending.size, 0, 0);
 				pending->resize(0);
 			}
 		}

@@ -17,7 +17,7 @@ void placed_shape_312800::function_30b780(shape_312800 *shape)
 {
 	shape->reference_count++;
 	field_54 = shape->slot_5();
-	referenced_2d88a0 *old = object;
+	referenced_2d88a0 *old = body.shape;
 	if (--old->reference_count == 0)
 	{
 		if (function_279740((long)old))
@@ -31,7 +31,7 @@ void placed_shape_312800::function_30b780(shape_312800 *shape)
 			((deletable_30b780 *)old)->destroy(1);
 		}
 	}
-	object = shape;
+	body.shape = shape;
 	if (field_8)
 	{
 		bounds_312800 bounds;

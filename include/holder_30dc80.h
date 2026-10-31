@@ -4,6 +4,7 @@
 // pairs it runs, which notes the groups those pairs reach in an array with
 // room for four on the object itself.
 #include "reference_counted_2d88a0.h"
+#include "pair_recorder_30dad0.h"
 
 // the handler's interface: a table only (its destructor is 0x30c0e0's)
 class pair_handler_30dc80
@@ -52,8 +53,14 @@ public:
 		body = body_;
 	}
 	// the pairs a dispatcher adds and removes (0x30dad0, 0x30dba0)
-	virtual void slot_1(void const *pair) {}
-	virtual void slot_2(void const *pair) {}
+	virtual void slot_1(void const *pair)
+	{
+		((class_30dad0 *)this)->function_30dad0((pair_30dc30 const *)pair);
+	}
+	virtual void slot_2(void const *pair)
+	{
+		((class_30dad0 *)this)->function_30dba0((pair_30dc30 const *)pair);
+	}
 };
 
 #endif
