@@ -725,6 +725,13 @@ real g_55e618;
 // home); with the velocity read at each use 199. Local names do not move the stack homes (compile-only frame
 // listing unchanged for four renames); ours homes sweep, perpendicular, (cache, collision), tangent, retail
 // tangent, sweep, (cache), perpendicular, (collision).
+// Round 116 (lane 6, fast, LTCG build): four rename sets of perpendicular/tangent/sweep (normal/tangent
+// velocity, bounce/slide, travel, along/motion/rebound) 102 each (homes unmoved, so the same-size name order
+// does not apply here); tangent, tangent and perpendicular, tangent at the top with perpendicular after the
+// cache 102 each; velocity read at each use with the perpendicular/tangent rows interleaved i, i, j, k, j, k
+// 200 (frame changes, +0x2); the copy form with that interleave 211. Retail keeps perp.i/j, tangent.k and
+// keep in xmm5/6/7/3 across the placement call (its LTCG callee leaves them) and spills only tangent.i/j and
+// perp.k.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

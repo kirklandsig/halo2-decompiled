@@ -797,6 +797,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // the callback sampled once into a named local from the volatile read 132 (frame 0x10); a named
 // loop-frame value for both 97 (same code); flag 1 as `((dword)flags >> 1) & 1` 97 (same code);
 // the rate reset before the identity store 98.
+// Round 116 (lane 6, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 still match): at the second dispatch both
+// builds hold the callback in EBX; ours reloads it only because the first read is volatile. Frame limit
+// after the clamp 118; byte clear before the event-word clears 116; event-word clears after the clamp 114;
+// `next_frame < 0.0f` 97 (same code); frame limit after the byte clear 119.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

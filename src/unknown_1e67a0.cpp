@@ -581,6 +581,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
  return inverse;
 }
 
+// score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
+// (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
+// y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
+// 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
+// aligned 110, closest), its products added straight into the velocity 239.
 // Round 16 (later): the jitter block's shape, the constant's XMM ownership and the limit spills
 // are the whole difference; the plain score is 132 and the reduced image scores 310 because the
 // reduced build does not inline the magnitude helper retail inlines.
@@ -589,11 +594,6 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // the on/off factor 131, the scale factor on the left of the jitter value 130, both 131, and the scaled
 // products added straight into the velocity 163 (1051 bytes against retail's 1077); the jitter block's
 // own body restored.
-// score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
-// (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
-// y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
-// 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
-// aligned 110, closest), its products added straight into the velocity 239.
 // Round 36: single-workspace jitter 163; shared jitter add 157; shared movement add 156; all shared updates 156;
 // jitter rename 156; shared offset scale 139; scale with direct updates 155; scale with shared jitter add 149.
 // Native word/short/dword bit samples 168/168/170; on/off-first samples 231/231/233;
@@ -617,6 +617,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // add 174 (1064 bytes, 251 instructions as retail, structural 28, aligned 96 against 105: closest
 // shape; limits.j/k then share one register where retail keeps two copies, and on_z/y spill
 // differently); plus a chained limits.j/k 258, both 208.
+// Round 116 (lane 6, fast, 0x24590 listed): projection through the existing vector3f_add_scaled 181 (1119
+// bytes); that with the jitter add 176; movement and jitter adds 182; the jitter add alone 130 again (1077
+// bytes, gain 2, not kept); on it, named on/off factors first with the volatile bits 201 (1054 bytes), with
+// plain bits 231 (1021 bytes: the jitter block takes retail's shape, bits in EAX, tests 1, 2, 4 first, but the
+// movement block above shifts). Retail reuses the limits.j/k spill slots for y and the z on/off factor.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

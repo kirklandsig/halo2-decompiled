@@ -150,12 +150,12 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
+// byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
 // MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
 // for the cycle loop and the field-first selection comparison, both calls inlined only with this function at
 // inline_depth(255) and player_action_initialize behind a forceinline wrapper at inline_depth(0) (as 0x825e0);
 // that wrapper is kept only with a byte match. The same calls with the pragma as here stay out of line: 457.
-// score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
-// byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
 // Round 30 (fast; "aligned" = differing lines after a sequence alignment, base 57): retail's
 // first grenade-count test is the existing function_cdff0 inlined (the NONE check, then a short
 // count: `movsx ax`, `test ax, ax`), but calling it there leaves both calls out of line 403;
@@ -242,6 +242,16 @@ void player_action_initialize(s_player_action *arg_0);
 // Round 243: Native persistent toggle/pulse/hold byte fields, subsets 1..7
 // 134/134/134/134/134/134/134; all signed byte 134. Original Boolean fields,
 // latch graph and complete body restored; comparison/count and cold output scheduling remain.
+// Round 116 (lane 6, fast): the round 27 lane 11 form still scores 1 on this tree (only the inlined 0xcbec0 count
+// read `[edx + edi + 0x23e]` against retail's `[edi + edx + 0x23e]`, same registers). Retail calls 0xcbec0 out of
+// line only from 0xc5ae3, and that copy reads `[edx + edi]` (type as base) like ours, so the order comes from the
+// inlined instance. On that form: the first count test written out instead of the 0xcdff0 call 29; one unit-index
+// local for the whole selection block 355; a unit-index local for the second count test and the cycle call 1.
+// Compile-only probes of the inlined cycle (result/unit-index/grenade locals, constant or variable direction,
+// nested inlining, a caller-side unit lookup just before the call, callee local renames) all give type as base;
+// only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
+// below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
+// found: the inlined order needs a cause outside this body.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
