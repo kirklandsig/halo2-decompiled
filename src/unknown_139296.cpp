@@ -335,6 +335,15 @@ void function_13ad48(long user_index, byte const *selectors, real *values, byte 
 
 bool function_22acb4(long player_index);
 
+// This round (score 165, was 165): retail's first mask folds the 0x36 == NONE
+// condition into its base value and then tests 0x36 == 0 before 0x36 == 1, while
+// ours folds the 0x36 == 1 condition and tests it first; putting retail's order
+// in the source scores 192, the 0x3c conditions written as set/clear pairs 253,
+// the third mask starting at one and testing the types in order 190, and any
+// combination of them is worse again. Retail keeps the first mask in ebx and
+// spills it to the dead user_index slot, ours keeps it in edi and spills the
+// second mask to a slot of its own, so our frame is one dword deeper than
+// retail's and every later register home shifts.
 // score 165 (was 165): extra second-mask spill and persistent constant homes remain.
 // Retail reads the mode word as NONE, 0, 1 in that order and the type bits as
 // 1, 2, 3; either order alone scores 190-196, both 196, the 0x3c block written

@@ -1232,6 +1232,12 @@ long function_2197f0(real gain);
    previous ambience */
 // score 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// this round: the entry still loads the class table into EDI where retail loads it into
+// EDX, and the fade product is still multiplied by the fade-out time before the inverse, so the elapsed
+// difference keeps XMM2 where retail keeps XMM3 and every use of it differs; a named local for the scaled
+// product, a second local for the scaled-out product, a local for the elapsed-minus-hold difference and a
+// local for the whole product all compile to the same code.
+// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
 // the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then

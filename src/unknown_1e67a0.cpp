@@ -628,12 +628,14 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // at each use 172; length_squared summed k, j, i 144. Compile-only screens (magnitude3d inline, 512
 // spellings: scale local, length/projection/offset/control/limit/acceleration operand orders, volatile,
 // jitter factor and offset forms) never give retail's 1.0 in XMM3 or its k, j, i projection order.
+// Round 12 (lane 18, fast, 0x24590 listed): 1-7 unused initialised locals at the top 132 each (the XMM3/XMM4
+// constant choice is no numbering tie); the two `(void)&parameter;` statements were dead (removed: identical
+// code); without them, the jitter add through the existing vector3f_add 130 (1077 bytes, as round 91: not kept);
+// the movement scaled through the existing vector3f_scale 132; the direction normalised through it 132.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
  s_physics_movement_output *state = (s_physics_movement_output *)output;
- (void)&object_index;
- (void)&blend;
  *(real *)((byte *)state + 0x28) = rate;
  state->enabled = true;
  byte *definition = (byte *)state->definition;

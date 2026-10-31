@@ -318,6 +318,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 }
 // score 115 (was 115): frame 0x1c agrees; validation items/data carriers and entry past the items reload differ.
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// this round: no new form; the case 1/3 loop still keeps its cursors in
+// registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
+// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
