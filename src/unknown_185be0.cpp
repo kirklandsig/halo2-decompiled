@@ -292,6 +292,9 @@ union s_185be7
 // Round 452: shared object/header getters and readonly settings, subsets 1-7,
 // 731 each; complete shared graph with ordinary lookup/predicate inline 810.
 // The control-root/NONE and range-result homes remain; original full source restored.
+// Round 461: raw third-input byte/word/long/dword across duration and latch tests
+// 734/730/733/733; complementary inactive bool/byte/short/long 731/731/728/730.
+// Gains at most three rejected; original Boolean carrier and complete body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

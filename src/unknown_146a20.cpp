@@ -154,6 +154,9 @@ bool g_47f05b;
 // constructor it is an exact 0, so the kept store is the last difference. Forms: the size-only buffer as
 // `(byte *)this + sizeof(*this)` 35; the size-only constructor setting the buffer in its body after a NULL base argument
 // 35; an explicit upcast at the publish 35; `byte *block` 34 (same code); the fixed allocator in a typed local first 38.
+// Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
+// buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
+// named const 34 (same code); the pool address named after the first construction 34 (same code).
 // @retail 0x146a20
 void function_146a20(void)
 {

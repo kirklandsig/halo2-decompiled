@@ -2600,6 +2600,10 @@ long __stdcall function_fda00(long weapon_index, s_scenario_weapon_view *placeme
 // after this function 3; one short index for all three loops 3; the definition read after the
 // field resets 110. A true result declared first 3, or just before the reset 3; loop indices
 // declared at the top 3; the +0x17e word as a named field 3; magazine index declared in its loop 3.
+// Round 43: the reset called before the +0x17e store 11 (that store cannot pass the reset's); the reset's
+// two words as one chained assignment 3; a __forceinline redeclaration of 0x105be0 above this function 3
+// (0x105e80 then inlines it); the barrel loop indexing weapon->barrels[i] directly 100; the reset storing
+// value250 first 4 (stores follow source order, `pop esi` stays second).
 // @retail 0xfdad0
 bool __stdcall function_fdad0(long weapon_index, void *placement, bool *flag)
 {
