@@ -1320,7 +1320,7 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
     }
 }
 
-// score 130 (was 130): only the mapped loop's rescale test after 0x1b2c0 differs: retail reloads the word
+// score 130 (was 130): BLOCKED-BY 0x1b2c0 (round 32 below). Only the mapped loop's rescale test after 0x1b2c0 differs: retail reloads the word
 // (`mov ax,[ebx]; test ah,8`), ours tests memory (`test byte [ebx+1],8`). Earlier: frame 0x28 and sampler agree;
 // deferred index and post-store descriptor rereads remain.
 // Earlier: frame and sampler agree; deferred index and post-store descriptor rereads remain.
@@ -1436,6 +1436,22 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // 170/171 (rolled loop, 1203/1202 bytes). Compile-only: short/indexed spellings, a word reference at the
 // loop top or after the call, four rescale statements and a do/while all fold to the memory test; the
 // test inside the component loop gives `mov ax, [..]; and ax, 0x800` and one test per component.
+// Round 32 (m3 lane 14): rescale test inside the component loop 150 (retail's `mov ax, [ebx]` load, but
+// `and ax, 0x800` and four tests); four per-component tests of a word local 151 (not threaded);
+// `(word & 0x800) == 0x800` 130; the entry word read at each use with no loop-top local 130 (same code).
+// Cause: retail's test load is the loop-top word CSE'd across the 0x1b2c0 call and reloaded from [ebx]
+// (not spilled), which LTCG allows only when 0x1b2c0 writes through its `out` parameter alone. Our
+// 0x1b2c0 writes cases 14/18 through a pointer copy (`real *zero = out + 1`), which makes callers assume
+// it writes any memory. 0x1b2c0 forms (0x19ca0/0x1b2c0): cases 14/18 stored through `out` directly
+// MATCH/6 (plain; VC then sinks the trailing out[2]/out[3] stores of cases 10, 12/13 and 14 and flips all
+// three pairs); best direct spellings (`out[1] = out[2] = out[3] = 0.0f`, or cases 12/13 written out[3]
+// first) MATCH/2; `real *const zero` 130/MATCH; a pointer to `&out[1]` 130/MATCH; existing
+// vector3f_assign/real_point3d_set on `(vector3f *)(out + 1)` 130/MATCH each; a plain `for (long i = 1;
+// i < 4; i++) out[i] = 0.0f;` MATCH/78 (any loop in 0x1b2c0 moves its first switch's shared clamp tail
+// from case 2 to case 4). Compile-only (reproduces 0x1b2c0 exactly): ~400 direct spellings of cases
+// 10-20, merged 14/18 labels, `return true` in the case, fall-through into case 12, `(out + 1)[k]`, cast
+// fields and `out++` all floor at 2 or worse. Next: a 0x1b2c0 form that hides case 14's stores from the
+// sinking without a pointer copy or a loop.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {

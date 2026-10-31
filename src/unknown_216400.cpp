@@ -96,7 +96,7 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
     return result;
 }
 
-// score 20 (was 32): the helper returns the new element (NULL when the list is full) and the caller copies
+// score 20 (was 20): the helper returns the new element (NULL when the list is full) and the caller copies
 // into it: retail's length (662), list in ECX and retail's format-call and enumeration registers; only
 // the append's own instructions differ: retail materializes the room test (`setne al; test al, al`) with
 // the count in ESI copied to EAX, `lea edx, [eax + 1]` and the shift on the copy, and no NULL test.
@@ -390,6 +390,14 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
 // caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
 // copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
+// Round 32 (m3 lane 14): retail's registers fit two inlined helpers sharing one count load: a bool room
+// test returned in AL (count then in ESI) and an index helper (`index = list->count; list->count = index
+// + 1; return index;`) returned in EAX (`mov eax, esi`). The room helper (`bool result = count != 4096;
+// return result;`, `return count != 4096;`, preset false/true filled by an if, `count < 4096`, taking the
+// count by value) with the index helper and the caller breaking, as an else arm, or through a named
+// `room` local: 54 each (654 bytes: retail's `lea edx, [eax + 1]; shl eax, 6; mov [ecx], edx; lea edi,
+// [eax + ecx + 4]` tail with the list in ECX, but the bool threads into `cmp; je`, count EAX, no copy);
+// a bool append helper over the room/index helpers 51 (setne/test, bool CL, list EDX, count EAX).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

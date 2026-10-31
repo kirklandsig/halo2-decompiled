@@ -292,7 +292,12 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 147 (was 172): frame 0x162c agrees; the actor offset is in ESI as retail. Left: the result
+// score 113 (was 147): the search tail's three exits now fall to one `return result` (retail's
+// reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
+// 0xf beside has_markers/available at 0xe, so later homes sit 8 higher), the result set with setne
+// (retail `mov al, 1` before the branch), 0x25d690 called after the marker call's first pushes, and
+// the tail's actor index/reference/slot in EBX/ESI/EDI (retail ESI/EDI/EBX).
+// Earlier 147 (was 172): frame 0x162c agrees; the actor offset is in ESI as retail. Left: the result
 // is set with setne (retail `mov al, 1` before the branch, `xor al, al` on the missing-prop exit),
 // the view/actor-offset/character/actor spill homes rotate (retail 0x14/0x18/0x1c/0x20, ours
 // 0x1c/0x14/0x20/0x18), 0x25d690 is called after the first pushes, and in the search tail retail
@@ -385,6 +390,17 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // On 147: three declaration orders of the function-scope locals 147 each; scratch declared in the
 // search block 147; the limit select as `distance < limit ? distance : limit` 147, `limit <= distance ?
 // limit : distance` 146, `distance > limit ? limit : distance` 145.
+// Round 32 (m3 lane 14): matched sibling 0x1b3fd0 gets retail's result byte (`mov al, 1; mov [esp+..], al;
+// jne; xor al, al`, a reload at each final epilogue) from `bool result = true; if (... == NONE) result =
+// false; else if (...) { body } return result;` with every body path reaching that return. Here: the
+// whole body in that shape 182 (result byte, frame 0x162c and the tail's reference in EDI as retail, but
+// the actor offset in EAX and the slot held in ESI); only the search tail single exit 113 (kept). On
+// 113: wrapped openings (sibling/`result && ready`/`if (!result) return result`/`return false` then
+// ready/constant true with `return false`) 182/274/267/267/287; `return result` for the missing prop
+// 113; `return true` when not ready 288 (1076 bytes); result declared then assigned 113; sibling opening
+// with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
+// 141; available/success declared at the search block's top, available alone, available at function
+// scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
@@ -481,38 +497,42 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
             state->unknown00 = true;
             g_46eeb8[0x23]->unknown8 = g_46f348;
             ai_scratch_buffer_release(scratch);
-            return result;
         }
-        s_262b40_result *location = function_262b40(reference);
-        bool available = false;
-        bool success = false;
-        if (*(short *)((byte *)&entry + 0x5c) != 0 &&
-            *(long *)((byte *)location + 0x14) != NONE &&
-            *(long *)((byte *)location + 0x14) != 0xffff)
+        else
         {
-            success = function_1f4a20((s_1f4a20_entry const *)&entry, actor_index, reference,
-                (s_1f4a20_source const *)request_markers, true, &state->point, &state->facing,
-                (signed char *)&state->unknown11, &available);
-            if (success)
+            s_262b40_result *location = function_262b40(reference);
+            bool available = false;
+            bool success = false;
+            if (*(short *)((byte *)&entry + 0x5c) != 0 &&
+                *(long *)((byte *)location + 0x14) != NONE &&
+                *(long *)((byte *)location + 0x14) != 0xffff)
             {
-                state->unknown0f = true;
-                state->unknown10 = false;
+                success = function_1f4a20((s_1f4a20_entry const *)&entry, actor_index, reference,
+                    (s_1f4a20_source const *)request_markers, true, &state->point, &state->facing,
+                    (signed char *)&state->unknown11, &available);
+                if (success)
+                {
+                    state->unknown0f = true;
+                    state->unknown10 = false;
+                }
+                else if (available)
+                    reference = g_470fa0;
             }
-            else if (available)
-                reference = g_470fa0;
+            if (!available && !success)
+                reference = function_2626b0(actor_index, reference, other_actor, scratch, unknown, true);
+            if (!REFERENCE_EQUAL(reference, g_470fa0))
+            {
+                state->unknown01 = true;
+                actor->unknown4ae = true;
+                ai_scratch_buffer_release(scratch);
+            }
+            else
+            {
+                state->unknown00 = true;
+                g_46eeb8[0x23]->unknown8 = g_46f348;
+                ai_scratch_buffer_release(scratch);
+            }
         }
-        if (!available && !success)
-            reference = function_2626b0(actor_index, reference, other_actor, scratch, unknown, true);
-        if (!REFERENCE_EQUAL(reference, g_470fa0))
-        {
-            state->unknown01 = true;
-            actor->unknown4ae = true;
-            ai_scratch_buffer_release(scratch);
-            return result;
-        }
-        state->unknown00 = true;
-        g_46eeb8[0x23]->unknown8 = g_46f348;
-        ai_scratch_buffer_release(scratch);
-        return result;
     }
+    return result;
 }
