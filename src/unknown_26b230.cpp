@@ -512,6 +512,13 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // compare-then-pass); every promoted/short/int team local folds the add and sinks the EDI save 31; short
 // const & / pointer to the field 25; clump_get named 3, in the argument 31; team or side getter by index 31,
 // by clump pointer 3; prop between clump and side 26, before both 45.
+// Round 92: read-only/immutable clump pointer, split clump/side assignments, side-before-clump
+// declaration, const side, early iterator declaration, and inline predicate/lookup declarations each 3.
+// Original body and declarations restored.
+// Round 137 (lane 4): the walk reusing `clump` (no other_clump) with a long team local 31, the team passed
+// directly 3; `function_20f040((long)clump->team)` 3; a long side compared as `(short)side` 3. The permuter matched
+// only with a `volatile` clump pointer (not allowed): retail's first team read is an opaque load (movsx, address add
+// not folded), the shape 0x26bc60 matched with its volatile read, so both likely share the original idiom.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -1923,6 +1930,9 @@ void function_269250(long clump_index, long actor_index);
 // team-arm form: selection locals before the walk 129; activity read in the walk call 126; team
 // compare reversed 126; the datum step reading the pool field at each use (data_iterator.h) 126,
 // identical. Zero-default score with the common compare 90.
+// Round 250: Native actor/group output ownership, then native selected-handle combinations:
+// 104/146/147/147/146/147; both complete-output forms with team-local scoring 129/129.
+// Pool/selection and x87/SSE allocation remain; all matched controls survive.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2130,11 +2140,21 @@ void function_269250(long clump_index, long actor_index)
 // are no longer hoisted); target-clear arm through prop_get at each use 220; the existing prop walk
 // struct 3; node iterator declared beside the prop iterator 3. On the opening body the deletion arm as
 // `if (unit) continue; break;` 89 (identical code).
+// Lane 16 r48 (fast): the 3 form under s_prop_pool_storage leaves only the pool registers (ours node pool
+// EDI / prop pool EBP; retail the other way). Under separate pool globals the 3 form matches but
+// 0x25d770 2 and 0x25d810 91 (335 B; result/actor registers permute): 0x25d770's walk as a for loop 114
+// (208 B, the step is duplicated); the prop pool defined in this file instead of globals.cpp 2/91; prop
+// declared before datum in 0x25d770 2/91; both pools as one two-element array 252 (709 B: the pools are
+// no longer hoisted; 0x26aaf0 0 -> 70). Ours gives the pool the loop references first the first
+// callee-saved register (reverse order with the struct); retail gives the prop pool it in all three.
 // Lane 14 r22: unit flag renamed to sort before the group flag 89 (slots unchanged); the completion
 // test as the prop loop's condition (`(!changed || unit) && next`, the removal arm `continue`) 111
 // (741 B, but the entry is not threaded past the test); the removed flag rechecked 3 (both flag slots
 // then agree; only the prop/node pool roles in EDI/EBP differ, set by s_prop_pool_storage, which
 // matched 0x25d770 needs); with the removed test last 190; set before the removal call 3.
+// Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
+// order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
+// deletion/pool scheduling remain; all matched controls survive.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2341,6 +2361,9 @@ void *actor_get_character_situation_entry(long actor_index);
 // DL round 206: candidate evaluator/collector inline modes 1/0, 0/1, 1/1, 2/0,
 // 0/2, 2/1, 1/2, 2/2 (ordinary, inline, forced) 283/283/283/1749/459/1749/459/3173.
 // Forced evaluator expansion also loses matched neighbours; all declarations and body restored.
+// Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
+// with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
+// allocation remain; all matched controls survive.
 // @retail 0x269870
 void function_269870(long clump_index)
 {

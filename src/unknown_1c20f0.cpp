@@ -97,6 +97,9 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // Round 40: helper storing a local point once 316; end from a by-value point producer 226;
 // end/delta/start/origin renamed 23 each (frame unchanged); ticks and call as an inline/forceinline
 // helper 267/335.
+// Round 91: a position pointer for origin/trace/final, origin/final, trace/final and origin/trace
+// 23/23/131/23; its early declaration 52; height/origin/final and height/trace/final 24/24;
+// reversed rounded-count productions 30; all restored.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {

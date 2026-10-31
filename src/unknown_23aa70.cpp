@@ -276,6 +276,9 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // the whole gap); with the format read into a long local for the switch 175; the coordinates through a
 // coordinate pointer and the node through the full base expression 107 (636 bytes); the decode written
 // in both arms of the node test 261.
+// Round 6 (lane 17): formats 3 and 4 indexed with format 4 ending `if (!node) break;` 175, with format 4
+// returning after its node store 175, with format 4's node byte read before the decode 190 (636 bytes);
+// format 4's pointer declared `const *const` 62; formed as data + offset + index * sizeof in bytes 62.
 // Round 11 (m3 lane 2), one-file LTCG harness (base convention reproduced; format 4 indexed flips it:
 // the switch temp and every case's base take EDI and the node EBX, so the node is coloured before
 // the format-4 base once that base stays live to the late node read): formats 2/3/4 pointer or
@@ -289,6 +292,30 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // break;` before the format-4 node store 175; a `wants_node` bool for the five node tests 193 (636 bytes);
 // `switch (buffer->format - 1)` with cases 0-3 175; the decode helper `inline` instead of `__forceinline` 521
 // (kept out of line).
+// Round 112 (fast; 0x14a8e0 70 with the convention kept, 269 when it flips): format 4 through a `vertices`
+// local with the node read through a pointer formed after the decode 175 (624 bytes, flipped); the node test
+// around the decode (decode and node store in one arm, decode alone in the else) 261 (696 bytes); format 3
+// indexed with the format-4 pointer 60 (as before: two points); `vertices + index` as the pointer 62 (same
+// code); the node byte read through a byte cast of the indexed record 175. A /Gd compile-only first pass
+// reloads every parameter per case here, so it shows nothing about the flip.
+// Round 8 (lane 17), formats 3 and 4 indexed through `vertices` locals (175, 624 bytes: exactly retail's code
+// with EBX and EDI swapped, the node in EBX unsaved, the switch temp and every base in EDI, the source on the
+// stack, ret 8; 0x14a8e0 269): format 4's coordinates as a `short position[3]` member 175; the default case
+// written first 175 (same code); the decode helpers taking long coordinates 175; the switch on
+// `source->buffer->format` 175; `source->buffer` at every use 186 (632 bytes, 0x14a8e0 99).
+// Round 99 (lane 8): the buffer read once inside each case 62; format 1 through a vertex pointer 62; a const buffer
+// pointer 62; format 3's position copied member by member 102; the default case's node test on its own line 62.
+// Round 20, all with formats 3 and 4 indexed through `vertices` locals (175, flipped: node EBX,
+// switch temp and bases EDI, source on the stack, `ret 8`): both array locals declared at the
+// function top 175; formats 1, 2 and default zeroing the node once after the switch with 3/4
+// returning 175; an unsigned index (definition and declaration) 175; format 4's node byte read into a
+// local before the decode (stored after) 174 (0x14a8e0 283); formats 3/4 returning after their node
+// stores 175. Only the node store's position (before the decode, 73) keeps the convention.
+// Round 10 (lane 17), formats 3 and 4 indexed through `vertices` locals (175, 624 bytes, caller 269): the index
+// parameter as `word` (definition, declaration, call) 154 (628 bytes: retail's convention and EDI node kept,
+// caller 158, but the index is loaded into BX and re-extended per case, so format 4 forms a pointer again); as
+// `dword` 175; the decode written as a macro (no parameter temporaries) 175; the index read once through its own
+// address into a local used by every case 175; the bounds as three lo/hi pairs 175.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

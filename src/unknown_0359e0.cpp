@@ -103,6 +103,15 @@ PRIVATE inline long swizzle_log2(dword value)
 // 87; `mask < 64` 82 (same code); y looked up before x in both arms 83. Diagnostic only: in a /O2 /Gr
 // object (no /arch:SSE) the minimum becomes retail's branch, yet the coordinate promotion and the
 // tail's register roles still differ; x and y used directly put y on the stack (ret 0xc).
+// Lane 10 round 34 (fast, with 0x136140): x and y used directly with the existing log2_floor 119 (y then arrives on
+// the stack: LTCG passes only width and x in registers), with swizzle_log2 130; short entry copies with log2_floor
+// 119, with swizzle_log2 130 (the compiler drops them); long copies with log2_floor 87; long copies moved between
+// the logarithms and the minimum 102, between the two logarithms 97 (both cost 0x136140). Retail's 16-bit `mov si, cx`
+// is a register move out of ECX (the loop count needs CL), so retail's source likely used x and y directly; what
+// keeps y a register argument there is still unknown.
+// Round 461: shared doubled shift count long/short 88/100; both remaining coordinate parts
+// long, direct/long/short count 82/88/100; native short parts 87/94/91. Original
+// arithmetic, coordinate captures and full body restored; count homes and promotions remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

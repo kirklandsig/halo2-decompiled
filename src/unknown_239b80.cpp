@@ -289,12 +289,55 @@ short function_239e50(short count, point2f const *points, short *indices);
 // state before the distance 42; the normalizer reading j into a scalar before the length and
 // scaling that scalar 42 (j still folded as `mulss xmm0,[j]`); an explicit `default: break;` 42;
 // the shared header's union vector2f with that j-scalar normalizer 42.
+// Round 132 (an LTCG env link reproduces it): every order of the first/line/state declarations with
+// the scales as written or `*=` j first and the dot taking (normal, point) or (point, normal): 42 each
+// (24 forms); the normalizer scaling through a 2-D scale helper (normalize3d's shape) 42; dividing by
+// the length 42; the length's sum j first 42; the normal built in a local vector and assigned 71.
 // Round 110: a block-local point pointer in case 0 (fast) 42. One-file LTCG harness (aligned 35, positional
 // 42 as the build): normalize2d with the zero length set in an if arm and the scale in its else 42; j read
 // into a scalar after the reciprocal 42; the vector copied into a local first 72 (positional); the
 // reciprocal written at both scales 42; a single result set in the scale arm 42. Matched 0xde080's
 // normalizer keeps `movss xmm4,[v->i]; mulss xmm4,xmm0` (no commute), while ours commutes `v->j * inv`
 // into the reciprocal's register here: retail's reciprocal looks live past both scales.
+// Round 25 (fast): a `vector2f *` local to line.n in case 0, with only the i store through it 69 (305
+// bytes), the same with j scaled first 73 (308); i store, normalize and dot through it 73; only the j
+// store through it 44 (304 bytes: retail's exact normalize block, constants XMM5/XMM4; the dot's
+// `mulss xmm1, [p.x]` fold and the state/index/point registers remain); both stores 53; normalize/dot
+// argument alone 42 (same code). Compile-only diagnostic: the reciprocal kept live past both scales
+// gives retail's XMM numbering. Opening body restored.
+// Round 54 (lane 12, fast; compile-only reproduces both the SSE block and the integer allocation):
+// operand order follows which normal component is written by name first. line.n.i written by name with
+// line.n.j and the case-0 dot through a `vector2f *normal = &line.n` gives retail's whole SSE block (1.0 in
+// xmm5, 0 in xmm4, j loaded fresh into xmm2, `mulss xmm1, [p.x]`) 23 (first difference +0xe; not kept: a
+// by-name/pointer mix kept only with a match), also with case 1's dot through `normal` 23; the same with
+// the dot through the helper 44 (304 bytes); every normal access in case 0 through the pointer 39 (301),
+// with case 1 too 66; with a y-first field copy of the first point 44 (310). Left after the SSE block:
+// state/index/point colouring (ours EDX/ESI/ECX, retail ECX/EDX/ESI), which compile-only diagnostics tie to
+// case 1 and to the case-0 point pointer living across `lahf` (without either, retail's ECX/EDX and y-first
+// copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
+// first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
+// case 1's dot by name or through the pointer in either term order.
+// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
+// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
+// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
+// case 1's difference as `line.d - dot` 43.
+// Round 29 (lane 14): count EBX and points EDI agree with retail (ECX is only written), so the rotation
+// is body-internal. A case-0 `vector2f *normal = &line.n` for the normalize and the dot 42 (same code),
+// for the dot only 42 (same code), with j's store too 44 (304 bytes), with i's store instead 69 (305);
+// case 1's distance as `line.d - dot` 43.
+// Round 7 (lane 17, fast): the normal built from the existing vector2d_from_points2d (first minus point,
+// i = delta.y, j = -delta.x) 86 (316 bytes: the negation is an SSE subtract from zero); the loop on
+// `i < count` with `if (state >= 2) break;` after the switch 101 (311); case 0 in matched 0x23a2b0's own
+// inline form (named length, `*=` scales, `else length = 0.f`, the dot by name) 56 (j still scaled in the
+// reciprocal's register); normalize2d spelled as matched 0xde080's (scale inside `!(fabs(m) < eps)`,
+// `v->i * inv`) 42 (same code); the normalizer's result tested implicitly 42 (same code).
+// Round 54 (lane 16, fast): `points + i` for every `&points[i]` 42; case 0 setting the state before the
+// distance store 42; the normalizer's zero test as `fabs((double)m)` 43; case 1 as `if (fabs(...) <
+// epsilon) break; state = 2;` 42; the loop condition `state <= 1` 43.
+// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
+// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
+// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
+// case 1's difference as `line.d - dot` 43.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -714,6 +757,14 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // compiles identically (120-form screen); mask first 132; side flags before the result 132; the
 // fraction default before the deltas 240 (880 bytes); one named copy size 129; one inline
 // append-and-dedupe helper for both tails 129; `points + count - 1` / `&points[count] - 1` 129.
+// Round 453: Plain current-point cursor with native/memcpy/memmove publication 280/280/306;
+// original indexed walk with point memcpy/memmove 129/337. Native intersection on the cursor
+// graph with native/memcpy append 235/235; complete memmove publications 298.
+// All original indexed traversal, native stores, copies and helper contracts restored.
+// Round 54 (lane 16, fast): the previous side computed straight from its distance expression (no previous
+// distance local) 133; the previous side stored before the previous point at the loop end 129 (same code); the
+// result declared after the flags and mask 132; the side test as `previous_inside != inside` 129 (same code); the
+// current side `bool const` 129 (same code). Diagnostic only: an `if (count > 0)` guard around the loop 211.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

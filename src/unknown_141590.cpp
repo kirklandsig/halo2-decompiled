@@ -195,6 +195,9 @@ static inline void quaternion_transform_vector(
 // Round 228: two-argument in-place helper with pointer/reference quaternion and vector
 // contracts 290/290/290/290; each with independent cross scalars 313/313/313/313.
 // Original helper contracts and complete body restored.
+// Round 242: Complete shared scale/add-scaled output pipeline with staged-cross/shared-dot/
+// independent-half subsets 0..7 363/363/358/361/355/356/349/350. Native half storage recovers frame
+// 0x24 but grows code; original helper and body restored, quaternion/cross spill overlap remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -749,7 +752,8 @@ void function_143250(
 	}
 }
 
-// score 1781 (was 1781): frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
+// score 1766 (was 1781): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
 // Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
 // [4,5] 2286, [6,7] 2329.
@@ -807,6 +811,21 @@ void function_143250(
 // Round 447: Third-band retained late rows [0,1,4] by columns in six row orders, then descending columns across rows and within each row
 // 1791/1795/1795/1790/1795/1791/1812/1803. Rotation admission and basis/matrix spill homes remain.
 // Original executable source and all trial helper/interface changes restored.
+// Lane 10 round 34: retail passes rotation in EAX, coefficients in ECX, result in ESI and the order on the stack
+// (ret 4); ours stacks rotation and the order (ret 8). --fast pins conventions from the last full build, so only
+// plain checks show them. Plain: the parameters in retail's call-setup order (result, order, rotation,
+// coefficients; definition, declaration and four calls) 1781, rotation still stacked; 0x22850's coefficient loop
+// written as three per-channel calls as retail has them (and as its second half does) 1781 here, 0x22850 237->254;
+// the eight leading terms and the matrix as plain locals 2116 (frame 0x300 as retail, rotation still stacked).
+// Fast: rotation-first orders (rotation, order, result, coefficients) and (rotation, result, order, coefficients)
+// 1781 each (convention pinned); round 19's body 2266 (rotation stacked there too).
+// Round 215: producer-ready retained column 0 1768; producer-ready retained column 1 1782;
+// producer-ready retained column 2 1784; producer-ready retained column 3 1913; producer-ready
+// retained column 4 1772; producer-ready retained column 5 1766; producer-ready retained column 6
+// 1782; all producer-ready retained columns 1833; producer-ready retained columns 0 and 5 (one-
+// point increment rejected) 1765. Keep t06 producer-ready column 5, plain-confirmed 1781 to 1766
+// at exact 10773-byte retail length; all 11489 baseline matches preserved. Combined columns 0/5 at
+// 1765 add only one point and are rejected.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
@@ -3335,6 +3354,9 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1116 = term_1115 * term_266;
 	term_1117 = term_1116 * 0.00476190494f;
 	term_1118 = term_1114 + term_1117;
+	matrix[5] = term_507;
+	matrix[12] = term_617;
+	matrix[33] = term_1118;
 	term_1119 = term_414;
 	term_1120 = term_635;
 	term_1121 = term_1120 * workspace.term_5;
@@ -3585,21 +3607,18 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	matrix[2] = term_467;
 	matrix[3] = term_473;
 	matrix[4] = term_484;
-	matrix[5] = term_507;
 	matrix[6] = term_524;
 	matrix[7] = term_544;
 	matrix[8] = term_564;
 	matrix[9] = term_579;
 	matrix[10] = term_585;
 	matrix[11] = term_598;
-	matrix[12] = term_617;
 	matrix[13] = term_633;
 	matrix[28] = term_1006;
 	matrix[29] = term_1032;
 	matrix[30] = term_1048;
 	matrix[31] = term_1061;
 	matrix[32] = term_1075;
-	matrix[33] = term_1118;
 	matrix[34] = term_1148;
 	function_143250(result + 9, 7, &matrix[0], coefficients + 9);
 	return result;

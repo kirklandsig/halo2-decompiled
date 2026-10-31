@@ -161,6 +161,9 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // X/Z load scheduling remains; the added result byte is exact-only and every form is restored.
 // DL204: shared-outcome side/fallback setters and named normalization length, masks 1..7,
 // 5/254/254/26/26/254/254; complete graph with fallback library copy 26. Exact-only forms restored.
+// Round 460: Shared-outcome graph with native normalized direction copies for positive,
+// negative and endpoint consumers, subsets 1-7 and immutable all, 350/337/370/222/364/365/364/364.
+// No exact match; every direction copy and added-result form restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

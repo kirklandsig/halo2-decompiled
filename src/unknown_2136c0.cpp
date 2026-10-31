@@ -97,11 +97,33 @@ void function_213970(void);
 // src/unknown_213d20.cpp, with an extern in src/unknown_214c30.cpp; block B: g_55bd04/g_55bd08 in
 // src/unknown_12be90.cpp). Scalar zero stores before the clears 131, without the size pragma 158;
 // enabled flag before the NONE stores 131; NONE stores before the zero stores 131, without the pragma 161.
+// Round 37 (lane 1, fast): still BLOCKED-BY the global layout. Block A's NONE store between its two
+// arrays 131; the enable flag before the NONE stores 131; NONE stores and flag first 131; retail's
+// NONE/flag order right after the clears 131; the zero stores before the clears 131.
 // Round 210: Actual preference-difference decisions reused for refresh and dirty publication:
 // Boolean language/version/both 193/193/226; native language/version/both 185/185/221; byte/short
 // pair 226/225. All regress with every match preserved. Original conditional publications,
 // comparisons, calls, resets and whole body restored. Two complete storage blocks still require
 // coordinated changes to protected definitions outside this queue.
+// Round 53 (lane 9, fast): progress handle cleared by memset 146 (242 bytes); the language read at each use
+// (`get_current_language()` in the test and the store; the size pragma keeps its out-of-line copy) 129 (232 bytes,
+// two-point gain dropped); with the block-A clears after the block-B ones 129; with the NONE/flag stores first 129;
+// with the language call on the left of the comparison 129. Still BLOCKED-BY the separate global definitions.
+// Round 26 (lane 14, fast): retail also inlines the cached language getter 0x11cae0 (ours calls it under
+// the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
+// between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
+// the string clear after the enable byte 142; the two session words cleared last 131.
+// Round 30 (lane 14, fast; still BLOCKED-BY the separate global definitions): the language local declared at
+// the top 131; the last block word (g_55c02c) cleared first 131; the string and request clears after the
+// scalar zero stores 131; the adjacent bool cleared just before the string clear 145 (242 bytes); block A's
+// NONE store between block A's clears and block B's first clear 131.
+// Round 116 (lane 6, fast): size pragma dropped with the existing getter 0x11cae0 called 158; that with
+// the query first 170; the getter first under the pragma 128 (three-point gain dropped, same as the
+// earlier query-first form); no pragma with the NONE/flag stores ahead of the scalar zeros 161; no pragma
+// with the scalar zeros before the clears 158. Ours lays the five arrays apart (0x4bac30, 0x4bdd58,
+// 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
+// definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
+// src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

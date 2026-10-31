@@ -340,6 +340,12 @@ s_object_gc_entry_ab g_440570[6] =
 // test peeled at the constant first entry, and the NONE exit falls through where retail branches to it); the same
 // with the exit test inside for (;;) 119 (same code); NONE as an enclosing if with one final clear and the query
 // returning 153 (361); the query in the while condition 176 (333).
+// Round 56 (lane 12, fast): the level from an inline pressure-level helper with early returns 270
+// (251 bytes); level first, `if (level != NONE)` around `while (entry->action)` with a break on the
+// query and one final clear 181 (328 bytes: retail's frame 0x2a04, level in EBP, globals in ESI, but
+// VC inverts the loop, testing the first entry's action at its constant address); that with an
+// `advance = !again` flag 181, with the query in the while condition 181; the index walk with
+// `advance = !again` on this body 131 (400 bytes).
 // @retail 0xbf380
 void function_bf380()
 {
@@ -760,6 +766,10 @@ void __stdcall function_bc300(long object_index)
 	record_pool_release(g_4e0300, object_index);
 }
 
+// score 5 (was 5): this round: with a `long` parameter MSVC widens every 16-bit read of it, so
+// the narrow load needs the parameter type changed, which changes the mangled name and breaks the
+// four other declarations (src/unknown_0b7b40.cpp, src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp,
+// src/unit_object_type.cpp) and still raises 0x118510: BLOCKED-BY 0x118510.
 // score 5 (was 5): the only difference left is the size parameter's load: retail reads it with a
 // 16-bit load (a short parameter), ours with a 32-bit one, which shifts every later byte by one.
 // With `short size` in the definition and in every declaration (src/unknown_0b7b40.cpp,

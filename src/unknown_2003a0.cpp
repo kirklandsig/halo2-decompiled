@@ -9,6 +9,7 @@
 #include "unit_requests.h"
 #include "unknown_11cc90.h"
 #include "data_iterator.h"
+#include "props.h"
 
 // @flags /O2 /Gr /arch:SSE
 
@@ -444,7 +445,10 @@ struct s_squad_iterator
 
 s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 
-// score 92 (was 92): no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
+// score 74 (was 92): the scan index, declared with the block's other locals, ends the zero
+// register and gives retail's walk registers and stores, but it is live across the walk and takes
+// a stack slot (push ecx frame, 347 bytes), so the flags go to EBX where retail keeps them in memory.
+// Before: no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
 // in EBP (stored as next, scan index, count and palette tests) where retail uses immediates/TEST.
 // Shared lookup 92; parent while 148; read-only squad 92; unused formal addresses removed 92;
 // definition scope 92; cached entries 87 (one-use pointer excluded); direct mode flags 94; early
@@ -471,15 +475,26 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // inline entries helper 94; index from next 94, long index 95, guarded do-while 94, squad index
 // stored before next 93; block view selected per use 93, in the condition 99, one block pointer
 // 104 (318 bytes). Retail also places the NONE store between the two entries arms.
+// Round 51 (lane 9): found flag 92 (330 bytes); getter as one ternary 92 (identical code); getter with a
+// NULL-initialised result 101 (346), with the found flag 114; `index == count` exhaustion 92; `for (index = 0;`
+// 92; count local dropped 92; scan as a while loop 92; dword definition flags 92; `short index = 0;` at the top
+// of the definition block 97, at function scope 74 at 347 bytes (a `push ecx` frame; the walk then gets EAX
+// definition, ECX squad and no zero register); uninitialised index at function/squad/definition scope 92 each;
+// the unused-parameter address statements dropped 92 (identical, removed).
+// Round 32 (one-file LTCG closure harness, exact; [harness positional, base 88]): index declared with
+// squad/definition 74 [56] (kept), first in that list [56], after them [56]; with a found flag [78] (338
+// bytes), long index [76] (342 bytes), count as a value [57], alternate read per use [56], entries declared
+// outside the scan [56]. Without it: found flag [86] (330 bytes), with a selection pointer or a found
+// pointer [86], long index [86] (322 bytes), do-while scan [86], squad index stored before next [85], index
+// declared just after the walk [88], in the definition block [93] (each still with the zero register).
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
-	(void)&flags;
-	(void)&mode;
 	if (squad_index != NONE)
 	{
 		s_squad_datum *squad;
 		s_squad_definition_entry *definition;
+		short index = 0;
 		for (;;)
 		{
 			squad = squad_get((word)squad_index);
@@ -502,7 +517,6 @@ void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags,
 				if (alternate) count_slot = (long *)(definition->data + 0x5c);
 				else count_slot = (long *)(definition->data + 0x54);
 				long count = *count_slot;
-				short index = 0;
 				for (; index < count; index++)
 				{
 					byte *entries;
@@ -842,6 +856,13 @@ done:
 // re-reads g_4e0350 each pass; ours hoists g_4e0350 into EBX and re-reads the definition.
 // Retail's NONE lives in ECX from entry into the third scan (re-set by `or ecx, -1` on its back
 // edge), with the result always in its stack slot.
+// Round 32 (one-file LTCG closure harness, exact): first scan with a named `next` (read once, stored
+// back plus one) 176; `++iterator->next >=` 176; the palette/entry pair through a short pointer 196
+// (617 bytes); next tested again in the count guard 176; flag comparison operands swapped 176, entry
+// bit as bool (harness, 617 bytes, no gain); squad declared at the function top 176, the first scan's
+// pair at the scan top and the palette index at the definition block's top (harness, identical).
+// Ours carries next in CX from the entry test into the first pass; retail folds both tests into
+// `cmp word [edx+4]` and reloads at the loop top.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -1202,6 +1223,16 @@ struct s_squad_tree_definition
 // parent field in pass 4 31 (pass 3 37); pass-3 append through an inline helper taking the group
 // pointer 31; sibling walk as a while loop 74; pass-4 while loop without the pragma 175; /Ob1 file
 // flags without the pragma 31 (diagnostic: same code as the pragma).
+// Round 51 (lane 9): compile-only screens of the parent test through an inline bool predicate, a named bool,
+// `!= false`, the row expression with the pointer inside or before the block, the getter argument through the
+// row expression and a named parent local: all one load, no form keeps two. Pass 3/pass 4/both as `continue`
+// forms 31/31/31; pass-4 squad through `squad_get((word)i)` 31; pools declared before the definition 31; one
+// group pointer for passes 1 and 3 31.
+// Round 54 (lane 9): pass-4 argument through a fresh squad_get(i) read ahead of the depth pair 42 (all reads
+// merge into one folded load); pass-3 parent getter at each use 34; pass-3 append through a link pointer
+// (0x201a50's form) 82 (324); the first-child field read at each use 31; parent/last declared at the loop top 31.
+// The matched examples of the folded-load/dead-add/copy shape (0x256b00, 0x26ace0) read the field three times
+// (a test and two lookups); neither pass has a natural third read.
 // @retail 0x2009d0
 void function_2009d0(void)
 {
@@ -1354,6 +1385,9 @@ void __stdcall function_205320(long group_index)
 // index in a local 18; header pointer local 19; high-word test by shift 18. Compile-only screens
 // reproduce ours exactly and ~20 squad/header/test forms (helper return, NULL-initialized squad, pool
 // local) all keep add eax,ecx; retail's other two sites of this lea (0x1f3430, 0x20d570) are unmatched.
+// Round 54 (lane 9): `(salt << 16) | (squad_index & 0xffff)` (0x1e0160's spelling) 37 (the index moves to EBP);
+// the existing object_get for both object lookups 18; that with squad_get 18; the reload through
+// object_header_get(...)->object 18; the insertion written in both arms of the high-word test 40 (143 bytes).
 // @retail 0x201ad0
 void function_201ad0(long squad_index, long object_index)
 {
@@ -1611,6 +1645,10 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // retail reloads it before, so the jump lands on the shared reload.
 // Pool read before the active test 2; record address size * index + data 2; not-found
 // stores swapped 2; datum index written index | salt 2; early return when inactive 20.
+// Round 32: the file's data-iterator step (0x200db0's helper) 110 (368 bytes); `while (step(&iterator))` with
+// the squad read from the iterator 2, the index read first 2; squad declared in the while
+// condition 2; squad index read before the NULL test 2; next index read before the pool in the
+// shared step 2.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -1786,38 +1824,16 @@ extern s_reference g_471004;
 point3f *function_b9dd0(long object_index, point3f *point);
 void __stdcall function_2628f0(long actor_index, s_reference reference);
 
-PRIVATE __forceinline byte *squad_area_get(long palette_index, short area_index)
-{
-    byte *result = NULL;
-    byte *scenario = (byte *)g_4e0350;
-    if (palette_index >= 0 && palette_index < *(long *)(scenario + 0x168))
-    {
-        byte *palette = *(byte **)(scenario + 0x16c) + (word)palette_index * 0x38;
-        if (area_index >= 0 && area_index < *(long *)(palette + 0x30))
-            result = *(byte **)(palette + 0x34) + area_index * 0x88;
-    }
-    return result;
-}
-
-PRIVATE __forceinline void squad_area_consider(byte *squad, byte const *definition, byte *area,
-    short palette_index, short area_index, point3f const *point, real *nearest, s_reference *best)
-{
-    real distance = function_210ac0((s_type_c3b527 const *)(area + 0x24), point);
-    if (*(real *)(area + 0x34) + *(real const *)(definition + 0x50) > distance)
-    {
-        *(short *)(squad + 0x32 + (signed char)squad[0x30] * 4) = palette_index;
-        *(short *)(squad + 0x34 + (signed char)squad[0x30] * 4) = area_index;
-        ++squad[0x30];
-    }
-    else if (distance < *nearest)
-    {
-        *nearest = distance;
-        best->unknown0 = palette_index;
-        best->unknown2 = area_index;
-    }
-}
-
-// score 224 (was 224): main's body (m3 review of lane 10 r33). The r33 form below reached 7 (4 with the
+/* fills the squad's area list around its target unit (a player's unit when the definition sets 0x10):
+   up to ten areas whose reach covers the target, else the nearest one; the two area loops store that
+   pair in opposite orders in retail, so each loop writes out its own test */
+// Matches (was 224), lane 10 round 34: round 33's form with each area loop writing out its own nearest-area test
+// (retail stores the pair area first in loop 1, palette first in loop 2; one shared body follows source order in
+// both). Tried on the way: the shared helper storing area first 8; best through a whole s_reference copy 240;
+// area-first stores with the nearest last 12; nearest between the stores 10/11; loop 1 written out with loop 2
+// through the helper 4 (an earlier x87 add order flips); the helper area-first for loop 1 with loop 2 written out
+// 0; both written out 0 (kept); both written out without the negated table test 3.
+// Earlier (224): main's body (m3 review of lane 10 r33). The r33 form below reached 7 (4 with the
 // ternary negated), but all of it rests on squad_area_consider taking its two indices as `short const &`
 // so the inlined code re-reads entry+4/+6 after the distance call: with plain shorts the same form is 336.
 // Like a volatile read, that reference only steers re-reads, so it is kept only with a byte match.
@@ -1912,13 +1928,12 @@ void function_204450(long definition_index, long squad_index)
     if (definition[0x24] & 0x10)
     {
         long target = NONE;
-        s_record_pool_iterator players;
+        s_data_datum_iterator players;
         players.data = g_4e8c24;
         players.index = NONE;
-        byte *player;
-        while ((player = data_iterator_next_inlined(&players)) != NULL)
+        while (data_datum_iterator_next_inlined(&players))
         {
-            long unit_index = *(long *)(player + 0x2c);
+            long unit_index = *(long *)(players.datum + 0x2c);
             if (unit_index != NONE)
             {
                 function_b9dd0(unit_index, &point);
@@ -1941,12 +1956,29 @@ void function_204450(long definition_index, long squad_index)
         {
             for (short i = 0; i < *(long *)entries && (signed char)squad[0x30] < 10; i++)
             {
-                byte *entry = *(byte **)(definition + (squad[0x60] ? 0x60 : 0x58)) + i * 8;
-                short palette_index = *(short *)(entry + 4);
-                short area_index = *(short *)(entry + 6);
-                byte *area = squad_area_get(palette_index, area_index);
-                if (area)
-                    squad_area_consider(squad, definition, area, palette_index, area_index, &point, &nearest, &best);
+                byte *entry = !squad[0x60] ? *(byte **)(definition + 0x58) + i * 8 : *(byte **)(definition + 0x60) + i * 8;
+                byte *scenario = (byte *)g_4e0350;
+                if (*(short *)(entry + 4) >= 0 && *(short *)(entry + 4) < *(long *)(scenario + 0x168))
+                {
+                    byte *palette = *(byte **)(scenario + 0x16c) + (word)*(short *)(entry + 4) * 0x38;
+                    if (*(short *)(entry + 6) >= 0 && *(short *)(entry + 6) < *(long *)(palette + 0x30))
+                    {
+                        byte *area = *(byte **)(palette + 0x34) + *(short *)(entry + 6) * 0x88;
+                        real distance = function_210ac0((s_type_c3b527 const *)(area + 0x24), &point);
+                        if (*(real *)(area + 0x34) + *(real const *)(definition + 0x50) > distance)
+                        {
+                            *(short *)(squad + 0x32 + (signed char)squad[0x30] * 4) = *(short *)(entry + 4);
+                            *(short *)(squad + 0x34 + (signed char)squad[0x30] * 4) = *(short *)(entry + 6);
+                            ++squad[0x30];
+                        }
+                        else if (distance < nearest)
+                        {
+                            nearest = distance;
+                            best.unknown2 = *(short *)(entry + 6);
+                            best.unknown0 = *(short *)(entry + 4);
+                        }
+                    }
+                }
             }
         }
         else
@@ -1960,11 +1992,23 @@ void function_204450(long definition_index, long squad_index)
                 for (short i = 0; i < *(long *)(palette + 0x30) && (signed char)squad[0x30] < 10; i++)
                 {
                     byte *area = *(byte **)(palette + 0x34) + i * 0x88;
-                    squad_area_consider(squad, definition, area, *(short *)(local_b3aa32 + 0x38), i, &point, &nearest, &best);
+                    real distance = function_210ac0((s_type_c3b527 const *)(area + 0x24), &point);
+                    if (*(real *)(area + 0x34) + *(real const *)(definition + 0x50) > distance)
+                    {
+                        *(short *)(squad + 0x32 + (signed char)squad[0x30] * 4) = *(short *)(local_b3aa32 + 0x38);
+                        *(short *)(squad + 0x34 + (signed char)squad[0x30] * 4) = i;
+                        ++squad[0x30];
+                    }
+                    else if (distance < nearest)
+                    {
+                        nearest = distance;
+                        best.unknown0 = *(short *)(local_b3aa32 + 0x38);
+                        best.unknown2 = i;
+                    }
                 }
             }
         }
-        if (!squad[0x30] && (best.unknown0 != g_471004.unknown0 || best.unknown2 != g_471004.unknown2))
+        if (!squad[0x30] && !REFERENCE_EQUAL(best, g_471004))
         {
             *(s_reference *)(squad + 0x32) = best;
             squad[0x30] = 1;
@@ -1976,13 +2020,14 @@ void function_204450(long definition_index, long squad_index)
         {
             s_reference reference = *(s_reference *)((byte *)actor + 0x418);
             bool valid = false;
-            if ((reference.unknown0 != g_470fa0.unknown0 || reference.unknown2 != g_470fa0.unknown2) &&
+            if (!REFERENCE_EQUAL(reference, g_470fa0) &&
                 !(reference.unknown2 & 0x8000))
             {
+                long entry_index = reference.unknown0;
                 byte *palette = *(byte **)((byte *)g_4e0350 + 0x16c) + (word)reference.unknown2 * 0x38;
-                if (reference.unknown0 >= 0 && reference.unknown0 < *(long *)(palette + 0x28))
+                if (entry_index >= 0 && entry_index < *(long *)(palette + 0x28))
                 {
-                    byte *entry = *(byte **)(palette + 0x2c) + reference.unknown0 * 0x20;
+                    byte *entry = *(byte **)(palette + 0x2c) + entry_index * 0x20;
                     if (entry)
                     {
                         for (short i = 0; i < (signed char)squad[0x30]; i++)
@@ -2053,6 +2098,17 @@ bool function_1e11b0(long actor_index, bool active);
 // with 0x203d70's short-view flag test 61; the existing step with the statement pragma 71 (191);
 // existing squad_get with the word store 62; squad re-fetched after the loop 79 (212). A 32-form
 // screen of loop form, flag store width, return spelling, pragma placement and lookup: 62 or more.
+// Round 51 (lane 9): 0x203d70's loop (`while ((actor = squad_actor_next_inline(&iterator)) != NULL)`, the
+// statement-level depth pair, word flag store, full-width return) 71 (191); with the function-level pair 109
+// (152); byte squad pointer 71; actor index read from the iterator at each use 71; header squad_actors_next
+// 71; `if (...) continue;` body 71, on the current body 64; iterator declared first 71; result local 74
+// (188). Word flag store on the current body 62 (199/199), with the word flag test 62, with a word return 65.
+// Round 54 (lane 9): the return spelled `(((dword)*(short *)(squad + 2)) >> 7) & 1` (0x203d70's flag read) gives
+// retail's `and eax, 0x80; shr eax, 7` exactly (75 alone, 210 bytes); with the word flag store 65 (206; store and
+// return as retail, the loop still rotated); with 0x203d70's loop and statement-level pair 71 (191: retail's
+// unrotated loop, missing only the squad pointer's spill into the parameter's home and its back-edge reload);
+// that with actor/actor_index declared first 71, the parameter copied into a local 71, the word flag test 71.
+// File-local word/dword bitfield views of bit 7 72/69 (shift-then-mask). The same read matched 0x202e90.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2088,7 +2144,10 @@ extern s_record_pool *g_5044c8;
 bool function_1e1de0(long actor_index);
 bool function_1df5d0(short team_a, short team_b);
 
-// score 179 (was 179): Frame 0x14 agrees; next-cursor memory home, contribution register and split entry flag clear remain.
+// score 39 (was 179): 850/850 bytes. Left: the health sum loads the squad total into XMM1 ahead of the
+// count add (retail adds the total into XMM0 in place), retail keeps the tracking node address before its
+// +8 read and loads the prop pool after it (ours folds the read and loads the pool first), and the +0x26
+// maximum uses EAX/ECX where retail uses EDX/EAX.
 // Earlier: Frame 0x14 agrees; next-cursor memory home, contribution register and split entry flag clear remain.
 // Earlier: frame 0x14 agrees; iterator index is cached and the flag clear splits.
 // frame 0x14 agrees; iterator index is cached and the flag clear splits.
@@ -2132,25 +2191,42 @@ bool function_1df5d0(short team_a, short team_b);
 // header begin/next/both 242 each; hostile declared first 245; word/short count 241/241. Left:
 // our `&= ~0x10` splits around the zero, and g_4f55d0 stays in EDX into the first walk (retail's
 // squad arm reuses EDX, so it reloads at the loop top).
+// Round 51 (lane 9), aligned counts in brackets: no `else count = 0` (retail never sets the count for an
+// actor with neither unit nor perception) 242; the +2 clear as a word 243; both 205 (850) [90]; with a
+// separate position iterator 190 [62], word count 176, both 187 [61]; dword definition flags 187 [60]; the
+// perception health computed from the short field first and the count read as a word after it 102 [24],
+// with dword flags 101 [23]; the target address in the call argument 60 (848); target index inlined 105;
+// `health + total` 101; with `else count = 0` back 230, byte clear 238, long count 167; hostile declared
+// first 50 [26], after the iterator 60; vector3f_scale 60; count before health 60; node read inside the
+// target index 56; all kept 46 [24]; existing prop_node_get 46; function-scope health 46; tracking index at
+// each use 46; scale declared first 46; typed value10 46; parameter address statement dropped 46 (removed);
+// typed count/total fields 46; `*(char *)` maximum 46; separate actor pointer for the position walk 83 (846);
+// every +2 flag operation as a word 39 [21] (kept); the existing prop_node_get/prop_get getters for the
+// tracking node and its team 39 (identical, kept); health sum first 39, after the count_c sum 37 [19].
+// Round 54 (lane 9): `total = health + total` 39 (identical: VC turns every spelling into the same
+// read-modify-write with the total loaded first); `real health` declared first at function scope 39; the health
+// sum after the +0xc sum 37; `health += total; total = health;` 39 (still the load-first copy); health set only
+// per path with `else health = 0.0f` 126 (851); the perception count read before the health division 178.
+// In all of retail the unfolded `imul 0x3c; add; mov [+8]` node lookup appears only here and in 0x2761d0/0x25d810,
+// where the node pointer has more than one use.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
-    (void)&squad_index;
     byte *squad = (byte *)squad_get(squad_index);
-    squad[2] &= ~0x10;
+    bool hostile = false;
+    *(word *)(squad + 2) &= ~0x10;
     *(short *)(squad + 0x16) = 0;
     *(short *)(squad + 0xc) = 0;
     *(short *)(squad + 0xa) = 0;
     squad[0x26] = 0;
     *(real *)(squad + 0x10) = 0.0f;
-    bool hostile = false;
     s_squad_actor_iterator iterator;
     squad_actor_begin_inline(&iterator, squad_index);
     s_actor_datum *actor;
     while ((actor = squad_actor_next_inline(&iterator)) != NULL)
     {
         real health = 0.0f;
-        long count;
+        word count;  /* retail sets it only on the two paths below; an actor with neither adds the previous value */
         if (actor->unit_index != NONE)
         {
             health = *(real *)(squad_transfer_object(actor->unit_index) + 0xec);
@@ -2159,11 +2235,9 @@ void function_203360(long squad_index)
         else if (actor->perception_index != NONE)
         {
             byte *perception = g_5044c8->data + (actor->perception_index & 0xffff) * 0x34;
+            health = (real)*(short *)(perception + 0x14) / (real)*(short *)(perception + 0x16);
             count = *(word *)(perception + 0x14);
-            health = (real)(short)count / (real)*(short *)(perception + 0x16);
         }
-        else
-            count = 0;
         *(short *)(squad + 0xa) += count;
         *(real *)(squad + 0x10) += health;
         *(short *)(squad + 0xc) += *((byte *)actor + 7) * count;
@@ -2174,30 +2248,28 @@ void function_203360(long squad_index)
         long tracking_index = *(long *)((byte *)actor + 0x338);
         if (tracking_index != NONE)
         {
-            byte *tracking = g_502418->data + (tracking_index & 0xffff) * 0x3c;
-            long target_index = *(long *)(tracking + 8);
-            byte *target = g_50241c->data + (target_index & 0xffff) * 0xc4;
-            if (!function_1df5d0(*(short *)((byte *)actor + 0x24), *(short *)(target + 0x20)))
+            if (!function_1df5d0(*(short *)((byte *)actor + 0x24), prop_get(prop_node_get(tracking_index)->unknown08)->team))
                 hostile = true;
             function_1e1de0(iterator.actor_index);
             if (actor->value086 > (signed char)squad[0x26])
                 squad[0x26] = (byte)actor->value086;
             if (actor->value086 >= 7)
-                squad[2] |= 0x10;
+                *(word *)(squad + 2) |= 0x10;
         }
     }
     if (hostile)
-        squad[2] &= ~0x20;
+        *(word *)(squad + 2) &= ~0x20;
     if (*(short *)(squad + 8) > 0)
     {
         real health = *(real *)(squad + 0x10) / (real)*(short *)(squad + 8);
         *(real *)(squad + 0x10) = health < 0.0f ? 0.0f : health;
     }
-    squad[3] &= ~1;
-    squad_actor_begin_inline(&iterator, squad_index);
+    *(word *)(squad + 2) &= ~0x100;
+    s_squad_actor_iterator position_iterator;
+    squad_actor_begin_inline(&position_iterator, squad_index);
     point3f *position = (point3f *)(squad + 0x18);
     *position = *g_468788;
-    while ((actor = squad_actor_next_inline(&iterator)) != NULL)
+    while ((actor = squad_actor_next_inline(&position_iterator)) != NULL)
     {
         position->x += actor->position.x;
         position->y += actor->position.y;
@@ -2211,7 +2283,7 @@ void function_203360(long squad_index)
     if (definition_index != NONE)
     {
         byte *definition = *(byte **)((byte *)g_4e0350 + 0x244) + definition_index * 0x7c;
-        if ((definition[0x24] & 0x10) || ((definition[0x24] & 0x20) && *(short *)(definition + 0x4e) != NONE))
+        if ((*(dword *)(definition + 0x24) & 0x10) || ((*(dword *)(definition + 0x24) & 0x20) && *(short *)(definition + 0x4e) != NONE))
         {
             long last_update = *(long *)(squad + 0x5c);
             if (last_update == NONE || (g_510c54->game_time - last_update) * g_510c54->rate > 2.0f)
@@ -2326,6 +2398,13 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // gives the area iterator its own slot (0x40) and shares the squad walk with the raised point;
 // ours shares the area iterator with the point; scope changes don't move it. The walk renamed to
 // sort before the area iterator (same-size slots by name): original body 275, walk form 333.
+// Round 32 (one-file LTCG closure harness, exact; [aligned]): retail passes the masked walk index
+// to the long-parameter callees with no word casts: walk form 335 [139] (1087 bytes), without the
+// casts 333 [133] (1088 bytes); record step without them 307 [144] (1108 bytes), long index without
+// them 275 [155]; walk with the word wake read [133], plus the else-if tail 309 [124] (1108 bytes);
+// overlap written straight into wake 318 [156] (1103 bytes), with the else-if tail [202]; words and
+// overlap declared at the loop body's top 275. The pool stays in EBX across the walk (so the pushes
+// come first) even with the area block, the definition block, the tail or the actor phase cut out.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2489,17 +2568,6 @@ struct s_actor_options;
 void function_1e4570(long arg_0, s_actor_options const *arg_1);
 void function_26b290(long arg_0);
 
-// score 2 (was 2): the squad flag bit is turned into a 0/1 value by
-// shifting first and masking after, retail masks first and shifts.
-// Also tried (all canonicalised to shift-then-mask or a byte form): word,
-// byte, bool and dword bitfields 2/166, `!= 0` 2, `? 1 : 0` 2, `!!` 2,
-// `/ 0x40` 2, `(word)`/`(dword)` casts of the mask 2, a `(byte)` cast 166,
-// short/dword/byte reads of the flags 2/166, `== 0x40` 167. In all of retail
-// only 0x203bf0 (bit 7 of the same byte) shows the mask-then-shift shape.
-// Lane 13 r20: word_flags_set setter 2; byte read 166; squad bitfield split out of `word : 7` 2;
-// `!= 0` on both sides 207; compared with the long argument 175. Compile-only, all folded: a bit-parameter
-// inline helper, signed/unsigned division, 0x7f/0xffc0/~0x3f masks, shl/shr pairs, bit 22 of the dword at +0,
-// byte/word/dword/long/bool/two-bit bitfields, __int64, signed char, a named mask local.
 // @retail 0x202e90
 void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
 {
@@ -2515,7 +2583,7 @@ void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
     *(short *)(local_3 + 0x64) = NONE;
     local_3[0x60] = false;
     if (*(short *)(local_3 + 0x2a) != (short)arg_1 ||
-        ((*(word *)(local_3 + 2) & 0x40) >> 6) != (byte)arg_2)
+        ((((dword)*(short *)(local_3 + 2)) >> 6) & 1) != (byte)arg_2)
     {
         byte *local_4 = NULL;
         if ((short)arg_1 >= 0 && (short)arg_1 < *(long *)((byte *)g_4e0350 + 0x240))
@@ -2572,7 +2640,7 @@ void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
     }
 }
 
-void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4);
+void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4);
 
 PRIVATE __forceinline s_squad_datum *function_200db0(s_squad_record_iterator *arg_0)
 {
@@ -2764,6 +2832,16 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 207: incoming-index, trigger-table/count and combined role names 50/50/50;
 // two-use trigger predicate counted as bool/byte/long/word 131/131/135/135,
 // Boolean count with the role names 131. Original trigger count and body restored.
+// Round 51 (lane 9): task/follow-up locals at function scope with the follow-up block after the chain 59; the
+// 0x202e90 call in both arms of the follow-up test 112 (610), with the NONE arm first 52 (head-merged, reload
+// remains); the follow-up call as a separate `local_4 != NONE && local_2 != NONE` test 50, tests swapped 97;
+// dword definition flags 50; iterator at function scope 50; trigger count/threshold swapped 50; follow-up
+// event read at each use 50.
+// Round 54 (lane 9): without the post-loop 0x1fb8a0 call the reload stays (diagnostic); the trigger part behind
+// an early return 50; local_2 set to NONE only in the compute arm 72 (580); the trigger entry count read into a
+// local before the loop 124 (593); one shared 0x202e90 call after the chain with the task, follow-up and flag set
+// per arm 180 at 578 bytes (the follow-up call then gets retail's `mov eax, ebp`, but the first arm loses its own
+// call site); the first test inverted with the first-arm call in the else 50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3059,7 +3137,11 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
-// score 338 (was 338): Frame 0x134 agrees; placement/definition registers and final chain homes remain.
+// score 318 (was 338): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
+// and passed masked to the calls where retail keeps the third parameter in EBP, masks the index with AND,
+// keeps the squad address and the 0x98 offset in their own slots and passes the index unmasked; the frame
+// slots of the row, seat, chain and entry index differ.
+// Earlier: Frame 0x134 agrees; placement/definition registers and final chain homes remain.
 // Round 73: arg_1 passed unmasked to every call and the +0x3a0 store (masked only for the
 // table lookups, as retail reads it) 374 (EBP takes the placement index as in retail, frame 0x130);
 // with a squad pointer local for the body 353 (retail's entry layout; the 0x200ee0 output shares the
@@ -3130,8 +3212,29 @@ void function_2011f0(long arg_0);
 // row local serves every other use; that mixed read (not kept) gives 253 [61] at 1332 bytes.
 // Left after it: placement/arg_2 EBX/EBP swap, seat/placement/spawn/chain slot order,
 // promoted difficulty, setne on the long final flag (retail pushes a bool formal).
+// Round 51 (lane 9), aligned counts in brackets: third parameter short (retail `cmp bp, -1`; 0xed710 pushes
+// it from a 16-bit load) 338, kept (0xed710 then matches with a short surprise field); full retail-order
+// rewrite (squad pointer, 0x203330 getter, unmasked index, long placement type, seat NONE once, bool flags)
+// 357 (1328) [210]; bool fourth/fifth parameters alone 349; 0x203330 getter 374 (1348); seat NONE once 357
+// [220]; long placement type 354 [147]; unmasked index 374 (1352); long type + unmasked 380, with a squad
+// pointer 363; long type + seat 350 [141]; long type + bool parameters 318 [141] (kept); that with seat 358,
+// getter 350, unmasked 378, squad pointer 356; long type + squad pointer 351; row/offset index as `& 0xffff`
+// 377 (1352) [148].
+// Round 54 (lane 9), aligned counts in brackets (baseline 141): a squad pointer from squad_get(arg_1) for
+// +0x2a/+0x76/+0x24, the row from `arg_1 & 0xffff`, arg_1 unmasked to every call and the +0x3a0 store, the
+// splice through squad_get and the memset sized by a fresh `(word)arg_1` row read 344 (1336) [132] (retail's
+// and/imul entry); with local_9 by if/else and the seat NONE once at its declaration 288 [65]; one squad pointer
+// per splice pass 283 (1332) [58]; the splice walking a fresh variable started from the chain head 276 (1328) [38];
+// the spawn index set in each arm of `arg_2 == NONE` 281 [34]; the row declared first 295 [45]; the arg_2 test
+// first 138 [57] (arg_1 cached in EBX); 0xc5340's `long difficulty; if/else; switch ((short)difficulty)` 280 [33]
+// (retail's movsx pair); row/seat renamed 280 (identical); the placement index through
+// `placement_entry->placement_index` 280 [31] (`cmp di, -1`); the row typed through s_squad_placement_table 280
+// [31]; `for (short attempt = 0; attempt < arg_0; attempt++)` with the splice unwrapped 338 (1332) [64] (retail's
+// unthreaded `xor esi, esi`, arg_2 moves to EDI). The same set without the fresh memset read 365 (1312) [43];
+// the difficulty and placement forms alone 322 [139]. Left at 280 [31]: arg_2 EBX/row EBP (retail the reverse),
+// the seat/row frame slots swapped, the threaded `arg_0 = 0`.
 // @retail 0x201520
-void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4)
+void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
     if (!g_4f55d0->active)
         return;
@@ -3139,7 +3242,7 @@ void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4
     long squad_offset = ((word)arg_1) * 0x98;
     long local_7 = NONE;
     bool local_8 = false;
-    if ((short)arg_2 != NONE)
+    if (arg_2 != NONE)
         arg_0 = 1;
     byte *local_9 = NULL;
     if (*(short *)((g_51e9d8->data + squad_offset) + 0x2a) != NONE)
@@ -3159,16 +3262,16 @@ void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4
     dword local_12[1];
     memset(local_11, 0xff, ((*(long *)(local_5 + 0x48) + 31) >> 5) * sizeof(dword));
     local_12[0] = 0;
-    if ((short)arg_2 == NONE)
+    if (arg_2 == NONE)
         function_201460(((word)arg_1), local_12);
-    else if (!(byte)arg_3 && !function_201400(((word)arg_1), (short)arg_2))
+    else if (!arg_3 && !function_201400(((word)arg_1), arg_2))
         arg_0 = 0;
     if (arg_0 > 0)
     {
         long local_13 = (word)arg_0;
         do
         {
-            short local_14 = (short)arg_2;
+            short local_14 = arg_2;
             if (local_14 == NONE)
                 local_14 = function_2039d0((short)((word)arg_1), local_11, local_12);
             if (local_14 >= 0 && local_14 < *(long *)(local_5 + 0x48))
@@ -3180,7 +3283,7 @@ void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4
                 if (local_17 != (word)NONE)
                 {
                     local_16 = function_201330((short)local_17);
-                    if (!(byte)arg_3 && local_16 != NONE)
+                    if (!arg_3 && local_16 != NONE)
                     {
                         s_unit_request local_18;
                         local_18.type = 0x32;
@@ -3192,7 +3295,7 @@ void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4
                 }
                 if (!local_8)
                 {
-                    short local_19 = *(short *)(local_15 + 0x28);
+                    long local_19 = *(short *)(local_15 + 0x28);
                     if (local_19 == NONE)
                         local_19 = *(short *)(local_5 + 0x34);
                     long local_20 = NONE;
@@ -3252,7 +3355,7 @@ void function_201520(short arg_0, long arg_1, long arg_2, long arg_3, long arg_4
                     }
                     if (placement_entry->field2a != 6)
                     {
-                        long local_30 = function_203780(local_16, local_14, (short)((word)arg_1), (bool)arg_4);
+                        long local_30 = function_203780(local_16, local_14, (short)((word)arg_1), arg_4);
                         if (local_30 != NONE)
                         {
                             ++*(short *)((g_51e9d8->data + squad_offset) + 0x24);

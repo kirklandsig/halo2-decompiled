@@ -81,6 +81,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 }
 
 // score 380 (was 380): Frame 0x64 versus 0x6c; rotation copies and product homes differ.
+// Round 34 (lane A, machine 3): retail's rotation switch has two case bodies (the g_4687ac and
+// the g_4687b0 axis) and one shared tail; grouping the five cases by axis gives 435 and 430
+// (reversed groups), so the five-case form stays; a 300 s permuter run reached 321 differing
+// instructions, its only new suggestion is a wrong swap of the row-13 components.
 // Scalar axis inputs 393 plain (391 fast, frame 0x6c); all axis snapshots 754; third component
 // snapshot 820; first two 900; camera record snapshot 615. Scalar-axis factor names, product names
 // and independent square order all 391 (fast). Basis scope ends after composition 380;
@@ -127,6 +131,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // recovers frame 0x6c, first +0xaf, but regresses; original helpers and full body restored.
 // Scaled rotation producer with native input/complement/sine-product subsets
 // 464/639/799/979/765/605/627/612; original helper and post-switch scaling restored.
+// Round 249: Shared staged cross-product families 0 / 1-2 / 3-4, all seven
+// nonempty subsets 380 each; all with shared in-place row scaling 380. Frame
+// remains 0x64/0x6c; original helpers, include set and complete body restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

@@ -276,6 +276,51 @@
 // result[12] zz5 term first, sqrt7 initialised 6 each; zz declared before sqrt15 and assigned after band2
 // or after xx_yy 6/6. Names and declaration order never move zz5's slot, and none of these statement or
 // operand orders moved the quadratic sqrt15 load ahead of the x87 z*z.
+// Round 135 (lane 4, fast with 0x146020 unless noted): the 6-point form (named sqrt3/sqrt35/sqrt21 roots,
+// `sqrt(2.0)` in both cubic products, `zz5 - 1.0f` and the sqrt21 product at each use, result[13] staged)
+// rebuilt 6. A compile-only harness shows the new stack homes follow statement order: with the sqrt21 product
+// named right after sqrt21 (before result[9]) and result[11]/result[13] written after result[12] (order 9, 10,
+// 12, 11, 13, 14, 15, xx_3yy after result[12]), zz5 takes zz's home and band3_21 the new one as in retail: 4
+// (plain 4; left the quadratic sqrt15-load/`fmul z` swap and the result[13] store after result[9]'s `fmul y`);
+// zz5_1 named on it 31; with a named float `real sqrt2 = (real)sqrt(2.0);` in both products 2 (only the
+// quadratic swap left; it still writes `zz5 - 1.0f` at each use, so it is keepable only as a match); that with
+// zz5_1 named 31 (rests on one-use sqrt3/sqrt35/sqrt21 locals); with those three roots inline again 66 (662
+// bytes); the 9, 10, 12, 11, 13 order on this body 59. Harness on the 2 form: 196 quadratic-block orders and
+// spellings (sqrt5 with its value, band2/result[6]/xz operand orders, zz staged) and 77 first-block orders keep
+// the sqrt15 load after `fmul z`; without the cubic block the swap stays, so it is not a cubic-block effect.
+// Round 33 (m3 lane 11): lane 14 r19's 6-point form rebuilt (fast 6, 0x146020 matched). A compile-only
+// /FAs build of this file reproduces both residual differences. Screened there: band3_21 or zz5
+// renamed (8 names) and band3_21 declared at five earlier places: no change; 80 single statement
+// moves and 150 random order/operand mixes in the quadratic block, 120 in the first block, and the
+// xz/x/difference stagings undone: the sqrt15 load never moves ahead of the x87 z*z. zz5 takes zz's
+// home (as retail) only when it is defined after the sqrt(21) product: with a named
+// `real band3_21 = (real)(sqrt21 * sqrt(2.0));` after sqrt105 and zz5 after it, fast 12 (band3_21's
+// home then lands below xx, yy and xy where retail has it above them, and the result[13] store slips
+// one place); 360 orders of the later statements keep that store slip.
+// Round 55 (lane 12; a one-file LTCG harness reproduces this function and 0x146020 exactly; 0x146020 matched in
+// every trial): legal forms only. The named sqrt3 root with band3_35 defined right after sqrt2 (before zz5) 55
+// (band3_35 then takes sqrt(15)'s slot as retail; a gain of 4, not kept); that with sqrt(35) named 77, with
+// sqrt(21) named 71; band3_35 first with both roots named 80; the sqrt3/band3_35 form with band3_21 defined before
+// sqrt105 73. Harness, on the sqrt3/band3_35 form: `sqrt2 * sqrt(35.0)` / `sqrt2 * sqrt(21.0)` operand orders
+// (same code), sqrt105 defined right after sqrt2 (much worse), result[15] at each earlier position (worse), and
+// every single-statement move of the nine cubic statements (none better).
+// Round 9 (m3 lane 18; fast, 0x146020 matched in each): lane 4's 2-point form rebuilt 2; on it band2 staged
+// (`band2 = sqrt15; band2 *= inverse_sqrt_pi;`) 2, band2 declared at the top but assigned after zz 92 (663 bytes),
+// zz staged (`zz = z; zz *= z;`) 2, a double sqrt5 3, result[7] as one product (no quadratic_xz) 133 (669 bytes).
+// Compile-only screens on the 2-point form (the harness reproduces the swap): 450 random quadratic-block and
+// first-block orders with operand/staging spellings, zz written at each use, double sqrt15/sqrt5 (with and
+// without casts), zz through a double product, sqrt5 written inline or first, zz first, the zz read from
+// direction->k, `zz + zz + zz`, band2 as a double product, and /G7: the sqrt15 load never moves ahead of
+// `fmul z` (result[8] through band2 moves it, but then band2 goes to x87 and sqrt15 disappears).
+// Round 18 (m3 lane 2, fast; 0x146020 matched in every trial): the named sqrt3 root with band3_35 right after sqrt2
+// rebuilt 55 (retail keeps sqrt(2) dead on the x87 stack to the end and computes result[15] first, between
+// fsqrt(105) and band3_21); on it: sqrt2/band3_35/sqrt105 as `real const` 55; result[13] before result[11] 55;
+// constant-first `3.0f * xx`/`3.0f * yy` 55; result[15] right before band3_21 146 (647 bytes); xx_3yy defined just
+// before result[15] 55. Original body restored.
+// Round 102 (m3 lane 8, fast; 0x146020 matched in each): band1 from a float root `(real)sqrt(3.0) * inverse_sqrt_pi`
+// 56 (fixes +0x50); with the cubic statements in the 9, 10, 12, 11, 13 order 56, plus xx_3yy after result[12] 56;
+// result[11] staged as `zz5_1 * band3_21`, `*= inverse_sqrt_pi`, `*= y` 69 at retail's 660 bytes; both cubic X/Y
+// accumulators from inverse_sqrt_pi first 139 (653 bytes).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

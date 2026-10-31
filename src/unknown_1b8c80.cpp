@@ -355,6 +355,17 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
+// score 8 (was 8): the seat loop's preamble still differs in the guard's shape (a sign test on the
+// decremented count where retail compares the count against the index register) and in the home of
+// the loop's zero (a constant in EAX where retail stores the index register's own zero); this
+// round's further forms (the index declared before the loop, the comparison written the other way
+// round, the seat pointer after the count, an explicit positive-count guard around the scan) score
+// 8, 9, 108 and 135, so the body is unchanged
+// score 8 (was 11): the seat count minus one goes into a local, which puts the count in ESI and
+// the index in EBP as retail does; what is left is the guard's shape (a sign test on the
+// decremented count where retail compares the count against the index) and the loop's zero
 // score 11 (was 6), coordinator review: the `tag->seat_count > 0` guard repeats the loop's own first test, so it is
 // kept only with a match (6 with it); the loop is back to its earlier form
 // score 6 (was 11): the seat scan is now guarded by an explicit
@@ -1384,6 +1395,17 @@ struct s_1ba091
 // the element 242, an assigned-if `same` 245, the negative decline test 230; element or iterator
 // declared earlier 240/240; the original loop with the new tail 244. The al-56 form (all of the
 // above but the byte local) leaves the loop's entry in memory and the prologue order.
+// Round 37 (lane 1, fast; "al" = difflib-aligned count, 121 for the original on this metric): the
+// selection grown to 0x14 with the radii at +0xc/+0x10, plain iterator and entry locals and the 0x20
+// test at both uses 237 (861 bytes, al 109); plus positive admission 241 (al 95); plus 0x1bead0's
+// fallback local assigned after its test 238 (al 80, retail's double NONE test); plus the default arm's
+// stores in retail's order (radius, seat, radius, flags) 239 (al 74); plus the default object index
+// stored through the slot state 237 (al 68); plus one 0x1fb7e0 call per seat type 240 (865 bytes, al
+// 61); plus a byte mask local 230 (frame 0x10, mask in BL, al 85), with a named element index 230; the
+// sibling's `for` loop 240 (al 61); the 0x40 test as `(flags >> 6) & 1` 240. Open: retail keeps the
+// loop entry in EBX (home F+4) and re-reads the flags for the 0x40 test; ours keeps the flags (or the
+// byte mask) in BL and the entry in memory, entering the loop by a jump past a reload, which shifts
+// every later instruction by two.
 // Round 109 (lane 6, fast): the matched 0x1bead0's loop (a plain slot-entry iterator and a for loop over
 // the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
 // the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus

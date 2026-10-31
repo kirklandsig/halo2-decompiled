@@ -894,7 +894,15 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
+// score 90 (was 90): this round: the difference is purely the register colouring of the two
+// values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
+// eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
+// ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
+// later jump). Copying the identity into a local, reading the own rank before the identity
+// test, copying the requested rank into a local before that test, a has-identity flag and
+// four local declaration orders all score 90, so the colouring is fixed by the callee's
+// convention and the body stands.
+// Earlier (90, was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.
 // identity/rank registers and the extra move before removal remain; selection guard,
@@ -957,6 +965,18 @@ bool __stdcall function_2399da(long controller_index)
 // Round 2 of lane 18: validity test through an inline helper (as 0x24b5bc's file has it) 90; flat
 // dispatch (remove, deny, rank 3, set) 90; set-rank first with deny and rank-3 returns 95; removal
 // re-deriving the identity from the selection 147; one shared controller-mask local 176.
+// Round 17 (m3 lane 2, fast): rank read through a pointer to the parameter 90; the permission test
+// as a named bool 90; task index declared at the top 90; `own_rank >= rank` 90; the over-rank
+// denial first (`rank != NONE && rank > own_rank`) then remove/rank-3/set 95 (437 bytes); 1-8 unused
+// initialised locals at the top (diagnostic: symbol numbering) 90 each, so the EAX/ECX choice is not
+// a numbering tie; a 600 s permuter run, best 82 only by duplicating the whole rank dispatch into
+// both permission arms with a short cast (not applied).
+// Round 9 (lane 17, fast): the EAX/ECX swap is a tie between the requested rank and the identity at the
+// rank dispatch: once the rank is not in a register there, the identity takes EAX as in retail. Diagnostics
+// (volatile parameter reads, reverted at once): at the NONE test 32 (433 bytes; aligned 12 -> 8: identity
+// EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
+// (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
+// 90. Plain: own rank read from the membership field at each use 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

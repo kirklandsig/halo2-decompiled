@@ -36,22 +36,6 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-long __stdcall function_1a08f0(s_async_task *task);
-
-PRIVATE __forceinline long function_214f83(char const *arg_0, s_file_handle *arg_1, bool volatile *arg_2)
-{
-    s_async_task local_0;
-    memset(&local_0, 0, sizeof(local_0));
-    local_0.create_file.path = arg_0;
-    local_0.create_file.access = GENERIC_READ | GENERIC_WRITE;
-    local_0.create_file.share_mode = 0;
-    local_0.create_file.creation_disposition = OPEN_ALWAYS;
-    local_0.create_file.flags = 0;
-    local_0.create_file.file = arg_1;
-    local_0.create_file.create_path = false;
-    return function_120ba0(6, &local_0, 8, function_1a08f0, arg_2);
-}
-
 // score 42 (was 42): retail tests the handle in ECX and copies it to EAX for the by-value
 // argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
 // memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
@@ -201,6 +185,21 @@ PRIVATE __forceinline long function_214f83(char const *arg_0, s_file_handle *arg
 // Round 50: the handle read into a HANDLE local with the element passed to the write 44; success
 // declared before done 42; `INVALID_HANDLE_VALUE != handle` 42; `success = !!opened` 42; the
 // comparison cast to long 42. Original body restored.
+// Round 23 (lane 15): the create-file task built by a hand-written copy of 0x1a0b40 replaced by a call to
+// 0x1a0b40 itself with its constant arguments (LTCG inlines it) 42, identical code, kept; on it (fast):
+// `success = handle != INVALID; if (success)` from the copy/from the array element 55/55; a bool
+// `opened` copied into success and success tested 55; the long `opened` with success tested 55.
+// Round 7 (m3 lane 18, fast): success stored first and the long copied from it 55 (351 bytes); the long
+// from `? 1 : 0` 42 (same code); `success = opened == 1` 44; a bool `opened` copied into success with
+// the branch on `opened` 55. Diagnostic only: done and success as one non-volatile two-element array
+// (done read through the helpers' volatile pointers) 60, the byte still forwarded.
+// Round 102 (m3 lane 8, fast): done and success in a struct with a `succeeded()` accessor 60 (351 bytes), with a
+// `set_success()` member 60, with a constructor clearing both 88 (365 bytes), without members on the long-opened flow 47
+// (364 bytes); `if (success != false)` 55. Compile-only: member accessors still forward the stored byte.
+// Round 9 (m3 lane 18, fast): success written through `*(byte *)&success` 55 (351 bytes); success read back
+// through `*(bool const *)&success` 55 (351 bytes); the long tested through `*(long const *)&opened` 42 (same
+// code); success declared before the path buffer 42; done and success at function scope 42. Compile-only, a
+// char-cast write and byte/bool-cast reads all forward the stored byte too.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
@@ -211,7 +210,7 @@ void game_state_cache_files_open(void)
 		bool success;
 
 		function_11c9c0(path, sizeof(path), g_470050, i);
-		function_214f83(path, &g_5020f8[i], &done);
+		function_1a0b40(path, 3, 3, 0, 8, 6, &g_5020f8[i], &done);
 		function_120d50(&done, false);
 		s_file_handle file = g_5020f8[i];
 

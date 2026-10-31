@@ -459,8 +459,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
-// score 90 (was 90): frame 0xd8 agrees; the ring conversion (fild where retail converts in SSE) and the
-// rotation schedule (one spilled component, register homes) differ; 1085 bytes against 1089.
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
 // Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`
 // as retail, but the point stores still come first); named ring phase 143 (ring conversion as
 // retail: cvtsi2ss, store, fld; frame 0xdc, radius copied through integer registers); the
@@ -571,6 +573,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // there only the direction components' registers, the radius copy and the sector load differ):
 // plain radius 222 (repeats the listed form on this base); radius as a reference into the object 264;
 // components read before the dot from locals 96; dot3f(vector, axis) 96; components before the dot 96.
+// Round 457: shared vector scales and sum with ordinary/staged cross, projection/cosine
+// scale order, original/named ring phase: 244/244/243/243/258/258/257/257.
+// All inputs precede stores; original complete rotation and body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

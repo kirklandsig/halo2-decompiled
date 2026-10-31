@@ -64,7 +64,11 @@ struct s_28e772
 	word : 5;
 	word field_12c : 1;
 	word : 10;
-	byte field_12e[0x4e];
+	byte field_12e[0x134 - 0x12e];
+	dword flags134;
+	byte field_138[0x13a - 0x138];
+	short ai_offset;
+	byte field_13c[0x17c - 0x13c];
 	byte field_17c;
 	byte field_17d[0x73];
 	vector3f field_1f0;
@@ -102,122 +106,11 @@ __forceinline void function_28e774(point3f const *arg_0, point3f const *arg_1, v
 	arg_2->k = arg_0->z - arg_1->z;
 }
 
-// score 8 (was 68): 2416 bytes as retail; left are the alignment dot's i product (retail
-// local_14->i * field_80.i), the case-four y sum (retail placed_point.y first) and case five's facing
-// dot (retail sums j, i, k; ours j, k, i once case six adds through vector3f_add). At 68 case six's i
-// add also differed (retail loads field_80.i and stores it at once; ours folded `addss xmm1, [edi]`
-// and stored late, which shifted the rest of case six): retail reads and stores the vector through
-// two pointers the compiler cannot prove equal, so no store sinks.
-// Lane 15 r19: case five with early breaks so both clears reach one NONE store 110 -> 80 (kept);
-// case zero's own block-local vector plus a facing pointer used for the dot and the k test 80 -> 68
-// (kept; the facing dot and case six's preloads become retail's); the else branch's negation through
-// the existing vector3f_scale 68 (identical code, kept). On 80: local_29 declared before local_14 82
-// (the compile-only harness shows retail's alignment dot, the real build flips all three products);
-// local_14 removed 82; facing pointer alone 76, as a reference 76; case zero's vector alone 74; case
-// five's own vector 80; case six's own vector 124; case-five point at the case top 80; contribution at
-// the case top 80; all three per-case vectors 74. On 68: contribution through vector3f_add (either
-// order) 70/70, through vector3f_add_scaled 105 (2400 bytes); contribution at function scope in four
-// places 68/68/68/68; case four's or case one/two's own offset vector 68/68/68; contribution adds or
-// the alignment dot through local_3->field_80 (diagnostic) 75/72; direction scaled in place 78, with
-// the negation helper 78; function-scope declaration orders 68/68/68/68; local_29, local_12/local_14
-// or both declared ahead of the perception lookup 472/465/513/521.
-// At 110: the case-five clear join (retail reloads ESI ahead of one shared NONE store, ours keeps
-// two), the last alignment product's operands, the case-four y sum and facing dot orders, and the
-// case-six contribution (retail preloads direction.j) remained.
-// Lane 15 r17: the case-six scale factor written at its one use (no local) 118 -> 110 (kept; the
-// length becomes retail's); the alignment test through the existing dot3f 110 (kept: it replaces the
-// hand-written dot, same count; either argument order the same code); a goto from the facing
-// rejection into the else branch's clear (diagnostic, not kept) 76 before that change: what is left
-// then is the four operand/sum orders and the contribution block; case-four y sum with its operands
-// swapped: identical code (VC orders them itself); contribution through vector3f_add_scaled 141,
-// direction scaled in place 142, contribution declared first 110 (same code).
-// At 118: staged alignment 136 plain, direct motion 235f, direct forward 253f, double-factor scaling 190f, signed-byte mode 504f.
-// Round 21: the case-five clear join is the 4-byte length difference (retail reloads esi ahead of one
-// shared NONE store; ours keeps two stores with different joins). Case-six forms leave the case 1/2,
-// 4 and 5 sum orders as they are (one product fewer 145f, two more 168f): no function-wide rotation.
-// Negating the first -1 product 105f (2416 bytes, but retail multiplies there, not kept); `2 - x * (2/3)`
-// 145f; `/ 3.0f` 118f; contribution through the existing vector3f_add 141f, through vector3f_add_scaled
-// 139f; case-five dot3f arguments swapped 118f.
-// Tried (MiniMax B run 19): the case-four NONE store reached by a goto into the else branch's
-// clear 76; not kept (a goto is kept only with a byte match).
-// At 138: alignment/clear-join/contribution schedules remain; fast preview 144.
-// Read-only forward 144f; alignment snapshot 414f; named alignment 144f;
-// marker failure break 185f; in-place contribution 204f; scale result 149f;
-// aggregate sum 210f; shared retreat scale 144f.
-// At 118: alignment product, facing dot, clear join and contribution schedules remain;
-// named target distance 119 plain / 122 fast; motion memcpy 142f;
-// point-getter result in case four/five/both 281/195/287f; failure-first arm 179f;
-// output reuse 192f; scale force-inline 142f; distance names / placement capture 122/122f.
-// At 121: alignment/facing products, marker-clear join and contribution schedule remain.
-// Fast: motion reference 125; forward reference 125; both vector references 125;
-// perception reference 125; limits reference 157; perception/motion references 125;
-// limits/motion references 157; object reference 125.
-// alignment operands, marker clear join and contribution schedule remain;
-// long marker count 206f; case-assigned short/long count 129/206f;
-// prior motion across scale 203f; elapsed fraction 129f; clamped elapsed 141f;
-// mode/all inputs assigned by arms 536/552f; unchanged preview 129f.
-// At 118: alignment operands, marker clear join and contribution schedule remain.
-// In-place direction scale 124f; contribution-first adds 124f; both 124f;
-// separation/combined length results 124/124f; both 124f; drift distance 124f;
-// normalization results with in-place scale 124f; preview 124f, all 103 code differences.
-// At 118: alignment/facing products, clear join and contribution schedule remain.
-// Genuine alignment i/j/k products 125/129/125f; ij/ik/jk products 129/125/125f;
-// all products and products with complete result 125/125f; preview 125f.
-// alignment operands, marker-clear join and contribution schedule remain;
-// byte busy result / elapsed consumer / factor accumulator / contribution-first sums / combined 124/124/124/124/124f;
-// marker comparison result 124f; terminal marker case / comparison 206/206f.
-// At 118: at aligned 21 the 4-byte length comes from case five's two field_50 = NONE
-// stores (retail reloads esi ahead of one shared store) and case six's first contribution term.
-// dot3f for the alignment test (either order) 118; case-four sum order 118; failure-first
-// case-five arm 198; `x = x + c` contribution adds 118; contribution scaled into direction 118;
-// the dot test as two NONE-storing ifs 234.
-// Round 242: shared/native displacement with repeated observations 129/118;
-// with normalization reuse 186/183; fused contribution plus these four forms 150/139/214/211.
-// All native displacement forms restored; alignment, facing sum, clear join and contribution remain.
-// Round 244: shared add after scale 141, with native point publication 141;
-// direct scale-return/add pipeline 141, with point publication 141; reverse add inputs
-// 141/141; native point publication alone 118; planar vector/point constructors with
-// pipeline 143. All restored; marker-clear receiver join and contribution schedule remain.
-// Round 247: complete published-motion observation, with facing/forward/both 410/448/443/476; complete candidate-motion observation, with facing/forward/both 417/450/464/481. Each worsens the matching prefix; marker-clear join and contribution schedule remain.
-// Round 250: complete case orders 12034567/12304567/12340567/12345067
-// 277/329/398/454; 12345607/12345670/40123567/41230567
-// 475/479/424/420. All complete cases and original order restored; idle relocation breaks the prefix.
-// Round 253: Existing native object getter with independent idle/marker/separation direction
-// workspaces, all eight subsets 118/118/118/118/157/118/118/118. Seven forms retain 103 code
-// differences; separation-only gives 142. Both callers survive, all tables unchanged. Original
-// getter, common workspace and complete cases restored.
-// Round 255: marker-facing rejection direct orders 113/121/113; immediate bool results in original/OR/AND/both orders 118/113/121/113; long result 118. The 113 forms reach 2416 bytes but gain only five and worsen the code window 103 -> 110. All restored.
-// Round 191: actual source-direction alignment 362; complete scalar contribution sums 118;
-// combined 362; source/facing ownership 435, with sums 435; source/direct admission 362,
-// with sums 362, all forms 435. All source/member substitutions were exact-match-only;
-// all trial bodies restored. Original vectors, cases, call tuples and expression trees retained.
-// Round 93 (lane 8): the field written directly everywhere (no local_29) with case six's add as
-// vector3f_add(&field_80, &contribution, &field_80) 68 -> 8 (kept: case six becomes retail's, the facing
-// dot's sum order flips); with contribution at the switch scope or declared before the direction test
-// 8/8; the helper's first two arguments swapped 8; case five's facing pointer removed 10. On 68: case
-// six reading through a second pointer to the field and storing through local_29 4 (all of case six
-// retail's; not kept: a second pointer that renames local_29); reads through the field and stores
-// through local_29 (scalar) 32 (j, k read as [ebp + 0x84]); stores through the field, reads through
-// local_29 64; vector3f_add(local_29, &contribution, local_29) 70; vector3f_add(local_29, &contribution,
-// &field_80) 70; vector3f_add(&field_80 or &contribution first, ..., local_29) 6/6 (facing dot flips);
-// case four's offset through function_28e774 then k = 0 70 (the x sum flips too); case four's sum through
-// vector3f_add 72. On the 4 form: case four's offset through vector2d_from_points2d 6 (x flips); its j
-// statement first 10; its k store first 12, between i and j 9; its sum's y statement first 8; all sums
-// written placed-first or offset-first 4/4; the alignment dot's arguments swapped 4; the dot through
-// &local_12->field_70 6 (j and k flip, i becomes retail's); the dot through &field_80 4; through
-// &local_13 394; case one/two's copy as a direct field store 8 (the facing dot flips).
-// Round 131 (lane 4) on 8: alignment dot3f(local_14, &field_80) 8 (same code); dot3f(&field_80,
-// &local_12->field_70) 74; dot3f(&local_12->field_70, &field_80) 68; facing dot3f(&direction, facing)
-// 8 (same code: VC orders the facing sum itself); one placed point declared ahead of local_13 at the
-// switch scope for cases four and five 43; permuter (4 tries) best 6 only by a volatile bool for
-// the location result (a steering volatile, not applied).
-// Also on 8: case four's placed point declared before its function_b9a90 call 8 (same code); local_14
-// as `vector3f const *` 8 (same code).
 // @retail 0x28e770
 void __stdcall function_28e770(long arg_0, long arg_1)
 {
 	s_28e770 *local_0 = &((s_28e770 *)g_4f55f0->data)[arg_0 & 0xffff];
-	s_handler_object_view *local_1 = handler_object_get(arg_1);
+	s_28e772 *local_1 = (s_28e772 *)handler_object_get(arg_1);
 	s_28e773 *local_2 = (s_28e773 *)function_1e4b50(arg_0);
 	if (!local_1->flags134)
 	{
@@ -233,7 +126,7 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 			{
 				local_5 = 4;
 				local_6 = 1;
-				local_7 = ((s_28e772 *)local_1)->field_14;
+				local_7 = local_1->field_14;
 			}
 			else if (local_3->field_50 != NONE)
 			{
@@ -246,10 +139,9 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 			long local_10;
 			vector3f target_velocity;
 			bool local_11 = swarm_target_get_location(local_7, local_6, &local_10, &local_8, &target_velocity);
-			s_28e772 *local_12 = (s_28e772 *)local_1;
-			vector3f *local_14 = &local_12->field_70;
+			vector3f *local_14 = &local_1->field_70;
 			local_3->field_80 = *local_14;
-			local_3->field_8c = local_12->field_7c;
+			local_3->field_8c = local_1->field_7c;
 			local_3->field_98 = *g_4687a4;
 			if (local_5 != local_3->field_24)
 				local_3->field_26 = 0;
@@ -294,7 +186,7 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 				{
 					function_28e774(&local_8, &local_3->field_14, &local_13);
 					real target_distance = function_30bf0(&local_13);
-					if (target_distance > 0.0f && !local_3->field_57 && !(bool)local_12->field_12c)
+					if (target_distance > 0.0f && !local_3->field_57 && !(bool)local_1->field_12c)
 					{
 						if (local_3->field_4c > 0)
 							goto local_21;
@@ -344,14 +236,12 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 					{
 						point3f placed_point;
 						function_b9dd0(arg_1, &placed_point);
-						local_13.i = placed_point.x - local_8.x;
-						local_13.j = placed_point.y - local_8.y;
-						local_13.k = 0.0f;
-						if (function_30bf0(&local_13) > 0.0f)
+						vector3f offset;
+						function_28e774(&placed_point, &local_8, &offset);
+						offset.k = 0.0f;
+						if (function_30bf0(&offset) > 0.0f)
 						{
-							local_8.x = local_13.i + placed_point.x;
-							local_8.y = placed_point.y + local_13.j;
-							local_8.z = placed_point.z + local_13.k;
+							vector3f_add((vector3f const *)&placed_point, &offset, (vector3f *)&local_8);
 							if (function_2900b0(arg_1, &local_8, 0.9f, 2.7f, (vector3f *)&local_3->field_58))
 								local_3->field_57 = true;
 						}
@@ -382,9 +272,9 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 							function_28f0e0(arg_1, (s_28f0e0 const *)&local_15, &direction, local_10);
 							break;
 						}
-						if (local_12->field_17c != 1 || (bool)local_12->field_12c)
+						if (local_1->field_17c != 1 || (bool)local_1->field_12c)
 							break;
-						vector3f const *facing = &local_12->field_1f0;
+						vector3f const *facing = &local_1->field_1f0;
 						real local_25 = dot3f(facing, &direction);
 						if (!(local_25 < -0.99f || (facing->k > 0.70710677f && local_25 > 0.99f)))
 							break;

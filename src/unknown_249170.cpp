@@ -147,11 +147,19 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // before the sine store 11 (the one-use sine is evaluated at its use, after the fcos); the sine declared
 // before the radius call 2 (same code: it is carried past the call). Our scheduler fills the fld latency
 // before case 1's fsin with the xorps (as retail does in case 6) where retail's case 1 and case 4 do not.
+// Round 96 (one-link harness with 0x247950's, 0x246cd0's, 0x259d0's and 0x1462e0's files; case 1 swap
+// reproduced): the two zero stores placed before/after the sine definition in all four combinations keep the
+// swap; either one before the radius call 549-563 (stores move ahead of the call); a cosine local after
+// velocity.j / after position.x with sine/cosine products 321 (swap kept); `real const sine` 2 (same code);
+// position.y before velocity.k / velocity.k before position.y 2 (same code); sine declared ahead of the
+// radius call and assigned after it 2 (same code).
 // Round 211: shared seed cursor extended to cases 1/0/4/8/0+1/1+4/1+8/0+1+4+8
 // 2/16/2/16/9/16/9/24.
 // returned random-vector outputs in cases 2/3/5/2+3/2+5/3+5/all; all with sphere position helper
 // 78/460/75/477/527/473/532/535.
 // All source forms restored; case 1 fsin/xorps scheduling remains.
+// Round 58: reverse zero-field dependency 4; velocity/position/both zero components through the unions 2/2/2;
+// all velocity/all output components 2/2; entry-wide tail velocity pointer 512; const case radius 2. Body restored.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

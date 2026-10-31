@@ -308,6 +308,9 @@ void function_117510(long index)
 // code), with per-use fields 154, with dot3f for the square 164/178; root through a bits local, a union,
 // a long pointer or in place 154/154/154/158; constant-first clamp 139 (same code), per-use 154;
 // `!(length >= c)` 155; rest square from link->length at its use 175.
+// Round 35 (lane 10, fast): per-use link fields again 154 (742; first difference +0x8a: link materialized after one
+// folded read, link->a kept in EBX across the root's stack stores, a/link in EAX/EDX); with the rest length read
+// first 154, link as `definition->links + i` 154, vertex-record endpoints 154, a separate correction local 161.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -479,6 +482,26 @@ static inline dword surface_random()
 // Original body restored.
 // DL210: native tail producer/clamp result/component output, masks 1-7, then all with existing vector setter; component-output frame with staged cross/projection-first/both/both and readonly inputs;
 // scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
+// Round 96 (one-link harness of this file with 0x30bf0's, exact at 139; the full build already passes wind in
+// EBX with a plain ret as retail): cross3f(&axis, &old, &cross) with `+ cross*sine` rows 166, with the
+// projection first 167 (864 bytes); rows as sine*cross / projection*axis / cosine*old 139 each (same code);
+// cross3f on the global with the projection first and rows in place 181 (852 bytes). Diagnostics (scalar
+// cross terms, kept only with a match): 0x177d10's in-place order on the global 181 (850 bytes; retail loads
+// the global's j/k before the axis draw), the same on an `old` copy 163.
+// Round 35 (lane 10, fast): matched 0x177d10's rotation (projection, cross j, k, i) as a shared forceinline helper
+// (direction pointer, axis by value; 0x177d10 stays matched with it, with an axis pointer it scores 17): on the
+// global 189 (845 bytes, frame 0x18: the global's fields are re-read at each use, as retail 0x177d10 does through
+// its pointer but retail 0x117dd0 does not), with random_index 193, with a split float tail 177; on a local copy
+// written back 174 (895), with the tail 191. Retail 0x117dd0 holds the old vector in registers, so it is not the
+// same inline sequence as 0x177d10. Helper removed.
+// Round 136 (lane 4, one-link harness exact at 139 and 104): tail with the cosines swapped, sinf, cosf last, a `wave`
+// split before or after `* 0.01f` (48 forms) 139 at best (sinf 160, split inside the cast 154-165); `old` copy or direct
+// global reads x dot3f / `(k + j) + i` projection x cross3f / scalar cross j,k,i or i,j,k x row order (48) 139 at best,
+// direct global reads with scalar cross terms 152; round 28's global-in-place scalar cross + random_index + sinf/cosf
+// tail split at `wave` 104 (--fast 104; scalar cross terms kept only with a match), with the cosines swapped, the fraction
+// first 189-191, a seed pointer local, sinf/cosf for the angle 105, separate sine/cosine 104; on the cross3f body:
+// sinf/cosf tail 160, split tail 165. At 104: frame 0x1c (retail spills cross j, keeps axis i in memory, global j/k in
+// xmm5/xmm4), seed update before the time product, tail cosine order.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -566,6 +589,23 @@ void function_117dd0(long index, vector3f *wind)
 // all with history-branch cursor 112. Seven-point gains rejected; original body restored.
 // DL210: native point setters for weighted/accelerated/final point phases, masks 1-7, then all with CRT history copy on the shared dot/projection graph;
 // scores 80/80/80/79/79/79/79/114. Original source forms restored.
+// Round 35 (lane 10, fast): slot/store order of the preheader spills follows where the previous weight is defined
+// relative to the k update (names change nothing: history_weight/position_weight 80, also with weights first 80):
+// weights before the acceleration 80 (retail's store order, slots swapped), previous weight first 84 (slots right),
+// current weight first and previous after the k update 78 (slots right, k stored between: 2 points, not kept),
+// seven other orders 80 each; history copy before the force subtraction 80, before the drag scale 125 (734);
+// final add through vector3f_add(&force, position, position) 81, with weights first 80; dot grouped
+// n.j*f.j + (n.i*f.i + n.k*f.k) 112 (gives retail's dot loads k, i, j and force registers, rest shifts), with
+// acceleration-first Verlet 106 (736), with the 78 order 112; dot k, i, j 105 (736); Verlet through
+// vector3d_from_points3d + vector3f_add 170 (776); else-loop vertex pointer with the 78 order 113.
+// Round 136 (lane 4, one-link harness exact at 80): retail keeps the Verlet x in xmm6 until the final add and reloads
+// all three normal components for the projection (ours writes x home and reloads normal i early into xmm6). Separate
+// `-=`/`+=` Verlet statements + `i + (k + j)` written dot + `tangent.i *= field` 148 (--fast; definition takes ESI, record
+// spilled); accel-first / `a + acc - b` / `acc + a - b` Verlet x dot3f either order / `(i + k) + j` / `j + (i + k)` x
+// written projection x drag field at each use / named drag / `force -= tangent * drag` x final add order (256 forms)
+// 80 best (same code), parenthesised dots 104-105 (736); previous copied first 96, previous scaled first 104, force block
+// before or inside the Verlet 168-200, previous copy before the Verlet 128; force/position/vertex declared outside the
+// loop, projected/tangent declared early or assigned, acceleration assigned 80 each.
 // @retail 0x118140
 void function_118140(long index)
 {
@@ -697,6 +737,9 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // 1452/1361 bytes. Original APIs, both orientation passes, fields and arithmetic preserved.
 // DL210: independent normal/tangent/texture API inputs, masks 1,2,4,5,6,7; texture with native oriented scales, masks 5,7;
 // scores 432/424/422/432/424/436/422/422. Original source forms restored.
+// Round 244: retained binormal/position readonly values, complete aggregate
+// initializers and lexical role names, seven subsets 422/453/453/422/422/453/453;
+// entry uninitialized value workspaces 422. Original carriers and body restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

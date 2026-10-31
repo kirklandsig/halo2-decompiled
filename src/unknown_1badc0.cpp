@@ -12,7 +12,15 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// score 211 (was 211): frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
+// Round 30 (lane D): the permuter's best variant scores 194 against its own 195 baseline (one point,
+// below the retention margin). What still differs: this body loads the output pointer into EBX before
+// saving EBP, retail saves EBP and keeps the pointer there, so the point copy runs through EBP where
+// retail uses EBX; the body is also 21 bytes short of retail. Original body kept.
 // score 211 (was 211): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
+// frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // copies the input point a second time (at 0x28, through integer moves) for the two vector
 // differences and keeps the center at 0x34; ours has the center at 0x28 and the to-center vector at 0x34.
 // Round 90: radius read before the center copy 215 and the copied point as the actor-to-point
@@ -141,6 +149,18 @@ real normalize2d(point2f *arg_0);
 // unchanged: center stays at 0x28); both vectors declared ahead of the point copy 211; the arg_5 path
 // as an else with one final false return 211; the point copy renamed to sort last 211; the point copied
 // after the center and radius 224 (1006 bytes). Restored.
+// Round 37 (lane 1): the dead pathfinding-data store, the record with its NONE word and the direct
+// 0x26d100 call are 0x26d0e0 inlined with 0x1fa7f0's result as its third argument (the form matched
+// 0x1b13b0 and 0x25b6b0 call out of line); written as that call 298 plain (975 bytes: our LTCG inlines
+// 0x26d0e0 but drops the third argument's [esp+0xc] store, and this function's convention changes to
+// arg_0 on the stack and ret 0x10, so matched callers 0x1ba5c0/0x1bdad0/0x1bff80 stop matching). Fast:
+// a result local set true before the out-pointer test 278 (the same convention change); the center and
+// radius through s_slot_object_view's unknown030/unknown03c 211 (same code); `2.0f - distance` inside
+// the normalize-success block, where retail computes it, 270.
+// Round 247: complete input snapshot across both real modes, with native/library copy
+// and phase/entry collision storage, 255/255/255/255; the same four without output
+// self-address observation 250/250/250/250. All disturb two matched callers in the
+// reduced image. Original input observations, output access, scalar spill and body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

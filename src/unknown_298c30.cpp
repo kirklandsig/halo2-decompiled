@@ -93,7 +93,8 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
-// score 408 (was 408): Frame 0x64 agrees; entry loads, normalization homes and 0x18 versus 0x1c cleanup differ.
+// score 408 (was 408): Frame 0x64 agrees; entry loads, normalized XY/magnitude homes and 0x18 versus 0x1c cleanup differ.
+// Earlier: Frame 0x64 agrees; entry loads, normalization homes and 0x18 versus 0x1c cleanup differ.
 // The pointer-to-parameter trick for arg_3 is gone and the score is unchanged; the parameter's own use
 // still differs from retail's stack home.
 // frame 0x64 agrees; entry loads, parameter cleanup and normalization/trig homes differ.
@@ -168,6 +169,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 1680 bytes, frame 0x68); per-file two-point distance helper with dx/dy locals 411; both 450;
 // separate rotated point in the angle loop 430, with short counters 473; the unused first
 // parameter's address read removed 409 (and the caller 0x29a190 445 -> 699: LTCG drops the argument).
+// Round 246: complete candidate-direction snapshot before publication with
+// candidate/endpoint short-byte, word-byte, long-byte, byte-short, byte-word,
+// byte-long, short-short and word-word counts 443/443/442/409/409/415/438/438.
+// Byte/short gives 1736 bytes and 0x1c cleanup but frame 0x78. Original helper and body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -327,7 +332,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 733 (was 733): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ.
+// score 719 (was 733): frame 0x124 versus retail 0x114; radius and trace/pivot homes differ.
 // Frame 0x11c versus 0x114, early radius retention and trace/pivot/result homes remain.
 // Earlier: frame 0x11c versus 0x114; radius caching and trace/point homes differ.
 // Shared endpoint setters 767; center CRT copy 767; step CRT copies 767;
@@ -426,12 +431,20 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // the result 733; trace-origin names swapped 733 (no home moves); getter as one ternary 734;
 // result-first getter 773 (retail's getter code at all five traces); frame-0x114 form plus the
 // result-first getter 799. Entry still hoists the step into XMM5 and the NONE exit is inline.
+// Round 452: sweep planar vectors 17/18/19 reused for obstacle direction 742 each;
+// also for fallback rotation 740 each; fallback rotation alone through 17/18 738 each.
+// All remain above 733; original native workspaces, helpers and complete body restored.
+// Round 461: complete conditional admission bool/byte/short/long and exhaustive
+// branch results 726 each (seven-point nonmatch gains restored). Conditional
+// admission plus ordinary function result 719; direct test plus ordinary result
+// 719 (plain kept), direct test with original result 726. Retail length 3372
+// recovered; frame grows 0x120 to 0x124, radius and trace/pivot homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
 	real arg_6, s_29946c const *arg_7)
 {
-	volatile bool local_0 = true;
+	bool local_0 = true;
 	s_actor_view *local_1 = actor_get(arg_0);
 	point2f local_2;
 	if (arg_1->field_0)
@@ -583,8 +596,8 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 			else
 				local_50 = local_47 ? local_49 : 6.2831854820251465f - local_49;
 			real local_51;
-			if ((arg_1->field_4 > 0.0 && arg_1->field_4 > local_50) ||
-				(!(arg_1->field_4 > 0.0) && local_50 > arg_1->field_4 + 6.2831854820251465f))
+			if (arg_1->field_4 > 0.0 ? arg_1->field_4 > local_50 :
+				local_50 > arg_1->field_4 + 6.2831854820251465f)
 				local_51 = arg_6 > local_43 ? local_43 - local_45 : local_44 - local_43;
 			else
 			{

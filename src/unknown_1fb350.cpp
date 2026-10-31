@@ -394,6 +394,32 @@ extern "C" void _ReadWriteBarrier(void);
 // missing. All callback values and original body restored.
 // DL209: Absolute-index scan/element API pairs 318/278/318/278/201/167; salted-handle APIs 174/185;
 // single condition-step scan/element pairs 203/180/203/180. All restored.
+// score 122 (was 122): this round: the permuter on this function finished with no candidate (10
+// tries in 605.9 s, best 122, the baseline, no confirming build); retail's frame is 0x14 with the
+// pool pointer in two stack homes and the current index in a third, ours is 0xc with the pool
+// pointer in EDI, and the fast check's reduced image leaves g_4e0300 and g_4f5724 unresolved, so
+// every line that loads one of them is counted as a difference.
+// score 122 (was 122): this round: the listing was re-read against retail's and no new source
+// shape was found. Retail's frame is 0x14 with the pool pointer in two stack homes and the
+// current index in a third, ours is 0xc with the pool pointer in EDI. Note that the fast check
+// builds a reduced image in which g_4e0300 and g_4f5724 are missing, so the global loads differ
+// from retail's and the score overstates the real gap. A permuter run on this function was
+// started at the end of the round.
+// score 122 (was 122): this round: the listing was re-read to place the first difference; retail
+// loads the pool once in the prologue and keeps it in two stack homes (one at the loop head, one
+// for the element lookup) with the iteration index in a third, ours keeps the pool in EDI with one
+// home, so the frame is 0xc against retail's 0x14 and every later offset differs. Still retail's
+// second home for the pool pointer and its register-held datum index; BLOCKED-BY 0xf0fd0 for the
+// flag register in the release path.
+// score 122 (was 122): computing the datum index in the body from the element's salt and the
+// iteration index, as retail does, gives 150 and 148 against 122, and a separate local for the
+// pool pointer used by the release call gives 158; the length stays 473 in all of them. Still
+// the frame of 0xc against retail's 0x14, retail's second home for the pool pointer and its
+// register-held datum index.
+// Round 250: Ordinary shared traversal with remaining-tick/control receiver subsets on three/four-
+// field iterators 151/152/151/151/152/151; complete receivers with positive callback completion
+// 166/166. Four-field frame 0x10 still lacks the second pool home. All matched controls survive;
+// original body, include and private helpers restored.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

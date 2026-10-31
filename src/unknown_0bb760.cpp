@@ -456,6 +456,11 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// Round 30 (lane D): the permuter found no better form (82 tries, best 84, the baseline). On this body
+// the variant byte read before the blend value scores 171 and before the selection seed 190; with
+// retail's found path (the inverse inside the found branch) it is 123, and the plain inverse form 132:
+// retail's not-found exit reloads 1.0 into xmm5 while ours rejoins the block's load, so the tail sits
+// 8 bytes short and every later branch target shifts. Original body kept.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
@@ -691,10 +696,33 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 
+// Round 31 (lane D): score 91 (was 91): unchanged; retail keeps the destination pointer in EBX and
+// the source pointer in its stack slot, while ours keeps the source in EBX and the destination in
+// EDI (which also feeds the 0x131c20 result register), and retail counts the colours with a signed
+// 32-bit division by 24 (magic 0xAAAAAAAB) where our (long) cast gives the cheaper 16-bit-range
+// sequence. Measured this round: the multiply block written green, red, blue with the value first
+// 90 (one point better, not kept), the same block with green and blue exchanged 105 each, the
+// block with the value written after the component 91 each, the destination formed after the count
+// test 99, the source in a separate variable 179, a byte-pointer destination 179, a temporary copy
+// of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
+// destination 148 and a constant source 91; every one restored.
+// score 91 (was 91): unchanged. Retail keeps the destination pointer in EBX and the source pointer
+// only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
+// retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
+// (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
+// instruction sequence does not.
 // score 91 (was 91): retail tests the count against zero before it computes
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the
 // loop's bookkeeping differ.
+// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure; positional/aligned, base 84/55 = full 91):
+// plain `for (i = 0; i < count; i++)` with `current = &base[count + i]` and `result = true` at the body's
+// top/end/after the copy 129/55 each (563 bytes: source kept in its stack slot as retail, but the false
+// result takes BL, EBX is pushed at entry, the two false exits merge and the destination takes EDI);
+// on it `&base[i + count]`, `base + count + i`, a source pointer, current declared first, the copy first,
+// `colors` name, count declared before the array, a flags local 129/129/129/129/143/129/113/129; early
+// `return false` 170; result declared in the block 95; `result = count > 0` after the loop 168; result set
+// before the loop 91 (aligned 75); pointer increments in a plain for 97, inside the count test 108.
 // Direct size/24 count 161; const base, entry and function views 91;
 // unsigned count 171; component clamp loop 91; scale loop and both loops 90
 // (one-count gain rejected).

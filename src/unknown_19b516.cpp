@@ -125,7 +125,7 @@ void c_widget::v15(c_widget *widget)
 	}
 }
 
-// score 2 (was 12): only the loop's shared tail differs: retail copies the next widget to ESI and tests ESI,
+// score 2 (was 2): only the loop's shared tail differs: retail copies the next widget to ESI and tests ESI,
 // ours tests EAX before the copy (`test eax, eax; mov esi, eax`).
 // Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
 // and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
@@ -149,6 +149,9 @@ void c_widget::v15(c_widget *widget)
 // harness screens on the twin 0x22ec1b: the same helper as a ternary or with an early return 12; a result
 // from a ternary, a reassigned parameter, an out pointer or a NULL-initialised result 2 each; a `break`
 // with the focus after the loop, the search in the loop condition or a do-while under a test 2 to 6.
+// Round 55 (real, v17 unchanged at 2): widget declared, then assigned, tested `!= NULL` 2; ineligible arm
+// stepping with `continue` 2; for loop with the helper at both ends 2; `break` in place of the return
+// 2; the widget held as the base class pointer with casts at the calls 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
@@ -214,6 +217,12 @@ void c_widget::v16()
 // do-while, 60 forms): only helper/helper gives 2; the walk written with its own local in the step, an
 // inner do-while in the step, and the search in the loop condition do not keep the entry scratch; a 600 s
 // permuter run (55 tries) found none below 2.
+// Round 213: native wrapped cursor 2; focus then break 2; focus common exit 2; for with focus/break 2;
+// native focus/break 2; widget selected result 16; native selected result 16; focus terminates cursor 2;
+// original executable source restored.
+// Round 16 (lane 2): `while (widget != NULL)` 2; a free forceinline previous-or-last helper taking the
+// widget 2; the loop variable typed as the base class with its methods 2; the c_widget wrapper plain
+// inline 72 (55 bytes, called); an early return when the entry finds none, then a do-while 2.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

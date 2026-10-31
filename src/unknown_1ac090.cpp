@@ -185,94 +185,37 @@ bool __stdcall function_1ac090(long actor_index, s_slot *slot)
 
 void function_265bb0(long actor_index);
 
-// score 60 (was 60): frame four versus retail zero (first tick in the frame, not the slot home);
-// slot, actor-table and object-table registers rotate and the mode is compared in memory.
-// Lane 11 r12: the second tick through local_1 (both ticks via the timer helpers) gives retail's
-// zero frame and 367-byte length, aligned 45 (was 77), but positional 94: restored on that count.
-// Retail loads the slot into ebx at entry, keeps the actor table in edx, the object table in
-// ebp and the unit index in edx for the else-arm call, and loads the mode into cx before testing
-// it; ours reads the slot per arm and compares the mode in memory. Lane 11 r12 (aligned counts):
-// unit index local 128 (382 bytes); for the mode and else-arm call only 44; state before the
-// actor/before the result/result last 45/45/48; a switch on the mode compiles as the if.
-// Earlier rounds, on the old form (frame four, the second tick written into the slot parameter):
-// Both timer helpers 85; add helper 68 plain kept; set helper 80; native tick outputs
-// both 72, first 70, second 80; shared random index 80; library slot copy 80.
-// Round 128: native slot data block/full native copy 91/91; data with second timer writer/native
-// output 80/80; one unit receiver 91; branch-assigned default 103; uniform unit reads 76; uniform
-// reads plus branch default 104. Original eight-byte frame and mode scheduling remain.
-// Round 138: mode predicate/shared clock/both 68/68/68; shared rate 84; second rounding-result
-// helper 74; clock/result helper 74; rate/result helper 104; native result on new frame 70;
-// force-inline second/both/first rounding results 85/70/68; native result with both 78.
-// Zero-frame forms regress allocation or expansion.
-// Round 53: unit index read at each use 60 kept (actor_index now in a register); delay through
-// random_index 60 kept. Mode arms swapped 64; unit index before state 68; with the set helper
-// for the second tick: unit at use 94 (zero frame, 367 bytes), unit local 85 (slot loads late),
-// plus state first 85, plus helper tick renamed 85.
-// Round 323: long/word/dword/real delay with second writer 88/85/105/105;
-// the same delay carriers with native second output 88/85/105/105. Conversion-input packing
-// restores zero frame in some forms but regresses allocation; original body restored.
-// Unit-object receiver on the whole-slot graph, four declaration phases: original second
-// output 68/92/82/88; existing setter 85/85/94/85. Native unit input ownership does not
-// recover the conversion homes or the mode register; original body restored.
-// Y346: timer input/output order, scalar names and complete delay-product boundaries 60 (seven forms);
-// all with the second input named at computation 60.
-// Lane 9 r23: both conversions through forceinline real_to_long 92, with a unit-index local 70
-// (slot read per arm, so its home is live at the first conversion and a frame slot is used);
-// existing pointer helpers for both with the pointer parameter first 85 (zero frame, first
-// conversion homes as retail; slot still loaded in the arm, mode compared in memory); with field
-// reads for the unit index 94 (367 bytes, three pushes); result after mode 83.
-// Round 212: long/dword returned-state storage at entry 69/69; branch-default 107/107;
-// the same with the zero-mode single exit 69/69/107/107. Four-byte conversion frame and
-// mode residency remain; original result storage, body and every call tuple restored.
-// Round 34: a `long ticks` local for the second conversion (no parameter reuse) gives retail's zero
-// frame and length 94 (aligned 29; two saved registers short); the file's timer setter for it 94;
-// plus a unit-index local 118, used for the 0x27 call only 85; plus the slot data block
-// `(s_1acda0 *)slot->unknownc` 94; data block + unit local for the 0x27 call only 80 (aligned 8: all
-// registers, both conversion homes and the slot load as retail; left the mode compared in memory where
-// retail loads it into cx and tests it, plus two load slots); the same with the unit local everywhere
-// 98; on it `!mode` 80, mode test without the local 80.
-// Lane 4 r117: the slot data block `(s_1acda0 *)slot->unknownc` for the state, a unit-index local for
-// the mode and the 0x27 call, the existing timer setter local_1 for the second tick (no write into
-// the slot parameter) and the whole-slot copy through the slot matched, but only with a redundant
-// `mode != 0 &&` in the second arm (it loads the mode into a register as retail does); not kept (a
-// test that is always true there only steers the register allocator). Without it 80.
 // @retail 0x1ac100
 short __stdcall function_1ac100(long actor_index, s_slot *slot, s_slot *next)
 {
 	short result = g_46fbe8;
 	s_actor_view *actor = actor_get(actor_index);
-	s_slot_2c *state = (s_slot_2c *)slot;
-	short mode = UNIT_MODE(actor->unknown018);
-	if (mode == 0)
-		result = 0x2b;
-	else if (((real *)actor->unknown2d8)[1] + ((real *)actor->unknown2d8)[0] > g_45dbd8)
+	s_1acda0 *state = (s_1acda0 *)slot->unknownc;
+	long unit_index = actor->unknown018;
+	short mode = UNIT_MODE(unit_index);
+	if (mode != 0 && ((real *)actor->unknown2d8)[1] + ((real *)actor->unknown2d8)[0] > g_45dbd8)
 	{
 		short delay = 2 + random_index(&g_4e7408->unknown0, 3);
 		local_0((real)delay * g_510c54->field_2_3, &state->ticks);
-		real seconds;
 		state->unknown12 = false;
-		seconds = g_510c54->field_2_3 * 0.5f;
-		__asm
-		{
-			fld seconds
-			fistp slot
-		}
-		state->unknown22 = (short)(long)slot;
+		local_1(g_510c54->field_2_3 * 0.5f, &state->unknown22);
 		if (actor->prop_index != NONE)
 			function_265bb0(actor_index);
 		if (function_e68c0(0x24, actor->unknown018))
 		{
 			g_46eeb8[0x2c]->unknown8 = g_46f348;
-			*(s_slot_2c *)next = *state;
+			*next = *slot;
 			state->unknown39 = true;
 			result = 0x2b;
 		}
 		else
 			result = g_46fbe4;
 	}
+	else if (mode == 0)
+		result = 0x2b;
 	else if (state->ticks == 0)
 	{
-		function_e68c0(0x27, actor->unknown018);
+		function_e68c0(0x27, unit_index);
 		g_46eeb8[0x2b]->unknown8 = g_46f348;
 		result = g_46fbe4;
 	}
@@ -987,6 +930,11 @@ struct s_1ac612
 // 0x26f8f0 helper (retail inlines it here; its /Ob1 file keeps it out of line even with an inline or
 // __forceinline declaration) 206/206/206; best-index renames (best_index, winner, zz_index) 29;
 // forward product in the helper's operand order 137; up product after the forward test 29, both 137.
+// Round 41 (lane 10): the closing cleanup is the body of the existing 0x26def0 with a NONE owner
+// (retail calls 0x26def0 out of line at 0x1ac270/0x1ad400 but has this body in line here); the call
+// itself stays out of line 301 (918 bytes); the body as a file-local forceinline helper 29, as a
+// plain inline helper 29; through actor_datum_get with the location-record field names 29; best
+// index at function scope with the selection block after the first one 273 (984 bytes).
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)

@@ -20,6 +20,18 @@ struct s_slot_7c
 	byte unknown20[0x40 - 0x20];
 };
 
+/* the collision result this caller reserves: retail's object is 0x5c bytes with
+   its flag word at +0x24 (the shared declaration is 0x4c bytes, so the shared
+   declaration cannot describe this caller's output) */
+struct s_collision_result_1697c0_caller
+{
+	byte unknown00[8];
+	point3f point;
+	byte unknown14[0x24 - 0x14];
+	short unknown24;
+	byte unknown26[0x5c - 0x26];
+};
+
 /* the prop state's position (unknown_25d690.cpp) */
 struct s_prop_state_position
 {
@@ -192,64 +204,6 @@ short __stdcall function_1c04f0(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
-// score 143 (was 143): frame 0xa0 versus 0xb0 (the 0x1697c0 collision output is 0x5c bytes; the
-// shared header type is 0x4c), then the scratch registers are rotated by one from the 0x110ab0
-// argument on (eax/ecx/edx), which also moves the request/collision arguments, the target copy and
-// the inlined 0x1f4460 head. With the 0x5c output and the NONE store first, the only structural
-// difference left is the target point: retail finishes point.z before the inlined head and adds the
-// actor offset from memory (`add esi, [esp + 0x34]; cmp byte ptr [esi + 0x229], bl`); ours sinks
-// point.z after the head's table load and goes through ECX (5 bytes longer).
-// Tried: native slot-data block 143; full 0x5c collision output (frame 0xb0) 140, with native
-// slot-data 140; complete point setter/vector setter/position-add/both vector producers 140 each;
-// destination, request, destination/request, hit/probe, both point names, target/request/probe
-// names and all workspace names 140 each; full output with shared scaled target, whole-point
-// initialization or shared distance difference, alone and with native slot-data: eight forms 140;
-// material initialized at declaration 138, aggregate target/early material 138; partial unit copy
-// 104 and with aggregate target or CRT point copy 104 (restored); CRT point copy/aggregate target
-// alone 140/140; uniform unit copy at entry 234, after position 161, with early material/slot data
-// 161/161; collision NONE store before the vector math 141 (138 with the 0x5c output: gives
-// retail's store order); with the 0x5c output, stamp through the existing 0x146650 getter 138,
-// stamp stores swapped 141, slot pointer declared after the lookups 138, `== false` test 138,
-// height declared at its definition 138. Deleting the whole stamp block (diagnostic) leaves 10
-// aligned differences: everything after it then takes retail's registers.
-// Full output with stamp byte/native payload, stamp signed byte, near byte, near signed byte,
-// both bytes and the three mixed/signed combinations: eight forms 140 at 955 bytes.
-// Native status declarations do not fix the post-stamp register rotation; all types/body restored.
-// Round 289: Computed proximity bool/byte/short/long on the complete collision/native-payload graph; then each with one result exit:
-// [247, 247, 252, 250, 231, 231, 226, 228]. All executable source and temporary types restored.
-// Round 423: returned position with native/original payload 226/226; each with complete
-// collision output 224/224; target declaration at publication gives 226/226/224/224.
-// All reduced previews; complete original body and declarations restored.
-// height declared at its definition 138 (deleting the whole stamp block, as a diagnostic, leaves 10
-// aligned differences: everything after it then takes retail's registers); full output with stamp
-// byte/native payload, stamp signed byte, near byte, near signed byte, both bytes and the three
-// mixed/signed combinations: eight forms 140 at 955 bytes; computed proximity bool/byte/short/long
-// on the complete collision/native-payload graph, then each with one result exit: 247, 247, 252, 250,
-// 231, 231, 226, 228. Round 36, on the 0x5c output with the NONE store first: request fields in
-// reverse order 140; `distance2d(...) < 2.0f` 138; target index stored before the point copy 138;
-// point declared before the target 138; sums written collision point first 138; object lookup
-// after the point 148.
-// Round 48: the stamp's time read into a local first 135 (fixes the 0x110ab0 push register but
-// moves the flag store after the time load; a one-use field copy, not kept); with the full 0x5c
-// output 132; action declared before the unit test 143; time local after the flag store 143; named
-// unit-test result 143; position declared first 143; state declared after the lookups 143.
-// Round 19: unchanged; the frame and the collision output size still differ; no new form was found.
-// Round 31: stamp test through the slot parameter 143; state declared after the lookups 143; no state
-// local 143; both tests as `== false` 143; a unit index local for the two unit calls 115 (950 bytes, but
-// the collision call still reads the field: a partial copy, not kept); one unit index at all three uses
-// 219. Diagnostics: the stamp's flag store or time store removed 188/193, both stores unconditional 113;
-// the 0x110ab0 argument stays in EDX in all three.
-// after the point 148. Round 19: unchanged.
-// Round 28 (lane 10): the scratch rotation follows the stamp block's temps: the stamp's time in a
-// one-use local (diagnostic, not keepable) 135 gives retail's EAX for the 0x110ab0 argument, but the
-// stamp's load moves above the flag store and the later temps (request actor, collision arguments)
-// sit one register further on; plus a named 0x110ab0 result 135; plus the timing pointer in a local
-// 135 (same code). Stamp through the existing 0x146650 getter 143 (same code); the slot cast at each
-// use instead of the state local 143.
-// Round 48: the stamp's time read into a local first 135 (fixes the 0x110ab0 push register but
-// moves the flag store after the time load; a one-use field copy, not kept); with the full 0x5c
-// output 132; action declared before the unit test 143; time local after the flag store 143; named
-// unit-test result 143; position declared first 143; state declared after the lookups 143.
 // @retail 0x1c0670
 bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 {
@@ -271,10 +225,12 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 		{
 			if (!state->unknown18)
 			{
+				s_game_time_globals *game = g_510c54;
 				state->unknown18 = true;
-				state->unknown14 = g_510c54->game_time;
+				state->unknown14 = game->game_time;
 			}
-			if (!function_110ab0(actor->unknown018))
+			long unit_index = actor->unknown018;
+			if (!function_110ab0(unit_index))
 			{
 				s_unit_request action;
 
@@ -288,16 +244,17 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 	if (actor->unknown040)
 	{
 		vector3f vector;
-		s_collision_result_1697c0 collision;
+		s_collision_result_1697c0_caller collision;
 
+		collision.unknown24 = NONE;
 		vector.i = g_4687bc->i * 4.0f;
 		vector.j = g_4687bc->j * 4.0f;
 		vector.k = g_4687bc->k * 4.0f;
 		position.x += g_4687b0->i;
 		position.y += g_4687b0->j;
 		position.z += g_4687b0->k;
-		collision.unknown24 = NONE;
-		if (function_1697c0(0x1808c0d, &position, &vector, node->object_index, actor->unknown018, &collision))
+		if (function_1697c0(0x1808c0d, &position, &vector, node->object_index, actor->unknown018,
+			(s_collision_result_1697c0 *)&collision))
 		{
 			long object_index = function_baf80(node->object_index);
 			s_actor_point_target target;

@@ -7,7 +7,7 @@
 // @flags /O2 /arch:SSE /Gr
 
 __declspec(noinline) void *function_122c10(long arg_0, long arg_1);
-void function_db760(long arg_0, long arg_1, long arg_2, long arg_3);
+void function_db760(long region_index, long object_index, long permutation_index, long mode);
 struct s_18444a;
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3);
 extern byte *g_4ed280;
@@ -24,59 +24,8 @@ static __forceinline long function_9c912(long arg_0, long arg_1, long arg_2)
     return local_0;
 }
 
-// score 29 (was 29): left are the frame (sub esp, 8: the object index gets its own slot, where
-// retail keeps a 4-byte frame and the object index in arg_1's slot and the permutation in arg_3's)
-// and the call setup, BLOCKED-BY 0xdb760 (contributor; retail takes the permutation in ebx and the
-// object on the stack, ours the object in ebx). Kept (round 78): the clamp as if/else-if/else
-// (retail's unthreaded `cmp; mov ecx, 1; jg; mov ecx, esi`), the mode read at each use, the
-// permutation read into its local before the parameter store (no `lea edi, [esi + 4]`: table in
-// esi, event in edi as retail) and no false assignments (result reloaded from its slot).
-// Tried: clamp of a re-read mode 84 (310 bytes); a plain permutation local 110/109 (the object
-// index then stays in ebx, as 0xdb760 takes it), with no false assignments 70; no false
-// assignments alone 59, inner one removed 58, outer one removed 68; PIN(mode, 0, 1) 66, with no
-// false assignments 75; event pointer declared at the top 82; the clamp helper plain static or
-// extern 57; a named tag table local 57; the permutation re-read at each use 57; the original
-// parameter order 86 (84 without false assignments); the parameter store at the call 120, inside
-// the range test 29, the range test on the parameter 84; locals renamed 29/31; result declared
-// after the object index 51; the object index computed before the result flag 51 (4-byte frame,
-// the result byte takes the parameter home); existing object_get, region word view, typed event
-// view, named permutation-table pointer 90; object failure early return 91. Round 117: the
-// permutation stored in arg_1 or arg_2 instead of arg_3 120 (271 bytes, 4-byte frame, the object
-// index in ebx); the bit test on the stored permutation 120; the object index also stored in the
-// unused arg_0 3 (retail's code except three parameter-home offsets, the minimum with this
-// callee is two; a second parameter reuse, not kept), arg_0 for the object index alone 120; the shift and
-// the permutation lookup on event[1] at each use 29; the damage tag read before the region test 59;
-// the region flags pointer formed just before the bit test 115 (276 bytes).
-// retail keeps a 4-byte frame and the object index in arg_1's home and the permutation in arg_3's)
-// object on the stack, ours the object in ebx). Everything between agrees. The frame follows from
-// the blocker: the permutation stored back into arg_3 is a new web that takes arg_1's dead home
-// first, and the object index (defined before arg_3's first read) has no other home it may use.
-// Kept (round 78): the clamp as if/else-if/else (retail's unthreaded `cmp; mov ecx, 1; jg; mov ecx,
-// esi`), the mode read at each use, the permutation read into its local before the parameter store
-// (table in esi, event in edi as retail) and no false assignments (result reloaded from its slot).
-// Tried: clamp of a re-read mode 84 (310 bytes); a plain permutation local 110 (lane 11: 74, the
-// object index then stays in ebx as 0xdb760 takes it; with no false assignments 70); no false
-// assignments 107 (result only on the stack), inner one removed 58, outer one removed 68; PIN(mode,
-// 0, 1) for the clamp 66, with no false assignments 75; the member's fields copied in the other
-// order; event pointer declared at the top 82; the clamp helper plain static/extern 57/57; a named
-// tag table local 57; the permutation re-read at each use 57; the original parameter order with the
-// new clamp/reads 86, without false assignments 84; a plain permutation local with them 109; the
-// parameter store at the call 120, inside the range test 29, the range test on the parameter 84;
-// locals renamed 31; result declared after the object index 51; object index declared before the
-// result (defined after it) 29; the object index stored into arg_1 and passed from it (diagnostic,
-// copy-propagated away) 29.
-// Tried: clamp of a re-read mode 84 (310 bytes, retail's unthreaded clamp); a plain permutation
-// local instead of the reused parameter 110 (lane 11: 74 at 280 bytes, the object index then
-// stays in ebx as 0xdb760 takes it), with no false assignments 70; no false assignments 107
-// (result only on the stack), inner one removed 58, outer one removed 68; PIN(mode, 0, 1) 66
-// (301 bytes); the member's fields copied in the other order; event pointer declared at the top
-// 82; the clamp helper plain static/extern 57/57; a named tag table local 57; the permutation
-// re-read at each use 57; the original parameter order with the new clamp/reads 86, without false
-// assignments 84; the parameter store at the call 120, inside the range test 29, the range test
-// on the parameter 84; locals renamed 31; result declared after the object index 51 (round 80:
-// 297 bytes and a 4-byte frame, but the result byte takes the parameter home and the event
-// pointer moves to ebx). Round 80: the event parameter or the object index renamed to sort
-// before or after the other 29 each (identical code).
+/* applies a section response event to an object: when the event names a valid region and an intact
+   permutation of it (for mode 1, one with an effect), destroys that permutation through function_db760 */
 // @retail 0x9c910
 bool c_damage_section_response_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -110,7 +59,7 @@ bool c_damage_section_response_event_definition::v11(long arg_0, long const *arg
                             {
                                 if (event[2] != 1 || *(long *)(*(byte **)(region + 0x10) + permutation_bit * 0x50 + 0x34) != NONE)
                                 {
-                                    function_db760(region_index, (long)arg_3, object_index, event[2]);
+                                    function_db760(region_index, object_index, (long)arg_3, event[2]);
                                     result = true;
                                 }
                             }
@@ -145,6 +94,12 @@ struct s_9cca0
 // retail's order, so this waits on 0x184440's body (BLOCKED-BY 0x184440).
 // Tried: the first zeroing through the member array 9; the tag in a local 58;
 // the tag test on the input 9; the vectors copied with memcpy 9; `&field_7e` 9.
+// Round 19: the global flag read into a named bool before the event 53; the marker stored
+// before the tag 10; the input as a typed struct 9 (same code); the vectors copied by component
+// through source pointers 50; the tag stored first after the zeroing 31. Diagnostics in 0x184440:
+// without its set_location call, or with a non-recursive stand-in for it, the test moves above
+// the k store as in retail but the vector copies then store i early (12), so the escape comes
+// through the recursive set_location and is not the whole difference.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

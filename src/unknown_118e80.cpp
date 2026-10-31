@@ -219,7 +219,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 220 (was 220): Frame 0x78/0x6c, early ESI save and basis/position homes remain.
+// score 220 (was 220): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
+// is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
+// 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
+// callee's double local makes this function keep 8-byte stack parity, so it pads its frame and cannot
+// save ESI late. Retail's 0x11f0d0 divides in float (fdivr [step]) and multiplies each component in
+// double without folding the last multiply (fld; fmul st(1); ...; fstp st(0)); a double parameter of an
+// inlined helper gives that code without the alignment need, a double local or any float form does not.
+// Earlier: retail's first 11d180 call writes the cross product into the stack slot its later two calls
+// write the rotated forward into: the position in a nested block (242), that first call's fourth
+// argument (260), both (258). The basis and position stack homes still differ; the eight vector locals
+// keep the homes they have here. Frame 0x78/0x6c, early ESI save and basis/position homes remain.
 // Earlier baseline: Frame 0x78 versus 0x6c, early ESI save and basis/position homes remain.
 // Earlier: Frame 0x78 versus 0x6c; early ESI save and basis/position homes remain.
 // frame 0x78 versus 0x6c; early ESI save and basis/position homes remain.
@@ -302,6 +312,26 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // DL round 206: existing matrix/vector, matrix3x3/vector and axes-vector producers
 // 220/296/296; early-arm callee inline 220; producer/inline pairs 220/296/296;
 // early-arm callee forced 1340. All producer, body and external declarations restored.
+// Round 100 (lane 7, plain unless noted): the temporary velocity (with world-up and the basis calls),
+// the first basis call's left, the later forward/left pair and the position each in their own block
+// give retail's slot packing (0x6c) but a 4-byte pad and the early ESI 260; without the position block
+// 266 (--fast 94 with the late ESI, a reduced-image artifact); 0x11ce20 called (&target_up, &up), as
+// retail's ECX/EDX setup implies, 218 (--fast 200); the speed scale read at each use 232 (--fast 190);
+// both 230. Diagnostics with the block-scope form: 0x11f0d0's double locals and acos return as real 73
+// (frame 0x6c, retail's late ESI; 0x11f0d0 2 -> 89, its last multiply folds); angle and acos real with
+// `double s` kept 260 (0x11f0d0 2); the difference written per use with a real scale 73 (0x11f0d0 81,
+// 0xc60c0 401 -> 416); an inline helper with a double scale parameter for the three position components
+// 73 with 0x11f0d0 unchanged at 2 (0xc60c0 401 -> 416), not kept: a new one-caller helper without a match.
+// On that helper form (0x11f0d0 with `real angle` and the double-parameter step): the block scopes 73;
+// plus both final dots with the local first 73; plus 0x11ce20 called (&target_up, &up) 71; with that
+// call alone 71; plus the speed scale read at each use 37 (plain; 0xc60c0 416); plus the final stores
+// forward-first 38; plus the dots local-first 37; plus world-up's two lookups read straight from the
+// pool, no table local (--fast) 36. Left at 36: the forward dot's i product order, the final stores
+// (retail interleaves both copies, ours writes the forward copy through `lea ecx`), and the second
+// 0x11f0d0 call re-deriving &up (`lea esi`) where ours copies EBX.
+// Round 244: complete ordinary-path requested-forward values via native/const,
+// aggregate/const, memcpy/memmove and entry copy/memmove constructions
+// 295/295/264/264/295/314/295/314. Original input observations and body restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -663,8 +693,11 @@ bool function_119380(long arg_0, s_119380 *arg_1)
 void function_1e54d0(void *arg_0, long arg_1);
 bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 
-// score 83 (was 83): the object table base and the looked-up object are kept in different
-// registers, one word field is loaded zero-extended here and as a plain word in retail, and the
+// score 83 (was 83): retail puts the word at +0xb4 in CX and the word at +0xb6 in AX, so the size
+// reaches 0xbc380 as a 16-bit argument; our shared declaration takes a long, and the table base
+// and the looked-up object stay in other registers. Also: the object table base and the looked-up
+// object are kept in different registers, one word field is loaded zero-extended here and as a plain
+// word in retail, and the
 // value stored at the 0x134 slot is sign-extended differently. Retail passes the size to 0xbc380
 // as a 16-bit argument (xor eax, eax; mov ax, ...), which needs that callee's shared declaration
 // changed (BLOCKED-BY 0xbc380: a contributor's file declares it with a long size).
@@ -685,6 +718,11 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // block is laid out after the other out-of-line arms where retail puts it first); with || on the two
 // bools 98; the false arm written first 96 (laid out in line); the bools declared the other way 88; the
 // two state fields read the other way 88 (load order and compare order swap together).
+// Round 100 (lane 7): the animation block is 0x119650 inlined with constant arguments (mode and set
+// 0x7000001, 0.0 seconds, flags 2): calling the existing function gives retail's block code, but NONE
+// is then hoisted into EBX and the index left in its stack home (frame 8) 120; with the early false
+// return 119; with the success path inside `if (!= NONE)` 123. That success-path form alone 88 with
+// `||` on the two bools 95. The goto to the single exit replaced by an `if (!= NONE)` block 83 (kept).
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
@@ -710,8 +748,7 @@ bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
     function_118f90((s_orientation_request_118f90 *)((byte *)local_0 + 0x13c));
     s_forward_object *local_3 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
     bool local_4 = false;
-    if (local_3->animation_state_offset == NONE)
-        goto done;
+    if (local_3->animation_state_offset != NONE)
     {
         local_4 = true;
         short local_5 = *(short const *)((byte const *)arg_1 + 0xb4);
@@ -744,7 +781,6 @@ bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
         else
             *arg_2 = true;
     }
-done:
     return local_4;
 }
 
@@ -906,7 +942,10 @@ void __stdcall function_d6bc0(long arg_0);
 void function_b75a0(long arg_0, point3f const *arg_1, vector3f const *arg_2, vector3f const *arg_3,
     s_location const *arg_4, bool arg_5);
 void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
-// score 156 (was 156): Frame 0x124 agrees; quotient/query, sweep/impact/location homes and word loads remain.
+// score 156 (was 156): retail keeps the quotient in a register and computes the scaled direction
+// before the sweep query; ours spills the quotient, computes it after the query, and the sweep
+// and point homes are swapped. Computing the scaled direction before the query gives 292.
+// Frame 0x124 agrees; quotient/query, sweep/impact/location homes and word loads remain.
 // Round 67: query count declared after saved outputs 156; existing assignment helper after the
 // query 156 and before it 292; pre-query helper with later best fraction 283; explicit pre-query
 // stores with saved outputs before count 283; pre-query long saved words 285 and first/third/
@@ -1020,10 +1059,15 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 240: speed-failure exit/complementary response/shared double scale and their pairs/all
 // 316/227/307/319/308/305/307; all with native query count 307. Original body restored;
 // frame 0x124 agrees, quotient/query and selected workspace homes remain.
+// Round 100 (lane 7): retail's sweep is i = q * v.i (copy q), j and k = v.j * q / v.k * q (load the
+// component, multiply q), each stored before the next, q never consumed; with the sweep before the
+// query every statement/operand order (48) and magnitude spelling (12) compiles to the same folded
+// q * v code (compile-only screen). Magnitude through length_sq3f 310; the tail test through
+// length_sq3f 156 and dot3f 156; the effect data as the file's typed damage-effect record 156; the
+// parameter-address statement removed 156 (kept).
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
-    (void)&arg_0;
     s_forward_object *local_0 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
     long local_1 = NONE;
     vector3f local_2;
@@ -1174,7 +1218,10 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// score 94 (was 94): frame 0x1f0 agrees; call setup, movement loads and force-call publication still differ.
+// score 94 (was 94): retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
+// order at the first 0x1e5af0 call; both callees live in files this lane may not edit
+// (BLOCKED-BY 0x1c4b00 and 0x1e5af0). Frame 0x1f0 agrees; call setup, movement loads and
+// force-call publication still differ.
 // Retail spills the found flag to a stack byte and pushes the whole dword to 0x1c4b00 (no zero-extension), so
 // 0x1c4b00 takes a bool; ours declares a long and zero-extends, and every later instruction is one line off.
 // Round 37: 0x1c4b00's flag as a bool in its definition and every declaration gives 44 (0x1c4b00 and its matched
@@ -1220,6 +1267,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // grouped (k + j) + i / (j + k) + i 94/94 (the inner pair stays j, k); word found flag with the grouped squares
 // 16 (exact-only: left are the MOV/LEA pair, the squares and the flag's stack byte); the squared-length test
 // passed straight to the flag setter 94; the +0x17c block address at each use 94.
+// Round 100 (lane 7, plain unless noted): 0x1c4b00's force as bool in its definition and all 13
+// declarations 44 (every matched caller still matches; 0xe24f0 648 -> 654, its over-long listing
+// shifted by the retail-shaped stack-byte push), with length_sq3f on the 0x138 vector through a
+// pointer 44, through a vector3f field of the output (--fast) 42; on the long form the 0x138 squared
+// length through dot3f 94; the found flag held in a long local (--fast) 95.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

@@ -3294,6 +3294,9 @@ bool function_14600()
     return result;
 }
 
+// score 40 (was 73): retail loads the width pair first and only then the
+// height pair, ours loads the height pair first; the conversions of the two
+// differences into EDX and EAX now agree
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -3304,14 +3307,14 @@ void function_1eb00()
     function_0222d0(D3DRS_ZBIAS, 0);
     function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x6c), 0);
     function_1c710(g_51f0f0);
-    real x = 1.0f / (short)(g_48564e - g_48564a);
     real constants[20];
+    real y = 1.0f / (short)(g_48564c - g_485648);
+    real x = 1.0f / (short)(g_48564e - g_48564a);
     constants[0] = x * 2.0f;
     constants[1] = 0.0f;
     constants[2] = 0.0f;
     constants[3] = -1.0f - x;
     constants[4] = 0.0f;
-    real y = 1.0f / (short)(g_48564c - g_485648);
     constants[5] = y * -2.0f;
     constants[6] = 0.0f;
     constants[7] = y + 1.0f;
@@ -5567,8 +5570,6 @@ void function_4c690(long tag, transform4x3f const *nodes)
 class c_1fa50
 {
 public:
-    void function_1fa50(short_rectangle2d const *bounds, void const *clip, void const *position,
-        long line_gap, real scale, long color, void const *shadow) const;
     void function_1fb10(short_rectangle2d const *bounds, real scale) const;
 };
 
@@ -5598,11 +5599,11 @@ PRIVATE __forceinline void convert_1fa50_text(word const *text, dword *out)
 }
 
 // @retail 0x1fa50
-void c_1fa50::function_1fa50(short_rectangle2d const *bounds, void const *clip,
-    void const *position, long line_gap, real scale, long color, void const *shadow) const
+void function_1fa50(short_rectangle2d const *bounds, word const *string, void const *clip,
+    void const *position, long line_gap, real scale, long color, void const *shadow)
 {
     dword text[2048];
-    convert_1fa50_text((word const *)this, text);
+    convert_1fa50_text(string, text);
     function_1f070(bounds, (short_rectangle2d const *)clip, (short *)position,
         line_gap, text, scale, (void const *)color, shadow, false);
 }
@@ -5610,7 +5611,7 @@ void c_1fa50::function_1fa50(short_rectangle2d const *bounds, void const *clip,
 // @retail 0x1fa30
 void function_1fa30(word const *text, short_rectangle2d *bounds)
 {
-    ((c_1fa50 const *)text)->function_1fa50(bounds, 0, 0, 0, 1.0f, 0, 0);
+    function_1fa50(bounds, text, 0, 0, 0, 1.0f, 0, 0);
 }
 
 // @retail 0x1fb10
@@ -7446,7 +7447,7 @@ void __stdcall function_1f490(long unused, long font, long character, long color
 extern dword g_5093b4;
 dword g_5093b8;
 dword __cdecl pack_color3f(color3f const *color);
-void function_25a10(vector3f const *direction, point3f const *position, byte const *state);
+void function_25a10(byte const *state, point3f const *position, vector3f const *direction);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 
 // @retail 0x132d0
@@ -7483,7 +7484,7 @@ void __stdcall function_132d0(s_frame_view_2c560 const *frame)
     if (((byte const *)frame)[0x26c])
     {
         memcpy(&g_48574c, ((byte const *)frame) + 0x14c, 0x120);
-        function_25a10(&g_4b9dac, &g_4b9da0, (byte const *)&g_48574c);
+        function_25a10((byte const *)&g_48574c, &g_4b9da0, &g_4b9dac);
     }
 }
 

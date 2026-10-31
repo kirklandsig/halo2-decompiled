@@ -279,6 +279,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (every loop slot 4 bytes off). The per-iteration entry copy removed 54 (identical, kept); block
 // pointer before the clears 148 (492 bytes); early return on `count <= 0` 54 (same code); indexed form
 // without the entry copy 144 (492 bytes); entries before first 54 (same code).
+// Round 6 (lane 17), indexed form (144; loop exactly retail's, head only): the index, count and zero
+// always take EAX/ECX/EDX in a rotation (block EAX/ECX/EDX, indexed EDX/ECX/EAX, long count first
+// ECX/EAX/EDX; retail EDX/EAX/ECX). On it: a short count read before the clears with the loop re-reading
+// the field 177 (480 bytes); the clears in both arms of the guard 145; the guard as a bool computed before
+// the clears 144; a long count before the clears 165; entries declared before the clears 146; `0 < count`
+// 144; `count >= 1` 145; the clears through a group-reset helper 144.
 // Round 107 (fast; the block form's entries cursor is biased +0xc, the second non-base read): indexed form
 // 144 (492 bytes; index in EDX as retail, count CX/EDX and zero EAX where retail has AX/EAX and ECX, first
 // in EAX across the copy where retail loads it into EDI and spills it); on it, current and first both
@@ -289,6 +295,30 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // no loop-entry jump over the pad); on it an early return on `count <= 0` 144 (aligned 23), the copy size as
 // `sizeof * count` 144 (23), `count >= 1` 145 (26); the block form with the geometry pointer renamed 54 (same code:
 // the slot order does not follow that name); on the indexed form the loop index declared before n 145 (23).
+// Round 112 (fast): the parameters as (mode, cache_index) at the definition and call 54 (same code: the one
+// register argument stays EAX). The arrival register follows the colouring of cache_index, the count and the
+// clears' zero: block form index EAX, count CX, zero EDX; indexed form EDX/CX/EAX 144; a named long count
+// at the block top ECX/AX/EDX 140 (retail EDX/AX/ECX; with retail's zero in ECX the six clears are 6-byte
+// stores, which is most of the indexed forms' 13-16 missing bytes). On that named count: the copy source as
+// the field 140, entries set after the advance 155, entries set before the loop 158, index declared before n
+// 141, the count as a short local 177 (480 bytes). A /Gd compile-only first pass loads cache_index into EBX
+// (block form) or EBP (indexed), so it does not predict the arrival register here.
+// Round 28 (lane 14), `--fast`: the indexed form rebuilt 144 (492 bytes, aligned 30: count CX and zero EAX where
+// retail has AX/ECX, so the six clears take the 5-byte EAX stores; first kept in EAX where retail loads it into
+// EDI and spills it; the cursor stored to mode's home before the copy where retail keeps entries in EDX and
+// stores the cursor at the loop head); the clears as two chained assignments per group or one chain of six 54/54
+// (same code) and on the indexed form 144/144 (same code); on the block form the cursor advanced before the
+// counters 58, a for loop over n 60, `0 < block->count` 54 (same code).
+// Round 99 (lane 8), indexed forms (index in EDX as retail; count CX and zero EAX where retail has AX and ECX):
+// rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
+// from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
+// copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
+// Round 40 (reduced-relink screen, base 49 on its scale): 36 combinations of the block pointer or indexed
+// blocks, the count as the field, a long at the top of the `if` or a short before the clears, the entries
+// cursor before the copy or after the advance, a separate index or `first + n`, and the block pointer before
+// or after the clears: nothing below the current body; indexed with a short count before the clears and the
+// cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
+// `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

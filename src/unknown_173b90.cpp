@@ -12,6 +12,7 @@
 #include "globals.h"
 #include "data_array.h"
 #include "effects.h"
+#include "vector_products.h"
 #include "normalize3d.h"
 #include "matrix_transform.h"
 #include <xtl.h>
@@ -529,11 +530,39 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // particle copies swapped 48; with them declared at the inner loop's scope and assigned after the
 // particle lookup 40; with them made just before the rotation test 352 (1187 bytes); indexed
 // definitions with scale first 113 (1136 bytes) and alone 115.
+// Lane 16 r48 (fast): long-indexed definitions 115 (1136 B); colour declared first 42; offset step before
+// the emitter step 42; offset declared before the emitter index 42; dword offset 42. A compile-only build
+// of this file reproduces both rotations op for op (9 ops from retail's 33): row i's terms in all six
+// orders and both groupings, member-wise copies in all six orders (these become float copies), `+=` or
+// swapped translation adds, the motion rotation first, swapped particle copies, scale first, colour or
+// result pointers first, the masks inline, the next index read after the callback and an emitter-first
+// body all leave row i at j,k,i; indexed definitions (long/short) 33/46.
 // Round 95 (lane 8): the zero store after the list test is the mark of an index that VC
 // strength-reduces into the offset (retail keeps only the offset IV), so retail likely indexed the
 // definitions; the indexed form `&(*(T **)(definition + 0x34))[index]` 115 (1136 bytes, aligned 38 ->
 // 91: every rotation row's sum order changes); with scale first 113; with the definition computed
 // before the emitter lookup 126, both 124; the index as a for-loop counter 115 (same code).
+// Round 114 (lane 6, fast): scale initialised before multiplier 40 again (the 1.0 stores only; below
+// the margin); the particle position copied as a vector3f (no casts) 42 (identical); the next index
+// read right after the particle lookup 272 (1113 bytes); color declared first 42; the 0xf80f mask
+// passed at the call 42; on scale-first, the translation after the motion rotation 84.
+// Round 27 (lane 13): both rotations through the existing vector3f_rotate_into_axes 84; the multiplier as a
+// ternary 186; indexed definitions with a 16-bit index 271; indexed + scale first + the definition before the
+// emitter lookup 124; the colour declared at the function top 42 (identical). A compile-only screen of the whole
+// file (it reproduces our rotations exactly; ~110 forms) shows flat row sums canonicalised (every term and
+// operand order identical) and four row-order states that cycle as whole-function tuples are added (indexed
+// form +1, each no-op product past the first +1, a 16-bit index +2); none is retail's for either rotation.
+// Helper shapes (row statements jki/kij, unconditional copy, copied parameter, component locals, row locals,
+// `+=` rows), inline datum getters and index types (long/dword/int/short/word, pointer arithmetic), each in all
+// four states: no form gives retail's left/forward/up row i with forward/up/left rows j and k.
+// Round 137 (lane 4): scale first 40; indexed definitions 115, with scale first 113 (1136 bytes: every difference
+// before the first rotation is retail's, the rotations differ from the helper copy's store order on, ours i first,
+// retail j first); on that, the particle copies swapped 121, declared before the particle lookup and assigned after
+// it 113 (same code).
+// Round 59 (lane 12, fast): the scale product as `scale = ...; scale *= multiplier;` at both scale
+// sites 124 (1138 bytes); that on the indexed form with scale first 119 (1140 bytes, every rotation
+// row reorders); const emitter definition and particle pointers 42; the particle loop as a do/while
+// under its existing `if` 42; the emitter definition computed before the first-particle read 42.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -802,8 +831,11 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 // vector half buffer 17; half names buffer/scaled 17/17; product declarations swapped 17;
 // second input alternate with declarations swapped/original 17/17.
 // Scale from the buffer through the unpacked result 42 (204 bytes); a 2400 s permuter run, no result.
+// Round 27 (lane 13): parameters reordered to (color_a, color_b, system, multiplied, tinted): all three retail
+// callers query the tint before the multiply flag, which a call written with the tint last evaluates first
+// (0x174a30 292 -> 248 with it); this body's code is unchanged (17), and so are 0x177040 and 0x178c80.
 // @retail 0x175a80
-void function_175a80(bool tinted, dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied)
+void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted)
 {
 	if (!multiplied)
 	{
@@ -845,13 +877,6 @@ public:
 	void function_248750(s_particle_system_datum *system, real dt, byte *location);
 };
 
-PRIVATE inline void particle_cross_174a30(vector3f const *forward, vector3f const *up, vector3f *out)
-{
-	out->i = up->k * forward->j - up->j * forward->k;
-	out->j = up->i * forward->k - up->k * forward->i;
-	out->k = up->j * forward->i - forward->j * up->i;
-}
-
 class c_particle_tag_view_174a30
 {
 public:
@@ -866,7 +891,8 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
-// score 292 (was 292): frame 0x60, 1372 bytes against 1355. Left: our entry stores a `result`
+// score 248 (was 248): 1355 bytes and frame 0x60 as retail (round 27 form, below). Before it (292,
+// 1372 bytes against 1355): our entry stored a `result`
 // slot (retail has none and returns `xor eax, eax` / `mov eax, 1` from the bool expression);
 // ours merges the flag-9 word update with the flag-8 clear (retail stores the word, clears flag 8
 // with `and byte ptr [ebp+0xd], 0xfe` and reloads); retail keeps the child index in EDI from the
@@ -960,19 +986,39 @@ public:
 // Round 45: shared ordinary/staged cross producers, each with original/word receiver/
 // direct completion/both graphs, 292/290/356/353 each. Two-point gains restored;
 // original private cross, completion, flags and complete body retained.
+// Round 27 (lane 13): child->unknown24 read at each use instead of an index local 316 (aligned 117 -> 91:
+// child index in EDI at the loop head, particle in EBX, name index in EDI, as retail); plus the tint and
+// multiplied queries written in the 0x175a80 call 292 (tag object in EBX as retail; multiplied queried
+// first); plus the flag-9 update as a bitfield if/else `if (flag8) flag9 = true; else flag9 = false;`
+// (retail's word store, byte clear and reload) and the boolean-expression return 267 (word-pointer or
+// cast-per-use forms of the flag update 267/267; `flag9 = flag8` is branchless 354); plus
+// TEST_FIELD_BIT on flag0 252 (retail tests flag0 and flag3 as bytes, flag9 as a plain bit; on both
+// 274, on flag9 only 273); a named tint/both named/named multiplied 285/275/269; then 0x175a80's
+// parameters as (color_a, color_b, system, multiplied, tinted), so the call evaluates the tint query
+// first as all three retail callers do, 263 (frame 0x60, every stack slot as retail); then the
+// `volatile` parent dropped 248 (1355 bytes; VC no longer hoists the child-list address); the
+// existing normalize3d and vector3f_scale for the hand-written normalisation and negation 248
+// (identical, kept). Also tried: member function (this in ECX) 292; datum_get_inlined 292; parent
+// colour read into a local before the child definition call 274/262; an inline colour helper taking
+// the parent colour 414 (not inlined), forceinline 260 (colour read early as retail). Left (aligned
+// 59): the default case loads the velocity after the -1 constant and its cross product takes other
+// XMM registers; the fallback's x87 length sums k, j, i (retail j, i, k, a rotation: tuple count) and
+// retail keeps the normalised forward in xmm4/xmm2/xmm5 across the join (ours reloads); retail reads
+// the parent colour before the child definition call.
+// Round 59 (lane 12, fast): the fallback normalisation through the existing normalize_inline 248
+// (different code, same count); the existing cross3f for both cross products 248 (identical code,
+// kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
+// negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
+// tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
-	long result = false;
-	word flags = *((word *)particle_system + 6);
-	if (flags & 0x100)
-		flags |= 0x200;
+	if (particle_system->flag8)
+		particle_system->flag9 = true;
 	else
-		flags &= ~0x200;
-	*((word *)particle_system + 6) = flags;
+		particle_system->flag9 = false;
 	particle_system->flag8 = false;
-	flags = *((word *)particle_system + 6);
-	if (!(flags & 0x20) && !bit_vector_test(g_4c56c0, particle_system->location.cluster_index))
+	if (!particle_system->flag5 && !bit_vector_test(g_4c56c0, particle_system->location.cluster_index))
 		function_1753f0(particle_system);
 	s_effect_particle_system_definition *definition = particle_system->function_1751d0();
 	long location_index = particle_system->location_index;
@@ -993,10 +1039,9 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 		if (particle)
 		{
 			transform4x3f matrix;
-			long index = child->unknown24;
-			if (index != NONE && index < tag->count())
+			if (child->unknown24 != NONE && child->unknown24 < tag->count())
 			{
-				long name = names[index];
+				long name = names[child->unknown24];
 				switch (name)
 				{
 				case 0x20000ca:
@@ -1011,32 +1056,18 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 					break;
 				default:
 				{
-					vector3f const *velocity = (vector3f *)(particle + 0x28);
-					matrix.forward.i = velocity->i * -1.0f;
-					matrix.forward.j = velocity->j * -1.0f;
-					matrix.forward.k = velocity->k * -1.0f;
+					vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
 					function_30bf0(&matrix.forward);
 					function_11d000(&matrix.forward, &matrix.up);
-					particle_cross_174a30(&matrix.forward, &matrix.up, &matrix.left);
+					cross3f(&matrix.forward, &matrix.up, &matrix.left);
 					break;
 				}
 				}
 			}
 			else
 			{
-				vector3f const *velocity = (vector3f *)(particle + 0x28);
-				matrix.forward.i = velocity->i * -1.0f;
-				matrix.forward.j = velocity->j * -1.0f;
-				matrix.forward.k = velocity->k * -1.0f;
-				real magnitude = (real)sqrt(matrix.forward.j * matrix.forward.j +
-					matrix.forward.i * matrix.forward.i + matrix.forward.k * matrix.forward.k);
-				if (!(fabs(magnitude) < 0.0001f))
-				{
-					real inverse = 1.0f / magnitude;
-					matrix.forward.i *= inverse;
-					matrix.forward.j *= inverse;
-					matrix.forward.k *= inverse;
-				}
+				vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
+				normalize3d(&matrix.forward);
 				real x = (real)fabs(matrix.forward.i);
 				real y = (real)fabs(matrix.forward.j);
 				real z = (real)fabs(matrix.forward.k);
@@ -1058,7 +1089,7 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 					matrix.up.j = 0.0f - matrix.forward.i;
 					matrix.up.k = 0.0f;
 				}
-				particle_cross_174a30(&matrix.forward, &matrix.up, &matrix.left);
+				cross3f(&matrix.forward, &matrix.up, &matrix.left);
 			}
 			matrix.scale = 1.0f;
 			matrix.position = *(point3f *)(particle + 0x1c);
@@ -1067,24 +1098,19 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 			spawn.unknown = dt;
 			spawn.location_index = child->location_index;
 			c_type_4e7709 *child_tag = particle_object_for_tag(child->function_1751d0()->tag_index);
-			bool tinted = child_tag->tinted();
-			function_175a80(tinted, particle_system->color, 0xffffffff, child, child_tag->multiplied());
+			function_175a80(particle_system->color, 0xffffffff, child, child_tag->multiplied(), child_tag->tinted());
 			function_175270(child, &spawn, &matrix, false);
 		}
 		if (!function_174a30(child, dt))
 		{
-			s_particle_system_datum *volatile parent = particle_system;
-			particle_system_unlink(child, &parent->first_child_index, &parent->last_child_index);
+			particle_system_unlink(child, &particle_system->first_child_index, &particle_system->last_child_index);
 			function_174180(child_index);
 		}
 		child_index = next_index;
 	}
 	particle_system->flag0 = false;
-	if (function_1753a0(particle_system) > 0 && TEST_FIELD_BIT(particle_system->flag3))
-		result = true;
-	else if (particle_system->flag0 || particle_system->first_child_index != NONE || particle_system->flag9)
-		result = true;
-	return result;
+	return function_1753a0(particle_system) > 0 && TEST_FIELD_BIT(particle_system->flag3) ||
+		TEST_FIELD_BIT(particle_system->flag0) || particle_system->first_child_index != NONE || particle_system->flag9;
 }
 
 
@@ -1386,6 +1412,11 @@ bool function_17afd0(long effect_index, long value);
 // Round r4 (lane 17): camera flag renamed to sort after same_view 102 (slots unchanged: not name-ordered here); camera
 // flag declared before same_view 103; shifted word bit 9 + view global at each use + false-then-set availability 138
 // (508 bytes); owner = NONE at the top of the loop body 141 (488); same_view assigned in if/else arms 102 (same code).
+// Round 27 (lane 13, fast): availability false-then-set 144 (availability spilled, same-view in BL, NONE in EBX);
+// plus same-view declared before availability 144; plus owner in an if/else 142/142; plus the view global at each
+// use 148/148, with the if/else owner 150/150, with the shifted bit 9 138/138 (510 bytes); the effect index read
+// from the field at each use 106; one-expression availability + view at each use + shifted bit 9 + if/else owner
+// 113 (498 bytes; owner in ESI, view in EBP, NONE in EBX), without the owner form 123.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

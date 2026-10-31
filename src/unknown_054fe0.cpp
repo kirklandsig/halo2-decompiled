@@ -1171,6 +1171,36 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 // helper's session read once through its address (re-reads in a compile-only build, not under LTCG); the
 // same in the outer qos helper; helpers with external linkage. A store through latency ahead of the check
 // also removes the reuse (compile-only), so retail's check sees member_count as possibly changed.
+// Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
+// session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
+// function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
+// guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
+// (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
+// Round 54 (lane 12, fast with 0x658c0/0x65770): an `include` flag set from the QoS query in place of
+// `continue` 126 (351 bytes); the channel lookup and the observer QoS test as two statements 67 (same code);
+// both on the (session, latency) order with the host read after the observer 108/86 (callers 140/19);
+// `s_qos_result qos = { 0 };` 67. Compile-only (keeps the CSE): the loop as a while with the increment at
+// the end, qos at the loop top, the lookup as a member function of the session class or the whole function
+// as one, a memset of qos; clearing qos inside the QoS helper re-reads but puts the helper out of line;
+// the lookup in another object is a call under LTCG (/Ob1).
+// Round 23 (lane 15): the recipe without the re-read is 86 and in the current tree also costs 0x658c0
+// (430 bytes, 140) and 0x65770 (19), plain; LTCG then passes latency in EBX and session on the stack.
+// No out-of-line member-channel, channel-QoS or observer getter exists in retail to call instead. On the
+// recipe (fast): helper session const 86; channel helper bound and flag tests as early returns 86; loop
+// condition `session->member_count > i` 86; all three helpers __forceinline 86; the channel helper alone
+// __forceinline 86.
+// Round 26 (lane 15, fast; on the recipe, which in this tree passes latency in EBX and session on the stack, 86 with
+// 0x658c0 140 and 0x65770 19): a pointer local to the member mask 86; `host != i` 86; times declared first 86; the
+// counters declared before the observer 86 (callers 140/19 each). Lead: the member bit set first in the loop body
+// gives retail's frame 0x78, session in EBX, latency on the stack, the member_count re-read in the check and both
+// callers' match (78, 319 bytes, aligned 24), but it sets the bit for members whose QoS lookup fails, which retail
+// skips (its failure exits jump past the mask store): not keepable. Retail's re-read needs a store or call between
+// the latch's member_count load and the check that keeps the bit on the success and host paths only.
+// Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
+// session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
+// function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
+// guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
+// (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
 // @retail 0x64480
 void network_session_get_member_latency(s_session_member_latency *latency, c_class_58d20 *session)
 {
@@ -1270,6 +1300,17 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 
 /* the host gives the players their properties: unique names, and teams when
    the game has teams */
+// Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
+// differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
+// measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
+// in the requested cursor.
+// score 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// than 8, takes the memset path) and reads the parameters through the 0x4db0 member rather than
+// through the session_get_data_4db0 call; adding both was measured at 211 and 222, because MSVC
+// still compares the parameters with `xor edx,edx` where retail uses `test edi,edi`, reloads the
+// owner from the stack where retail keeps it in EDX, and computes the requested cursor with
+// `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
+// Still differs in the owner, the name count and the zero's allocation and the requested cursor.
 // score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier: the frame 0xe4 still agrees; the owner, the name count, the
 // zero's allocation and the requested cursor are unchanged, and this round's trials
@@ -1882,6 +1923,14 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// Round 31 (lane D): score 339 (was 339): unchanged this round; the permuter run was stopped by
+// the background time limit before it produced a result. Still differs in retail's conditional move
+// (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
+// the type, membership and member-index homes and the saved registers.
+// score 339 (was 339): unchanged. Retail writes output->state with a conditional move (cmovne at
+// +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
+// lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
+// member-index homes and the saved registers differ.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Earlier: Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers differ.
 // Round 216: complete state-field observations 378; with native membership/player/selected-member

@@ -209,6 +209,30 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // kind/z_type and the count renamed 170 each; a `short` pending index 198; the active owner in a
 // loop-local 170; the pending size sum before the priority test 170. On the cursor form the cursor
 // stepped in the `for` increment 132 (823 B).
+// Round 135 (lane 4, fast with 0x89d20): `blocked` as a long 246 (821 bytes); the pending `blocked` declared
+// after the chain query 61; the pending item locals declared before the loop 55 (same code); the active cursor
+// non-const 55 (same code); the pending priority/size zeroed before `type = 3` and the chain query 65.
+// Round 33 (m3 lane 11), fast with 0x89d20, on the cursor form: `type = 4` after the active chain
+// query 58; `type = 3` after the pending chain query 60; the active cursor stepped in its own
+// statement 61; the active item priority declared before its loop 55; the active size zeroed before
+// its priority 54. Retail keeps type's home last (+0x34) with the cursor, entry and item slots 4 lower.
+// Round 38 (m3 lane 10, fast): on the indexed active chain (170: active loop as retail; in the pending
+// loop ours keeps type in EBX, the vtable in ESI and spills the index, where retail spills type and keeps
+// the index in ESI and the vtable in EBX): the active callback through the peers local 218 (816 bytes);
+// handles_count declared before type 170; type as a dword 170; pre-increment in both chain loops 170;
+// the active arms as `if (item_priority <= 0.0f) blocked = true; else if (priority < item_priority)` 211.
+// Round 55 (lane 12; a one-file LTCG harness with 0x89d20's file reproduces the build exactly): on the indexed
+// active chain, the pending item locals at the arm scope, the pending counter declared before its `for`, the
+// pending loop as a `while`, the active counter named j, both counters declared before their loops: 170 each
+// (identical code: type keeps EBX, the pending counter spills). Diagnostic only (harness compile; no pragma in
+// src): favour-size for this body 225/242 instructions, aligned 159 (much further from retail).
+// Round 117 (fast with 0x89d20): the result count renamed `written` 55, the output cursor renamed `slot` 55, the
+// active cursor renamed `a_cursor` 55 (names do not move the slots: same code each); the active cursor declared
+// at the active arm's top 171 (832 bytes); pre-increment in the active loop 55 (same code).
+// Round 31 (lane 13, fast): the pending loop walked by a cursor with the active loop indexed 201; the
+// pending cursor alone 216 (832 bytes); both maxima as `if (item > priority) priority = item;` 177 (814
+// bytes: `comiss xmm0, [priority]` where retail loads priority first, so the ternary is retail's); item
+// locals renamed per chain 55; blocked flags renamed per chain 55 (both same code).
 // @retail 0x98150
 long c_handle_table_450cd0::v1(long a1, long max_count, void *output)
 {

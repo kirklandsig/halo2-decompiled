@@ -623,11 +623,35 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // (1268), staged 224; the player state named before the previous_up copy 57 (identical). On the base the first
 // product is retail's sequence with up.k in xmm1 (loaded before the distance store) where retail loads it into
 // xmm0 after the store, so right's j/k colours swap and the second product is not staged.
+// Round 111 (lane 6, fast): command declared before observer 57; the staged second product reading forward through
+// a second view of the command (`((s_follow_output_23de50 *)output)->forward`) 55 (1262 B: the second product then has
+// retail's operand order and stores), with the view for the first product only 55; that plus a forward pointer in
+// the else branch 53 (else branch retail's; only previous_up.k in xmm2 loaded before the distance store, retail xmm0
+// after it, swapping right.i/right.k, remains); on 53: previous_up copied after the direction difference 96, after
+// the forward copy 128, between the distance and the copy 100, right declared first 55, const previous_up 53, staged
+// first product 54 (1264 B), first product from direction 220, the up output through the view 53, five declaration
+// orders of previous_up/direction/right 53 each.
 // Round 33 (lane 10): retail's second product is exactly cross3f_staged's order (k, j, i, then the stores),
 // 217 at 1270 bytes again (up.k then in xmm2); the field-of-view copy moved to the start of the camera
 // branch 248 (1261 bytes), with the staged product 114 (1262); the else-branch forward pointer 55 again,
 // with the staged product 217; the distance in a named local stored at once 57 (identical). A compile-only
 // /FAs build reproduces our camera colouring but returns the distance on x87 (xmm0 stays free there).
+// Round 114 (lane 6, fast): right or direction declared at function scope 57/57; the second product's
+// output through the output view (plain cross3f) 57; the forward copy as memcpy 57; the else branch's
+// cosine declared at function scope 57 (all identical code).
+// Round 133 (fast): the direction through the existing scaled_difference3f with a 1.0f scale 223 (1266
+// bytes); the forward copy field by field 232 (1274 bytes), as memcpy 57 (identical); memcpy with
+// cross3f_staged for the second product 217 (1270 bytes), for both products 221 (1272). The 3 extra bytes are
+// the second product's three `movss x, [forward]; mulss x, right` pairs, where retail copies right's register
+// and multiplies forward from memory (one byte shorter each). A one-file harness with the callee files gives
+// 362 at 1246 bytes here (not exact).
+// Round 137 (lane 4): else branch through a named forward pointer 55 (else branch retail's); the second product as
+// cross3f_staged through a `vector3f const *forward` local 221 (1272 bytes), with the else pointer 221; on the else
+// pointer: a named up pointer for the second product and its normalize 222 (1273), the first product staged 222.
+// Round 59 (lane 12, fast): the first product reading the direction local with the forward copy
+// after it 217 (1261 bytes, every product register moves), with cross3f_staged for the second
+// product 223 (1266); either with a forward pointer in the else branch 217/223; the else branch
+// without the cosine local (cos(pitch) at both uses) 238 (1284 bytes).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

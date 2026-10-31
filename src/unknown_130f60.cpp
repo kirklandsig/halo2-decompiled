@@ -175,7 +175,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 355 (was 355): Entry ESI save, direction/opposite homes and x87 normalization storage still differ.
+// score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
 // clamp, and clamp combinations 410/414/420/402/410/414/420; all with disjoint clears before common
 // remaining initialization 454 (fast control 402; full 444).
@@ -207,6 +207,40 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Round 240: inner descriptor cursor/two-axis dispatch/byte ordinal and their pairs/all
 // 369/417/448/443/452/416/468; direct table-end cursor 512 (fast control 374).
 // With full-context control recovered at 355, the descriptor cursor scores 419; original body restored.
+// Round 244: complete final base-layer receivers, seven subsets, fast
+// 378/374/378/375/379/379/379; complete native layer values 520.
+// Original final consumers and complete body restored (fast control 374).
+// Round 49 (lane 16): the opposite vector's magnitude from float squares (no double casts) gives
+// retail's x87 block and vector homes exactly (fast 372, plain 409 at 1879 bytes alone); with each
+// switch case selecting its own sample set 324 plain at 1893 bytes (kept); the angle call as
+// (axis, view_direction), retail's EDX/ECX setup, 324 (kept, same count); float squares and the
+// call order without the per-case sets 409; the existing vector3f_scale for the reciprocal scale
+// 344 fast (1895 bytes, same multiplies). Screened compile-only (same code as kept): the scale rows
+// in any operand or row order or through vector3f_assign (retail loads j and multiplies by the
+// reciprocal, ours copies the reciprocal; the 3-byte difference drops retail's loop-head padding and
+// shifts the rest); the remaining stores after all three memsets (1.0 stays in XMM5). Without the
+// angles copy the frame drops to 0x28 (retail 0x30). On the kept form (fast 336): the weight
+// clamped in its own statement 406 (1845 bytes); `remaining = remaining * (1 - weight)` 337; the
+// reciprocal written inline in each row 336 (same code).
+// Round 58 (lane 12; none kept): the final third remaining weight read from the field at both uses
+// 379 plain (353 fast, 1874 bytes); the pitch cosine read from the angles copy 304 plain (264 fast,
+// 1901 bytes: retail's first accumulation and the inner loop-head padding, but retail reads the
+// source's pitch there, and the mixed reads are not kept); the yaw sine and cosine from the copy 265
+// fast; every angle read from the copy 359 fast. Compile-only screens (control 159 aligned lines):
+// operand order, if/else clamp, PIN macro and an out-colour pointer in the accumulate helper 159;
+// the weight statement first 177; a clamped-weight local 284; scope moves of weight, magnitude,
+// reciprocal, j, i and the sample/axis order 159; 1/2/3 unused locals 159/157/157; an angles-to-vector
+// inline helper (one caller) by value 169-176, by pointer with the copy adjusted 145. The second and
+// third accumulations keep a rotated height/distance/intensity colouring in every form.
+// Round 52 (lane 16; fast control 336, retail's ESI shrink-wrap there): the body's own differences are the
+// reciprocal scale's j row (retail loads j then multiplies by the reciprocal; ours copies the reciprocal; any
+// spelling, row order, vector3f_scale, normalize_inline: same) and the loop accumulations' products (retail
+// colour * weight for red, weight * colour for green and blue; ours colour first everywhere; helper body orders,
+// weight-first products, a clamped local, if/else clamp, reference/scalar/weight-first helper parameters: same).
+// The products follow the symbol set: reading the angles from the local copy everywhere gives retail's products
+// compile-only but changes the angle reads (359 fast); the existing direction_from_angles on the copied angles
+// with yaw turned and pitch zeroed 371, on the source angles and the turned copy 334 (1885 bytes, the x87 order
+// differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
@@ -239,7 +273,7 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt((double)opposite.j * opposite.j + (double)opposite.i * opposite.i);
+			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
 			if (!(0.0001f > fabs(magnitude)))
 			{
 				real reciprocal = 1.0f / magnitude;
@@ -252,15 +286,22 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 		{
 			for (long j = 0; j < 2; j++)
 			{
-				s_fog_direction_sample *sample = source->samples[j].count > 0 ? source->samples[j].entries : NULL;
+				s_fog_direction_sample *sample;
 				vector3f const *axis;
 				switch (j)
 				{
-				case 0: axis = &direction; break;
-				case 1: axis = &opposite; break;
-				default: continue;
+				case 0:
+					sample = source->samples[0].count > 0 ? source->samples[0].entries : NULL;
+					axis = &direction;
+					break;
+				case 1:
+					sample = source->samples[1].count > 0 ? source->samples[1].entries : NULL;
+					axis = &opposite;
+					break;
+				default:
+					continue;
 				}
-				real angle = function_11ce20(view_direction, axis);
+				real angle = function_11ce20(axis, view_direction);
 				if (sample && sample->angle_end > sample->angle_start)
 				{
 					real weight = PIN((angle - sample->angle_end) / (sample->angle_start - sample->angle_end), 0.0f, 1.0f);

@@ -279,10 +279,16 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 203 (was 203): the frame is 0x24 against retail's 0x2c and the source receiver's home
+// score 209 (was 203): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
+// source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
+// home and the side bytes still differ.
+// Earlier at 203 (MiniMax H): no new in-file form moved it; retail declares 0x245540 with its
+// matrix and source the other way round, and that declaration and its call live in src/unknown_245850.cpp.
+// Earlier at 203 (from 203): the frame is 0x24 against retail's 0x2c and the source receiver's home
 // differs; retail declares 0x245540 with its matrix and source the other way round, and that
 // declaration and its call live in src/unknown_245850.cpp.
-// score 203 (was 203): frame 0x24 versus 0x2c; source receiver and side-byte homes remain.
+// Earlier at 203 (from 203): frame 0x24 versus 0x2c; source receiver and side-byte homes remain.
 // Earlier: the transform block is the only place left where retail's arithmetic
 // differs from the shared helpers: retail's point transform sums (forward.*x + up.*z) + left.*y
 // + position.*, where the shared point transform sums (up.*z + left.*y) + forward.*x, and an
@@ -467,8 +473,21 @@ void function_245400(s_source_245400 const *source, long index,
 // Actual marked point transform, return/native output 405/405; scaled-vector/both calls 386/582;
 // each with a force-inline declaration 405/405/386/582. Original body and declarations restored.
 // Round 441: Native point ownership, complete result with copy/setter after rejection 209/219, beside edge 206/216; transform-only in-place point after direction 220/205, before direction 211/208. All exact-only forms restored; original frame/source/side homes remain.
+// Round 97 (lane 7): retail's (index, matrix, source, ...) parameter order at the definition,
+// declaration and the 0x245aa0 call 203 (source still EDX, matrix still EBP from entry). The source
+// arrives in ECX whenever its last use comes before the facing block (the plane table read at the top
+// 209; at the top of the material-test block 209), in EDX whenever the plane table is read after the
+// edge vector. Plane table at the block top with the right-surface index and code read first 208;
+// the matrix read through its address at its test 208 (still EBP from entry); right-surface index and
+// code read first alone 206. Retail's borrowed-EBP region and plane table in EBX appear only when the
+// matrix is read from its stack home at the test.
+// Round 41, with 0x245400's (source, index, matrix, ...) order at the definition, declaration and call:
+// plane table read at function entry / at the top of the material-test block / just after the materials
+// pointer 209/209/209 (source in ECX, 0x245aa0 MATCH each; the block-top read kept); just before the edge
+// vector 203 (EDX, 0x245aa0 3). (index, matrix, source, ...) with the entry read 209 (0x245aa0 16, the
+// element loaded through EDX); the old order with the entry read 209 (0x245aa0 16).
 // @retail 0x245540
-void function_245540(long arg_0, s_source_245400 const *arg_1,
+void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
 	long arg_5, long arg_6, s_collection_245270 *arg_7)
 {
@@ -479,13 +498,13 @@ void function_245540(long arg_0, s_source_245400 const *arg_1,
 	short second_material = (short)materials[*(short *)local_0->field_0a].field_00;
 	if (first_material != second_material)
 	{
+		plane3f const *local_7 = *(plane3f const *const *)((byte const *)arg_1 + 0xc);
 		point3f const *local_4 = &arg_1->field_3c[((word const *)local_0)[0]].field_00;
 		point3f const *local_5 = &arg_1->field_3c[((word const *)local_0)[1]].field_00;
 		vector3f local_6;
 		vector3d_from_points3d(local_4, local_5, &local_6);
 		long local_2 = first_material;
 		long local_3 = second_material;
-		plane3f const *local_7 = *(plane3f const *const *)((byte const *)arg_1 + 0xc);
 		plane3f const *local_8 = &local_7[local_2 & 0x7fff];
 		plane3f const *local_9 = &local_7[local_3 & 0x7fff];
 		bool local_10 = (bool)((local_2 >> 15) & 1);

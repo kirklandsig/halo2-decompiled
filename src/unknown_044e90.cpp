@@ -2,7 +2,8 @@
 #include "unknown_044e90.h"
 #include "normalize3d.h"
 
-// score 421 (was 421): Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
+// score 421 (was 421): Frame/list strides and entry/table/plane homes remain.
+// Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
 // Storage headers are at 0xb0/0x10bc/0x20c8/0x40d4 versus retail 0xb0/0x10c0/0x20d0/0x40e0.
 // Input plane homes are 0x2c/0x30/0x34/0x38 versus 0x34/0x38/0x3c/0x40; normal registers,
 // inverse-scale reuse, distance division and capacity-release scheduling also differ.
@@ -83,6 +84,18 @@
 // Round 445: Real storage alignment eight with natural/eight plane-array alignment,
 // each with aggregate/explicit query fields, 429 each; storage sixteen on the same four
 // graphs 417 each. Four-point lead below keep gate; complete header and body restored.
+// Round 97 (lane 7): retail stores 0 into the plane distance when the transform scale is 0 (a value
+// difference: its zero path shares the distance store with the division path); `else p.d = 0.0f;` alone
+// 444, on the 16-aligned storage template (417) 441. On that: the normal computed in both transform arms into
+// a local vector and stored once at the join with `0.0f - p.d` (retail's join stores) 462; with
+// `transform->scale != 0.0f` 450; with the normal locals defined after the distance block (the transform block
+// is then retail's but for register rotation) 475 at 1700 bytes; with the release tests as
+// `!(capacity & 0x80000000)` (retail's `test/js` and capacity reloads) 448 at 1744 bytes, aligned differences
+// 294 -> 235; parts arms swapped 448 (the two calls' identical pushes stay hoisted, retail sets up each call in
+// its arm). Left on that graph: the entry pointer in EDI (retail EBX, pushes interleaved), the tag table loaded
+// in each branch (retail once into ESI before the tag test) and register rotations.
+// Round 456: Persistent global entry reference; flags/table input graphs on native/default storage alignment:
+// 421/457/433/454/417/455/432/452. Original executable body and supporting declarations restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

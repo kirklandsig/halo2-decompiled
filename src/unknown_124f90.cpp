@@ -1226,7 +1226,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 137 (was 149): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
 // the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then
@@ -1283,6 +1283,17 @@ long function_2197f0(real gain);
 // the first branch written with divisions 207 (636 bytes); clamps as `t = time; if (t > 1.0f) t = 1.0f;`
 // 136, as `t = 1.0f; if (time < 1.0f) t = time;` 190 (642 bytes). Compile-only: clamp ternary spellings
 // and dot/product term orders are canonicalised (no change).
+// Round 133 (one-file LTCG harness, exact here: 137): no index local, class index passed raw 179 (670 bytes:
+// retail's `movsx eax, cx` and raw `push ecx`, but the table load folds into the add); the raw index for the
+// call only 179; the hold sum through `decibels_interpolate(0, gain, 1.0f)` 184 (704 bytes), through the
+// existing decibels_add on the gain's bits 163 (686 bytes; retail's long copy of the ducking gain appears);
+// the first branch with divisions 207 (636 bytes), plus a fade_out local 207; a fade_out local with the
+// inverse 141 (670 bytes); the time sum product-first 137 (identical). Left: the else branch and the first
+// branch are retail's code with XMM2/XMM3 (and the 1.0 constant's register) swapped.
+// Round 40 (one-file LTCG harness, exact: 137): the ambience test inverted with the branches swapped 137 (elapsed
+// stays XMM2, retail XMM3); a fade_out local for the tests and the product 141 (670 bytes); the time sum product-first
+// 137, `inverse * (elapsed - hold) * fade_out` 137 (same code); `(elapsed - hold) * (inverse * fade_out)` 172; the
+// reciprocal computed before the fade-out tests 187 (656 bytes).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2774,6 +2785,19 @@ static inline short sound_voice_find_available_channel(char type)
 // result false after the search, true on success, `if (!result)` failure 132; bool result with the search
 // index re-tested after a break loop 104 (retail's found-path-after-loop layout: VC places a loop's break
 // target after the function's other blocks). Original byte-result body restored.
+// Lane 16 r50 (fast): bool result with an `assigned` flag tested before the failure calls 123 (flag in a
+// stack byte); the defaults before `if (channel != NONE) { buffer selection }` and then a failure-first
+// `if (channel == NONE || (buffer_index == NONE && (priority & 2 || requested != NONE))) { failure } else
+// { commit }`: byte result 151, bool result 126 (435 B: retail's block order and `xor bl, bl ... mov al, bl`
+// failure, but NONE hoisted into EBP at entry and the not-found exit unthreaded), with `return true` after
+// the commit 123; the defaults assigned inside the channel block 113 (threaded, failure back after the
+// loop), with `return true` 139; only the driver default before the channel test 107 (430 B, retail's
+// layout, `or ebp, -1` shared with the channel compare, but the not-found exit unthreaded and the channel
+// spilled); that with the driver default before the search 135; the search returning from its loop on
+// those 141/113; the kept form with the driver default before the channel test 132; the failure calls
+// written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
+// the not-found exit past a block that sets the driver default, which no form here reproduces.
+// A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3137,9 +3161,13 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 86 (was 86): retail holds the playback base in ecx, builds the pointer with `lea esi,[eax+ecx]` and folds
-// the sound-system time into the compare; ours hoists the time into edx and holds the base in edi. The mode switch
-// still needs a second non-empty case.
+// score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
+// compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
+// sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
+// ternary. Earlier (86): retail holds the playback base in ecx, builds the pointer with `lea esi,[eax+ecx]` and
+// folds the sound-system time into the compare; ours hoists the time into edx and holds the base in edi. The
+// mode switch still needs a second non-empty case.
 // Frame 8 agrees; playback base, clock scheduling and promoted mode remain.
 // Retained clock receiver 163; voice record reference 86; combined receivers 163; role names 86;
 // native update/mode/both flag words 86/86/86; receiver plus native flags 163.
@@ -3172,6 +3200,47 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // tag 86/86/86; conditional native sound-tag value 204; pool/value and receiver/value 204/204;
 // pool/readonly 86; all 204. Native tag capture expands frame eight to 24 and length 558 to 588;
 // original clock, iterator, mode and call inputs restored.
+// Round 133 (one-file LTCG harness, exact: 86): matched 0x128020's loop-top `sounds = g_4e637c;` with its
+// `(s_sound_playback *)sounds->data + index` pointer 86, the pointer form alone 104; the time in a local 86;
+// `!(start > time)` 86; the getter-read test with the pointer inside it 49 (kept); on it, the pool global at each
+// use 49; a for loop 49, with `case 1: continue;` 78 (retail's `sub eax, 0` switch, but pool/index swap
+// EBP/EBX), `case 1: goto next;` in the do-while 78, case 1 first 78, case 0 ending in continue 78, long mode 89,
+// the switch on the ternary 89, an if/else mode 78, `default: continue;` 49 (dropped); empty case 1 with or
+// without `default: __assume(0)`, case 1 first, cases 1 and 2: 49 (empty cases are dropped).
+// Round 18 (m3 lane 2, one-file LTCG harness, exact 49): on the for loop with `case 1: continue;` (78, retail's
+// `sub eax, 0` with the index in EBP and the pool/voice/range pointers in EBX): range index operands swapped 78;
+// range as pointer arithmetic 78; `NONE == (short)...` 78; mode as if/else 78, inverted ternary 84; `(short)`
+// permutation argument 78; `NONE ==`/`NONE !=` tests 78/78; a do-while whose condition advances (continue goes
+// to the advance) 78, with the pool global 78; pool local in the for init 78; the sibling 0x128020's loop-top pool
+// read 78, its sound pointer at the loop top 167; bool-returning 0x125e60 78. One-target forms (`default:
+// continue;`, `case 0` ending in continue, `case 1: continue; default: continue;`) 49 (`test ax, ax`).
+// Round 40 (one-file LTCG harness, exact: 49; the for/continue and two-label forms confirmed with --fast): a for
+// loop with `case 1: continue;` 78 (retail's `sub eax, 0` and pool reload after the next-index ternary; only the
+// sound index and the pool/voice/range pointers swap EBX/EBP); on it, the range pointer written at both calls 31
+// (registers right, address computed after the class-flag call), computed before the mode 24, the class-flag test
+// without `(bool)` 72 and flag4 without TEST_FIELD_BIT 98 (registers right, the tests fold to `test byte`), both 97;
+// `case 1: case 2: continue;` 17, cases 1, 2 and 3 17, `case 3: continue;` 17 (registers right, `test eax, eax`
+// for `sub eax, 0`), `case 2: continue;` 78, `case 1:` then `case 2:` each continuing 113; case 1 as an empty inline
+// or out-of-line call 78/78; default placed first or last 78; mode as if/else 78, switch on the ternary 89;
+// early-continue start test 78, plus the value_ac test 78; reason, voice index, voice, definition or range declared
+// at the top 78 each; voice arms swapped 108; the existing for-form find helper 49 (same code), with the for loop 78;
+// the 0x218ac0 pitch-range getter 49/78; definition by table read 78; a while loop with goto 214 (592 bytes).
+// Without the switch, dropping either `(bool)` swaps the registers too (120/136). 0x125e60 returning bool (callers
+// without `(byte)`) 78 with the for form (0x125e60 itself unchanged).
+// Round 9 (m3 lane 18, fast): 0x128020's loop-top `sounds = g_4e637c;` added to this body 49 (identical, the
+// load is CSE'd); a plain while loop with that loop-top reload 268 (636 bytes, not rotated); a for loop reading
+// the pool global in the init and increment with `case 1: continue;` 78 (retail's `sub eax, 0` and the pool
+// reload after the next-index ternary; only the index/pool EBX/EBP swap and the prologue load before `push
+// ebp`), with the entry pool through the named `sounds` local 78; `case 1: continue;` skipping a bottom
+// `sounds = g_4e637c;` 183 (572 bytes).
+// Round 102 (m3 lane 8; one-link LTCG harness, exact for 49 and 78): a dead store in a `case 1:` of the do-while gives
+// exactly the for/`case 1: continue;` code (78), so the EBX/EBP swap comes from the two-case compare chain itself, not
+// the continue edge. A 192-form grid of the for/continue loop (pool local or global in the init, both next-index
+// ternary orders, case 1 before/after case 0 or with `default: break;`, mode as ternary or if/else, both range index
+// orders, `&g_4e6378[i]` or `g_4e6378 + i`, start test through the macro or a loop-top pointer) never moves the swap
+// (78 or 164). Fast: for/continue 78; with the update test inverted (pending arm first) 132; `case 1: case 2:
+// continue;` 17; 0x128020's while + `skip_to_next:` with `case 1: goto skip_to_next;` 214 (592 bytes); index and mode
+// declared at function scope 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3181,9 +3250,9 @@ void function_1282d0(void)
 	{
 		do
 		{
-			s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
-			if (sound->start_time <= SOUND_SYSTEM->time)
+			if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
 			{
+				s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
 				if ((byte)function_125e60((s_looping_track_sound *)sound))
 				{
 					long reason;
@@ -3939,36 +4008,29 @@ void function_21b0e0(bool arg_0);
 long players_first_active_local_player(void);
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 
-// score 55 (was 55): statement clears give retail's 0x40-first, copy-free clears but force MSVC's 8-byte frame
-// realignment; the argument form keeps retail's frame but clears the 0x80 array first, with copies of memset's results.
-// Earlier: plain 0x1744 frame now; the clears run channels-first with `mov edx, edi` copies of
-// memset's results (retail buffers-first, no copies), short restart cursor and loop padding remain.
-// Promoted voice limit 108; entry system
-// 108; direct elapsed 108; pending byte 108; frame input 108; short player cursor 122; short
-// next-player result 115; both player values 122; const element arrays 108; `= {}` arrays 121;
-// `!= 0` flag argument 128; flag argument through local_0 108; long restart cursor 134 (gives
-// retail's movsx/inc/cmp loop; only the loop padding jump moves with the longer prologue).
-// Fixed stack allocation of first/second/both buffers 131/145/149; batch 139; batch with first/second/both
-// 162/162/164; all with long restart 161.
-// Entry allocation first/second/both/all 174/176/174/164; all with long restart 163. All restored.
-// Actual first/second/both memset-return receivers, used by collection and submission, 143/129/125;
-// declarations at entry 143/129/125; both with long restart, normal/entry declarations, 108/108. Original
-// body restored.
-// Round 161: any memset of a local of 128 bytes or more realigns the frame unless EBP is wanted as a
-// general register (every other retail function clearing a large local without realigning uses EBP) or
-// memset's result is used. Existing next-player helper 107; player for loop 107; results as two one-use
-// locals 55; with long restart 75; results as the call's arguments with long/short restart 76/55 (kept).
-// Round 164: word restart cursor 114; statement clears realign in every form tried (compile-only:
-// split statement/argument clears, callee-owned arrays, short/char clear loops, pointer-local targets,
-// no system local, arrays at entry, player for loop).
-// Round 235: persistent buffer/channel clear return with the other clear still a call argument
-// 104/72; with long restart 60/86; entry declarations repeat 104/72/60/86. Original body restored.
-// Round 94: every form that realigns or uses EBP here also changes matched callee 0x128020's registers
-// (0 -> 147: its allocation follows this function's EBP use). Count first + statement clears + long restart
-// 134; statement clears 121; `= {}` arrays + long restart 139; memset results kept in named locals for
-// 0x129380 only (arrays direct to 0x129100) 129 (527 bytes, copies through EBX/EBP), with long restart 110.
-// Compile-only: realignment is decided late (a size held in a variable or a static const, fills of 0xff,
-// clears of struct fields or through a pointer all realign; /Os avoids it but changes the whole body).
+/* the per-voice and per-channel value pointers of one spatialization pass, cleared when declared
+   (a plain memset of a local this large makes VC realign the frame with `and esp, -8`; retail's
+   clears don't, and a clearing constructor or member function is the only form found that avoids it) */
+struct s_voice_value_table
+{
+	vector3f *values[0x40];
+
+	s_voice_value_table()
+	{
+		memset(values, 0, sizeof(values));
+	}
+};
+
+struct s_channel_value_table
+{
+	vector3f *values[0x80];
+
+	s_channel_value_table()
+	{
+		memset(values, 0, sizeof(values));
+	}
+};
+
 // @retail 0x125b40
 void function_125b40(void)
 {
@@ -3983,7 +4045,7 @@ void function_125b40(void)
 			{
 				local_0->changing_pause = true;
 				local_0->unknown7b = false;
-				for (short local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
+				for (long local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
 					sound_voice_restart_stream((short)local_1);
 				looping_sound_controllers_synchronize(true);
 				function_21f5a0();
@@ -4005,18 +4067,18 @@ void function_125b40(void)
 			sound_voices_update_chunks();
 			function_128020();
 			function_1282d0();
-			vector3f *local_3[0x40];
-			vector3f *local_4[0x80];
 			s_voice_position_batch local_5;
 			local_5.count = 0;
-			function_129100(&local_5, (vector3f **)memset(local_3, 0, sizeof(local_3)), (vector3f **)memset(local_4, 0, sizeof(local_4)));
+			s_voice_value_table local_3;
+			s_channel_value_table local_4;
+			function_129100(&local_5, local_3.values, local_4.values);
 			long local_6 = players_first_active_local_player();
 			while (local_6 != NONE)
 			{
 				function_221a70(local_6, &local_5);
 				local_6 = local_player_next_inline(local_6);
 			}
-			function_129380((vector3f const *const *)local_3, (vector3f const *const *)local_4);
+			function_129380(local_3.values, local_4.values);
 			function_1293f0();
 			if (SOUND_SYSTEM->unknown7e[0])
 				SOUND_SYSTEM->unknown7e[1]++;

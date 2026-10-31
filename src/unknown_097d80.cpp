@@ -127,6 +127,11 @@ struct c_aggregate : c_child
 // store before the child read 45; the dispatch gate as nested ifs 45; a const dispatch cursor 45;
 // the cleanup item read into its local before the test 89 (368 bytes). BLOCKED by the build flag:
 // the retail frame needs `produced` to share a slot, which only a non-LTCG object gives.
+// Lane 16 r48 (fast): the collection loop in a block of its own 45 (frame 0x8024); the cleanup bound
+// named from the block 65; the cleanup loop bounded by starts[3] 45; `*source` read once before the
+// collection loop 145 (389 B); the item cleared before its release 59. Retail's slot 0x10 holds
+// produced, then the dispatch cursor and the cleanup countdown (strength-reduced loop temporaries),
+// which our LTCG build gives slots of their own.
 // Round 33 (lane 10): loop 1's child and error tests nested 45 (identical); loop 2's inner walk over
 // a block pointer range 128 (389 bytes); v5's count output as a `long &` 45 (identical); loop 2's
 // cursor declared at function scope 45 (identical); produced declared at the top of loop 1's body
@@ -134,6 +139,24 @@ struct c_aggregate : c_child
 // frame (produced, loop 2's cursor and loop 3's count in one slot) and leaves request in EBP (retail
 // EBX) and the end bound loaded first; the starts store first, nested tests, a source copy, the
 // bounds declared end first, a block-pointer walk and a `!error` gate don't move either there.
+// Round 7 (m3 lane 18, fast): produced renamed written (a name sorting after the compiler's
+// temporaries) 45 (frame 0x8024); the dispatch bounds declared end first 45 (same code); the
+// dispatch child read after the bounds 45; the cleanup indexing blocks[k].items[j] directly 45; the
+// collection loop guarded by `if (child == 0 || error != 0) continue;` 55.
+// Lane 16 r50 (fast): the cleanup item test as a declaration in the condition 89 (368 B); blocks
+// declared after starts/error/total 45; one function-scope index for all three loops 45 (frame
+// 0x8024); the get_info output declared at the inner loop top 45; the cleanup through blocks[k]
+// directly 45. BLOCKED by the build flag (frame 0x8020 needs a non-LTCG object).
+// Round 138 (lane 4; a one-file LTCG harness of this file reproduces the 0x8024 frame): the dispatch gate
+// with the type test first 49; the collection test with the error test first 50; each boundary stored after
+// its child (`starts[i + 1] = total;` in the loop, `starts[0] = 0;` first) 129; the release output initialized
+// to NONE at its declaration 78 (376 bytes); a named `room` argument 45 (same code). Harness only: renaming the
+// request, source, error, total, starts, blocks or child locals: the same code each (names do not move the
+// LTCG frame); nested gate/collection tests, a while dispatch loop, a block pointer argument same code.
+// Round 27 (m3 lane 15, fast): `if (child && !error)` 45; `blocks + j` in the dispatch call 45; the
+// dispatch gate with the type test first 49; the dispatch inner loop as `while (first < end)` with a
+// post-increment 45; the capacity named before the call 45. Still BLOCKED by the build flag (frame 0x8020
+// needs `produced` to share a slot, which only a non-LTCG object gives).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

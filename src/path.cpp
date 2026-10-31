@@ -420,6 +420,28 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Round 320: advancing link-output receiver with long/short/word link counts 368/368/368;
 // long previous-index combinations 366/382/365; long path count with long/short link count 316/316.
 // First forms recover frame 0xe4 but regress; complete original body and memcpy restored.
+// Round 134 (m3 lane 4): both builds now return with ret 0x24 and take the state in EBX. Retail keeps one
+// memory bool at [esp+0xf] for the edge flag-seven bit (movsx/shr 7/and al,1, stored, then je) and for the
+// special test (stored false at the else arm's start, `mov al, 1; je` / `mov al, [esp+0xf]`), and its
+// type-2 arm stores the type from cx, not the constant 2. Short link count 368 (1368 bytes, frame 0xe4);
+// with one node variable set at entry and in the loop 368 (copy-propagated, the entry depth read still
+// folds; retail does `lea` then `movsx [eax+0x3e]`); an inline node getter (diagnostic) 368; one flag for
+// the link test (assigned in the condition) and the special test, false then true, 363 (retail's special
+// sequence and complete/flag slots); with count zeroed after the init loop 371; the shared flag on the
+// long link count 315 (1391 bytes). All restored.
+// Round 37 (lane 10, fast): the convention already agrees (state in EBX, ret 0x24, caller 0x270930 MATCH).
+// Retail keeps `previous` in EDI inside the loop (reloaded from its home on both loop entries), keeps
+// a default-false `special` byte at [esp+0xf] that also receives the edge flag bit of the link test,
+// and computes the start node with `lea` before reading its depth. Short link count 368 (1368 bytes,
+// frame 0xe4); with the node pointer declared at the top and reused in the loop 368 (same code, the
+// address still folds); with `special` false then set by an if 368; on the long count: link count
+// incremented after the copy 359; count defined after the initialization loop 354.
+// Round 30 (lane 14, fast): a `s_type_c3b527 const *origin = &input->start;` for the delta block 334: the
+// delta block and the edge-geometry loop then are retail's code (`lea esi, [ebx + 0x14]`, `push esi`, the
+// step index in ESI), but the extra frame word shifts every slot by 4 and the post-loop gains a `jmp` into
+// the scan loop; with the short link count 377 (1358 bytes, frame 0xe4; link count then takes EDI where
+// retail keeps `previous`); with `special` also false then set by an if 383; origin at the scan-loop top 400
+// (1418 bytes); origin shared with the previous-point ternary 386 (1407 bytes).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -801,6 +823,11 @@ bool function_2715a0(byte *buffer)
 // Round 320: actual exclusion-search ordinal as result, short/long with joined/separate query guards
 // 599/584/599/584; all live penalty reads 578/567/578/567. All lengthen the body.
 // Complete original search, penalty snapshot, heap operations and result qualifier restored.
+// Round 215: short remaining count and mutable links 503; short remaining count with native masks
+// 515; short remaining count and readonly links 503; short remaining count with readonly
+// links/native masks 515; long remaining count and mutable links 502; long remaining count with
+// native masks 516; long remaining count and readonly links 502; long remaining count with
+// readonly links/native masks 516.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
@@ -1365,18 +1392,40 @@ short function_272700(s_type_f17a25 *state, long node_index)
 // Indexed unit-scale segment/offset differences 16; all three named squares 62; native point publication 31;
 // complete start/end values 139/131; named projection 16; indexed segment plus all named squares 62;
 // all named squares plus named projection 62. Original complete body and noinline declaration retained.
+// score 0 (was 16): matches retail: the point on the segment from start to end closest to the attractor, or the
+// nearer end when the projection falls outside the segment; the segment's squared length is summed in the order
+// i, j, k and the projection in the order j, k, i, the orders retail uses.
+// score 16 (was 67): retail computes the segment i, j, k and sums (i + j) + k for the length and (j + k) + i for the projection, ours j, k, i and (k + j) + i for both; tried: `dot3f(&delta, &delta)` for the length 16, `dot3f(&delta, &offset)` 16, the projection written out in y, z, x order 36, all three written out 67, parameters reordered (start, end, attractor, out) 16; compile-only harness: every written-out sum order and grouping 27-64, all 24 parameter orders and the offset computed at the top no better.
+/* Squared length of a vector, with the components summed in the order i, j, k. */
+static inline real squared_length_ijk(vector3f const *v)
+{
+	real sum = v->i * v->i;
+	sum += v->j * v->j;
+	sum += v->k * v->k;
+	return sum;
+}
+
+/* Dot product of two vectors, with the components summed in the order j, k, i. */
+static inline real dot3f_jki(vector3f const *a, vector3f const *b)
+{
+	real sum = a->j * b->j;
+	sum += a->k * b->k;
+	sum += a->i * b->i;
+	return sum;
+}
+
 // @retail 0x272740
 PRIVATE void function_272740(point3f const *attractor,
 	point3f const *start, point3f const *end, point3f *out)
 {
 	vector3f delta;
 	vector3d_from_points3d(start, end, &delta);
-	real length_squared = length_sq3f(&delta);
+	real length_squared = squared_length_ijk(&delta);
 	if (length_squared > 0.0f)
 	{
 		vector3f offset;
 		vector3d_from_points3d(attractor, start, &offset);
-		real t = dot3f(&offset, &delta) / length_squared;
+		real t = dot3f_jki(&offset, &delta) / length_squared;
 		if (t < 0.0f || t > 1.0f)
 		{
 			*out = *end;
@@ -1394,6 +1443,8 @@ PRIVATE void function_272740(point3f const *attractor,
 	}
 }
 
+// score 0 (was 8): matches retail: the weight of the point on the segment closest to the attractor, and that point's
+// distance to the attractor; the segment's squared length is summed in the order k, i, j, the order retail uses.
 // score 8 (was 97): retail computes the segment i, k, j and sums its square as (k + i) + j; ours computes j, k, i and sums
 // (k + j) + i. Tried: the weight in float (no double local) 88 -> 82; weight declared first 81; written-out sums in every order
 // 79-94; the segment, offset and both lengths through vector3d_from_points3d/length_sq3f/dot3f 21; the length test against g_45dbd8
@@ -1404,6 +1455,15 @@ PRIVATE void function_272740(point3f const *attractor,
 // Indexed unit-scale difference helper for the segment or all differences 8/8; all three named segment squares 83;
 // all three named component differences plus the native setter 8; complete start-point value 117; named projection 8;
 // complete native point publication 30; complete start-point value plus named projection 117. All restored.
+/* Squared length of a vector, with the components summed in the order k, i, j. */
+static inline real squared_length_kij(vector3f const *v)
+{
+	real sum = v->k * v->k;
+	sum += v->i * v->i;
+	sum += v->j * v->j;
+	return sum;
+}
+
 // @retail 0x272810
 PRIVATE real function_272810(s_type_f17a25 const *state, s_type_c3b527 const *start,
 	point3f const *end, real *distance_out)
@@ -1417,7 +1477,7 @@ PRIVATE real function_272810(s_type_f17a25 const *state, s_type_c3b527 const *st
 	function_210690(start->output_index, &input->attractor_point, &local_attractor);
 	vector3f delta;
 	vector3d_from_points3d(&start->point, &local_end, &delta);
-	real length_squared = length_sq3f(&delta);
+	real length_squared = squared_length_kij(&delta);
 	point3f closest;
 	if (length_squared > g_45dbd8)
 	{

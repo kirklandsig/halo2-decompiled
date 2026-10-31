@@ -9,6 +9,7 @@
 #include "object_iterator.h"
 #include "unknown_1428b0.h"
 #include "unknown_20fe20.h"
+#include "unknown_20f1a3.h"
 #include "unknown_11cc90.h"
 #include "vector_angles.h"
 #include "slot_handler.h"
@@ -193,19 +194,6 @@ long function_20f960(long index, s_audio_priority_table *table, bool *expired)
 		*expired = value;
 	}
 	return result;
-}
-
-PRIVATE __forceinline long function_20f1a3(byte const *arg_0, real arg_1)
-{
-    long local_0 = *(long const *)(arg_0 + 8);
-    real local_1 = *(short const *)(arg_0 + 2) * arg_1;
-    long local_2;
-    __asm
-    {
-        fld local_1
-        fistp local_2
-    }
-    return local_0 + local_2;
 }
 
 // @retail 0x20f1a0
@@ -1134,6 +1122,8 @@ void function_2118c0(void)
 // as b * 8 + x 150; a [3][8][8] table 150; a row += 8 loop, a row induction
 // variable, inline row accessors, w's computed in the loops 150-180 (all rows
 // become pointer IVs); previous at the k level 22; tb before ta 20.
+// Round 55: a local 3D table pointer/reference 150/150; function-scope/split wrapped
+// indices 14/14; split float declarations 14; early band reset 14; sample/function-scope row 14/14.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -1878,6 +1868,23 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
 // the source order); a compile-only harness keeps the exit order and the success block's load order
 // (weight, tag value, tag pointer; retail loads the tag pointer first) for a break with a retest, a found
 // flag, `tag_index[0]`, a copied tag and a weight pointer local.
+// Round 26 (lane 14, fast; faithful with the file plus 0x1a6fe0, 0x1a7ad0, 0x272ab0, 0x1c9e50, 0x20f1a0,
+// 0x1144a0, 0x114440, 0x20f040, 0x203330, 0x25d770 and 0x25d810 in the image: control 277; aligned 29):
+// the 0x40 failure as its own statement with the 0x80/0x100 groups under `if (eligible)` 277 (same
+// code); the same with `!actor` and the two lookups as separate failure statements 632 (2200 bytes,
+// registers reassigned from the prologue); the 0x40 failure as the else arm with the inverted test 632;
+// `!actor` and the lookups as two else-if failure arms each repeating the 0x40 test (diagnostic) 302;
+// the success stores tag first 277 (same code); `object[0x39d] <= 0` 277 (retail's `ja`, aligned 28).
+// Round 49 (lane 16, plain): the 0x80 group with no early clear and `else eligible = false` on
+// both failures 271 (the no-actor and squad-NONE exits then reach retail's shared clear-and-reload
+// tail, but the squad-entry-null exit does too and the group's early clear is gone; 2260 bytes);
+// that with the failure arm first 271; with the squad bit as a ternary 271; with `default:
+// eligible = false` in the 0x100 switch 271; the clear moved inside the actor arm before the
+// lookup with an outer else 277 (all three exits right, the clear lands before the call); early
+// clear plus outer else 277 (the else is dropped). Retail keeps the early clear and the redundant
+// failure clears, which ours removes as known-false stores. Diagnostic: the eligible flag's
+// address escaping sends the 0x40 failure into the shared tail (as retail) but reshuffles the
+// whole function (614/664).
 // @retail 0x20d8c0
 short function_20d8c0(long source_index, s_audio_priority_table *table, byte const *request,
     long object_index, long target_index, long previous_index, long *tag_index, real *weight)

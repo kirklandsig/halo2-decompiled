@@ -508,7 +508,6 @@ static inline word font_character_pixel(long alpha, long color)
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
 // score 85 (was 85): Frame 0xc agrees; alpha extension, literal assembly and run-two reuse differ.
-// Earlier score 85 (was 85): alpha extension, literal-word assembly and run-two reuse differ.
 // Alpha parity extension, literal-word assembly and run=2 reuse remain. Disjoint
 // shifted/multiplied alpha fields 204/194; long/word/unsigned opacity nibble 172/236/172; word
 // color-first/alpha-first and long color-first assembly 175/228/172. Original pixel helper and
@@ -550,6 +549,12 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 448: Indexed two-pixel stores with one run-based advance; full-width parity,
 // word fill pixels and default one-byte consumption, all eight combinations 161/213/153/217/131/203/122/211.
 // Original body and helpers restored; Frame 0xc agrees; alpha extension, literal assembly and run-two reuse remain.
+// Round 212: Conditional expansion, word/long results: one expanded-alpha result 216/220;
+// complete-pixel result 205/210; two-path alpha assignment 197/205;
+// separate complete-pixel returns 195/199. All restored; parity branches and
+// pointer-convention changes regress. Alpha width, literal assembly and run-two reuse remain.
+// Round 245: plain two-byte literal parser, word/dword accumulator, with full parity and
+// native word fill interactions 85/85/204/204/107/107/208/208. Original helper and decoder restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

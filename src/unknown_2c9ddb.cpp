@@ -115,6 +115,12 @@ extern long g_55c154;
 // frame), with the shift bit test 174; the bit test as a signed shift 62 (sar); `selected == NONE`
 // tested twice without the classification local 77 (574 bytes). BLOCKED-BY 0x13fac0: our link
 // inlines the copy at this all-constant call site, where retail calls it.
+// Round 97 (lane 7): a named destination `word *variant_name = g_54e4a0.name;` for the copy and the
+// 0x238c69 call keeps 0x13fac0 out of line with retail's ecx/edi/esi setup: on the one-load body 88 (562
+// bytes; aligned differences 25 -> 19, only the duplicated selected-arm load left); on two load arms 179.
+// Two load arms with the named count: 179 (`this` in ESI and spilled, EBX holds a zero constant, `saved`
+// and the &g_54e4a0 address in turn); with the count named for both calls 179; with the variant global as
+// its own extern symbol 179 (same allocation).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -331,6 +337,9 @@ void c_class_2c9e69::select_last_variant()
 // them apart only because its name arm reloads into EBX. Copies in both arms 36; name-arm
 // copy declared before the test 36, or at function top 36; name-arm copy only (text read
 // directly in the empty arm) 13 at 159 bytes, the name arm then exact except EDI for EBX.
+// Round 39: an early return for an absent datum 23; `else { name; if (text) ... }` 23; the arms swapped
+// (`variant != NONE` first, the empty copy kept) 30; the two lookups assigned after their declarations 23;
+// the variant named in the name arm 23.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

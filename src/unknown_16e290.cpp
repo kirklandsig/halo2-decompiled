@@ -400,6 +400,31 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // 811-byte extent remain. The original unsigned word quotient, signed loops and memory operations
 // were preserved. Original positive Boolean convergence and complete body restored; padded-
 // count/byte-count and scalar homes remain.
+// Round 452: prior visited word used for admission and final store, dword/signed
+// masks with dword/byte/word flags, then shared global tests, eight forms 226 each.
+// They grow the frame to 0xf4; original field widths, mask, visits and body restored.
+// Round 58 (lane 12, fast = plain here; none kept): retail keeps count + 31 in EBX from the entry and
+// shifts that same register in place for the word count after the clears (`sar ebx, 5`), while the
+// entry's `>> 5` (EDX) feeds the base row and `lea edi, [edx*4]` bytes; so the entry and later word
+// counts are not one shared value there. Tried: a count local with bytes as words * sizeof and the
+// word count recomputed 224 (796 bytes, one shared word value); the same with base first 222; bytes
+// as words * sizeof alone 238; a count local with bytes as words * sizeof and the word count from
+// bytes 237 (retail's entry `lea [words*4]` but bytes kept in EBX); bytes as words * 4 with the word
+// count bytes >> 2 238 (`sar ebx, 2`, not folded back to `>> 5`); sizeof with >> 2 238; words << 2
+// with >> 2 111 (folded, same code); a padded-count local with sizeof bytes 224 (796 bytes); a
+// padded-count local with the masked byte form 208.
+// Round 8 (lane 18, fast, aligned counts in brackets, base 111 [65]): the word count as `(count + 31) >> 5`
+// at the top with bytes as `((count + 31) >> 5) * sizeof(dword)` 224 [73] (796 bytes, frame 0xec: the
+// shifted value is shared and kept, where retail keeps count + 31 in EBX and shifts it again after the
+// copies); bytes and base from a word-count local 224 [73]; the word count declared after base 224 [73];
+// base as `&bits[((count + 31) >> 5) * index]` 111 [65] (same code); the round 85 memcmp-break loop
+// re-measured 125 [57] (810 bytes), with the shifted-count head 228 [73].
+// Round 10 (lane 17): every head form tried CSEs retail's late `sar ebx, 5` into the head's shift: a count local
+// with a words local for bytes and base and the word count recomputed after the copies 224 (796 bytes); the count
+// local with bytes `((count + 31) & ~31) >> 3`, base by `((count + 31) & ~31) >> 5` and the late word count
+// `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
+// sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
+// as an aggregate initializer 111 (same code).
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {

@@ -153,6 +153,8 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 // 2; a named turn-angle local instead of reusing arg_4 2; the two limits in separate locals 39;
 // one-expression angle sum 34 (with separate limits 2); a named object pointer after/before the
 // actor lookup or first 2/2/13; 0x11cc90's parameters declared (b, a) 2; all three first forms 2.
+// Round 91: internal forceinline/plain helper linkage, the helper after its caller, point-reference subsets,
+// an output reference and an actor reference 2 each; all restored.
 // @retail 0x29c860
 void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	point2f const *arg_3, real arg_4, vector3f *arg_5)
@@ -243,6 +245,21 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// score 645 (was 645), coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
+// locals (the 0x44 setting read early, the 0x11cd20 result held until after the side test), kept only with a match;
+// without them the sum splits and store reorders below score 643 (fast), under the 8-point bar. Its tried forms:
+// score 268 (was 271): the left vector is built before the forward copy, so the three stores
+// land where retail puts them; left: the second normalize's j product keeps the other operand
+// order, the avoidance vector and the left vector still swap their 12-byte slots, the 0x5d0
+// flag store, the steering block's sums and the local_16 dot's x87 order differ.
+// score 271 (was 291): the distance from the side test is held in a local and written into the
+// struct after the test, so its value stays in a register across the test; left: the left vector
+// and the avoidance vector still swap their 12-byte slots, the steering block's sums, the local_16
+// dot's x87 order, the 0x5d0 flag store and the second normalize's j product differ.
+// score 291 (was 300): the settings word at local_2+0x44 is read before the local_16 branch, as
+// retail does (it keeps it in xmm1 across the branch); left: the left vector and the avoidance
+// vector still swap their 12-byte slots, the steering block's sums, the local_16 dot's x87 order,
+// the 0x5d0 flag store and the second normalize's j product differ.
 // score 300 (was 300): the actor flag updates are the existing setters 0x1e4290 (clear 0x800)
 // and 0x1e4260 (set 2), which retail inlines here (they are `inline` at their definitions), and the
 // side test reads the left vector, which is initialised from local_8 as sibling 0x29a190 writes it

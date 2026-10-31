@@ -1,5 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "view_context_storage.h"
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 /* UNKNOWN_1E9700.CPP: a value of the difficulty table for the current
    campaign difficulty (lane M; called by the behaviors of 0x1a8000..0x1affff) */
 
@@ -70,6 +72,20 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
+// bytes, the value loaded with the sign-extending idiom), through an unsigned 16-bit local (112),
+// and through a short cast, a word read of the counter and a word cast (107 each). Still the
+// maximum's register home: retail keeps the old maximum in ECX and the counter in AX and reads
+// the 15-bit value with the 16-bit idiom (xor eax,eax; mov ax,[...]) with one -1 default and the
+// enable byte in AL; ours zero-extends the value into EAX, keeps the enable byte in DL and
+// materialises the -1 default twice. Still BLOCKED-BY 0x196960/0x1968b0, whose file is held.
+// score 107 (was 107): this round: the comparison written the other way round (the counter first)
+// gives 107, and the counter read through a 16-bit local, at block scope or at function scope, 112
+// with and without that comparison (419 bytes). Still the maximum's register home: retail keeps the
+// old maximum in ECX and the counter in AX and reads the 15-bit value with the 16-bit idiom
+// (xor eax,eax; mov ax,[...]) into ECX with one -1 default and the enable byte in AL, ours
+// zero-extends the value into EAX, keeps the enable byte in DL and materialises the -1 default
+// twice. Still BLOCKED-BY 0x196960/0x1968b0 (retail inlines both; their file is held).
 // score 107 (was 107): this round: the player maximum read as a nested initialise/compare/assign
 // gave 109, the same nested read for the team maximum 117 and the player maximum alone 112.
 // Still the enable reloads and the maximum-register homes: retail keeps the old maximum in ECX
@@ -735,6 +751,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // Right offset right after its inset 197; bounds copied to a local first 302; the
 // rectangles as short_rectangle2d 2; top inset after the other offsets 123; piece
 // declared before inner 2.
+// Round 41 (lane 10): inset and offset in one expression per edge 207 (1162 bytes);
+// top offset before bottom 2; bounds read directly without the `input` alias 2 (kept);
+// both screen offsets read into named locals first 44; horizontal edges inset and
+// offset before the vertical ones 52. The compile-only harness gives retail's load
+// order for the current source, so the swap comes from link-time scheduling.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
@@ -782,12 +803,11 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 			result = false;
 		if (result)
 		{
-			s_request_screen_bounds const *input = bounds;
 			s_request_screen_bounds inner;
-			inner.left = input->left + 8;
-			inner.top = input->top + 8;
-			inner.right = input->right - 8;
-			inner.bottom = input->bottom - 8;
+			inner.left = bounds->left + 8;
+			inner.top = bounds->top + 8;
+			inner.right = bounds->right - 8;
+			inner.bottom = bounds->bottom - 8;
 			inner.left += g_4b9dd2;
 			inner.right += g_4b9dd2;
 			inner.bottom += g_4b9dd0;
@@ -903,8 +923,6 @@ s_entry_420 *function_1e8d50(long index);
 class c_1fa50
 {
 public:
- void function_1fa50(short_rectangle2d const *bounds, void const *clip, void const *position,
-  long line_gap, real scale, long color, void const *shadow) const;
  void function_1fb10(short_rectangle2d const *bounds, real scale) const;
 };
 
@@ -1029,7 +1047,7 @@ void function_1e6fe0(long local_player_index)
  limits.right = (short)(center_x + half_width);
  limits.bottom = (short)(center_y + half_height);
  if (function_1e9140((s_request_screen_bounds const *)&limits))
-  ((c_1fa50 const *)text)->function_1fa50(&limits, NULL, NULL, 0, 1.0f, 0, NULL);
+  function_1fa50(&limits, (word const *)text, NULL, NULL, 0, 1.0f, 0, NULL);
 }
 
 // @retail 0x1e90b0
