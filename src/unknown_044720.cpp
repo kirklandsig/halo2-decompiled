@@ -161,6 +161,9 @@ void function_44720(void)
         ++index;
     }
 }
+// score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
+// through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
+// the flags word; this round's variants all scored worse, so the body is unchanged.
 // score 107 (was 107): frame 0x44 versus retail 0x40; entry-offset construction
 // and the geometry flag reloads differ.
 // Round 125 (one-link LTCG harness with the callers' and callees' files, exact for this function):

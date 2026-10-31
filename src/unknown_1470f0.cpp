@@ -230,6 +230,9 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // (same code), as `(long)m_buffer + m_size` 8; first end inline with a barrier in the first arm 60
 // (153 bytes); first end as a long local 44 (the == folds away); first start named too 8; the
 // equality test before the >= 10; permuter, 59 tries, none lower.
+// Round 61: first-only return 8; nested named end with the first return 70; nested plain inclusive
+// end 43; const end 8; one shared end 8; shared start/end 8; start named after end 8; concrete
+// page_count end 8; void * end 8. Original body restored.
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {
