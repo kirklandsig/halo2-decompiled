@@ -285,6 +285,10 @@ bool camera_velocity_profile_new(s_camera_velocity_profile *profile, real total_
 // result clamp as PIN: the same code; real: fills after the hold clamp 104 (268 bytes); fills after
 // the first conversion 99 (271 bytes); the sum in three statements 101 (270 bytes); all three
 // conversions after the clamps 87 (285 bytes); fills just before the sum 121 (253 bytes).
+// Round 26 (lane 15, fast): each segment's two terms accumulated right after its tick conversion 125 (249
+// bytes); const aggregate-initialized arrays 49 (same code); the rate terms and the acceleration terms as two
+// named partial sums, ramp + distance or distance + ramp, 51/51; every product of the six-term sum
+// parenthesised 49 (same code); the sum explicitly grouped left to right in the written order 55.
 // Round 36 (lane 10, fast): the sum as three calls of a forceinline per-segment helper (ticks * rate + ticks *
 // ticks * acceleration) taking the rate and acceleration by value 49, taking the arrays and a segment index
 // 49; the helper factored `(acceleration * ticks + rate) * ticks` 72 (261 bytes); the three calls as one

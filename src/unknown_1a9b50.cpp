@@ -250,28 +250,6 @@ bool __stdcall function_1aa990(long actor_index, s_slot *slot)
 	return result;
 }
 
-// score 11 (was 11): extent now agrees at 352 bytes; the pool pointer still uses ECX
-// instead of EAX, the fraction uses EDX instead of ECX, and the shared range-value
-// load/compare schedule differs. Reading the range field at each use (no local) gives
-// retail's compares (aligned 7 -> 4) but 17 at 353 bytes: the ECX pool load is a byte
-// longer than retail's EAX one.
-// Tried (r35): prop_ref_get and the real record types 17; the state assigned after declaration 17;
-// prop_node_state 17; the reversed probability comparison 35; const entry, state, or actor/unit 17.
-// Guarded state/value/both observations 59/11/57; probability result conditional 105;
-// three-first rejection 42; four-first selection 97; both observations with the
-// conditional/four-first result 91/94. Keep the twice-used range value after the prop guard.
-// Round 268 on the two-use range graph: long result 11; entry range declaration 11;
-// entry prop/state declarations 11; unsigned result 11; long result plus entry range 11;
-// entry range/receivers 11; unsigned result plus entry receivers 11; split entry acquisition
-// with unsigned result 11. Loads and call tuples stayed at their original boundaries.
-// Upper-first range with original/full role names 14/14; complete role names 11;
-// byte selection alone/upper-first/names/both 41/44/41/44; signed-byte selection 41
-// (fast control 11). Pool/fraction carriers and conditional range loads remain; all restored.
-// Round 33: lower-only scalar, split result predicates, range-field pointer and nested upper
-// scalar 17 each; guarded state value 59; noinline state/actor/fraction/admission helpers 11 each;
-// entry prop index with state wrapper/direct range 63; block prop index with them 17.
-// Round 87, on the per-use range field: result declared first 88; the inner tests merged into
-// one if 17; the state through prop_node_state 17; a node pointer for the state 17.
 // @retail 0x1aa9f0
 short __stdcall function_1aa9f0(long actor_index)
 {
@@ -282,21 +260,22 @@ short __stdcall function_1aa9f0(long actor_index)
 
 	if (!(unit->flags19 & 1) && entry && actor->prop_index != NONE &&
 		entry->unknown24 >= g_45dbd8 && !actor->unknown229 &&
-		(actor->times[4] == NONE || (real)(g_510c54->game_time - actor->times[4]) * g_510c54->rate > entry->unknown34) &&
-		!function_110ab0(actor->unknown018))
+		(actor->times[4] == NONE || (real)(g_510c54->game_time - actor->times[4]) * g_510c54->rate > entry->unknown34))
 	{
-		s_prop_datum_view *prop = (s_prop_datum_view *)prop_node_get(actor->prop_index);
-		s_prop_state_64 *state = (s_prop_state_64 *)function_25d690((s_prop_datum *)prop);
-		if (prop->unknown27 >= 1)
+		long unit_index = actor->unknown018;
+		if (!function_110ab0(unit_index))
 		{
-			real prop_value = prop->unknown28;
-
-			if ((state->unknown64 || prop_value > entry->unknown1c) && entry->unknown20 > prop_value)
+			s_prop_datum_view *prop = (s_prop_datum_view *)prop_node_get(actor->prop_index);
+			s_prop_state_64 *state = (s_prop_state_64 *)function_25d690((s_prop_datum *)prop);
+			if (prop->unknown27 >= 1)
 			{
-				if (state->unknown64 && !function_1e2030(actor_index))
-					result = 4;
-				else if (function_1c9ee0(entry->unknown24) > function_259a0(&g_4e7408->unknown0))
-					result = 3;
+				if ((state->unknown64 || prop->unknown28 > entry->unknown1c) && entry->unknown20 > prop->unknown28)
+				{
+					if (state->unknown64 && !function_1e2030(actor_index))
+						result = 4;
+					else if (function_1c9ee0(entry->unknown24) > function_259a0(&g_4e7408->unknown0))
+						result = 3;
+				}
 			}
 		}
 	}
@@ -799,6 +778,15 @@ static __forceinline long real_to_long(real value);
 // each use (retail addresses it off the view) 513 (1941 bytes); that with an object pointer and
 // `object->velocity` reads (retail spills the object pointer, not object + 0x88) 524; the object
 // pointer alone 409.
+// Round 181 (lane 3): aligned through the moved early exit only 170 rows differ: our code is
+// retail's apart from the early false exit's place (retail puts it after the first `goto local_7`
+// jump; ours is last) and the object/facing/query homes. Retail stores the true result once
+// (`mov byte [esp+0x13], 1`) and reloads it at the end, so its result is not folded to a constant
+// even though the false path has its own exit. The result preset true with the false arm first
+// 399 (the true store hoists to the entry, the exit stays last); an early `return false` with the
+// result declared true before it 510 (frame 0x54: the result folds); the facing pointer declared
+// after the flag and vector 384 (identical); the near-facing flag set before its copy 384
+// (identical); that copy read from the view directly 397.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

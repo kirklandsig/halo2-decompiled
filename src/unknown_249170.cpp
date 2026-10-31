@@ -158,6 +158,8 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // returned random-vector outputs in cases 2/3/5/2+3/2+5/3+5/all; all with sphere position helper
 // 78/460/75/477/527/473/532/535.
 // All source forms restored; case 1 fsin/xorps scheduling remains.
+// Round 58: reverse zero-field dependency 4; velocity/position/both zero components through the unions 2/2/2;
+// all velocity/all output components 2/2; entry-wide tail velocity pointer 512; const case radius 2. Body restored.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

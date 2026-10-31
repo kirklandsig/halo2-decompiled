@@ -636,6 +636,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // branch 248 (1261 bytes), with the staged product 114 (1262); the else-branch forward pointer 55 again,
 // with the staged product 217; the distance in a named local stored at once 57 (identical). A compile-only
 // /FAs build reproduces our camera colouring but returns the distance on x87 (xmm0 stays free there).
+// Round 114 (lane 6, fast): right or direction declared at function scope 57/57; the second product's
+// output through the output view (plain cross3f) 57; the forward copy as memcpy 57; the else branch's
+// cosine declared at function scope 57 (all identical code).
 // Round 133 (fast): the direction through the existing scaled_difference3f with a 1.0f scale 223 (1266
 // bytes); the forward copy field by field 232 (1274 bytes), as memcpy 57 (identical); memcpy with
 // cross3f_staged for the second product 217 (1270 bytes), for both products 221 (1272). The 3 extra bytes are

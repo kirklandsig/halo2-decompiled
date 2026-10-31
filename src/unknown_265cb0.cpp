@@ -363,7 +363,8 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// score 152 (was 152): result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
+// score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
+// Earlier: result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
 // result/range homes, inverse SIMD groups and seat-threshold reloads remain.
 // Round 57: retail's result stores are a spill of a long result (dword store, `mov ax, word` reload at
 // each tail-duplicated exit). Plain long result 241 (result home +0xc); short return type with every
@@ -506,6 +507,9 @@ real function_30bf0(vector3f *vector);
 // Round 240: reusable mode test/all-axis origin scalars/all-axis point scalars and their pairs/all
 // 323/346/319/364/342/380/395; all with ordinary result 395. Original input observations and
 // complete body restored; mode caching grows the frame to 0x354.
+// Round 246: native actor basis fields in all seven nonempty subsets, then all
+// with the native occupant basis, 152 each. Original padding, receiver expressions
+// and complete body restored; result/range/projection homes remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
