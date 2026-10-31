@@ -165,6 +165,9 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 // default then the selected byte 102; entry flags read before the selected byte 26; the bools
 // set in both arms 95 (714 bytes). Both remaining causes are 0x2cbf0's prototype (level width,
 // register-argument order), which the held file also declares.
+// Round 28: flags field read at each use 110; flags computed per entry inside the j loop 187
+// (684 bytes); struct assignment for the copy 16; category test through the original 16; first
+// record tested `i == 0` 17.
 // @retail 0x133f70
 void function_133f70(s_133f70 const *record, bool arg_2)
 {
