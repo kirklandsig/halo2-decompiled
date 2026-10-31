@@ -592,6 +592,8 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // share. What still differs: the frame stays 0x8c against retail's 0x80 and the datum/tag homes differ.
 // Original body kept.
 // score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Earlier 280 from 280: Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain. BLOCKED-BY 0xba300.
 // Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain.
 // Round 9 (lane 10): retail's case-3 failure byte is a dead store into the slot the audibility output
