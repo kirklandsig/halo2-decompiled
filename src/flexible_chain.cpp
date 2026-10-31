@@ -313,6 +313,12 @@ void __stdcall function_1160c0(real dt)
 // Round 242: Long/word/signed-byte/byte node ordinals 290/180/282/282;
 // with invariant reciprocal 296/190/279/279. Original short induction,
 // reciprocal scope and complete body restored; segment/previous/axis homes remain.
+// Round 43 (one-file LTCG link of this file with the callee closure and the inlining ballast object,
+// equal to the full listing): renaming axis/length/segment/previous/offset (five name sets, both
+// orders of each pair) leaves every stack home and instruction unchanged, so the reversed slot order
+// does not follow local names; the rotation through an inline (vector, axis, sine, cosine) helper
+// on an offset copy, explicit or staged cross terms, about 240 (harness 218 against 161, 1370 bytes);
+// stiffness computed after the tick increment about 183 (harness 165); the axis scaled with *= 179 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
