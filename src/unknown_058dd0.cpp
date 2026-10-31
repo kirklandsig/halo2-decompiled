@@ -244,6 +244,9 @@ void c_session_state_pre_game::enter(long a, long b, long c)
 // bytes); `if (!result)` split from the live test 65; `bool result;` declared first 65; the
 // 0x6e6b0 test as its own `if (result)` 69; one early `return result` for the three guards 63 (183
 // bytes, the same plan with `xor bl, bl; mov al, bl` exits).
+// Round 183 (lane 3): with 0x6e720 taking the session in EBX (a variant pointer named before its
+// summary getter, not kept there) the success test with `result = true` inside its block MATCHES; the
+// same form with the current 0x6e720 69 (174 bytes); the 0x6e720 preset stored-pointer opening 69.
 // @retail 0x6e500
 bool c_session_state_start_game::update()
 {
@@ -815,6 +818,10 @@ void c_session_client::function_06dbc0()
 // early return or joined into the condition 45/45 (diagnostic: a hand copy of the helper); memcmp size
 // as sizeof(s_session_id), an equal-id return before the call and a return after it 43 each
 // (identical). BLOCKED-BY 0x58d90: retail inlines that existing helper, ours stays out of line (/Ob0).
+// Round 183 (lane 3, fast): a member pointer named for the memcmp 43; a client copy of this carrying
+// the session read and the call 43; case 7/8 as `if (!flag) break; return;` 43; the mode/type test as an
+// early return before the compare 43; a named differs result with sizeof(s_session_id) 43 (all the same
+// code). The function is virtual (standard thiscall), so no caller or convention lever applies.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
@@ -1180,70 +1187,13 @@ static __forceinline long function_724a6(s_surface_description *arg_0)
 }
 #pragma inline_depth(255)
 
-// score 7 (was 7): the session member is loaded into ecx (retail eax), the level's address into
-// edx (retail ecx) and the reloaded type into eax (retail edx), one rotation of the scratch
-// registers; the type filter (cmp 5/je, cmp 3/je, cmp 4/jne default) and both arms are retail's.
-// The named condition gives that filter (the || test written in the if lays the default arm
-// first, 98), and 0x1932c0 stays out of line through the out-of-line wrapper above (inlined in
-// the default arm otherwise, 568 bytes; a noinline declaration in its own file also gives 7 but
-// costs 0x1931d0 its match, where retail inlines it). The barrier keeps the inlined 0x193440
-// reloading the type.
-// Goto-filter forms (9): one 5 || 3 || 4 test or its negation (100), case 5/3/4 in one switch
-// (108), cases 1-2 and 3-5 with __assume(0) (134); separate case 3 and case 4 (103); 5 || 3 then
-// a case 4 switch (100); a negated && test before the special block (100); the || test around a
-// case 1-2/3-5 switch with __assume(0) (111); an else-if chain of equality gotos (7). Member at
-// each use 165; member before session root 9; common limit result 190; retained width/minimum
-// results 99/162; typed variant storage/native record copy 9/9; typed storage with helper
-// classification 128; helper classification with fallback noinline 128, without the barrier 145;
-// fallback noinline alone 9; immutable member 9; member after collection 10; immutable variant,
-// summary, values or type 9; unsigned type 9.
-// Named-condition forms: no barrier 86; the type read from the values record 27 (reloads, but
-// loads before the limit store); an unsigned type read 86; summary/selected results as if
-// statements 7/7; member after the collection 8; values first 7; member through an inline getter
-// 7; 0x5c240 called directly is inlined (580 bytes; a noinline declaration here is ignored).
-// retail tests the variant type as cmp 5/je, cmp 3/je, cmp 4/jne default,
-// (MiniMax S run 4: an else-if chain of equality gotos for 5, 3 and 4 gives retail's filter but
-// scores 7, a gain under the bar: the session member, level address and reloaded type stay in
-// the wrong registers.)
-// ours turns the 3/4 cases into a jl/jg range; the session member travels in eax (ours ecx)
-// and the reloaded type in edx (ours eax). Every goto-free form lays the default block out
-// first: one 5 || 3 || 4 test or its negation (100), case 5/3/4 in one switch (108), cases
-// 1-2 and 3-5 with __assume(0) (134); separate case 3 and case 4 (103); 5 || 3 then a case 4
-// switch (100); a negated && test before the special block (100); the || test around a
-// case 1-2/3-5 switch with __assume(0) (111). The table itself is function_193440 inlined.
-// Member at each use 165; member before session root 9; common limit result 190;
-// retained width/minimum results 99/162; typed variant storage/native record copy 9/9;
-// typed storage with helper classification 128. Frame and first +0xe remain unchanged.
-// helper classification with fallback noinline 128; without the barrier 145;
-// fallback noinline alone 9; immutable member 9; member after collection 10;
-// immutable variant 9; immutable summary 9; immutable values 9;
-// immutable type 9; unsigned type 9.
-// Further trials: member/level-address allocation, range dispatch and reloaded type remain.
-// own fallback noinline/held dispatch 9; own fallback noinline/classifier with barrier 7.
-// own fallback noinline/classifier 86; own fallback noinline/classifier with native output 7.
-// own fallback inline/held dispatch 57; own fallback inline/classifier with barrier 128.
-// own fallback inline/classifier 145; own fallback inline/classifier with native output 128.
-// new classifier/uniform session 166; new classifier/collection at use 44.
-// new classifier/session and collection 184; new classifier/session and output 166.
-// new classifier/collection and output 44; new classifier/all roots 184.
-// new classifier/member at use 165; new classifier/all roots and member 153.
-// classifier own inline with barrier 7; classifier own force-inline with barrier 7.
-// classifier own inline without barrier 86; classifier own force-inline without barrier 86.
-// Round 42: current fallback wrapper/existing classifier 7; member through the owning path 7;
-// initialized level 132; collection direct at first/second/third use 7/7/7;
-// first width result as bool/long 7/7. The three-register rotation remains.
-// Entry level/type/shared-variant workspaces and role names 7; width inline 7,
-// force-inline 235. Long/unsigned-long classification results with either
-// or both upper clamps as conditional assignments 7 in all eight forms.
-// Entry level/type declarations and a shared variant workspace, alone and combined: eight forms 7.
-// Width helper declared inline in its own unit and every prototype 7; force-inline 235 (584 bytes).
-// All restored; the member/level-address/type scratch-register rotation remains.
-// Round 14: level declared at function scope (first/after the collection) 7/7; variant or type
-// declared at function scope 7/7; the collection at each of its three uses 44.
+// 0x1932c0 stays out of line through the wrapper above (inlined in the default arm otherwise),
+// and the barrier keeps the inlined 0x193440 reloading the type.
 // @retail 0x72330
 void function_72330(c_session_state_matchmaking *state)
 {
-	c_class_58d20 *session = state->owner->session_a;
+	s_session_owner *owner = state->owner;
+	c_class_58d20 *session = owner->session_a;
 	long member = session->member_index;
 	s_member_quality_collection *members = (s_member_quality_collection *)&session->value4c;
 	s_matchmaking_player_values *values = (s_matchmaking_player_values *)state;
@@ -1865,6 +1815,10 @@ bool network_session_host_become_leader(c_class_58d20 *session);
 // NONE duration sentinel 131; preparation and duration in one gate 138; completion nested in
 // the success arm 97; bool readiness with the failure arm first and combined mode gate 96.
 // Original body restored.
+// Round 183 (lane 3): with 0x6e720 taking the session in EBX (a variant pointer named before its
+// summary getter, not kept there) `bool ready = 6e720 && 6e6b0; if (ready) { ...; ready = remaining == 0; }
+// else unknown18 = 0;` MATCHES (also with 0x6e720's plain `for` copy loop); with 0x6e720's preset
+// stored-pointer opening 94 (426 bytes).
 // @retail 0x72700
 bool c_session_state_start_match::update()
 {

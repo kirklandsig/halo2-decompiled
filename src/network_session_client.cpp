@@ -709,6 +709,19 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
 // test); the value alone before the loop 137; the variant alone before the member count 52. Named
 // copies inside the loop or a `long const *` to the value are propagated back (session ESI).
+// Round 183 (lane 3): `const byte *variant = session->data4db0;` declared before the summary getter and
+// passed to 0x6e910 gives the session EBX (index ESI, player EDI) and 22 (not kept: a one-use pointer local
+// while this function does not match); with it 0x6e500 and 0x72700 match in their recorded forms. Left:
+// the opening's second lea after the je and a one-step scratch rotation through the summary lea, the mask
+// temp and the copy loop. The variant at function top, after the summary or in the loop block: ESI; the
+// summary as `flag49fd ? data4a00 : NULL` with the variant in the loop block: EBX but an if/else summary
+// 126. The preset stored-pointer opening (retail's lea schedule and opening registers) keeps ESI in every
+// form tried (real 46, with the variant 46; ~600 first-pass harness forms); the plain `for` copy loop gives
+// retail's copy code but folds the mask read into the test (100, 477 bytes; one extra temporary before the
+// player loop unfolds it in the harness). Pointer locals to the mask or the 0x49c8 value are propagated
+// back; a two-ternary stored-pointer opening keeps EBX and retail's summary/mask registers but adds the
+// ternary code. First-pass harness: only in-loop uses decide the order (one session use fewer or one index
+// use more flips it); out-of-loop uses, names and a fastcall receiver do not.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
