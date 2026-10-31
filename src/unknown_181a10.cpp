@@ -385,7 +385,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // Indexed second/first/both shape reads 24/79/8; indexed second kind 24; both/second entry
 // shape reads 135/135; indexed second/both shape addresses 24/8; first body through an entry
 // pointer 8; contact index declared outside the loops 8; first body read in the outer loop 211;
-// second's body array in a local 158; second's count in a local 151.
+// second's body array in a local 158; second's count in a local 151. Round 60: the loop indices
+// renamed outer/inner 8 (same slots: these are spill homes, names do not order them); the collector
+// and contact buffer declared before the loops 181; i and j declared before the loops 8; an early
+// NONE return in place of the enclosing test 87; second declared before first, assigned in order 8.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
