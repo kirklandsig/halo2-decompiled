@@ -978,6 +978,13 @@ struct s_bitmap_texture_view
 // masked value carried through a pointer-typed local, and the array typed as pointers all give
 // byte-identical code to the baseline (3). Still the masked level address is loaded into EDX where
 // retail reuses the base register, which is dead after that load.
+// This round (score 3, was 3): the mask spelled as a complement, a dword cast, a zero-padded literal,
+// the array through a pointer local, a store-then-mask pair, a named local for the unmasked address
+// and a local copy of the level all compile identically; the masked level address is still loaded
+// into EDX where retail reuses the dead base register. Also this round: the mask as an unsigned
+// literal, a long cast around the whole expression, a dword local masked and then stored, the mask
+// operands the other way round, an unsigned long local and the element reached by pointer
+// arithmetic all give the same three instructions.
 // score 3 (was 3): the masked level address is loaded into EDX, retail reuses the base register,
 // which is dead after that load.
 // Entry data declaration 3; level-index local 3; reversed subscript 3; 28-bit field view 3;
