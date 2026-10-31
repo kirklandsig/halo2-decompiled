@@ -195,6 +195,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
 // 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
 // its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
+// Round 258: Both captured normalized components used for native direction publication, y/x or
+// x/y capture order and publication after value08/position/distance/parent: 177/177/177/177/177/177/177/177.
+// Original native copy, captures and body restored; early Y preload and XMM allocation remain.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)

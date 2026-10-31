@@ -118,7 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
-// score 200 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 200 (was 200): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
@@ -127,13 +127,13 @@ static inline void quaternion_transform_vector(
 // home, but our frame then shrinks to 0x18 and the transform spills one slot instead of retail's three); the axis
 // components as named locals 282 and 325; a result vector in the transform helper 367 (frame grows, code grows).
 // Frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
-// score 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
+// Earlier 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
 // the sine half in the matrix parameter's home slot ([esp+0x38]) and the cosine half at the bottom local
 // ([esp+0x10]), while ours keeps both halves in the two-member struct at [esp+0x14]/[esp+0x18]; retail holds the
 // quaternion in xmm2/xmm1/xmm0 (i/j/k) where ours uses k/i/j. Tried: cross products with the vector operand first
 // 237 (identical - VC commutes the products); the axis components as named locals 344; the scale before the
 // crosses 325.
-// score 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Earlier 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Lane 6 r85: helper with `s` computed first 302 (s and the doubled scalar hoisted above the matrix copy,
 // the doubled scalar spilled twice as retail, frame 0x20, constants one xmm lower); with vector-first
@@ -218,6 +218,9 @@ static inline void quaternion_transform_vector(
 // 0..7 237/291/281/293/200/267/265/252. Staged axis plus real scale kept: 200 plain,
 // 1321/1317 bytes. Five further coefficient orders 256/205/205/257/260; scalar before
 // cross/ratio/scale 310/200/200. Frame and quaternion/cross spill homes remain.
+// Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
+// native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
+// frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
