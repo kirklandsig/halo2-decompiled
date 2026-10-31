@@ -4,6 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
+#include "vector2f_products.h"
 #include "globals.h"
 #include "unknown_1fa590.h"
 #include "unknown_26c380.h"
@@ -21,20 +22,9 @@ struct s_sector_edge
 	word sectors[2];
 };
 
-struct vector2f
-{
-	real i;
-	real j;
-};
-
 static inline real dot_product2d(point3f const *point, vector2f const *vector)
 {
 	return point->x * vector->i + point->y * vector->j;
-}
-
-static inline real cross_product2d(vector2f const *a, vector2f const *b)
-{
-	return a->i * b->j - a->j * b->i;
 }
 
 static inline void vector2d_from_points3d(point3f const *p0, point3f const *p1, vector2f *out)

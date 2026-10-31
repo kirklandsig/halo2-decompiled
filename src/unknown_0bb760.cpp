@@ -695,6 +695,14 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the
 // loop's bookkeeping differ.
+// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure; positional/aligned, base 84/55 = full 91):
+// plain `for (i = 0; i < count; i++)` with `current = &base[count + i]` and `result = true` at the body's
+// top/end/after the copy 129/55 each (563 bytes: source kept in its stack slot as retail, but the false
+// result takes BL, EBX is pushed at entry, the two false exits merge and the destination takes EDI);
+// on it `&base[i + count]`, `base + count + i`, a source pointer, current declared first, the copy first,
+// `colors` name, count declared before the array, a flags local 129/129/129/129/143/129/113/129; early
+// `return false` 170; result declared in the block 95; `result = count > 0` after the loop 168; result set
+// before the loop 91 (aligned 75); pointer increments in a plain for 97, inside the count test 108.
 // Direct size/24 count 161; const base, entry and function views 91;
 // unsigned count 171; component clamp loop 91; scale loop and both loops 90
 // (one-count gain rejected).

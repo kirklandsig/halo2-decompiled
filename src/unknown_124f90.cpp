@@ -1283,6 +1283,13 @@ long function_2197f0(real gain);
 // the first branch written with divisions 207 (636 bytes); clamps as `t = time; if (t > 1.0f) t = 1.0f;`
 // 136, as `t = 1.0f; if (time < 1.0f) t = time;` 190 (642 bytes). Compile-only: clamp ternary spellings
 // and dot/product term orders are canonicalised (no change).
+// Round 133 (one-file LTCG harness, exact here: 137): no index local, class index passed raw 179 (670 bytes:
+// retail's `movsx eax, cx` and raw `push ecx`, but the table load folds into the add); the raw index for the
+// call only 179; the hold sum through `decibels_interpolate(0, gain, 1.0f)` 184 (704 bytes), through the
+// existing decibels_add on the gain's bits 163 (686 bytes; retail's long copy of the ducking gain appears);
+// the first branch with divisions 207 (636 bytes), plus a fade_out local 207; a fade_out local with the
+// inverse 141 (670 bytes); the time sum product-first 137 (identical). Left: the else branch and the first
+// branch are retail's code with XMM2/XMM3 (and the 1.0 constant's register) swapped.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3137,9 +3144,13 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 86 (was 86): retail holds the playback base in ecx, builds the pointer with `lea esi,[eax+ecx]` and folds
-// the sound-system time into the compare; ours hoists the time into edx and holds the base in edi. The mode switch
-// still needs a second non-empty case.
+// score 49 (was 86): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
+// compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
+// sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
+// ternary. Earlier (86): retail holds the playback base in ecx, builds the pointer with `lea esi,[eax+ecx]` and
+// folds the sound-system time into the compare; ours hoists the time into edx and holds the base in edi. The
+// mode switch still needs a second non-empty case.
 // Frame 8 agrees; playback base, clock scheduling and promoted mode remain.
 // Retained clock receiver 163; voice record reference 86; combined receivers 163; role names 86;
 // native update/mode/both flag words 86/86/86; receiver plus native flags 163.
@@ -3172,6 +3183,13 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // tag 86/86/86; conditional native sound-tag value 204; pool/value and receiver/value 204/204;
 // pool/readonly 86; all 204. Native tag capture expands frame eight to 24 and length 558 to 588;
 // original clock, iterator, mode and call inputs restored.
+// Round 133 (one-file LTCG harness, exact: 86): matched 0x128020's loop-top `sounds = g_4e637c;` with its
+// `(s_sound_playback *)sounds->data + index` pointer 86, the pointer form alone 104; the time in a local 86;
+// `!(start > time)` 86; the getter-read test with the pointer inside it 49 (kept); on it, the pool global at each
+// use 49; a for loop 49, with `case 1: continue;` 78 (retail's `sub eax, 0` switch, but pool/index swap
+// EBP/EBX), `case 1: goto next;` in the do-while 78, case 1 first 78, case 0 ending in continue 78, long mode 89,
+// the switch on the ternary 89, an if/else mode 78, `default: continue;` 49 (dropped); empty case 1 with or
+// without `default: __assume(0)`, case 1 first, cases 1 and 2: 49 (empty cases are dropped).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3181,9 +3199,9 @@ void function_1282d0(void)
 	{
 		do
 		{
-			s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
-			if (sound->start_time <= SOUND_SYSTEM->time)
+			if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
 			{
+				s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
 				if ((byte)function_125e60((s_looping_track_sound *)sound))
 				{
 					long reason;
@@ -3969,6 +3987,13 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // 0x129380 only (arrays direct to 0x129100) 129 (527 bytes, copies through EBX/EBP), with long restart 110.
 // Compile-only: realignment is decided late (a size held in a variable or a static const, fills of 0xff,
 // clears of struct fields or through a pointer all realign; /Os avoids it but changes the whole body).
+// Round 133: the restart block through the matched sibling 0x125a90(1) (its resume case is this block) 212
+// (473 bytes: LTCG keeps 0x125a90 out of line); the sibling's `long` restart counter 76 (everything up to the
+// clears is retail's, first difference +0x57 -> +0x10a; only the clears' copies and the padding they shift
+// remain); with it, statement clears 139 (the body is retail's; only the realigned prologue and its pushes
+// differ), `= {}` arrays 139, memset results in two named locals 77. Compile-only: statement clears realign
+// with clears of 0x40 bytes too, with `__declspec(align(4))` arrays, long/char element views, a returning clear
+// wrapper (inline/forceinline) or the player loop as a for loop.
 // @retail 0x125b40
 void function_125b40(void)
 {

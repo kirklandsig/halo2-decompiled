@@ -289,6 +289,14 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // no loop-entry jump over the pad); on it an early return on `count <= 0` 144 (aligned 23), the copy size as
 // `sizeof * count` 144 (23), `count >= 1` 145 (26); the block form with the geometry pointer renamed 54 (same code:
 // the slot order does not follow that name); on the indexed form the loop index declared before n 145 (23).
+// Round 112 (fast): the parameters as (mode, cache_index) at the definition and call 54 (same code: the one
+// register argument stays EAX). The arrival register follows the colouring of cache_index, the count and the
+// clears' zero: block form index EAX, count CX, zero EDX; indexed form EDX/CX/EAX 144; a named long count
+// at the block top ECX/AX/EDX 140 (retail EDX/AX/ECX; with retail's zero in ECX the six clears are 6-byte
+// stores, which is most of the indexed forms' 13-16 missing bytes). On that named count: the copy source as
+// the field 140, entries set after the advance 155, entries set before the loop 158, index declared before n
+// 141, the count as a short local 177 (480 bytes). A /Gd compile-only first pass loads cache_index into EBX
+// (block form) or EBP (indexed), so it does not predict the arrival register here.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

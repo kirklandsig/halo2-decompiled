@@ -163,6 +163,15 @@ bool function_a7670(long object_index);
 // cleanup, scores 182/197/259/263/182/197/259/263. Original executable form restored.
 // DL204: reverse first/second/both membership indices 260/256/245; reverse first cursor
 // alone/with reverse second 310/328; indexed-cleanup counterparts 241/336/252. Original restored.
+// Round 97 (lane 7): on the per-arm list base, second scan setting the shared found flag + inner bound
+// from the field + plain indexed cleanup 233 (957 bytes; aligned differences 93 -> 52: retail's scans, retry
+// head, cleanup and BL admission; left: outer index EDX, shifted spill slots, the body index stored at its
+// definition and loop tail where retail keeps it and the list in ECX/EDX on the unflagged path, the header
+// address folded after the `local_9 > 0` branch, loop padding); with a nested if for the flagged body 233; with
+// a counted retry loop 233; with the admission flag assigned in if/else arms 249; the shared found flag alone
+// 260. A renamed outer index moves no spill slot. Lead: on that base the outer selector is zeroed into EDX
+// (retail EAX), so the list lands in EAX (retail EDX) and every spill slot shifts by one; the one real extra
+// instruction is the body-index spill at loop entry (retail spills it only on the flagged path after `dec`).
 // @retail 0x278f00
 void function_278f00()
 {

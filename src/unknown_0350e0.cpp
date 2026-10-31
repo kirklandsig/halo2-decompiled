@@ -3820,7 +3820,7 @@ void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab co
 s_bit_vector_pool *function_1320f0(long kind, long count, bool flag, long mask, byte const *projections,
     byte const *origin, real radius, void *filter, real plane_offset, long bsp);
 bool first_person_weapon_get_marker(long object, long marker, point3f *position, vector3f *forward, vector3f *up);
-real function_31b40(vector3f *direction, vector3f const *up);
+real function_31b40(vector3f const *direction, vector3f *up);
 void function_31660(long light, long tag, s_index_state_31660 *visibility, long parent, long root, bool flag, bool *special);
 void function_31c20(s_bit_vector_pool *visibility, bool flag, long parent);
 void function_2cb30();

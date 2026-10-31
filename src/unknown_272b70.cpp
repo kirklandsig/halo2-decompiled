@@ -722,7 +722,7 @@ void function_273670(long ai_index, bool flag)
 	}
 }
 
-void function_201520(short value, long type, long a, long b, long c);
+void function_201520(short value, long type, short a, bool b, bool c);
 void function_204010(long squad_index, long other_squad_index);
 
 /* for every squad an ai index names (or the squad of a starting location),
