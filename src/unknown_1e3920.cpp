@@ -622,6 +622,10 @@ real function_267370(long object_index);
 // compiles to the same products (canonicalised). Parent through an if 352; the later class test through
 // `type` 242; carrier chosen before the resets 376; type read after the plane test 127; point declared at
 // the top of the block 98.
+// Lane 9 r52 (plain): cross3f_staged staged i, j, k 108; left declared before up 98; a named second-cross
+// output pointer 98; a named sample pointer for 0x1e3a00 and the zone test 254; up/left declared at the top
+// of the block 112. The compile-only /FAs model forms retail's -1 web (`or ecx, -1` at the resets, the
+// carrier compared against ECX) but keeps `type` in EDI there, so it does not explain the LTCG sharing.
 // Round 23 (plain checks, 98): retail's two crosses order their product operands differently from
 // each other (first cross: the first three products flipped against ours; second: the last four),
 // while ours compiles both alike. Locate-only: the first cross's global axis through a local pointer
@@ -1057,6 +1061,14 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // ternary substitution result): c 356; c+d 363; b+d 350; b+c 357; a+b 346; a+d 355; a+c 350; b+c+d 365;
 // all four 369. First difference unchanged: retail's -1 web (ESI) reaches the loop-entry
 // `squad_index != NONE` compare with squad_index in ECX; ours keeps squad_index in ESI and -1 in EDI.
+// Lane 9 r52 (fast): an unrotated top-tested substitution loop gives retail's whole entry (-1 in ESI, the
+// squad index in ECX): `bool replace = true; while (replace && next != NONE)` with the ternary result 302
+// (a flag loop, kept only with a match); with the byte squad flag 322; with the mode switch 324; unit arm
+// first on those 324 aligned worse. Flag-free `if (substitute && squad) while (squad_index != NONE &&
+// next != NONE)` gives the same loop shape but LTCG then inlines 0x1e4990 at the in-loop call 423 (also
+// with the advance under `if (ternary) ... else break;` 423). Unit field read at each use: two sequential
+// guards 310 (a repeated test), one guard 333. VC places the unit arm right after the perception arm
+// whatever the source order (goto-ordered arms, cleanup first, an inlined unit arm, a switch on the bit).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1687,6 +1699,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // named seed pointer for every random draw (on 263) 333; the counter increment as `+= 1` (on 263) 263 (same code);
 // the weapon pair declared at function scope (on 263) 263 (same code). Our callee closure has no stub and nothing
 // writes or takes the address of the object-pool global, so retail's held pool register is allocation, not a blocker.
+// Lane 9 r52 (fast): retail loads the object-pool global once into EDI above the inlined 0x1e5240's NONE
+// test and re-reads its data field at every lookup; ours CSEs the data field and reloads the global (the
+// callees in that span are leaves, so it is not a callee summary). `inline` on 0x1e53e0 265 (0x2758b0
+// 21 -> 113); the pool read into a local before 0x1e5240's test 263 (same code); NONE-first weapon query
+// results 275; the lookups through a plain static getter taking the pool 263 (same code).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -481,6 +481,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
+// becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
+// both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
+// but splits the tail into a 16 bit load for the compare and a 32 bit one for the update; taking
+// the present teams out of the volatile local gives the shared 32 bit reload, but the player loop
+// then keeps them in a register and loses the load/or/store.
 // score 32 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
 // retail; the comparison and the update of the two masks use different registers, and the input
 // counter loop uses different ones too. Retail keeps the word mask in a register after the loop

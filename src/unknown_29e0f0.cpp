@@ -155,6 +155,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 205: Consistent link-array base with outer/inner/both actual cursors 464/433/447; record cursor 433;
 // outer-record/inner-record/all cursors 500/455/436; all with shared bitmap operations 458.
 // All restored; selected-default, endpoint and bitmap homes and root-table roles remain.
+// Round 245: complete squared/length metric deltas via the shared point difference or
+// native whole-vector initializer, eight non-original pairs 402/398/418/398/418/398/418/398.
+// Original scalar producers and entire body restored on the byte-endpoint/frame-0x64 graph.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

@@ -207,6 +207,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Round 240: inner descriptor cursor/two-axis dispatch/byte ordinal and their pairs/all
 // 369/417/448/443/452/416/468; direct table-end cursor 512 (fast control 374).
 // With full-context control recovered at 355, the descriptor cursor scores 419; original body restored.
+// Round 244: complete final base-layer receivers, seven subsets, fast
+// 378/374/378/375/379/379/379; complete native layer values 520.
+// Original final consumers and complete body restored (fast control 374).
 // Round 49 (lane 16): the opposite vector's magnitude from float squares (no double casts) gives
 // retail's x87 block and vector homes exactly (fast 372, plain 409 at 1879 bytes alone); with each
 // switch case selecting its own sample set 324 plain at 1893 bytes (kept); the angle call as
