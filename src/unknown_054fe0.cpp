@@ -1117,6 +1117,17 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 }
 
 // score 67 (was 67): Frame 0x74 versus 0x78; output/cursor ownership, extrema homes and member-bound reread remain.
+// Round 102 (lane 7): a one-file LTCG harness (this file plus the bodies of every callee the function and
+// its two callers reach) reproduces this function exactly: 67 here, 86 for host-after-observer with
+// (session, latency), 0 for that plus the volatile member_count re-read. On that recipe: the channel lookup
+// through the existing member-state getter 98 (329 bytes; adds a NULL test); bound tests swapped 86; qos
+// declared at the loop top 86; host and member arms each setting the bit 108 (338 bytes); `mask = mask |
+// bit` 86; `session->member_count > i` as the loop test 86. On the current body the state getter 95
+// (329 bytes). Real --fast agrees: the four recipe forms 86 each (callers 140 and 19), the getter 95 (callers
+// stay matched). The current (latency, session) order already gives retail's convention (session in EBX,
+// latency pushed, as 0x658c0's call shows); what differs is that ours keeps the CSE'd count in EAX and
+// gives the member cursor EBP and latency ESI, where retail gives latency EBP, keeps the cursor in ECX
+// (spilled around the copy) and compares the count from memory.
 // Earlier: the frame is still four bytes smaller than retail's and the
 // count, the minimum and the maximum are still set up in another order; this
 // round's trials in this file found no lower form of them
@@ -1300,6 +1311,17 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 
 /* the host gives the players their properties: unique names, and teams when
    the game has teams */
+// Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
+// differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
+// measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
+// in the requested cursor.
+// score 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// than 8, takes the memset path) and reads the parameters through the 0x4db0 member rather than
+// through the session_get_data_4db0 call; adding both was measured at 211 and 222, because MSVC
+// still compares the parameters with `xor edx,edx` where retail uses `test edi,edi`, reloads the
+// owner from the stack where retail keeps it in EDX, and computes the requested cursor with
+// `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
+// Still differs in the owner, the name count and the zero's allocation and the requested cursor.
 // score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier: the frame 0xe4 still agrees; the owner, the name count, the
 // zero's allocation and the requested cursor are unchanged, and this round's trials
@@ -1912,7 +1934,21 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// Round 31 (lane D): score 339 (was 339): unchanged this round; the permuter run was stopped by
+// the background time limit before it produced a result. Still differs in retail's conditional move
+// (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
+// the type, membership and member-index homes and the saved registers.
+// score 339 (was 339): unchanged. Retail writes output->state with a conditional move (cmovne at
+// +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
+// lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
+// member-index homes and the saved registers differ.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
+// 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
+// current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
+// three extra homes match 0x5a680 inlined with (NULL, &index) and its membership result kept; round 5
+// found the full build calls it from this /Ob1 file and a local inline copy would be a twin, so the function
+// stays BLOCKED-BY 0x5a680 as well as by the cmovne (/arch:SSE) noted below.
 // Earlier: Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers differ.
 // Round 216: complete state-field observations 378; with native membership/player/selected-member
 // references 378/378/377; membership-player/membership-member/player-member 378/377/377;

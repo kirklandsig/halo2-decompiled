@@ -146,6 +146,10 @@ static __forceinline long real_to_long(real value);
 // Round 88: dot3f argument orders 6/6; direct < 0 2; slot-field projection 50;
 // vector3f_add_scaled 2; with point difference 39; manual point difference 39;
 // real_point3d_set 2. Original two-difference body restored.
+// Round 38 (fast): a facing pointer for the k and i actor reads with slot_state->direction.i 2;
+// slot_state->direction for all three direction reads 50 (472 B); a facing pointer for all three 6
+// (also before the helper call, or for k/j, or j/i with direction.i through the slot 6 each). A
+// one-file LTCG harness (exact: 2) over 136 spellings of the dot never loads direction.i first.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

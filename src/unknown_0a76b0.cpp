@@ -3083,31 +3083,6 @@ bool __stdcall unit_action_vehicle_board_update(long unit_index, long type)
 
 /* ejects from a vehicle (type 32), or (when asked) finishes an ejection at
    once */
-// score 2 (was 4): only the vehicle index reload after the flag store differs (ours ECX,
-// retail EAX). Earlier: failure-exit order (retail puts the early vehicle/seat exit, `mov al, dl`,
-// before the constant-false exit) and the flag store before the active OR.
-// Late success, entry-first, byte/long/word completions 138 each; per-use actions 133;
-// common completion 15; common callback 109 (restored); split admission 115;
-// flags publication 35, split flags 118; structured completion 15 (kept),
-// structured flags 35; structured result after vehicle lookup 30.
-// Round 91: flag set as one ternary expression 15; vehicle/seat early return 115 (result
-// moves to a stack byte); nested vehicle/seat ifs 15; flags local stored once 35;
-// active-type guard `return false` 113.
-// Round 50: the vehicle/seat test as one `goto done` to the single exit 4 (retail's exit order),
-// kept; with it, the active OR before the flag set/clear 64 (364 bytes); `result = true` before the
-// set/clear 28; the flags as one value ternary 26 (345 bytes); `result = true` after each
-// function_cc810 call 52; the permuter (35 tries) found nothing below 4. What remains: retail
-// stores the merged flags before `or [ebx+8], 1` and reloads the vehicle index into EAX; ours
-// loads it into ECX ahead of the store.
-// Round 29: the active bit set with bit_vector_set (as the other handlers set theirs) gives
-// retail's store-then-OR order, 2 (kept); only the vehicle reload stays in ECX (retail EAX).
-// bit_vector_set for the flag set/clear too 34 (alone 34); the OR in both set/clear arms 56;
-// `result = true` before the bit set 26; the bit set before the flag set/clear 64 (364 bytes);
-// the set/clear test inverted 5; `result = true` after the call 26; the permuter (34 tries) 2.
-// Round 29 (lane 14): the other seven orders of the result/unit/actions/vehicle declarations
-// 2/2/4/28/28/2/2; unit_action_active() for the active test 2 (same code); the typed type20
-// flag read 2 (same code); the +5 byte in a named bool for both tests 125; the flags word as
-// dword 2 (same code). Lead: the callee 0xcc810 is unmatched; its body may set the reload register.
 // @retail 0xeb3c0
 bool __stdcall unit_action_vehicle_ejection(long unit_index, s_unit_request *request)
 {
@@ -3131,7 +3106,6 @@ bool __stdcall unit_action_vehicle_ejection(long unit_index, s_unit_request *req
 		{
 			function_e6960(unit_index, 0x20);
 			result = true;
-			function_cc810(vehicle_index);
 		}
 		else if (function_10f430(unit_index, 0x7000101, 0x7000101, 0x7000101, 0x80000c4, 0.0f, 0, 2))
 		{
@@ -3141,8 +3115,9 @@ bool __stdcall unit_action_vehicle_ejection(long unit_index, s_unit_request *req
 				actions->unknown00 &= ~2;
 			bit_vector_set(actions->active, 0x20, true);
 			result = true;
-			function_cc810(vehicle_index);
 		}
+		if (result)
+			function_cc810(vehicle_index);
 	}
 done:
 	return result;

@@ -975,6 +975,9 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // The one-point phase gain is rejected; original predicates and body restored.
 // DL204: conditional blend/loop preservation 328/322/309/368; native three-long name-prefix
 // comparison alone/with blend updates 338/349/361/386. All original executable forms restored.
+// Round 459: Unsigned state/channel/both flag domains 210/210/210; uniform phase mask with
+// original/state/channel/both domains 337/337/337/337; all with retained phase predicate 315. All
+// executable trial forms restored.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {
