@@ -1014,6 +1014,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copies the count into ECX for upper); copy loops indexed by the destination (`i = lower; i < upper`, `i = upper;
 // i > lower`, both) on the current body 371/373/373, on the plain-entry form 364/361/361; on the plain-entry form the
 // direction step computed before the copy loops 358, the flag set from `removed < position` 390 (1162 bytes).
+// Round 140 (lane 4): on the current body, lower as `removed <= position ? removed : position` 49 (same code);
+// upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
+// `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
+// cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

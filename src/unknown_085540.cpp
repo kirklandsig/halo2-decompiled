@@ -943,6 +943,11 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // before start 32 (and 0x6a8a0, 0x80e10, 0x18f260 worse). With the barrier: the header memset
 // before `unknownac = 0` 19; `long size` before the count increment 19. A compile-only build
 // gives the +0xc/+8 ring stores and the hoisted header store for every statement order.
+// Round 140 (lane 4): the ring pointer declared first in the block 25; `unknownac = 0` ahead of the
+// ring stores 200 (644 bytes); `header.value` assigned before kind and size 25; the count increment
+// after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
+// wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
+// the reader's local non-volatile 250 (its zero stores vanish).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
