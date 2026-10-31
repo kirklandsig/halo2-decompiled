@@ -379,11 +379,11 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 39 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
+// score 32 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
 // the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
 // d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
-// (n.i or position.x loaded first) in plane 1, the top/bottom planes and three diagnostic tests.
+// (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
 // Round 51 (lane 16): retail's has-plane arm jumps past the plane-4 transform, so the shared
 // transform after the if/else was a behaviour difference: the transform back in the else arm 99
 // (2818 bytes, the stored unit normal forwarded), with that normal set through vector3f_assign
@@ -575,6 +575,13 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // pointer with x0 through it 83, with x0 through the result 39 (same code). Compile-only: the x term
 // written `n.i * position.x` still loads position.x first in every plane; one plane pointer reused
 // for planes 0-3 49 (harness, forwards the zero distance).
+// Round 185 (lane 3, fast; kept form plain 32): the `cam` alias dropped 39 (the error tests rotate by
+// one temporary); with the corners through the existing real_point3d_set as well 32 (kept: every error
+// test lines up; left the identifier/x0 start, plane 1's x term and the top/bottom planes' sums);
+// `if (camera->has_plane)` 32 (same code, kept). Also: the identifier stored before the copy 135;
+// real_point3d_set alone 40; with x0 through rect 83; with the negated plane-4 normal through
+// vector3f_assign 48; on the kept form, rect declared before points 32, the points local dropped 32,
+// all four reads through result->rectangle 108, the identifier stored after the depth read 32.
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
@@ -582,64 +589,54 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 	if (rectangle->x1 > rectangle->x0 && rectangle->y1 > rectangle->y0)
 	{
 		point3f *points = &result->points[0];
-		s_camera_163db0 const *cam = camera;
 		box2f const *rect = &result->rectangle;
 		result->rectangle = *rectangle;
 		result->identifier = identifier;
-		real depth = cam->depth;
+		real depth = camera->depth;
 		real x0 = result->rectangle.x0 * depth;
 		real x1 = rect->x1 * depth;
 		real y0 = rect->y0 * depth;
 		real y1 = rect->y1 * depth;
-		result->points[1].z = 0.0f - cam->depth;
-		result->points[1].x = x0;
-		result->points[1].y = y0;
-		result->points[3].z = 0.0f - cam->depth;
-		result->points[3].x = x1;
-		result->points[3].y = y0;
-		points->z = 0.0f - cam->depth;
-		points->x = x0;
-		points->y = y1;
-		real negated_depth = 0.0f - cam->depth;
-		result->points[2].x = x1;
-		result->points[2].y = y1;
-		result->points[2].z = negated_depth;
-		function_1429d0(&cam->matrix, 4, points, points);
-		result->points[4] = cam->matrix.position;
+		real_point3d_set(&result->points[1], x0, y0, 0.0f - camera->depth);
+		real_point3d_set(&result->points[3], x1, y0, 0.0f - camera->depth);
+		real_point3d_set(points, x0, y1, 0.0f - camera->depth);
+		real_point3d_set(&result->points[2], x1, y1, 0.0f - camera->depth);
+		function_1429d0(&camera->matrix, 4, points, points);
+		result->points[4] = camera->matrix.position;
 		result->bounds = *g_4687e0;
 		function_11f770((box3f *)&result->bounds, 5, result->points);
 		vector3f_assign(&result->planes[0].normal, -1.0f, 0.0f, 0.0f - result->rectangle.x0);
 		function_30bf0(&result->planes[0].normal);
 		result->planes[0].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[0], &result->planes[0]);
+		transform_plane_163db0(&camera->matrix, &result->planes[0], &result->planes[0]);
 		vector3f_assign(&result->planes[1].normal, 1.0f, 0.0f, result->rectangle.x1);
 		function_30bf0(&result->planes[1].normal);
 		result->planes[1].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[1], &result->planes[1]);
+		transform_plane_163db0(&camera->matrix, &result->planes[1], &result->planes[1]);
 		vector3f_assign(&result->planes[2].normal, 0.0f, -1.0f, 0.0f - result->rectangle.y0);
 		function_30bf0(&result->planes[2].normal);
 		result->planes[2].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[2], &result->planes[2]);
+		transform_plane_163db0(&camera->matrix, &result->planes[2], &result->planes[2]);
 		vector3f_assign(&result->planes[3].normal, 0.0f, 1.0f, result->rectangle.y1);
 		function_30bf0(&result->planes[3].normal);
 		result->planes[3].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[3], &result->planes[3]);
-		if (!(!(cam->has_plane)))
+		transform_plane_163db0(&camera->matrix, &result->planes[3], &result->planes[3]);
+		if (camera->has_plane)
 		{
-			result->planes[4].normal.i = 0.0f - cam->plane.normal.i;
-			result->planes[4].normal.j = 0.0f - cam->plane.normal.j;
-			result->planes[4].normal.k = 0.0f - cam->plane.normal.k;
-			result->planes[4].d = 0.0f - cam->plane.d;
+			result->planes[4].normal.i = 0.0f - camera->plane.normal.i;
+			result->planes[4].normal.j = 0.0f - camera->plane.normal.j;
+			result->planes[4].normal.k = 0.0f - camera->plane.normal.k;
+			result->planes[4].d = 0.0f - camera->plane.d;
 		}
 		else
 		{
 			vector3f_assign(&result->planes[4].normal, 0.0f, 0.0f, 1.0f);
 			result->planes[4].d = 0.0f;
-			transform_plane_163db0(&cam->matrix, &result->planes[4], &result->planes[4]);
+			transform_plane_163db0(&camera->matrix, &result->planes[4], &result->planes[4]);
 		}
 		vector3f_assign(&result->planes[5].normal, 0.0f, 0.0f, -1.0f);
-		result->planes[5].d = cam->depth;
-		transform_plane_163db0(&cam->matrix, &result->planes[5], &result->planes[5]);
+		result->planes[5].d = camera->depth;
+		transform_plane_163db0(&camera->matrix, &result->planes[5], &result->planes[5]);
 		vector3d_from_points3d(&result->points[4], &result->points[0], &result->directions[0]);
 		vector3d_from_points3d(&result->points[4], &result->points[1], &result->directions[1]);
 		vector3d_from_points3d(&result->points[4], &result->points[2], &result->directions[2]);
