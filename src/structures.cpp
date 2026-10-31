@@ -461,6 +461,11 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // Round 426: captured instance key through publication with long/short/word/dword plane storage 232/180/197/232; Boolean results 242/187/194/242. Original collision observations and defined vertex failures restored.
 // Round 229: failure-only in/out validity on the original point-output helper, bool/byte/short/long
 // pointer outputs 172/172/172/172; references 172/172/172/172. Original helper, defined failures and query restored.
+// Round 185 (lane 3, fast): the 0x16e1b0 outputs declared part index, unknown, part offset 172
+// (same slots: retail's part offset/unknown/part index homes stay swapped); the BSP declared before
+// the point copy 172; the vertex helper forced inline 172; the three fetches as one && expression
+// 264 (681 bytes); `if (!section) return false;` 211 (726 bytes). Retail's skip after a missing
+// first vertex tests a flag no path initialises, so no defined-failure form reproduces it.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -673,6 +678,9 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // the geometry-block call 9, plus the lookup pointer 4 (only BLOCKED-BY 0x11e800's argument
 // registers left, so neither form can be kept yet); lookup declared at the top 70; a region
 // index local 262.
+// Round 185 (lane 3, fast, diagnostic): the bounds read before the geometry-block call plus the
+// lookup pointer still give 4, all four 0x11e800 argument registers (ours second/third/point in
+// esi/edx/ecx, retail edx/ecx/esi), so BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -819,6 +827,12 @@ done:
 // `ret 0xc`, matched caller 0xd2a50 56), plus `(void)&parameter` 126 (0xd2a50 56); the parameter read in
 // the retry test 124 (471 bytes, 0xd2a50 kept; LTCG keeps the read); the two exclusion tests as one
 // nested if 125 (same code), with the object branch first 130.
+// Round 185 (lane 3, fast): the grouped state replaced by plain flags/attempts/collision locals 157
+// (456 bytes, matched caller 0xd2a50 97); one 0x14ac60 call reached through a `found` flag 164 (0xd2a50
+// 72); a compiled-out `do {} while (false);` at the requery join 125 (same code: VC drops it before
+// threading); the existing 0x10a0b0 called, with `inline` on its definition, 162 (stays out of line,
+// 0xd2a50 99); the flag and a `modeled` result set in if/else arms (false and the 0xbf9a0 result in
+// the eligible arm) 125 (same code).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
