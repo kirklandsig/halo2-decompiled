@@ -512,6 +512,9 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // compare-then-pass); every promoted/short/int team local folds the add and sinks the EDI save 31; short
 // const & / pointer to the field 25; clump_get named 3, in the argument 31; team or side getter by index 31,
 // by clump pointer 3; prop between clump and side 26, before both 45.
+// Round 92: read-only/immutable clump pointer, split clump/side assignments, side-before-clump
+// declaration, const side, early iterator declaration, and inline predicate/lookup declarations each 3.
+// Original body and declarations restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
