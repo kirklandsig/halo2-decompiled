@@ -419,6 +419,12 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // copies); bytes and base from a word-count local 224 [73]; the word count declared after base 224 [73];
 // base as `&bits[((count + 31) >> 5) * index]` 111 [65] (same code); the round 85 memcmp-break loop
 // re-measured 125 [57] (810 bytes), with the shifted-count head 228 [73].
+// Round 10 (lane 17): every head form tried CSEs retail's late `sar ebx, 5` into the head's shift: a count local
+// with a words local for bytes and base and the word count recomputed after the copies 224 (796 bytes); the count
+// local with bytes `((count + 31) & ~31) >> 3`, base by `((count + 31) & ~31) >> 5` and the late word count
+// `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
+// sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
+// as an aggregate initializer 111 (same code).
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {

@@ -2285,7 +2285,7 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 // eight, so its frame is four bytes longer). Tried: a twelve-byte vector (vector3f, real[3], a plain
 // three-real struct) 8 (frame 0x14, the vector at esp+0xc); the twelve-byte vector in an inner scope 8; the
 // angle in a separate local 5; a sixteen-byte vector 8.
-// score 5 (was 5): only frame 0xc versus retail 0x10 and the angle temporary home remain; x87 adds now agree.
+// score 2 (was 5): only frame 0xc versus retail 0x10 and the angle temporary home remain; x87 adds now agree.
 // Earlier at 20: Frame 0xc versus 0x10 (retail keeps the atan2 temp in the query buffer's first dword,
 // ours with range) and the last two x87 adds (retail adds the bound before the angle) differ; the query
 // writes a 12-byte vector, which the 8-byte buffer only gets away with here. Native vector, 12-byte scratch
@@ -2299,6 +2299,9 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 // locals renamed four ways 10; the query test inverted 7; the angle wrap as a ternary 7.
 // Common selected-angle publication with byte/native-vector output, zero-angle initialization and fallback-range
 // initialization combinations 53/53/74/74/60/60/75/76. Original query buffer and body restored.
+// Round 59: a twelve-byte/two-component union 8; a two-component union 2; an indexed three-component union 8;
+// the twelve-byte union through its vector member 8; a named random result on the two-component union 2 and on
+// the twelve-byte union 8; a separate angle on the two-component union 5; range before the twelve-byte union 8.
 // @retail 0xcfec0
 void function_cfec0(long unit_index)
 {

@@ -43,6 +43,10 @@ extern "C" void _ReadWriteBarrier(void);
 // BLOCKED-BY 0xbadc0, which ours sees as read-only. No barrier 165; callee
 // bool read through its address, no barrier 165; result kept in the second
 // parameter 3; result flag declared before the lookup 10.
+// Round 183 (lane 3, fast): the barrier before the lookup call 5; right after the call 4; the result
+// flag declared before the call (barrier after it) 10; the event record declared before the call 3; the
+// record declared before the barrier 3. Retail keeps g_4e0300 in ESI across the call but reloads the
+// object's field, so its 0x1c9580 is seen as writing through pointers only.
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {

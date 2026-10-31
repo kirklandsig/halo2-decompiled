@@ -751,6 +751,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // Right offset right after its inset 197; bounds copied to a local first 302; the
 // rectangles as short_rectangle2d 2; top inset after the other offsets 123; piece
 // declared before inner 2.
+// Round 41 (lane 10): inset and offset in one expression per edge 207 (1162 bytes);
+// top offset before bottom 2; bounds read directly without the `input` alias 2 (kept);
+// both screen offsets read into named locals first 44; horizontal edges inset and
+// offset before the vertical ones 52. The compile-only harness gives retail's load
+// order for the current source, so the swap comes from link-time scheduling.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
@@ -798,12 +803,11 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 			result = false;
 		if (result)
 		{
-			s_request_screen_bounds const *input = bounds;
 			s_request_screen_bounds inner;
-			inner.left = input->left + 8;
-			inner.top = input->top + 8;
-			inner.right = input->right - 8;
-			inner.bottom = input->bottom - 8;
+			inner.left = bounds->left + 8;
+			inner.top = bounds->top + 8;
+			inner.right = bounds->right - 8;
+			inner.bottom = bounds->bottom - 8;
 			inner.left += g_4b9dd2;
 			inner.right += g_4b9dd2;
 			inner.bottom += g_4b9dd0;
