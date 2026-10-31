@@ -483,6 +483,13 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // test: the model as `long const *` read as model[1] 37; the entry tests as guard-clause returns 37; the
 // render-model argument named before the call 37; `if (graph && graph->node_count != 0)` for the ternary
 // 121 (520 bytes); each arm breaking on its own call result (no `found`) 37.
+// Round 118 (lane 5, fast with 0x113ba0/0x113c60): the visited words grouped with both markers in one
+// local struct (so the markers' escape covers the vector) with the mask test 190 (frame realigned to 8;
+// the set is still mask-first load/OR/store, so the vector's escape does not give retail's fused set and
+// 0x120220, which can only reach the markers, is a weak lead); a `break` on each arm's iterator call 37
+// (same code); the state parameter renamed to sort before the tag table's name 37 (back-edge reloads
+// unchanged, so names do not order them); that per-arm break with the mask test 42; the graph and
+// iterator setup shared ahead of an if/else call 167.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

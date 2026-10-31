@@ -125,7 +125,7 @@ void c_widget::v15(c_widget *widget)
 	}
 }
 
-// score 2 (was 12): only the loop's shared tail differs: retail copies the next widget to ESI and tests ESI,
+// score 2 (was 2): only the loop's shared tail differs: retail copies the next widget to ESI and tests ESI,
 // ours tests EAX before the copy (`test eax, eax; mov esi, eax`).
 // Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
 // and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
@@ -149,6 +149,9 @@ void c_widget::v15(c_widget *widget)
 // harness screens on the twin 0x22ec1b: the same helper as a ternary or with an early return 12; a result
 // from a ternary, a reassigned parameter, an out pointer or a NULL-initialised result 2 each; a `break`
 // with the focus after the loop, the search in the loop condition or a do-while under a test 2 to 6.
+// Round 55 (real, v17 unchanged at 2): widget declared, then assigned, tested `!= NULL` 2; ineligible arm
+// stepping with `continue` 2; for loop with the helper at both ends 2; `break` in place of the return
+// 2; the widget held as the base class pointer with casts at the calls 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {

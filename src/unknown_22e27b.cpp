@@ -252,6 +252,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // boundary disposal as `if (flag && type == 0) { dispose = true; break; }` 96; the flag-3 test as
 // `== 0` 96; 1-8 unused initialised locals at the top (diagnostic: symbol numbering) 96 each, so
 // the rotation is not a numbering tie.
+// Round 9 (lane 17, fast): the scale blend through the file's existing interpolate_linear 110 (659 bytes; first
+// difference +0x15); the loop as `for (; time >= next_time; next_time += frame_time)` 96 (identical code); that
+// with disposal false from its declaration and direction-first frame sum 96; timing locals initialised at their
+// declarations (frame time, next time, elapsed) with the frame declared before the loop 96; disposal declared
+// before an uninitialised restart flag cleared before the loop 111 (first difference +0xf).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

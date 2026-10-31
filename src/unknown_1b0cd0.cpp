@@ -422,6 +422,12 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // the dot test 18; facing address before the active branch 155; leader declaration split 12;
 // basis declarations before the leader 12; state declaration split from its cast 12.
 // Opening body restored.
+// Round 41 (lane 10): the existing 0x1f86f0 test for the mode-2 check 208 (711 bytes); current
+// index with the mode read at the call 54; short index with the mode at the call as a ternary
+// 37; that form with `short index` declared at the top 66, with the point declared at the
+// top of the active branch 66. With a short index and the mode at the call the >= 7 block is
+// retail's except that the list is read from the stack (no EBX reload at the join) and the two
+// closing flag stores share `mov al, 1`.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

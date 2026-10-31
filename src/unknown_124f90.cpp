@@ -628,6 +628,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Round 39: every store through the array element 3; voice reference 3; the first two stores
 // through the array element ahead of the pointer 3 (they then precede `inc edi` too, which keeps
 // `inc esi` beside it); index advanced after the first two stores 3, or at the end 3/3.
+// Round 33 (lane 13; closure LTCG harness, base 3 = 3): definition type stored before the sound index
+// 2 (the stores follow source order, `inc esi` stays after `inc edi`; not kept); `g_4e6378 + index++`
+// 3; the inner counter declared before the for 3; a per-type count local used for the sum and the
+// bound 49 (the bound then sits in a register); `(char)type` 3; `++i` 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1532,6 +1536,9 @@ void looping_sound_controller_release(long index);
 // pool release in both arms 33; controller test outside the unknown03 test 40; byte cast before the
 // mask 5. Without the depth pragma the release inlines (122); with either test removed the pool
 // still takes EBP, so the byte store's register is what moves it.
+// Round 33 (lane 13; LTCG harness, base 5 = 5; the decrement already uses DL as in retail): the whole
+// decrement cast to byte 5; an early-return form for no effect 33; the controller pool global typed as a
+// record pool (no cast) 5; a `(word)` controller index 31; `(count + 0xff) & 0x7f` 5.
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -2146,6 +2153,17 @@ void sound_update_locations(void)
 // `0 - step` bound 140/119, with a named `0 - maximum` 152; a target-taking helper (delta inside)
 // at the third 126/87, also on the first two 134; all 27 helper/`+=`/target combinations of the
 // third, fourth and fade 34-136.
+// Round 33 (lane 13; LTCG harness, base 17 = 17): the add forms follow the whole function's IL, not the
+// line: the first loop's step without its transition-time local 75 (third add now a copy as retail,
+// fourth still a copy, 188 instructions), the same in the fade-out loop alone 75 or both 75; on it the
+// fourth through the helper 94, as `PIN + x` / `x + PIN` 75/75, the third as `+=` 29, the fade through
+// the helper 94, third and fourth swapped 16. Fade test inverted (`fade > 0.001f` first) 138; the
+// environment pointer declared first 106; a const environment pointer 17; `used` initialised in its
+// declaration 17; the slot declared at function scope 75; the fade-out loop as a for 112-117. All 255
+// combinations of helper or `+=` on each of the six adds with or without each loop's transition-time
+// local: best 14 (first loop's step without the local, third as `+=`, fourth through the helper: third
+// in place, fourth a copy); retail's third/fourth forms appear only with the first two adds or the
+// fade-out add flipped and the 1.0 no longer hoisted (122).
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
@@ -3233,6 +3251,14 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // reload after the next-index ternary; only the index/pool EBX/EBP swap and the prologue load before `push
 // ebp`), with the entry pool through the named `sounds` local 78; `case 1: continue;` skipping a bottom
 // `sounds = g_4e637c;` 183 (572 bytes).
+// Round 102 (m3 lane 8; one-link LTCG harness, exact for 49 and 78): a dead store in a `case 1:` of the do-while gives
+// exactly the for/`case 1: continue;` code (78), so the EBX/EBP swap comes from the two-case compare chain itself, not
+// the continue edge. A 192-form grid of the for/continue loop (pool local or global in the init, both next-index
+// ternary orders, case 1 before/after case 0 or with `default: break;`, mode as ternary or if/else, both range index
+// orders, `&g_4e6378[i]` or `g_4e6378 + i`, start test through the macro or a loop-top pointer) never moves the swap
+// (78 or 164). Fast: for/continue 78; with the update test inverted (pending arm first) 132; `case 1: case 2:
+// continue;` 17; 0x128020's while + `skip_to_next:` with `case 1: goto skip_to_next;` 214 (592 bytes); index and mode
+// declared at function scope 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4000,61 +4026,29 @@ void function_21b0e0(bool arg_0);
 long players_first_active_local_player(void);
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 
-// score 55 (was 55): statement clears give retail's 0x40-first, copy-free clears but force MSVC's 8-byte frame
-// realignment; the argument form keeps retail's frame but clears the 0x80 array first, with copies of memset's results.
-// Earlier: plain 0x1744 frame now; the clears run channels-first with `mov edx, edi` copies of
-// memset's results (retail buffers-first, no copies), short restart cursor and loop padding remain.
-// Promoted voice limit 108; entry system
-// 108; direct elapsed 108; pending byte 108; frame input 108; short player cursor 122; short
-// next-player result 115; both player values 122; const element arrays 108; `= {}` arrays 121;
-// `!= 0` flag argument 128; flag argument through local_0 108; long restart cursor 134 (gives
-// retail's movsx/inc/cmp loop; only the loop padding jump moves with the longer prologue).
-// Fixed stack allocation of first/second/both buffers 131/145/149; batch 139; batch with first/second/both
-// 162/162/164; all with long restart 161.
-// Entry allocation first/second/both/all 174/176/174/164; all with long restart 163. All restored.
-// Actual first/second/both memset-return receivers, used by collection and submission, 143/129/125;
-// declarations at entry 143/129/125; both with long restart, normal/entry declarations, 108/108. Original
-// body restored.
-// Round 161: any memset of a local of 128 bytes or more realigns the frame unless EBP is wanted as a
-// general register (every other retail function clearing a large local without realigning uses EBP) or
-// memset's result is used. Existing next-player helper 107; player for loop 107; results as two one-use
-// locals 55; with long restart 75; results as the call's arguments with long/short restart 76/55 (kept).
-// Round 164: word restart cursor 114; statement clears realign in every form tried (compile-only:
-// split statement/argument clears, callee-owned arrays, short/char clear loops, pointer-local targets,
-// no system local, arrays at entry, player for loop).
-// Round 235: persistent buffer/channel clear return with the other clear still a call argument
-// 104/72; with long restart 60/86; entry declarations repeat 104/72/60/86. Original body restored.
-// Round 94: every form that realigns or uses EBP here also changes matched callee 0x128020's registers
-// (0 -> 147: its allocation follows this function's EBP use). Count first + statement clears + long restart
-// 134; statement clears 121; `= {}` arrays + long restart 139; memset results kept in named locals for
-// 0x129380 only (arrays direct to 0x129100) 129 (527 bytes, copies through EBX/EBP), with long restart 110.
-// Compile-only: realignment is decided late (a size held in a variable or a static const, fills of 0xff,
-// clears of struct fields or through a pointer all realign; /Os avoids it but changes the whole body).
-// Round 133: the restart block through the matched sibling 0x125a90(1) (its resume case is this block) 212
-// (473 bytes: LTCG keeps 0x125a90 out of line); the sibling's `long` restart counter 76 (everything up to the
-// clears is retail's, first difference +0x57 -> +0x10a; only the clears' copies and the padding they shift
-// remain); with it, statement clears 139 (the body is retail's; only the realigned prologue and its pushes
-// differ), `= {}` arrays 139, memset results in two named locals 77. Compile-only: statement clears realign
-// with clears of 0x40 bytes too, with `__declspec(align(4))` arrays, long/char element views, a returning clear
-// wrapper (inline/forceinline) or the player loop as a for loop.
-// Round 18 (m3 lane 2, fast): the arrays declared 0x80 first 55; the batch declared before the arrays 55; memset
-// of `&local_3[0]`/`&local_4[0]` 55; the batch declared and its count cleared before the arrays 55, with the long
-// restart cursor 76 (same +0x10a padding shift). The caller chain 0x12b450 <- 0x12b690 <- 0x12190 is matched up to
-// the startup code, so a caller's stack alignment cannot explain the missing realignment.
-// Round 40: long restart cursor 76; the restart call without its `(short)` 55 (same code); the 0x40 clear as a
-// statement with the 0x80 clear's result as the argument 123, with the long cursor 158; the 0x40 array `= {0}`
-// with the 0x80 clear's result 147. Probes: a returning clear wrapper inlined across files by LTCG still realigns
-// (build/r40h/clr); in compile-only probes of this clear shape only /Os (or /Oi-, which calls memset) avoids the
-// `and esp, -8`; retail realigns 115 other functions with large clears, so retail's compiler does it too.
-// Round 9 (m3 lane 18; one-file LTCG probes build/r9/al): the frame realigns exactly when some large-local clear's
-// result is unused: memset statements, `long` clear loops (turned into rep stosd), a zero-fill macro, a 0x7c-byte clear of
-// the array, clears through an LTCG-inlined helper's pointer parameters, a result assigned to a dead local, with or
-// without /arch:SSE and with a caller that keeps an 8-aligned stack; both results used (named or as arguments) never
-// realign but keep `mov reg, edi` copies. Fast trials: results named in retail's clear order (0x40 first) before the
-// count store 132 (521 bytes), after it 55 (retail's clear order, still two copies); named results with the long
-// restart cursor 77; named results at both calls with the long cursor 108 (527 bytes); only the first result named,
-// the second an argument 132 (521 bytes). Diagnostic only: favour-size pragma with statement clears and the long
-// cursor 274 (411 bytes).
+/* the per-voice and per-channel value pointers of one spatialization pass, cleared when declared
+   (a plain memset of a local this large makes VC realign the frame with `and esp, -8`; retail's
+   clears don't, and a clearing constructor or member function is the only form found that avoids it) */
+struct s_voice_value_table
+{
+	vector3f *values[0x40];
+
+	s_voice_value_table()
+	{
+		memset(values, 0, sizeof(values));
+	}
+};
+
+struct s_channel_value_table
+{
+	vector3f *values[0x80];
+
+	s_channel_value_table()
+	{
+		memset(values, 0, sizeof(values));
+	}
+};
+
 // @retail 0x125b40
 void function_125b40(void)
 {
@@ -4069,7 +4063,7 @@ void function_125b40(void)
 			{
 				local_0->changing_pause = true;
 				local_0->unknown7b = false;
-				for (short local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
+				for (long local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
 					sound_voice_restart_stream((short)local_1);
 				looping_sound_controllers_synchronize(true);
 				function_21f5a0();
@@ -4091,18 +4085,18 @@ void function_125b40(void)
 			sound_voices_update_chunks();
 			function_128020();
 			function_1282d0();
-			vector3f *local_3[0x40];
-			vector3f *local_4[0x80];
 			s_voice_position_batch local_5;
 			local_5.count = 0;
-			function_129100(&local_5, (vector3f **)memset(local_3, 0, sizeof(local_3)), (vector3f **)memset(local_4, 0, sizeof(local_4)));
+			s_voice_value_table local_3;
+			s_channel_value_table local_4;
+			function_129100(&local_5, local_3.values, local_4.values);
 			long local_6 = players_first_active_local_player();
 			while (local_6 != NONE)
 			{
 				function_221a70(local_6, &local_5);
 				local_6 = local_player_next_inline(local_6);
 			}
-			function_129380((vector3f const *const *)local_3, (vector3f const *const *)local_4);
+			function_129380(local_3.values, local_4.values);
 			function_1293f0();
 			if (SOUND_SYSTEM->unknown7e[0])
 				SOUND_SYSTEM->unknown7e[1]++;

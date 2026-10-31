@@ -602,6 +602,9 @@ void function_1537f0(s_profile_record *record);
 // XUID identity zeroed in the loop 67; the XUID identity zeroed right before the call 67. A compile-only build
 // folds the identity even with the record initializer out of line, so only an identity inside a larger local
 // object stays in memory (round 34); no existing 0x9c-byte type was found.
+// Round 101 (lane 7), `--fast`: identity `= { 0, 0, 0 }` 95 (282 bytes); a const identity `= { 0 }` 67; assigned from a
+// value-initialized temporary 67; memset of its member array 67; the zero identity copied into the entry first and the
+// entry's own identity passed to 0x7f8b0 97 (284 bytes).
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1019,6 +1022,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copy's strength reduction changes); backward/forward copies through a per-iteration element pointer 107/66;
 // forward copy as `for (i = lower; i < upper; i++) g[i] = g[i + 1]` 371; the copy arms swapped 70. Screened only
 // (upper stays EAX): count-path orders, declaration orders, ternary spellings, a shared index, `--i` loops.
+// Round 101 (lane 7), `--fast`: round 111's plain-entry form rebuilt 54 (upper coalesced with the count in EAX; retail
+// copies the count into ECX for upper); copy loops indexed by the destination (`i = lower; i < upper`, `i = upper;
+// i > lower`, both) on the current body 371/373/373, on the plain-entry form 364/361/361; on the plain-entry form the
+// direction step computed before the copy loops 358, the flag set from `removed < position` 390 (1162 bytes).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

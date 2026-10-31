@@ -764,6 +764,9 @@ union s_60403
 // declared after the member loop 327/112, with the plain bool 334/128; header stores previous first
 // 156/110; `previous ? *previous : NONE` 143/111. The entry assignment (current EBX, previous EBP)
 // drives every loop's roles.
+// Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
+// at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
+// named `dword bit = 1 << i;` in the emission loop 149 (same code).
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
