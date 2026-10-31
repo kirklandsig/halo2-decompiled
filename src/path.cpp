@@ -429,6 +429,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // the link test (assigned in the condition) and the special test, false then true, 363 (retail's special
 // sequence and complete/flag slots); with count zeroed after the init loop 371; the shared flag on the
 // long link count 315 (1391 bytes). All restored.
+// Round 37 (lane 10, fast): the convention already agrees (state in EBX, ret 0x24, caller 0x270930 MATCH).
+// Retail keeps `previous` in EDI inside the loop (reloaded from its home on both loop entries), keeps
+// a default-false `special` byte at [esp+0xf] that also receives the edge flag bit of the link test,
+// and computes the start node with `lea` before reading its depth. Short link count 368 (1368 bytes,
+// frame 0xe4); with the node pointer declared at the top and reused in the loop 368 (same code, the
+// address still folds); with `special` false then set by an if 368; on the long count: link count
+// incremented after the copy 359; count defined after the initialization loop 354.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

@@ -130,6 +130,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // returning directly 52; the successor for loop with `continue` filters, the result and `break` 51. The XDK's own
 // XOnlineAreUsersIdentical is the only header macro with two uses of the guest mask (its null-identity form is the
 // round 34 trial). Callers 0x1a303b/0x2b393c kept their matches in every preview.
+// Round 99 (lane 8), one-file LTCG harness exact against the build: the mask is hoisted in every `!result` loop
+// whatever the guest test's position, in `break` loops only with the guest test first, never with early returns.
+// Real: `while (!result && index != NONE)` with a successor local and `index = next` after the test 37, also as a for
+// loop with that increment 37 (both move the player argument to the stack, ret 8, and lose 0x1a303b and 0x2b393c);
+// the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
+// Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
+// `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -587,6 +594,9 @@ void function_1537f0(s_profile_record *record);
 // (s_network_message_player_add, s_session_interface_user, s_network_session_player, the player settings
 // source/entry): none puts a 12-byte identity immediately before it, so round 34's two-member layout has no
 // existing type.
+// Round 99 (lane 8): identity declared and zeroed once before the loop 83 (280 bytes, still folded), with the XUID
+// type 83 (280); the source declared before the identity 67; the XUID identity per iteration 67; the identity zeroed
+// after the entry pointer 67. No existing type has an identity followed by the 0x90-byte record.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -992,6 +1002,11 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // names do not move registers); the count path without its flag store 355 (1162 bytes); the `>` arm without its
 // flag store 370 (1162); bounds and flag declared above the removal 378; the count path as a nested if with the
 // flag cleared in the outer else 391 (1178).
+// Round 99 (lane 8): the tail (head repairs, links, time, fill) already matches; on round 111's plain-entry form
+// (rebuilt 54): bounds zeroed in a final else 54, `g_4cf978 > position` 56, upper before lower in the removal arm 58,
+// the count path's flag store first 54; harness: count path lower first 55, the mixed `function_7fd10(g_4cf980)` read
+// 52, lower and upper initialized to position 369 (1162 bytes); the existing 0x7f8b0 call for the fill 100 (1174 bytes:
+// the head repairs reorder and carry g_4cf97c in EAX, field56 through AL).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

@@ -1308,6 +1308,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // const row pointer 52 (same code). The XDK's D3DDevice_BeginVisibilityTest is a library function (no header
 // inline); no other file writes the 0x817c8 push. The draw result in its own `drawn` local clamped into the total
 // 96 (463 bytes), on the row form 136, with status declared first 136.
+// Round 56 (lane 12): the SDK's begin-test call in the plain full build 158 (still out of line;
+// retail holds the push header only here); the global test as an early-return guard 52; the count
+// reassigned before the set 66; a pointer local to the whole visibility table for count, slots and
+// row 52; the frame counter read at each use 125.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
