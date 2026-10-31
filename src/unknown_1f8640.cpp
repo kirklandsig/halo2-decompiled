@@ -367,7 +367,8 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 228 (was 228): frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
+// score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
+// Earlier: frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
 // Round 46 leads (aligned diff 59 at 228): retail's failure block stores result = false itself and the
 // route switch has a real default storing false (`default: result = false; break;` and `failed:
 // result = false;` give frame 0x80, aligned 50, positional 415). VALUE BUG: retail's case 3 jumps into
@@ -445,6 +446,10 @@ struct s_1f8a70_actor
 // unit-mode test 333, both 432, `result = false;` inside the first exit with no initializer 270 (same
 // code), `return false;` there 270; the fix with the real default only 380; t2 with the returned test
 // 436. Retail's first exit keeps the constant in BL; every form here folds it to `xor al, al`.
+// Round 246: early active/arrival/mode test-result subsets on the dword-selector
+// graph 430/308/434/442/449/442/449; all with explicit failed false 435. The mode
+// result recovers frame 0x80 and pool/data entry order at 442, first +0x33, but the
+// first false still lacks BL and length grows to 1672. Original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

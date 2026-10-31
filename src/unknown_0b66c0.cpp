@@ -204,6 +204,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // condition (`bool result = start >= 0 && ...; if (result)`) 44 (0xb5f10 41); a non-volatile local
 // copy of the string for the scan and the add 60 (83 bytes, 0xb5f10 80); a `byte` result 41
 // (0xb5f10 41); `result = true` before the copy 40 (same code).
+// Round 26 (lane 15, fast): the string as the text struct of 0xb61d0 (`s_text512_ab const *volatile`, scanning and
+// adding its bytes; callers cast as they do for find) 40 (same code), without the volatile 41 (104 bytes, 0xb5f10
+// 35); a named end offset (`long end = start + count;`) before the test 43 (101 bytes); `start = (long)string +
+// start` 40 (same code); the string added before the count increment 36 (0xb5f10 6, as listed above).
 // Round 132 (an LTCG env link of this file reproduces it and 0xb5f10 exactly): `string + start` gives
 // retail's body except that start lives in EDX and the walk in EDI (retail: walk EDX, start EDI), so
 // LTCG passes start in EDX. With it, the length loop as `while (length < 0x1ff && *string++)` 28, a
@@ -501,6 +505,11 @@ bool function_7af40(s_type_99af70 const *address);
 // 0xb40b0 61): with the reads, state stored first 111; the increment through a pointer to the
 // field 111; plain member accesses without the `connection` alias 111; the copy's source as a
 // volatile read of the own path parameter 111. Without the reads, counter/copy/state order 36.
+// Round 36 (lane 10, fast with 0xb40b0), on retail's endpoint reads: the copy's source read once through
+// the own parameter's address 111 (the path load still comes before both sunk stores); counter, copy,
+// state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
+// the return); the destination named before the counter 111; the path read into a named source between
+// the counter and the state store 111. VC splits the counter whenever any store precedes the call.
 // Round 132 (an LTCG env link with 0x7af40's object reproduces the full listing): with retail's
 // endpoint reads, the in-place `inc` survives when `connection` is used after the copy call (a
 // diagnostic store there gives retail's code plus that store); a destination pointer kept across the

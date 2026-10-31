@@ -310,6 +310,8 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// Not kept (MiniMax G, 10-31): the state in a named one-member struct local matches (0); that is the
+// one-member struct steering a stack home that Y201 already found here (held, ruled out).
 // score 11 (was 11): the state is loaded with movsx and spilled as a dword;
 // retail loads it into cx and keeps it in a word on the stack. Tried: the
 // state through function_e70b0's out parameter 124; this helper with an out
@@ -632,7 +634,8 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 12 (was 67): layout, frame and code now as retail; left: both dot products evaluate their
+// score 12 (was 12): Frame and block layout agree; dot-product term/operand order remains.
+// Earlier: layout, frame and code now as retail; left: both dot products evaluate their
 // y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
 // y,z), a value-numbering tie that flips with the CSE sharing of the current-point address.
 // Earlier state: approach as its own statement after the arms (no gotos), struct copy of the
@@ -706,6 +709,8 @@ struct s_1f9762
 // ternary with its arms reversed 92, with the first dot swapped 92; diagnostics, one-caller helpers
 // (not keepable): the previous point as a forceinline accessor 67 [28], the approach computation
 // as a forceinline helper returning whether it has length 67 [36].
+// Round 456: Native persistent path reference on recovered block graph, readonly path, actual point value at projection and first-dot operand graphs:
+// 12/10/108/108/12/10/108/108. Original executable body and supporting declarations restored.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)

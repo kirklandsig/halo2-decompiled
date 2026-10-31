@@ -250,6 +250,12 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
+// Round 30 (lane D): no better form found. The permuter ran 50 tries and its best was 258 against the
+// 261 baseline (three points, below the retention margin), and two flag reads were tried: bit 5 through
+// a byte bitfield view and the flag byte's mask tested directly both score 275, so the word bitfield
+// view stays. What still differs: our frame is 0x1c against retail's 0x18, the current and entry roles
+// are rotated between EDI and ESI, the next-group base is retained in an extra spill, and the policy
+// and availability bytes take the two frame slots the other way round. Original body kept.
 // score 261 (was 261): Frame 0x1c versus 0x18; current/entry/status homes and next-group spill remain.
 // flag 1 read through a word bitfield view gives retail's load-and-shift;
 // frame 0x1c versus 0x18 and the current/entry roles and next-group spill still differ.
@@ -544,6 +550,9 @@ PRIVATE __forceinline void physics_mass_copy(byte const *body, s_physics_mass_ar
 // aggregate zeroed by an s_physics_mass constructor 4; identity zero via an hkVector4 local 4, 1.0s via
 // m128_f32 lanes 4; aggregate scalar zeros chained/swapped 4/4, one named __m128 zero 4; allocation without
 // the allocator local 4; identity on array.data->transform 4; identity through a reference 4.
+// Round 92 (plain): identity before size 23, between size/capacity 22; pointer-return identity 4;
+// initial allocator for the list 339; list allocator for release 102; list allocator before the
+// aggregate call 85; value-initialized array 345; one allocator throughout 340. Original restored.
 // @retail 0x1d5ec0
 c_havok_reference_counted *__stdcall function_1d5ec0(s_havok_component *component,
     s_physics_model_owner *owner, char const *kinds, char *output, long *output_count,

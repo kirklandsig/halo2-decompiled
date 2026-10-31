@@ -303,6 +303,8 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // stack, ret 8; 0x14a8e0 269): format 4's coordinates as a `short position[3]` member 175; the default case
 // written first 175 (same code); the decode helpers taking long coordinates 175; the switch on
 // `source->buffer->format` 175; `source->buffer` at every use 186 (632 bytes, 0x14a8e0 99).
+// Round 99 (lane 8): the buffer read once inside each case 62; format 1 through a vertex pointer 62; a const buffer
+// pointer 62; format 3's position copied member by member 102; the default case's node test on its own line 62.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

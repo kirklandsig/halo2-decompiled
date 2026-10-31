@@ -1284,6 +1284,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // write/close 159, resize/write 145, write only 156; checksum `&&` 78, `if (valid && a != b) valid = false;` 67, the
 // stored checksum read after the call 7, a ternary on the call 15, `valid = false; if (call)` 15; the flags as `0`
 // 133; the write's handle through `g_557c90[index]` or a const cast 7/7; the handle as an s_file_handle member 7.
+// Round 56 (lane 12, fast), on round 53's 7 form: an s_file_handle local for the write call gives
+// retail's write setup (handle loaded first, flags zero in ECX) but drops the close call's
+// `mov ecx, eax` copy, 114 (917 bytes); with a second local at the close 114 (checksum then EAX
+// as retail); a local copy instead of the direct argument at each combination of size query,
+// resize, write and close: write alone 114, resize alone 122, close alone 119, query alone 122,
+// write with resize, with query or with both 6 (930 bytes; left: the resize handle EAX for ECX,
+// the header address ECX for EDX, the close copy EDX for ECX), all four 118; on the 6 form the two
+// locals' positions and copy/assign forms (24) 6 each, written/resized/bytes/header declared
+// earlier 6 each, the header initializer on typed fields 6, a named flags local first 120;
+// permuter on the 6 form: 65 tries, none below 6.
 // @retail 0x213970
 void function_213970(void)
 {

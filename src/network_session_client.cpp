@@ -694,6 +694,8 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // Round 97 (lane 8, fast with the inlined callees): the mask test with the bit first 55; the machine mask
 // stored after the copy loop 139 (495 bytes); the player-loop index declared with the buffers (no preset
 // pointers) 55; a short copy-loop index 153 (467 bytes); the summary declared after the buffers 55.
+// Round 51 (lane 16, fast with the inlined callees): the address copy as `if (n > 0) for (i = 0; i != n;
+// i++)` (the rolled-countdown form of 0x2be050) 114 (477 bytes), as a plain `for (i < n)` 114 (477 bytes).
 // Round 113 (lane 6, fast with the inlined callees): variant address and players base named before the
 // player loop 52; address pointer declared with the buffers 55; const session parameter 55; short copy index
 // 153 (467 bytes); 0x6ec80's preset stored pair plus the variant address named before the loop 46 (opening
@@ -701,6 +703,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // bytes: retail's copy prologue, but the mask read folds into the test), with that the bit-first mask test,
 // a distinct copy index name or a mask local in the loop 108 each. Diagnostic on the 46 form: the 0x49c8
 // argument as a constant gives EBX/ESI/EDI with only the copy prologue (count spill before the leas) left, 25.
+// Round 30 (lane 13, fast): the call's variant address and 0x49c8 value both named before the player
+// loop 130 (493 bytes): the session moves to EBX with retail's index ESI and player EDI, but the value
+// takes a stack slot (frame 0xec0); both named after the summary getter 71, before the member count
+// read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
+// test); the value alone before the loop 137; the variant alone before the member count 52. Named
+// copies inside the loop or a `long const *` to the value are propagated back (session ESI).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
