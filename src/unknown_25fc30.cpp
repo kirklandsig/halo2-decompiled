@@ -1737,6 +1737,9 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// score 2 (was 4): the hit fraction is read into a named local before the distance is computed, so
+// the product loads the distance where retail does. Still differ: the collision bool's byte home
+// (+0x13 against +0x10).
 // Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
 // alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
 // score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
@@ -1814,10 +1817,11 @@ void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *
 				{
 					vector3f local_10;
 					vector3d_from_points3d(local_6, &local_2, &local_10);
+					real fraction = local_7.t;
 					real local_13 = (real)sqrt(length_sq3f(&local_10));
 					if (local_13 < 1.f)
 						type = 4;
-					else if (local_13 * local_7.t < 1.f)
+					else if (local_13 * fraction < 1.f)
 						type = 2;
 					else
 						type = 4;
