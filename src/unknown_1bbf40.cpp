@@ -571,6 +571,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // left: retail stores the 0 at the scan's start and reloads it at the exit, and its frame is 0x34 where
 // ours is 0x30, the seat object taking the dead actor slot retail gives the flag); the false after
 // `allow_exit = true` (live across the team test and the loop) 200 (872 bytes).
+// Round 44 (lane 1, fast): if/else arms with `special = actor->unknown268 != 0` in the special arm and `special =
+// false` opening the scan 200 (872 bytes: the field is re-read at the tail, but the arm stores 1 to the slot and
+// the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
+// g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
+// datum-index `continue` as a nested if 47 (same code).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
