@@ -824,6 +824,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 243: Existing normal-copy setters and overlap-safe bounds transfer,
 // subsets 1..7 460/502/526/495/508/565/569; all with native negated input 569.
 // Original transfers and complete body restored; coefficient preload and projection homes remain.
+// Round 100 (lane 8, fast): plane 0's d in every term order with camera-first or normal-first products: operand order
+// never changes the code; i/j/k 146, i/k/j normal-first 115 (same code), j/i/k 149, j/k/i 133, k/i/j 144, k/j/i 133.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
