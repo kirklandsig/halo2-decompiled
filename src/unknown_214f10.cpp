@@ -193,6 +193,13 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // from `? 1 : 0` 42 (same code); `success = opened == 1` 44; a bool `opened` copied into success with
 // the branch on `opened` 55. Diagnostic only: done and success as one non-volatile two-element array
 // (done read through the helpers' volatile pointers) 60, the byte still forwarded.
+// Round 102 (m3 lane 8, fast): done and success in a struct with a `succeeded()` accessor 60 (351 bytes), with a
+// `set_success()` member 60, with a constructor clearing both 88 (365 bytes), without members on the long-opened flow 47
+// (364 bytes); `if (success != false)` 55. Compile-only: member accessors still forward the stored byte.
+// Round 9 (m3 lane 18, fast): success written through `*(byte *)&success` 55 (351 bytes); success read back
+// through `*(bool const *)&success` 55 (351 bytes); the long tested through `*(long const *)&opened` 42 (same
+// code); success declared before the path buffer 42; done and success at function scope 42. Compile-only, a
+// char-cast write and byte/bool-cast reads all forward the stored byte too.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

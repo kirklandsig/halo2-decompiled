@@ -482,6 +482,12 @@ bool function_22acb4(long player_index);
 // Round 242: Existing shared word-bit setter in first/second/first-second/third/first-third/
 // second-third/all-three/all-four result families 165/299/299/165/165/299/299/299. Original macro,
 // result domains, enum producers, query and aliased stores restored; second-mask spill remains.
+// Round 8 (lane 17), on the retail-order body with a short second (283, aligned 19: VC narrows `(char)flags & 1`
+// to `mov cl, al; and cl, 1` while EBX still holds the first mask, so the second takes ECX and a slot and 0xfffd
+// is hoisted into EBX; retail spills the first, then `movsx ebx, al; and ebx, edi`): the second declared at entry,
+// before/after the first, with the third 283 each; `(char)flags` then `&= 1`, `(word)(char)`, `(short)(char)` 283
+// each; word `(word)(char)` 232; long `(short)(char)` 287; long second 287 (aligned 18, `and ecx, edi` but
+// zero-extended into CL); `*first_out` stored right after the first mask 263 (878 bytes, status in EDI).
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)
@@ -1214,6 +1220,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // 116/118/118/125/118; draw result as a ternary 158 or stored as the failed result 118 (also alone);
 // one shared offset, with or without a shared count 127/127; offset declared before the mask
 // zeros, before the setup call or first, with the sibling first loop 1/1/1.
+// Round 20: an indexed first loop (`for (long i = 0; i < count; i++)`, element field_24 + i * 0x50) is
+// exact once at most one later loop has a `> 0` guard: with the later loops in the current for form 6
+// (both zero EBX before their guards); later sibling loops guarded `>= 1` 12 (`cmp eax, 1; jl`, the rest
+// of both loops exact); all three indexed 118; chained mask zeroing with the indexed first loop 122;
+// indexed first, sibling second, for-form third 3 (only the third xor-before-guard); indexed first and
+// third with the sibling second 118. Two later zero guards (or indexed zero starts) keep the zero live.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

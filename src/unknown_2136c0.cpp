@@ -113,6 +113,17 @@ void function_213970(void);
 // the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
 // between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
 // the string clear after the enable byte 142; the two session words cleared last 131.
+// Round 30 (lane 14, fast; still BLOCKED-BY the separate global definitions): the language local declared at
+// the top 131; the last block word (g_55c02c) cleared first 131; the string and request clears after the
+// scalar zero stores 131; the adjacent bool cleared just before the string clear 145 (242 bytes); block A's
+// NONE store between block A's clears and block B's first clear 131.
+// Round 116 (lane 6, fast): size pragma dropped with the existing getter 0x11cae0 called 158; that with
+// the query first 170; the getter first under the pragma 128 (three-point gain dropped, same as the
+// earlier query-first form); no pragma with the NONE/flag stores ahead of the scalar zeros 161; no pragma
+// with the scalar zeros before the clears 158. Ours lays the five arrays apart (0x4bac30, 0x4bdd58,
+// 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
+// definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
+// src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

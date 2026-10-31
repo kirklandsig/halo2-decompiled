@@ -23,7 +23,7 @@ s_direction_face g_475480[32];
    then each component scaled by its inverse */
 static __forceinline real normalize_decoded_direction(vector3f *v)
 {
-	real m = (real)sqrt(v->k * v->k + (v->i * v->i + v->j * v->j));
+	real m = (real)sqrt(v->i * v->i + (v->j * v->j + v->k * v->k));
 	if (!(fabs(m) < k_real_epsilon))
 	{
 		real inv = 1.f / m;
@@ -61,18 +61,18 @@ void function_194c10(s_bitstream *stream, vector3f const *vector, real lo, real 
 }
 
 /* the direction an index names: a 64 x 64 grid point on one face of the
-   direction table, then that face's scale, axes and origin applied to it */
+   direction table, built in the output itself (its third component zero),
+   then that face's scale, axes and origin applied to it */
 static __forceinline void decode_direction(long index, vector3f *direction)
 {
-	point3f grid;
-	grid.x = (real)(index & 0x3f) * (1.f / 63.f);
-	grid.y = (real)((index >> 6) & 0x3f) * (1.f / 63.f);
-	grid.x = grid.x * 2.f;
-	grid.y = grid.y * 2.f;
-	grid.z = 0.f;
-	real x = grid.x;
-	real y = grid.y;
-	real z = grid.z;
+	direction->k = 0.f;
+	direction->i = (real)(index & 0x3f) * (1.f / 63.f);
+	direction->j = (real)((index >> 6) & 0x3f) * (1.f / 63.f);
+	direction->i = direction->i * 2.f;
+	direction->j = direction->j * 2.f;
+	real x = direction->i;
+	real y = direction->j;
+	real z = direction->k;
 	s_direction_face const *face = &g_475480[index >> 12];
 	if (face->scale != 1.f)
 	{
@@ -85,93 +85,6 @@ static __forceinline void decode_direction(long index, vector3f *direction)
 	direction->k = z * face->axes[2].k + y * face->axes[1].k + x * face->axes[0].k + face->origin.k;
 }
 
-// score 4 (was 4): what still differs is the magnitude sum's first pair: ours sums j*j + i*i, then k*k,
-// retail j*j + k*k, then i*i (the decoded k is now popped and reloaded as in retail). Round 127: the
-// file's decode-path normalizer (normalize_decoded_direction, grouped k*k + (i*i + j*j)) in place of
-// normalize3d, 47 -> 4 (0x195070 56 -> 6); on it: the groupings i*i + (j*j + k*k) (0x294050's
-// magnitude form) and j*j + (i*i + k*k) (normalize_inline's) 47/47 (k kept on x87 again; a written
-// inner order makes no difference); the normalization inside the decoder 4; the inner pair written
-// j*j + i*i 4 (same code); the magnitude as its own inline helper inside the normalizer 4;
-// diagnostics: extra no-op products after the normalization 4, before it (with i*i + (j*j + k*k))
-// 91/131/145 (k still kept and first); a branch before the normalization with the grouped forms
-// 204 (the decode moves to SSE stores).
-// Earlier (score 47): what still differs is the normalization: ours keeps the decoded k on the x87
-// what still differs is the normalization: ours keeps the decoded k on the x87
-// stack (fst) and squares it first; retail pops it and sums j*j, k*k, then i*i from memory, as if a
-// block ended after the decode (a diagnostic branch there gives retail's order). These sum orders
-// follow VC's tuple numbering, not the source order. Round 13: the decoder builds its grid point
-// as a point3f and reads it back into x, y and z (and 0x195070 shares it): its constants now
-// match retail (the zero made first in xmm3, 2.0 and 1.0 loaded into xmm2 at their uses), 61 -> 47.
-// Before that (cause 1), retail's decoder acted as if a block ended after the two 1/63 products: a
-// one-pass loop around them (diagnostic only) gave retail's schedule, 51.
-// two causes. (1) The decoder's constants: retail makes the zero first (xmm3)
-// and loads 2.0 and 1.0 into xmm2 at their uses; ours loads 2.0 early into xmm3 and makes the zero
-// late. Retail's decoder acts as if a block ends after the two 1/63 products: a one-pass loop around
-// them (diagnostic only, not kept) gives retail's schedule, 51. (2) Ours keeps the decoded k on x87
-// (fst) and squares it first; retail pops it and sums j*j, k*k, then i*i from memory. A block boundary
-// before the normalization (diagnostic branch) makes ours reload in retail's order. These sum orders
-// follow VC's tuple numbering, not the source order.
-// Round 78: the rounding through the existing real_to_long (forceinline declaration, as ai.cpp does)
-// in place of the hand-written fld/fistp block 62 -> 61 (kept: the sum is now k, j, i and j scales as
-// retail's j * inv); on it: a two-pass grid loop 124 (VC keeps the loop); normalize_inline 61;
-// normalize_decoded_direction 61; compound doubling 61; the angle call inside the rounding 101;
-// decoder parameters (output, index) 61; before it: normalize_inline 62; grid doubling written first in
-// one expression 62; named face index 62.
-// Tried: shared face/grid scales 96; initialized grid 133; shared scale value 96; complete output
-// aggregate/memcpy 155; default memcpy and direct angle 62; coordinate stages 62; selected scale
-// results 62; plane offset first 100; axis table 62; origin snapshot 129; table subobjects 129;
-// coordinate names 62; existing normalizer call 187; face scale value 82; integer grid values 62;
-// complete shared decoder 503; decoder output reference 62; native component loop 173; complete
-// private decode consumer 62; ordinary decoder inline 394; initial direction value 63; workspace
-// names, formatter scope, unsigned index, complete bounds, shared rounding, shared/existing decoded
-// normalization, completed decode output and decoder pointer/vector results 62, 62, 62, 122, 72,
-// 62, 62, 88, 62, 155; sum orders j+k+i, i+(j+k), k+j+i, i+k+j 62 each; decoder stores through the
-// n[] view 62 (with i+(j+k) 62); zero declared first in the decoder 84; grid divided by 63 62; the
-// existing real_to_long for the angle (plain inline) 73; grid point passed to an inline point
-// transform 62; step count as a decoder parameter 62; point2f grid scaled in place 68; a compiled-out
-// `do {} while (false)` between the decode and the normalization 62 (identical code: no join); zero
-// after y / between x and y / after the face pointer 73/81/62; the decoder returning its output
-// pointer into the normalization 62. Round 20: constant-first doubling 61; `x *= face->scale` 61;
-// face pointer before the grid values 81; the equal-direction arm first 61; zero between the grid
-// products and the doubling 72; the rows written in both scale arms 224 (no tail merge).
-// pointer into the normalization 62.
-// Round 13, on the grid decoder (harness, the region scored alone): normalize_inline (sums k, i,
-// then j) and normalize_decoded_direction no gain; the rows into scalars, a result local copied
-// out, a pointer return into the normalizer, a caller-side copy of the decoded vector, an axis
-// loop for the rows, the rows reordered: none reloads; the decoder as an address-less plain or
-// `inline` function in unknown_195720.cpp is not inlined (393, two callers lost; `inline` leaves an
-// unresolved call); `__forceinline` there is untested (its reduced image lacked that file).
-// Round 119: the 0x195070 decoder (same decode, retail hoists 2.0 there and makes the zero late, as
-// ours does here) shows the block after the 1/63 products is particular to this caller. A two-pass
-// grid loop shifting the index by six, the zero first 130; the same with `index >> (6 * n)` 134; the
-// face transform as a three-component loop 172 (not unrolled); the grid through an inline
-// `(real)value / 63.f` helper 114 (599 bytes); the zero first and the face pointer before the
-// doubling 87.
-// pointer into the normalization 62. Round 80: the file's decoded-direction normalizer with its sum in
-// i, j, k order (here and/or in 0x195070) 61 (the reduced build keeps the decoded k on x87 either way;
-// an LTCG harness of the file alone popped it); the face pointer before the grid 81; y before x 75;
-// compound face scaling 61.
-// Round 34: face pointer and zero before the grid values 87; the three rows into locals, then the
-// stores 61; constant-first grid products and doubling 61; y before x 71; `1.f != face->scale` 61.
-// pointer into the normalization 62. Round 20: constant-first doubling 61; `x *= face->scale` 61;
-// face pointer before the grid values 81; the equal-direction arm first 61; zero between the grid
-// products and the doubling 72; the rows written in both scale arms 224 (no tail merge).
-// DL201: shared squared length with sqrtf and fabs/fabsf, dot/length forms 87/87/87/87;
-// double magnitude with sqrt/sqrtf 118/118. Out-of-line magnitude query 118/118
-// is unresolved and excluded. Ordered two-sided magnitude tests, dot/length 92/92.
-// Original normalization restored; final-component forwarding remains.
-// Round 51 (compile-only, which reproduces both sums): the commutative x87 order follows the order
-// the direction's fields are first assigned (a flat sum runs in the reverse of it; k stays on the x87
-// stack only when assigned last), and retail's orders need k assigned before j here (i, k, j with the
-// flat dot3f sum) and before i in 0x195070 (j, k, i), but the decode assigns i, j, k. Sums i+(j+k),
-// (j+k)+i, flat ijk/jki, (i+k)+j, j+(i+k): k kept and first in each; with a diagnostic block boundary
-// k is reloaded but still first in its pair; decode rows in other orders move the stores; the
-// normalizer's scale statements in all six orders: identical; equal arm first with the struct copy:
-// k kept; decode returning the vector by value: extra copies; the existing normalize3d in both
-// decoders 47 here, 177 in 0x195070 (384 bytes).
-// Round 213: existing default vector setter 140; setter with equal arm first 140; native fallback value
-// 185; native fallback with equal arm first 185; named angle offset 86; named scaled angle 86; named
-// quantized angle 86; named offset and scale 4; original executable source restored.
 // @retail 0x194d30
 void function_194d30(s_bitstream *stream, vector3f const *up, vector3f const *forward)
 {

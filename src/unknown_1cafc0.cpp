@@ -508,36 +508,19 @@ bool function_1cb920(void *data, long mode)
 
 #define DEFAULT_WEAPON_NAME 0x30000d9
 
-/* requests the urgent resources of a mode, weapon class and weapon type */
-PRIVATE __forceinline void graph_weapon_type_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type)
-{
-	s_graph_weapon_type *animations = (s_graph_weapon_type *)graph_weapon_type_get(graph, mode, weapon_class, weapon_type);
+/* requests the resources of a mode, weapon class and weapon type and their defaults, in the graph and the
+   graphs it inherits from (src/unknown_1dacb0.cpp's inline copy of 0x1ddd00, which retail inlines here) */
+void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
+	bool other);
 
-	if (animations)
-	{
-		long i;
-
-		for (i = 0; i < animations->urgent_resource_count; i++)
-		{
-			s_cache_resource *resource = &graph->resources[animations->urgent_resources[i]];
-
-			if (resource->streamed)
-			{
-				animation_cache_request_resource(resource, true);
-			}
-		}
-	}
-}
-
-PRIVATE __forceinline void graph_weapon_types_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type)
-{
-	graph_weapon_type_request(graph, mode, weapon_class, weapon_type);
-	graph_weapon_type_request(graph, mode, weapon_class, DEFAULT_WEAPON_NAME);
-	graph_weapon_type_request(graph, mode, DEFAULT_WEAPON_NAME, weapon_type);
-	graph_weapon_type_request(graph, mode, DEFAULT_WEAPON_NAME, DEFAULT_WEAPON_NAME);
-	graph_weapon_type_request(graph, DEFAULT_WEAPON_NAME, DEFAULT_WEAPON_NAME, DEFAULT_WEAPON_NAME);
-}
-// score 399 (was 399): Frame eight versus twelve and independent hidden-result homes remain; request graph/name allocation still differs.
+// score 348 (was 399): frame (12) and both query temporaries' homes agree since the request expansion became the
+// existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
+// `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
+// the graph in EBX and graph+0x34 in EBP; the inheritance loop then keeps the graph in EBP (ours reloads it per use) and
+// retail's final `mov al` is not normalised (ours `test al, al` / `setne al`).
+// Round 8 (lane 17, on the call): bool success 478; byte return type 478; `success != false` as the urgent argument
+// with no test 645; `return success != false;` 351; found-name locals type/class/mode 348 (same code).
+// Earlier 399: Frame eight versus twelve and independent hidden-result homes remain; request graph/name allocation still differs.
 // Aligned only 90 (round 27): retail packs the primary query's hidden result into the dead mode slot and gives
 // the fallback's its own frame dword (+0x18); ours packs both into the set slot. In the request expansions
 // retail holds &graph->mode_count in EBX and reloads the graph from its home (EBP), ours keeps the graph in EBP.
@@ -625,7 +608,6 @@ bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_n
 {
 	s_graph_tag *graph = graph_get();
 	byte success = false;
-	c_type_709360 animation_id;
 
 	names_resolve(names, mode, weapon_class, weapon_type, set);
 	*found = *names;
@@ -684,16 +666,7 @@ bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_n
 	}
 	if (success)
 	{
-		long found_weapon_class = found->weapon_class;
-		long found_weapon_type = found->weapon_type;
-		long found_mode = found->mode;
-		long i;
-
-		graph_weapon_types_request(graph, found_mode, found_weapon_class, found_weapon_type);
-		for (i = 0; i < graph->inheritance_count; i++)
-		{
-			graph_weapon_types_request(graph_inherited_get(graph, i), found_mode, found_weapon_class, found_weapon_type);
-		}
+		graph_resources_request(graph, found->mode, found->weapon_class, found->weapon_type, true, false);
 	}
 	return success;
 }
@@ -1002,6 +975,9 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // The one-point phase gain is rejected; original predicates and body restored.
 // DL204: conditional blend/loop preservation 328/322/309/368; native three-long name-prefix
 // comparison alone/with blend updates 338/349/361/386. All original executable forms restored.
+// Round 459: Unsigned state/channel/both flag domains 210/210/210; uniform phase mask with
+// original/state/channel/both domains 337/337/337/337; all with retained phase predicate 315. All
+// executable trial forms restored.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

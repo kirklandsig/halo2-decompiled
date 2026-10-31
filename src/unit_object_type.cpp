@@ -616,7 +616,7 @@ bool function_1147e0(long unit_index, bool a, real b, real c, long definition_in
 void function_c86e0(long unit_index, bool keep_weapon_zoom);
 void function_1c95d0(long unit_index, long attacker_index, short type, real amount);
 void function_1c9e10(long unit_index, vector3f const *direction, real shake);
-void function_c7840(vector3f const *desired, vector3f *current, transform4x3f const *frame, real rate, vector3f *velocity,
+void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real arg_3097c5_2, real pitch_rate);
 bool __stdcall function_10f430(long unit_index, long mode, long weapon_class, long weapon_type, long set, real blend,
 	bool force, long flags);
@@ -6953,7 +6953,7 @@ bool __stdcall function_c60c0(long unit_index)
 			frame.left.i = frame.up.j * frame.forward.k - frame.up.k * frame.forward.j;
 			frame.left.j = frame.up.k * frame.forward.i - frame.up.i * frame.forward.k;
 			frame.left.k = frame.up.i * frame.forward.j - frame.up.j * frame.forward.i;
-			function_c7840(&unit->unknown15c, &unit->unknown168, &frame, g_510c54->rate, &unit->unknown174,
+			function_c7840(&frame, &unit->unknown168, &unit->unknown15c, g_510c54->rate, &unit->unknown174,
 				(real const *)(state + 4), arg_3097c5_2, pitch_rate);
 		}
 		else
@@ -7006,7 +7006,7 @@ bool __stdcall function_c60c0(long unit_index)
 			frame.up.i = frame.forward.j * frame.left.k - frame.forward.k * frame.left.j;
 			frame.up.j = frame.forward.k * frame.left.i - frame.forward.i * frame.left.k;
 			frame.up.k = frame.forward.i * frame.left.j - frame.forward.j * frame.left.i;
-			function_c7840(&unit->unknown180, (vector3f *)&unit->unknown18c, &frame, g_510c54->rate, &unit->unknown198,
+			function_c7840(&frame, (vector3f *)&unit->unknown18c, &unit->unknown180, g_510c54->rate, &unit->unknown198,
 				(real const *)(state + 0x14), look_yaw_rate, look_pitch_rate);
 		}
 		else
@@ -7074,6 +7074,8 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // 650 and copying v into a local vector first 618 (2479 bytes) both make our LTCG pass `current` on the stack
 // (ret 0x18), which breaks matched 0x1e5af0 (43, plain) and 0x1faf80 (4 -> 211): rejected. Retail keeps
 // `current` in EDI with the components preloaded; find what keeps it a register parameter.
+// Round 117: parameters reordered to (frame, current, desired, ...): retail sets up EAX (desired), EDI (current), ESI
+// (frame) in that order at both 0xc60c0 calls, EAX before ESI at the other two; 700 (same), and 0x1faf80 4 -> 2.
 // Round 37: the round-180 copy form rechecked 618 (2479 bytes, `current` on the stack); components read first 650
 // (2435, stack); with the desired vector rotated first 634 (2445) but `current` still a stack argument (ret 0x18);
 // both frame-to-world rotations through matrix_transform_vector in place 717 (2363); components first with the
@@ -7081,7 +7083,7 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // (retail EBX), and `current` is spilled, so LTCG passes it on the stack. Retail keeps `wraps` in a stack byte
 // copied to BL.
 // @retail 0xc7840
-void function_c7840(vector3f const *desired, vector3f *current, transform4x3f const *frame, real rate, vector3f *velocity,
+void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
 {
 	vector3f local_263186;

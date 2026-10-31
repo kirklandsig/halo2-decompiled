@@ -436,6 +436,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // frame 0xe4); with the node pointer declared at the top and reused in the loop 368 (same code, the
 // address still folds); with `special` false then set by an if 368; on the long count: link count
 // incremented after the copy 359; count defined after the initialization loop 354.
+// Round 30 (lane 14, fast): a `s_type_c3b527 const *origin = &input->start;` for the delta block 334: the
+// delta block and the edge-geometry loop then are retail's code (`lea esi, [ebx + 0x14]`, `push esi`, the
+// step index in ESI), but the extra frame word shifts every slot by 4 and the post-loop gains a `jmp` into
+// the scan loop; with the short link count 377 (1358 bytes, frame 0xe4; link count then takes EDI where
+// retail keeps `previous`); with `special` also false then set by an if 383; origin at the scan-loop top 400
+// (1418 bytes); origin shared with the previous-point ternary 386 (1407 bytes).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -817,6 +823,11 @@ bool function_2715a0(byte *buffer)
 // Round 320: actual exclusion-search ordinal as result, short/long with joined/separate query guards
 // 599/584/599/584; all live penalty reads 578/567/578/567. All lengthen the body.
 // Complete original search, penalty snapshot, heap operations and result qualifier restored.
+// Round 215: short remaining count and mutable links 503; short remaining count with native masks
+// 515; short remaining count and readonly links 503; short remaining count with readonly
+// links/native masks 515; long remaining count and mutable links 502; long remaining count with
+// native masks 516; long remaining count and readonly links 502; long remaining count with
+// readonly links/native masks 516.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

@@ -3104,6 +3104,10 @@ bool __stdcall unit_action_vehicle_board_update(long unit_index, long type)
 // bit_vector_set for the flag set/clear too 34 (alone 34); the OR in both set/clear arms 56;
 // `result = true` before the bit set 26; the bit set before the flag set/clear 64 (364 bytes);
 // the set/clear test inverted 5; `result = true` after the call 26; the permuter (34 tries) 2.
+// Round 29 (lane 14): the other seven orders of the result/unit/actions/vehicle declarations
+// 2/2/4/28/28/2/2; unit_action_active() for the active test 2 (same code); the typed type20
+// flag read 2 (same code); the +5 byte in a named bool for both tests 125; the flags word as
+// dword 2 (same code). Lead: the callee 0xcc810 is unmatched; its body may set the reload register.
 // @retail 0xeb3c0
 bool __stdcall unit_action_vehicle_ejection(long unit_index, s_unit_request *request)
 {
