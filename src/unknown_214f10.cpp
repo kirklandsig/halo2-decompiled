@@ -211,6 +211,12 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // file copied between the flag store and the test 42 (same code). Diagnostic only (volatile, reverted):
 // a volatile flag access, bool or char store of the long, 50/50 (memory test, but a byte setne without
 // the xor and the handle pushed from EAX).
+// Round 22 (m3 lane 2, fast): `_ReadWriteBarrier()` between the success store and its test gives retail's store
+// and memory re-test, but the array element then reloads after it and the handle stays in EAX without the xor:
+// on the long flow branching on success 50; `success = handle != INVALID` 50; branching on the long 42 (same
+// code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
+// 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
+// the element or the copy 49/50/50/49.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

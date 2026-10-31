@@ -166,6 +166,10 @@ short __stdcall function_2551c0(long actor_index)
 // rotate_vector_170d70 in place of the helper 389 (kept out of line, 584 bytes); outputs
 // `v * cos + (projection * axis - cross * sin)` 129 (822 bytes); all three outputs projection-first
 // 43 (same code).
+// Round 22 (lane 2, fast): the existing 0xe70b0 call for the tail's state test 70 (820 bytes; the tail
+// and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
+// five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
+// statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

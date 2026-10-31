@@ -201,6 +201,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // the field_08 clear 230 (876 bytes), the count increment 200 (860 bytes; 0x248cc0 then 15 in the reduced image),
 // the list-head link 243 (878 bytes); field_10 last with the fifth sample through 0x248076's reference straight
 // into field_38 70 (same code); the count increment moved before the 0x173ba0 call 159 (860 bytes; 0x248cc0 15).
+// Round 57 (m3 lane 9, fast): field_10 first with the fifth sample in a local stored in both arms of the cache
+// test 156 (879 bytes, not hoisted); field_10 first with the compare against the record re-derived from the pool
+// 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
+// the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
+// with field_10 first 133.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -495,6 +500,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // placement and sample declarations: all eight 416 (frame 0xa0). Original body restored.
 // Round 232: Rate read once, pending mask, both, named age increment, rate+age, mask+age, all, then all with allocation-failure exit
 // 360, 359, 360, 359, 360, 359, 357, 357. Original executable source restored.
+// Round 462: Complete initial scaled-position point-set/vector-scale producers, aggregate/setter
+// publication and original/early age: 393/393/358/363/411/397/376/377. All original geometry,
+// stores, helper graph and includes restored; frame and late EBP save remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

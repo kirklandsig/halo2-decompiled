@@ -288,6 +288,11 @@ void function_14bac0()
 // step 228/229/228/229, reaching frame 0x40 with shared probes. Complete selected-unit
 // field observations on those four graphs 264/264/263/263 (1032 bytes). Original
 // returned-output/selected-unit graph, point buffers and both traversals restored.
+// Round 465: existing in-place sum on returned relocation output, shared difference/ancestry helper/
+// native recipient masks 0..7: 222/222/301/300/228/228/315/315. All frame 0x50; original full body restored.
+// Round 253: Complete returned relocation-point value, native/library copy, dead getter input shared with
+// bounds and native recipient combinations; scores 277/274/277/274/277/274/277/274.
+// Original executable source restored; no qualifying gain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

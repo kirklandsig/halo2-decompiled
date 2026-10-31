@@ -655,6 +655,11 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 77 (was 77): retail's own clone takes the point in EAX and the forward vector in ECX and
+// pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
+// from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
+// items.cpp, unknown_246f10.cpp). Retail also calls 0x1883e0 with twelve stack arguments where
+// ours passes thirteen: BLOCKED-BY 0x1883e0 (another file).
 // score 77 (was 77): frame 0x48 agrees; first counter spill recovered; effect/forward inputs and second scan differ
 // (BLOCKED-BY 0x1883e0, see below). Earlier forms and observations:
 // Point setter 89; component loop 317; origin value 150; description position 105;
