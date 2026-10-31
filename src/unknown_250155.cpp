@@ -2517,6 +2517,19 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// score 95 (was 95): this round: the widget indices as longs (with (short) casts at the
+// find_text/find_bitmap calls) 198/227, the helper taking them by reference 95/198/227, the
+// helper's assignment order 96/98/99 and a mode local in the last loop 95 all compile to the
+// same or worse code. Retail's last loop keeps the four indices in registers (eax, edi, ebx
+// and ecx) and reloads the screen from its slot; ours spills them, because the helper's
+// out-parameters force them into memory. A separate counter for the second loop moves the
+// first loop's player-slot pointer to retail's slot (-8) and scores 93, but the gain is under
+// eight, so the body stays as it is.
+// score 95 (was 95): this round: the four widget indices' declaration order (both loops),
+// the two function-scope locals the other way round, the widget indices after the team
+// locals, the player slot kept in a local, the loop counter as an int and the voice query's
+// player index in a local all compile to the same code (95). Retail still reloads players[i]
+// after the voice-state query and keeps bitmap_a in ebx in the last loop.
 // score 95 (was 95): the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where

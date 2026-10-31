@@ -397,9 +397,13 @@ inline real item_real_random_range(real lower, real upper)
 {
 	dword *seed = &g_4e7408->unknown0;
 	*seed = *seed * 0x19660d + 0x3c6ef35f;
-	return lower + (upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f));
+	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
 }
 
+// score 2 (was 6): the range helper's product written before the add (the
+// product and the lower bound added, not the lower bound and the product) puts
+// the x87 sequence in retail's order. Left: the last add still comes before the
+// owner's third field load, where retail has it after.
 // score 6 (was 6): the three x87 instructions around the effect call's argument
 // pushes are still one slot early here (the fxch st(1) after the first push 0,
 // the delay spill before the tag-index load and the fstp st(0) before the push

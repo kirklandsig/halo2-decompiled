@@ -1353,6 +1353,16 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // total order 99 (350 bytes; channels moves to EDI, flag still BL); cursor declared at entry (harness) 113
 // with 0x54990 off by 11. Retail's colours all follow from the flag taking EAX before the loop temps
 // (mask then lands in EBX, has-player in CL); every form here lets the mask take EAX first.
+// Round 20: the walk also differs in its steps: ours adds 0x170 after every unrolled channel, retail
+// addresses the four channels at fixed offsets from one cursor and steps 0x5c0 once. `&channel[i]`
+// through the local pointer 128 (368 bytes: a second IV for the values, biased +0x2ec base, 0x54990
+// 6); flag first with the step in the for statement 111 (channels in EBP, 0x54990 1; flag still BL);
+// a named per-channel size in the arm 94; nested initialized/have-player tests 94; `2 + (flag ? 13 :
+// 11) * value` 94; a countdown counter `remaining = 16 .. > 0` 94 (all four the same code).
+// Round 10 (lane 17): flag, total, cursor 111 (0x54990 1; channels moves to EBP but the flag still takes BL, so
+// channels being live at the flag's definition is not what keeps retail's flag in AL); the flag declared at
+// function entry and assigned in place 94; the getter result named before the compare 94; total, flag, cursor 108
+// (0x54990 1); cursor, flag, total 99 (350 bytes); the cursor `s_voice_channel const *` 94 (same code).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1456,6 +1466,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // has-player test 150/82; has-player in a named bool 122/27; written at function scope 141/134
 // (0x56380 lost); `2 + written * entry_size` 122/27; a direct `return NONE` 162/242; the inactive
 // queue as an early `goto done` 122/27; one `||` failure test 139/40.
+// Round 20: the zero in EAX is a shared constant for the result, the PIN test and `written = 0`;
+// with a non-constant result start (diagnostic) the PIN test becomes `test edi, edi` and written an
+// immediate store (205, convention moves). Inactive queue as an early `return 0` 191 (0x56380 73);
+// written declared inside the capacity block 197; nested else arms instead of the gotos 134 (same
+// code); first cursor byte stored in each include_mask arm with `*cursor++` in the else 178 (475
+// bytes); the player bit written at its use 134 (same code); clamp test removed (diagnostic) 171
+// with `ret 0x10`.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3322,6 +3339,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the mask tested as `(members >> member) & 1` 164, a per-iteration channel-index local 164; the
 // cursor at function scope before the stride 141. Screened: a channel pointer copy and the mask
 // declared before the member read change nothing.
+// Round 20 (no cursor; data keeps EBP, consumed EDI): NONE and kind tests split 139; size reduced
+// before the stride 139; consumed, size, stride order 158 (476 bytes); `*(word *)&packet[1]` with
+// `== 0` 139; the plain arm through the out-of-line talker test 181 (450 bytes, not inlined); one
+// shared kind test before the relay branch 180 (467 bytes).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
