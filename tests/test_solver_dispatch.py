@@ -237,6 +237,42 @@ def compare_case(solver_images, data, precision, context, retail_coverage=None):
 
 @pytest.mark.parametrize('kind', [4, 9, 10, 12])
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_angular_rows_capture_axes_before_body_updates(solver_images, kind, precision):
+    # Stress the read/write order with a row over either body's linear/angular
+    # or angular/inertia fields. Retail captures both axes before updating A,
+    # then reads B's current velocity, including A's update for shared bodies.
+    # These synthetic overlaps expose reloads hidden by ordinary disjoint rows.
+    for owner in (0, 0x80):
+        for offset in (0x10, 0x20):
+            for alias in (False, True):
+                for seed in range(12):
+                    data = solver_case(kind, seed)
+                    put(data, STEP + 28, 'i', (1, 2, 4)[seed % 3])
+                    put(data, OPS + 4, 'I', HEAP + owner + offset)
+                    put(data, OPS + 16, 'I', HEAP if alias else HEAP + 0x80)
+                    size, row_kind = OP_LAYOUT[kind]
+                    put(data, OPS + 24, 'I', kind | size << 8 | row_kind << 16)
+                    put(data, OPS + 24 + size, 'I', 0x400)
+                    exact_case = kind == 12 and owner == 0 and offset == 0x10 and not alias and seed == 0
+                    if exact_case:
+                        # Impulse 4 changes A's angular vector from (0,1,0,4)
+                        # to (4,1,0,8). B must use the original axis, giving
+                        # (0,4,0,16), rather than reloading the changed vector.
+                        put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
+                        put(data, HEAP + 0x10, '4f', 1, 0, 0, 1)
+                        put(data, HEAP + 0x20, '4f', 0, 1, 0, 4)
+                        put(data, HEAP + 0xa0, '4f', 0, 0, 0, 0)
+                        for body in (HEAP, HEAP + 0x80):
+                            put(data, body + 0x30, '4f', 1, 1, 1, 1)
+                    context = ('angular row overlap', kind, owner, offset, alias, seed)
+                    snapshots = compare_case(solver_images, data, precision, context)
+                    if exact_case:
+                        for heap, _ in snapshots:
+                            assert struct.unpack_from('<4f', heap, 0xa0) == (0, 4, 0, 16)
+
+
+@pytest.mark.parametrize('kind', [4, 9, 10, 12])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_angular_impulse_retains_x87_remainder(solver_images, kind, precision):
     # SIMD consumes a float copy of the impulse, while accumulation keeps the
     # x87 value. Cancellation makes premature rounding observable without

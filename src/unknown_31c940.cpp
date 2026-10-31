@@ -40,8 +40,12 @@ static __forceinline void apply_angular(float const &impulse, solver_angular_row
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
-	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, row->a));
-	b->angular = _mm_add_ps(b->angular, _mm_mul_ps(change_b, row->b));
+	// Retail captures both axes before either body update. A row can overlap
+	// body storage, so updating A must not change the axis subsequently used by B.
+	__m128 axis_a = row->a;
+	__m128 axis_b = row->b;
+	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
+	b->angular = _mm_add_ps(b->angular, _mm_mul_ps(change_b, axis_b));
 	*result += impulse;
 }
 
@@ -120,6 +124,43 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *step, unsigned 
 	}
 	float candidate = error_a * row[0].a.m128_f32[3];
 	if (candidate > 0.0f) apply_linear(candidate, row, a, b, result);
+}
+// Capture the row inputs before projection, while keeping body velocities as
+// references: the second update must observe the first when the bodies alias.
+static __forceinline void solve_angular_error(__m128 axis_a, __m128 axis_b,
+	float mass, float target, __m128 const &inverse_a, __m128 const &inverse_b,
+	solver_step_31c940 *const &step, float *result,
+	__m128 &velocity_a, __m128 &velocity_b)
+{
+	solver_scalar_31c940 projected = sum_three_31c940(_mm_add_ps(
+		_mm_mul_ps(velocity_a, axis_a), _mm_mul_ps(velocity_b, axis_b)));
+	float impulse = mass * (target * load_error_scale(step) - projected.value * load_velocity_scale(step));
+	float rounded;
+	float volatile &store = rounded;
+	store = impulse;
+	__m128 scalar = _mm_load_ss(&rounded);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	velocity_a = _mm_add_ps(velocity_a, _mm_mul_ps(change_a, axis_a));
+	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+	*result += impulse;
+}
+
+// The scalar limit is copied before projection; the friction coefficient's
+// address is retained across the run of consecutive linear-friction rows.
+static __forceinline void solve_linear_friction(float target, float limit, float const &friction_scale,
+	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
+	solver_velocity_31c940 *const volatile &b,
+	solver_step_31c940 *const volatile &step, float *result)
+{
+	float impulse = (target * friction_scale - linear_velocity(row, a, b).value * load_velocity_scale(step)) * row->a.m128_f32[3];
+	float magnitude = (float)fabs(impulse);
+	if (magnitude > limit)
+	{
+		float factor = limit / magnitude;
+		impulse *= factor; row->linear.m128_f32[3] *= factor;
+	}
+	apply_linear(impulse, row, a, b, result);
 }
 
 // @retail 0x31c940
@@ -299,10 +340,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 12:
 			{
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
+				solver_velocity_31c940 *body_b = b;
 				do
 				{
-					float impulse = row->a.m128_f32[3] * (row->b.m128_f32[3] * load_error_scale(step) - angular_velocity(row, a, b) * load_velocity_scale(step));
-					apply_angular(impulse, row, a, b, result);
+					solve_angular_error(row->a, row->b, row->a.m128_f32[3], row->b.m128_f32[3],
+						a->inverse_inertia, body_b->inverse_inertia, step, result, a->angular, body_b->angular);
 					++row; ++result; op += 4;
 				} while (*op == 12);
 				terms = (__m128 *)row;
@@ -325,16 +367,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 6:
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+				float const &friction_scale = step->friction_scale;
 				do
 				{
-					float impulse = (row->linear.m128_f32[3] * load_friction_scale(step) - linear_velocity(row, a, b).value * load_velocity_scale(step)) * row->a.m128_f32[3];
-					float magnitude = (float)fabs(impulse);
-					if (magnitude > operation_float(op, 4))
-					{
-						float factor = operation_float(op, 4) / magnitude;
-						impulse *= factor; row->linear.m128_f32[3] *= factor;
-					}
-					apply_linear(impulse, row, a, b, result);
+					solve_linear_friction(row->linear.m128_f32[3], operation_float(op, 4),
+						friction_scale, row, a, b, step, result);
 					++row; ++result; op += 8;
 				} while (*op == 6);
 				terms = (__m128 *)row;
