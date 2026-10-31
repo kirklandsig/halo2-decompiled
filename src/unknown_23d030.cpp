@@ -186,6 +186,11 @@ struct s_free_state_23d260
 // 355/343/339/370. All native direction producers and consumer changes restored; zero/side normalization remains.
 // Round 321: Complete native up-vector ownership with staged shared cross/forward snapshot/entry declaration subsets: 359/338/380/373/359/338/380/373.
 // Round 321: All lengthen the body; original publication, normalizer, projection, row accumulation and include set restored. Stacked notes merged.
+// Round 8 (lane 18, fast, aligned counts in brackets, base 102 [59]): fallback as `side.i = 1.f; side.k = 0.f;
+// side.j = 0.f;` 102 [59]; as `side.k = side.j = 0.f; side.i = 1.f;` 118 [52] (1328 bytes); the normalized
+// length in a named local 103 [59]; side declared at the top 102 [59]; `if (!normalize_inline(&side))` 121
+// [59] (1328 bytes); normalize3d with the yaw cosine/sine locals re-measured 276 [66] (x87 length exact,
+// the rotation's products then change operand order). The zero carrier stays XMM3 in every form.
 // Round 214: inverse movement setter 256; transformed position setter 102; world position setter
 // 102; inverse/transformed setters 277; inverse/world setters 277; both position setters 258; all
 // three setters 277; native world position update 195.

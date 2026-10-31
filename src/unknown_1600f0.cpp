@@ -1007,171 +1007,6 @@ struct s_game_engine_globals_connections_view
 };
 
 /* builds a player's row of the scoreboard at a position */
-// score 73 (was 73): everything before +0x397 matches; in the time and connection columns VC adds the
-// score width before the name width (ours `add cx, word ptr [score]`, retail `add cx, bx` and the
-// score through `lea`), so their scratch registers differ.
-// Earlier (score 170, was 170): this round's reduced-image listing (1227 bytes, frame 0x6d0 against retail's
-// 1254 bytes and frame 0x6d8) shows every stack home shifted by eight bytes, so the fast score of 272
-// is not the full build's 170 and the reduced image is not a usable target for this function.
-// Earlier (score 170, was 170): this round the reduced image scores the function 272 (the full build scores
-// 170); the deferred icon tail and the time/connection register homes still differ, and the fast
-// number is the one the reduced image reports.
-// Earlier (score 170, was 170): frame 0x6d8 agrees; deferred icon tail and time/connection registers remain;
-// retail tests the score/time widths as dwords but adds them as words, name width (bx) first.
-// Round 75: short widths (casts dropped) 170 (kept: the column sums add the name width first as
-// retail, the width tests become word compares); parenthesised/(short)-summed time left 184/184;
-// connection sum reordered 184; summed time and connection lefts 184; short name width only 173,
-// with uncast long sums 173; word widths 170; short score/time with long name 292; long score
-// with short time/name 180.
-// Round 44: all/score-name/name/time width views 184/288/292/168; long time with short uses 168;
-// long fixed widths with short uses 173; derived score predicate 291; direct icon on the long-time
-// form 208. The two-point time-width gains are rejected; opening body restored.
-// Earlier 184 (was 184): frame 0x6d8 agrees; deferred icon tail and time/connection registers remain;
-// default-zero byte icon 230, native integer 184; parsed-name scope 184;
-// separate connection rectangle 206; both name buffers scoped 184.
-// whole-row reference 184; column reference 184.
-// input-color reference 184; color snapshot 309.
-// channel samples 323; direct right edges 306.
-// trailing right edges 297; row reference with trailing edges 297.
-// Test-derived glyph 182 fast/plain (two-point gain rejected); separately gated query 204;
-// query Boolean 205; hidden-first with test/query values 229/249;
-// column observations 184; columns with test/query values 182/204.
-// Direct icon zero default 192; initializer zero default 208; separate place/icon/name
-// rectangles 184/229/222; place and icon rectangles 184; scoped numeric buffers 225;
-// scoped numeric buffers plus direct icon default 188 (all plain).
-// arithmetic fallback result/direct publication 216/210; actual icon/score/time/connection
-// receivers 214/184/186/318; icon receiver with arithmetic fallback 255; all receivers 317.
-// Place rectangle aggregate 206; icon rectangle aggregate 230; name rectangle aggregate 213; score
-// rectangle aggregate 239; time rectangle aggregate 237; connection rectangle aggregate 229; all
-// rectangle aggregates 320; trailing rectangle aggregates 306.
-// icon tail and time/connection register schedule still differ.
-// entry icon zero 261f; outer icon scope 184f.
-// zero before icon init 205f; zero before place format 248f.
-// signed word result 184f; unsigned native result 184f.
-// signed result before icon init 205f; native result before icon init 205f.
-// deferred icon tail and time/connection homes still differ.
-// Positive place visibility 318; horizontal/vertical/both live origin fields 184/184/184;
-// completed color alpha 184; visibility with origins 318; horizontal/both origins
-// with completed color alpha 184/184. Widget-root control equals the full baseline.
-// Dim-default glyph 183 (one-point gain rejected); glyph-last/icon-alpha-first metadata 184/184;
-// connection alpha first 185; two-use numeric width 281; time/connection bottom first 184/184;
-// dim default plus numeric width 281. Opening body restored.
-// Direct rectangle-left accumulation for score/time/connection individually, each pair and all
-// 184 each; all right/bottom field accumulations 184. Opening field expressions restored.
-// frame 0x6d8 agrees; retail stores the icon value in each arm (1, or the
-// dim value via neg/sbb/and) and places the else arm and the player-index/alpha tail after the score
-// column, jumping back to the name; the time/connection sums add name_width before score_width.
-// Tried: default-zero byte icon 230; native integer 184; parsed-name scope 184; separate connection
-// rectangle 206; both name buffers scoped 184; whole-row reference 184; column reference 184;
-// input-color reference 184; color snapshot 309; channel samples 323; direct right edges 306;
-// trailing right edges 297; row reference with trailing edges 297; test-derived glyph 182 (two-point
-// gain rejected); separately gated query 204; query Boolean 205; hidden-first with test/query values
-// 229/249; column observations 184; columns with test/query values 182/204; direct icon zero default
-// 192; initializer zero default 208; separate place/icon/name rectangles 184/229/222; place and icon
-// rectangles 184; scoped numeric buffers 225; scoped numeric buffers plus direct icon default 188;
-// arithmetic fallback result/direct publication 216/210; actual icon/score/time/connection receivers
-// 214/184/186/318; icon receiver with arithmetic fallback 255; all receivers 317; rectangle
-// aggregates for place/icon/name/score/time/connection 206/230/213/239/237/229; all of them 320;
-// trailing rectangle aggregates 306; entry icon zero 261; outer icon scope 184; zero before icon init
-// 205; zero before place format 248; signed word result 184; unsigned native result 184; signed result
-// before icon init 205; native result before icon init 205; positive place visibility 318;
-// horizontal/vertical/both live origin fields 184/184/184; completed color alpha 184; visibility with
-// origins 318; horizontal/both origins with completed color alpha 184/184; dim-default glyph 183
-// (one-point gain rejected); glyph-last/icon-alpha-first metadata 184/184; connection alpha first 185;
-// two-use numeric width 281; time/connection bottom first 184/184; dim default plus numeric width 281.
-// Round 71 (full relink; --fast builds this one differently): width declarations in any order and
-// width sums written with score_width first compile identically; icon if/else storing 1 or
-// `dim ? 2 : 0` +4; nested icon ternary +9 (1226 bytes); score_width-first sums with the if/else +4.
-// Round 151: Shared score/time visibility, visible/hidden arm first and direct glyph publication:
-// 211/204/205/201; corresponding positive-width forms 211/204/205/201. Original admissions, icon result,
-// fields and complete body restored.
-// Success-first word/explicit fallback/zero fallback 204/204/202; byte/native carriers 236/204; with
-// entry name zero/connection scope/time scope 268/204/268. All restored.
-// Inverted/nested/completed/negative/conditional-positive/conditional-negative/dim-scoped/
-// dim-branch icon selection 184/184/203/203/203/203/184/197. Original body restored.
-// Native column-enable values serve width and visibility: score/time/both bool
-// 304/298/298; score/time/both byte 304/298/298; bool-byte/byte-bool 298/298
-// (calibrated fast). Original derived-width gates and frame restored.
-// Round 14 (lane 10, plain, on the short-width body): store 1 in the success arm and `dim ? 2 : 0` in the
-// else arm 207 (both arms then are retail's code, neg/sbb/and included, but laid out in source order where
-// retail puts the hide-place else arm right after the success arm and the dim arm plus the player/alpha tail
-// after the score column); three stores 207; one nested ternary 212; the place test written `if (hide_place)`
-// first with the arm stores 255, with the original icon 216.
-// Round 104 (plain): long column widths 184 (retail tests them as dwords); hidden-place arm first 216;
-// score column with its hidden arm first 170 (identical); icon value stored after the player index and
-// alpha 170; long icon value 170. Original body restored.
-// Round 219: Shared numeric width/score origin/both/time origin/width-time/both origins/all short
-// geometry 258/291/294/302/283/310/295; all long geometry 291. All restored; deferred icon tail
-// and time/connection homes remain.
-// Native widget metadata with glyph enum, immutable complete background and tail store order:
-// eight calibrated scores 170; metadata type and helper graph restored.
-// Round 380: numeric-buffer terminator after widths, name terminator at entry and
-// time terminator before name parsing, all seven subsets 175/232/228/231/262/173/176;
-// complete form with direct connection input 176. Calibrated widget/query roots;
-// original private initialization phases, all copies and executable body restored.
-// Round 383: complete native background/foreground/both/foreground-first aggregate producers
-// 170/170/170/308; paired color role identities on those graphs 170/170/170/308.
-// Original producers, dim arithmetic, all copies and complete body restored.
-// Round 237: Actual time/score/both byte flag fields, width declaration-at-calculation alone and
-// with each field combination, then all with immutable widths: eight calibrated scores 170.
-// Original field domains and declaration lifetimes restored.
-// Round 222: Consistent horizontal/vertical/both coordinate values, short
-// 285/281/308 and long 280/281/309; readonly pairs 308/309. Every widget/query
-// control matched; original input observations and executable body restored.
-// Round 174: opposite dim state shared by foreground and glyph, bool/byte/short/long
-// 311/311/306/308; complete glyph result on those graphs 311/311/308/309. All
-// restored; frame/opening homes agree, deferred icon tail and time/connection carriers remain.
-// Round 267: Separate complete native rectangle outputs for place/icon, name/score and
-// time/connection, every subset and all immutable 196/246/237/256/277/239/279/279.
-// Original shared bounds restored; frame/prefix agree, deferred icon tail and later homes remain.
-// Round 394: Existing icon-query/time-formatter/name-parser inline declarations, all seven
-// subsets 170 each; all three separate noinline declarations 170. Original declarations restored.
-// Round 271: existing short/name/connection widget initializer inline class contracts,
-// all seven subsets and joint noinline contracts, 170 each on calibrated roots.
-// Original owning header and complete body restored; deferred icon tail remains.
-// Round 279: native byte input domains for glyph, dim and hidden-place flags,
-// all seven subsets and all four input flags together: eight calibrated scores 170.
-// Original Boolean signature and complete body restored; deferred icon tail remains.
-// Round 291: Default validity before construction for place/icon, score, both, time, place/time,
-// score/time and all: 256/252/258/252/246/247/268; all with connection default 267. All exact-only forms
-// restored (calibrated fast control 170).
-// Round 219: Query-output default at entry/time/place/name boundaries 253/192/235/191;
-// each with direct per-arm glyph 250/187/232/184. All restored; deferred icon tail and
-// trailing time/connection homes remain.
-// Round 42: native formatter output consumed directly by place/score/both widgets
-// 252/216/263; same producers with direct glyph arms 255/219/266; both producers
-// with direct connection input 263, plus direct glyph arms 266. Six matched formatter,
-// query and widget controls survive. Original complete body restored; deferred icon
-// tail and time/connection input homes remain.
-// Round 110 (plain): place and icon each in their own `if (!hide_place) ... else valid = false;`
-// block (like the score and time widgets) with the icon arms storing 1 or `dim ? 2 : 0`: 145 (retail's
-// block order: the dim arm and the player-index/alpha tail after the score column); with the old
-// icon_value local the split keeps source order. On it, long widths cast to short in the sums as in
-// 0x1600f0: 73 (kept). Then time/connection sums score-first 73; only the first width of each sum
-// cast 73; name width declared first 73; short score width 162 (1257 bytes: sign-extended,
-// word-compared, though its time column is retail's); quality declared in the connection block 73.
-// Same code as 73 (screened): name width assigned first or from the column flags, int/dword widths,
-// renamed width locals, a cast on the name+score partial sum.
-// Round 23 (plain checks; the reduced image scores the unchanged body 265): short name width with
-// its casts dropped 111 (retail's name column adds the width as a dword `lea`, so it is a long);
-// only the score/time widths cast in the time/connection sums 73 (same code); `(short)(position[0]
-// + name_width)` and `(short)(position[0] + time_width + name_width)` partial sums 73 (same code);
-// score width declared last 73 (same code); a named score-column offset (`name_width + 0x2d`) in
-// the three later sums 267.
-// Round 49 (lane 16, plain): the rest is the time and connection sums: ours folds the score width's
-// stack home into the 16-bit add (position + score, then name), retail adds the name width first and
-// the score width last from a register. A compile-only build gives retail's order, and ours as soon
-// as the score width's address escapes, so whole-program codegen treats it as a memory variable
-// where retail did not. Tried (whole-program build): time width assigned first 79 (prologue swaps);
-// time width, then name width from the score flag, then score width 79; the 0x2d before the widths
-// in both sums 73 (same code); the time column's left as score left + score width 73 (same code);
-// the connection entry passed directly 73 (same code).
-// Round 25 (plain): time column stored left, right, top, bottom 75; that order in the time and
-// connection columns 75; name width first defined as 0xd8 and then reduced by the time and score
-// widths, in two statements 73 or one 73; connection entry written in the call (no pointer local) 73
-// (identical, kept). Screened alike (same code): sum text order, casts, parenthesised partial sums, width
-// declaration order x assignment order x name-width expression x ternary/if, bool/byte/char column flags.
-// Only a short score width gives retail's time block (162 above: its entry and width test are wrong).
 // @retail 0x1603f0
 void game_engine_player_row_build(short const *position, real alpha, long player_index, word const *name, long place,
 	long score, long seconds, bool hide_connection, bool show_icon, bool hide_place, color3f const *color, bool dim,
@@ -1246,16 +1081,18 @@ void game_engine_player_row_build(short const *position, real alpha, long player
 	unicode_string_copy(parsed_name, name_text, 0x100);
 	function_22d2ee(parsed_name, 0x100);
 	unicode_string_copy(name_text, parsed_name, 0x100);
+	/* the name width goes uncast into the name and score columns; a (short) there moves the score
+	   width ahead of it in the time and connection sums */
 	bounds.left = position[0] + 0x2d;
 	bounds.top = position[1];
-	bounds.right = bounds.left + (short)name_width;
+	bounds.right = bounds.left + name_width;
 	bounds.bottom = bounds.top + 0x14;
 	row->name.initialize(&bounds, &local_e2f2b4, &field_24, name_text, 0x14, false);
 
 	if (score_width && !hide_place)
 	{
 		text_buffer_format(&buffer, (const word *)L"%d", score);
-		bounds.left = position[0] + (short)name_width + 0x2d;
+		bounds.left = position[0] + name_width + 0x2d;
 		bounds.top = position[1];
 		bounds.right = bounds.left + (short)score_width;
 		bounds.bottom = bounds.top + 0x14;

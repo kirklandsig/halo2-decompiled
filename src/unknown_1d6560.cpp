@@ -122,6 +122,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 320: both rigid-body flags read live through the model; repeated/shared byte type
 // and original/explicit object-bit result arms 117/111/114/117; explicit level tests
 // 117/111/114/117. Every form loses the matched caller; complete original body restored.
+// Round 457: selected-body const reference with repeated/shared type, original/explicit
+// object-bit arms and original/explicit upper-level arms: 96/136/93/136/96/136/93/136.
+// Shared-type forms lose the matched caller; the three-point forms are below the keep gate.
+// Original body and caller convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -250,6 +254,12 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
+// Round 30 (lane D): no better form found. The permuter ran 50 tries and its best was 258 against the
+// 261 baseline (three points, below the retention margin), and two flag reads were tried: bit 5 through
+// a byte bitfield view and the flag byte's mask tested directly both score 275, so the word bitfield
+// view stays. What still differs: our frame is 0x1c against retail's 0x18, the current and entry roles
+// are rotated between EDI and ESI, the next-group base is retained in an extra spill, and the policy
+// and availability bytes take the two frame slots the other way round. Original body kept.
 // score 261 (was 261): Frame 0x1c versus 0x18; current/entry/status homes and next-group spill remain.
 // flag 1 read through a word bitfield view gives retail's load-and-shift;
 // frame 0x1c versus 0x18 and the current/entry roles and next-group spill still differ.

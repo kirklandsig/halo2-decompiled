@@ -337,6 +337,10 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 void function_11bed0(s_location *location, point3f const *point);
 
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
+// Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
+// line here and our build inlines it, and the datum and element register homes follow from that;
+// the loop body is retail's otherwise. The only forms that keep the call out of line are the
+// implied-test ones the 2026-10-30 ruling rejects, so the native-iterator body stands.
 // Earlier: native iterator keeps the initial called scan and subsequent inline scan; location lookup still expands.
 // Published pool per use 161; shared bitmap scan 161; plain for 161; reused absolute slot 161;
 // shared next-datum advance 116; source receiver 160; bool datum iterator 134 (fast). Native iterator 93 fast/plain.
@@ -990,6 +994,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
+// score 7 (was 14): only the record initialization's playback reload and 0xa4 byte still move up.
 // MiniMax C (10-31): flag OR through playing->loop 13 again (mixed access; not kept).
 // score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
 // byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
@@ -1027,6 +1032,9 @@ long __stdcall function_125e60(s_looping_track_sound *sound);
 // from the register); link stores split links/playing (track index and flag / permutation copy / ring / controller)
 // LLPP 14 (retail's OR, callbacks store moves), PPPP 18, LLLLPP 14, PPLL 17; chained fade zeros start-first 14,
 // chained NONE resets 14, both 14 (identical code).
+// Round 58: links reference/fixed links/fixed playing 14/14/14; fixed playback 7; track index through playing 10;
+// track and flag zero through playing 17; flag zero alone through playing 7 (kept); direct getter unknowna4 240;
+// second record/later-state playback pointers 7/7; simplified flag-zero split 7 (plain confirmed).
 // @retail 0x21b940
 long function_21b940(long looping_sound_index, long definition_index, long pitch_range_index, short track_index, short state, dword *seed)
 {
@@ -1068,7 +1076,7 @@ long function_21b940(long looping_sound_index, long definition_index, long pitch
 				playing->handle = NONE;
 				s_looping_track_links *links = &playing->loop;
 				links->track_index = (char)track_index;
-				links->flags = 0;
+				playing->loop.flags = 0;
 				links->field_8_4 = track->field_8_4;
 				links->permutations = track->permutations;
 				links->next_sound_index = result;
@@ -1275,6 +1283,10 @@ struct s_looping_detail_request
 
 // score 127 (was 127): return result first restores entry load allocation; the first-player expansion remains (retail
 // calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
+// Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
+// and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
+// the rest of the body is retail's. The out-of-line forms are the implied-test ones the 2026-10-30
+// ruling rejects, so the body stands.
 // Round 8: the first-player query stays inlined whatever the else arm's shape: the next-player step
 // through the out-of-line 0x14de10 (diagnostic) 97 with the query still inlined; the skip loop as a
 // for, `while (skip-- > 0)`, an inverted count test and a guarded do-while all unchanged (154 fast).

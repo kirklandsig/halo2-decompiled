@@ -1556,6 +1556,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
+// Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
+// product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
+// the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
+// not retail's form. Original body kept.
 // score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Retail keeps the zero in ESI (pushed first, reused as the prism pointer, based at plane.j where
 // ours bases it at the point count) and counts the accepted shapes in 32-bit counters (test/jle,
