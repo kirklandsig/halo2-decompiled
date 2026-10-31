@@ -918,7 +918,7 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // as retail does: 347 -> 324, 1312 bytes. The frame is still 0x30 against retail's 0x28: ours keeps
 // the normal's x at esp+0x18 and its y at esp+0x34 where retail has the y at 0x2c and the x at
 // 0x34, and ours still spends a slot on the spilled direction.x.
-// score 324 (was 347): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
+// score 324 (was 324): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
 // and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
 // zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still
 // copies it for 0 - radius after the first offset where retail subtracts in place before both
@@ -1028,6 +1028,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // 322 each; a negative_radius local before the first offset 398, before the normal 424 (1281 bytes);
 // the offsets written per coordinate with that local, origin first/product first 360/360 (1268
 // bytes). Compile-only: unary minus in place of `0.0f -` gives identical code.
+// Round 252: Common successful output across all three success paths: long/dword/word/native point at entry
+// and after working-edge declaration 459/459/456/401/459/459/456/401. Original complete executable source
+// restored; Frame 0x30 versus 0x28, zero/radius ownership, history homes and crossing allocation remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

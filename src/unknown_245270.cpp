@@ -4,6 +4,7 @@
 #include "unknown_0259d0.h"
 #include <math.h>
 #include "vector_products.h"
+#include "unknown_11cc90.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -147,6 +148,13 @@ PRIVATE __forceinline void function_244de2(real thickness, short count, point3f 
 // Zero-initialised then x, y 6; the direction's i/j copied and rotated through
 // a temporary 244 (y saved) / 224 (x saved); a separate projected direction 155;
 // y stored before x with a const view for the sum 136.
+// Round 31: the hand-written normalization replaced by the existing normalize2d_fast on a
+// vector2f 6 (identical code, kept); on that: y written before x 136 (x squared first but taken
+// from st0); the dot computed just before the first prism 92; the swapped corners exchanged the
+// other way 18; `-x` for `0.f - x` in the second prism 6. Compile-only: writing only x through a
+// pointer gives retail's square order and reload, but puts the second prism's loads in y, x,
+// distance order (retail y, distance, x); routing both prisms through function_24526f with a
+// plane local grows the frame.
 // @retail 0x244de0
 void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 	real arg_3, long arg_4, long arg_5, long arg_6, byte arg_7,
@@ -180,19 +188,10 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 			local_0->field_1c = *arg_1;
 			local_0->field_28 = arg_3;
 		}
-		point2f local_1 = { -arg_1->j, arg_1->i };
-		real local_2 = (real)sqrt(local_1.x * local_1.x + local_1.y * local_1.y);
-		if (!(fabs(local_2) < 0.0001f))
+		vector2f local_1 = { -arg_1->j, arg_1->i };
+		if (normalize2d_fast(&local_1) != 0.f)
 		{
-			real local_3 = 1.f / local_2;
-			local_1.x = local_3 * local_1.x;
-			local_1.y = local_3 * local_1.y;
-		}
-		else
-			local_2 = 0.f;
-		if (local_2 != 0.f)
-		{
-			real local_4 = arg_0->y * local_1.y + arg_0->x * local_1.x;
+			real local_4 = arg_0->y * local_1.j + arg_0->x * local_1.i;
 			point3f local_5[4];
 			local_5[0] = *arg_0;
 			local_5[1].x = arg_0->x + arg_1->i;
@@ -202,11 +201,11 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 			local_5[2].z -= arg_2;
 			local_5[3] = *arg_0;
 			local_5[3].z -= arg_2;
-			function_244de2(arg_3, 4, local_5, local_1.x, local_1.y, 0.f, local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
+			function_244de2(arg_3, 4, local_5, local_1.i, local_1.j, 0.f, local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
 			point3f local_6 = local_5[1];
 			local_5[1] = local_5[3];
 			local_5[3] = local_6;
-			function_244de2(arg_3, 4, local_5, 0.f - local_1.x, 0.f - local_1.y, 0.f, 0.f - local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
+			function_244de2(arg_3, 4, local_5, 0.f - local_1.i, 0.f - local_1.j, 0.f, 0.f - local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
 		}
 	}
 }
@@ -283,6 +282,8 @@ void function_245400(s_source_245400 const *source, long index,
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
 // home and the side bytes still differ.
+// Earlier at 203 (MiniMax H): no new in-file form moved it; retail declares 0x245540 with its
+// matrix and source the other way round, and that declaration and its call live in src/unknown_245850.cpp.
 // Earlier at 203 (from 203): the frame is 0x24 against retail's 0x2c and the source receiver's home
 // differs; retail declares 0x245540 with its matrix and source the other way round, and that
 // declaration and its call live in src/unknown_245850.cpp.

@@ -935,6 +935,16 @@ done:
 	return result;
 }
 
+// score 9 (was 9): this round: eight more forms of the shared getter (a data base and a masked
+// slot local in either order, the base added with `+=`, a byte-pointer product with sizeof, a
+// pool local, the slot masked in its own local) all compile to the same code (9); an
+// `unsigned short` slot local gives 38 (`movzx esi, cx`) and was reverted. The prologue's
+// register choice (the offset in EAX and `lea esi, [eax + edx]` against our offset in ESI and
+// `add esi, edx`) is not steerable from the source.
+// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX and forms the
+// actor with `lea esi, [eax + edx]`, ours builds it in ESI and adds the base. This round: the
+// shared getter rewritten as a byte-pointer product (`(byte *)data + (index & 0xffff) * sizeof(...)`)
+// compiles byte-identically in all seventeen functions of the file, so MSVC canonicalizes it.
 // score 9 (was 9): Round 30 (lane C): the prologue still builds the actor offset in ESI and folds
 // the table base into it (`add esi, edx`); retail computes the offset in EAX and forms the actor
 // with `lea esi, [eax + edx]`. New forms: a data-base local with a masked slot local, a byte

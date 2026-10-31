@@ -145,6 +145,9 @@ static inline real distance_squared(point3f const *a, point3f const *b)
 // distance_squared arguments swapped 11/8/12; copies swapped 144; height default 228;
 // root_left or root_up declared after the forward normalize 10/31; mid_left among the
 // mid pointers 18; &root->left, &root->up or all three in the second cross 16/20/18.
+// Round 38 (fast): the four root/mid axis pointers at the top of the function 297, the root ones
+// only 302, the mid ones only 280; at the top of the inner block 279, the root ones only 292. In
+// the second cross retail loads the higher-offset component first in all six products.
 // @retail 0x120220
 void function_120220(
 	transform4x3f *target,

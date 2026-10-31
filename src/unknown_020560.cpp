@@ -74,6 +74,8 @@ PRIVATE __forceinline long texture_floor(real value)
 // bias assigned in the arm without its zero default 65; ignored call result named 4; bitmap
 // narrowed to short at the floor 16. Harness: the second floor's asm decides it (an asm copy
 // that clobbers EDX in place of ECX gives EAX here).
+// Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
+// clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

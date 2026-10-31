@@ -491,6 +491,8 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // direct clock 96. Round 15: settings field before the factor in either product 15/15; clock
 // read after the first factor 80; timestamp read before the clock 94 (418 bytes); unit index
 // passed directly 41.
+// Round 28: descriptive local names 15; the random compare written `f() < chance` 15; the prop
+// state named at its test 15; the rate first in the elapsed product 15; `!= NULL` result test 15.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

@@ -976,6 +976,9 @@ void function_1d1540(s_havok_component *component);
 // retail fetches again after 0x1d1260); the transform by reference 88; inverse declared with local 88;
 // the second fetch into the body local 88. The lead stands: LTCG made the component a register argument
 // only when the first pass left a callee-saved register free.
+// Round 250: One body receiver with conditional post-reset refetch: constructor copy, flag/fixed-
+// first and bool/byte refresh 81/81/81/81 at 220 bytes; set copy 85/85/86/86 at 231. Frame/component
+// convention remains; every matched control survives.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
