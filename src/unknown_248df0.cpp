@@ -137,7 +137,12 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 // (up, forward) cross helper for case 13 212, computed before the point difference 211, its
 // vector declared first 212; vector3d_from_points3d for case 12's / both cases' difference
 // 31/31. Earlier fraction, case-tail, helper-parameter and case-order forms reached 121
-// before later fixes.
+// before later fixes. Round 29 (lane 14): a compile-only screen reproduces case 12 exactly:
+// the address-taken direction is always the memory operand in every written-dot form; only
+// vector3d_from_points3d with dot3f loads it first (i, k, j order) 69; a plain cross vector
+// moves the result to XMM1 (also in the compile-only screen): with case 13 returning its
+// fraction directly 152, cases 12 and 13 both 162, the fraction's `+ 1` returned early 210,
+// the fraction as a ternary 210.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {

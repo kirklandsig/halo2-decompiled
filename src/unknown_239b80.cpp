@@ -317,6 +317,10 @@ short function_239e50(short count, point2f const *points, short *indices);
 // copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
 // first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
 // case 1's dot by name or through the pointer in either term order.
+// Round 29 (lane 14): count EBX and points EDI agree with retail (ECX is only written), so the rotation
+// is body-internal. A case-0 `vector2f *normal = &line.n` for the normalize and the dot 42 (same code),
+// for the dot only 42 (same code), with j's store too 44 (304 bytes), with i's store instead 69 (305);
+// case 1's distance as `line.d - dot` 43.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
