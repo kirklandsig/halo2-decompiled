@@ -154,6 +154,8 @@ bool function_25d9b0(long prop_index);
 // on this body a long priority 84 (priority moves to EDI, the view to ESI; not retail's shape); `return 0` at the
 // loop's end 119 (551 bytes, the loop exit gets its own zero epilogue); both 125; the gate's arms as `return
 // priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
+// Round 465: default-first/branch-complete property acquisition result, short/long priority,
+// existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
