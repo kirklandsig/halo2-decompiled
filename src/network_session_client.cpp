@@ -694,6 +694,8 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // Round 97 (lane 8, fast with the inlined callees): the mask test with the bit first 55; the machine mask
 // stored after the copy loop 139 (495 bytes); the player-loop index declared with the buffers (no preset
 // pointers) 55; a short copy-loop index 153 (467 bytes); the summary declared after the buffers 55.
+// Round 51 (lane 16, fast with the inlined callees): the address copy as `if (n > 0) for (i = 0; i != n;
+// i++)` (the rolled-countdown form of 0x2be050) 114 (477 bytes), as a plain `for (i < n)` 114 (477 bytes).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
