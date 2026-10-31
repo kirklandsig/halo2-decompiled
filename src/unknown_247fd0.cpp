@@ -190,6 +190,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // the compare, a flags read between, the sample through a named local, operands swapped, a cache local.
 // Round 51 (lane 16, fast with 0x248cc0): field_10 first with the fifth draw in its own brace scope 133
 // (876 bytes), with the cache compare block in its own brace scope 133 (both still split the compare).
+// Round 102 (m3 lane 8; one-link LTCG harness, exact): in the kept form field_10's temporary takes ECX where retail's
+// takes EDX (ECX then holds the live seed pointer) and every later scratch register follows; the child loop also
+// reuses EAX for the second list address where retail reloads the parent. Fast: field_10 first 133; field_10 first with
+// `arg_0->field_50 != local_1` and the cache stores swapped 129 (863 bytes); with a named record copy for the compare
+// 133; child unknown4c stored before parent 70 (same code); count increment before the field_3c store 71. Harness:
+// field_38 through 0x248076's reference, through local_9 or a named sample local, a named cache pointer: all as T1.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

@@ -309,6 +309,10 @@
 // fsqrt(105) and band3_21); on it: sqrt2/band3_35/sqrt105 as `real const` 55; result[13] before result[11] 55;
 // constant-first `3.0f * xx`/`3.0f * yy` 55; result[15] right before band3_21 146 (647 bytes); xx_3yy defined just
 // before result[15] 55. Original body restored.
+// Round 102 (m3 lane 8, fast; 0x146020 matched in each): band1 from a float root `(real)sqrt(3.0) * inverse_sqrt_pi`
+// 56 (fixes +0x50); with the cubic statements in the 9, 10, 12, 11, 13 order 56, plus xx_3yy after result[12] 56;
+// result[11] staged as `zz5_1 * band3_21`, `*= inverse_sqrt_pi`, `*= y` 69 at retail's 660 bytes; both cubic X/Y
+// accumulators from inverse_sqrt_pi first 139 (653 bytes).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {
