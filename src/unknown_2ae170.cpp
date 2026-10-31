@@ -686,6 +686,8 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // Lead: retail calls 0x12aff0 with the plain /Gr fastcall convention (flag in CL, three floats
 // pushed), which a non-LTCG object would also give; that would explain why retail never merges or
 // hoists its 15 identical (-64, 0, -64) calls, which ours hoist out of the loops (BLOCKED-BY 0x12aff0).
+// Round 248: initialized descriptor role-name permutations and two routing-table name positions
+// 320 each (fast control 320, full 328); original complete body restored.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
