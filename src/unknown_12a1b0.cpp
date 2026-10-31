@@ -990,6 +990,10 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
+// score 13 (was 14): the loop flag's bit is set through the playing record's loop member while the flag byte
+// is cleared through the links pointer, so the bit set stays an OR into memory as in retail; the record
+// initialization's store schedule still differs (the playback reload, the 0xa4 byte and the loop-flag byte
+// move up).
 // score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
 // byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
 // Earlier: Float/result/random spill homes and initialization scheduling differ.
@@ -1073,7 +1077,7 @@ long function_21b940(long looping_sound_index, long definition_index, long pitch
 				links->next_sound_index = result;
 				links->previous_sound_index = result;
 				if (playing->state == 2 && (playback->flags & 0x2000))
-					links->flags |= 1;
+					playing->loop.flags |= 1;
 				if (definition->flags & 0x20)
 				{
 					function_2198f0(sound->controller_index)->function_219f60(1);
