@@ -374,6 +374,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // to the helper 115; the case 2/4 entry through a named element pointer 115, its state read once into
 // a named local 115 (same code). Natural loops still split the handle (harness: pointer cursors 184
 // positional, index loops with the direct call or the helper 184/185).
+// Round 214: shared phase ordinal 115; entry chain array 115; positive validity admission 115;
+// ordinal/entry chain array 115; ordinal/positive admission 115; entry array/positive admission
+// 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

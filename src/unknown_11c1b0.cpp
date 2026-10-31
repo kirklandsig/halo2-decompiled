@@ -113,6 +113,14 @@ void function_16e2c0(long arg_0);
 // count read into a local at entry 50; the range test before the NONE test in the disjunction 50 (the
 // same code); the structure-globals pointer as a ternary 50; the loaded BSP's list index read once into a
 // named local for the call and the table 89 (461 bytes).
+// Round 37 (lane 10, fast): one index variable at the top 128 (own slot, push ecx); one variable defined as
+// the block's first statement 58 (457 bytes: retail's BX/EDI, the zero-extended dword store into the
+// argument's home and every later instruction agree; only the global read and that store follow the range
+// test, where retail has them at entry, the store between `cmp bp, -1` and its je); that with the early
+// true test reading the index first 59; one variable after a named `arg_0 == NONE` bool 100 (459 bytes: the
+// store lands between the compare and its jump as in retail, but in its own slot); the body in an inner
+// block with the variable at its top 100 (own slot). The argument's home is taken only by a variable
+// defined after the range test.
 // @retail 0x11c1b0 standard
 bool __stdcall function_11c1b0(short arg_0, bool arg_1)
 {

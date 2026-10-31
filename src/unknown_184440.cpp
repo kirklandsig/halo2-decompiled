@@ -208,6 +208,9 @@ __forceinline bool function_184448(long arg_0)
 // Round 447: Native short worklist count/cursor and existing shared group lookup, seven subsets; shared lookup with full-width edge pair
 // 982/981/982/990/981/984/981/990. Frame 0x11d4 versus 0x11cc and initial surface/geometry homes remain.
 // Original executable source and all trial helper/interface changes restored.
+// Round 245: complete double product/squared-sum/square-root intermediate ownership,
+// seven subsets 989/977/989/989/977/989/977; full graph with single result 981.
+// Original two-use normalizer and complete body restored; frame excess remains.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

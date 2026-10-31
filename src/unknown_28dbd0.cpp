@@ -73,6 +73,7 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax E run 26: score 185 (was 185): our frame is 0x11c against retail's 0x118, so every stack home is four bytes late; a delayed-sine form reaches frame 0x118 but scores 180 and the form that also fixes the request homes scores 209, and the rotation's two spilled cross terms and the sine/cosine homes remain.
 // score 185 (was 185): frame 0x11c against retail's 0x118; the request home is four bytes late and the
 // rotation's cross-term homes differ (retail spills two scalar cross terms, sine and cosine). Forms tried:
 // Round 43: mixed two-scalar cross pairs k/j/i-first 241/232/232; request-forward launch copy 246;
