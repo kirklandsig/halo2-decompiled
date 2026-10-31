@@ -163,6 +163,11 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // early store and return 79, view through the index getter after/before the node 74/88, one shared store
 // 52; the guard clause 7. On 7: the final call under a positive test 7, `(short)` cast 7, the type byte
 // declared signed char 7, a positive test around the 0x1f4f40 call 7.
+// Round 23 (lane 15, plain): the type byte in a named char local, tested and passed 11; the 0x262800
+// reference read into a local first 7 (its temporary moves EAX -> EDI, retail ECX); the state pointer
+// declared before the actor 9; the readiness in a named bool stored and tested 22 (byte setcc); the
+// completion store shared after an `if (view)` block 51 (276 bytes). At 0x1afb30's call to 0x1f4f40
+// our build converts the byte in place as retail does; here EAX holds the actor index too early.
 // Lane 16 r46 (plain): the 0x262800 reference copied into a named local first 7 (its temp moves to EDI).
 // Round 213: inline facing callee 7; inline release callee 7; inline node test 7; both call contracts
 // inline 7; short facing mode 44; short mode with inline facing callee 44; long facing mode 46; long mode

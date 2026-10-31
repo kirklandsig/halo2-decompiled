@@ -289,6 +289,12 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // break;` before the format-4 node store 175; a `wants_node` bool for the five node tests 193 (636 bytes);
 // `switch (buffer->format - 1)` with cases 0-3 175; the decode helper `inline` instead of `__forceinline` 521
 // (kept out of line).
+// Round 112 (fast; 0x14a8e0 70 with the convention kept, 269 when it flips): format 4 through a `vertices`
+// local with the node read through a pointer formed after the decode 175 (624 bytes, flipped); the node test
+// around the decode (decode and node store in one arm, decode alone in the else) 261 (696 bytes); format 3
+// indexed with the format-4 pointer 60 (as before: two points); `vertices + index` as the pointer 62 (same
+// code); the node byte read through a byte cast of the indexed record 175. A /Gd compile-only first pass
+// reloads every parameter per case here, so it shows nothing about the flip.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

@@ -1134,6 +1134,8 @@ void function_2118c0(void)
 // as b * 8 + x 150; a [3][8][8] table 150; a row += 8 loop, a row induction
 // variable, inline row accessors, w's computed in the loops 150-180 (all rows
 // become pointer IVs); previous at the k level 22; tb before ta 20.
+// Round 55: a local 3D table pointer/reference 150/150; function-scope/split wrapped
+// indices 14/14; split float declarations 14; early band reset 14; sample/function-scope row 14/14.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -1878,6 +1880,16 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
 // the source order); a compile-only harness keeps the exit order and the success block's load order
 // (weight, tag value, tag pointer; retail loads the tag pointer first) for a break with a retest, a found
 // flag, `tag_index[0]`, a copied tag and a weight pointer local.
+// Round 49 (lane 16, plain): the 0x80 group with no early clear and `else eligible = false` on
+// both failures 271 (the no-actor and squad-NONE exits then reach retail's shared clear-and-reload
+// tail, but the squad-entry-null exit does too and the group's early clear is gone; 2260 bytes);
+// that with the failure arm first 271; with the squad bit as a ternary 271; with `default:
+// eligible = false` in the 0x100 switch 271; the clear moved inside the actor arm before the
+// lookup with an outer else 277 (all three exits right, the clear lands before the call); early
+// clear plus outer else 277 (the else is dropped). Retail keeps the early clear and the redundant
+// failure clears, which ours removes as known-false stores. Diagnostic: the eligible flag's
+// address escaping sends the 0x40 failure into the shared tail (as retail) but reshuffles the
+// whole function (614/664).
 // @retail 0x20d8c0
 short function_20d8c0(long source_index, s_audio_priority_table *table, byte const *request,
     long object_index, long target_index, long previous_index, long *tag_index, real *weight)

@@ -64,6 +64,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // `if (i != 0) { if (power > 0) ... } else { copy; strength }` 38 (821 bytes: in-place add and retail's
 // lea copy, but the i == 0 block lands after the blend block); a 600 s permuter run on the colour-first
 // form, best 51 (it moved the strength back first).
+// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure, positional/aligned; base 10/16 = full 30):
+// colour copy first 105/5 (828 bytes: the copy is retail's, the strength add loads the entry first into
+// xmm0 and copies back); on it two to four extra used locals, `strength = entry + strength`, `if (!i)`,
+// a const source cast, a nested else-if, the fifth argument as `&color.red`: identical (105/5); strength
+// declared first 108; a named power local in a nested test 84/46; the strength add before the blend
+// call 182. On the strength-first body: the first argument as a const pointer or the fifth as
+// `&color.red` 10/16 (identical): the ecx/edi pair follows the CSE of `&color`, not the spelling.
 // Earlier (52): the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
 // the blend registers and the color0 store match. Left: the strength add loads the entry's strength,
 // adds and copies back where retail adds it to xmm7 in place (its operands flip only when the strength

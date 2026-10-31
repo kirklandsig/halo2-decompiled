@@ -113,6 +113,17 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // stack, ret 8); the successor assigned in an else 57; a guarded do-while with a successor and early returns 49.
 // Harness only: for loops with `index = next` (no hoist), an inline entry getter (identical), short index or
 // successor, the found copy after the loop, result set before the copy.
+// Round 98 (lane 7), `--fast`: `*iterator = index = entry->next` with an early return 52; the successor stored after
+// the test on both paths 51; the `!result` loop with a successor local and `break` 57; a for loop with `continue`
+// filters and `break` 51; one index with `continue` filters and an early return 55. The successor read through the
+// table (`long next = g_4cf98c[index].next;` before the entry pointer, or `*iterator = g_4cf98c[index].next;` with the
+// index read back) in the `!result` loop with `break` or with `else index = next` gives retail's AL mask and EBX
+// successor, 36 at 127 bytes (not kept: an always-true loop test or a mixed read, no match); left are the top-tested
+// loop (retail: guard, then push ebx and the mask, latch `cmp ebx, -1; je; mov esi, ebx`) and the entry computed after
+// the successor load. Harness: the rotated loop with that successor and a `break` hoists the mask only with the guest
+// test first (so it depends on the test block's frequency); test spellings, result and successor types change nothing.
+// Harness: an `if (index != NONE)` guard or a do-while around the `!result` loop, the existing iterate helper on a local
+// index, booleans computed before the test and (in the rotated loop) the copy after the loop all lose the hoist.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -554,6 +565,11 @@ void function_1537f0(s_profile_record *record);
 // the entry pointer 67; the link stores as four statements in retail's order 67; the identity as the XDK XUID
 // type 67; the entry pointer as `g_4cf98c + i` 67. An LTCG harness copy of round 34's two-member local object
 // again gives retail's identity stores and offsets (259 bytes), with NONE then hoisted into EBP.
+// Round 98 (lane 7), `--fast`: the XUID identity zeroed by its two fields with the existing 4-aligned
+// `s_player_properties` source and no tail clear 80 (249 bytes: retail's 0xa0 frame, but only the flags dword stays in
+// memory, its store hoisted out of the loop, and NONE moves into EBP); the flags field zeroed first 75 (251); the
+// identity zeroed dword by dword 80 (249); the XUID by memset with flags and timestamp as two stores 80 (236); the
+// first form with those two stores 85 (241).
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -843,7 +859,7 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 }
 #pragma inline_depth(8)
 
-// score 49 (was 66): frame 0xc and the whole tail agree; the admission prefix (a `cache_full` bool, retail
+// score 49 (was 49): frame 0xc and the whole tail agree; the admission prefix (a `cache_full` bool, retail
 // tests the count directly and loads the removed index into EDX) and the upper bound's register (retail ECX,
 // so the forward copy index takes EAX) remain.
 // Paired range arms 373;
@@ -941,6 +957,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // Harness screens on the 54 form, all with upper still in EAX: every min/max spelling and three-way order, the
 // declaration orders, a named count, one copy index for both loops, the copy and repair loops as force-inline
 // helpers, a plain else for the count path (1155 bytes). Permuter on the 49 form: nothing better in 60 tries.
+// Round 98 (lane 7), `--fast`: round 149's plain entry with the explicit flag arms, the count path upper first and
+// `downward = true` first in the `<` arm 54 (aligned 23: retail's `mov bl, 1` before the spills); that with the 0x7f8b0
+// call for the fill 104 (1174 bytes); the current body with `downward = true` first 50; the plain entry form with
+// `lower < upper` 54, with the count path's flag store first 54. Harness, all with upper in EAX: four copy-loop index
+// spellings, a function-scope copy index, the eight declaration orders above the removal block (373), the count path
+// first, an unconditional count path (1155 bytes), short bounds, bounds without initializers, removed set in an else.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
