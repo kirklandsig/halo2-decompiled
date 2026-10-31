@@ -515,6 +515,10 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // Round 92: read-only/immutable clump pointer, split clump/side assignments, side-before-clump
 // declaration, const side, early iterator declaration, and inline predicate/lookup declarations each 3.
 // Original body and declarations restored.
+// Round 137 (lane 4): the walk reusing `clump` (no other_clump) with a long team local 31, the team passed
+// directly 3; `function_20f040((long)clump->team)` 3; a long side compared as `(short)side` 3. The permuter matched
+// only with a `volatile` clump pointer (not allowed): retail's first team read is an opaque load (movsx, address add
+// not folded), the shape 0x26bc60 matched with its volatile read, so both likely share the original idiom.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {

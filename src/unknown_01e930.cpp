@@ -433,6 +433,12 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // (aligned 109 -> 96: the call stays out of line as retail's, where `function_1358c0(10)` folds to a table
 // load; lead); that with the sound interface read once into a local 251 (aligned 107), with
 // `dword large = flags & 0x100` 278 (aligned 99).
+// Round 9 (lane 17, fast; aligned base 109): the mask tested at both uses with the movie open as an if/else
+// with a call per arm 278 (1102 bytes, frame 0x44, aligned 136); that with the format-field size query 286
+// (1112 bytes, aligned 119); a dword mask local for both uses with the per-arm open 283 (frame 0x44); a dword
+// mask local for the open and the size ternary on `flags & 0x100` 269 (frame 0x3c, aligned 111; diagnostic, a
+// local/direct mix), with the per-arm open 278. Retail's movss 1.0 stores and fld/fcompi timeout compare need
+// /arch:SSE, which this file's flags lack (build flags are the user's decision).
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

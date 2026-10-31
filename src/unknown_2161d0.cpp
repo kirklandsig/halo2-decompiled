@@ -79,6 +79,10 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // Round 88: the path built through the existing copy/terminate/append helper shape 10; separate
 // location and path locals 19 (frame 0x140: retail keeps 4 bytes between them); a named path
 // pointer 10; result read back from the task 10; the build as an inline member of the record 10.
+// Round 10: separate location and plain path array locals 19 (the reuse stays: mov edx, esi); the
+// append through an inline member of the record 10; through a static inline function 10; a path pointer
+// for the append only 10; the storage name in its own local first 10. (Matched 0x216da0 recomputes after
+// an inlined member's call; here that form keeps the reuse.)
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

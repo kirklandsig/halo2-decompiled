@@ -72,6 +72,20 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
+// bytes, the value loaded with the sign-extending idiom), through an unsigned 16-bit local (112),
+// and through a short cast, a word read of the counter and a word cast (107 each). Still the
+// maximum's register home: retail keeps the old maximum in ECX and the counter in AX and reads
+// the 15-bit value with the 16-bit idiom (xor eax,eax; mov ax,[...]) with one -1 default and the
+// enable byte in AL; ours zero-extends the value into EAX, keeps the enable byte in DL and
+// materialises the -1 default twice. Still BLOCKED-BY 0x196960/0x1968b0, whose file is held.
+// score 107 (was 107): this round: the comparison written the other way round (the counter first)
+// gives 107, and the counter read through a 16-bit local, at block scope or at function scope, 112
+// with and without that comparison (419 bytes). Still the maximum's register home: retail keeps the
+// old maximum in ECX and the counter in AX and reads the 15-bit value with the 16-bit idiom
+// (xor eax,eax; mov ax,[...]) into ECX with one -1 default and the enable byte in AL, ours
+// zero-extends the value into EAX, keeps the enable byte in DL and materialises the -1 default
+// twice. Still BLOCKED-BY 0x196960/0x1968b0 (retail inlines both; their file is held).
 // score 107 (was 107): this round: the player maximum read as a nested initialise/compare/assign
 // gave 109, the same nested read for the team maximum 117 and the player maximum alone 112.
 // Still the enable reloads and the maximum-register homes: retail keeps the old maximum in ECX

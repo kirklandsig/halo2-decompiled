@@ -156,6 +156,13 @@ void function_133720(s_bit_vector_pool *arg_1, bool arg_2)
 // Record stores point/index/radius, radius/point/index, radius/index/point, index/point/radius,
 // index/radius/point 19/19/20/13/21; radius local before the copy with the index stored first 30
 // (radius stored first 31, local after the record 30, index first 34); point read directly 24.
+// Round 32: BLOCKED-BY 0xbd610. The record's address reaches the 0xbd610 stub (built without /GL)
+// through 0x4b5d0 -> 0x137800's node-section argument, so LTCG treats the record as escaped and
+// will not move the object's radius/point loads above the record stores. One-file LTCG harness
+// diagnostic: with only that argument nulled at 0x137800's call, this body is 2 (only the
+// radius/index stores swapped) and index/point/radius or point/index/radius record order matches
+// byte for byte. Normal build: index/point/radius 13, radius local first 30, radius local stored
+// before the index 31, record declared first 13, source point through a pointer local 175.
 // @retail 0x133790
 bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *arg_4, long arg_5, bool arg_6)
 {
