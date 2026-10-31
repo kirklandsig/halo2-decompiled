@@ -7222,7 +7222,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 001f5ef0,58,game,speed,a16 pad,,,0010f340,src/unknown_1f5560.cpp,matched
 001f5f30,340,game,speed,a16 pad,,,000bfe60 0015e020 001f5ef0,src/unknown_1f5560.cpp,matched
 001f6090,7132,game,speed,a16 pad,,,00024590 0002b400 00030bf0 000b7930 000b7b40 000b9dd0 000b9fc0 000cbd50 000cd0c0 000e64e0 000e68c0 000e6900 000e70b0 0010f630 0010fcd0 00110ab0 00114b60 001469f0 001e4260 001e4990 001e4a50 001e4ef0 001f40b0 001f50e0 001f57f0 001f58c0 001f5f30 001f7c70 001f8160 001f8660 001f9240 001f9450 001fa600 001fa7f0 001fb7e0 00210770 00210850 0026bf10 0026c180 0026c590 0026d100 0026f2d0 0026fc80 002702a0 002967b0,,todo
-001f7c70,984,game,speed,a16 pad,,,00030bf0 000e6900 0010f9b0 001e4a50 001f8160 001f9240 001f9450 0026f2d0 0026f360 0026f990 0026fe90,src/unknown_1f5560.cpp,todo
+001f7c70,984,game,speed,a16 pad,,,00030bf0 000e6900 0010f9b0 001e4a50 001f8160 001f9240 001f9450 0026f2d0 0026f360 0026f990 0026fe90,src/unknown_1f5560.cpp,matched
 001f8050,165,game,speed,a16 pad,,,001e4a50 0026f290,src/unknown_1f5560.cpp,matched
 001f8100,89,game,speed,a16 pad,,,000fa1a0 001f8050,src/unknown_1f5560.cpp,matched
 001f8160,935,game,speed,a16 pad,,,0002b400 000e6900 000fa1a0 001e4a50 001f8050,src/unknown_1f5560.cpp,todo
@@ -9451,7 +9451,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0026fbf0,139,game,unknown,a16,,,000b8d30,src/path_transitions.cpp,matched
 0026fc80,406,game,speed,a16 pad,,,001e4a50 0026fbf0 00270130,src/path_transitions.cpp,todo
 0026fe20,97,game,speed,a16 pad,,,000b8d30,src/path_transitions.cpp,matched
-0026fe90,660,game,speed,a16 pad,,,001e4a50 0026fe20 00270130,src/path_transitions.cpp,todo
+0026fe90,660,game,speed,a16 pad,,,001e4a50 0026fe20 00270130,src/path_transitions.cpp,matched
 00270130,260,game,speed,a16 pad,,,,src/path_transitions.cpp,matched
 00270240,84,game,speed,a16 pad,,,0010f9b0 001420f0 00142a60,src/path_transitions.cpp,matched
 002702a0,342,game,speed,a16 pad,,,0010f9b0 00141590 00142a60 0026d100 00270240,src/path_transitions.cpp,matched
