@@ -321,6 +321,10 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 29 (lane 14): count EBX and points EDI agree with retail (ECX is only written), so the rotation
+// is body-internal. A case-0 `vector2f *normal = &line.n` for the normalize and the dot 42 (same code),
+// for the dot only 42 (same code), with j's store too 44 (304 bytes), with i's store instead 69 (305);
+// case 1's distance as `line.d - dot` 43.
 // Round 7 (lane 17, fast): the normal built from the existing vector2d_from_points2d (first minus point,
 // i = delta.y, j = -delta.x) 86 (316 bytes: the negation is an SSE subtract from zero); the loop on
 // `i < count` with `if (state >= 2) break;` after the switch 101 (311); case 0 in matched 0x23a2b0's own
