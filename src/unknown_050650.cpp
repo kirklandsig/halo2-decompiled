@@ -672,7 +672,8 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// score 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
+// score 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
+// Earlier at 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
 // against retail's 1444); retail keeps the shared direction/normalise/output chain between case 2 and case 1 and holds
 // two copies of the remembered-prop code (case 1's copy cross-jumps into case 2's) where ours shares one block.
 // Retail copies the marker position and the case 3 and 5 points as three dwords where ours copies three floats, and
@@ -684,7 +685,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // same addresses, the copied dwords in another register order); case 1's own remembered copy jumping into case 2's
 // 1e3b00 call 379 (the prologue's register choice flips); the Boolean homes made retail's (point_valid set once at
 // the aim-at-point label, `point_valid = result = false`) 321, restored because the gain is under 8.
-// score 276 (was 276): frame 0x8c agrees; Boolean homes, point/case-tail transport and aiming workspace remain.
+// Earlier at 276 (was 276): frame 0x8c agrees; Boolean homes, point/case-tail transport and aiming workspace remain.
 // Earlier: frame 0x8c and movement-record addressing agree; Boolean role homes and point/case-tail transport differ.
 // frame 0x8c and movement-record addressing agree; Boolean role homes and point/case-tail transport differ.
 // Boolean role homes and case-specific point/reference transport differ.
@@ -762,6 +763,8 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case 2's non-aiming paths to the aim test 302 (VC threads `aiming`). VC picks one jump predecessor to fall
 // into the direction chain and cross-jumps the others' identical tails into it afterwards; retail's pick is
 // case 2's remembered 0x1e3b00 block (case 1's copy cross-jumps into it; the 0xcafc0 blocks stay apart).
+// N round 257: Actual marker output at function/case/valid-reference/aiming lifetime, original/two-use marker-key observations 322/322/322/322/322/322/322/322.
+// Original marker lifetime, key reads and complete body restored; fast control 322, full 276.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

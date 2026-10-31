@@ -316,7 +316,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	long local_1 = arg_1[0];
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
-// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// score 115 (was 115): frame 0x1c agrees; validation items/data carriers and entry past the items reload differ.
+// Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
@@ -386,6 +387,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Round 214: shared phase ordinal 115; entry chain array 115; positive validity admission 115;
 // ordinal/entry chain array 115; ordinal/positive admission 115; entry array/positive admission
 // 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
+// N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
+// Original dispatch, all validity storage, helper and both local-slot reads restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
