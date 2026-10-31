@@ -407,6 +407,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 }
 
 #include "local_cameras.h"
+#include "local_players.h"
 #include "sound_sources.h"
 #include <float.h>
 #include <string.h>
@@ -451,10 +452,10 @@ struct s_listener_environment_bsp
 
 PRIVATE inline long sound_first_listener()
 {
-	long i = 0;
-	for (; i < 4; ++i)
-		if (g_4e8c20->entries[i] != NONE) break;
-	return i < 4 ? i : NONE;
+	long first = NONE;
+	for (long i = 0; i < 4; ++i)
+		if (g_4e8c20->entries[i] != NONE) { first = i; break; }
+	return first;
 }
 
 PRIVATE __forceinline void sound_environment_play_cue(long tag)
@@ -474,6 +475,11 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 	function_189fe0(&request, tag);
 }
 
+// score 154 (was 223): the transition definition read through the local bsp and the missing-query fill
+// order; the entry test and scan match retail's, but the position copy (retail loads x, the cluster, y and
+// z before it stores), the BSP/count home slots, the cue request tail order and the 0x18ab70 convention remain.
+// Earlier 156 (was 223): the transition definition read through the local bsp; the entry test and
+// first-listener scan match retail's, but the BSP spill slot, the position copy and the cue requests remain.
 // score 223 (was 223): Frame 0x14c versus 0x148; BSP/camera/query homes and duration spill remain.
 // Lane 8 r64 (fast; two callees build differently in the reduced image): existing 0x14ddc0 listener
 // test 295 (aligned 150 against 159: retail's `cmp iv, -0x48; setne`); existing first-local-player
@@ -582,10 +588,11 @@ void __stdcall function_18bb80(real elapsed)
 	s_portal_path_bsp *bsp = (s_portal_path_bsp *)g_4e0348;
 	for (long listener = 0; listener < 4; ++listener)
 	{
-		s_local_camera *camera = local_camera_get(listener);
-		if (camera && g_4e8c20->entries[listener] != NONE)
+		if (local_player_exists(listener))
 		{
-			if (listener == sound_first_listener() && camera->active && camera->index != NONE)
+			long first = sound_first_listener();
+			s_local_camera *camera = local_camera_get(listener);
+			if (listener == first && camera->active && camera->index != NONE)
 			{
 				long cluster = camera->index;
 				point3f position = camera->position;
@@ -599,9 +606,9 @@ void __stdcall function_18bb80(real elapsed)
 					{
 						for (long j = count; j < 2; ++j)
 						{
-							clusters[j] = NONE;
-							portals[j] = NONE;
 							indices[j] = NONE;
+							portals[j] = NONE;
+							clusters[j] = NONE;
 						}
 						count = 2;
 					}
@@ -613,16 +620,16 @@ void __stdcall function_18bb80(real elapsed)
 				for (i = 0; i < count; ++i)
 				{
 					long index = indices[i];
-					long tag = index != NONE ? ((s_listener_environment_bsp *)bsp)->environments[index].tag : NONE;
-					real transition;
+					long tag = NONE;
+					if (index != NONE)
+						tag = ((s_listener_environment_bsp *)bsp)->environments[index].tag;
+					real transition = 2.0f;
 					if (index != NONE)
 					{
-						s_listener_environment_definition *definition = &((s_listener_environment_bsp *)g_4e0348)->environments[index];
-						transition = definition->transition_time;
-						if (fabs(transition) < 0.0001f) transition = 2.0f;
+						s_listener_environment_definition *definition = &((s_listener_environment_bsp *)bsp)->environments[index];
+						if (!(fabs(definition->transition_time) < 0.0001f))
+							transition = definition->transition_time;
 					}
-					else
-						transition = 2.0f;
 					requests[i].transition_time = transition;
 					requests[i].fade = 1.0f;
 					requests[i].index = tag;
