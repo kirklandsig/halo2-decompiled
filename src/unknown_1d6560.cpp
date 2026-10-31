@@ -544,6 +544,9 @@ PRIVATE __forceinline void physics_mass_copy(byte const *body, s_physics_mass_ar
 // aggregate zeroed by an s_physics_mass constructor 4; identity zero via an hkVector4 local 4, 1.0s via
 // m128_f32 lanes 4; aggregate scalar zeros chained/swapped 4/4, one named __m128 zero 4; allocation without
 // the allocator local 4; identity on array.data->transform 4; identity through a reference 4.
+// Round 92 (plain): identity before size 23, between size/capacity 22; pointer-return identity 4;
+// initial allocator for the list 339; list allocator for release 102; list allocator before the
+// aggregate call 85; value-initialized array 345; one allocator throughout 340. Original restored.
 // @retail 0x1d5ec0
 c_havok_reference_counted *__stdcall function_1d5ec0(s_havok_component *component,
     s_physics_model_owner *owner, char const *kinds, char *output, long *output_count,
