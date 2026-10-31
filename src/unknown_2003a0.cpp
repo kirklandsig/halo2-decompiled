@@ -487,6 +487,12 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // outside the scan [56]. Without it: found flag [86] (330 bytes), with a selection pointer or a found
 // pointer [86], long index [86] (322 bytes), do-while scan [86], squad index stored before next [85], index
 // declared just after the walk [88], in the definition block [93] (each still with the zero register).
+// Round 46 (lane 1, fast): the entries select as `!alternate ? +0x58 : +0x60` 74 (retail's arm order,
+// unchanged); the index declared `= 0` at the top of the flags-test block 92, just before the loop 92; with a
+// scan-local index, the count read through the slot in both tests 92, the `!alternate` select 92, `index ==
+// count` 92. Diagnostics: the scan as a forceinline bool helper (found returns true) gives retail's threaded
+// exits at 336 bytes, 94 (zero register kept); without `next = 0` as well 96 (zero register gone, walk
+// squad/definition swapped): the zero register is that constant coalesced with a scan-local index.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -1237,6 +1243,13 @@ struct s_squad_tree_definition
 // (retail's folded load, dead add and `mov eax, ecx` appear, but the parent lookup sits before the branch);
 // pass-4 index as `(long)i` 31; a pass-4 pointer to the parent field 31; pass-3 test through the local pool's
 // element 58; test-only parent locals with the use re-reading the field, pass 3/pass 4/both 31/31/31.
+// Round 46 (lane 1): retail's shape needs a second read of the parent field in each then-block, merged with
+// the first before the test's value is forwarded: an unused `squad_group_get(field)` local ahead of pass 3's
+// parent lookup and ahead of pass 4's call gives a byte match (fast and plain; kept: an unused getter result,
+// kept only with a match, as the release build of a compiled-out check would leave it), pass 4's
+// alone 40 (its code then retail's, the loop alignment off). Natural second reads in pass 3: the first child
+// read through a second getter after/before the parent local 53/53 (one +4 field pointer for the load and the
+// store), through the local pool 105 (358 bytes); the getter form with pass 4's unused local 34.
 // @retail 0x2009d0
 void function_2009d0(void)
 {
@@ -1263,6 +1276,8 @@ void function_2009d0(void)
 		s_squad_group_datum *group = &((s_squad_group_datum *)groups->data)[(word)i];
 		if (group->parent_index != NONE)
 		{
+			// unused: the release build keeps only the lookup (its check is compiled out)
+			s_squad_group_datum *checked_parent = squad_group_get(group->parent_index);
 			s_squad_group_datum *parent = squad_group_get(group->parent_index);
 			long child = parent->first_child_index;
 			if (child == NONE)
@@ -1284,6 +1299,8 @@ void function_2009d0(void)
 		s_squad_datum *squad = squad_get(i);
 		if (*(long *)squad->unknown6c != NONE)
 		{
+			// unused: the release build keeps only the lookup (its check is compiled out)
+			s_squad_group_datum *checked_group = squad_group_get(*(long *)squad->unknown6c);
 			#pragma inline_depth(0)
 			function_205280(*(long *)squad->unknown6c, i);
 			#pragma inline_depth()
@@ -2865,6 +2882,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 119 (lane 5): the order/pending part as a forceinline or plain inline helper taking the index and squad
 // 50/50 (copy-propagated); the trigger part's squad re-fetched at the join through squad_get(arg_1)/(word)arg_1
 // 199/212 (the reload stays); the follow-up arm without the short casts 50.
+// Round 46 (lane 1): 0x290e20 already takes its NONE in EBX as in retail. Diagnostics: the trigger loop's
+// 0x290e20 call, the 0x204d30 call or the last 0x1fb8a0 call given 0 for the index 87/49/54, the reload stays
+// in each. The trigger pointer declared at function scope 50; the optional output, the counter output or the
+// task declared at function scope 59/50/50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

@@ -132,6 +132,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // kind-7 test as a plain if 100 (260 bytes, sbb select); parameters (component, owner, level, kind, index) as the
 // caller's setup order implies 96 (same code, caller kept), with the one-read body 136, with a single-exit kind-7
 // path 100 (caller 13).
+// Round 46 (lane 1): parameters in retail's register order (component, index, kind, owner, level) 96 (same
+// code, caller kept), with the one-read type after the body 94 (caller 13), with case 0 also through the
+// object_index local 133 (220 bytes, caller 213), with case 0 through the header data at that index 133
+// (caller 213). A /Gd screen of 72 one-read forms (type/body/result orders, byte/long type, case 0 through the
+// component or the local, switch/result kind-7 path, header pointer) and two with the body formed at its uses
+// loads the index into EAX in every one. Retail loads the header data first and keeps it live into case 0
+// (EDX), which costs EBP for the body array; no form here keeps it.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
