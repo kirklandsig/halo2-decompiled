@@ -142,6 +142,9 @@ short __stdcall function_1bef40(long actor_index)
 
 static __forceinline long real_to_long(real value);
 
+// score 17 (was 19), coordinator review: the 6 below wrote actor_reset_state's seven stores out here and read the
+// unset reference into a one-use local; both are kept only with a match, so the helper call and the direct store are
+// back. The doubling as sample + sample stays (17, fast). The lane's tried forms:
 // score 6 (was 6): the reset's zero fields (0x4ac, 0x504) are still stored before the NONE fields
 // (0x5ac, 0x5b0) and the seed store still precedes the delay's doubling (retail doubles first); the
 // only form that reproduces retail's order makes the actor pointer volatile, which is not allowed.
@@ -203,16 +206,8 @@ bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 	real sample2 = function_x82e52f(&g_4e7408->unknown0, __FILE__, __LINE__);
 	real wait = 0.5f * sample2;
 
-	s_actor_view *actor = actor_get(actor_index);
-	actor->unknown50c = false;
-	actor->unknown5b4 = 0;
-	actor->unknown5b6 = 0;
-	actor->unknown5ac = NONE;
-	actor->unknown5b0 = NONE;
-	actor->unknown4ac = 0;
-	actor->unknown504 = 0;
-	s_reference unset_reference = g_470fa0;
-	state->reference = unset_reference;
+	actor_reset_state(actor_index);
+	state->reference = g_470fa0;
 
 	state->unknown10 = (short)real_to_long(g_510c54->field_2_3 * delay);
 	state->unknown12 = (short)real_to_long(g_510c54->field_2_3 * wait);
