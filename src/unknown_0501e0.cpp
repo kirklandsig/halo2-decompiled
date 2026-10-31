@@ -179,6 +179,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // kept); with the dot through the existing dot3f either argument order 215/215; with the zero local dropped
 // 215 (aligned 230). Kept: dot3f for the hand-accumulated dot and 0.f in place of the zero-only local 221
 // (aligned 238 -> 232).
+// Round 9 (lane 17): a compile-only /O2 screen reproduces this body op for op; in it, every definition order,
+// written sum order and product operand order of the helper scores within 181-190 aligned (current 184), so
+// sum and product order are canonicalised. Retail's first view copies each raw offset to a second register
+// before the scale test and computes `scale * raw` into that copy (the raw value stays live); no screened
+// form keeps the copy apart. Real (fast): the explicit if/else arms again 305 (1078 bytes, aligned 162);
+// arms with the camera passed by pointer 302 (1081 bytes); arms with i, k, j definitions 305; arms with
+// three-statement rows and the camera pointer 310; a scaled copy through the existing vector3f_scale (in
+// place) and the existing matrix_transform_vector 285 (1160 bytes).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
