@@ -1226,7 +1226,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 137 (was 149): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
 // the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then
@@ -1290,6 +1290,10 @@ long function_2197f0(real gain);
 // the first branch with divisions 207 (636 bytes), plus a fade_out local 207; a fade_out local with the
 // inverse 141 (670 bytes); the time sum product-first 137 (identical). Left: the else branch and the first
 // branch are retail's code with XMM2/XMM3 (and the 1.0 constant's register) swapped.
+// Round 40 (one-file LTCG harness, exact: 137): the ambience test inverted with the branches swapped 137 (elapsed
+// stays XMM2, retail XMM3); a fade_out local for the tests and the product 141 (670 bytes); the time sum product-first
+// 137, `inverse * (elapsed - hold) * fade_out` 137 (same code); `(elapsed - hold) * (inverse * fade_out)` 172; the
+// reciprocal computed before the fade-out tests 187 (656 bytes).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3210,6 +3214,19 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // to the advance) 78, with the pool global 78; pool local in the for init 78; the sibling 0x128020's loop-top pool
 // read 78, its sound pointer at the loop top 167; bool-returning 0x125e60 78. One-target forms (`default:
 // continue;`, `case 0` ending in continue, `case 1: continue; default: continue;`) 49 (`test ax, ax`).
+// Round 40 (one-file LTCG harness, exact: 49; the for/continue and two-label forms confirmed with --fast): a for
+// loop with `case 1: continue;` 78 (retail's `sub eax, 0` and pool reload after the next-index ternary; only the
+// sound index and the pool/voice/range pointers swap EBX/EBP); on it, the range pointer written at both calls 31
+// (registers right, address computed after the class-flag call), computed before the mode 24, the class-flag test
+// without `(bool)` 72 and flag4 without TEST_FIELD_BIT 98 (registers right, the tests fold to `test byte`), both 97;
+// `case 1: case 2: continue;` 17, cases 1, 2 and 3 17, `case 3: continue;` 17 (registers right, `test eax, eax`
+// for `sub eax, 0`), `case 2: continue;` 78, `case 1:` then `case 2:` each continuing 113; case 1 as an empty inline
+// or out-of-line call 78/78; default placed first or last 78; mode as if/else 78, switch on the ternary 89;
+// early-continue start test 78, plus the value_ac test 78; reason, voice index, voice, definition or range declared
+// at the top 78 each; voice arms swapped 108; the existing for-form find helper 49 (same code), with the for loop 78;
+// the 0x218ac0 pitch-range getter 49/78; definition by table read 78; a while loop with goto 214 (592 bytes).
+// Without the switch, dropping either `(bool)` swaps the registers too (120/136). 0x125e60 returning bool (callers
+// without `(byte)`) 78 with the for form (0x125e60 itself unchanged).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4018,6 +4035,11 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // of `&local_3[0]`/`&local_4[0]` 55; the batch declared and its count cleared before the arrays 55, with the long
 // restart cursor 76 (same +0x10a padding shift). The caller chain 0x12b450 <- 0x12b690 <- 0x12190 is matched up to
 // the startup code, so a caller's stack alignment cannot explain the missing realignment.
+// Round 40: long restart cursor 76; the restart call without its `(short)` 55 (same code); the 0x40 clear as a
+// statement with the 0x80 clear's result as the argument 123, with the long cursor 158; the 0x40 array `= {0}`
+// with the 0x80 clear's result 147. Probes: a returning clear wrapper inlined across files by LTCG still realigns
+// (build/r40h/clr); in compile-only probes of this clear shape only /Os (or /Oi-, which calls memset) avoids the
+// `and esp, -8`; retail realigns 115 other functions with large clears, so retail's compiler does it too.
 // @retail 0x125b40
 void function_125b40(void)
 {

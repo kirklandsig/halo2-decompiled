@@ -160,6 +160,9 @@
 // local copy v1: `real` 581 (identical), `double` 651; both shape pointers NULL then one if/else 622
 // (2622 bytes), plus the sines from the global point 604 (frame 0x60). Retail rounds s0 to float before
 // an SSE `* 0.03`; ours folds `* 0.5 * 0.03` in x87.
+// Round 40: `if (shape0) inv = ... else inv = ...` in the first mode switch 707 (2663 bytes); input copies d then c
+// 580 (one point); the maxima as one expression 760; camera shifts read before the old20/old30 copies 581 (same
+// code); md before mc 666.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -488,7 +491,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 284 (was 512): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// score 284 (was 284): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; the
 // state clamp keeps the index in the state's register (jle) where ours uses the bound's (jg); slots
@@ -614,6 +617,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Clamp as `if (state < 0) index = 0; else { index = state; if (index > max) index = max; }` 279 (the
 // clamp is then retail's exactly; -5), with dy first in cases 1/2 276; zero-default clamp 579, ternary
 // then if 584; the exact clamp with second point first in 1/2 and 4 381 (with dy first 381).
+// Round 40 (case 0 edge points): first as `first = point->position; first.z += half_width;` and second likewise
+// 535 (2668 bytes), second first 561; first as a struct copy only 468, second only 505; `half_width +
+// point->position.z` 284 (same code). The one-file LTCG harness gives 290 here, so it was not used.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -890,6 +896,9 @@ void __stdcall function_43720(s_43740_input *input)
 // `&((s_ribbon_point *)...)->position` 62; the bitmap address written `bitmap * 0x74 + base` 62; `long const tag`
 // 62; the group lookup before the index call 62 (LTCG still loads it after the call); the record filled in retail's
 // store order (shader, slot, normal, tag, source, definition, count, bitmap) 62.
+// Round 40: record filled slot, shader, normal, count, tag, bitmap, then source and definition 64; with the normal
+// read through the stored shader 67 (213 bytes, 0x42b20 62); filled count, shader, normal, slot, tag, source,
+// definition, bitmap 63; arrays indexed through the stored slot 62 (same code); texture test as an early return 62.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

@@ -309,6 +309,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // DL round 206: existing matrix/vector, matrix3x3/vector and axes-vector producers
 // 220/296/296; early-arm callee inline 220; producer/inline pairs 220/296/296;
 // early-arm callee forced 1340. All producer, body and external declarations restored.
+// Round 244: complete ordinary-path requested-forward values via native/const,
+// aggregate/const, memcpy/memmove and entry copy/memmove constructions
+// 295/295/264/264/295/314/295/314. Original input observations and body restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

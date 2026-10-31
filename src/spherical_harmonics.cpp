@@ -276,6 +276,18 @@
 // result[12] zz5 term first, sqrt7 initialised 6 each; zz declared before sqrt15 and assigned after band2
 // or after xx_yy 6/6. Names and declaration order never move zz5's slot, and none of these statement or
 // operand orders moved the quadratic sqrt15 load ahead of the x87 z*z.
+// Round 135 (lane 4, fast with 0x146020 unless noted): the 6-point form (named sqrt3/sqrt35/sqrt21 roots,
+// `sqrt(2.0)` in both cubic products, `zz5 - 1.0f` and the sqrt21 product at each use, result[13] staged)
+// rebuilt 6. A compile-only harness shows the new stack homes follow statement order: with the sqrt21 product
+// named right after sqrt21 (before result[9]) and result[11]/result[13] written after result[12] (order 9, 10,
+// 12, 11, 13, 14, 15, xx_3yy after result[12]), zz5 takes zz's home and band3_21 the new one as in retail: 4
+// (plain 4; left the quadratic sqrt15-load/`fmul z` swap and the result[13] store after result[9]'s `fmul y`);
+// zz5_1 named on it 31; with a named float `real sqrt2 = (real)sqrt(2.0);` in both products 2 (only the
+// quadratic swap left; it still writes `zz5 - 1.0f` at each use, so it is keepable only as a match); that with
+// zz5_1 named 31 (rests on one-use sqrt3/sqrt35/sqrt21 locals); with those three roots inline again 66 (662
+// bytes); the 9, 10, 12, 11, 13 order on this body 59. Harness on the 2 form: 196 quadratic-block orders and
+// spellings (sqrt5 with its value, band2/result[6]/xz operand orders, zz staged) and 77 first-block orders keep
+// the sqrt15 load after `fmul z`; without the cubic block the swap stays, so it is not a cubic-block effect.
 // Round 33 (m3 lane 11): lane 14 r19's 6-point form rebuilt (fast 6, 0x146020 matched). A compile-only
 // /FAs build of this file reproduces both residual differences. Screened there: band3_21 or zz5
 // renamed (8 names) and band3_21 declared at five earlier places: no change; 80 single statement
