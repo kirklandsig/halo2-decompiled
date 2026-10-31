@@ -1441,6 +1441,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (that branch then matches retail: index_count in EDI, guarded rep stosd, EDI reloaded; but the
 // 0x199ef8 result takes EBX there and mode moves to the stack, frame 0x58); with mode declared first 110;
 // the first branch's fill alone 169; both with the three qsort calls written out 169/163 (420 bytes).
+// Round 56 (lane 9, fast): branch two's result chained into item_count at the call (no else) 148 (424 bytes);
+// `item_count = player_count;` before the mode-one test (no else) 110; that with branch two's index fill 92
+// (frame 0x58, mode on the stack), plus branch one's index fill 173 (418); branch two's index fill with the
+// three qsort calls written out 169 (420). Diagnostic: the else path re-querying instead of reading
+// player_count (no forwarding) 116: the result then goes straight to its home as retail, but index_count
+// stays in memory in both scans, so the forwarding is not the only cause.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2025,6 +2031,11 @@ extern dword g_54d5b8;
 // `if (!g_51ec99)` then the store and return 81 (call after case 4 as retail, pushes 0xad and the state register); the
 // flag test before `dialog = 0xad` 37; `dialog = 0xad; if (!g_51ec99) break;` then its own store and return 48 (163);
 // the call under the flag then a jump to the store, with `case 1:` 83 (178).
+// Round 56 (lane 9, fast): every case label with its own body (0, 2, 3 each returning; 6, 14, 19 each
+// 0xae) 58 (159 bytes); only 0/2/3 separate 58; only 6/14/19 separate 36 (merged back, same code); a
+// `show` flag cleared by case 4 guarding the call 64 (171); the call under a label in the default with
+// every case jumping to it 37 (the 0xae block still falls into the call); `dialog = 0xab` as the
+// local's initial value without a default 56 (160). Every layout keeps the 0xae block before the call.
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2543,6 +2554,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // bitmaps first 95; the search index declared once at function scope 95; a separate counter for the
 // first loop only 93. Lead for the reload: 0x53b40 reaches 0x53c30 through 0x53de0 with an
 // out-parameter, so retail's view of its side effects may differ from ours (src/network_voice.cpp).
+// Round 56 (lane 9, fast): the second loop's search written in place (result unused, as retail) 95, with a
+// counter per loop 93 (same as the counters alone); the item list at function scope 101; the colour array
+// at function scope 95; the voice state as a ternary 95. The last loop's extra bytes: ours keeps the screen
+// in EBX for all five calls and puts the `false` argument in EDI once text_b is pushed; retail pushes 0
+// and moves the screen into EDI. 0x2514fd shows the same reload symptom after 0x19a9b4, whose chain ends in
+// the same out-parameter session getter (0x596a0) as 0x53b40's.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -2890,9 +2907,11 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
-// score 61 (was 61): frame 0x754 agrees; the item-loop receiver reload (retail: once after the loop),
-// row-loop text lookup (retail inlines it; widget/counter registers swapped), animation byte
-// (retail movsx) and the final receiver reloads differ.
+// score 48 (was 61): frame 0x754 agrees; with the row text through find_child and the searching flag
+// computed as one expression, the item loop, sections 1-2 and the animation byte are retail's; left: the
+// row loop's counter/text registers (ours ESI/EDI, retail EDI/ESI), EDI saved at entry (retail after the
+// game test), and the flag materialised at the end in AL (retail sets BL to 1 before the tests, keeps it
+// across the two calls and clears it; that variable form gives 161 here because `this` then takes ESI).
 // Tried: category descending 237; title default first 244; bitmap index long 237; title widget scopes
 // 237; separate player row counters 237; existing widget lookups 175; native animation bit 233; widget
 // lookups animation bit 179; map text lookup 237; text lookup helpers 156; bitmap lookup helpers 164;
@@ -2961,6 +2980,12 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // i,text,bitmap / i,bitmap,text 161 each, find_bitmap for section 1/2/both 161, the animation bit as `((char)x >> 1) & 1`
 // / `(x >> 1) & 1` / ANIMATION_FLAG of `(char)x` 161 (874) / 161 (874) / 161 (retail's `movsx byte` read is unique).
 // Diagnostics without the item loop / the appearance copy: find_text still called (not the inline budget).
+// Round 56 (lane 9, fast): the flag as one expression alone 78; with the find_child row text 48 (direct store,
+// kept) / 46 (`bool searching = !(...)` then stored: a one-use local, not kept); on the find_child row:
+// `searching = false` default with an `&&` test 161, the flag stored to the list directly with a later
+// clear 177, the flag declared at function scope 161 (variable form) / 46 (expression); on 46: each
+// section's text/bitmap in its own block 171, row-scoped text/bitmap 48, `has_game` as a ternary 173 /
+// as an if 288, i declared first 46.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {
@@ -3169,7 +3194,7 @@ void c_network_squad_browser_screen::v3()
 	}
 	for (i = 0; i < sizeof(squad->player_names) / sizeof(squad->player_names[0]); i++)
 	{
-		text = find_text((short)(i + 4));
+		text = find_child(6, (short)(i + 4), false);
 		bitmap = find_child(8, (short)(i + 5), false);
 		if (text)
 		{
@@ -3195,13 +3220,7 @@ void c_network_squad_browser_screen::v3()
 			}
 		}
 	}
-	bool searching = true;
-
-	if (ANIMATION_FLAG(animation, 1) || network_session_manager_session_unready() || network_session_manager_is_joining())
-	{
-		searching = false;
-	}
-	list.searching = searching;
+	list.searching = !(ANIMATION_FLAG(animation, 1) || network_session_manager_session_unready() || network_session_manager_is_joining());
 	c_class_1a2c81::v3();
 }
 
