@@ -62,8 +62,12 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
 	a->linear = _mm_add_ps(a->linear, linear_a);
 	b->linear = _mm_sub_ps(b->linear, linear_b);
-	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, row->a));
-	b->angular = _mm_add_ps(b->angular, _mm_mul_ps(change_b, row->b));
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	b->angular = _mm_add_ps(b->angular, angular_b);
 	*result += impulse;
 }
 
@@ -400,8 +404,18 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				do
 				{
 					float impulse = (row->linear.m128_f32[3] - linear_velocity(row, a, b).value) * row->a.m128_f32[3] * load_error_scale(step);
-					if (impulse > operation_float(op, 4)) impulse *= operation_float(op, 4) / impulse;
-					else if (impulse < operation_float(op, 8)) impulse *= operation_float(op, 8) / impulse;
+					// Keep the divide followed by multiply on both clamp paths;
+					// reassociating them changes rounding at 24-bit x87 precision.
+					if (impulse > operation_float(op, 4))
+					{
+						float ratio = operation_float(op, 4) / impulse;
+						impulse = ratio * impulse;
+					}
+					else if (impulse < operation_float(op, 8))
+					{
+						float ratio = operation_float(op, 8) / impulse;
+						impulse = ratio * impulse;
+					}
 					apply_linear(impulse, row, a, b, result);
 					row = (solver_linear_row_31e7b0 *)((s_linear_term_31c530 *)row)->offset(1); ++result; op += 16;
 				} while (*op == 5);

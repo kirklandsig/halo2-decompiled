@@ -431,6 +431,66 @@ def contact_group_case(pair_count, seed):
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+@pytest.mark.parametrize('positive', [False, True])
+def test_bounded_linear_clamp_keeps_divide_then_multiply(solver_images, precision, positive):
+    data = solver_case(5, 2)
+    put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
+    put(data, OPS + 24, 'I3fI', 0x31005, 0.2, -0.4, 0, 0x400)
+    put(data, TERMS, '12f', 1, 0, 0, 1.5 if positive else -1.5,
+        0, 0, 0, 1, 0, 0, 0, 0)
+    put(data, IMPULSES, 'f', 0)
+    for body in (HEAP, HEAP + 0x80):
+        put(data, body + 0x10, '8f', *([0] * 8))
+        put(data, body + 0x30, '4f', 1, 1, 1, 1)
+    snapshots = compare_case(solver_images, data, precision, ('linear clamp order', positive))
+    # With a 24-bit x87 significand, (bound / impulse) * impulse is one
+    # float ULP beyond the bound. Reassociation must not collapse it to bound.
+    if precision == 0x7f:
+        expected = 0x3e4cccce if positive else 0xbeccccce
+    else:
+        expected, = struct.unpack('<I', struct.pack('<f', 0.2 if positive else -0.4))
+    for heap, _ in snapshots:
+        assert struct.unpack_from('<I', heap, 0x10)[0] == expected
+        assert struct.unpack_from('<I', heap, IMPULSES - HEAP)[0] == expected
+
+
+@pytest.mark.parametrize('kind', [2, 5, 6, 13])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_linear_rows_capture_axes_after_linear_updates(solver_images, kind, precision):
+    # Retail reloads the angular axes after both linear updates, then captures
+    # both before either angular update. These synthetic overlaps distinguish
+    # that order from capturing too early or reloading B's axis too late.
+    for owner in (0, 0x80):
+        for offset in (0, 0x10, 0x20):
+            for alias in (False, True):
+                for seed in range(12):
+                    data = solver_case(kind, seed)
+                    put(data, STEP + 28, 'i', (1, 2, 4)[seed % 3])
+                    put(data, OPS + 4, 'I', HEAP + owner + offset)
+                    put(data, OPS + 16, 'I', HEAP if alias else HEAP + 0x80)
+                    size, row_kind = OP_LAYOUT[kind]
+                    put(data, OPS + 24, 'I', kind | size << 8 | row_kind << 16)
+                    put(data, OPS + 24 + size, 'I', 0x400)
+                    exact_case = kind == 13 and owner == 0 and offset == 0 and not alias and seed == 0
+                    if exact_case:
+                        put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
+                        put(data, HEAP, '4f', 1, 0, 0, 2)
+                        # Keep the overlapped body's kind byte equal to 2.
+                        put(data, HEAP, 'I', 0x3f800002)
+                        put(data, HEAP + 0x10, '4f', 0, 1, 0, 1)
+                        put(data, HEAP + 0x20, '4f', 1, 0, 0, 0)
+                        for body in (HEAP, HEAP + 0x80):
+                            put(data, body + 0x30, '4f', 1, 1, 1, 1)
+                        put(data, HEAP + 0x90, '8f', *([0] * 8))
+                    snapshots = compare_case(solver_images, data, precision,
+                                             ('linear row overlap', kind, owner, offset, alias, seed))
+                    if exact_case:
+                        for heap, _ in snapshots:
+                            assert struct.unpack_from('<4f', heap, 0x20) == (5 + 2**-20, 2, 0, 10)
+                            assert struct.unpack_from('<4f', heap, 0xa0) == (2, 0, 0, 0)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_contact_pair_groups_then_friction(solver_images, precision):
     # Local retail disassembly identifies the two pair entries, their four
     # outcomes (both, first, second, neither), and the following friction entry.
