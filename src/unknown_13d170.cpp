@@ -244,6 +244,9 @@ struct s_block_candidate
 // first as retail); with the allocation success returning directly 381 [244]. On the 239 form, retail still
 // lays out the no-candidate limit update + return right after the loop guard and keeps the case 0/1 bodies in
 // the loop (ours puts both at the end), and uses its zero EBX as offset (frame 0x1050 versus 0x1054).
+// Round 242: Actual queued-candidate count long/dword/short/word, capacity-bound and
+// not-full admission 407/407/406/418/407/407/406/418. All recover frame 0x1054 but
+// grow code; original ring state and body restored, page-offset/tail homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -159,6 +159,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // yaw/only the pitch default in the else arm 368/368 (frame 0x28); the XY through normalize2d_fast 352 on
 // the 350 form, 308 on 309 (kept: retail length 1706, the private 2-D normalizer copy removed); first
 // normalizer through vector3f_scale 318.
+// Lane 18 round 6: retail's early J load is the else arm's J reload hoisted above the length branch: its then
+// arm scales J in place in XMM1 (`mulss xmm1, xmm0`) and I as a memory operand, while ours forms scale * J
+// from memory, so only one arm loads J. Retail also keeps the degree factor in XMM7 for all three products.
+// Normaliser scaling J first as `j = j * scale` then `i = scale * i` 401 (0x29b990 9); J alone as
+// `j = j * scale` 389 and as `j = scale * j` 389 (same code); k zeroed after the length 393; magnitude
+// initialised at declaration with both angles zeroed only in the else arm 397. Original helper and body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

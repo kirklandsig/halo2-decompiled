@@ -736,6 +736,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // compiles identically (120-form screen); mask first 132; side flags before the result 132; the
 // fraction default before the deltas 240 (880 bytes); one named copy size 129; one inline
 // append-and-dedupe helper for both tails 129; `points + count - 1` / `&points[count] - 1` 129.
+// Round 453: Plain current-point cursor with native/memcpy/memmove publication 280/280/306;
+// original indexed walk with point memcpy/memmove 129/337. Native intersection on the cursor
+// graph with native/memcpy append 235/235; complete memmove publications 298.
+// All original indexed traversal, native stores, copies and helper contracts restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

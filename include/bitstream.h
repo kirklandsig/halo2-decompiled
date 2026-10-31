@@ -135,4 +135,15 @@ inline void read_byte_string(s_bitstream *stream, byte *buffer, long count)
 	}
 }
 
+/* the real a quantized value stands for (the event definitions in
+   src/unknown_09a5e0.cpp, and 0x194ff0 on the logarithms of its bounds) */
+static inline real event_dequantize_real(long value, long maximum, real minimum_value, real maximum_value)
+{
+	if (value == 0)
+		return minimum_value;
+	if (value >= maximum)
+		return maximum_value;
+	return (minimum_value * (maximum - value) + maximum_value * value) / maximum;
+}
+
 #endif

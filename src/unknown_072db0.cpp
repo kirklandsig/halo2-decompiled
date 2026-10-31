@@ -1462,6 +1462,14 @@ struct s_rating_summary
 // cursor}; ours spills level in both loops and keeps the counters cursor in EBX, so the slot swap
 // likely follows the team loop's register choice (diagnostic: with constant counter arguments level
 // takes EBX, but the collection is still reloaded from its parameter slot rather than kept in EBX).
+// Round 134 (m3 lane 4): retail's team loop keeps the collection in EBX (pushed for 0x74720, reloaded
+// at the loop end), level in EBX after it, and both cursors in slots 0x14/0x18; ours turns EBX into the
+// counters cursor, so level spills to 0x18 in both loops, which is likely the level/compare-cursor slot
+// swap as well. The four shared values declared level first 92; the key stored before the session 88
+// (the summary block then differs only in the formatter call/count push order; 4 points, not kept); on
+// it, the group compare against `&g_509454[group].owner` 88 (same code); the team counters as a walking
+// pointer (diagnostic) 213 (the collection moves to EDI from entry); a typed collection copy for the
+// team loop (diagnostic) 88 (copy-propagated). All restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

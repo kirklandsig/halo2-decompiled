@@ -479,6 +479,9 @@ bool function_22acb4(long player_index);
 // and cl, 1 and CSEs 2 (EBX) and 0xffef (EDI) instead. On the retail block order (232, aligned 37): long
 // flags 232, (word)((long)(char)flags & 1) 232, byte flags 233, long second 287 (aligned 19: 1 in EDI as
 // retail, second still in ECX with its own slot, 0xfffd CSEd into EBX for the third/fourth clears).
+// Round 242: Existing shared word-bit setter in first/second/first-second/third/first-third/
+// second-third/all-three/all-four result families 165/299/299/165/165/299/299/299. Original macro,
+// result domains, enum producers, query and aliased stores restored; second-mask spill remains.
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)

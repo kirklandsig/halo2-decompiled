@@ -426,6 +426,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // the result 733; trace-origin names swapped 733 (no home moves); getter as one ternary 734;
 // result-first getter 773 (retail's getter code at all five traces); frame-0x114 form plus the
 // result-first getter 799. Entry still hoists the step into XMM5 and the NONE exit is inline.
+// Round 452: sweep planar vectors 17/18/19 reused for obstacle direction 742 each;
+// also for fallback rotation 740 each; fallback rotation alone through 17/18 738 each.
+// All remain above 733; original native workspaces, helpers and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

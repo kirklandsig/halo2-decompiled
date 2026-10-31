@@ -39,6 +39,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // up*height first, coefficients loaded into registers, right.i kept in xmm7 for both views), frame 0x18 versus
 // 0x14 (retail spills the blend scale at [esp] where it is computed). Earlier: transform term order
 // right/up/forward written point first and
+// frame 0x18 versus 0x14; coefficient/input/result overlap remains.
+// Earlier: transform term order right/up/forward written point first and
 // coefficient first 221 each; the transform as three statements 304, which does use retail's
 // sum tree (forward*depth + up*height) + right*width; blend term order and squared-sum order
 // 221 each; depth limits written at their uses 230; orthographic dot product in point and
@@ -165,6 +167,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Independent scale overwrite orders ikj/jik/jki/kij with original ijk captures 244/222/222/244;
 // with live forward coefficient stream 250/241/250/250. Extra frame word and coefficient/result
 // overlap remain; original helper/body restored.
+// Round 452: shared vector scale copied/in-place, branch-owned, copied/source and library-copy
+// inputs 309/327/330/309; with live forward coefficients 298/314/318/298. Native
+// scalar consolidation does not match; original scalar helper and body restored.
 // T47: Plain weighted-point blend loop on retained separate-offset/depth-limit graph,
 // long/dword/short/word counters: view cursor 222/222/271/271; indexed view output
 // 226/226/271/271. Original complete helper and body restored.

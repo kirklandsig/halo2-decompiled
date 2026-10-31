@@ -4475,6 +4475,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // repeated identity 375/369; with one completion-result exit 365/358; with both 365/358.
 // Completion exits recover length 1264 but regress; opening policy graph, acknowledgement paths,
 // result lifetime and held timeout interface restored.
+// Round 453: Complete version-arm preference/equality/both outputs 304/306/300;
+// explicit identity-result arms on those three 304/306/300; both outputs with delayed
+// selection declarations/entry identity declaration 300/300. Both output homes with
+// all/initial-state shared exits 318/302. The 300 form recovers result +b but gains only five; dropped.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4864,9 +4868,13 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
-// score 697 (was 777): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
+// score 697 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
 // Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
 // First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
+// Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
+// with first/second/both result passes 798/662/809; all with member-mask role names 809.
+// Second pass without the implied result-loop test 748; complete admission predicates with
+// player fields/original player snapshot 767/750. The 662 form required the implied test and was dropped.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
