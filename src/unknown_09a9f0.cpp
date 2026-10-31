@@ -445,6 +445,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // `result && value` 77; bool result declared after the creation call 80 (158); a header-pointer local
 // for the test on the long result 49 (same code); the flagged arm first on the long result 52. The EBP
 // cache of the last argument follows the shared header address (fewer live registers at the test).
+// Round 12 (lane 17, fast): `entity->object_index = object_index = v29(...)` (one chained value) on the long
+// result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
+// 49/77 (same code); the chained form with the early bool and the store and attach through the existing
+// 0xbb780 77 (still one shared header address under the link's inline).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

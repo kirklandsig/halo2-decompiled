@@ -926,6 +926,11 @@ void __stdcall function_43720(s_43740_input *input)
 // shader + 0x2c and computes the position before the pushes. The position computed before the record
 // is declared 62; input.tag read through the definition parameter 62; the vertex count as `2 * count`
 // 62; `NONE != tag` 62 (identical code each time; 0x42b20 still matches).
+// Round 12 (lane 17, fast): the normal flag read through the stored input.vertices.shader 67 (213 bytes:
+// still folded to +0x68, the definition moves to the stack, 0x42b20 62); the slot taken once into a long
+// local before the texture call for both arrays 69 (215 bytes, 0x42b20 66); the position computed after
+// the normal and before the tag, bitmap and count 62; that with the count right after the slot 63; the
+// mid-fill position with both arrays indexed through the stored slot 62 (0x42b20 matched in the last three).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

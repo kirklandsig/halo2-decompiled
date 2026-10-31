@@ -693,6 +693,16 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // order, bytes before/after total/total_size, both position sums' written operand order, the signature
 // buffers at function scope or swapped; worse: the body pointer local 25, buffer initialised from the body
 // 28, the total converted in place 60, the shared MIN with the total in place or the view dropped 53+.
+// Round 12 (fast; 0x2adb10 129 throughout): the scratch registers follow VC's EAX -> ECX -> EDX
+// round-robin for temporaries; the `total` local is coalesced into the body-size load's EAX where retail
+// sums into a fresh temporary (EDX). No total local (sum inside the conversion) 88: the first 20
+// instructions are then retail's (total EDX, task EAX), but the signature case loads body_size straight
+// into position's ESI (retail: temporaries ECX/EDX and `lea esi, [ecx+edx]`), rotating every later
+// temporary, and the body case keeps size ESI / position EDI. On that: one function-scope position 88;
+// buffer and size declared at the top of the body case 88; the signature sum body first 88; the
+// signature case before the body case 88 (same code each). Retail's hoisted body_size is a temporary
+// shared by both cases (its body arm ends `sub ecx, eax` + the clamp's `mov edi, ecx`), as if hoisted
+// before allocation; ours is hoisted after allocation from two identical coalesced loads.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
