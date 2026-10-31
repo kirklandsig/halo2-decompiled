@@ -531,6 +531,10 @@ done:
 // buffer 57 (171 bytes); the name declared before the tag with a named buffer 54 (173 bytes); the name
 // first, NONE guard and repeated copy 68 (189 bytes); tag first, repeated copy and early goto 44 (178
 // bytes); numeric order, NONE guard, repeated copy, early goto and a named buffer 72 (189 bytes).
+// Round 119 (fast, on the 32 form): the name declared before the variant 32; the selector read into a local
+// before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
+// the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
+// its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

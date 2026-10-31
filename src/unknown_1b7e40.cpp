@@ -150,6 +150,10 @@ bool function_25d9b0(long prop_index);
 // retail's exact zero epilogue, but priority is spilled to the argument slot and the state kept in ESI, the
 // other way from retail), with priority initialized at its declaration 91, also without the fallback's own
 // zero store 91, with a long priority 91, with the state declared at the top 91.
+// Round 119 (plain; a --fast image of the file's three loop functions is unfaithful here, 145 on this source):
+// on this body a long priority 84 (priority moves to EDI, the view to ESI; not retail's shape); `return 0` at the
+// loop's end 119 (551 bytes, the loop exit gets its own zero epilogue); both 125; the gate's arms as `return
+// priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
