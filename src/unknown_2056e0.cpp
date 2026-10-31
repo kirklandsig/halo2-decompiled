@@ -79,14 +79,15 @@ void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angu
 void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity, vector3f const *angular_velocity);
 matrix3x3 *function_142eb0(matrix3x3 const *right, matrix3x3 const *left, matrix3x3 *out);
 
-/* scales a vector down to the given length when it is longer */
+/* scales a vector down to the given length when it is longer; the double
+   scale goes straight to the helper (a named double local here would make
+   LTCG keep every caller's stack 8-byte aligned, padding their frames) */
 PRIVATE __forceinline void vector_limit_length(vector3f *v, real maximum)
 {
 	real length_squared = v->k * v->k + v->j * v->j + v->i * v->i;
 	if (length_squared > maximum * maximum)
 	{
-		double scale = maximum / sqrt(length_squared);
-		scale_vector_by_double(v, scale, v);
+		scale_vector_by_double(v, maximum / sqrt(length_squared), v);
 	}
 }
 
