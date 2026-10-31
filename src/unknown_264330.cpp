@@ -525,6 +525,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // register, as it lives across the 0x2640c0/0x2641c0 calls): `sample = true; update = true;` 424;
 // sample/update declared after the node call 420; update declared first 422; sampled_one declared
 // before maximum 420; the update test nested under `if (sample && update)` 420.
+// Round 256: Case priorities beginning with 1 10423/14023/14203/14230/13042/13402/13420/14320 give
+// 422/422/425/419/449/452/457/445; one-point form rejected. Original cases and body restored;
+// frame and actor homes remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
