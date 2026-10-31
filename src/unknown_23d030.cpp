@@ -199,6 +199,10 @@ struct s_free_state_23d260
 // retail, but the x87 order changes and side.k stays in XMM0); that local after forward.j 103 (zero XMM3 again);
 // the local also for both forward.k reads of the up cross product 260; yaw cosine/sine locals at the forward
 // vector 324 (1351 bytes), before the movement 291.
+// Round 58 (lane 12, fast = plain here; none kept): side, movement, position and pitch-cosine declared
+// at the function's top, each and all together, 102 (same code); the normalize test as `!` 121 (1328
+// bytes) and as `0.f ==` 102 (same code); the roll update with the zero arm first 107. The zero stays
+// in XMM3 and the clamp constants in XMM1 in every form.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

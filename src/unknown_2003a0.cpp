@@ -445,7 +445,10 @@ struct s_squad_iterator
 
 s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 
-// score 92 (was 92): no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
+// score 74 (was 92): the scan index, declared with the block's other locals, ends the zero
+// register and gives retail's walk registers and stores, but it is live across the walk and takes
+// a stack slot (push ecx frame, 347 bytes), so the flags go to EBX where retail keeps them in memory.
+// Before: no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
 // in EBP (stored as next, scan index, count and palette tests) where retail uses immediates/TEST.
 // Shared lookup 92; parent while 148; read-only squad 92; unused formal addresses removed 92;
 // definition scope 92; cached entries 87 (one-use pointer excluded); direct mode flags 94; early
@@ -478,6 +481,12 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // of the definition block 97, at function scope 74 at 347 bytes (a `push ecx` frame; the walk then gets EAX
 // definition, ECX squad and no zero register); uninitialised index at function/squad/definition scope 92 each;
 // the unused-parameter address statements dropped 92 (identical, removed).
+// Round 32 (one-file LTCG closure harness, exact; [harness positional, base 88]): index declared with
+// squad/definition 74 [56] (kept), first in that list [56], after them [56]; with a found flag [78] (338
+// bytes), long index [76] (342 bytes), count as a value [57], alternate read per use [56], entries declared
+// outside the scan [56]. Without it: found flag [86] (330 bytes), with a selection pointer or a found
+// pointer [86], long index [86] (322 bytes), do-while scan [86], squad index stored before next [85], index
+// declared just after the walk [88], in the definition block [93] (each still with the zero register).
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -485,6 +494,7 @@ void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags,
 	{
 		s_squad_datum *squad;
 		s_squad_definition_entry *definition;
+		short index = 0;
 		for (;;)
 		{
 			squad = squad_get((word)squad_index);
@@ -507,7 +517,6 @@ void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags,
 				if (alternate) count_slot = (long *)(definition->data + 0x5c);
 				else count_slot = (long *)(definition->data + 0x54);
 				long count = *count_slot;
-				short index = 0;
 				for (; index < count; index++)
 				{
 					byte *entries;
@@ -847,6 +856,13 @@ done:
 // re-reads g_4e0350 each pass; ours hoists g_4e0350 into EBX and re-reads the definition.
 // Retail's NONE lives in ECX from entry into the third scan (re-set by `or ecx, -1` on its back
 // edge), with the result always in its stack slot.
+// Round 32 (one-file LTCG closure harness, exact): first scan with a named `next` (read once, stored
+// back plus one) 176; `++iterator->next >=` 176; the palette/entry pair through a short pointer 196
+// (617 bytes); next tested again in the count guard 176; flag comparison operands swapped 176, entry
+// bit as bool (harness, 617 bytes, no gain); squad declared at the function top 176, the first scan's
+// pair at the scan top and the palette index at the definition block's top (harness, identical).
+// Ours carries next in CX from the entry test into the first pass; retail folds both tests into
+// `cmp word [edx+4]` and reloads at the loop top.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -1212,6 +1228,11 @@ struct s_squad_tree_definition
 // row expression and a named parent local: all one load, no form keeps two. Pass 3/pass 4/both as `continue`
 // forms 31/31/31; pass-4 squad through `squad_get((word)i)` 31; pools declared before the definition 31; one
 // group pointer for passes 1 and 3 31.
+// Round 54 (lane 9): pass-4 argument through a fresh squad_get(i) read ahead of the depth pair 42 (all reads
+// merge into one folded load); pass-3 parent getter at each use 34; pass-3 append through a link pointer
+// (0x201a50's form) 82 (324); the first-child field read at each use 31; parent/last declared at the loop top 31.
+// The matched examples of the folded-load/dead-add/copy shape (0x256b00, 0x26ace0) read the field three times
+// (a test and two lookups); neither pass has a natural third read.
 // @retail 0x2009d0
 void function_2009d0(void)
 {
@@ -1364,6 +1385,9 @@ void __stdcall function_205320(long group_index)
 // index in a local 18; header pointer local 19; high-word test by shift 18. Compile-only screens
 // reproduce ours exactly and ~20 squad/header/test forms (helper return, NULL-initialized squad, pool
 // local) all keep add eax,ecx; retail's other two sites of this lea (0x1f3430, 0x20d570) are unmatched.
+// Round 54 (lane 9): `(salt << 16) | (squad_index & 0xffff)` (0x1e0160's spelling) 37 (the index moves to EBP);
+// the existing object_get for both object lookups 18; that with squad_get 18; the reload through
+// object_header_get(...)->object 18; the insertion written in both arms of the high-word test 40 (143 bytes).
 // @retail 0x201ad0
 void function_201ad0(long squad_index, long object_index)
 {
@@ -1621,6 +1645,10 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // retail reloads it before, so the jump lands on the shared reload.
 // Pool read before the active test 2; record address size * index + data 2; not-found
 // stores swapped 2; datum index written index | salt 2; early return when inactive 20.
+// Round 32: the file's data-iterator step (0x200db0's helper) 110 (368 bytes); `while (step(&iterator))` with
+// the squad read from the iterator 2, the index read first 2; squad declared in the while
+// condition 2; squad index read before the NULL test 2; next index read before the pool in the
+// shared step 2.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -2075,6 +2103,12 @@ bool function_1e11b0(long actor_index, bool active);
 // (152); byte squad pointer 71; actor index read from the iterator at each use 71; header squad_actors_next
 // 71; `if (...) continue;` body 71, on the current body 64; iterator declared first 71; result local 74
 // (188). Word flag store on the current body 62 (199/199), with the word flag test 62, with a word return 65.
+// Round 54 (lane 9): the return spelled `(((dword)*(short *)(squad + 2)) >> 7) & 1` (0x203d70's flag read) gives
+// retail's `and eax, 0x80; shr eax, 7` exactly (75 alone, 210 bytes); with the word flag store 65 (206; store and
+// return as retail, the loop still rotated); with 0x203d70's loop and statement-level pair 71 (191: retail's
+// unrotated loop, missing only the squad pointer's spill into the parameter's home and its back-edge reload);
+// that with actor/actor_index declared first 71, the parameter copied into a local 71, the word flag test 71.
+// File-local word/dword bitfield views of bit 7 72/69 (shift-then-mask). The same read matched 0x202e90.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2169,6 +2203,12 @@ bool function_1df5d0(short team_a, short team_b);
 // typed count/total fields 46; `*(char *)` maximum 46; separate actor pointer for the position walk 83 (846);
 // every +2 flag operation as a word 39 [21] (kept); the existing prop_node_get/prop_get getters for the
 // tracking node and its team 39 (identical, kept); health sum first 39, after the count_c sum 37 [19].
+// Round 54 (lane 9): `total = health + total` 39 (identical: VC turns every spelling into the same
+// read-modify-write with the total loaded first); `real health` declared first at function scope 39; the health
+// sum after the +0xc sum 37; `health += total; total = health;` 39 (still the load-first copy); health set only
+// per path with `else health = 0.0f` 126 (851); the perception count read before the health division 178.
+// In all of retail the unfolded `imul 0x3c; add; mov [+8]` node lookup appears only here and in 0x2761d0/0x25d810,
+// where the node pointer has more than one use.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2358,6 +2398,13 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // gives the area iterator its own slot (0x40) and shares the squad walk with the raised point;
 // ours shares the area iterator with the point; scope changes don't move it. The walk renamed to
 // sort before the area iterator (same-size slots by name): original body 275, walk form 333.
+// Round 32 (one-file LTCG closure harness, exact; [aligned]): retail passes the masked walk index
+// to the long-parameter callees with no word casts: walk form 335 [139] (1087 bytes), without the
+// casts 333 [133] (1088 bytes); record step without them 307 [144] (1108 bytes), long index without
+// them 275 [155]; walk with the word wake read [133], plus the else-if tail 309 [124] (1108 bytes);
+// overlap written straight into wake 318 [156] (1103 bytes), with the else-if tail [202]; words and
+// overlap declared at the loop body's top 275. The pool stays in EBX across the walk (so the pushes
+// come first) even with the area block, the definition block, the tail or the actor phase cut out.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2521,17 +2568,6 @@ struct s_actor_options;
 void function_1e4570(long arg_0, s_actor_options const *arg_1);
 void function_26b290(long arg_0);
 
-// score 2 (was 2): the squad flag bit is turned into a 0/1 value by
-// shifting first and masking after, retail masks first and shifts.
-// Also tried (all canonicalised to shift-then-mask or a byte form): word,
-// byte, bool and dword bitfields 2/166, `!= 0` 2, `? 1 : 0` 2, `!!` 2,
-// `/ 0x40` 2, `(word)`/`(dword)` casts of the mask 2, a `(byte)` cast 166,
-// short/dword/byte reads of the flags 2/166, `== 0x40` 167. In all of retail
-// only 0x203bf0 (bit 7 of the same byte) shows the mask-then-shift shape.
-// Lane 13 r20: word_flags_set setter 2; byte read 166; squad bitfield split out of `word : 7` 2;
-// `!= 0` on both sides 207; compared with the long argument 175. Compile-only, all folded: a bit-parameter
-// inline helper, signed/unsigned division, 0x7f/0xffc0/~0x3f masks, shl/shr pairs, bit 22 of the dword at +0,
-// byte/word/dword/long/bool/two-bit bitfields, __int64, signed char, a named mask local.
 // @retail 0x202e90
 void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
 {
@@ -2547,7 +2583,7 @@ void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
     *(short *)(local_3 + 0x64) = NONE;
     local_3[0x60] = false;
     if (*(short *)(local_3 + 0x2a) != (short)arg_1 ||
-        ((*(word *)(local_3 + 2) & 0x40) >> 6) != (byte)arg_2)
+        ((((dword)*(short *)(local_3 + 2)) >> 6) & 1) != (byte)arg_2)
     {
         byte *local_4 = NULL;
         if ((short)arg_1 >= 0 && (short)arg_1 < *(long *)((byte *)g_4e0350 + 0x240))
@@ -2801,6 +2837,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // remains); the follow-up call as a separate `local_4 != NONE && local_2 != NONE` test 50, tests swapped 97;
 // dword definition flags 50; iterator at function scope 50; trigger count/threshold swapped 50; follow-up
 // event read at each use 50.
+// Round 54 (lane 9): without the post-loop 0x1fb8a0 call the reload stays (diagnostic); the trigger part behind
+// an early return 50; local_2 set to NONE only in the compute arm 72 (580); the trigger entry count read into a
+// local before the loop 124 (593); one shared 0x202e90 call after the chain with the task, follow-up and flag set
+// per arm 180 at 578 bytes (the follow-up call then gets retail's `mov eax, ebp`, but the first arm loses its own
+// call site); the first test inverted with the first-arm call in the else 50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3179,6 +3220,19 @@ void function_2011f0(long arg_0);
 // pointer 363; long type + seat 350 [141]; long type + bool parameters 318 [141] (kept); that with seat 358,
 // getter 350, unmasked 378, squad pointer 356; long type + squad pointer 351; row/offset index as `& 0xffff`
 // 377 (1352) [148].
+// Round 54 (lane 9), aligned counts in brackets (baseline 141): a squad pointer from squad_get(arg_1) for
+// +0x2a/+0x76/+0x24, the row from `arg_1 & 0xffff`, arg_1 unmasked to every call and the +0x3a0 store, the
+// splice through squad_get and the memset sized by a fresh `(word)arg_1` row read 344 (1336) [132] (retail's
+// and/imul entry); with local_9 by if/else and the seat NONE once at its declaration 288 [65]; one squad pointer
+// per splice pass 283 (1332) [58]; the splice walking a fresh variable started from the chain head 276 (1328) [38];
+// the spawn index set in each arm of `arg_2 == NONE` 281 [34]; the row declared first 295 [45]; the arg_2 test
+// first 138 [57] (arg_1 cached in EBX); 0xc5340's `long difficulty; if/else; switch ((short)difficulty)` 280 [33]
+// (retail's movsx pair); row/seat renamed 280 (identical); the placement index through
+// `placement_entry->placement_index` 280 [31] (`cmp di, -1`); the row typed through s_squad_placement_table 280
+// [31]; `for (short attempt = 0; attempt < arg_0; attempt++)` with the splice unwrapped 338 (1332) [64] (retail's
+// unthreaded `xor esi, esi`, arg_2 moves to EDI). The same set without the fresh memset read 365 (1312) [43];
+// the difficulty and placement forms alone 322 [139]. Left at 280 [31]: arg_2 EBX/row EBP (retail the reverse),
+// the seat/row frame slots swapped, the threaded `arg_0 = 0`.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

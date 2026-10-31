@@ -634,7 +634,15 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
-// score 34 (was 34): Group-flag load width and velocity zero-store schedule remain.
+// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
+// retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
+// retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// Lane S (34, was 42): masking the group flags into a dword local gives retail's `test al, 1` and
+// `test al, 2` with the group pointer in EAX, but the flags are loaded as a byte and masked instead of
+// retail's word load (the extra bytes shift every later block), and case 0x1200055f still lacks
+// retail's zero store.
+// Group-flag load width and velocity zero-store schedule remain.
 // Earlier: the group-flag load is the only content difference left in the block: ours is a
 // byte load with a mask (`movzx eax, byte ptr [eax+2]; and eax,3`), retail's is a word load
 // (`mov ax, word ptr [eax+2]`), and the three extra bytes shift every later block.
@@ -699,6 +707,15 @@ struct s_device_machine_view
 // on the bool form 42; a const group pointer with the bool form 42; `second` declared beside the
 // flags and assigned later 42. In the mask forms the pointer is dead after the flags load (esi is
 // popped after the first test), so it is a coalescing choice, not a longer live range.
+// Round 101 (lane 8; exact LTCG harness through a function-pointer caller, harness 32 = 34): plain
+// masks on the word local plus `function_value = 0.0f;` first in the 0x1200055f velocity block leave
+// only the group pointer's register (`push esi; lea esi` / `mov ax, [esi+2]` / `pop esi` against
+// retail's `lea eax` and `mov ax, [eax+2]`), 656 bytes, 106 positional: the 16-bit flags value never
+// shares EAX with the dying pointer. On that base: no pointer local 113, direct field reads 106, the
+// word local declared at its read 106, the flags read before the machine test 114, the machine flags
+// read at each use 106, nested tests 106, the power test's operands swapped 106 (the pushed ESI in
+// each). On the lane S form: a byte/word bits local 32/32 (harness); dword/long/int/short flags locals
+// with masks 105 each (pushed ESI); the zero store added 105.
 // Round 456: Success constructed in recognized cases, at tail/entry, crossed with native group reference and explicit velocity zero:
 // 128/124/128/124/184/185/184/185. Original executable body and supporting declarations restored.
 // @retail 0x106d70
@@ -1129,6 +1146,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // score 2 (was 2): the float argument is stored to the stack before edi is pushed; retail pushes edi first and
 // stores the float one slot higher. Round 23: had_animation set after the time / first in the block 43/44;
 // the animation as a const reference 203; sampled declared after the time 2; time before the animation 2.
+// Round 30: sampled at function scope 39; the animation direct-initialised 2; time declared beside speed and
+// assigned in the block 2; time computed after the first sample call 20; had_animation set before the node
+// lookup 31.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

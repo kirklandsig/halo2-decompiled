@@ -131,6 +131,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // recovers frame 0x6c, first +0xaf, but regresses; original helpers and full body restored.
 // Scaled rotation producer with native input/complement/sine-product subsets
 // 464/639/799/979/765/605/627/612; original helper and post-switch scaling restored.
+// Round 249: Shared staged cross-product families 0 / 1-2 / 3-4, all seven
+// nonempty subsets 380 each; all with shared in-place row scaling 380. Frame
+// remains 0x64/0x6c; original helpers, include set and complete body restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

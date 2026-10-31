@@ -1478,6 +1478,13 @@ struct s_rating_summary
 // value, change 92; the counters read from the collection at the call 212 (as before); the team loop through
 // a `const s_match_rating_collection *` view of the collection (entries for the team reads, passed to the
 // change call) 92; without the inline_depth(0) region (diagnostic) 407 (1268 bytes).
+// Round 30 (lane 14, fast): the key stored before the session copy 88 again (the summary block then differs
+// only in the formatter call/count push order; 4 points, not kept); on it: a named group-entry pointer for
+// the state test and the owner compare 279 (1196 bytes); level declared per loop 105 (every slot reshuffles,
+// the team loop still gives EBX to the counters cursor); lower declared per loop 88; the team statistics
+// pointer formed before the change call 88; the team counters read into first/second/third locals
+// (diagnostic) 212 (the collection moves to EDI from entry, the counters cursor still EBX).
+// On the original source: lower as `lower = 0; if (value >= 0) lower = ...;` in both loops 274.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1773,6 +1780,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // whole body restored; key forms recover length but enlarge the aligned frame.
 // Round 45: twice-used initial-request comparison as bool/byte/char/long, mutable
 // and immutable, 737 each; frame grows to 0xc8. Original complete body restored.
+// Round 215: identity-change clear cursor 709; invalid-user clear cursor 709; disconnected clear
+// cursor 709; both online clear cursors 709; identity-change/disconnected clear cursors 709;
+// invalid-user/disconnected clear cursors 709; all three clear cursors 709; all three clear
+// cursors with word remaining counts 709.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

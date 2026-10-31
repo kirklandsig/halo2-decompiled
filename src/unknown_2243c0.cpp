@@ -52,7 +52,7 @@ bool function_23ea80(long tag, transform4x3f const *matrix, long variant, long s
 void __stdcall function_173ba0(dword, void *, void *, void const *, real *);
 void function_175610(s_particle_value_cache *, s_particle_system_datum *, s_particle_location_datum *,
 	particle_callback_175610, void *);
-void __stdcall function_224550(s_draw_sprite_seed const *, s_draw_value_cache *,
+void __stdcall function_224550(s_draw_sprite_seed const *, s_particle_value_cache *,
 	point3f *, point3f *, real, color4f const *, s_draw_sprite_context *);
 
 // @retail 0x2243c0
@@ -293,6 +293,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // read after the search loop 132; the three pointer fields zeroed in one chained assignment 117; the head in
 // 0x16b90's direct-indexing shape 117; search result written straight into the context 136. Reference
 // locals for the lookups compile identically (compile-only, not counted).
+// Round 116 (lane 6, fast): the 0x1c620 call's argument setup agrees with retail. Stage/pass sums written
+// `arg_3 + local_7` / `arg_4 + local_8` 117 (same code); that with the first cache zero moved down 120; the
+// two sums named where computed 117 (same code); the stage offset folded into the first ordinal 117, and the
+// pass offset into the second as well 117. Retail loads arg_3/arg_4 into ESI/EBP before the chain and
+// leaves a dead `lea eax, [eax + edx*2]` after the pass element read; ours loads them late into EBP/EDX.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

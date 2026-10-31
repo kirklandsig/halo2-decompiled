@@ -633,6 +633,12 @@ real function_267370(long object_index);
 // 98; the zone result through a bool local 100; `carrier` declared first in the block 98; the first
 // cross plain (cross3f) with the second staged 114 (1727 bytes); the first staged with the second
 // plain 112.
+// Round 58 (lane 12, plain checks; --fast builds this function at 416): the carrier's first arm
+// re-reading the parent index from the object 403 (frame 0x8c); the carrier's first test on the
+// parent index instead of the pointer 335 (1712 bytes); one 0x118e80 call with a ternary index
+// argument 107; the held bit as one bool expression 194; a named location pointer for the zone test
+// 100. Diagnostic (fast only, unfaithful here): `(short)NONE` in the shared zone helper leaves the
+// `or edi, -1` / `cmp ax, di` sharing unchanged.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {

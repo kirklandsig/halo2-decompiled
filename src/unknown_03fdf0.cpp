@@ -319,6 +319,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (495); the count declared after `current = first` 166; before the clears 139 (508 bytes, frame 0x4c, zero ESI);
 // entries then count first in the block 140; copy source as the field address, entries after the advance 155; the
 // copy as `sizeof * count` into `&g_4ba138[first]` 140; through the metadata view 140.
+// Round 40 (reduced-relink screen, base 49 on its scale): 36 combinations of the block pointer or indexed
+// blocks, the count as the field, a long at the top of the `if` or a short before the clears, the entries
+// cursor before the copy or after the advance, a separate index or `first + n`, and the block pointer before
+// or after the clears: nothing below the current body; indexed with a short count before the clears and the
+// cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
+// `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

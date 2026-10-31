@@ -147,6 +147,10 @@ struct c_aggregate : c_child
 // declared after starts/error/total 45; one function-scope index for all three loops 45 (frame
 // 0x8024); the get_info output declared at the inner loop top 45; the cleanup through blocks[k]
 // directly 45. BLOCKED by the build flag (frame 0x8020 needs a non-LTCG object).
+// Round 27 (m3 lane 15, fast): `if (child && !error)` 45; `blocks + j` in the dispatch call 45; the
+// dispatch gate with the type test first 49; the dispatch inner loop as `while (first < end)` with a
+// post-increment 45; the capacity named before the call 45. Still BLOCKED by the build flag (frame 0x8020
+// needs `produced` to share a slot, which only a non-LTCG object gives).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
