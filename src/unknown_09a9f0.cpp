@@ -440,6 +440,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // and read back 77; one header pointer for the test and the object 77; `result = true` first in the arm 72
 // (176 bytes, result spilled); an unsigned object index 77. Retail's object read needs both the data reload and
 // a recomputed index, as a join present at CSE time and threaded later would give.
+// Round 21 (m3 lane 2, fast): bool result first with the flagged arm first and the object through a
+// header-pointer local 75 (160 bytes); bool result with the second virtual call after the block under
+// `result && value` 77; bool result declared after the creation call 80 (158); a header-pointer local
+// for the test on the long result 49 (same code); the flagged arm first on the long result 52. The EBP
+// cache of the last argument follows the shared header address (fewer live registers at the test).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
