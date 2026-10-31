@@ -3547,6 +3547,11 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 422: observer snapshot 188; owner snapshot 163; both attach snapshots 167; per-player
 // identity address 131; observer/identity 188; owner/identity 163; all repeated inputs 167; all
 // inputs/entry snapshots 200. Opening body restored.
+// Round 25 (fast; agrees with full): from the first attach on retail's scratch registers are ours
+// rotated by one, so its reason-7 tails both use ECX and cross-jump (the 15 bytes) and the flag
+// folds to [ebp + edx*4 + 0x72dd]. Non-volatile result 157; result declared after the lookup 136;
+// member arm first 145 (463 bytes); state flag/time read at each use 153; state pointer after the
+// flag test 153; pointer kept with the flag read directly 153 (pointer sunk). Opening body restored.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3753,6 +3758,14 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // Round 44: actual returned outcome from availability/registration/resolution, alone/paired/all,
 // then all with channel outcome 187/187/187/187/187/187/187/187.
 // Original result, cleanup and body restored; host/session staging and clock remain.
+// Round 25 (fast, aligned counts in brackets): loopback helper 136 [54]; with forceinline clock 147
+// [38]; with channel failure first too 138 [18: only host/session staging at 0x7ab10 and the mode
+// store's scratch left]. On that composite: key index local 168 (559 bytes); host pointer local
+// before the call/at entry 138/138 (same code); key index and host locals 168; the join-key helper
+// 0x5fac0 called (inlined) 157; 0x7ab10 parameters reordered consistently (local, port, key,
+// address, xnaddr)/(address, local, port, key, xnaddr) 138/138 (same code: allocation, not order).
+// Retail acts as if it lacked register summaries for 0x5fb00 (session reloaded) and 0x7ab10 (host
+// copied ESI->EBX); no call cycle links them. Opening body restored.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,

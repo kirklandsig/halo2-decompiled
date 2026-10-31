@@ -299,6 +299,12 @@ short function_239e50(short count, point2f const *points, short *indices);
 // reciprocal written at both scales 42; a single result set in the scale arm 42. Matched 0xde080's
 // normalizer keeps `movss xmm4,[v->i]; mulss xmm4,xmm0` (no commute), while ours commutes `v->j * inv`
 // into the reciprocal's register here: retail's reciprocal looks live past both scales.
+// Round 25 (fast): a `vector2f *` local to line.n in case 0, with only the i store through it 69 (305
+// bytes), the same with j scaled first 73 (308); i store, normalize and dot through it 73; only the j
+// store through it 44 (304 bytes: retail's exact normalize block, constants XMM5/XMM4; the dot's
+// `mulss xmm1, [p.x]` fold and the state/index/point registers remain); both stores 53; normalize/dot
+// argument alone 42 (same code). Compile-only diagnostic: the reciprocal kept live past both scales
+// gives retail's XMM numbering. Opening body restored.
 // Round 54 (lane 12, fast; compile-only reproduces both the SSE block and the integer allocation):
 // operand order follows which normal component is written by name first. line.n.i written by name with
 // line.n.j and the case-0 dot through a `vector2f *normal = &line.n` gives retail's whole SSE block (1.0 in

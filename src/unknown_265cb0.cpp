@@ -1219,6 +1219,13 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
+// score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
+// movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
+// direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
+// score 14 (was 14): the direction and ahead homes are swapped: retail stacks movement, offset,
+// ahead, target_direction and direction, ours movement, offset, direction, ahead and
+// target_direction. Declaration order, scope, type, initialiser and extra source references all
+// leave the homes as they are.
 // score 14 (was 14): only three vector homes differ: retail stacks movement, offset, ahead,
 // target_direction, direction upward from esp+0x34; ours movement, offset, direction, ahead,
 // target_direction (12-byte slots; names and declaration places do not move them).

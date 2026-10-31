@@ -52,16 +52,6 @@ struct s_unit_object_view
 	long field2ac;
 };
 
-/* the real a quantized value stands for */
-static inline real event_dequantize_real(long value, long maximum, real minimum_value, real maximum_value)
-{
-	if (value == 0)
-		return minimum_value;
-	if (value >= maximum)
-		return maximum_value;
-	return (minimum_value * (maximum - value) + maximum_value * value) / maximum;
-}
-
 /* the identifier in one of the eight slot table slots, or NONE outside them */
 static long slot_table_identifier(long slot)
 {

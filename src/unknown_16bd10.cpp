@@ -285,6 +285,11 @@ bool camera_velocity_profile_new(s_camera_velocity_profile *profile, real total_
 // result clamp as PIN: the same code; real: fills after the hold clamp 104 (268 bytes); fills after
 // the first conversion 99 (271 bytes); the sum in three statements 101 (270 bytes); all three
 // conversions after the clamps 87 (285 bytes); fills just before the sum 121 (253 bytes).
+// Round 36 (lane 10, fast): the sum as three calls of a forceinline per-segment helper (ticks * rate + ticks *
+// ticks * acceleration) taking the rate and acceleration by value 49, taking the arrays and a segment index
+// 49; the helper factored `(acceleration * ticks + rate) * ticks` 72 (261 bytes); the three calls as one
+// statement and two += 62 (268 bytes); the by-value helper with PIN tick clamps 96. Compile-only, every one
+// of these (and both call orders) still spills one coefficient where retail spills three.
 // @retail 0x16be50
 real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, long ticks)
 {
