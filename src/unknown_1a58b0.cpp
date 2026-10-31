@@ -800,6 +800,10 @@ void function_25aba0(long actor_index);
 
 // score 29 (was 29): the kind-2 failure pop is `dec [mem]` where retail loads, decrements and stores
 // around the stamp, and the choice-failure pop is split where retail uses `dec [mem]` (aligned 8).
+// Round 96: kind-2 dispatch first 147; the kind test reversed 126; the current-slot ternary inverted
+// 29 (identical); current-slot assigned in an if 242; the default type assigned in an if 166; the
+// next-type test inverted 36; positive next-handler validation 29 and positive enabled dispatch 29
+// (both identical). Original dispatch and failure arms restored.
 // The choice arm's pop before its stamp is not retail's order there: it is kept only because its 5
 // extra bytes balance the kind-2 pop's 5 missing ones, so put the stamp first again once the kind-2
 // pop splits. Before this round only the state-one pop and the `= {0}` workspace remained (aligned 7); earlier: actor/result ESI/EDI (0x1a7b30's result arrives in ESI,
