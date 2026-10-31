@@ -1190,7 +1190,12 @@ void __cdecl function_24970(s_histogram_state *state)
 // the globals 66; a shared bounds point helper for cases 1 and 4 17. In a
 // compile-only build every form that merges the two subtractions gets
 // retail's pair, and every two-subtraction form (~190: mixes, declaration
-// orders, compare sides, scopes) gets ours unless begin stays live to out[2]
+// orders, compare sides, scopes) gets ours unless begin stays live to out[2].
+// Round 55: case 1's out[3] stored before out[2] 18; case 4's out[2] stored first 33; both
+// subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
+// place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
+// LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
+// none changes the pair.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -2025,13 +2030,6 @@ static __forceinline void *surface_texture_get(long index)
     return result;
 }
 
-// score 2 (was 2): the loop's head reloads the two bounds from the stack in
-// the other order, ours reloads the low bound first and retail the high bound.
-// The order follows the code after the curve loop: without the fill loops (or
-// without the swizzle call in them) a compile-only build gives retail's order.
-// Tried: the lock as the method 2, as the compatibility wrapper 3 (one, low,
-// high), with an unlock 3, the method with an unlock 2, a dword bits local 2;
-// mode as the first parameter 2 (with the method 2, the wrapper 2, an unlock 3)
 // @retail 0x24ee0
 void function_24ee0(s_24ee0_state const *state, short mode)
 {
@@ -2083,8 +2081,7 @@ void function_24ee0(s_24ee0_state const *state, short mode)
             byte component = curve[y * 4];
             for (long x = 0; x < 64; ++x)
             {
-                dword color = D3DCOLOR_XRGB(component, curve[x * 4], component);
-                ((dword *)rectangle.pBits)[function_024e50((word)y, (word)x)] = color;
+                ((dword *)rectangle.pBits)[function_024e50((word)y, (word)x)] = D3DCOLOR_XRGB(component, curve[x * 4], component);
             }
         }
         real bounds[4];
