@@ -599,6 +599,16 @@ struct s_1af5c6
 // Round 15: the ray vector built in the call's argument list (the point-difference helper returning its
 // output) 20; the existing distance3d for the distance 31; the second object index in its own local 20;
 // the second header read inside the test 20; the hit fraction read into a local after the test 19.
+// Round 11 (lane 18): the tail from the 0x11c010 test on is 0x1c8df0 with constant arguments (no side
+// probes, the 0x15808c2f mask, the 0x20 bit cleared for an actor with +0x26c set, no out-pointer):
+// a call to 0x1c8df0 330 (359 bytes; LTCG keeps it out of line, also with a __forceinline
+// declaration here 330, or with auto-inlining allowed 330, or with `inline` on 0x1c8df0's definition 321); the distance through the existing
+// vector3d_from_points3d + magnitude3d 20 (kept: it replaces the hand-written difference and square
+// root), with the hit fraction read into a local after the test 19; the ignore index copied before the
+// ray vector 20; the ignore index chosen by a plain if/else 140 (fast); the copied point and the 2640c0
+// buffer in one block and the probe's vector and result in another 44 (frame stays 0x80, but the point
+// copy goes below the NONE/source pair), the same with the point copy renamed 44; one category result
+// in 0x1c8df0's if/else-if form 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
@@ -646,10 +656,9 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, local_13);
 	if (!function_1697c0(local_12, &local_9.field_4, local_13, local_8, NONE, (s_collision_result_1697c0 *)&local_7))
 		return 0;
-	real local_16 = local_2->field_30.x - local_9.field_4.x;
-	real local_17 = local_2->field_30.y - local_9.field_4.y;
-	real local_18 = local_2->field_30.z - local_9.field_4.z;
-	real local_14 = (real)sqrt(local_18 * local_18 + local_17 * local_17 + local_16 * local_16);
+	vector3f local_20;
+	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, &local_20);
+	real local_14 = magnitude3d(&local_20);
 	if (1.0f > local_14)
 		return 4;
 	return 1.0f > local_14 * local_7.field_4 ? 2 : 4;
