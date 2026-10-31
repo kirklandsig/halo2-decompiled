@@ -170,6 +170,10 @@ void function_1d56f0(s_havok_component *component)
 // sort last 77; the source transform through a const reference 77; the setter call's index replaced by a
 // constant (diagnostic) 87; index copied to a local at entry 77; entry reference through the array's
 // operator[] 77; forceinline getter declaration 77.
+// Round 97 (lane 7): BLOCKED-BY 0x1d0cf0 again (its file is held this round); 19 aligned differences, all in
+// that tail but the lookup's SIB order. A byte offset local added first, the component through a const
+// reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
+// 77 each (still `[eax + edx + 0x40]`).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

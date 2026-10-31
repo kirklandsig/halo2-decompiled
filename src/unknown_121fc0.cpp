@@ -88,6 +88,10 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 231: existing tokenizer null guard / empty guard / nested result / result-first
 // 217/206/213/221; each with current table-entry token observations 217/206/213/221.
 // Original tokenizer and body restored; outer EBP preservation and read-size homes remain.
+// Round 53: the next/token pointers declared before the success test 128; the found index declared
+// outside the count test 128; the clamp as `if (size >= sizeof) size = sizeof - 1` 128; `while (token != NULL)`
+// 128; the token array cleared by memset 256 (724 bytes, rep stosd). Moving the token loop out of the
+// success block (counters set inside it) drops EBP altogether (724 bytes, harness).
 // @retail 0x121fc0
 void function_121fc0(void)
 {

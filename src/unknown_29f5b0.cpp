@@ -4732,7 +4732,7 @@ void __stdcall function_2a4fd0(short function_index, long thread_index, bool ini
 
 s_type_f4462a const g_44c734 = { _hs_type_void, 0, function_2a4fd0, NULL, 1, { _hs_type_ai } };
 
-void function_201520(short value, long type, long a, long b, long c);
+void function_201520(short value, long type, short a, bool b, bool c);
 
 /* 291: void (ai, short_integer) */
 // @retail 0x2a5010

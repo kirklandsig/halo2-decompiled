@@ -3,6 +3,7 @@
 #include "data_array.h"
 #include "data_iterator.h"
 #include "unknown_067e10.h"
+#include "vehicle_ray.h"
 #include <string.h>
 
 // @flags /O2 /arch:SSE /Gr
@@ -38,7 +39,6 @@ point3f *function_b9dd0(long object_index, point3f *point);
 struct s_location;
 void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool update);
-struct s_vehicle_ray { point3f point; vector3f vector; real t; };
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore, long ignore2);
 void __stdcall function_df5f0(long object_index, point3f *center, real *height, real *radius);
 void function_1c7e70(long player_index, short value);

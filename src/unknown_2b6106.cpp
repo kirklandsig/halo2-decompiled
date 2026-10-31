@@ -739,6 +739,15 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // Round 447: Raw zero/0x80 saved bit in dword/word/byte/long at the original extraction point, then at the API result
 // 613/581/618/613/648/645/648/648. Current frame 0x864 versus 0x85c; EBP bias and flag/time homes remain.
 // Original executable source and all trial helper/interface changes restored.
+// Lane 10 round 34 (fast; aligned counts from a difflib alignment of the listing in brackets, baseline [294]):
+// retail calls the name formatter in each lookup arm with no NULL test of the name (tail-merged), so the arms
+// formatting and showing directly give retail's block exactly but score 559 [285]; retail's player search ends
+// with `cmp esi, -1` (a found index tested after the loop, long counter): index-after-loop form 565 [266]; bool
+// campaign 588 [283]; short count 579 [297]; all four with a long final-loop counter 619 [274]; search plus long
+// final counter 571 [263]. The positional score rises while the bias is missing. Bias diagnostics (none biased):
+// widget array declared first, six field locals, the status call removed, the body cut after the widget loop or
+// at any later block. Retail's other /O1 EBP frames bias only when a slot lands in the unbiased [-0xf0,-0x81]
+// window (0x2b6208, 0x2b4059, 0x2b0565), which 0x2b65b8 and 0x2b642e do not have, so the trigger is not that.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

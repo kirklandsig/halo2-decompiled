@@ -696,6 +696,8 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // image loss accepted.
 // Round 232: Once-read radius/options/both, per-use flags alone/with radius/with options/with both, then all with Boolean success
 // 754, 748, 773, 675, 754, 768, 773, 786. Original executable source restored.
+// T47: Input-step cursor / forward inserted-step cursor / repeated blocking-segment receiver
+// subsets 730/728/766/675/730/728/766; all with Boolean success 752. Original body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

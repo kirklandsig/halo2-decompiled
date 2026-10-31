@@ -4,6 +4,7 @@
 #include "object_markers.h"
 #include "unknown_1428b0.h"
 #include <math.h>
+#include "vector_products.h"
 // @flags /O2 /arch:SSE /Gr
 
 struct s_object;
@@ -104,7 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 920 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
+// score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
 // (xor/dec/jne/add): retail's scale helper is unrolled. The helper as three statements gives retail's frame
 // 0x1d4 and the same 32 calls with matching instruction counts between calls in all but four segments, but
@@ -211,6 +212,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // existing center point setter on expanded scale/scale-add 1168/1168.
 // Point production retains the expanded entry pair and grows frame to 0x1d8;
 // all helpers, declarations, original center copy and body restored.
+// Round 97 (lane 7): the angular accumulate through the existing vector3f_add_scaled 961 alone; with the
+// angular residual as three statements 902 (4267 bytes); with the residual through the existing
+// vector3d_from_points3d instead 902, kept (retail keeps the accumulated vector in XMM registers to the join);
+// the residual helper alone 913; the two linear-block residual subtracts through the same helper too 906,
+// either one alone 902 (same code); on 902 a long scale counter 933; the attached object index read once into
+// a named local 926. A renamed second activity bool moves no byte slot.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -393,11 +400,9 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
      function_1d24a2(&local_63, local_67, &local_59);
      vector3f local_68;
      function_1d24a2(&local_63, local_65, &local_68);
-     for (long axis = 0; axis < 3; ++axis)
-      local_68.n[axis] = local_29.n[axis] - local_68.n[axis];
+     vector3d_from_points3d((point3f const *)&local_68, (point3f const *)&local_29, &local_68);
      function_a75d0(&local_68, g_510c54->rate * coefficient_58);
-     for (long component = 0; component < 3; ++component)
-      local_59.n[component] = local_68.n[component] * -1.0f + local_59.n[component];
+     vector3f_add_scaled(&local_59, &local_68, -1.0f, &local_59);
      if (!(local_3 > response_fraction)) local_3 = response_fraction;
      local_2 = true;
     }

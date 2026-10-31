@@ -3714,8 +3714,14 @@ void function_db670(long object_index, long vehicle_index)
 /* a permutation destroyed elsewhere (over the network): starts its delayed
    effect, or destroys it here */
 // @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
+// score 34 (was 38): this function's own convention is now retail's (region in EAX, permutation in EBX, object
+// and mode on the stack); left are its callees' conventions: 0xd9d60 takes the flag on the stack where retail
+// passes it in AL (BLOCKED-BY 0xd9d60), and 0xda110 takes the permutation in ECX and the info in EDX where retail
+// passes the permutation in EAX and pushes the info (BLOCKED-BY 0xda110). Round 112: the parameters as (region,
+// object, permutation, mode), the order retail's only caller 0x9c910 sets up (EBX last, object pushed), 34 (kept;
+// matched 0x9c910); declared as (region, permutation, object, mode) the object took EBX and the permutation the stack 38.
 // @retail 0xdb760
-void function_db760(long region_index, long permutation_index, long object_index, long mode)
+void function_db760(long region_index, long object_index, long permutation_index, long mode)
 {
 	s_damage_info *info = (s_damage_info *)function_d5b60(object_index);
 
