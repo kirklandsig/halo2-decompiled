@@ -141,6 +141,12 @@ short __stdcall function_2551c0(long actor_index)
 // first in the loop 70; direction first in the loop 70.
 // Round 20 (lane 15, fast): `0.f < length` 43 (same code); the best update as direction, found, score 48 and as
 // direction, score, found 47; the distance part named (`reach`) 56 (815 bytes); the loop as `i != 8` 109 (814 bytes).
+// Round 26 (lane 15, fast): the extra two bytes are two pre-call products loaded from the axis where retail keeps
+// the vector's component in a register and folds the axis (cross_j's v.i * a.k and cross_k's v.j * a.i). The real
+// 0x26c590 overload in place of the header's argument-order wrapper 109 (814 bytes); one parenthesised product in
+// the rotation helper, each of its 18 in turn: the projection's j product 49 (815 bytes), its i product 78 (820
+// bytes), its k product 116, the six cross products 109 each, the outputs' cosine products 109-138, projection and
+// sine products 109-123; source permuter (600 s, 43 tries) no gain.
 // Round 36 (lane 10, fast), the rotation helper in the forms of other files' rotations: matched 0x1ecf50's
 // forceinline helper (named dot3f dot, then the projection) 56 (815 bytes), the same as plain inline 56; the
 // projection dot j, k, i with the j/k outputs projection-first 43; the dot i + (j + k) with crosses j, k, i
@@ -286,13 +292,6 @@ void __stdcall function_255660(long actor_index, s_slot *slot)
 	actor->unknown456 = true;
 }
 
-struct s_2556b0
-{
-	byte field_0[0xc4];
-	long field_c4;
-	s_pathfinding_data *field_c8;
-};
-
 struct s_2556c0
 {
 	byte field_0[4];
@@ -300,22 +299,10 @@ struct s_2556c0
 	byte field_6[10];
 };
 
-// score 1 (was 1): the byte test uses the other SIB base and index slot;
-// the address is the same. Immutable index 1; index predeclared/read before the blocked test 1 each;
-// edge predeclaration, a post-bounds edges base, a field-base flag pointer and an exact flag pointer 1 each;
-// scoped favor-speed-off 37; bool return, as its caller's tests of al show, 1 (kept).
-// Index first defined at entry 1; trace field read at each use 1; a forceinline (data, index) edge
-// accessor, element or sum form, 1/1; element address taken before the bounds test 1. In every
-// matched speed function whose shifted index is loaded from memory (19 sites), it comes first.
 // @retail 0x2556b0
 bool function_2556b0(point3f const *arg_0, vector3f const *arg_1, long arg_2, real *arg_3)
 {
-	s_pathfinding_data *local_0 = NULL;
-	s_2556b0 *local_1 = (s_2556b0 *)g_4e0348;
-	if (local_1->field_c4 > 0)
-	{
-		local_0 = local_1->field_c8;
-	}
+	s_pathfinding_data *local_0 = (s_pathfinding_data *)function_1fa7f0();
 	s_sector_trace_result local_2;
 	function_26c590(local_0, arg_0, arg_2, NONE, arg_1, 1.5f, NULL, (s_path_trace_result *)&local_2);
 	if (local_2.blocked)
