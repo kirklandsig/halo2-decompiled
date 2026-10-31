@@ -1178,6 +1178,9 @@ PRIVATE inline void shape_rotate_vector(matrix3x3 const *matrix, vector3f const 
 // orientation copies 37. On the dual-helper graph, symmetric left/up/forward
 // products, transverse sums, all products L-U-F/F-L-U/U-L-F and accumulators
 // 79/73/22/22/73/73/73/79. Entire original helper, body and copies restored.
+// Round 92: existing 0x2477b1 for the second rotation 15, for both 82; rotation helpers swapped 44;
+// private-helper orders input/matrix/out, input/out/matrix, matrix/out/input and out/matrix/input 82
+// each, out/input/matrix 9; pointer-return helper 9. Original helper, calls and include set restored.
 // @retail 0x1f0450
 void __stdcall function_1f0450(s_shape_state *history, byte *out, s_shape_carrier_contact const *contact)
 {
