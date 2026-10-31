@@ -125,6 +125,14 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // but the three screen lookups merge). Diagnostics: six extra title stores put display_name at
 // -0x8cc and title at -0x6cc as in retail (516); extra display_name stores 694. So retail weighs
 // title above display_name and layout below suffix; ours the other way round.
+// Round 52 (lane 16, fast = plain): retail sends every text arm straight to one function_253b1a call (the
+// received arm's select and the last title-less arm share `xor ebx, ebx; jmp`), with no NONE test; ours keeps a
+// test that the received select and the last arm share. Received text as if/else 661 (2338 bytes; the test is
+// threaded but every widget-pointer slot moves); `else if (online) {...} else text = 0x700024e;` 708 (2379
+// bytes); message arms calling set_text themselves and the last arm calling function_253b1a(0xe00024f), the
+// dispatch keeping only `if (text != NONE)`, 548 (2352 bytes); the null-datum guard as a wrapping if 330 (same
+// code); the session-player lookup as if/else 330 (same code). The suffix buffer's home also needs retail's
+// re-derived `lea` after each 0x230134 call (an open callee case: BLOCKED-BY 0x230134).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

@@ -252,6 +252,9 @@ long g_55e6c0;
 // dimensions 29 (same code); height stored before width with kind first 30; the lock word cleared after
 // the element count 33; the clamp testing the upper bound first 151 (495 bytes). The loop and tail
 // match; the differing call and global lines are positional knock-ons of the folded packing block.
+// Round 93: destination-field accumulator 153; typed resource pointer 167; size macros 29;
+// parameter-address reads 29; unsigned packing dimension copies 29; direct typed Size publication 29;
+// signed packed carrier 29; named height part 29. Original packing restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

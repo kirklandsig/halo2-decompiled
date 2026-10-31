@@ -304,6 +304,11 @@ void c_juggernaut_engine::v15(long player_index)
 // retail's code with ebx/esi swapped (the byte use pulls the masked index into ebx): absolute
 // index declared first 8, both read from the iterator 8/8. Every retail call of 0x192950 pushes
 // a full register, so its parameter width is open.
+// Round 57 (--fast): a long parameter on the existing test 81 (the shift is CSE'd with the keep
+// path's, and 0x192950 itself differs); the masked index as a word local 85, also with the test
+// on the player index 85; the removal call on the masked index too 8; renaming the player index
+// (index, player) or the masked index (player_absolute_index, slot_index) with the masked-index
+// test 8 each.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

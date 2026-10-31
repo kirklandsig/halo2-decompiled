@@ -144,6 +144,11 @@ bool g_47f05b;
 // g_479888 with the buffer through `block` 36 (146 bytes by chance: block copied to EDX, the 1s immediates,
 // no vtable store); neither local (diagnostic, listed) 38 (reload on the constructed arm as retail, 1s
 // immediates); a buffer local read from g_479888 before the global stores 38.
+// Round 53: `block` for the placement and the pool with the buffer from g_479888 43; `block` read after
+// the three stores with the placement from g_479888 36 (146 bytes), with the buffer from g_479888 38;
+// `block` (at the top or after the stores) used only for the pool 34/34 (149 bytes). Compile-only, all
+// store orders and `block`/g_479888 mixes for placement, buffer and pool: the 1 in a register comes only
+// with both from `block`, the arm reload only when the arm reads g_479888; never both, no base store.
 // Round 100 (lane 8, one-file harness exact with unknown_22c0a0.cpp): diagnostic only, a compiler barrier at the end of
 // the abstract constructor keeps the base vtable store (12 at 147 bytes; 0x146b80/0x22c3e0 lose), and with the size-only
 // constructor it is an exact 0, so the kept store is the last difference. Forms: the size-only buffer as
