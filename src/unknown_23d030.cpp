@@ -194,6 +194,15 @@ struct s_free_state_23d260
 // Round 214: inverse movement setter 256; transformed position setter 102; world position setter
 // 102; inverse/transformed setters 277; inverse/world setters 277; both position setters 258; all
 // three setters 277; native world position update 195.
+// Round 21 (m3 lane 2, fast): side as an aggregate initializer 102 (same code); a pitch sine local computed
+// with the pitch cosine 106 (1328 bytes, first difference +0x94: zero XMM1, clamp and side i/j registers as
+// retail, but the x87 order changes and side.k stays in XMM0); that local after forward.j 103 (zero XMM3 again);
+// the local also for both forward.k reads of the up cross product 260; yaw cosine/sine locals at the forward
+// vector 324 (1351 bytes), before the movement 291.
+// Round 58 (lane 12, fast = plain here; none kept): side, movement, position and pitch-cosine declared
+// at the function's top, each and all together, 102 (same code); the normalize test as `!` 121 (1328
+// bytes) and as `0.f ==` 102 (same code); the roll update with the zero arm first 107. The zero stays
+// in XMM3 and the clamp constants in XMM1 in every form.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

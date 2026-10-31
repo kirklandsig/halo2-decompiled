@@ -242,6 +242,12 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // Round 89: shared object-velocity receiver 199; second output pointer 163; nonrotating receiver 162;
 // change renamed scaled_change and displacement renamed offset 10 each; second linear pointer 164;
 // const change and const scale 10 each; force-inline point-velocity helper 10 (0x109e00 still matched).
+// Round 31 (0x109e00 matched each time): a nonrotating velocity receiver pointer also used for the
+// output copy 162 (compile-only: it gives the x add retail's copy-then-memory form but reorders the
+// rotating block); `result` declared first 12; the change built by statements 10 (identical);
+// previous velocity declared with the offset and the moved transform at its call 10; the delta as
+// `-change.i` 52. Compile-only screens of 128 local-declaration combinations (headers, platform index,
+// definition, velocity pointer, declaration places) found none that flips only the two x adds.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {
@@ -441,6 +447,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 241: entry/component/entry-component/object/entry-object/component-object/
 // all receivers at use 303/303/353/133/303/307/352; all with existing center converter 362.
 // Original body restored; input registers, physics spill and center/projection scheduling remain.
+// Round 40 (screen, base 101; 0xb7060 2 throughout): bisected, only dropping the body search loop moves the
+// object index to EAX as retail, and then the entry index stays on the stack (the transform block, the
+// transfer block and the calls move nothing). The dot as `dot = k; dot += j; dot += i` 99 (the k and j
+// products up-first as retail); dot3f in either order, the first two terms parenthesised, the terms i, j, k
+// 101 each; cross3f_staged(up, forward, left) 101, cross3f 113; with the `+=` dot: the scaled terms as one
+// vector3f 124 (918 bytes), updated in place 122, `up->i = up->i - scaled_i` 99.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

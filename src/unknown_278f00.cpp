@@ -172,6 +172,9 @@ bool function_a7670(long object_index);
 // 260. A renamed outer index moves no spill slot. Lead: on that base the outer selector is zeroed into EDX
 // (retail EAX), so the list lands in EAX (retail EDX) and every spill slot shifts by one; the one real extra
 // instruction is the body-index spill at loop entry (retail spills it only on the flagged path after `dec`).
+// Round 249: Real two-list parent record, indexed/branched arrays and branched/conditional
+// named members 281/181/181/181; those four with indexed cleanup 276/196/196/196.
+// Original parent observations, native child types, cleanup and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

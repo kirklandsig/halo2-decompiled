@@ -308,6 +308,9 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 }
 
 #define sound_effect_delete function_21dcf1
+// score 204 (was 204): this round: no new in-file form moves it; the request has to reach 0x189fe0
+// in EAX or eight matched callers lose their match, and that body is in src/unknown_189010.cpp:
+// BLOCKED-BY 0x189fe0.
 // score 204 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost

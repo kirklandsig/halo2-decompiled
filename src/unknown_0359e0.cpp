@@ -109,6 +109,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // the logarithms and the minimum 102, between the two logarithms 97 (both cost 0x136140). Retail's 16-bit `mov si, cx`
 // is a register move out of ECX (the loop count needs CL), so retail's source likely used x and y directly; what
 // keeps y a register argument there is still unknown.
+// Round 461: shared doubled shift count long/short 88/100; both remaining coordinate parts
+// long, direct/long/short count 82/88/100; native short parts 87/94/91. Original
+// arithmetic, coordinate captures and full body restored; count homes and promotions remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

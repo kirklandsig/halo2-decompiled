@@ -209,6 +209,11 @@ evaluate:
 	return priority;
 }
 
+// score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
+// build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
+// index into a local before the actor lookup, the reversed compare, a named actor local and the
+// separate-exit forms compile byte-identically (73) or worse (85-87 at 272-277 bytes); holding
+// the call out of line needs a noinline declaration in src/unknown_25d690.cpp.
 // score 73 (was 73): retail calls function_25d740 out of line (ECX node) and sinks the
 // ESI/EDI saves past each early exit; our build inlines it through the prop_node_view
 // wrapper, so the blocks are laid out differently. A single exit (`result = 0x10;` in the
