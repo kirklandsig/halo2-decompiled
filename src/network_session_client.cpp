@@ -696,6 +696,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // pointers) 55; a short copy-loop index 153 (467 bytes); the summary declared after the buffers 55.
 // Round 51 (lane 16, fast with the inlined callees): the address copy as `if (n > 0) for (i = 0; i != n;
 // i++)` (the rolled-countdown form of 0x2be050) 114 (477 bytes), as a plain `for (i < n)` 114 (477 bytes).
+// Round 113 (lane 6, fast with the inlined callees): variant address and players base named before the
+// player loop 52; address pointer declared with the buffers 55; const session parameter 55; short copy index
+// 153 (467 bytes); 0x6ec80's preset stored pair plus the variant address named before the loop 46 (opening
+// scratch registers retail's, session still ESI), plus a players base 46, with a plain `for` copy 108 (477
+// bytes: retail's copy prologue, but the mask read folds into the test), with that the bit-first mask test,
+// a distinct copy index name or a mask local in the loop 108 each. Diagnostic on the 46 form: the 0x49c8
+// argument as a constant gives EBX/ESI/EDI with only the copy prologue (count spill before the leas) left, 25.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

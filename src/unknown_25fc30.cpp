@@ -461,6 +461,15 @@ void __stdcall function_25dd50(
 // (same code); the facing test with the failing arm first as an if/else 85 (839 bytes); covers
 // declared at the loop-body top 38; no cover pointer, `covers[index]` at both uses 38; the face flags
 // read through `bsp->pathfinding` 165 (844 bytes; the face address keeps `[edx + ecx + 5]`).
+// Round 36 (lane 10, fast): the cover arm as a forceinline helper (context, position, point, normal,
+// side) returning false from the failed-facing store, with early returns or one result, 18/18: the
+// failed-facing store then lands right after the cover arm as in retail (it falls into the helper's
+// return); left: face base/index, the definition load and ECX/EDX in the 0x29d7b0 pushes, covers/index
+// registers, the facing dot's j operands. Not kept (a one-caller helper). On it: dot operands swapped
+// 18, covers tested by the caller 18, `covers + index` 18, a named or parameter index 18/18, the cover
+// address before the null test 22, the dot through the cover's normal before/after the copy 98/114,
+// the trace arm as a second helper 18 (alone 38), the 0x29d7b0 test split off 18; plain `inline` is
+// not inlined 332.
 // @retail 0x25e430
 void __stdcall function_25e430(
 	long actor_index,

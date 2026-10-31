@@ -1398,6 +1398,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 450: scalar candidate transfer/final-publication increment/both 41/41/41;
 // direct priority result alone/with transfer/with increment/both 42/42/42/42;
 // shared seat-definition input 48. Scalar address copies exact-only; all original code restored.
+// Round 454: Collection entry/mid-publication record receivers 153/153, each 153 with
+// sorted candidate fields at every use; persistent collection cursor with derived short count
+// 231/231, with original bounded short count 213/213. Comparator survives; original body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2580,6 +2583,9 @@ struct s_scenario_scripting_view
 // Round 234: Actual scripting/point-set/scenario record-reference subsets 1..7, then all with typed
 // point member: 96/80/96/80/96/80/96/96. Data references begin after signed admission; original search
 // restored; actor/counter homes and delayed data observation remain.
+// Round 454: Per-use candidate point/decoded selector/both 91/94/92; their loop-owned
+// short-counter forms 87/86/90; native point reference alone/with per-use selector 80/94.
+// Selector re-decode loses wrapper 0x2a71e0 at 14; original search and wrapper restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
