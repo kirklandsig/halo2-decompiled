@@ -4027,7 +4027,9 @@ bool function_d5de0(long object_index)
 		}
 	}
 
-	changed |= function_d8b50(&object->unknownf8, &object->unknown100, (char *)&object->unknown109, (byte const *)info,
+	/* retail passes the character's vitality properties ([esp+0x14] at
+	   0xd6598, NULL for a unit no actor drives), not the damage info */
+	changed |= function_d8b50(&object->unknownf8, &object->unknown100, (char *)&object->unknown109, bounds,
 		TEST_FIELD_BIT(object->damage_flags.body_depleted));
 	if (TEST_FIELD_BIT(object->damage_flags.unknown11))
 	{
@@ -4039,7 +4041,7 @@ bool function_d5de0(long object_index)
 		return true;
 	}
 	return changed | function_d8b50(&object->unknownf4, &object->unknownfc, (char *)&object->unknown108,
-		(byte const *)info, TEST_FIELD_BIT(object->damage_flags.shield_depleted));
+		bounds, TEST_FIELD_BIT(object->damage_flags.shield_depleted));
 }
 
 /* an object's render model sections by list (unknown_181a80.cpp) */
