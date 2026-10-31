@@ -910,6 +910,11 @@ void function_25aba0(long actor_index);
 // kind-2 test inverted with the failure statements inside it 29 (identical); success leaving by `break`
 // 29 (identical); the check result in a `started` bool 29 (identical). `level = level - 1` there and a
 // `continue` after the failure statements: identical / 42 positional.
+// Lane 16 r50 (fast): source permuter, 66 tries in 600 s, best 29; the choice==g_46fbe4 arm as an if/else
+// without `continue` (the rest of the handler code in its else), stamp first 119 (the choice pop fuses as
+// retail, but the enabled failures cross-jump into a fused state-one pop again), pop first 29 (same code);
+// on the stamp-first form the kind-2 failure orders stamp/pop/state 134, state/stamp/pop 119,
+// state/pop/stamp 133, pop/stamp/state 134, pop/state/stamp 133.
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {

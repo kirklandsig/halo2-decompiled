@@ -518,6 +518,11 @@ bool function_7af40(s_type_99af70 const *address);
 // pre-increment 32 (same code). Env only: the three stores through a struct-initialized endpoint copied
 // to `*connection->endpoint` 92 instructions (a stack temporary); the copy's terminator through its
 // returned destination 89.
+// Round 36 (lane 10, fast with 0xb40b0), on retail's endpoint reads: the copy's source read once through
+// the own parameter's address 111 (the path load still comes before both sunk stores); counter, copy,
+// state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
+// the return); the destination named before the counter 111; the path read into a named source between
+// the counter and the state store 111. VC splits the counter whenever any store precedes the call.
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {

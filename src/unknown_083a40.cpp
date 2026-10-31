@@ -649,6 +649,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // first); `++*count;` as its own statement at the four second-loop sites 32 (same code); both 49; the
 // swap callee as (collection, player, update, other) with the key pointer first 44, with the count
 // statements 36.
+// Round 36 (lane 10, fast): one function-scope update pointer for both loops 32; `slot`/`occupied` at
+// function scope 32; the occupied record through its own scoped pointer 32, the last record likewise 32,
+// both 32 (all same code). Retail loads `updates` last in the swap and occupied set-ups and groups
+// (collection + offset) first in the occupied key, as if that sum were treated as loop-invariant.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

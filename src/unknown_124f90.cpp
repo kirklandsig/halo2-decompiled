@@ -2781,6 +2781,19 @@ static inline short sound_voice_find_available_channel(char type)
 // result false after the search, true on success, `if (!result)` failure 132; bool result with the search
 // index re-tested after a break loop 104 (retail's found-path-after-loop layout: VC places a loop's break
 // target after the function's other blocks). Original byte-result body restored.
+// Lane 16 r50 (fast): bool result with an `assigned` flag tested before the failure calls 123 (flag in a
+// stack byte); the defaults before `if (channel != NONE) { buffer selection }` and then a failure-first
+// `if (channel == NONE || (buffer_index == NONE && (priority & 2 || requested != NONE))) { failure } else
+// { commit }`: byte result 151, bool result 126 (435 B: retail's block order and `xor bl, bl ... mov al, bl`
+// failure, but NONE hoisted into EBP at entry and the not-found exit unthreaded), with `return true` after
+// the commit 123; the defaults assigned inside the channel block 113 (threaded, failure back after the
+// loop), with `return true` 139; only the driver default before the channel test 107 (430 B, retail's
+// layout, `or ebp, -1` shared with the channel compare, but the not-found exit unthreaded and the channel
+// spilled); that with the driver default before the search 135; the search returning from its loop on
+// those 141/113; the kept form with the driver default before the channel test 132; the failure calls
+// written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
+// the not-found exit past a block that sets the driver default, which no form here reproduces.
+// A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

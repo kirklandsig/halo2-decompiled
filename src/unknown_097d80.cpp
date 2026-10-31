@@ -139,6 +139,10 @@ struct c_aggregate : c_child
 // frame (produced, loop 2's cursor and loop 3's count in one slot) and leaves request in EBP (retail
 // EBX) and the end bound loaded first; the starts store first, nested tests, a source copy, the
 // bounds declared end first, a block-pointer walk and a `!error` gate don't move either there.
+// Lane 16 r50 (fast): the cleanup item test as a declaration in the condition 89 (368 B); blocks
+// declared after starts/error/total 45; one function-scope index for all three loops 45 (frame
+// 0x8024); the get_info output declared at the inner loop top 45; the cleanup through blocks[k]
+// directly 45. BLOCKED by the build flag (frame 0x8020 needs a non-LTCG object).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
