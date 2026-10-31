@@ -445,6 +445,12 @@ struct s_1f8a70_actor
 // unit-mode test 333, both 432, `result = false;` inside the first exit with no initializer 270 (same
 // code), `return false;` there 270; the fix with the real default only 380; t2 with the returned test
 // 436. Retail's first exit keeps the constant in BL; every form here folds it to `xor al, al`.
+// Round 53 (value bug confirmed from retail's jump table: case 3 jumps into case 5's tail, which also sets
+// route_mode = 1): the early exits as one if/else-if chain to a shared `return result;` with `result = true`
+// in the true paths 430, with the fix 440; that chain with no initializer and `result = false;` in the first
+// branch 401, with the fix 406 (the first exit becomes retail's `xor bl, bl` / `mov al, bl` exactly, but the
+// true paths then return through BL); only the first branch sharing the failure return 429/437 (folded), the
+// success return 426/432 (EDI pushed before the first test); the fix alone 270.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

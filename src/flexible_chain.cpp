@@ -313,6 +313,8 @@ void __stdcall function_1160c0(real dt)
 // Round 242: Long/word/signed-byte/byte node ordinals 290/180/282/282;
 // with invariant reciprocal 296/190/279/279. Original short induction,
 // reciprocal scope and complete body restored; segment/previous/axis homes remain.
+// Round 53: the axis j/k (or all three) scaled with `*=` 179/179 (same code); the segment index in a short
+// local 290; `definition->segments + (...)` 179; length declared then assigned 179.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
