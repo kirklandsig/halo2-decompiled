@@ -29,6 +29,9 @@ PRIVATE byte *update_object_0a6430(long index)
 // local 16; final declarations before assignments 16; count declared at function scope 16;
 // count initialized at function scope 184; final count comparison reversed 17; second word
 // read directly at the call 16. Opening body restored.
+// Round 28: getter as an s_object_header array element 16; a named short level in the 0x100
+// block 16; getter plain inline 16; 0x200 compare count-first 17; the shadowing definition
+// locals renamed 16.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

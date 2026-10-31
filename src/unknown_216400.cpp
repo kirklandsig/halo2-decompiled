@@ -398,6 +398,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // `room` local: 54 each (654 bytes: retail's `lea edx, [eax + 1]; shl eax, 6; mov [ecx], edx; lea edi,
 // [eax + ecx + 4]` tail with the list in ECX, but the bool threads into `cmp; je`, count EAX, no copy);
 // a bool append helper over the room/index helpers 51 (setne/test, bool CL, list EDX, count EAX).
+// Round 138 (lane 4): a bool append helper (`bool result = list->count != 4096;`, then `long index =
+// list->count; list->count = index + 1;` and the memcpy into `entries[index]`) 51 (setne/test as retail, but
+// count EAX, result CL, list EDX); that with `long index = list->count++;` 51; the pointer helper with a named
+// `room` test and the index copy 49; the pointer helper as a list member function (`list->new_entry()`) 20 (same
+// code); the bool helper as a list member function 51.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

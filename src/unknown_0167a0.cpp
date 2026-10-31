@@ -1427,6 +1427,12 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // (not counted): word/short/bitfield/struct-copy locals, `!= 0`, `(x >> 8) & 8` and casts all fold to the
 // memory test.
 // Review: the remapped arm's one-use `index` local written at the call instead, 130 (same).
+// Round 138 (lane 4; a one-file LTCG harness of this file plus unknown_131e50.cpp reproduces it): the rescale
+// test through an inline rescale helper taking the descriptor 130; through an inline descriptor getter 130; a
+// named masked word `word rescale = *(word const *)entry & 0x800;` 130; the word read before the 0x1b2c0 call
+// and tested after it 193 (spilled); a bool read before the call 247. Harness only: `!= 0`/`== 0x800` tests,
+// a short read, a word cast, the call result kept 130 each. Every live-across-call form spills to the stack;
+// retail's unfolded `mov ax` needs a second use of the reloaded word between the two calls (not found).
 // Round 27 (m3 lane 15, plain; `--fast` fails on this file; 130 since round 115, 267 before): retail's
 // AX is dead after its test and its store reloads the word after the pack call, so the test's load must
 // have a second use the optimizer drops (retail's entry shows the same unfolded form for `remapping`, which has two real uses).
