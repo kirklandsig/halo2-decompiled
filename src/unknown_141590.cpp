@@ -132,6 +132,7 @@ static inline void quaternion_transform_vector(
 // 237 (identical - VC commutes the products); the axis components as named locals 344; the scale before the
 // crosses 325.
 // score 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Lane 6 r85: helper with `s` computed first 302 (s and the doubled scalar hoisted above the matrix copy,
 // the doubled scalar spilled twice as retail, frame 0x20, constants one xmm lower); with vector-first
 // products 302 (identical code); with plain half-angle locals 291; doubled scalar after the cross 301;
@@ -211,6 +212,10 @@ static inline void quaternion_transform_vector(
 // Round 242: Complete shared scale/add-scaled output pipeline with staged-cross/shared-dot/
 // independent-half subsets 0..7 363/363/358/361/355/356/349/350. Native half storage recovers frame
 // 0x24 but grows code; original helper and body restored, quaternion/cross spill overlap remains.
+// Round 255: shared real construction scale with independent-half/scalar-cross/staged-axis masks
+// 0..7 237/291/281/293/200/267/265/252. Staged axis plus real scale kept: 200 plain,
+// 1321/1317 bytes. Five further coefficient orders 256/205/205/257/260; scalar before
+// cross/ratio/scale 310/200/200. Frame and quaternion/cross spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -237,13 +242,9 @@ void matrix4x3_rotation_between_vectors(
 
 	if (sine != 0.f)
 	{
-		rotation.i = arg_5f338b->j * arg_bc44c6->k - arg_5f338b->k * arg_bc44c6->j;
-		rotation.j = arg_5f338b->k * arg_bc44c6->i - arg_5f338b->i * arg_bc44c6->k;
-		rotation.k = arg_5f338b->i * arg_bc44c6->j - arg_5f338b->j * arg_bc44c6->i;
+		cross3f_staged(arg_5f338b, arg_bc44c6, (vector3f *)&rotation);
 		real scale = state.sine_half / sine;
-		rotation.i *= scale;
-		rotation.j *= scale;
-		rotation.k *= scale;
+		vector3f_scale((vector3f *)&rotation, scale, (vector3f *)&rotation);
 		rotation.w = state.cosine_half;
 	}
 	else if (cosine < 0.f)
@@ -839,6 +840,9 @@ void function_143250(
 // point increment rejected) 1765. Keep t06 producer-ready column 5, plain-confirmed 1781 to 1766
 // at exact 10773-byte retail length; all 11489 baseline matches preserved. Combined columns 0/5 at
 // 1765 add only one point and are rejected.
+// Round 255: producer-ready retained columns 1/5, 2/5, 3/5, 4/5, 5/6, 1/4/5, 2/4/5,
+// 4/5/6 score 1772/1768/1768/1772/1771/1802/1801/1783. Original publication graph restored;
+// frame 0x314/0x300, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
