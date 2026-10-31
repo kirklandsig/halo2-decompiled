@@ -634,18 +634,13 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 7 (was 12): the first dot product is written out with its i term taking the projection
-// first and its j and k terms taking the path point first, the arrangement retail's own code
-// has and the shared helper's uniform order cannot express; the second dot product stays on the
-// helper; left: the compiler schedules the first dot's terms as k,i,j where retail has k,j,i,
-// keeps the projection's i component in the register where retail has the path's, swaps the
-// second dot's i term's operands, and leaves the path base in the dead address computation
-// where retail leaves the point's address.
-// score 10 (was 12): the first dot product now takes the projection vector as its first operand,
-// which puts the i term's product in the register as retail has it; left: the two dot products
-// evaluate their j and k terms in the opposite order (ours j,k / k,j; retail k,j / j,k) and the
+// score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
+// products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
 // second dot's i term keeps the projection vector in the register where retail has the point.
-// score 12 (was 12): layout, frame and code now as retail; left: both dot products evaluate their
+// MiniMax G (10-31): the first dot written out by hand (i term projection-first, j and k terms
+// point-first, an order the helper cannot express) 7: an existing helper's body by hand, kept only
+// with a match; both dots projection-first 10 (same code).
+// Earlier 12: layout, frame and code now as retail; left: both dot products evaluate their
 // Frame and block layout agree; dot-product term/operand order remains.
 // Earlier: layout, frame and code now as retail; left: both dot products evaluate their
 // y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
@@ -783,7 +778,7 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 		projection_direction = &direction;
 	if (projection_direction)
 	{
-		real remaining = (projection_direction->k * path->field_30[path->field_2e].point.point.z + path->field_30[path->field_2e].point.point.y * projection_direction->j + projection_direction->i * path->field_30[path->field_2e].point.point.x) - dot3f((vector3f const *)point, projection_direction);
+		real remaining = dot3f(projection_direction, (vector3f *)&path->field_30[path->field_2e].point.point) - dot3f((vector3f const *)point, projection_direction);
 		if (remaining < *(real *)(definition + 4) * 1.2f)
 			reached = true;
 	}
