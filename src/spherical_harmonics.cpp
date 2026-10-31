@@ -321,6 +321,11 @@
 // 56 (fixes +0x50); with the cubic statements in the 9, 10, 12, 11, 13 order 56, plus xx_3yy after result[12] 56;
 // result[11] staged as `zz5_1 * band3_21`, `*= inverse_sqrt_pi`, `*= y` 69 at retail's 660 bytes; both cubic X/Y
 // accumulators from inverse_sqrt_pi first 139 (653 bytes).
+// Round 105 (m3 lane 8, fast; 0x146020 matched in each): the direction components declared in retail's
+// load order y, z, x 124 at retail's 660 bytes (xmm colouring follows the declarations: y xmm6, z xmm1,
+// x xmm3), reversed z, y, x 124 (660 bytes); with the named float sqrt(3) root on y, z, x 122 (660
+// bytes); `real const sqrt15` 59 (same code); result[13] with x first 59 (same code, the product
+// still shared with result[11]).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

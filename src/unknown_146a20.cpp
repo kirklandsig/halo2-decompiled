@@ -157,6 +157,15 @@ bool g_47f05b;
 // Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
 // buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
 // named const 34 (same code); the pool address named after the first construction 34 (same code).
+// Round 105 (lane 8, fast with 0x146b80/0x22c3e0/0x146ac0): retail 0x146b80 and 0x146e30 build the
+// same class at g_479888 + an offset and drop the base store; only here (object at g_479888 itself,
+// buffer at this + 0x30) is it kept. Header forms: the abstract array value-initialised with NONE set
+// in the body 42 (0x146b80 21, 0x22c3e0 219); the fixed base storing buffer, count, size 33 (Round
+// 103's count-before-size form re-measured); the abstract loop zeroing all four slots, then NONE 21
+// (144 bytes; the plain dead zero store at +0x14 survives the loop, but the vtable store is still
+// dropped; 0x146b80 15, 0x22c3e0 207). Diagnostics (not kept): the pool constructed first 52; the
+// pool construction removed 75: the base store is dropped either way, so nothing after the
+// construction keeps it.
 // @retail 0x146a20
 void function_146a20(void)
 {

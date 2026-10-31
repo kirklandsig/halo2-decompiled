@@ -233,6 +233,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // EDX, so the start arrives in EDX); the copy declared before `result` 28 (0xb5f10 6); the copy with a
 // plain string parameter 41 (104 bytes, 0xb5f10 35); the copy taken inside the sign tests 28 (0xb5f10 6);
 // copies of both start and count 51 (92 bytes, 0xb5f10 104).
+// Round 105 (lane 8, fast with 0xb5f10/0xb61d0): the count-first `string + start` lead re-measured 39
+// (start passed in EDI, the sum in a new EAX temp; 0xb5f10 35); count tested first with `start +=
+// string` before the count increment 36 (counter ECX as retail, but start in EDX, walk EDI; 0xb5f10
+// 6); with a plain string parameter: that 49 (92 bytes), start tested first with the add before the
+// increment 49 (92 bytes), count first with `string + start` 46 (103 bytes); the add reading the
+// plain parameter once through its own address (volatile) before the increment, count first or start
+// first, 36/36 (0xb5f10 6 each). Moving the add ahead of the clamp always passes start in EDX.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -560,6 +567,13 @@ bool function_7af40(s_type_99af70 const *address);
 // into the clearing store (`flags = flag ? 0x40 : 0`) with counter, copy, state 32 (243 bytes; the counter
 // still splits, into ECX); that with the open call re-reading `connection->endpoint` 40 (239 bytes), and
 // with counter, state, copy 104 (258 bytes, 0xb40b0 61).
+// Round 105 (lane 8, fast with 0xb40b0/0xb5f10): the exported csstrncpy (src/game_state_lifecycle.cpp)
+// for the copy 37 (240 bytes); that with retail's endpoint reads fast 24 (244 bytes, call unresolved in
+// the reduced image) but plain 111 (LTCG inlines it, the counter splits into EBX, 0xb40b0 61); with the
+// copy between the counter and the state store fast 25 (unresolved call, not confirmed); the state
+// store and the copy in an inline member called after the counter, on retail's reads 111 (0xb40b0 61),
+// on the current endpoint local 32 (same code). Retail's own endpoint initializer (0xb4d50) keeps its
+// null test, so the three clears here are not that helper.
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {
