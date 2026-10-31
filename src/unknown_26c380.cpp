@@ -634,6 +634,13 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
 short function_210310(long object_index, long a);
 bool function_210690(short output_index, point3f const *point, point3f *out);
 
+// score 28 (was 28): retail computes start before direction, sets the NONE result before the call
+// setup and keeps point on the stack. Round 61: with the parameters as (up, point, output, collision)
+// (point then needs no `&point` read to stay on the stack), start first and result declared first it
+// matches (fast), and so does 0x1c19b0, every matched caller kept: BLOCKED-BY 0x270400 (two call lines
+// in contributor code). With this order: point read directly 35, plus start first 2. With this
+// signature: start and result first 37; that through one `point3f const *` read of `&point` 37;
+// point read directly 28 here but five matched callers lose their argument setup.
 // @retail 0x26d100
 long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
 {
