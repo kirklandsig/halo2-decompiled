@@ -150,6 +150,8 @@ bool function_25d9b0(long prop_index);
 // retail's exact zero epilogue, but priority is spilled to the argument slot and the state kept in ESI, the
 // other way from retail), with priority initialized at its declaration 91, also without the fallback's own
 // zero store 91, with a long priority 91, with the state declared at the top 91.
+// Round 465: default-first/branch-complete property acquisition result, short/long priority,
+// existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
