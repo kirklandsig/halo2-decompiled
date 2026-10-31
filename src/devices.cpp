@@ -718,6 +718,15 @@ struct s_device_machine_view
 // with masks 105 each (pushed ESI); the zero store added 105.
 // Round 456: Success constructed in recognized cases, at tail/entry, crossed with native group reference and explicit velocity zero:
 // 128/124/128/124/184/185/184/185. Original executable body and supporting declarations restored.
+// Round 33 (lane 13; one-file LTCG harness, base 32 = 34): on the masks + zero-store form (106, the
+// pointer in a pushed ESI): type and group-index tests nested 106; a long machine flags local 106; the
+// value declared before the result 108; the machine test as a ternary 106; the group index in a long
+// local inside the type test 106; a `word const &` flags reference 106; the group pointer or the word
+// flags declared at function scope 106/106; on the lane S form with the zero store, word/byte bits
+// locals 105/105 (a byte bits local loads `mov al, [eax+2]` into the pointer's EAX: only the 16-bit
+// load refuses it). Diagnostics: no machine test 108 (the table base then takes ESI), the machine
+// test after the group test 113. Matched 0x1bb1d0 and 0x1c7450 do load 16 bits into a pointer's own
+// register across a branch, so the conflict is not the load width alone.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -993,6 +1002,12 @@ bool function_108530(long device_index, long name)
 // register; 0x108670 13 -> 28).
 // Round 456: Parallel half-ramp distance contributions, phase velocity changes and squared-speed differences named at their producers, seven subsets and all with field-owned cruise velocity:
 // 121/121/121/121/121/121/121/134. Original executable body and supporting declarations restored.
+// Round 33 (lane 13; LTCG harness with both callers, listing equal to the full build's): ours keeps the
+// ramp-down time in xmm1 from its zero clamp to the half-time product, retail only in its stack slot.
+// A `real const *` to the ramp-down time read once at the zero clamp, the min clamp, the cruise time,
+// the half time or the deceleration test, and `(void)&` of it: 121 each (identical code, the address
+// folds away); the inner block's locals, or position/delta/distance, or both, declared uninitialised
+// at the top: 121 each (identical code).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1356,9 +1371,9 @@ bool function_0b6760(s_index_pair const *pair);
 
 // score 294 (was 294): our frame is 0x1c and retail's 0x20, and the index, header, state and result
 // homes still differ; the group path reloads the definition pointer from three base registers.
-// score 294 (was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
+// Earlier (294, was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
 // homes still differ, and the group path reloads the definition pointer from three base registers.
-// score 294 (was 294): Frame 0x1c versus 0x20 and index/header/state/result homes remain; the
+// Earlier (294, was 294): Frame 0x1c versus 0x20 and index/header/state/result homes remain; the
 // group path still reloads the definition pointer from three base registers and adds the two
 // products in the opposite order.
 // Earlier: Frame 0x1c versus 0x20 and index/header/state/result homes remain; native
@@ -1444,6 +1459,13 @@ bool function_0b6760(s_index_pair const *pair);
 // Round 229: complete tag-table observations with device/entry-key reads, inherited/ordinary
 // index and ordinary/result-first lifetime, all eight 442/370/374/412/442/370/374/412.
 // Original saved pointer, qualifiers and complete body restored.
+// Round 33 (lane 13; closure LTCG harness, base listing equal to the full build's, positional 260 =
+// 294): plain index 372 (1478 bytes, frame 0x20); plain index with both event ids as selects between
+// two field reads 353 (1488 bytes, retail's 394 instructions; the callee-saved registers permuted:
+// group pointer EBX, velocity pointer ESI, index EDI, where retail has ESI, EBX, ESI, and the result in
+// DL where retail keeps a stack byte); on that, the result declared first 353, the state test before
+// the result and definition 352, the definition before the state and result 348. Retail compares the
+// state offset in memory and re-reads it with movsx (no CSE); ours loads it once.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
