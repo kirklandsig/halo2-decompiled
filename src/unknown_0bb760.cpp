@@ -466,6 +466,12 @@ void function_3dd10(long object_index, bool force);
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
 // reloaded at the not-found exit) and the 1.0/0.0 load order.
+// Round 102 (lane 7): a one-file LTCG harness (this file plus the HSV and 0x3dd10 files) reproduces 84
+// exactly. First scan as `for (j = 0; j < choice_count; ++j)` 637 (1310 bytes, unrolled); bound read as
+// entry->count 646; through a scan helper writing last/weight/mask through pointers, plain inline 354
+// (called, 952 bytes), __forceinline 637, with entry->count 646; one `j` shared by both loops 637, with
+// the `!=` scan 84; a walking choice pointer 563 (1245 bytes); the mask set through a SET_FLAG macro 637.
+// Real --fast agrees for the `<` scan, shared j, walking pointer, forceinline helper and SET_FLAG forms.
 // Round 54: moving the inverse into the found branch gives retail's 1.0/0.0 load order and the
 // found-path subtraction (132f), but our not-found exit then rejoins the block's 1.0 load instead
 // of reloading it, so the tail sits 8 bytes short of retail's and every later branch target
