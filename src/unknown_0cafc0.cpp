@@ -242,6 +242,9 @@ point3f *function_b9ef0(long object_index, point3f *result)
 // 2/2/2/2/2/2/2/2; all restored.
 // Round 400: If-else crouch, staged complement and complete staged weights in masks 1-7, then
 // complete height scope: 2/2/2/2/2/2/2/2. Original producers and arithmetic restored.
+// Round 41: scale-first product 2; named height sum 2; scale local 2; `z = product + z` 2; crouch declared
+// at function scope 2. Retail's biped copy of this blend (0xe5d50) loads the crouching height before the 1.0
+// constant, as ours does here; 1.0 is used once in 0xcafc0, so it is not a shared value.
 // @retail 0xcafc0
 void function_cafc0(long unit_index, point3f *position)
 {
