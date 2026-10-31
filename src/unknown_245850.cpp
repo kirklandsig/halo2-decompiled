@@ -42,6 +42,15 @@ struct s_245850
 // retail's point->z row but move the loads (17-18); all three point rows ungrouped give
 // point->z but not x (21, real 26); point copy 139; scale local 126; named transformed
 // normal 59. The pragma removed lets LTCG inline 0x14a300 (160).
+// Round 28: every 0x14a300 call site loads the index with `mov dx` where retail sign-extends, so
+// its index is a long in retail (0x14a300 still matches with one); a long index (harness, all
+// declarations) gives the movsx but rotates the point registers 107; with it a flat x row 13, the
+// z row in 120 shapes 13, the k row in 12 shapes 13, k,i,j plane values 22 (best d sum 18), other
+// row orders 31, z,y,x point values 17. Real builds: flat x row 114 (575 bytes); z,y,x point
+// values with the y row parenthesised left to right 14; that y row alone 18; k,i,j plane values
+// 23; compound `*=` scale 14. Explicit parentheses change the code (fully parenthesised x rows
+// 103+); all 264 spellings of the z row 14-96, the 18 of the k row 14-20, and the 264 of the x
+// row with z,y,x point values and that y row 14-18.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

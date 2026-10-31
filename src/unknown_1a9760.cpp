@@ -62,6 +62,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // length xmm7; ours 0.5 in xmm0, the components in xmm5/xmm2/xmm3, the length in xmm1. local_3 declared
 // before local_2 / at the top 104/104; the trace result, local_5 with local_6, and local_8 declared at the
 // top 104/104/104 (all the same code).
+// Round 251: Native direction input/selection/output memcpy, seven subsets, 104 each; complete memmove 233.
+// Original body and include restored; half/offset XMM allocation and x87/SSE projection scheduling remain.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

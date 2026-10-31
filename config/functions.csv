@@ -2822,7 +2822,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000c3110,42,game,speed,a16 pad,,,,src/unknown_0bffa0.cpp,matched
 000c3140,212,game,speed,a16 pad,,,,src/unknown_0bffa0.cpp,matched
 000c3220,58,game,speed,a16 pad,,,001cae40,src/unknown_0bffa0.cpp,matched
-000c3260,212,game,speed,a16 pad,,,0016ba40 0016bc00 001cae40,src/unknown_0bffa0.cpp,todo
+000c3260,212,game,speed,a16 pad,,,0016ba40 0016bc00 001cae40,src/unknown_0bffa0.cpp,matched
 000c3340,607,game,speed,a16 pad,,,0002dba0 00031520 0003e9c0 00042850 000b8c40 000b8d30 001662a1,src/unknown_0bffa0.cpp,todo
 000c35a0,820,game,speed,a16 pad,,,00030bf0 000c17f0,src/unknown_0bffa0.cpp,matched
 000c38e0,104,game,speed,a16 pad,,,0016bc00,src/unknown_0bffa0.cpp,matched
