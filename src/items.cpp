@@ -400,24 +400,27 @@ inline real item_real_random_range(real lower, real upper)
 	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
 }
 
-// score 2 (was 6): the range helper's product written before the add (the
-// product and the lower bound added, not the lower bound and the product) puts
-// the x87 sequence in retail's order. Left: the last add still comes before the
-// owner's third field load, where retail has it after.
-// score 6 (was 6): the three x87 instructions around the effect call's argument
+// score 2 (was 2): frame 0x14 and retail length agree; the final x87 add
+// follows the third owner-field load, where retail puts it before that load.
+// Earlier: writing the product before the lower bound fixed the other x87
+// scheduling differences.
+// Earlier 6 (was 6): the three x87 instructions around the effect call's argument
 // pushes are still one slot early here (the fxch st(1) after the first push 0,
 // the delay spill before the tag-index load and the fstp st(0) before the push
 // eax); this round found no lower form of the argument setup
-// score 6 (was 6): the argument setup still keeps the fxch st(1) after the first
+// Earlier 6 (was 6): the argument setup still keeps the fxch st(1) after the first
 // push 0, the delay spill before the tag-index load and the fstp st(0) before the
 // push eax; this round added no lower form (the owner's field order, the delay
 // expression's spelling and the source permuter leave the three x87
 // instructions where they are)
-// score 6 (was 6): the effect call's argument setup has three x87
+// Earlier 6 (was 6): the effect call's argument setup has three x87
 // instructions one slot earlier in ours: the fxch st(1) before the first push 0,
 // the delay spill before the tag-index load and the fstp st(0) before the push
 // eax; the x87 sequence, the argument registers and the owner struct's stores
 // all match
+// Product-first range span/sample/offset named subsets 1..7: 2/76/76/61/61/61/61;
+// scalar offset accumulator 61. Original range producer and complete body restored;
+// frame 0x14 and last add/third owner-field load scheduling remain.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -1429,6 +1432,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // +0xf; frame 0xac, release tail and event homes remain. Original names, declarations, Boolean
 // accumulator, impulse helper and complete body restored.
 // Round 46: Captured-spin logical OR previous-first/spin-first/conditional 185/188/202; byte bitwise/logical accumulation 159/182; long bitwise/logical 178/205; entry bool with logical OR 186. Original body restored.
+// Direct native event origin/position getter output, native/library parallel copy,
+// owner/scalar publication before/after getter: all eight 227 (921 bytes, frame 0xa0).
+// Original separate point, returned receiver, initializer order and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

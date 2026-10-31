@@ -1426,6 +1426,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // recover frame 0x28 and first +8, but argument homes remain. All leave the caller 441/442 versus
 // 364; plain confirms 508/442, a target gain of 21 against caller regression 78. Original scan,
 // input observations, math, helpers, interfaces and complete body restored.
+// Complete reused scalar normal captures ijk/ikj/jik/jki/kij/kji:
+// 555/555/553/553/553/553; immutable/native component-publication 555/555.
+// Frame remains 0x2c; every form puts caller at 442 versus 364. Original
+// input observations, native vector, length expression and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2053,6 +2057,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 44: complete default normal/base/lightmap initializations after material, individually/
 // paired/all, then all after native input captures 761/761/761/759/759/759/759/759.
 // Original default observations and body restored; frame 0x98/0x90 and homes remain.
+// Reused magnitude results before RGB construction, after pin/before packing and after
+// packed publication, base/dynamic or dynamic/base: 628/628/622/622/622/622;
+// base-only/dynamic-only before RGB 614/628. Frames 0x8c versus 0x90; original
+// producer phases, calls, complete body and matched caller controls restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
