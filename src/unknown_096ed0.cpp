@@ -209,6 +209,9 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // kind/z_type and the count renamed 170 each; a `short` pending index 198; the active owner in a
 // loop-local 170; the pending size sum before the priority test 170. On the cursor form the cursor
 // stepped in the `for` increment 132 (823 B).
+// Round 135 (lane 4, fast with 0x89d20): `blocked` as a long 246 (821 bytes); the pending `blocked` declared
+// after the chain query 61; the pending item locals declared before the loop 55 (same code); the active cursor
+// non-const 55 (same code); the pending priority/size zeroed before `type = 3` and the chain query 65.
 // Round 33 (m3 lane 11), fast with 0x89d20, on the cursor form: `type = 4` after the active chain
 // query 58; `type = 3` after the pending chain query 60; the active cursor stepped in its own
 // statement 61; the active item priority declared before its loop 55; the active size zeroed before

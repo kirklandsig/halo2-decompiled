@@ -990,6 +990,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
+// MiniMax C (10-31): flag OR through playing->loop 13 again (mixed access; not kept).
 // score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
 // byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
 // Earlier: Float/result/random spill homes and initialization scheduling differ.
@@ -1223,6 +1224,9 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // iterator fields index-first, iterator/both at function scope 24 each. Compile-only with a
 // forced-inline 0x126df0 copy gives retail's index EDI/element ESI when the count gets EBX;
 // with the first index in EBX (LTCG) ours swaps them.
+// Round 57: aggregate iterator initialization 24; first-initialized index 24; iterator pointer 50;
+// index declared after initialization 24; first-next while/do-while 64/64; current-index rename 24;
+// named state predicate 24 (one-use local, restored). Plain checks throughout; original body restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

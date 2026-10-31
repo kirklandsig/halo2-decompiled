@@ -70,6 +70,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// MiniMax E run 26: score 629 (was 629): retail keeps the success flag in memory and the slot view in EDI and never saves EBX, ours keeps the flag in BL and pushes EBX, so every stack home is four bytes off; hoisting the FLT_MAX minimum and the point copy to function scope reproduces the prologue but shortens the body (635 with the flag as a long, 651 combined), and the rotation's cross terms and the final product order still differ.
 // score 629 (was 629): Frame 0x108 agrees; early EBX/BL success, hit-byte and basis/rotation homes remain.
 // MiniMax H run 14: the cross helper 0x2922b1 with its sign flipped and the operands swapped at
 // all four calls (same results) 622; under the keep bar, not kept.
