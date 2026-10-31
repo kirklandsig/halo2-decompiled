@@ -416,6 +416,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // caches the last argument), with the flagged arm first 75; on the long result, `result = false` before the
 // index clear 50, the object read through a one-use header pointer 49, the header test indexed by a (word)
 // cast 54 (182 bytes).
+// Round 52 (lane 16, fast), all on the early bool result: `entity->object_index = object_index;` repeated at the
+// top of the unflagged arm 42 (retail's prologue, no EBP cache of the last argument, retail's EBP window and data
+// reload; the index arithmetic stays shared as `shl ecx, 2` and the extra store remains), with the object read
+// through the entity's stored index 42 (same code: the stored value is forwarded); the flagged index cleared, then
+// published and retested 68 (retail's object read, join unthreaded); the creation result stored in the entity
+// and read back 77; one header pointer for the test and the object 77; `result = true` first in the arm 72
+// (176 bytes, result spilled); an unsigned object index 77. Retail's object read needs both the data reload and
+// a recomputed index, as a join present at CSE time and threaded later would give.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

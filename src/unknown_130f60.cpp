@@ -219,6 +219,15 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // angles copy the frame drops to 0x28 (retail 0x30). On the kept form (fast 336): the weight
 // clamped in its own statement 406 (1845 bytes); `remaining = remaining * (1 - weight)` 337; the
 // reciprocal written inline in each row 336 (same code).
+// Round 52 (lane 16; fast control 336, retail's ESI shrink-wrap there): the body's own differences are the
+// reciprocal scale's j row (retail loads j then multiplies by the reciprocal; ours copies the reciprocal; any
+// spelling, row order, vector3f_scale, normalize_inline: same) and the loop accumulations' products (retail
+// colour * weight for red, weight * colour for green and blue; ours colour first everywhere; helper body orders,
+// weight-first products, a clamped local, if/else clamp, reference/scalar/weight-first helper parameters: same).
+// The products follow the symbol set: reading the angles from the local copy everywhere gives retail's products
+// compile-only but changes the angle reads (359 fast); the existing direction_from_angles on the copied angles
+// with yaw turned and pitch zeroed 371, on the source angles and the turned copy 334 (1885 bytes, the x87 order
+// differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
