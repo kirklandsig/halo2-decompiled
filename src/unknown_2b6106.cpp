@@ -658,7 +658,8 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 557 (was 557): retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
+// score 530 (was 557): Frame 0x864 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain.
+// Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
 // ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
 // small locals differently.
 // Frame 0x85c agrees; EBP bias 0x70, flags/time/state homes and status-helper transport remain.
@@ -748,6 +749,15 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // widget array declared first, six field locals, the status call removed, the body cut after the widget loop or
 // at any later block. Retail's other /O1 EBP frames bias only when a slot lands in the unbiased [-0xf0,-0x81]
 // window (0x2b6208, 0x2b4059, 0x2b0565), which 0x2b65b8 and 0x2b642e do not have, so the trigger is not that.
+// Round 215: player score cursor with long ordinal 557; team score cursor with long ordinal 557;
+// both score cursors with long ordinals 557; player score cursor with short ordinal and retail-
+// sized frame 562; team score cursor with short ordinal 549; both score cursors with short
+// ordinals 557; player score cursor with real pointer difference bound 544; team score cursor with
+// real array end 539; signed-short team ordinal alone on the current search/list graph 549; team
+// score cursor with unsigned-word ordinal 549; pointer-difference player scan with array-end team
+// scan 530. Keep t11 combined actual player/team score-array scans, plain-confirmed 557 to 530 at
+// 1991/2041 bytes; all 11489 baseline matches preserved. No arithmetic, input observation or call
+// tuple changes.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
@@ -966,19 +976,25 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                         long score;
                         if (!details[0xa74])
                         {
-                            for (long j = 0; j < *(short *)(details + 0xa80); j++)
-                                if (j != i && *(long *)(details + 0xf44 + j * 4) > best)
-                                    best = *(long *)(details + 0xf44 + j * 4);
+                            long const *player_scores = (long const *)(details + 0xf44);
+                            for (long const *player_cursor = player_scores;
+                                player_cursor - player_scores < *(short *)(details + 0xa80); ++player_cursor)
+                                if (player_cursor != player_scores + i && *player_cursor > best)
+                                    best = *player_cursor;
                             ((c_widget *)this)->function_230134(0xc00027a, format);
                             score = *(long *)(details + 0xf44 + i * 4);
                         }
                         else
                         {
                             long team = *(short *)(details + 0xf84 + i * 2);
-                            for (long j = 0; j < 8; j++)
-                                if ((*(long *)(details + 0x10a4) & (1 << j)) && j != team &&
-                                    *(long *)(details + 0x10a8 + j * 4) > best)
-                                    best = *(long *)(details + 0x10a8 + j * 4);
+                            long const *team_scores = (long const *)(details + 0x10a8);
+                            for (long const *team_cursor = team_scores; team_cursor < team_scores + 8; ++team_cursor)
+                            {
+                                long team_index = team_cursor - team_scores;
+                                if ((*(long *)(details + 0x10a4) & (1 << team_index)) && team_index != team &&
+                                    *team_cursor > best)
+                                    best = *team_cursor;
+                            }
                             ((c_widget *)this)->function_230134(0xa00027b, format);
                             score = *(long *)(details + 0x10a8 + team * 4);
                         }

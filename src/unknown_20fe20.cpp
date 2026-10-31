@@ -9,6 +9,7 @@
 #include "object_iterator.h"
 #include "unknown_1428b0.h"
 #include "unknown_20fe20.h"
+#include "unknown_20f1a3.h"
 #include "unknown_11cc90.h"
 #include "vector_angles.h"
 #include "slot_handler.h"
@@ -193,19 +194,6 @@ long function_20f960(long index, s_audio_priority_table *table, bool *expired)
 		*expired = value;
 	}
 	return result;
-}
-
-PRIVATE __forceinline long function_20f1a3(byte const *arg_0, real arg_1)
-{
-    long local_0 = *(long const *)(arg_0 + 8);
-    real local_1 = *(short const *)(arg_0 + 2) * arg_1;
-    long local_2;
-    __asm
-    {
-        fld local_1
-        fistp local_2
-    }
-    return local_0 + local_2;
 }
 
 // @retail 0x20f1a0

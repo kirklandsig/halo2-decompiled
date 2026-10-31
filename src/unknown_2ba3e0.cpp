@@ -736,6 +736,13 @@ real g_55e618;
 // does not separate the builds. On the velocity pointer form (harness 183, frame 0x118): keep computed after
 // the tangent 187; tangent declared before perpendicular 183; the impact declared at the block's top 183;
 // perpendicular and tangent interleaved per component 183, with keep late 187 (all at least 185 here).
+// Round 116 (lane 6, fast, LTCG build): four rename sets of perpendicular/tangent/sweep (normal/tangent
+// velocity, bounce/slide, travel, along/motion/rebound) 102 each (homes unmoved, so the same-size name order
+// does not apply here); tangent, tangent and perpendicular, tangent at the top with perpendicular after the
+// cache 102 each; velocity read at each use with the perpendicular/tangent rows interleaved i, i, j, k, j, k
+// 200 (frame changes, +0x2); the copy form with that interleave 211. Retail keeps perp.i/j, tangent.k and
+// keep in xmm5/6/7/3 across the placement call (its LTCG callee leaves them) and spills only tangent.i/j and
+// perp.k.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

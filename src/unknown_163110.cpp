@@ -570,6 +570,11 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // copy field by field 678, depth read at the product 651); one dead temporary ahead of the copy
 // (diagnostic only) restores the x0 product, and the floor over 128 dead-temporary placements is 6:
 // plane 1's x term and the plane 2/point 3 and plane 3/point 0 error tests keep the other operand first.
+// Round 53: x0 as `depth * rect->x0` 83; x0 through the pointer declared after x1/y0/y1 659;
+// products in x0, y0, x1, y1 order through the pointer 87; the copy through a non-const rectangle
+// pointer with x0 through it 83, with x0 through the result 39 (same code). Compile-only: the x term
+// written `n.i * position.x` still loads position.x first in every plane; one plane pointer reused
+// for planes 0-3 49 (harness, forwards the zero distance).
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {

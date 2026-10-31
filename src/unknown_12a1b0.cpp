@@ -994,6 +994,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
+// score 7 (was 14): only the record initialization's playback reload and 0xa4 byte still move up.
 // MiniMax C (10-31): flag OR through playing->loop 13 again (mixed access; not kept).
 // score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
 // byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
@@ -1031,6 +1032,9 @@ long __stdcall function_125e60(s_looping_track_sound *sound);
 // from the register); link stores split links/playing (track index and flag / permutation copy / ring / controller)
 // LLPP 14 (retail's OR, callbacks store moves), PPPP 18, LLLLPP 14, PPLL 17; chained fade zeros start-first 14,
 // chained NONE resets 14, both 14 (identical code).
+// Round 58: links reference/fixed links/fixed playing 14/14/14; fixed playback 7; track index through playing 10;
+// track and flag zero through playing 17; flag zero alone through playing 7 (kept); direct getter unknowna4 240;
+// second record/later-state playback pointers 7/7; simplified flag-zero split 7 (plain confirmed).
 // @retail 0x21b940
 long function_21b940(long looping_sound_index, long definition_index, long pitch_range_index, short track_index, short state, dword *seed)
 {
@@ -1072,7 +1076,7 @@ long function_21b940(long looping_sound_index, long definition_index, long pitch
 				playing->handle = NONE;
 				s_looping_track_links *links = &playing->loop;
 				links->track_index = (char)track_index;
-				links->flags = 0;
+				playing->loop.flags = 0;
 				links->field_8_4 = track->field_8_4;
 				links->permutations = track->permutations;
 				links->next_sound_index = result;

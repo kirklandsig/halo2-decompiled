@@ -1967,6 +1967,12 @@ void function_27dd10(void)
 // new one flips it) and not the source shape. Tried: blend-1 translation and scale through
 // interpolate_real 159; a node lookup returning the index or NONE 382; the per-arm walk as a
 // template 2114 (out of line); orientation_vector_blend taking the fraction by value 147.
+// Round 100 (lane 7, --fast): the per-arm apply reading the blend weight into a local at its top 2,
+// in the blend-1 arm (all three components) 147; the flags test as `!= 0` 2; the apply index in a
+// named local 2. Compile-only screens: the walk's bound as an if or with the compare reversed, the
+// frame-state saves or restores reversed and the pass counters as a switch keep the tie and change
+// matched neighbours; a constant subtraction before the blend-1 rotation apply (semantics changing)
+// is the only form that gives retail's order.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2042,6 +2048,9 @@ void function_2818e0(void)
 // score 2 (was 2): the two stack slots are read in the opposite order inside the inlined helper.
 // The same allocator tie as 0x27dff0. Tried: blend-2 `+=` and `*=` 2; the blend-2 translation as a
 // loop over vector.n 364; the multiply's sign mask as long 2, as `1UL << 31` 2, as real lanes 245.
+// Round 100 (lane 7, --fast): the per-arm apply reading the blend weight into a local at its top 2,
+// in the blend-1 arm 2; the blend-2 rotation through a pointer local to the destination rotation
+// 352; the flags test as `!= 0` 2; the apply index in a named local 2.
 // @retail 0x281b60
 void function_281b60(void)
 {
