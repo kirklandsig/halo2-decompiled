@@ -196,6 +196,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // `arg_0->field_50 != local_1` and the cache stores swapped 129 (863 bytes); with a named record copy for the compare
 // 133; child unknown4c stored before parent 70 (same code); count increment before the field_3c store 71. Harness:
 // field_38 through 0x248076's reference, through local_9 or a named sample local, a named cache pointer: all as T1.
+// Round 9 (m3 lane 18, fast): retail's compare is not a jump target (nothing branches to it), so its fold right after
+// the fstp is the build's. field_10 first with another store moved between the field_38 sample and the compare:
+// the field_08 clear 230 (876 bytes), the count increment 200 (860 bytes; 0x248cc0 then 15 in the reduced image),
+// the list-head link 243 (878 bytes); field_10 last with the fifth sample through 0x248076's reference straight
+// into field_38 70 (same code); the count increment moved before the 0x173ba0 call 159 (860 bytes; 0x248cc0 15).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

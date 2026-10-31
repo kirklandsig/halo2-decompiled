@@ -3227,6 +3227,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // the 0x218ac0 pitch-range getter 49/78; definition by table read 78; a while loop with goto 214 (592 bytes).
 // Without the switch, dropping either `(bool)` swaps the registers too (120/136). 0x125e60 returning bool (callers
 // without `(byte)`) 78 with the for form (0x125e60 itself unchanged).
+// Round 9 (m3 lane 18, fast): 0x128020's loop-top `sounds = g_4e637c;` added to this body 49 (identical, the
+// load is CSE'd); a plain while loop with that loop-top reload 268 (636 bytes, not rotated); a for loop reading
+// the pool global in the init and increment with `case 1: continue;` 78 (retail's `sub eax, 0` and the pool
+// reload after the next-index ternary; only the index/pool EBX/EBP swap and the prologue load before `push
+// ebp`), with the entry pool through the named `sounds` local 78; `case 1: continue;` skipping a bottom
+// `sounds = g_4e637c;` 183 (572 bytes).
 // Round 102 (m3 lane 8; one-link LTCG harness, exact for 49 and 78): a dead store in a `case 1:` of the do-while gives
 // exactly the for/`case 1: continue;` code (78), so the EBX/EBP swap comes from the two-case compare chain itself, not
 // the continue edge. A 192-form grid of the for/continue loop (pool local or global in the init, both next-index

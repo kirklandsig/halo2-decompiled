@@ -236,6 +236,10 @@ bool function_14480(long tag, short stage, short index);
 // the stage into ecx and passes the flags on the stack (ret 0xc), ours pushes
 // the stage and passes four stack arguments (ret 0x10); 0x14560 lives in
 // src/unknown_01cf50.cpp, which this lane may not edit (BLOCKED-BY 0x14560)
+// Round 19: our 0x14560 reads the stage from its stack slot just before the 0x14390 call, where
+// retail copies it into ESI at entry, so LTCG leaves it on the stack. Caller forms leave 0x14560
+// unchanged: the calls in an if/else 7; the stage read through its address 24; a false-preset result
+// assigned in the if/else 7; an early return on success 24; the NONE test first in the if/else 11.
 // @retail 0x47fd0
 bool function_47fd0(long tag, short stage, short index, byte flags)
 {
