@@ -196,6 +196,10 @@ void __stdcall swarm_delete(long arg_0);
 // the tag field compared against the result 89, the `> 0` count test first with the delete in the else 89,
 // the allocation test written `NONE != local_0` 89, the tag pointer `const` with the field compared against
 // the result 89; on this body, the field compared against the result with the `> 0` count test first 56.
+// Round 7 (lane 17, fast): the limit as `field <= 0 ? 10 : field` 74; on s2 (92), the record pointer before
+// the definition-index read with the ternary limit 72 (289 bytes; the tag then takes EBX), the limit as an
+// explicit if/else 53, the definition index read between the allocation and its NONE test 93; the existing
+// character getter with the tag pointer declared before the result 44 (same code).
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

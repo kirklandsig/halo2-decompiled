@@ -924,6 +924,10 @@ void function_1d1540(s_havok_component *component);
 // Reset/rebuild inline/noinline contracts, original then aligned-copy/fixed-or-flag-first graphs
 // 81/81/81/81/81/81/81/81/88/88/88/88/27/27/27/27. Original executable source restored. All four 27
 // forms still lose matched 0x1d1b60 at 59 in the reduced image.
+// Round 28 (lane G): the declaration order does not decide the argument registers: with retail's
+// order (transform, index, component) and the old order kept only for the caller in another file,
+// the score is still 81 here and 38 in 0x1d0c20, and matched 0x1d1b60 stays matched, so the order
+// was left as it is. What still differs: retail keeps the component in EBX, ours on the stack.
 // Both-inline paired form: plain 27 at 220 bytes; matched 0x1d1b60 loses 59; rejected.
 // Round 158: assigned copy + body pointer + m_fixed first 88 at 230 (retail's code; a /Gd first
 // pass loads the component once into ebx, yet it stays a stack argument); same with set() 88; flag5
@@ -1013,6 +1017,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // 38, with 0x1d0cf0's retail body 40; that with a volatile read of 0x1d0cf0's component at the
 // 0x1d1540 call/the 0x1d1260 call/the second body fetch 40/40/40. Round 89: through the existing
 // component_matrix_frame converter 38 (same code, kept), with 0x1d0cf0's retail body 40.
+// Round 28 (lane G): retail's arguments here are (matrix, index, component) as in 0x1d0cf0; the
+// declaration order does not change the registers LTCG picks (0x1d0cf0 81 and this 38 either
+// way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {

@@ -16,7 +16,7 @@ void function_1d4360(s_havok_component *arg_0, transform4x3f *volatile arg_1);
 void function_141590(transform4x3f const *arg_0, transform4x3f *arg_1);
 int __fastcall function_142a60(transform4x3f const *arg_0, transform4x3f const *arg_1, transform4x3f *arg_2);
 
-PRIVATE __forceinline void function_1d3fc1(vector3f *arg_0)
+PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 {
  real j_squared = arg_0->j * arg_0->j;
  real local_0 = (real)sqrt(arg_0->i * arg_0->i + j_squared + arg_0->k * arg_0->k);
@@ -27,9 +27,12 @@ PRIVATE __forceinline void function_1d3fc1(vector3f *arg_0)
   arg_0->j = arg_0->j * local_1;
   arg_0->k = arg_0->k * local_1;
  }
+ return arg_0;
 }
 
-// score 149 (was 149): magnitude order, reciprocal/SSE carriers and projection schedule remain.
+// score 119 (was 149): Frame 0x13c agrees; first reciprocal/component carriers and
+// magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// Earlier: magnitude order, reciprocal/SSE carriers and projection schedule remain.
 // Retail sums the forward magnitude j,i,k (k loaded late, reloaded on the short-vector path) and the
 // other three k,j,i; in this /Ob1 file every sum compiles i,j,k whatever the source order (dot3f,
 // k*k+j*j+i*i, i*i+j*j+k*k each 155 with the normalize3d shape), only a named square moves it.
@@ -80,6 +83,10 @@ PRIVATE __forceinline void function_1d3fc1(vector3f *arg_0)
 // the preloads (ours k,j,i into xmm4-6, retail j,i) appear only once the dot reads forward afterwards.
 // Round 53: unnamed `j*j + i*i + k*k` 155; `j*j + (i*i + k*k)` 155; a named k square summed k, j, i 154;
 // the sum cast to double 155; the projection written `up->i = up->i - local_10 * forward->i` 149 (same code).
+// Round 456: Direct forward/up, then direct-forward with partial/complete scalar inputs,
+// i/j subtotal and post-normalization forward/up/both receivers:
+// 157/169/157/157/157/150/160/119. Both receivers retained at 119, 923/922 bytes
+// after the plain whole-image check; all other forms restored. Original math and game calls preserved.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
@@ -117,11 +124,9 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
    function_142a60(&local_1[5], &local_1[3], &local_1[0]);
    if (arg_1->unknown04 & 0x10000)
    {
-    vector3f *forward = &local_1[0].forward;
-    vector3f *up = &local_1[0].up;
     vector3f *left = &local_1[0].left;
-    function_1d3fc1(forward);
-    function_1d3fc1(up);
+    vector3f *forward = function_1d3fc1(&local_1[0].forward);
+    vector3f *up = function_1d3fc1(&local_1[0].up);
     real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;

@@ -465,6 +465,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the test, 0x1d90e0 and the set (nested ifs) 128, the same with the shift test 122, with a short
 // local 45; the first marker query's result named 42 (same code); iterator a tested before b 46.
 // The set still reuses the test's value numbers across 0x1d90e0. Body restored.
+// Round 8 (lane 18, fast): with the mask test, a fresh node index read at the set (volatile diagnostic,
+// reverted) still gives the mask-first load/OR/store set, so it is not the index's value number;
+// mask test with `mask & word` operands 42; mask test with the set as `mask | word` 42, both swapped
+// 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
+// the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
+// unmatched: a lead if retail's set needs a call that may write the vector.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
