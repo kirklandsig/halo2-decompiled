@@ -1362,7 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
-// score 83 (was 116): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
+// score 83 (was 83): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
 // index_count/item_count slots are swapped; branch two gives EDI to the 0x199ef8 result and keeps
 // index_count in memory (`inc dword ptr`), where retail keeps index_count in EDI through both scans and
 // reloads player_count from its slot; that asymmetry is the lead for the slot swap and the fills.
@@ -1433,6 +1433,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (aaa/zzz) 83/83/83 (slots do not move). Compile-only, the index fill always gives index_count a
 // whole-body register and homes mode (216 combinations of fill/qsort/scan/maximum/loop-index/qsort
 // placement/declaration order); only a pointer `<` fill keeps retail's homes, but as a pointer rep stosd.
+// Round 35 (lane 11, fast): the second branch's fill alone as `for (long j = index_count; j < 16; j++)` 107
+// (that branch then matches retail: index_count in EDI, guarded rep stosd, EDI reloaded; but the
+// 0x199ef8 result takes EBX there and mode moves to the stack, frame 0x58); with mode declared first 110;
+// the first branch's fill alone 169; both with the three qsort calls written out 169/163 (420 bytes).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
