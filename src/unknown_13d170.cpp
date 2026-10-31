@@ -237,6 +237,9 @@ struct s_block_candidate
 // maximum 367 at retail length (three-point lead rejected). Original body restored.
 // Round 237: Computed page-size long/dword, each with named-mask expression, original/entry constant result lifetime: 370/370/370/370/413/413/413/413.
 // Original executable body restored.
+// Round 242: Actual queued-candidate count long/dword/short/word, capacity-bound and
+// not-full admission 407/407/406/418/407/407/406/418. All recover frame 0x1054 but
+// grow code; original ring state and body restored, page-offset/tail homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

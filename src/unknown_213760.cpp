@@ -1136,7 +1136,6 @@ void __stdcall function_2138f0(long first, long last);
 void cache_file_path_from_slot(long index, char *path, long path_size);
 bool cache_file_header_read(long index);
 s_cache_file *cache_file_from_type(long type);
-long __stdcall function_1a08f0(s_async_task *task);
 
 PRIVATE inline void cache_wait_for_completion(bool volatile *done)
 {
@@ -1155,7 +1154,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 104 (was 104): frame 0x1144 and extent agree; file displacement, request-copy
+// score 104 (was 104): retail hands the file handle to the read call by value, which the declaration
+// in include/async.h and the callers outside this file cannot give; frame 0x1144 and the extent agree.
+// frame 0x1144 and extent agree; file displacement, request-copy
 // scheduling, the first read handle copy and write-success join still differ.
 // Earlier: frame 0x1144 and extent agree; file displacement, request-copy, the first read
 // call's handle copy and the write-success join remain.
@@ -1262,6 +1263,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 233: complete post-completion success and failure decisions, each in bool/byte/short/long
 // widths, all 178 at 930 bytes; every form shrinks the frame to 0x1140. Original nested write
 // result/output storage restored; retail frame 0x1144 and file/request register homes remain.
+// Round 53: the open request through the existing 0x1a0b40 (identical code, kept). Three forms that
+// are kept only on a match reach 7 (fast) together: `else if (cache_file_header_read(index))` with
+// `valid = true` before the range test (retail's 1 in ESI and threaded continue), the write success
+// set by its own test (cmp/je join), and 0x1a0b40 given `&g_557c90[index].handle` while `file` serves
+// the rest (address first built as a call argument: retail's `lea ebp, [ecx + base]` and loop-top
+// registers); with a handle local for the open test and size query in place of the argument form 38,
+// harness-only header-read arm 153, write test 146, both 142. Left at 7: retail loads the write's
+// handle first into EAX with the flags zero in ECX, and the checksum compare into EAX (ours zero EAX
+// first, compare EDX). On the 7 form: s_file_handle member + named write_flags + bytes first 7; header
+// initializer returning the header in both calls 7; named write_flags after bytes 7; bytes declared
+// outside the write block 7; checksum operands swapped 7. A permuter run on the 38 form: 60 tries,
+// none below 38. Diagnostic: one dead load before the 0x213800 call gives the checksum register.
 // Round 449: native initialized validity slots byte/signed-byte/word/long
 // 270/270/263/271; with ordinary completion while 307/307/295/308.
 // Original Boolean slots, byte fill, completion helper and complete body restored.
@@ -1278,17 +1291,8 @@ void function_213970(void)
         char path[256];
         cache_file_path_from_slot(index, path, sizeof(path));
         dword expected_size = cache_file_size_limit(index);
-        s_async_task task;
-        memset(&task, 0, sizeof(task));
-        task.create_file.path = path;
-        task.create_file.access = GENERIC_READ | GENERIC_WRITE;
-        task.create_file.share_mode = 0;
-        task.create_file.creation_disposition = OPEN_ALWAYS;
-        task.create_file.flags = FILE_FLAG_NO_BUFFERING;
-        task.create_file.file = (s_file_handle *)&file->handle;
-        task.create_file.create_path = false;
         bool volatile done;
-        function_120ba0(6, &task, 0, function_1a08f0, &done);
+        function_1a0b40(path, 3, 3, 1, 0, 6, (s_file_handle *)&file->handle, &done);
         cache_wait_for_completion(&done);
         bool valid = false;
         if (file->handle != INVALID_HANDLE_VALUE)

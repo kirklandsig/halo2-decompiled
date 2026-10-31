@@ -10,6 +10,7 @@
 #include "segment_sphere.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vehicle_ray.h"
 
 #define FLAG(bit) (1 << (bit))
 #define TEST_FLAG(flags, bit) (((flags) & FLAG(bit)) != 0)
@@ -737,13 +738,6 @@ struct s_palette_168f40
 {
 	byte unknown000[0x34c];
 	s_material_168f40 *materials;
-};
-
-struct s_vehicle_ray
-{
-	point3f point;
-	vector3f vector;
-	real t;
 };
 
 // @retail 0x168f40

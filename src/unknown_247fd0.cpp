@@ -179,6 +179,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // Lane 15 r19: field_10's value read into a real local before the fifth draw and stored after it 144
 // (876 bytes, through XMM0); the cache update's two stores swapped 141 (864 bytes), with field_10 first
 // 129 (863 bytes); the child datum or the pool record address by byte arithmetic 70/70 (same code).
+// Round 112 (fast): field_10 copied after the cache update 147 (878 bytes: the fstp then meets the compare
+// and splits it), with the compare operands swapped 147; the fifth sample as `(real)(dword)_random(...) *
+// (1.0f / 65535.0f)` 70 (same code as 0x82e52f's), with field_10 after the cache update 147, with field_10
+// first 133. Everything after the compare is a scratch-register rotation that starts at field_10's temp
+// (ECX here once the seed pointer is dead, EDX in retail's order while it is live).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

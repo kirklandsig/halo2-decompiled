@@ -481,61 +481,7 @@ struct s_request_profile
 	byte field_148[0x1e0 - 0x148];
 };
 
-// score 61 (was 61): aligned frame 0x1e8 agrees; the pointer induction variable and the registers it rotates differ.
-// Default profile 164; early memset 150; unsigned version 143; aligned byte prefix 180;
-// unsigned local index 143; aligned dword prefix 180; common bits 370; separate tick reset 335.
-// All use ordinary player data and native loops; original profile and body retained.
-// A plain 32-entry loop of `ticks = 0; state = function_1e7a10(local_index, i) ? 5 : 0;` gives retail's
-// per-element flag reloads and bool select but stays rolled (337, 357 bytes): with if/else, a
-// pointer local, a bool local, short/int/unsigned/do/while counters, an inline transition helper,
-// inline/forceinline on 0x1e7a10 alike; noinline 373; the four-way body calling it 154.
-// Native pointer destinations with matched per-element query: index less/not-equal bounds, ticks first
-// 347/347 and state first 349/349; pointer less/not-equal bounds, ticks first 320/320 and state first
-// 334/334. All remove qualified global data reads.
-// DL192: Native transition record publication, Boolean/full query, flat/grouped loops 221/222/196/189;
-// complete array clear before those queries 196/163/196/187. Ordinary global load throughout; all restored.
-// Round 421: matched full-value query in one native 32-entry loop, indexed long/short/word/dword
-// counters 348/321/321/348; advancing destination with those counters 349/321/321/349.
-// All remove the inherited qualified global data read; original body restored at 108/540.
-// Round 105 (kept, 108 -> 61): no state pointer (fields through g_51e9c0[local_index] at each use, so
-// the flag pair is read through the memcpy destination as retail), the profile index read at each use
-// with a plain player data read (gives retail's unfused `add eax, esi`), and each element through the
-// existing 0x1e7a10 query, ticks first. Still differs: our pointer IV starts at element 1's ticks
-// (+6, index bias 3) where retail's starts at its state (+4, bias 2), which moves the local index from
-// EDX to EBX. Tried: state first 134-136 (IV right, ticks stores one element late, loop padding);
-// natural i..i+3 spelling 86; per-element pointers 133-135; plain 32-entry loops stay rolled 345/354;
-// a bool local per element 137; state = 0 then `if (query) state = 5` 106; with the volatile read 175;
-// profile index local 164. Diagnostic only: element 1 alone state-first gives retail's IV and
-// registers (36 with this spelling, 79 natural), so the IV follows element 1's first store.
-// Round 44: VC unrolls a constant-trip loop only with one store in its body (two stores never unroll, even from an
-// inlined helper in another file: 339 rolled). Plain loop storing a transition record 166 (565 bytes); both flag
-// words read at each use 205, with natural i..i+3 elements 177; natural four-way body calling 0x1e7a10 150 (583 bytes,
-// aligned 36: retail's flag reloads and select), with this body's i-2..i+1 elements 154; natural query body without
-// the transition pointers, ticks first 195, state first 139 (aligned 28), pointers with state first 142; state first
-// with 0x1e7a10's pair taken from the state record 139. Retail reads the pair through the memcpy destination register.
-// Round 177: a plain 32-entry loop storing a record local (`transition.state = query ? 5 : 0; transition.ticks
-// = 0; transitions[i] = transition;`) is unrolled by VC itself with retail's counter (esi = 2, i-2..i+1, exit on
-// esi-2 < 32) but builds the record on the stack and copies dwords: 196 (565 bytes); ticks set first, aggregate
-// initializer, record hoisted out of the loop 196 each; a ticks loop then a state loop 170 (the ticks loop stays
-// rolled, no fusion). Hand-unrolled spellings: elements i-1..i+2 87; i-3..i (counter `i - 3 < 32`) 86 (541 bytes:
-// retail's esi = 2 counter, aligned 89 -> 43, but the pointer still starts at element 1's ticks, +6, and the
-// local index stays in EBX); i-3..i state first 132; `i < 35` 96; i-4..i-1 63 (aligned 58); i-2..i+1 with
-// `i < 34` 96; per-element pointer blocks with the i-2/i-3/i-4 spellings 135/133/133.
-// Round 12 (m3 lane 2; one-link harness with 0x137e40's file, 56 positional against the real 61): the
-// natural i..i+3 elements with element i+1 state-first 79 (542 bytes; first difference moves +0xf -> +0x3b:
-// retail's registers and IV, but element i+1's ticks store goes late and element i+3 loads the high word
-// first); natural elements all state-first 134; one 32-entry loop storing a local transition record
-// (fields set, or an initialiser) 196/196 (565 bytes: VC unrolls it, counter rebased to 2 as in retail,
-// but the record goes through the stack); ticks/state interleaving t,s,s,t,s,t,t,s 100. Harness only: all
-// 70 ticks/state interleavings (best aligned 6, positional 74); the t,s,s,t,t,s,t,s order with seven loop
-// spellings 37-101; a one-store body (state only) unrolls with counter 2 and pointer at element 0.
-// Round 47 (lane 16, fast with 0x137e40/0x1e7a10/0x1e7a60): one group pointer to elements i-2..i+1
-// 91; each state from the existing 0x1e7a60 `== 3` 110; a dword counter 96 (rebased to 1); a short
-// counter 239 (599 bytes); a pointer local to the transition array before the loop 87 (the prologue
-// and outer loop then take retail's registers, EDI table and EDX local index, first difference
-// +0xf -> +0x3b, but the IV starts at element 0 with the counter rebased to 3; retail: element 1,
-// counter 2); with that pointer the elements i..i+3 91, i-1..i+2 126, i-3..i 80 (the IV stays at
-// element 0, counter 3, whatever the spelling).
+/* copies each requesting player's profile flags into its local state and resets the 32 transitions */
 // @retail 0x1e73b0
 void function_1e73b0()
 {
@@ -563,16 +509,28 @@ void function_1e73b0()
 				}
 				memcpy(((s_local_player_state_view *)g_51e9c0)[local_index].request_flags, profile.flags, sizeof(profile.flags));
 				((s_local_player_state_view *)g_51e9c0)[local_index].version = version;
-				for (long i = 2; i - 2 < 32; i += 4)
+				for (long i = 0; i < 32; i += 4)
 				{
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[(i - 2)].ticks = 0;
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[(i - 2)].state = function_1e7a10(local_index, i - 2) ? 5 : 0;
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[(i - 1)].ticks = 0;
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[(i - 1)].state = function_1e7a10(local_index, i - 1) ? 5 : 0;
 					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].ticks = 0;
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = function_1e7a10(local_index, i) ? 5 : 0;
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[(i + 1)].ticks = 0;
-					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[(i + 1)].state = function_1e7a10(local_index, i + 1) ? 5 : 0;
+					if (function_1e7a10(local_index, i))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].ticks = 0;
+					if (function_1e7a10(local_index, i + 1))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].ticks = 0;
+					if (function_1e7a10(local_index, i + 2))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].ticks = 0;
+					if (function_1e7a10(local_index, i + 3))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].state = 0;
 				}
 			}
 		}

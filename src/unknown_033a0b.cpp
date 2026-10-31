@@ -83,6 +83,9 @@ extern s_4e6950 g_4e6950;
 // Round 445: Clamp-only component walk after retained scaler 367; symmetric first-product
 // lifetimes 342; both 367; symmetric biased-product lifetimes 342; walk/biased 367;
 // first/biased 342; all 357; all with forced existing clamp 357. Original body/helper restored.
+// Round 451: Existing complete-vector setter for clamped case subsets
+// 23/35/23+35/24/23+24/35+24/all, then forced clamp on all: 360/343/337/344/389/388/352/352.
+// Five-point form rejected; original publications restored.
 // @retail 0x33980
 void function_33980(long selector, vector3f *out)
 {

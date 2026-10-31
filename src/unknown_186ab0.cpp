@@ -239,6 +239,9 @@ void player_action_initialize(s_player_action *arg_0);
 // through the float overloads; pragma removed 569 (0x14d040 inlined); copy orders 9/11/11/5, struct
 // block copy 8; SIB call-site forms (result local, unit index local) 1; permuter 600 s, 21 tries, none
 // below 1. Non-flag latch spellings (else first, named pressed bool, store first) all keep the arm inline.
+// Round 243: Native persistent toggle/pulse/hold byte fields, subsets 1..7
+// 134/134/134/134/134/134/134; all signed byte 134. Original Boolean fields,
+// latch graph and complete body restored; comparison/count and cold output scheduling remain.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
