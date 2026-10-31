@@ -259,6 +259,9 @@ static __forceinline s_object_visibility_header_ab *visibility_header_step(s_rec
 // BLOCKED-BY 0x109660: its body takes the entry index in EAX and the object in ECX whatever
 // the declared order. Callee forms: pool local 2; entries + index 2; header pointer 2;
 // entry before object 2; that plus both parameters swapped at all three places 2.
+// Round 37 (0x109660 forms): entry pointer computed before the object 2; entry as `entries + index` 2; component
+// index read before the entry pointer 2; entry by pointer arithmetic on the cast array 2; entry as an element of
+// the cast array 2. Our 0x109660 copies the entry index from EAX (retail ECX into EBX) whatever its body order.
 // @retail 0xb7060
 void function_b7060()
 {

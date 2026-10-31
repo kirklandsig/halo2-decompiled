@@ -1263,6 +1263,9 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 // dropped for `remaining >= 4` 138; mode 2's front loop first (`if (!rear)`) 139; the constant gain
 // written as 0.0f at each use 137 (same code); mode 3's quad arm first 135; both front-first swaps 137.
 // BLOCKED by the build-flag lead (/Op) and the case-0 statement above.
+// Round 115 (lane 6, fast): the flag as `(flags & 8) != 0` 137 (same code); mode 3 as `rear && pair` /
+// `!rear && quad` arms 137; the pair bool dropped for `remaining >= 2` at its three tests 138; modes 1 and 2's
+// front loop merged under `mode == 1 || (mode == 2 && !rear)` 157 (364 bytes); the bools as `> 1` / `> 3` 137.
 // @retail 0x2afb80
 void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rear, long mode, s_mixbin_settings *mixbins)
 {
@@ -1411,6 +1414,11 @@ void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rea
 // used twice 177 at 606 bytes (0x2af800 79); whole-file float-consistency pragma diagnostic 205 (all
 // fast). Lead: retail's entry sum (level copied through EAX into the dead parameters slot, then addss)
 // and its SSE mode-one sends are /Op code generation (see 0x2aefe0).
+// Round 115 (lane 6, fast): the flag as `(flags & 8) != 0` 200 (same code), with the rear gains read at use
+// 208 (573 bytes); the four bins named first as long locals 200; the send sum written `base_level +
+// level_offset` 200; named bins with every gain and the sum read at use 231 (545 bytes). Retail's entry sum
+// (level copied through EAX into the dead parameters slot, then addss from it) is also the shape a 4-byte
+// decibel struct or long-bits copy gives (as 0x2afb80's attenuation), not only /Op.
 // @retail 0x2af920
 void c_sound_effects::add_sends(s_sound_send_parameters *parameters, long unused, long mode, s_mixbin_settings *mixbins)
 {
