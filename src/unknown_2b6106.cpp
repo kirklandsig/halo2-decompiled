@@ -977,10 +977,10 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                         if (!details[0xa74])
                         {
                             long const *player_scores = (long const *)(details + 0xf44);
-                            for (long const *player_score = player_scores;
-                                player_score - player_scores < *(short *)(details + 0xa80); ++player_score)
-                                if (player_score != player_scores + i && *player_score > best)
-                                    best = *player_score;
+                            for (long const *player_cursor = player_scores;
+                                player_cursor - player_scores < *(short *)(details + 0xa80); ++player_cursor)
+                                if (player_cursor != player_scores + i && *player_cursor > best)
+                                    best = *player_cursor;
                             ((c_widget *)this)->function_230134(0xc00027a, format);
                             score = *(long *)(details + 0xf44 + i * 4);
                         }
