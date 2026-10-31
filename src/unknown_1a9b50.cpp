@@ -535,6 +535,9 @@ extern point2f *g_468778;
 // `if (!settings || f13 || f14 || f2d) return false;` and a direct final return 393 (1549 bytes, frame
 // 0x40 and all four pushes at entry as retail; ours keeps arg_0/actor/settings/slot in EBX/EDI/ESI/EBP,
 // retail in EDI/EBP/memory/ESI with the prop in EBX); the slot pointer declared first there 393.
+// Round 249: Repeated actor/request truth snapshots, singly/both 400/401/394;
+// actor-first counterparts 402/425/415; both with late false default, original/actor-first
+// acquisition 426/429. All three predicate calls, early distance and complete original body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
