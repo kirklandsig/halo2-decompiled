@@ -1177,6 +1177,10 @@ void c_game_engine_markers::v21(long object_index)
 // at each call, no player local, 100; the player pointer from a re-read `unit->player_index` with the
 // team at each call 119 (CSE'd back); the team at each call with the unit fetched again for the event
 // block's player index 117 (446 bytes; options still in EDX), with v30's per-arm team and a const player 117.
+// Round 113 (lane 6, fast with v24/v30): the object index read once through its own address for the type
+// test 40 (same code), with the team at each call 119; one header-array local for the slot and unit fetches
+// 104; the event declared at function scope 40 (same code); the team at each call rebuilt (119, 430 bytes:
+// retail's flag test and player pointer, the options pointer held in EDX from entry).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

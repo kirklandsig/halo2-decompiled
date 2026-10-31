@@ -390,6 +390,12 @@ static inline bool teams_enabled_19e1c0()
 // 732 (1129 bytes); the volatile result with that clamp 431 (1398 bytes); the plain result with
 // every token test read through the parameter's address 691 (identical to the plain result); the
 // event teams read at each use 394; a long opponent counter 421.
+// Lane 18 round 6: retail's 4 frame bytes past the text buffer hold the inlined teams test's dead byte store (ours
+// makes it too), so the volatile result is the extra slot. A plain result with one shared inline copy helper
+// (length, clamp, copy; four callers) 691 (same code as the plain result); the opponent loop's team as long 421
+// (team in EDI passed in ECX as retail, 1424 bytes); with `best_score <= function_1587f0(team)` 421 (loop body
+// now retail's, missing only its `xor edi, edi` and padding); both with the plain result 688; and with the text
+// buffer declared before the plain result 688. Original body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

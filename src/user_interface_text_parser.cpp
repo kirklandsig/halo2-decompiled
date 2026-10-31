@@ -505,6 +505,11 @@ done:
 // test for its two uses; on it the tag read before the variant call 57, the selector straight from
 // the getter with the tag first 57, `if (!globals) goto done;` 54, the tag read at the translator call
 // 45 (171 bytes; the selector then in EAX as retail, still the EBX buffer).
+// Round 98 (lane 8; LTCG env link, address-taken entry; env rows positional/aligned, base 42/35): one
+// shared copy after the `if (globals)` block with the default's `goto done` 47/29 (173 bytes, buffer
+// hoisted into EBX); with `&g_55c6e4[0]` at the translator 47/29; the tag read at the translator call
+// 43/33 (174 bytes); `name_id` declared before the definition lookup 42/35 (identical); the translator
+// called in each case with the shared copy 42/35 (170 bytes).
 // Round 24 (lane 14, fast), all on the natural one-copy form (54: buffer address hoisted into EBX at the
 // globals test, selector in ECX, tag loaded after the range compare): the buffer address read once into a
 // named `wchar_t *` local used by the translator and the copy 54 (same code); numeric case order 49; an

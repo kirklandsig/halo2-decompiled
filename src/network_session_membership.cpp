@@ -758,6 +758,12 @@ union s_60403
 // with the pointer arm first 151; the two maps declared before the header stores 149 (identical);
 // one `previous + 0xc` base pointer for the three member reads 437 (1522 bytes); the third loop's
 // player pointer declared before the old player 152.
+// Round 98 (lane 8; LTCG env link of this file with the ballast, equal to the full listing; env rows
+// positional/aligned, base 141/103): one `bool changed = a != b || memcmp(...)` 268/130 (1513 bytes);
+// plain bool set in the test 159/120; the map entry as a reference 141/103 (identical); retained mask
+// declared after the member loop 327/112, with the plain bool 334/128; header stores previous first
+// 156/110; `previous ? *previous : NONE` 143/111. The entry assignment (current EBX, previous EBP)
+// drives every loop's roles.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

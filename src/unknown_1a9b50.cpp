@@ -786,6 +786,13 @@ static __forceinline long real_to_long(real value);
 // object/facing value pairs 555/583/544; all scalar values 603; all native vector
 // values 574. Original pointers, fresh reads, arithmetic, query aliases and body
 // restored; frame 0x58, early rejection and magnitude/query homes remain.
+// Lane 18 round 6: the first 66 instructions agree; retail's false exit after the `goto local_7` jump shifts
+// positions by 3-5 to about index 430. Retail keeps the actor in ESI into the velocity block, forms the facing
+// address late (`add eax, 0x2c`, later `lea esi, [eax+0x2c]`) and spills the AI object pointer (velocity read
+// at +0x88). Then-arm `return local_2;` with a final `return false;` 510; false-initialised result without the
+// else arm 496; object pointer local for the six velocity reads 409 (1918 bytes); facing field read at each use
+// 513 (1941 bytes); both 524; `facing` declared in the else arm only, the then-arm copy read from the field
+// 477 (1906 bytes). Original body restored.
 // Round 37 (lane 1, fast): the existing magnitude3d call for the written-out object-speed root 482
 // (1886 bytes: our LTCG keeps the call, retail inlines it here and calls it in 0x1aa0d0); result
 // preset false without the else 496 (frame 0x54); no facing pointer, the prop view's facing read at

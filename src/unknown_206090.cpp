@@ -255,6 +255,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Actual point-state/point-definition/contact-definition byte offsets, subsets 1-7: 1383/1381/1400/1400/1369/1404/1390; all with typed contact offset 1456.
 // Reduced control 1363/6238 with frame 0x5cc differs from full 1364/6243 with frame 0x5d0; every offset form regresses against its control.
 // Full original signed loops, live counts/bases, input captures, helpers, math groups and body restored.
+// Round 452: native vector memcpy at magnitude/default/dynamic copy boundaries,
+// subsets 1-7, 1364/1366/1366/1364/1364/1366/1366; complete memmove graph 1477.
+// The caller/callee control reproduces full 1364/6243 without a target caveat.
+// Original native copies, magnitude capture, helpers and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
