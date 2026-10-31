@@ -635,6 +635,8 @@ struct s_1f9762
 };
 
 // score 12 (was 12): layout, frame and code now as retail; left: both dot products evaluate their
+// Frame and block layout agree; dot-product term/operand order remains.
+// Earlier: layout, frame and code now as retail; left: both dot products evaluate their
 // y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
 // y,z), a value-numbering tie that flips with the CSE sharing of the current-point address.
 // Earlier state: approach as its own statement after the arms (no gotos), struct copy of the
@@ -718,6 +720,8 @@ struct s_1f9762
 // projection as an inline helper in all parameter and argument orders 10. Diagnostic: the path read
 // through an embedded member at the projection only, first dot reversed, 2 (a mixed read); the second
 // dot's x-term never moved in 12 forms on that graph.
+// Round 456: Native persistent path reference on recovered block graph, readonly path, actual point value at projection and first-dot operand graphs:
+// 12/10/108/108/12/10/108/108. Original executable body and supporting declarations restored.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)
