@@ -359,20 +359,17 @@ real function_30bf0(vector3f *vector);
 
 bool g_47ff86 = true;
 
-PRIVATE inline void transform_plane_163db0(transform4x3f const *matrix, vector3f const *normal, s_plane *plane)
+PRIVATE inline void transform_plane_163db0(transform4x3f const *matrix, s_plane const *source, s_plane *plane)
 {
-	real x = normal->i;
-	real y = normal->j;
-	real z = normal->k;
+	real x = source->normal.i;
+	real y = source->normal.j;
+	real z = source->normal.k;
 	plane->normal.i = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x;
 	plane->normal.j = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x;
-	real nk = matrix->up.k * z;
-	nk += matrix->left.k * y;
-	nk += matrix->forward.k * x;
-	plane->normal.k = nk;
+	plane->normal.k = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x;
 	real scale = matrix->scale;
 	real distance = matrix->position.y * plane->normal.j;
-	distance += plane->d * scale;
+	distance += source->d * scale;
 	distance += matrix->position.z * plane->normal.k;
 	distance += matrix->position.x * plane->normal.i;
 	plane->d = distance;
@@ -382,29 +379,49 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 96 (was 68, review): the top and bottom planes' own transform helper (a copy of
+// score 39 (was 96): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
+// the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
+// d * scale, x and schedule the k row's first add before its third product, where the other planes
+// sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
+// (n.i or position.x loaded first) in plane 1, the top/bottom planes and three diagnostic tests.
+// Round 51 (lane 16): retail's has-plane arm jumps past the plane-4 transform, so the shared
+// transform after the if/else was a behaviour difference: the transform back in the else arm 99
+// (2818 bytes, the stored unit normal forwarded), with that normal set through vector3f_assign
+// 53 (2833 bytes, read back as retail does); the transform helper taking the source plane and the
+// output plane (distance read from the source) 39 (the distance load stays after the normal
+// stores); the k row as one expression 39 (kept, drops the `nk +=` split). x0 read through the
+// rectangle pointer 95; all four products `depth * rect->` 95, all through result->rectangle 98,
+// depth read at each product 162; the d * scale operand spellings 55/55/53; compile-only screens:
+// all 24 one-expression distance sums 103 (canonicalised, a different order per plane), 168
+// grouped sums best 79, dot3f distance forms 88-107, the camera/rectangle/points aliases or the
+// negated-depth local dropped 39/52/42/41 (harness units), the error test written x first 35 (same).
+// The rectangle pointer declared after the identifier store, x0 through it or the result, or the
+// pointer first with depth assigned after the identifier 83/83/83 (2832 bytes).
+// A second helper for the top and bottom planes (one-expression k row, z, y, d, x) gives them
+// retail's code (harness 25) but is not kept without a match.
+// Earlier score 96 (was 68, review): the top and bottom planes' own transform helper (a copy of
 // transform_plane_163db0 that sums the distance as z, y, d * scale, x) is removed, since a copied
 // helper body is kept only with a match; with that helper the function scored 68.
-// score 68 (was 74): the near corner's z value is computed into a named local before the corner
+// Earlier score 68 (was 74): the near corner's z value is computed into a named local before the corner
 // is stored and the corner is then stored as x, y, z, which is the order retail stores it in;
 // the identifier store, the plane-5 normal stores and the distance product operands still differ.
-// score 74 (was 76): the k component of the transformed plane normal is now summed through a
+// Earlier score 74 (was 76): the k component of the transformed plane normal is now summed through a
 // named local, which reproduces retail's order of the three products and the two adds;
 // the identifier store, the plane-5 normal stores and the distance product operands still differ.
-// score 76 (was 78): the plane-4 normal is stored as k, i, j in the branch that sets it to the
+// Earlier score 76 (was 78): the plane-4 normal is stored as k, i, j in the branch that sets it to the
 // unit z normal, which is the order retail stores it in; the identifier store, points[2] store
 // order, the plane-5 normal stores and the distance product operands still differ.
-// score 78 (was 99): the plane-4 transform moved out of the else arm so both paths share it,
+// Earlier score 78 (was 99): the plane-4 transform moved out of the else arm so both paths share it,
 // and the plane-4 and plane-5 normals are set with vector3f_assign, which reproduces retail's
 // read-back of the normals; the identifier store, points[2] store order and product operands differ.
-// score 99 (was 124): retail sums the plane distance of the top and bottom planes in a different
+// Earlier score 99 (was 124): retail sums the plane distance of the top and bottom planes in a different
 // order than the other four, so those planes use their own transform helper and their distance
 // products now line up; the identifier store, the last corner stores and the plane-4 and plane-5
 // normals (which retail reads back from memory) still differ.
-// score 124 (was 363): the error pointer is now cleared once before the plane checks and the
+// Earlier score 124 (was 363): the error pointer is now cleared once before the plane checks and the
 // per-group else branch is gone, so the diagnostic branches line up; the identifier store, the
 // plane-normal products and the branch polarity of the last check in each group still differ.
-// score 363 (was 363): frameless admission and EDI output agree; camera/corner roles, initial stores and normal/distance scheduling differ.
+// Earlier score 363 (was 363): frameless admission and EDI output agree; camera/corner roles, initial stores and normal/distance scheduling differ.
 // Earlier: frameless guard and EDI output agree; camera/corners EBX/EBP and initial store scheduling differ.
 // camera in EBP and the corner array in EBX (here exchanged); retail reads the copied rectangle
 // through the copy's address (`[eax+4]`...) after the identifier store, where ours reads
@@ -571,19 +588,19 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 		vector3f_assign(&result->planes[0].normal, -1.0f, 0.0f, 0.0f - result->rectangle.x0);
 		function_30bf0(&result->planes[0].normal);
 		result->planes[0].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[0].normal, &result->planes[0]);
+		transform_plane_163db0(&cam->matrix, &result->planes[0], &result->planes[0]);
 		vector3f_assign(&result->planes[1].normal, 1.0f, 0.0f, result->rectangle.x1);
 		function_30bf0(&result->planes[1].normal);
 		result->planes[1].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[1].normal, &result->planes[1]);
+		transform_plane_163db0(&cam->matrix, &result->planes[1], &result->planes[1]);
 		vector3f_assign(&result->planes[2].normal, 0.0f, -1.0f, 0.0f - result->rectangle.y0);
 		function_30bf0(&result->planes[2].normal);
 		result->planes[2].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[2].normal, &result->planes[2]);
+		transform_plane_163db0(&cam->matrix, &result->planes[2], &result->planes[2]);
 		vector3f_assign(&result->planes[3].normal, 0.0f, 1.0f, result->rectangle.y1);
 		function_30bf0(&result->planes[3].normal);
 		result->planes[3].d = 0.0f;
-		transform_plane_163db0(&cam->matrix, &result->planes[3].normal, &result->planes[3]);
+		transform_plane_163db0(&cam->matrix, &result->planes[3], &result->planes[3]);
 		if (!(!(cam->has_plane)))
 		{
 			result->planes[4].normal.i = 0.0f - cam->plane.normal.i;
@@ -593,15 +610,13 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 		}
 		else
 		{
-			result->planes[4].normal.k = 1.0f;
-			result->planes[4].normal.i = 0.0f;
-			result->planes[4].normal.j = 0.0f;
+			vector3f_assign(&result->planes[4].normal, 0.0f, 0.0f, 1.0f);
 			result->planes[4].d = 0.0f;
+			transform_plane_163db0(&cam->matrix, &result->planes[4], &result->planes[4]);
 		}
-		transform_plane_163db0(&cam->matrix, &result->planes[4].normal, &result->planes[4]);
 		vector3f_assign(&result->planes[5].normal, 0.0f, 0.0f, -1.0f);
 		result->planes[5].d = cam->depth;
-		transform_plane_163db0(&cam->matrix, &result->planes[5].normal, &result->planes[5]);
+		transform_plane_163db0(&cam->matrix, &result->planes[5], &result->planes[5]);
 		vector3d_from_points3d(&result->points[4], &result->points[0], &result->directions[0]);
 		vector3d_from_points3d(&result->points[4], &result->points[1], &result->directions[1]);
 		vector3d_from_points3d(&result->points[4], &result->points[2], &result->directions[2]);
@@ -809,6 +824,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 243: Existing normal-copy setters and overlap-safe bounds transfer,
 // subsets 1..7 460/502/526/495/508/565/569; all with native negated input 569.
 // Original transfers and complete body restored; coefficient preload and projection homes remain.
+// Round 100 (lane 8, fast): plane 0's d in every term order with camera-first or normal-first products: operand order
+// never changes the code; i/j/k 146, i/k/j normal-first 115 (same code), j/i/k 149, j/k/i 133, k/i/j 144, k/j/i 133.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

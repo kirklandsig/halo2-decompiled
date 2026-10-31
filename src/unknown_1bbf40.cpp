@@ -531,6 +531,14 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // top 47 (aligned 40); allow_exit declared after the actor lookup 52 (44); `!!actor->unknown268`
 // in the bitwise def 47 (same code); the iterator declared at the outer block's top 47 (same code);
 // the seat index in a long 196.
+// Round 38 (m3 lane 10, fast): the type-6 false-then-field form (99) is aligned 15: entry, NONE in EBX and
+// the scan as retail; left: the true path stores setne to the argument slot (retail `mov cl, 1; jmp`
+// to the join), no reload into CL at the join, the tail tests the slot, and the >= 3 block's float
+// temporaries move to [esp + 0x18]/[esp + 0x14] because the slot stays live. Compile-only screens
+// thread every branchy def (the join placed after the special path) unless the proximity exit leaves
+// the loop by `break`. Trials: `return g_46fbe4;` for the proximity exit 76; that with the if/else
+// branchy def 226 (872 bytes); with the false-then-field def 133; the negated flag (`scan = true;
+// if (type == 6) scan = !field;`) 100 (aligned 18); the false-then-field flag as a long 210 (877).
 // Round 55 (lane 12, fast): `special = true;` preset, then `if (!(type == 6 && byte)) { special = false; scan }`
 // 187 (aligned 11: the only form found whose special path jumps over the scan to the tail as retail's does, with
 // NONE in EBX; left: the preset stores 1 to the slot before the test, and the flag stays in memory at the tail,
@@ -540,6 +548,10 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // false;` with the scan's false 126 (862 bytes). Harness (this file plus its callees' files; same layouts as the
 // build): `&&`, if/else arms, the inverted if/else with `else special = true`, a single-exit inline flag getter
 // all lay the tail's first block after the special path; only a preset-true flag keeps the scan between.
+// Round 135 (lane 4, fast): the type test named (`bool turret = ... == 6;`) 47 (same code); `if (type == 6 &&
+// byte) special = true; else { special = false; scan }` 200 (872 bytes, flag memory-only); the vehicle type read
+// into a short local 47 (same code); `& (actor->unknown268 == true)` 47 (same code); `special = false; if (type
+// == 6 && byte) special = true; else { scan }` 202.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
