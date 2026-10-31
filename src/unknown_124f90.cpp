@@ -4047,7 +4047,7 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // (build/r40h/clr); in compile-only probes of this clear shape only /Os (or /Oi-, which calls memset) avoids the
 // `and esp, -8`; retail realigns 115 other functions with large clears, so retail's compiler does it too.
 // Round 9 (m3 lane 18; one-file LTCG probes build/r9/al): the frame realigns exactly when some large-local clear's
-// result is unused: memset statements, `long` clear loops (turned into rep stosd), ZeroMemory, a 0x7c-byte clear of
+// result is unused: memset statements, `long` clear loops (turned into rep stosd), a zero-fill macro, a 0x7c-byte clear of
 // the array, clears through an LTCG-inlined helper's pointer parameters, a result assigned to a dead local, with or
 // without /arch:SSE and with a caller that keeps an 8-aligned stack; both results used (named or as arguments) never
 // realign but keep `mov reg, edi` copies. Fast trials: results named in retail's clear order (0x40 first) before the
