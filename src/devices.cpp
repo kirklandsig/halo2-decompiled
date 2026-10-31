@@ -634,13 +634,15 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
-// score 34 (was 34): the group-flag load is the only content difference left in the block: ours is a
-// byte load with a mask (`movzx eax, byte ptr [eax+2]; and eax,3`), retail's is a word load
-// (`mov ax, word ptr [eax+2]`), and the three extra bytes shift every later block.
-// score 34 (was 42): masking the group flags into a dword local gives retail's `test al, 1` and
-// `test al, 2` with the group pointer in EAX, but the flags are loaded as a byte and masked
-// instead of retail's word load, and case 0x1200055f still lacks retail's zero store.
-// score 42 (was 42): the group-flag test is two bytes longer than retail's: ours shifts the flags byte
+// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
+// retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
+// retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// Lane S (34, was 42): masking the group flags into a dword local gives retail's `test al, 1` and
+// `test al, 2` with the group pointer in EAX, but the flags are loaded as a byte and masked instead of
+// retail's word load (the extra bytes shift every later block), and case 0x1200055f still lacks
+// retail's zero store.
+// Earlier: the group-flag test is two bytes longer than retail's: ours shifts the flags byte
 // down by one before the second test (`shr al, 1; test al, 1`), retail tests bit 2 directly; retail
 // also clears the result in case 0x1200055f where ours does not (`function_value = 0.0f;` first in
 // the velocity block is retail's store, but alone it shifts every later instruction: 656 bytes, 114,
@@ -698,6 +700,15 @@ struct s_device_machine_view
 // on the bool form 42; a const group pointer with the bool form 42; `second` declared beside the
 // flags and assigned later 42. In the mask forms the pointer is dead after the flags load (esi is
 // popped after the first test), so it is a coalescing choice, not a longer live range.
+// Round 101 (lane 8; exact LTCG harness through a function-pointer caller, harness 32 = 34): plain
+// masks on the word local plus `function_value = 0.0f;` first in the 0x1200055f velocity block leave
+// only the group pointer's register (`push esi; lea esi` / `mov ax, [esi+2]` / `pop esi` against
+// retail's `lea eax` and `mov ax, [eax+2]`), 656 bytes, 106 positional: the 16-bit flags value never
+// shares EAX with the dying pointer. On that base: no pointer local 113, direct field reads 106, the
+// word local declared at its read 106, the flags read before the machine test 114, the machine flags
+// read at each use 106, nested tests 106, the power test's operands swapped 106 (the pushed ESI in
+// each). On the lane S form: a byte/word bits local 32/32 (harness); dword/long/int/short flags locals
+// with masks 105 each (pushed ESI); the zero store added 105.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
