@@ -1065,7 +1065,9 @@ bool __stdcall function_111650(long unit_index, long *names);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 715 (was 715): aligned frame 0x19ac versus retail unaligned 0x1984; flag and scalar homes differ.
+// score 639 (was 715): aligned frame 0x19ac versus retail unaligned 0x1984; flag and scalar homes differ.
+// Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
+// double (LTCG had pushed its 8-byte alignment need onto 0x2056e0's callers).
 // Physics-state branch scope, separate velocity outputs and both 715 each; final default-array
 // initialization alone or with either/both workspace changes 723 each; all with native flag tests 753.
 // Original scopes, scalar observations, default stores and existing local qualifier retained.
@@ -2169,9 +2171,11 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 /* the physics of type 0 vehicles (the differential-steered ones): the
    engine drives each side's contacts, the turn trading torque between
    the sides */
-// score 115 (was 115): frame 0x14 against 0x10 (one dead slot below gear_throttle; the four used slots
-// agree but sit 4 higher); zero/scalar residency and spin schedule remain. Kept earlier: live period
-// receiver, native twice-used gear and result-first torque.
+// score 101 (was 115): the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
+// alignment need LTCG had pushed onto this caller); before that, frame 0x14 against 0x10 (one dead
+// slot below gear_throttle; the four used slots agree but sit 4 higher); zero/scalar residency and
+// spin schedule remain. Kept earlier: live period receiver, native twice-used gear and result-first
+// torque.
 // Live period 136; native gear 190; both 113; scalar roles 192/136/190/113; result-first torque 101 kept plain.
 // Spin exit / period-first / both 101; named absolute steering with each 127; early torque zero 140.
 // Y405: Frame 0x14 versus 0x10 and zero/scalar homes remain;
@@ -2270,7 +2274,8 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
-// score 189 (was 189): frame 0x34 versus 0x30; native gear and incoming roles agree;
+// score 187 (was 189): the frame is now retail's 0x30 (round 114); before that, frame 0x34 versus
+// 0x30; native gear and incoming roles agree;
 // torque/contact homes, flag extraction and spin allocation remain. Shared workspace/in-place spin
 // and original bits 304/257/201/272/216; native short gear on the two legal graphs 187/202.
 // Early one-use bit forms 334/92/121 and their short-gear/return-value forms
@@ -2301,6 +2306,24 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // the throttle slot with torque; compile-only does too, LTCG pairs it with the offset). i before
 // torque, scoped throttle with late torque, a named gear-select result, the throttle magnitude
 // passed inline: 29 each. Original body restored.
+// Round 114 (lane 6): the 0x34 frame was 8-byte alignment that LTCG pushed up from 0x2056e0, whose
+// inline cap helper named a `double scale`; passing the scale straight to scale_vector_by_double
+// (0x2056e0 still matches) gives retail's 0x30 frame here (189 -> 187 on this body). On round 50's D9
+// form (early named bits, the element pointer, the wrap written on the fields; 29 before) that is 10,
+// and with `torque * dt` written in both adds (no spin local) 8 at 991 bytes: only the torque and
+// loop-offset slots stay swapped (torque 0x14 / offset 0x18 sharing the throttle's, retail the other
+// way round). None of those forms is kept without a byte match. On the 8 form: i or torque declared
+// first 8/8, torque declared late 8, throttle in a block 8, throttle passed inline 8, a while loop 8,
+// plain else-if gear 177, torque preset to 0 270, brake store before the torque store 19, torque
+// stored first 32, contact pointer before the definition pointer 9, memcpy for the rotation copy 71,
+// the existing VEHICLE_DWORD_BITS view for the bits (early 8, at use 180), torque from an inline
+// helper returning from each arm 8 / single exit 71, spin named before the calls 81. Wrap helper
+// forms: period through a pointer 84, by reference 84, forceinline 84; the helper also doing the add
+// with a named spin 10 (the D9 spin code), with `torque * dt` per call 70, with torque and dt passed
+// 70; on this body (period pointer, add inside) 183. Diagnostics: extra torque uses in or after the
+// loop, throttle and torque as one variable (10), and removing any single call never move torque
+// above the offset. Source permuter on the 8 form: 6 tries in 616 s, nothing lower. Original body
+// restored.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {

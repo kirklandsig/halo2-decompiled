@@ -534,6 +534,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // definitions; the indexed form `&(*(T **)(definition + 0x34))[index]` 115 (1136 bytes, aligned 38 ->
 // 91: every rotation row's sum order changes); with scale first 113; with the definition computed
 // before the emitter lookup 126, both 124; the index as a for-loop counter 115 (same code).
+// Round 114 (lane 6, fast): scale initialised before multiplier 40 again (the 1.0 stores only; below
+// the margin); the particle position copied as a vector3f (no casts) 42 (identical); the next index
+// read right after the particle lookup 272 (1113 bytes); color declared first 42; the 0xf80f mask
+// passed at the call 42; on scale-first, the translation after the motion rotation 84.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

@@ -86,20 +86,25 @@ struct s_save_list_2164c0
     s_save_entry_2164c0 entries[4096];
 };
 
-PRIVATE inline bool append_save_entry_2164c0(s_save_list_2164c0 *list, s_save_entry_2164c0 const *entry)
+/* counts in the list's next entry and returns it, NULL once the list is full */
+PRIVATE inline s_save_entry_2164c0 *append_save_entry_2164c0(s_save_list_2164c0 *list)
 {
-    bool result = list->count != 4096;
-    if (result)
+    s_save_entry_2164c0 *result = NULL;
+    if (list->count != 4096)
     {
-        memcpy(&list->entries[list->count++], entry, sizeof(s_save_entry_2164c0));
+        result = &list->entries[list->count++];
     }
     return result;
 }
 
-// score 32 (was 32): frame 0x8ac and extent agree (659 bytes plus 3 of fill); only registers differ:
-// the append's list/count/result (ours edx/eax/cl, retail ecx/esi/al, with the count copied to eax
-// and the new count stored before the copy) and the scratch pairs before the format call,
-// XFindNextSaveGame and XFindClose. Deleting the append alone makes those pairs retail's; every form
+// score 20 (was 32): frame 0x8ac and extent agree; with the helper handing out the list's next entry
+// (round 114) the list is in ECX and the scratch pairs before the format call, XFindNextSaveGame and
+// XFindClose are retail's. Left: retail tests a materialized bool (`cmp esi, 0x1000; setne al;
+// test al, al`), copies the count to EAX and stores the new count before forming the slot; ours
+// branches on the compare, forms the slot first and tests the returned pointer (`test edi, edi`).
+// Earlier (32): only registers differed: the append's list/count/result (ours edx/eax/cl, retail
+// ecx/esi/al, with the count copied to eax and the new count stored before the copy) and the scratch
+// pairs before the format call, XFindNextSaveGame and XFindClose. Deleting the append alone makes those pairs retail's; every form
 // with a materialized result gives ours, every form without one gives retail's list ECX but no
 // setne/test. A byte scan finds retail's append sequence nowhere else.
 // Tried: memcpy into `&entries[count++]` 32 (kept, from 51); file path/directory/both receivers
@@ -363,6 +368,10 @@ PRIVATE inline bool append_save_entry_2164c0(s_save_list_2164c0 *list, s_save_en
 // Round 177 (fast, append helper): the result declared `bool const` 32, as `char` 32, as `!(count ==
 // 4096)` 32 (all same code); the room test `4096 - list->count != 0` 51 (mov/sub before the setne);
 // `if (!result) return result;` before the copy 32 (same code).
+// Round 114 (lane 6): the append helper taking the count by value 33; a bool helper handing the entry
+// out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
+// caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
+// copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
@@ -425,8 +434,10 @@ found:
                 {
                     entry.type = type;
                     function_216e50(data.szSaveGameName, type, &entry.language, entry.name);
-                    if (!append_save_entry_2164c0(list, &entry))
+                    s_save_entry_2164c0 *slot = append_save_entry_2164c0(list);
+                    if (!slot)
                         break;
+                    memcpy(slot, &entry, sizeof(entry));
                 }
 next:;
             } while (XFindNextSaveGame(find, &data));
