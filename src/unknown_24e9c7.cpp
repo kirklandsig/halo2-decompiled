@@ -192,6 +192,11 @@ struct s_24e9c7_bounds
 // 155 (735 bytes); the same with separate side scalars 155; across built in the side point and scaled in
 // place with scalar back 139 (the listed form; side y spilled at -0x14); that scalar form with scale read
 // first 155.
+// Round 35 (lane 13, fast): retail's -0xc/-8 pair reads as one 8-byte point (x kept in a register, its home
+// unused; y spilled, then scaled in place to the side y); tried: across as a point scaled in place into the
+// side vector, declared at function entry 139 (742 bytes) or at its computation 139; a separate across point
+// declared at entry 139; an initialised across point 139; size computed before the bitmap pointer 125 (same
+// code). Every point local still homes below the scalars.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -1485,6 +1485,10 @@ struct s_rating_summary
 // pointer formed before the change call 88; the team counters read into first/second/third locals
 // (diagnostic) 212 (the collection moves to EDI from entry, the counters cursor still EBX).
 // On the original source: lower as `lower = 0; if (value >= 0) lower = ...;` in both loops 274.
+// Round 35 (lane 13, fast): the team loop's level computed inside the change-call argument list 131 (MSVC calls it
+// in place during the pushes, after lower; retail calls it right after the change), level and lower both there
+// 138; the team loop as the `type == 5` if-branch 317; the key stored before the session copy 88 (as before);
+// with the key read from the collection at that store 90.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

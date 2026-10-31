@@ -544,6 +544,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
 // other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
 // and case 2's declaration orders, compile identically (286-290).
+// Round 35 (lane 13): result declared first 278; surface pointer declared first 278; corners a, b, c, d 299
+// (1284 bytes: actor_index loaded into EAX at entry and pathfinding moved to EBX as retail, but LTCG then passes
+// pathfinding in EDX); with the surface pointer first 299; with case 5's direction copied before its position 295.
+// Retail's caller sets up ECX, EAX, EDI in the same order as ours, so no parameter reorder is indicated.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
