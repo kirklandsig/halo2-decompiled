@@ -355,6 +355,8 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
 // score 8 (was 8): the seat loop's preamble still differs in the guard's shape (a sign test on the
 // decremented count where retail compares the count against the index register) and in the home of
 // the loop's zero (a constant in EAX where retail stores the index register's own zero); this
@@ -404,9 +406,7 @@ bool function_1b9200(long object_index, long prop_index)
 		{
 			s_vehicle_seat_definition *seat = NULL;
 
-			long seat_count = tag->seat_count - 1;
-
-			for (short i = 0; i <= seat_count; i++)
+			for (short i = 0; i < tag->seat_count; i++)
 			{
 				if (TEST_FIELD_BIT(tag->seats[i].flags.bit3))
 					seat = &tag->seats[i];
