@@ -560,6 +560,12 @@ bool function_7af40(s_type_99af70 const *address);
 // into the clearing store (`flags = flag ? 0x40 : 0`) with counter, copy, state 32 (243 bytes; the counter
 // still splits, into ECX); that with the open call re-reading `connection->endpoint` 40 (239 bytes), and
 // with counter, state, copy 104 (258 bytes, 0xb40b0 61).
+// Round 22 (m3 lane 2, fast with 0xb40b0/0xb5f10): `_ReadWriteBarrier()` between the counter and the state store
+// keeps the in-place `inc` with the state store before the call: alone 36 (242 bytes, success tail retail's); with
+// retail's endpoint reads 103 (257 bytes: the body is retail's but the address then arrives in EAX, 0xb40b0 61);
+// the barrier before the counter / after the state store with the reads 111/102; counter, barrier, copy, state with
+// the reads 15 (the listed mixed form); single bool result 103; close after an else 103; the three stores through a
+// new inline reset helper on `connection->endpoint` with the barrier 103, with the copy before the state 15.
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {

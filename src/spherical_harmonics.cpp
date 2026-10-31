@@ -321,6 +321,13 @@
 // 56 (fixes +0x50); with the cubic statements in the 9, 10, 12, 11, 13 order 56, plus xx_3yy after result[12] 56;
 // result[11] staged as `zz5_1 * band3_21`, `*= inverse_sqrt_pi`, `*= y` 69 at retail's 660 bytes; both cubic X/Y
 // accumulators from inverse_sqrt_pi first 139 (653 bytes).
+// Round 22 (m3 lane 2, fast; 0x146020 matched in each): lane 4's 2-point form rebuilt 2; permuter on it (anneal,
+// 600 s, 52 tries) best 2. Compile-only on the 2-point form, the quadratic sqrt15 load stays after `fmul z` for:
+// the five other input load orders, const inputs, one input declaration, the 23 other first-block store orders,
+// inverse_sqrt_pi with a double numerator, a float root or declared first, zz right after sqrt15 or at the block
+// top, result[5] `band2 * y * z`, sqrt5 first, result[6] first or inverse_sqrt_pi first, result[7] unstaged.
+// Real builds on this body: const inputs 59; result[5] `band2 * y * z` 59; sqrt5 set first 59; result[6] with
+// inverse_sqrt_pi first 59.
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {
