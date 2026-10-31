@@ -40,6 +40,10 @@ PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0);
 // Compile-only screens reproduce ours exactly; declaration/setup orders, nested tests, swapped
 // compare, goto exit, stdcall, a pool local, pool read at each use in the step all keep ESI;
 // only an object index held in EBX from entry (0x1fb760's case) moves the pool to EDI.
+// Round 139: the step through the non-volatile shared iterator 41 (pool to EBX); the loop
+// condition `!result && step` with the result assigned from the test 29; the result set from the
+// flag inside the object test 30; the object index read through its address 12; the iterator
+// aggregate-initialised 13; a 600 s permuter run (61 tries), none below 12.
 // @retail 0x1fb6f0
 bool recorded_animation_playing(long object_index)
 {

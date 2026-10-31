@@ -1518,6 +1518,10 @@ long function_2421d0(long team)
 // ternary 55; nested arms with the peer read after the type 30 (before NONE 35); a plain
 // `else if (enabled)` 35 (193 bytes); NONE in a final else 56; the peer tested first in each && 55;
 // the existing game_engine_get() in each arm 74.
+// Round 139: a peer ternary in each type arm 75 (213 bytes; the arms' scratch registers rotate
+// by one, ecx/edx/eax then edx/eax/ecx); the peer tested first with the type if/else inside 57;
+// the peer local declared before the type 33; the type read at each test, no local 59; the peer
+// as a bool 61.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
