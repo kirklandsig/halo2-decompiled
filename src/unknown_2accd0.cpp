@@ -703,6 +703,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // signature case before the body case 88 (same code each). Retail's hoisted body_size is a temporary
 // shared by both cases (its body arm ends `sub ecx, eax` + the clamp's `mov edi, ecx`), as if hoisted
 // before allocation; ours is hoisted after allocation from two identical coalesced loads.
+// Round 34 (lane 13, LTCG harness, base 22 = 34): locals renamed (size as count/read_size, position
+// as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
+// before its buffer 34 (all identical code: names do not break these register ties); the body case as
+// an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

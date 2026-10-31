@@ -931,6 +931,11 @@ void __stdcall function_43720(s_43740_input *input)
 // local before the texture call for both arrays 69 (215 bytes, 0x42b20 66); the position computed after
 // the normal and before the tag, bitmap and count 62; that with the count right after the slot 63; the
 // mid-fill position with both arrays indexed through the stored slot 62 (0x42b20 matched in the last three).
+// Round 34 (lane 13, LTCG harness through 0x42b20, base 58 aligned 32 = 62; 0x42b20 0 in each): the
+// definition given a typed sub-record at +0x3c with the normal flag at its +0x2c, shader and normal read
+// through it 62; with the tag as a typed field 62; the typed tag alone 62; a second index local copied
+// from the tag for the call and lookup 62; an early return on the field with the tag local after it 62;
+// the tag as a dword 62 (all identical code); the lookup through `(word)tag` harness 60, aligned 53 (204 bytes).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

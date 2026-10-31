@@ -720,6 +720,9 @@ extern "C" void _ReadWriteBarrier(void);
 // place of the memset 175 (the first zero store goes, 672 bytes); the 0x12aff0 call inside the
 // room expression 65 (667 bytes); the voice fields through globals->voices[voice_index] 191; room
 // declared at the top 21 (same code).
+// local for both calls 42. The existing decibel-volume helper 65 (667 bytes); direct global reads 21;
+// direct indexed voice accesses 191 (686); an independent RoomHF PIN 112 (691); a real loss local 57;
+// chained filter zeros 23; the filter at first use 21; a room-base local 99. Body restored.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

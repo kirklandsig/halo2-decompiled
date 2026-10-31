@@ -50,6 +50,9 @@ typedef void *(__stdcall *texture_allocate_proc)(long size, long alignment);
 // of the arm 68. Retail's result is set late yet not coalesced with the header, and its spill
 // stores the header register: a copy of the header defined after width's read and live across
 // the allocation call would give both; no source form tried keeps that copy apart.
+// The failure result rewritten 69 (181 bytes); the result declared before allocation 28; the buffer
+// before aligned 28; all declarations at entry 28; the result before Lock/Data 33/35; a promoted
+// height with the failure result 66 (182), with Lock first 31. Body restored.
 // @retail 0x23e340
 D3DTexture *function_23e340(short width, short height, short format,
 	texture_allocate_proc allocate, long *size, void **data, D3DTexture *header)
