@@ -634,15 +634,15 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 231 (was 231): this round: the root-walk loop and the table read are the only places
+// score 230 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// bool result byte) while ours keeps EBP for the global base and a dword result.
+// Earlier round: the root-walk loop and the table read are the only places
 // left that could give retail's frame shape, so each was tried alone and together: the table
 // read moved inside the root loop 216 fast (237 plain), a bool result instead of the dword
 // 264, and both together 220; every one is worse than the 231 we keep, so the body stands.
 // The remaining difference is the frame (retail self-aligns to 0xb4, ours is 0xac with
 // EBP-based globals) and the result width; nothing in the reachable code moves it.
-// score 231 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
-// bool result byte) while ours keeps EBP for the global base and a dword result; retail's
-// x87 block computes atan2(radius, magnitude) (swapping ours scores 230).
+// Earlier: retail's x87 block computes atan2(radius, magnitude) (swapping ours scores 230).
 // Round 89: the reduced image self-aligns like retail, so trials were measured there (baseline 247)
 // and confirmed plain: the existing function_baf80 for the root walk 280 (stays out of line; retail
 // calls it out of line from 48 other functions, so this loop is its own); the table read inside the
@@ -709,6 +709,24 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // Round 205: Existing marker-position provider with long/Boolean/word/byte results, inherited/direct radius:
 // 230/251, 280/295, 238/255, 260/272. One-point 230 rejected; all original forms restored.
 // Caller-dependent self-alignment, full-handle spills and scalar/angle homes remain.
+// Round 7 (lane 17): the angle now computes retail's value: retail loads the magnitude, then the radius,
+// then `fxch; fpatan`, which is atan2(radius, magnitude), and adds pi/4 as a float (`fadd dword` of the
+// float constant at 0x45e01c); ours computed atan2(magnitude, radius). The swap alone 232 plain (radius
+// loaded first, no fxch); with the angle sum in real (`(real)atan2(radius, (double)magnitude) + pi/4`)
+// retail's exact x87 sequence, 230 plain (kept). With the callers in the reduced image it no longer
+// self-aligns (fast now agrees with plain); without them it does (246): either caller alone gives LTCG
+// the alignment guarantee retail's lacked, so the frame is a call-chain property, not this body's.
+// On 230 (fast, callers included): the radius as a plain double (no alias) 235 (the field is re-read,
+// no double home); a bool result 273 (861 bytes), on the next form too 273; the header table read
+// inside the root walk 236; the range's zero as the model-NONE else arm 228 (retail's memory-zero
+// compare and else-arm xorps; below the keep bar, lead); on that, a single-result iterator step 273
+// (927 bytes), both offsets through vector3d_from_points3d 228, the typed visible_clusters field 228,
+// the step's ternary as `index != NONE ? ... : 0` 227 (below the bar, lead), and on that the outer
+// scope block removed 227, the link iterator at function scope 227, the squared radius before the
+// model index 227, the marker at loop-body scope 227, the near test as `radius_squared >
+// distance_squared` 227. Retail's latch NONE re-test and abs-index spill follow from its frame
+// pointer (the handle lives in memory); the zoom argument's 32-bit widening needs 0xc8880's
+// parameter (contributor, left alone).
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -789,7 +807,7 @@ bool function_bba80(long object_index)
                     double const &radius = radius_value;
                     real magnitude = function_30bf0(&offset);
                     if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos(atan2((double)magnitude, radius) + 0.7853981852531433f))
+                        cos((real)atan2(radius, (double)magnitude) + 0.7853981852531433f))
                     {
                         result = true;
                         goto done;

@@ -14,6 +14,11 @@ real normalize2d(point2f *arg_0);
 
 // score 211 (was 211): frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
+// Round 30 (lane D): the permuter's best variant scores 194 against its own 195 baseline (one point,
+// below the retention margin). What still differs: this body loads the output pointer into EBX before
+// saving EBP, retail saves EBP and keeps the pointer there, so the point copy runs through EBP where
+// retail uses EBX; the body is also 21 bytes short of retail. Original body kept.
+// score 211 (was 211): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // copies the input point a second time (at 0x28, through integer moves) for the two vector
 // differences and keeps the center at 0x34; ours has the center at 0x28 and the to-center vector at 0x34.
 // Round 90: radius read before the center copy 215 and the copied point as the actor-to-point

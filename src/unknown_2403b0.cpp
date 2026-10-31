@@ -37,6 +37,7 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // score 95 (was 95): the object-pool data pointer is spilled across 0xcbd50/0x101280 where
 // retail reloads it, and the completion bits are set through AL where retail uses DL and CL;
 // the frame 0x3c agrees.
+// Frame 0x3c agrees; pool-data spill and scratch-register ties remain.
 // (Merged from a second score line, 95 (was 95):) frame 0x3c agrees; pool-data spill and scratch-register ties remain.
 // Earlier: frame 0x3c agrees; the object-pool data pointer is cached where retail reloads
 // frame 0x3c agrees; the object-pool data pointer is spilled across 0xcbd50/0x101280
@@ -125,6 +126,12 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // Round 315: Seven joint positive unit/weapon/slot admission graphs 95 each; full graph with
 // independent completion event 116 at 912/912. Original resource, score and event lifetimes restored;
 // pool-data spill and scratch-register ties remain.
+// Round 53 (lane 9, fast): the spilled pool pointer is a callee-summary effect after all: a diagnostic
+// global store inside 0x101280 (reverted) makes this body reload the pool after that call as retail does,
+// 95 -> 53, with 0x101280 itself then 55 bytes. Byte-identical spellings of 0x101280 keep it pure here:
+// `inline` on its definition 95; the object read through an out-parameter helper 95; its file linked after
+// this one 95 (all three callers of 0x101280 still match); one pool-data local for both lookups 95.
+// BLOCKED-BY 0x101280's summary.
 // Round 26 (lane 14, fast with 0x101280 and its other callers): retail reloads the pool data right
 // after the 0x101280 call (its other callers 0xa8040/0x241520 don't use the pool after it); `inline` on
 // 0x101280's definition 95 (callers unchanged); completion bits in reverse order 95; the limit branch

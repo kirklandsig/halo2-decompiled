@@ -852,6 +852,15 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // every sum stored to a slot and pushed through a GPR, and no (send + level) shared between appends
 // are /Op code generation; the sibling 0x2afb80 matches in a /O2 /Op /arch:SSE /Gr file (flags are
 // the user's decision).
+// Round 7 (lane 17, fast with 0x2af7b0/0x2af450/0x2aeb20): the else branch wholly through decibels_add
+// (the input level once as long bits, every sum and mode tail as bits, gains and front/rear levels read at
+// each use, as retail reads them) 463 at 1263 bytes and the dispatcher lost (parameters then stays on the
+// stack and this comes in ECX); the same with the front/rear snapshots kept 470 at 1276 (dispatcher exact,
+// so the flip follows the this/parameters balance; decibels_add's long operands load each gain as an
+// integer and stage it, where retail loads the gains as floats and stages only register-held bits); the
+// input level copied once into a real local for the else branch's sums 411 (dispatcher lost); the
+// first branch's two selected levels as long bits 377 (aligned 161 -> 152, but level then sits in EBX and
+// the right bin is spilled); the first level as a real/long union 370 (same code).
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
