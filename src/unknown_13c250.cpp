@@ -128,6 +128,10 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // Round 241: three-handle table with separate/gathered slots, word/byte selectors and
 // qualified/plain counts 238/238/238/238/265/265/268/268. Grouped diagnostics restored;
 // original collection, pointer ranking and frame 0xd8 retained.
+// Round 40 (screen, base 138): the three weapons in a local array appended by a loop 234 (790 bytes), the
+// same array appended in three statements 138 (same code: the slot reads still share the unit pointer);
+// either with the count not volatile 258/273, the base so 273; the found unit kept and the lookups after the
+// walk under `if (unit != NONE)` 138 (same code).
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {
