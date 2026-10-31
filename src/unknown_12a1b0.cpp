@@ -1211,6 +1211,9 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // iterator fields index-first, iterator/both at function scope 24 each. Compile-only with a
 // forced-inline 0x126df0 copy gives retail's index EDI/element ESI when the count gets EBX;
 // with the first index in EBX (LTCG) ours swaps them.
+// Round 57: aggregate iterator initialization 24; first-initialized index 24; iterator pointer 50;
+// index declared after initialization 24; first-next while/do-while 64/64; current-index rename 24;
+// named state predicate 24 (one-use local, restored). Plain checks throughout; original body restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
