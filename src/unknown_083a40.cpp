@@ -657,6 +657,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // function scope 32; the occupied record through its own scoped pointer 32, the last record likewise 32,
 // both 32 (all same code). Retail loads `updates` last in the swap and occupied set-ups and groups
 // (collection + offset) first in the occupied key, as if that sum were treated as loop-invariant.
+// Round 42 (lane 1, fast with 0x69260/0x84e90): the three spots share one pattern: retail reuses the
+// register just freed (ECX for the preheader cursor before the offset, ECX for `updates` after the slot
+// push) where ours takes another free one (EDX), so the scheduler moves the store or the load. One
+// function-scope index for the three loops 32; the swap given `&watcher->players` 32; a block-scoped
+// update pointer in each second-loop block 32; the session player as `session->players + i` 32 (all
+// identical code); the conflict scan without its flag (`break`, then `if (j < 16) continue;`) 230.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

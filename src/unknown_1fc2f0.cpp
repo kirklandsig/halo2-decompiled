@@ -200,7 +200,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
-// score 43 (was 43): the limit test is written the other way round, so the comparison matches
+// score 32 (was 43): the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
 // in other registers and the limit is computed before the squared length. Converting the ticks
@@ -335,6 +335,18 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // velocity stores and deltas then run j, i where retail runs i, j), i, k, j 47, k, i, j 62, k, j, i 62,
 // j, k, i 49; subtractions i, j, k grouped before the products j, i, k / i, j, k / j, k, i 96/93/97, the
 // same with subtractions j, i, k 96/92/97 (375-378 bytes); one to three dead real locals 43 (identical).
+// Round 42 (lane 1; minimal SSE compile-only harness, then fast): kept the squared length named once
+// for the test and the root with the deltas assigned j, i, k: 32 (first difference +0x59; retail's limit
+// and length schedule and its k, j, i sum). What still differs: the tick conversion takes XMM4 (retail
+// reuses the rate's XMM3), so the velocity stores run j, i and the k product and delta copies differ;
+// the correction products then interleave with their adds. Tried on it: deltas i, k, j 33 (harness
+// k, i, j / k, j, i / j, k, i / i, j, k worse); the copy of the state velocity as one struct assignment
+// 132 (394 bytes); the squared length named after the limit 46; the tick scale read straight from the
+// global 32; the rate chains j, i, k 32 (both identical code). Harness only (no gain over the kept
+// form): all chain and tick-product orders, the conversion late, inline or from the global, no rate
+// local, `short ticks`, `limit` declared at its assignment, `delta` declared first, and the correction
+// through vector3f_scale, vector3f_add, adds written correction-first (all equal), scaled in place or
+// through vector3f_add_scaled (worse). Late conversions make the tick products copy the tick register.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
@@ -362,15 +374,16 @@ void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_
 	velocity.i *= tick_scale;
 	velocity.j *= tick_scale;
 	velocity.k *= tick_scale;
-	delta.i = velocity.i - state->velocity.i;
 	delta.j = velocity.j - state->velocity.j;
+	delta.i = velocity.i - state->velocity.i;
 	delta.k = velocity.k - state->velocity.k;
+	real length_squared = length_sq3f(&delta);
 	limit = g_510c54->rate * 0.5f;
-	if (!(limit * limit > length_sq3f(&delta)) &&
+	if (!(limit * limit > length_squared) &&
 		tracked->location.unknown0 == state->location.unknown0 &&
 		tracked->location.unknown2 == state->location.unknown2)
 	{
-		real scale = limit / ((real)sqrt(length_sq3f(&delta)) * g_510c54->rate);
+		real scale = limit / ((real)sqrt(length_squared) * g_510c54->rate);
 
 		vector3f correction;
 		local_scale3d(&delta, scale, &correction);

@@ -1814,6 +1814,11 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // through real_point3d_set and then assigned 109 (766 bytes: the position pointer local gives retail's
 // `lea eax, [esi + 0x2c]` stores). A compile-only build does not model this function (retail keeps
 // forward in xmm2-4 across the LTCG 0x11d000 call).
+// Round 42 (lane 1, fast with 0x178360): node copy first re-viewed (107: the hoisted extension also
+// moves the markers base to EBX in the matrix arm; the xmm rotation is unchanged); with one marker
+// pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
+// else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
+// indexings 77 (identical); the zero position as a chained assignment 79.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
