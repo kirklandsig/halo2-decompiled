@@ -2505,34 +2505,42 @@ void function_4d830(s_render_transform_record const *record)
 }
 
 
-// score 16 (was 26): the two branches share one call setup that is hoisted in front of the
-// branch, where retail repeats the argument setup inside each of the two blocks.
-#pragma optimize("p", on)
+PRIVATE __forceinline real maximum_25ca0(real first, real second)
+{
+    real result = second;
+    if (first > second)
+        result = first;
+    return result;
+}
+
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
+// Coordinator review (MiniMax C): the lane's 16 needed a #pragma optimize("p") pair around
+// the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
+// divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
-    real divisor = 0.0001f > g_4b9fa4 ? 0.0001f : g_4b9fa4;
-    real reciprocal = 1.0f / divisor;
-    real value = 0.0f - g_4b9ff8 * reciprocal;
     real constants[4];
+    *(volatile real *)&constants[3] = maximum_25ca0(0.0001f, g_4b9fa4);
+    real value = g_4b9ff8;
+    value *= 1.0f / *(volatile real *)&constants[3];
+    value = 0.0f - value;
     constants[0] = value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
     constants[1] = 0.0f;
     constants[2] = g_4b9f18;
-    if (enabled)
-    {
-        constants[3] = g_4b9f9c;
-        D3DDevice_SetVertexShaderConstant(-81, constants, 1);
-    }
-    else
+    if (!(enabled))
     {
         constants[3] = 0.0f;
         D3DDevice_SetVertexShaderConstant(-81, constants, 1);
     }
+    else
+    {
+        constants[3] = g_4b9f9c;
+        D3DDevice_SetVertexShaderConstant(-81, constants, 1);
+    }
 }
-#pragma optimize("", on)
 
 // @retail 0x1cd90
 void function_1cd90(void)
