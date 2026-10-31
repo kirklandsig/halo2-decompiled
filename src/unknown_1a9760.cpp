@@ -57,6 +57,11 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 53: the short-vector arm first (`if (fabs < eps) local_4 = 0; else ...`) 104; `local_8 * k` 104;
 // the dot with the negated component first in each product 104; `0.5f * v` 104; the unknown456 store just
 // before the magnitude 108. Harness: all but the last compile byte-identically.
+// Round 40 (lane 11, fast): the first difference (+0x6f) is register numbering: retail gives the half
+// constant xmm3 and the three offset components xmm1/xmm2/xmm0, kept live into the projection, and the
+// length xmm7; ours 0.5 in xmm0, the components in xmm5/xmm2/xmm3, the length in xmm1. local_3 declared
+// before local_2 / at the top 104/104; the trace result, local_5 with local_6, and local_8 declared at the
+// top 104/104/104 (all the same code).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
