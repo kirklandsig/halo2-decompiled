@@ -6,6 +6,7 @@
 #include "unknown_0259d0.h"
 #include "unknown_2c0d00.h"
 #include "unknown_11cc90.h"
+#include "vector2f_products.h"
 #include <math.h>
 #include <string.h>
 
@@ -210,7 +211,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 899 (was 899): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 882 (was 899): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
 // Frame pointer 1207; size preference 1436; native object fields 866;
@@ -264,9 +265,20 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // volatile 974 (aligned 524); no settings volatile 904; raised at function scope 888; location declared
 // before the actor block 888. Ours hoists the object-table global load to the entry for both lookups;
 // retail loads it inside each block (four loads against three).
+// Round 27 (m3 lane 15, plain): retail reads `settings` once into ECX, keeps `unit_index` in EDI and reads
+// the actor's fields from the computed actor address (none of the three volatiles is retail's), and EBP is
+// self_unit (its NULL is the entry's zero, so the priority/range zeros come from it). The settings
+// volatile dropped 882 (kept, 3705 bytes); on 899: the location/raised grouping struct as plain locals
+// 906 (3718 bytes), no unit_index volatile 917, no actor volatile 959 (3680 bytes); on 882: no unit_index
+// volatile 938, plain locals 925 (3702 bytes), no actor volatile 996 (3648 bytes), both 998 (3646 bytes),
+// self_unit declared first 882 (same code); the previous-direction dot and the other-actor offset and dot
+// through dot3f/vector3d_from_points3d 893 (3694 bytes), with the object offset and its squared length
+// through vector3d_from_points3d/length_sq3f too 899 (3690 bytes). Retail lays the type-0 arm's
+// other-actor branch out before the join (the offset/radius test) and its `else if` branch and types
+// 1/7/11 after it; ours keeps source order.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
-    s_path_settings const *volatile settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
+    s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, volatile long unit_index, long ignore_index)
 {
     short ignore_priority = 0;
@@ -906,12 +918,16 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // as retail does: 347 -> 324, 1312 bytes. The frame is still 0x30 against retail's 0x28: ours keeps
 // the normal's x at esp+0x18 and its y at esp+0x34 where retail has the y at 0x2c and the x at
 // 0x34, and ours still spends a slot on the spilled direction.x.
-// score 324 (was 347): frame 0x30 versus 0x28: ours keeps 0.0 in xmm6 for the whole loop and spills
-// direction.x and the first offset's y, where retail clobbers its xmm0 zero with 0 - radius and
-// re-zeroes it for the compares; the edge pointer then sits in ebx (retail esi) and the vertex in
-// memory (retail ebx). Retail's crossing test is one byte set three times (`xor dl, dl` before the
-// normalisation, `mov dl, 1` per test): the flag form `crossing = false; if (..) crossing = true` x3
-// reaches 318 here (kept out: flag rule).
+// score 324 (was 347): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
+// and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
+// zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still
+// copies it for 0 - radius after the first offset where retail subtracts in place before both
+// offsets, so ours keeps radius in xmm6 (retail xmm4) and spills direction.x and the first offset's y
+// (the 8 extra frame bytes). Earlier: ours kept 0.0 in xmm6 for the whole loop. The edge pointer sits
+// in ebx (retail esi) and the vertex in memory (retail ebx). Retail's crossing test is one byte set
+// three times (`xor dl, dl` before the normalisation, `mov dl, 1` per test): the flag form
+// `crossing = false; if (..) crossing = true` x3 reached 318 in earlier rounds (kept out: flag rule);
+// on the 347 and 324 bodies of round 27 it is 371 (1331 bytes).
 // Review (coordinator): the two-scalar direction (324) is a hand copy of vector2d_from_points2d's body
 // with no match, so the code stays at main's helper call (347); body copies are kept only with a match.
 // Round 79 kept: the edge's node pair as a real array, the fixed-side tests on the edge's word
@@ -1004,6 +1020,14 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 317: Complete negative crossing result with factored rejection, second-test order
 // and sentinel priority, 369/369/413/413/411/411/411/411. Frames 0x30/0x38/0x28;
 // sentinel-first recovers retail frame but regresses. Original body restored.
+// Round 27 (m3 lane 15, fast): on 347, the two cross tests through cross_product2d alone 347 (same
+// code), the dot test through dot_product2d alone 347, both together 324 (kept, plain 324), the dot
+// through the vector2f dot_product2d as well 324; the flag form on 347/324 371/371 (1331 bytes);
+// on 324: first_vertex declared before previous_vertex 322 (retail's entry store order); with it the
+// normal by two assignments, normalize_local2d_2c, normalize2d_fast, the ring exits as two statements
+// 322 each; a negative_radius local before the first offset 398, before the normal 424 (1281 bytes);
+// the offsets written per coordinate with that local, origin first/product first 360/360 (1268
+// bytes). Compile-only: unary minus in place of `0.0f -` gives identical code.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1059,9 +1083,9 @@ bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real
         point2f first, second;
         vector2d_from_points2d(&offset, start, &first);
         vector2d_from_points2d(&other_offset, start, &second);
-        bool first_crossing = (first.y * direction.y + first.x * direction.x < 0.0f ? 1 : 0) == side &&
-            first.x * direction.y - first.y * direction.x < 0.0f;
-        bool second_crossing = second.x * direction.y - second.y * direction.x < 0.0f;
+        bool first_crossing = (dot_product2d(&first, &direction) < 0.0f ? 1 : 0) == side &&
+            cross_product2d((vector2f const *)&first, (vector2f const *)&direction) < 0.0f;
+        bool second_crossing = cross_product2d((vector2f const *)&second, (vector2f const *)&direction) < 0.0f;
         bool crossing = first_crossing || second_crossing || first_vertex == NONE;
         long vertex = ((crossing != first_open) == side) ? vertex1 : vertex0;
         if (vertex == previous_vertex)
@@ -1382,6 +1406,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Also (fast): normalize2d_fast 444 (same code); out-of-line normalize2d 562; step through a pointer with
 // short type/link locals set for a typed step, type re-read through it at the emit, output element at
 // the emit 509 (frame 0x104, 1686 bytes); that with a long type local 515.
+// Round 27 (m3 lane 15, plain): both point differences through vector3d_from_points3d with length_sq3f
+// 501 (1707 bytes), the differences alone 501; delta as a vector3f with length_sq3f 444 (same code); no
+// output_index volatile 486, no source_radius volatile 469 (round 79's numbers after this round's
+// 0x2c3030/0x2c0d60 changes).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -192,6 +192,15 @@ void __stdcall swarm_delete(long arg_0);
 // point read once into a named pointer for both copies 92 (same code); the record fields stored in
 // declaration order 92. On this body, the delete path as an else arm without the goto, count test
 // `> 0` first, 56; the same with the `<= 0` delete arm first 44 (identical code, kept: no goto or label).
+// Round 115 (lane 6, fast): with the if-form limit (`local_4 = 10; if (field_2e > 0) local_4 = field_2e;`):
+// the tag field compared against the result 89, the `> 0` count test first with the delete in the else 89,
+// the allocation test written `NONE != local_0` 89, the tag pointer `const` with the field compared against
+// the result 89; on this body, the field compared against the result with the `> 0` count test first 56.
+// Round 29 (lane 14): the prologue never reads ESI (no hidden register argument). Compile-only:
+// `(dword)NONE` record stores, a dword result, a dword tag compare and an inline construction helper
+// all keep tag ESI / NONE EDI. Real (fast): the construction helper 170 (207 bytes, not inlined);
+// the flag test through TEST_FIELD_BIT 44 (same code); the limit before the allocation 91; `!local_5`
+// as the first-iteration flag 44 (same code); swarm_get at each use 149.
 // Round 7 (lane 17, fast): the limit as `field <= 0 ? 10 : field` 74; on s2 (92), the record pointer before
 // the definition-index read with the ternary limit 72 (289 bytes; the tag then takes EBX), the limit as an
 // explicit if/else 53, the definition index read between the allocation and its NONE test 93; the existing
@@ -200,6 +209,10 @@ void __stdcall swarm_delete(long arg_0);
 // the record stores in struct order (actor, position, counts, first creature, event count, gather point,
 // flags) 82; the NONE pair chained 44 (same code); a long loop index 75; the creature count read once into
 // a short local for the test and the copy 44 (same code).
+// Round 115 (lane 6, fast): with the if-form limit (`local_4 = 10; if (field_2e > 0) local_4 = field_2e;`):
+// the tag field compared against the result 89, the `> 0` count test first with the delete in the else 89,
+// the allocation test written `NONE != local_0` 89, the tag pointer `const` with the field compared against
+// the result 89; on this body, the field compared against the result with the `> 0` count test first 56.
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

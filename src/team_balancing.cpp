@@ -554,6 +554,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
 // last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
 // first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
+// Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
+// 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
+// condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
+// clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

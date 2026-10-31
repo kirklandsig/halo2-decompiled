@@ -1211,6 +1211,10 @@ void __stdcall unit_action_throw_grenade_interrupted(long unit_index, long type)
 // declared before the getter and never read gives retail's data reload and matches byte for byte
 // (as 0xe5040's unused header does); not kept, an unused local being a dead store. A header that is
 // read (for the getter or the second lookup) loses the reload.
+// Round 116: hand first with the hand getter (60) is retail's code except the pool data and unit read
+// again for the store's lookup (pool in EBP). On that form: the weapon through function_cbd50 60;
+// a bool hand 59; the entry unit for the store with the getter on its own lookup 59; an early
+// return for a NONE weapon 60; the 0xee7f0 state from the hand (`hand ? 0x19 : 0x18`) 55.
 // @retail 0xe8460
 void function_e8460(long unit_index, bool primary)
 {
@@ -1304,22 +1308,27 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 148 (was 195): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
+// score 148 (was 148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
 // primary 148, both 203; hand before unit lookup 203, with scan 198, with state and scan 201.
+// Round 116: retail loads the unit twice at entry (the second load, for the other hand's slot and
+// weapon, from a copy of the same data register with the index times 12 shared), spills the hand
+// at once and keeps the other weapon in EDI; ours uses one lookup (592 bytes). Retail also picks
+// 0x14/0x15 with a branch (`mov eax, 0x14; jne; mov eax, 0x15`). The other weapon through
+// function_cbd50 148 (kept: the existing function in place of its body written out); the other
+// hand as `!hand` 166; the type as an if/else 148 (same code), `type = 0x15; if (primary)` 189,
+// `type = 0x14; if (!primary)` 190 (retail's branch, the tail one instruction later). Locate-only:
+// an unused header element after or before the first lookup 170/161.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	long hand = !primary;
-	long other_weapon_index = NONE;
-	short other_slot = UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false];
+	long other_weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false]);
 	long has_other;
 	bool is_vehicle;
 
-	if (other_slot != NONE)
-		other_weapon_index = UNIT_ACTION_UNIT_GET(unit_index)->weapon_object_indices[other_slot];
 	has_other = other_weapon_index != NONE;
 	is_vehicle = ((dword)(1 << unit->object_type) >> 1) & 1;
 
@@ -1402,10 +1411,18 @@ bool function_100350(long weapon_index);
 
 /* switches the weapon in a hand (types 8 and 18: the first and second
    hand) */
-// score 131 (was 146): frame 8 versus 4, pool/header homes, failure exits
+// score 121 (was 133): frame 8 versus 4, pool/header homes, failure exits
 // and put-away argument residency remain. Signed-word slot 146; Boolean hand
 // ordinal 136; both 131 (kept, 392/402 bytes). Common result 152; with word slot
 // 156; with Boolean hand 166; all three 169; active-bit completion arm first 169.
+// Round 116: retail keeps the false result in AL from before the immediate test, the long hand in
+// the dead unit_index argument slot and unit_index in EBP, and reloads the unit at the join after
+// the admission tests; ours keeps the post-110ab0 flags lookup in EDI across the 0xe6fe0 call as
+// `current`, which leaves unit_index in memory (426/402 bytes). Single exit with a false result,
+// long hand and the admission/weapon tests as two conditions 121 (kept); the slot's weapon through
+// function_cbd50 121 (same code; kept, the existing function in place of its body written out); the
+// weapon read from the entry unit 132; primary/hand declared
+// before the unit 137; the result declared first 129; the active bit through bit_vector_set 121.
 // @retail 0xe8980
 bool __stdcall unit_action_weapon_switch(long unit_index, s_unit_request *request)
 {
@@ -1413,42 +1430,35 @@ bool __stdcall unit_action_weapon_switch(long unit_index, s_unit_request *reques
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 	bool primary = request->type == 8;
-	bool hand = !primary;
+	long hand = !primary;
+	bool result = false;
 
-	if (!switch_request->immediate)
+	if (switch_request->immediate ||
+		unit->weapon_slots[hand] != (&unit->current_weapon_index)[hand] && !function_110ab0(unit_index) &&
+		!TEST_FIELD_BIT((UNIT_ACTION_UNIT_GET(unit_index)->flags_134 >> 25) & 1) && !unit_action_active(unit_index, 0x16))
 	{
-		if (unit->weapon_slots[hand] == (&unit->current_weapon_index)[hand])
-			return false;
-		if (function_110ab0(unit_index) || (TEST_FIELD_BIT((UNIT_ACTION_UNIT_GET(unit_index)->flags_134 >> 25) & 1)) ||
-			unit_action_active(unit_index, 0x16))
+		long weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[hand]);
+
+		if (unit->weapon_slots[hand] == NONE || weapon_index != NONE && function_cd6a0(unit_index, NONE, weapon_index))
 		{
-			return false;
+			function_e69c0(unit_index, 0);
+			function_e69c0(unit_index, 0xa);
+			function_e69c0(unit_index, 0x1b);
+			function_e69c0(unit_index, 0x16);
+			if (function_e8510(unit_index, switch_request->immediate, switch_request->silent, primary))
+			{
+				function_e8720(unit_index, 0x7000101, switch_request->silent, switch_request->silent, primary);
+			}
+			else
+			{
+				long type = primary ? 8 : 0x12;
+
+				actions->active[type >> 5] |= 1 << (type & 0x1f);
+			}
+			result = true;
 		}
 	}
-
-	s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
-	long weapon_index = NONE;
-	short slot = current->weapon_slots[hand];
-
-	if (slot != NONE)
-		weapon_index = current->weapon_object_indices[slot];
-	if (unit->weapon_slots[hand] != NONE && (weapon_index == NONE || !function_cd6a0(unit_index, NONE, weapon_index)))
-		return false;
-
-	function_e69c0(unit_index, 0);
-	function_e69c0(unit_index, 0xa);
-	function_e69c0(unit_index, 0x1b);
-	function_e69c0(unit_index, 0x16);
-	if (function_e8510(unit_index, switch_request->immediate, switch_request->silent, primary))
-	{
-		function_e8720(unit_index, 0x7000101, switch_request->silent, switch_request->silent, primary);
-		return true;
-	}
-
-	long type = primary ? 8 : 0x12;
-
-	actions->active[type >> 5] |= 1 << (type & 0x1f);
-	return true;
+	return result;
 }
 
 /* a weapon switch waiting for the old weapon to be put away */
@@ -1530,10 +1540,17 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 }
 
 /* drops the weapon in a hand (types 9 and 19) */
-// score 138 (was 163): frame and entry homes agree through +0x34; pool reload, weapon/result
+// score 138 (was 138): frame and entry homes agree through +0x34; pool reload, weapon/result
 // and mode/flag homes remain. Numeric-hand lookup selected/other/both 142/141/142;
 // both with success admission 138, persistent result 154, common primary mode 171,
 // full player value 145, persistent result/full player value 157.
+// Round 116: retail reads the pool data again for the hand getter in the same block as the slot
+// read (no store between), homes the weapon in the dead unit_index argument slot (NONE stored
+// first) and mode in a local (ours the reverse), hoists the false result into AL before the weapon
+// test and forms the other hand with setne. The player value through unit_get_player_index (kept,
+// 138, retail inlines that function), with a long value 143 (retail's movsx/cmp tail); a single
+// false result with either 174/171; mode and flag declared first 138 (same code); the other hand
+// as `!hand` 141, as `primary != false` 136.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1579,13 +1596,9 @@ bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 		function_ce920(unit_index, slot, mode, flag);
 		function_e8720(unit_index, 0x7000101, false, false, primary);
 
-		byte *object = (byte *)function_badc0(unit_index, 3);
-
-		if (object && *(long *)(object + 0x13c) != NONE)
+		if (unit_get_player_index(unit_index) != NONE)
 		{
-			byte *current = (byte *)function_badc0(unit_index, 3);
-			long player_index = current ? *(long *)(current + 0x13c) : NONE;
-			short value = unit_action_player_value28_get(player_index);
+			short value = unit_action_player_value28_get(unit_get_player_index(unit_index));
 
 			if (value != NONE)
 				function_191f3a(UNIT_ACTION_UNIT_GET(weapon_index)->definition_index, value);
@@ -4370,7 +4383,7 @@ void *function_1e4f90(long actor_index);
 
 /* a flinch: its time, then the weapon dropped (or swapped for the actor's
    spare weapon) */
-// score 52 (was 63): frame 0xe4 and 278-byte length agree; unit/pool homes,
+// score 52 (was 52): frame 0xe4 and 278-byte length agree; unit/pool homes,
 // byte-versus-word slot test and final short-result conversion still differ.
 // Lead: `bool result = true; if (--ticks <= 0) { weapon via the hand-slot getter;
 // if (weapon != NONE && !flag) {...} result = false; } return result;` is retail's
@@ -4395,6 +4408,12 @@ void *function_1e4f90(long actor_index);
 // `s_unit_action_header *header = UNIT_ACTION_HEADER_GET(unit_index);` declared before the getter
 // and never read gives retail's data reload and matches byte for byte (as 0xe5040's unused header
 // does); not kept, an unused local being a dead store.
+// Round 116: the lead differs from retail only by the pool data read again for the weapon lookup
+// (ours keeps the data in EDI), which moves everything after it. On the lead: the weapon's
+// definition through `UNIT_ACTION_HEADER_GET(weapon_index)->unit` 64; the drop request declared
+// at the top 64; the actor index through a fresh unit lookup 89; the countdown on
+// `UNIT_ACTIONS_GET(unit)` without an actions local 75; the result declared first 68. A getter
+// that writes the weapon through a pointer does not give the reload either (compile-only screen).
 // @retail 0xed910
 bool __stdcall function_ed910(long unit_index, long type)
 {
@@ -4794,12 +4813,22 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 /* puts a unit back on its animation graph's root: placed where its root
    node is, facing the root's horizontal forward, its state animations, and
    the graph's default seat transform */
-// score 139 (was 139): frame 0xa0 agrees; object-pool/input residency,
+// score 107 (was 139): frame 0xa0 agrees; object-pool/input residency,
 // forward preloads and the normalization fallback join differ.
 // Pool root/masked ordinal/both 139; full forward aggregate in all four lookup
 // graphs 152; aggregate with normalization-first fallback 132 (seven-point gain,
 // restored). Normalization-first alone 139; output-matrix scope 139, scope plus
 // aggregate 152, scope plus normalization-first 139, all three 132. Original restored.
+// Round 116: retail keeps the pool in EBP and the index times 12 in EAX and reads the pool data
+// again for the node lookup after the root copies (ours reuses the first lookup's element address
+// and keeps unit_index in EBP; everything after the normalization is retail's code one
+// instruction later), and copies the inverse for the i/j products (ours loads the component).
+// Forward copy with k cleared and normalize3d 113, with normalize_inline 107 (kept: the x87 block
+// is retail's), with function_30bf0 234 (out of line); the node lookup through the header 139,
+// through slot_handler.h's object_get/object_node_matrix 107, from the entry unit 156; the root
+// matrix by memcpy 139; the first lookup through a named header 107; forward declared at the copy
+// or before the matrix 107. Locate-only: an unused header element after the first lookup gives
+// retail's entry and the aligned tail (13).
 // @retail 0xee460
 bool __stdcall function_ee460(long unit_index, long state_name, long action_name)
 {
@@ -4819,26 +4848,10 @@ bool __stdcall function_ee460(long unit_index, long state_name, long action_name
 
 	position.z = position.z - root_position.z;
 	function_142a60(nodes, &root_matrix, &matrix);
-	forward.i = matrix.forward.i;
-	forward.j = matrix.forward.j;
-	forward.k = matrix.forward.k;
-
-	real length = (real)sqrt(forward.i * forward.i + forward.j * forward.j);
-
-	if (0.0001f > (real)fabs(length))
-	{
+	forward = matrix.forward;
+	forward.k = 0.0f;
+	if (normalize_inline(&forward) == 0.0f)
 		forward = *g_4687a8;
-	}
-	else
-	{
-		real inverse = 1.0f / length;
-
-		forward.i = inverse * forward.i;
-		forward.j = inverse * forward.j;
-		forward.k = inverse * 0.0f;
-		if (length == 0.0f)
-			forward = *g_4687a8;
-	}
 	function_b75a0(unit_index, &position, &forward, g_4687b0, NULL, false);
 	if (state_name != NONE && action_name != NONE)
 		function_10f430(unit_index, state_name, 0x7000101, 0x7000101, action_name, 0.0f, 0, 2);

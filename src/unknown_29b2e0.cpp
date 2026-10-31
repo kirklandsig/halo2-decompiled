@@ -179,6 +179,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // on 267: descriptive helper names 267 (same code), the yaw renamed or the normalizer's length and local_11
 // renamed to sort last 267/267 (same code), both angles initialised at declaration 369, the existing cross3f for
 // the second axis 295 (1737 bytes), the turn test's product delta-first 267 (same code).
+// Round 29 (lane 14): retail's frame holds two scalar slots at +0x10/+0x14 (first pitch value, sines, one
+// rotation spill) apart from the XY vector (+0x18); the first copy's slot (+0x20) carries the rotation input
+// and result, ours uses the second copy's. Fast: the rotation input, the cross axis or the first pitch value
+// at function scope 308/308/308 (same code); the XY vector initialised after the second normalization 384;
+// both rotations in place on the first copy 311 (frame 0x34); a later XY read (diagnostic) gives frame 0x28.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
