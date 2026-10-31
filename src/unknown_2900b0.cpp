@@ -288,7 +288,8 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 	}
 }
 
-// score 28 (was 28): retail loads the actor pool, the pool's data and then the origin, where
+// score 28 (was 28): the entry compares the actor index with an immediate -1
+// retail loads the actor pool, the pool's data and then the origin, where
 // ours loads the origin first and the pool after it, and the loop's object lookup scales the
 // index into EDX in retail and into EAX here.
 // score 28 (was 38): the entry compares the actor index with an immediate -1
@@ -395,6 +396,16 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // are a separate cause.
 // are a separate cause.) The copy helper's plain point assignment gives the
 // same code as the dword-struct copy it replaced.
+// Round 132 (LTCG env link with swarm.cpp's object, which reproduces the full listing; --fast puts the
+// argument on the stack, 150-151): the prologue and loop differences are one ECX/EDX colouring (retail
+// gives the actor data EDX and the origin pointer ECX after the pool pointer dies, so the origin load
+// follows the pool; ours gives the origin EDX and lets the data reuse ECX). The actor pointer through
+// actor_get after the copy 96, before the copy 32 (pool ECX and data EDX as retail, but the add
+// finishes before the copy); the centre update as plain inline 108 (out of line); the copy helper as
+// plain inline 28 (same code); the count cleared after reading the first creature 28; the creature
+// loop as a for 28; the creature pointer as a ternary 33; the actor base as a typed array 28; the
+// masked actor index in a local first 30; the copy first 96; the origin in a named local 28; a centre
+// pointer local for the copy 38.
 // Round 110 (fast, with 0x1e3b60 and 0x28f890 in the image): the actor pointer
 // defined at the top, ahead of the NONE test, 80 (not sunk into the branch);
 // the creature pointer through an if/else getter on this form 28; an early

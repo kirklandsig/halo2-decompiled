@@ -102,9 +102,9 @@ __forceinline void function_28e774(point3f const *arg_0, point3f const *arg_1, v
 	arg_2->k = arg_0->z - arg_1->z;
 }
 
-// score 8 (was 68): 2416 bytes as retail; left are the alignment dot's i product (retail
-// local_14->i * field_80.i), the case-four y sum (retail placed_point.y first) and case five's facing
-// dot (retail sums j, i, k; ours j, k, i once case six adds through vector3f_add). At 68 case six's i
+// score 4 (was 8): 2416 bytes as retail; left are the alignment dot's i product (retail
+// local_14->i * field_80.i) and the case-four y sum (retail placed_point.y first); until round 15 also
+// case five's facing dot (retail sums j, i, k; ours j, k, i once case six adds through vector3f_add). At 68 case six's i
 // add also differed (retail loads field_80.i and stores it at once; ours folded `addss xmm1, [edi]`
 // and stored late, which shifted the rest of case six): retail reads and stores the vector through
 // two pointers the compiler cannot prove equal, so no store sinks.
@@ -206,6 +206,13 @@ __forceinline void function_28e774(point3f const *arg_0, point3f const *arg_1, v
 // written placed-first or offset-first 4/4; the alignment dot's arguments swapped 4; the dot through
 // &local_12->field_70 6 (j and k flip, i becomes retail's); the dot through &field_80 4; through
 // &local_13 394; case one/two's copy as a direct field store 8 (the facing dot flips).
+// Round 15 (m3 lane 2): case four's sum through the existing vector3f_add(placed point, offset) 8 -> 4
+// (kept; the facing dot becomes retail's). On 4: offset through vector2d_from_points2d 4 and through
+// function_28e774 with k = 0 4 (y becomes retail's, x flips); vector3f_add arguments swapped 4; the
+// alignment dot through &local_12->field_70 8; a named alignment local 6. Compile-only screens (exact
+// for these three spots): the spots follow the function's live-symbol count (extra used locals flip
+// them), not declaration order (24 orders), dot argument order, const or the top copy's spelling; no
+// offset/sum helper combination gives retail's x (offset first) with retail's y (placed first).
 // Round 131 (lane 4) on 8: alignment dot3f(local_14, &field_80) 8 (same code); dot3f(&field_80,
 // &local_12->field_70) 74; dot3f(&local_12->field_70, &field_80) 68; facing dot3f(&direction, facing)
 // 8 (same code: VC orders the facing sum itself); one placed point declared ahead of local_13 at the
@@ -349,9 +356,7 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 						local_13.k = 0.0f;
 						if (function_30bf0(&local_13) > 0.0f)
 						{
-							local_8.x = local_13.i + placed_point.x;
-							local_8.y = placed_point.y + local_13.j;
-							local_8.z = placed_point.z + local_13.k;
+							vector3f_add((vector3f const *)&placed_point, &local_13, (vector3f *)&local_8);
 							if (function_2900b0(arg_1, &local_8, 0.9f, 2.7f, (vector3f *)&local_3->field_58))
 								local_3->field_57 = true;
 						}

@@ -226,6 +226,8 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // The view's own physics bits 4; the tail written out in both arms 106; disable tested first 4;
 // both index reads through the havok object getter 51; a word index 14; in a one-file LTCG
 // build the data stays in eax for every lookup spelling, even with the update tail deleted.
+// Round 55: no noinline 4; inline target 4; inline activation/update/list-update declarations 4/4/4;
+// component reference 4; const object and type 4; explicitly masked getter index 4.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -632,6 +634,12 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// score 231 (was 231): this round: the root-walk loop and the table read are the only places
+// left that could give retail's frame shape, so each was tried alone and together: the table
+// read moved inside the root loop 216 fast (237 plain), a bool result instead of the dword
+// 264, and both together 220; every one is worse than the 231 we keep, so the body stands.
+// The remaining difference is the frame (retail self-aligns to 0xb4, ours is 0xac with
+// EBP-based globals) and the result width; nothing in the reachable code moves it.
 // score 231 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result; retail's
 // x87 block computes atan2(radius, magnitude) (swapping ours scores 230).

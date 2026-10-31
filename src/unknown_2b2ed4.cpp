@@ -103,6 +103,13 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // uninitialized recent-player entry lifetime, all seven combinations 358;
 // complete graph with native status workspace also at entry 358. Original
 // array, member observations, output scopes and full body restored; homes remain.
+// Round 49 (lane 16, fast = plain here): the buffer homes follow reference weight, not names or
+// declaration places: display_name declared first, message at function scope, title and suffix
+// beside message 358 each (same code); player/layout/values declared at the top 670; the empty
+// row's text chosen first and set through one call 652 (display_name then takes retail's -0x8cc,
+// but the three screen lookups merge). Diagnostics: six extra title stores put display_name at
+// -0x8cc and title at -0x6cc as in retail (516); extra display_name stores 694. So retail weighs
+// title above display_name and layout below suffix; ours the other way round.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

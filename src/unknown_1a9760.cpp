@@ -54,6 +54,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // inline_depth(0) even a __forceinline helper is called, so no header helper can take part.
 // Diagnostic lead (not kept): `/Ob1` in place of the pragma pair still inlines 0x25d700 and 0x1e4290, 383
 // (1119 bytes), with normalize3d and dot3f 424 (1152).
+// Round 53: the short-vector arm first (`if (fabs < eps) local_4 = 0; else ...`) 104; `local_8 * k` 104;
+// the dot with the negated component first in each product 104; `0.5f * v` 104; the unknown456 store just
+// before the magnitude 108. Harness: all but the last compile byte-identically.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

@@ -2019,7 +2019,7 @@ void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum
 		bool tinted = particle_definition->tinted();
 		bool multiplied = particle_definition->multiplied();
 
-		function_175a80(tinted, effect->color_a, effect->color_b, particle_system, multiplied);
+		function_175a80(effect->color_a, effect->color_b, particle_system, multiplied, tinted);
 	}
 	while ((location = effect_location_next(effect, &location_index, definition->location_mode)) != 0)
 	{
@@ -3043,7 +3043,7 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 			c_type_4e7709 *particle_definition = function_137bd0(particle_system->function_1751d0()->tag_index);
 			bool tinted = particle_definition->tinted();
 
-			function_175a80(tinted, color_a, color_b, particle_system, particle_definition->multiplied());
+			function_175a80(color_a, color_b, particle_system, particle_definition->multiplied(), tinted);
 		}
 		while ((location = effect_location_next(effect, &location_index, location_mode)) != 0)
 		{

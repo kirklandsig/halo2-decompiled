@@ -2069,6 +2069,13 @@ struct s_player_creation_record
 // Round 319: Empty-old-controller reset bypass with live old-field reads, install-first
 // arm and shared globals receiver, all eight subsets 42 each (650/650 bytes,
 // first +0x210). All restored; opposite recursive expansion and requested homes remain.
+// Round 33 (m3 lane 11), fast, the plain call each time (0x14c880 and 0x14f270 matched unless
+// noted): plain 267; 0x14f270 without its explicit convention 268 (0x14f270 28); 0x14f270 calling
+// player_set_local_user instead of itself 268 (0x14c880 then inlines its variable call, 360); a
+// bare body holding only the call still calls it (diagnostic); inline_recursion on from 0x14f270
+// (diagnostic) 268; 0x14f270 with an early return 267; 0x14f270 with one function-scope globals
+// local 267 (0x14f270 36). Our link never inlines a variable-argument
+// 0x14f270 into this caller, recursive or not, though 0x14c880 takes a non-recursive one.
 // @retail 0x14c090
 void __stdcall function_14c090(long index, bool reuse, s_player_creation_record const *record)
 {

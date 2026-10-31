@@ -3,6 +3,7 @@
 #include "slot_handler.h"
 #include "unknown_26e370.h"
 #include "unknown_11cc90.h"
+#include "vector2f_products.h"
 #include "unknown_272b70.h"
 
 /* slot type 0x7e: the actors of a group take the positions of a formation
@@ -78,11 +79,6 @@ static inline real distance2d(point2f const *a, point2f const *b)
 
 	distance += dy * dy;
 	return (real)sqrt(distance);
-}
-
-static inline real dot_product2d(vector2f const *a, vector2f const *b)
-{
-	return a->i * b->i + a->j * b->j;
 }
 
 short __stdcall function_1b0cd0(long actor_index);

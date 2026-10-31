@@ -681,10 +681,19 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // 0x5c5c0 0x6e910, which reproduces the plain 55): variant address named before the loop 52 (substituted
 // back); `continue` guards 55; `do { } while (++i < 16)` 221; `while (i < 16)` 221; the loops through
 // the membership getter 0x5a680 55; 0x6e910's team parameter as `long` (no `char` truncation) 55.
+// Round 32 (lane 11, plain check): the 0x49c8 value through the existing getter 142 (503 bytes); shift-first
+// mask test `(mask >> i) & 1` 126 (475 bytes); `session->players + i` 55; the address copy as member and
+// address pointer walks 59; `(mask & (1 << i)) != 0` 55. A compile-only first pass (this file /Gd with the
+// setters and getters inline) reproduces ESI and the known flip (no 0x49c8 read: EBX/ESI/EDI); the member
+// count or the 0x4f20 tests through force-inline helpers stay ESI (parameter copies are propagated), as do a
+// named has-data test, the variant cast, unsigned/short-cast indices and the output as `players + i`.
 // Round 21 (lane 14, fast with the inlined callees): the call's last argument through the existing
 // get_value_49c8() 142 (503 bytes: the live test comes back); the copy countdown declared before its
 // index 55 (same code); the result initialised from the state test 169 (507); the copy loop counting
 // member_count itself down 118; the machine-address pointer written at both uses 55 (same code).
+// Round 97 (lane 8, fast with the inlined callees): the mask test with the bit first 55; the machine mask
+// stored after the copy loop 139 (495 bytes); the player-loop index declared with the buffers (no preset
+// pointers) 55; a short copy-loop index 153 (467 bytes); the summary declared after the buffers 55.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

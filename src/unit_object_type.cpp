@@ -1455,6 +1455,12 @@ void function_d0d20(long unit_index)
 // Primary-only/secondary-only default-first results 56/57. Primary getter consumed directly
 // after the ordinary secondary reads 58; with the secondary default-first 61. Original body
 // restored; incoming unit home, second pool reload and weapon-result diamonds remain.
+// Round 96: both 0xcbd50 calls (retail's stack argument in EBP, ret 4 and default-first results) with the
+// first argument through a block-scoped pool local 48, through a pool-local unit pointer 48; the existing
+// inlined current-weapon getter (unknown_1e1f20.h) for the first weapon with a pool-local second
+// argument 48 (load order changes, the second weapon read reuses the guard's unit); the guard through
+// the pool local with UNIT_GET arguments 57 (141 bytes, unit in EDI); first argument pool-local, second
+// UNIT_GET 74. With 0xcbd50 the inlined lookups always merge with a UNIT_GET guard or argument.
 // @retail 0xd1540
 void __stdcall function_d1540(long unit_index)
 {
@@ -2297,6 +2303,11 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 
 /* once: sets the unit's flag 21 and a random angle at +0x2d8 around its
    actor's direction (or its own facing) */
+// score 2 (was 5): the angle's temporary now sits in the vector's first component, as in retail, so only the
+// frame differs (0xc against retail's 0x10: retail gives the vector the twelve bytes the actor writes, ours
+// eight, so its frame is four bytes longer). Tried: a twelve-byte vector (vector3f, real[3], a plain
+// three-real struct) 8 (frame 0x14, the vector at esp+0xc); the twelve-byte vector in an inner scope 8; the
+// angle in a separate local 5; a sixteen-byte vector 8.
 // score 5 (was 5): only frame 0xc versus retail 0x10 and the angle temporary home remain; x87 adds now agree.
 // Earlier at 20: Frame 0xc versus 0x10 (retail keeps the atan2 temp in the query buffer's first dword,
 // ours with range) and the last two x87 adds (retail adds the bound before the angle) differ; the query
@@ -2318,24 +2329,25 @@ void function_cfec0(long unit_index)
 
 	if (!TEST_FIELD_BIT((unit->flags_134 >> 21) & 1))
 	{
+		real actor_vector[2];
 		real range;
-		byte unknown[8];
 
 		bit_vector_set(&unit->flags_134, 21, true);
-		if (unit->actor_index != NONE && function_1e3370(unit->actor_index, unknown))
+		if (unit->actor_index != NONE && function_1e3370(unit->actor_index, actor_vector))
 		{
 			unit->unknown2d8 = 0.0f;
 			range = 0.43633232f;
 		}
 		else
 		{
-			real angle = (real)atan2(unit->forward.j, unit->forward.i);
+			/* the angle keeps the vector's first component, as in retail */
+			actor_vector[0] = (real)atan2(unit->forward.j, unit->forward.i);
 
-			if (angle > 3.1415927f)
+			if (actor_vector[0] > 3.1415927f)
 			{
-				angle -= 6.2831855f;
+				actor_vector[0] -= 6.2831855f;
 			}
-			unit->unknown2d8 = angle;
+			unit->unknown2d8 = actor_vector[0];
 			range = 1.7453293f;
 		}
 		unit->unknown2d8 += function_259d0(&g_4e7408->unknown0, 0, 0, -range, range);
@@ -2562,6 +2574,8 @@ void function_cce00(long unit_index, short starting_profile_index, bool reset, b
 // Round 178: bits 26/27 as unit_action_active calls (as matched 0xcc170 now has them) 111: LTCG inlines just those
 // two and calls the rest, retail's own split, and the two tests re-read +0x346 as retail does, but the hand loop's
 // unit lookup still merges with the entry one (retail re-looks it up after the calls), 297 bytes.
+// Round 179: the 26/27 calls with the unit local declared only after the tests (entry test through UNIT_GET) 111
+// (same code: the post-call lookup still merges).
 // Round 130: the two hand-written bit tests are 0xe6fe0's body: unit_action_active(unit_index, 26/27)
 // gives retail's per-test reloads (our LTCG inlines exactly those two calls, as retail; the later ones
 // are cold) and 0xcbd50 per hand with a UNIT_GET argument gives the slot cursor and counter: 79
@@ -6700,7 +6714,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
-// score 350 (was 367): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
+// score 254 (was 310): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
 // before the level count, and the second loop's weapon index is NONE then an `if`. Still differs: frame 0x24 versus 0x28 (retail keeps the second loop's `first`
@@ -6711,6 +6725,14 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // volatile goes only on parameters and locals here.
 // Tried: the flags passed as *(long *)&flags 252; with the volatile reads: bit mask computed before the pointer
 // 249, the pointer read volatile 254.
+// Round 179: the four action-bit tests as unit_action_active calls (retail inlines 0xe6fe0 there, reloading +0x346
+// per test) 310 -> 254, kept; the second loop's weapon through the existing 0xcbd50 254 (same code), kept. Still
+// differs: frame 0x24 versus 0x28 (retail writes the flags word once from CX into a stack slot and pushes it as a
+// dword, builds it with 16-bit ops, spills `first` and uses EBX/EDX where ours uses EDX/EDI); 0x113da0/0x113df0
+// results tested as AL in retail (ours EAX); 0xd1540 takes the unit on the stack in retail. Tried: 0x100430's
+// `value` as word (definition and declaration) 257; the zoom block's weapon as NONE then if, with the scales from
+// the stored byte field 293; only the scales from the byte field `(real)unit->unknown240` 253; the zoom block's
+// weapon through 0xcbd50 293 (retail re-reads the header data pointer there, ours keeps it).
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -6877,37 +6899,17 @@ bool __stdcall function_c58f0(long unit_index)
 			{
 				continue;
 			}
-			s_unit *holder = UNIT_GET(unit_index);
-			short index = (&holder->current_weapon_index)[hand];
-			long weapon_index = NONE;
-
-			if (index != NONE)
-			{
-				weapon_index = holder->weapon_object_indices[index];
-			}
+			long weapon_index = function_cbd50(unit_index, (&UNIT_GET(unit_index)->current_weapon_index)[hand]);
 			bool held = function_110ab0(unit_index);
 
 			if (unit->unknown1ec > 0)
 			{
 				held = false;
 			}
-			/* retail looks the unit up again after 0x110ab0 for these three tests */
-			s_unit *bit_holder = UNIT_GET(unit_index);
-			if (TEST_FIELD_BIT((*(dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4) >> 22) & 1) ||
-				TEST_FIELD_BIT((*(dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4) >> 26) & 1) ||
-				TEST_FIELD_BIT((*(dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4) >> 27) & 1))
+			if (unit_action_active(unit_index, 0x16) || unit_action_active(unit_index, 0x1a) ||
+				unit_action_active(unit_index, 0x1b) || unit_action_active(unit_index, first ? 8 : 0x12))
 			{
 				held = true;
-			}
-			else
-			{
-				dword const *bits = (dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4);
-				long bit = first ? 8 : 0x12;
-
-				if (bits[bit >> 5] & (1 << (bit & 0x1f)))
-				{
-					held = true;
-				}
 			}
 			dword control = unit->unknown148;
 			word flags;

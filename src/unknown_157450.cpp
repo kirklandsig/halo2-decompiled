@@ -4393,6 +4393,15 @@ void function_15fe20(long team_index, color3f *color);
 // rival text cleared before its player lookup 85. 0x7f720 returning color3f by value (all calls
 // in the image changed, then restored) gives 46 with no local, but matched 0x7f790 then takes a
 // 0x18 frame (retail 0xc), so retail's callee keeps the pointer form.
+// Lane 16 r48 (fast; aligned difflib counts in brackets): both team colours through locals plus the two
+// individual reorders 42 [22]; on that, the weapon default before the unit test 73 at 2688 B [20: left the
+// byte shift count, the unit index in EAX for retail's ECX, the -1 register compares and the pool-first
+// unit lookup]; engine_object_get for the unit 73 (same code); existing unit_get_current_weapon 73 [22];
+// named unit index 73 (same code); `(short)iterator.index` as the shift count 72 [19, retail's
+// `mov cl, byte`]; a long slot 74 [15, the charge tail becomes retail's]. A compile-only screen of ~70
+// tail forms (default before/inside/after the slot read, named index, getter helpers, NONE-checking
+// getters, short/long/char slot, if/ternary) never compares against the -1 register; simpler bodies do,
+// until the compared index feeds the masked lookup.
 // Lane 14 r22: `1 << (iterator.index & 0xffff)` in the zone presence loop alone 87; both team colours
 // through a new by-value inline helper (color3f, short team; with that shift) 61 (the copies are
 // retail's, but the own-team argument is pushed before the buffer address); with a long team

@@ -681,6 +681,18 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // per-arm size 161 (689 B); plus `body_size > body_offset` 157 (dispatch hoist appears, into ESI); plus a
 // function-scope position 157; size/position renamed 157 each: size keeps ESI, position EDI (retail
 // the reverse), so the hoisted body-size load lands in the size register instead of ECX.
+// Round 112 (real --fast; compile-only aligned in brackets, base [22]): retail's body arm computes the
+// remaining count in ECX (the hoisted body_size) and copies it to size with a `mov edi, ecx` shared with
+// the scratch clamp; ours computes it in place in size's register. One MIN after both arms (the direct arm
+// setting size to the remaining count) 158 (690 bytes) [20: size EDI, position ESI as retail, but the
+// clamp becomes cmova and the body case loads body_offset first, so the hoist goes]; the same with `if
+// (size > remaining) size = remaining;` after the arms 158 [20, also cmova]; a capacity local for it 27
+// [compile-only]; a remaining local set in both arms (size = remaining) 161 (689) [25: copy-propagated,
+// sums header first]; the arms swapped (`if (!parameters->body)`) 41 (687) [24]; a named remaining in the
+// scratch arm 161 (689) [25]. Compile-only, all 22 (same code): size/position at function scope in any
+// order, bytes before/after total/total_size, both position sums' written operand order, the signature
+// buffers at function scope or swapped; worse: the body pointer local 25, buffer initialised from the body
+// 28, the total converted in place 60, the shared MIN with the total in place or the view dropped 53+.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

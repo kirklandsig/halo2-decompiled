@@ -366,9 +366,13 @@ PRIVATE inline void transform_plane_163db0(transform4x3f const *matrix, vector3f
 	real z = normal->k;
 	plane->normal.i = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x;
 	plane->normal.j = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x;
-	plane->normal.k = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x;
+	real nk = matrix->up.k * z;
+	nk += matrix->left.k * y;
+	nk += matrix->forward.k * x;
+	plane->normal.k = nk;
+	real scale = matrix->scale;
 	real distance = matrix->position.y * plane->normal.j;
-	distance += plane->d * matrix->scale;
+	distance += plane->d * scale;
 	distance += matrix->position.z * plane->normal.k;
 	distance += matrix->position.x * plane->normal.i;
 	plane->d = distance;
@@ -378,6 +382,28 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
+// score 96 (was 68, review): the top and bottom planes' own transform helper (a copy of
+// transform_plane_163db0 that sums the distance as z, y, d * scale, x) is removed, since a copied
+// helper body is kept only with a match; with that helper the function scored 68.
+// score 68 (was 74): the near corner's z value is computed into a named local before the corner
+// is stored and the corner is then stored as x, y, z, which is the order retail stores it in;
+// the identifier store, the plane-5 normal stores and the distance product operands still differ.
+// score 74 (was 76): the k component of the transformed plane normal is now summed through a
+// named local, which reproduces retail's order of the three products and the two adds;
+// the identifier store, the plane-5 normal stores and the distance product operands still differ.
+// score 76 (was 78): the plane-4 normal is stored as k, i, j in the branch that sets it to the
+// unit z normal, which is the order retail stores it in; the identifier store, points[2] store
+// order, the plane-5 normal stores and the distance product operands still differ.
+// score 78 (was 99): the plane-4 transform moved out of the else arm so both paths share it,
+// and the plane-4 and plane-5 normals are set with vector3f_assign, which reproduces retail's
+// read-back of the normals; the identifier store, points[2] store order and product operands differ.
+// score 99 (was 124): retail sums the plane distance of the top and bottom planes in a different
+// order than the other four, so those planes use their own transform helper and their distance
+// products now line up; the identifier store, the last corner stores and the plane-4 and plane-5
+// normals (which retail reads back from memory) still differ.
+// score 124 (was 363): the error pointer is now cleared once before the plane checks and the
+// per-group else branch is gone, so the diagnostic branches line up; the identifier store, the
+// plane-normal products and the branch polarity of the last check in each group still differ.
 // score 363 (was 363): frameless admission and EDI output agree; camera/corner roles, initial stores and normal/distance scheduling differ.
 // Earlier: frameless guard and EDI output agree; camera/corners EBX/EBP and initial store scheduling differ.
 // camera in EBP and the corner array in EBX (here exchanged); retail reads the copied rectangle
@@ -512,57 +538,51 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
-	s_camera_163db0 const *cam = camera;
 	bool valid = false;
-	char const *error;
 	if (rectangle->x1 > rectangle->x0 && rectangle->y1 > rectangle->y0)
 	{
+		point3f *points = &result->points[0];
+		s_camera_163db0 const *cam = camera;
+		box2f const *rect = &result->rectangle;
 		result->rectangle = *rectangle;
 		result->identifier = identifier;
 		real depth = cam->depth;
 		real x0 = result->rectangle.x0 * depth;
-		real x1 = result->rectangle.x1 * depth;
-		real y0 = result->rectangle.y0 * depth;
-		real y1 = result->rectangle.y1 * depth;
+		real x1 = rect->x1 * depth;
+		real y0 = rect->y0 * depth;
+		real y1 = rect->y1 * depth;
 		result->points[1].z = 0.0f - cam->depth;
 		result->points[1].x = x0;
 		result->points[1].y = y0;
 		result->points[3].z = 0.0f - cam->depth;
 		result->points[3].x = x1;
 		result->points[3].y = y0;
-		result->points[0].z = 0.0f - cam->depth;
-		result->points[0].x = x0;
-		result->points[0].y = y1;
-		result->points[2].z = 0.0f - cam->depth;
+		points->z = 0.0f - cam->depth;
+		points->x = x0;
+		points->y = y1;
+		real negated_depth = 0.0f - cam->depth;
 		result->points[2].x = x1;
 		result->points[2].y = y1;
-		function_1429d0(&cam->matrix, 4, result->points, result->points);
+		result->points[2].z = negated_depth;
+		function_1429d0(&cam->matrix, 4, points, points);
 		result->points[4] = cam->matrix.position;
 		result->bounds = *g_4687e0;
 		function_11f770((box3f *)&result->bounds, 5, result->points);
-		result->planes[0].normal.i = -1.0f;
-		result->planes[0].normal.j = 0.0f;
-		result->planes[0].normal.k = 0.0f - result->rectangle.x0;
+		vector3f_assign(&result->planes[0].normal, -1.0f, 0.0f, 0.0f - result->rectangle.x0);
 		function_30bf0(&result->planes[0].normal);
 		result->planes[0].d = 0.0f;
 		transform_plane_163db0(&cam->matrix, &result->planes[0].normal, &result->planes[0]);
-		result->planes[1].normal.i = 1.0f;
-		result->planes[1].normal.j = 0.0f;
-		result->planes[1].normal.k = result->rectangle.x1;
+		vector3f_assign(&result->planes[1].normal, 1.0f, 0.0f, result->rectangle.x1);
 		function_30bf0(&result->planes[1].normal);
 		result->planes[1].d = 0.0f;
 		transform_plane_163db0(&cam->matrix, &result->planes[1].normal, &result->planes[1]);
-		result->planes[2].normal.i = 0.0f;
-		result->planes[2].normal.j = -1.0f;
-		result->planes[2].normal.k = 0.0f - result->rectangle.y0;
+		vector3f_assign(&result->planes[2].normal, 0.0f, -1.0f, 0.0f - result->rectangle.y0);
 		function_30bf0(&result->planes[2].normal);
 		result->planes[2].d = 0.0f;
-		result->planes[3].d = 0.0f;
 		transform_plane_163db0(&cam->matrix, &result->planes[2].normal, &result->planes[2]);
-		result->planes[3].normal.i = 0.0f;
-		result->planes[3].normal.j = 1.0f;
-		result->planes[3].normal.k = result->rectangle.y1;
+		vector3f_assign(&result->planes[3].normal, 0.0f, 1.0f, result->rectangle.y1);
 		function_30bf0(&result->planes[3].normal);
+		result->planes[3].d = 0.0f;
 		transform_plane_163db0(&cam->matrix, &result->planes[3].normal, &result->planes[3]);
 		if (!(!(cam->has_plane)))
 		{
@@ -573,27 +593,24 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 		}
 		else
 		{
+			result->planes[4].normal.k = 1.0f;
 			result->planes[4].normal.i = 0.0f;
 			result->planes[4].normal.j = 0.0f;
-			result->planes[4].normal.k = 1.0f;
 			result->planes[4].d = 0.0f;
-			transform_plane_163db0(&cam->matrix, &result->planes[4].normal, &result->planes[4]);
 		}
-		result->planes[5].normal.i = 0.0f;
-		result->planes[5].normal.j = 0.0f;
-		result->planes[5].normal.k = -1.0f;
+		transform_plane_163db0(&cam->matrix, &result->planes[4].normal, &result->planes[4]);
+		vector3f_assign(&result->planes[5].normal, 0.0f, 0.0f, -1.0f);
 		result->planes[5].d = cam->depth;
 		transform_plane_163db0(&cam->matrix, &result->planes[5].normal, &result->planes[5]);
-		for (long i = 0; i < 4; i++)
-		{
-			vector3d_from_points3d(&result->points[4], &result->points[i], &result->directions[i]);
-		}
+		vector3d_from_points3d(&result->points[4], &result->points[0], &result->directions[0]);
+		vector3d_from_points3d(&result->points[4], &result->points[1], &result->directions[1]);
+		vector3d_from_points3d(&result->points[4], &result->points[2], &result->directions[2]);
+		vector3d_from_points3d(&result->points[4], &result->points[3], &result->directions[3]);
+		char const *error = 0;
 		if (!(plane_error_163db0(&result->planes[0], &result->points[1]) < 0.01f &&
 			plane_error_163db0(&result->planes[2], &result->points[1]) < 0.01f &&
 			plane_error_163db0(&result->planes[5], &result->points[1]) < 0.01f))
 			error = "_pyramid_bottom_left world-vertex off planes";
-		else
-			error = 0;
 		if (!(plane_error_163db0(&result->planes[1], &result->points[3]) < 0.01f &&
 			plane_error_163db0(&result->planes[2], &result->points[3]) < 0.01f &&
 			plane_error_163db0(&result->planes[5], &result->points[3]) < 0.01f))
