@@ -149,6 +149,16 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// score 110 (was 110): this round: no new form, and no lower score found. Still BLOCKED-BY
+// 0x221810 and 0x21d110 (held files): retail calls 0x221810 out of line, our LTCG inlines it (it
+// is a one-line wrapper in src/unknown_221490.cpp), so our class query expands into the tag
+// table lookup where retail has a call; ours copies the request's location into the state before
+// the flag word is built, retail copies it afterwards, and that order is what decides the homes:
+// retail homes the request in EBX and reloads the state flags after the query, ours forwards them
+// in a callee-saved register across it and builds the flag word in EDX where retail builds it in
+// EAX. Declaring 0x221810 __declspec(noinline) here is not allowed (a new noinline declaration is
+// a banned form) and earlier rounds measured that form at 156. The frame and the incoming request
+// agree (473 bytes against retail's 470).
 // score 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
 // retail homes the request in EBX and reloads the state flags after the first 0x221810 call,
 // ours forwards them across it and builds the flag word in EDX where retail builds it in EAX.

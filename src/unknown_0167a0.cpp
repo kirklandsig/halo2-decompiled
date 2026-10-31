@@ -74,6 +74,15 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// score 47 (was 47): this round: no new form, and no lower score found. Still BLOCKED-BY 0x18a90
+// (src/unknown_01cf50.cpp, a file this lane may not edit): retail passes the state in EBX
+// (mov ebx, ebp before the call), ours pushes it (push ebp), and that single argument shifts
+// every later call by one instruction - 0x19be0, 0x19ca0, 0x1a170, 0x1ab50, 0x17420, 0x18d70,
+// 0x18e80, 0x1b0a0, 0x1cf50 and 0x1b050 - and the two epilogue sequences that follow them. The
+// restore block differs too: retail reloads the table field before the entry store and loads
+// `second` after the two table loads, ours loads `second` right after the entry `lea`. The
+// frame, the entry store and the logarithm agree (973 bytes against retail's 972, the extra
+// byte being the state we push and retail keeps in EBX).
 // score 47 (was 47): BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
 // in EBX, ours pushes it; that tail is about 42 of the 47 lines and the extra byte, the later calls shifting
 // by one instruction) and the restore block's schedule: retail reloads the table field before the entry
