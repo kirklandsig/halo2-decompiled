@@ -87,7 +87,18 @@ __int64 timing_counter_peek(timing_counter *c)
 	return total;
 }
 
-// score 28 (was 28): the conversion is correct, but our compiler keeps the union local
+// score 15 (was 28): each channel's raw bits read as the word shifts, then expanded, as retail;
+// left: the three ORs put their result in the shift's copy register (retail keeps it in the
+// channel's: `or dl, bl`, `or cl, dl`, `or al, cl`), the two slot loads come byte then dword
+// (retail dword first), and the out pointer is loaded before the channel stores.
+// Round 39: blue expanded in the colour field (`color.b = b << 3; color.b |= color.b >> 5;`)
+// with green and red read already shifted and expanded in their locals 12 (blue then exact;
+// not kept: the three rows written two ways); all three expanded in the fields 28 (the slot
+// loads sink below the blue store, separate frame slots); the shifts first and the ORs in the
+// stores 15; all shifts, then all ORs 15; field stores ORed with the shifted locals 15; every
+// channel read already shifted 29; a field store per channel then a field OR 28; 180 statement
+// orders and spellings of the shifted-word form 29.
+// Before round 39, score 28 (was 28): the conversion is correct, but our compiler keeps the union local
 // in registers (`movzx eax`; `shr ax`) while retail keeps it in memory
 // (`xor ecx, ecx`; `mov cx, [eax]`; `shr word ptr [esp + 4], 5`) and puts the
 // blue channel in dl. No source shape or annealed permuter run reproduced it.
@@ -101,27 +112,23 @@ __int64 timing_counter_peek(timing_counter *c)
 // @retail 0x223e70
 void function_223e70(const word *rgb, S3TC_COLOR *out)
 {
-	union
-	{
-		dword d;
-		word w;
-		byte bytes[4];
-	} u;
+	S3TC_COLOR color;
 	word w = *rgb;
-	dword c = w;
-	byte b = (byte)(c << 3);
+	byte b = (byte)w;
+	w >>= 5;
+	byte g = (byte)w;
+	w >>= 6;
+	byte r = (byte)w;
+	b <<= 3;
 	b |= b >> 5;
-	u.d = c;
-	u.w >>= 5;
-	byte g = (byte)(u.bytes[0] << 2);
+	g <<= 2;
 	g |= g >> 6;
-	byte r = (byte)(u.d >> 6);
 	r <<= 3;
 	r |= r >> 5;
-	u.bytes[0] = b;
-	u.bytes[1] = g;
-	u.bytes[2] = r;
-	*(dword *)out = u.d;
+	color.b = b;
+	color.g = g;
+	color.r = r;
+	*out = color;
 }
 
 PRIVATE inline s_fixup_element *fixup_entry_target(s_fixup_entry *entry, byte *base8)

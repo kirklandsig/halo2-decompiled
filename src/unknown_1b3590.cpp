@@ -388,6 +388,10 @@ short __stdcall function_1b3ea0(long actor_index)
 // 26/26/26; inline contracts with Boolean/both lvalues 26/26.
 // Slot state through a past-the-header view (`slot->unknownc`) 26, declared first 27 (127 bytes),
 // with the NONE store first 26; stores through the cast parameter 26; `bool result = true` first 26.
+// Round 39: `bool result = true` stored into the bit and returned 26; actor first with the NONE store
+// first 26; `bit0 |= 1` 26; `result = true` after the bit 26; returning the bit itself 31 (128 bytes).
+// Harness (exact for this function): the actor address spelled offset-first, by index or with a named
+// offset 26 each; the reset in retail's store order as a forceinline or static helper 26 (identical code).
 // @retail 0x1b3ee0
 bool __stdcall function_1b3ee0(long actor_index, s_slot *slot)
 {

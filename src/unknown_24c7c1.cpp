@@ -443,6 +443,11 @@ void __fastcall function_24cdaf(void)
 // tick pointer name 6; increment result name 6; both role names 6; minimum intrinsic 6;
 // nested countdown guards 6; messages indexed at each use 6; the field read twice in the
 // saturation 27; a short reference for the ticks 6; nested expiry tests 6; a named elapsed time 6.
+// Round 19: the countdown as a forceinline helper 6; the tick and expiry update as a forceinline
+// helper taking the player 6; early-return guards 6; the tick address from a forceinline accessor 6;
+// the tick locals declared at the function top 6. Diagnostics: one pointer variable for both
+// counters 18 (the pointer takes ECX in both); without the message loop the tick block keeps
+// ECX/EAX; the value variable shared with the countdown 40 (split again, tick block unchanged).
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {

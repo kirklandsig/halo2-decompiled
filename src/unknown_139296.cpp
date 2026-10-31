@@ -482,6 +482,12 @@ bool function_22acb4(long player_index);
 // Round 242: Existing shared word-bit setter in first/second/first-second/third/first-third/
 // second-third/all-three/all-four result families 165/299/299/165/165/299/299/299. Original macro,
 // result domains, enum producers, query and aliased stores restored; second-mask spill remains.
+// Round 8 (lane 17), on the retail-order body with a short second (283, aligned 19: VC narrows `(char)flags & 1`
+// to `mov cl, al; and cl, 1` while EBX still holds the first mask, so the second takes ECX and a slot and 0xfffd
+// is hoisted into EBX; retail spills the first, then `movsx ebx, al; and ebx, edi`): the second declared at entry,
+// before/after the first, with the third 283 each; `(char)flags` then `&= 1`, `(word)(char)`, `(short)(char)` 283
+// each; word `(word)(char)` 232; long `(short)(char)` 287; long second 287 (aligned 18, `and ecx, edi` but
+// zero-extended into CL); `*first_out` stored right after the first mask 263 (878 bytes, status in EDI).
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)
