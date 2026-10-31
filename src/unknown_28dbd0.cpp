@@ -73,9 +73,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
-// MiniMax E run 26: score 185 (was 185): our frame is 0x11c against retail's 0x118, so every stack home is four bytes late; a delayed-sine form reaches frame 0x118 but scores 180 and the form that also fixes the request homes scores 209, and the rotation's two spilled cross terms and the sine/cosine homes remain.
-// score 185 (was 185): frame 0x11c against retail's 0x118; the request home is four bytes late and the
-// rotation's cross-term homes differ (retail spills two scalar cross terms, sine and cosine). Forms tried:
+// score 185 (was 185): Frame 0x11c versus retail 0x118; the request is four bytes
+// late, and cross-term/sine/cosine homes differ. Earlier delayed-sine forms 180/209
+// recover the frame/frame plus request homes but do not meet the keep gate.
 // Round 43: mixed two-scalar cross pairs k/j/i-first 241/232/232; request-forward launch copy 246;
 // distinct forward input/local output 235; velocity output with shared/scalar speed scaling 209/209;
 // mixed cross with velocity output 240.
@@ -164,6 +164,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // sine/cosine and with projection/cross too, the request declared first, the heading declared before
 // its angle draw, the axis declared before the field copy, and the zero k stored again before the
 // rotation: identical code (185); the zero k stored in each branch instead of once 241.
+// Round 457: initial heading draw in double storage, scalar/aggregate heading,
+// original/delayed sine and scalar/shared velocity scale: 185/185/187/187/185/185/187/187.
+// Frame remains 0x11c; original heading, helper, shared scales and complete body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

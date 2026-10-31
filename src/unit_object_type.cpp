@@ -1427,61 +1427,30 @@ void function_d0d20(long unit_index)
 }
 
 /* sends request 0x13 when the unit holds two weapons and either of them
-   fails 0x101640 */
-// score 51 (was 51): retail's length now; the unit argument is in EDI (retail on the stack, kept in
-// EBP), the second weapon's lookup reuses the first's (retail reloads the pool's data) and the
-// weapon reads are if/else (retail default-first). Retail keeps the pool pointer (EDX) and the
-// masked index times 12 (ECX) for all three unit lookups and reloads the data field and the element
-// each time; our LTCG merges any two lookups on the same base where the first dominates.
-// Round 130: both 0xcbd50 calls with pool-local arguments 48 (stack argument in EBP and ret 4 as
-// retail; the inlined reads use the guard's lookup); both calls with UNIT_GET arguments 74 (one
-// lookup, held in EBX); guard through the pool local with UNIT_GET arguments 57 (second lookup
-// reloads, third merges); a block-scoped pool local per weapon read 71; a second pool local for the
-// second read 68 (both copies propagate back to the global: one lookup). Primary/secondary/both existing getters
-// 72/74/74; masked guard getter 68, with primary/secondary/both 72/74/74; both getters
-// with a shared guard receiver 70. One parameter address read at first guard/request 57/57,
-// with both getters at first guard/second getter 66/66 (exact-match-only; restored).
-// Both weapon results default-first 70. Existing two-slot test 0xcd660 as the guard with both
-// 0xcbd50 reads 78 (called, not inlined); existing current-weapon getter + 0xcbd50 74; pool local
-// for both weapon lookups 51 (kept); with default-first reads 57; with the parameter address
-// read 40 (exact-match-only); second read through 0xcbd50 74; pool local in the guard instead
-// 57; named guard unit 51; pool local inside the block 51; guard through the pool local with
-// both 0xcbd50 reads 57; both 0xcbd50 arguments through the pool local 48 (stack argument in EBP
-// and ret 4 as retail, but the second read reuses the first's lookup); second argument through
-// UNIT_GET 74.
-// Round 43: early missing-slot rejection 51; with both results default-first 57; with
-// primary/secondary/both existing getters 37/58/48; both getters and a retained-pool guard 50.
-// The 37 one-use getter result is exact-match-only and restored; gains 48/50 are too small.
-// Primary-only/secondary-only default-first results 56/57. Primary getter consumed directly
-// after the ordinary secondary reads 58; with the secondary default-first 61. Original body
-// restored; incoming unit home, second pool reload and weapon-result diamonds remain.
-// Round 180: both reads as 0xcbd50 calls with pool-local arguments now 51 (identical code: EDI argument,
-// if/else reads); with one parameter address read at the guard 48 (EBP, ret 4, default-first reads; the
-// inlined reads reuse the guard's unit, the second argument the first's) and with UNIT_GET arguments 66;
-// the address read alone 40. Guard x argument grid, all with the address read: guard through a named pool
-// unit with pool arguments 34 (157 bytes: the arguments reuse the guard's unit and the inlined reads
-// reload inside their tests), UNIT_GET arguments 63, mixed 48/36; guard as two pool lookups with
-// pool-then-UNIT_GET arguments 34, other mixes 43-50; guard as two UNIT_GET lookups with mixed arguments
-// 46-66. A `long [2]` result array 63-74, the two reads as a two-slot loop 84 (186 bytes).
-// Round 96: both 0xcbd50 calls (retail's stack argument in EBP, ret 4 and default-first results) with the
-// first argument through a block-scoped pool local 48, through a pool-local unit pointer 48; the existing
-// inlined current-weapon getter (unknown_1e1f20.h) for the first weapon with a pool-local second
-// argument 48 (load order changes, the second weapon read reuses the guard's unit); the guard through
-// the pool local with UNIT_GET arguments 57 (141 bytes, unit in EDI); first argument pool-local, second
-// UNIT_GET 74. With 0xcbd50 the inlined lookups always merge with a UNIT_GET guard or argument.
+   fails 0x101640; each weapon is read through its own copy of the object
+   pool, so the guard and both reads look the unit up again, as retail does */
 // @retail 0xd1540
 void __stdcall function_d1540(long unit_index)
 {
-	s_record_pool *objects = g_4e0300;
-
 	if (UNIT_GET(unit_index)->current_weapon_index != NONE && UNIT_GET(unit_index)->next_weapon_index != NONE)
 	{
-		s_unit *unit = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit;
-		short index = unit->current_weapon_index;
-		long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
-		s_unit *other = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit;
-		short other_index = other->next_weapon_index;
-		long other_weapon_index = other_index != NONE ? other->weapon_object_indices[other_index] : NONE;
+		s_record_pool *objects = g_4e0300;
+		s_record_pool *other_objects = g_4e0300;
+
+		short index = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit->current_weapon_index;
+		long weapon_index = NONE;
+
+		if (index != NONE)
+		{
+			weapon_index = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[index];
+		}
+		short other_index = ((s_unit_header *)other_objects->data)[unit_index & 0xffff].unit->next_weapon_index;
+		long other_weapon_index = NONE;
+
+		if (other_index != NONE)
+		{
+			other_weapon_index = ((s_unit_header *)other_objects->data)[unit_index & 0xffff].unit->weapon_object_indices[other_index];
+		}
 
 		if (!function_101640(weapon_index) || !function_101640(other_weapon_index))
 		{
@@ -2575,69 +2544,37 @@ void function_cce00(long unit_index, short starting_profile_index, bool reset, b
 	}
 }
 
-/* whether the unit is free to act: not riding, without object flags 26
-   and 27 in its animation state, no blocking action, and neither hand's
-   weapon busy (0x100880) */
-// score 79 (was 79): Frame agrees; merged animation loads, retained object lookup and weapon-loop carriers still differ.
-// Round 178: bits 26/27 as unit_action_active calls (as matched 0xcc170 now has them) 111: LTCG inlines just those
-// two and calls the rest, retail's own split, and the two tests re-read +0x346 as retail does, but the hand loop's
-// unit lookup still merges with the entry one (retail re-looks it up after the calls), 297 bytes.
-// Round 179: the 26/27 calls with the unit local declared only after the tests (entry test through UNIT_GET) 111
-// (same code: the post-call lookup still merges).
-// Round 180: all nine tests as unit_action_active calls (26/27 inlined with retail's per-test +0x346 reads),
-// result first, with the post-call unit through a pool local 111, the entry test through it 111, both 111,
-// neither 111 (our LTCG copy-propagates the pool local, so the post-call lookup still merges); plus 0xcbd50
-// per hand on that unit 107 (294 bytes), with a UNIT_GET argument and no unit local 79 (retail's slot cursor
-// and counter, but 0xcbd50 stays out of line). BLOCKED-BY 0xe6fe0 (contributor): retail's callers treat it
-// as possibly writing memory (pool and index*12 kept, data and unit reloaded after the calls), ours as not.
-// Round 130: the two hand-written bit tests are 0xe6fe0's body: unit_action_active(unit_index, 26/27)
-// gives retail's per-test reloads (our LTCG inlines exactly those two calls, as retail; the later ones
-// are cold) and 0xcbd50 per hand with a UNIT_GET argument gives the slot cursor and counter: 79
-// (not kept: it raised the caller 0x186ab0 from 134 to 183 by changing what the call clobbers; body
-// restored). Retail also inlines 0xcbd50 in the loop: ours
-// does only when the loop's frequency estimate stays high: `if (...) result = false; if (result)
-// { loop }` inlines it and gives retail's layout (fail block after the tests) but 121 (no unit
-// re-lookup after the out-of-line 0xe6fe0 calls, so NONE stays in EBX). Other forms: the 26/27 calls
-// alone 111; with 0xcbd50 on the reloaded unit 107; if/else result arms 117, with 0xcbd50 101/101,
-// with the UNIT_GET argument 80; sequential `if (...) return false;` tests 96, as an else-if chain 97.
-// Retail re-looks-up the unit after the 0xe6fe0 calls (pool in EBX, index in ESI kept) while ours
-// keeps it: our link treats 0xe6fe0 as not writing memory but retail does not (neither re-looks the
-// unit up inside the loop after 0x100880).
-// Direct rejection 79 plain (kept); retained pool 98; masked getter 98; native slot 101;
-// hand cursor 84; pool/direct rejection/cursor 79; shared flag mask 135; failure-first result 119.
-// Round 167: retail re-looks-up the unit after the 0xe6fe0 calls, ours keeps it (our LTCG treats
-// 0xe6fe0 as not writing memory). Pool local for the post-call lookup 79 (identical code); lookup
-// inside the hand loop 79 (identical); 0xcbd50 per hand 115 (kept out of line, but gives retail's
-// slot cursor and counter); action bits through a bitfield view 79; result declared first 79.
-// Round 43: separate parent/animation/action rejection scopes 79; direct busy-weapon
-// return 120; nested slot/weapon predicates 79; split/direct 120; split/nested 79;
-// direct/nested 120; all three 120; all three with a real slot cursor 116. The direct
-// returns shrink to 263/267 bytes and lose the native frame/result lifetime. Original
-// body restored; pool/header retention, animation reloads and hand carriers remain.
+/* whether the unit is free to act: not riding, performing none of the
+   actions 0x1a, 0x1b, 0x16, 8, 0x12, 0, 1, 0xa and 0xb (0xe6fe0), and
+   neither hand's weapon busy (0x100880); the hands are read through a
+   copy of the object pool, which looks the unit up again after the calls */
 // @retail 0xc85c0
 bool function_c85c0(long unit_index)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	bool result = true;
+	s_record_pool *objects = g_4e0300;
 
-	if (unit->parent_index != NONE ||
-		TEST_FIELD_BIT((*(dword *)((byte *)unit + unit->unknown346 + 4) >> 26) & 1) ||
-		TEST_FIELD_BIT((*(dword *)((byte *)unit + unit->unknown346 + 4) >> 27) & 1) ||
+	if (unit->parent_index != NONE || unit_action_active(unit_index, 0x1a) || unit_action_active(unit_index, 0x1b) ||
 		unit_action_active(unit_index, 0x16) || unit_action_active(unit_index, 8) ||
 		unit_action_active(unit_index, 0x12) || unit_action_active(unit_index, 0) ||
 		unit_action_active(unit_index, 1) || unit_action_active(unit_index, 0xa) ||
 		unit_action_active(unit_index, 0xb))
 	{
-		return false;
+		result = false;
 	}
+	if (result)
 	{
-		unit = UNIT_GET(unit_index);
 		for (long hand = 0; hand < 2; hand++)
 		{
-			short index = (&unit->current_weapon_index)[hand];
+			short index = (&((s_unit_header *)objects->data)[unit_index & 0xffff].unit->current_weapon_index)[hand];
+			long weapon_index = NONE;
 
-			if (index != NONE && unit->weapon_object_indices[index] != NONE &&
-				function_100880(unit->weapon_object_indices[index], NONE))
+			if (index != NONE)
+			{
+				weapon_index = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[index];
+			}
+			if (weapon_index != NONE && function_100880(weapon_index, NONE))
 			{
 				result = false;
 				break;
@@ -2905,6 +2842,12 @@ void function_c5740(long unit_index, bool start)
 // pushes the material slot's raw dword to 0x188180 (its seventh parameter is a short there, a long in
 // our declaration and definition), reloads the pool's data after 0x1012c0 (our LTCG treats that matched
 // callee as read-only) and keeps the definition index in EBP.
+// Round 37: the weapon's definition and root lookups through a block pool local used twice 96 (retail's
+// data reload after 0x1012c0 and its EDI/ESI roles, but the prologue shifts); the slot reads through it instead 96;
+// the local first at function scope 96, after the slot read 96. Diagnostic only, on a link of this file with a
+// scratch copy of 0x188180's definition (not kept): its seventh parameter as a short, alone and with the pool local,
+// moves no closer (the material then sits in EBP; our 0x188180 still takes point, forward and the effect value in
+// other registers than retail's EAX, ECX and stack). BLOCKED-BY 0x188180 (parameter type and register convention).
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -7131,6 +7074,12 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // 650 and copying v into a local vector first 618 (2479 bytes) both make our LTCG pass `current` on the stack
 // (ret 0x18), which breaks matched 0x1e5af0 (43, plain) and 0x1faf80 (4 -> 211): rejected. Retail keeps
 // `current` in EDI with the components preloaded; find what keeps it a register parameter.
+// Round 37: the round-180 copy form rechecked 618 (2479 bytes, `current` on the stack); components read first 650
+// (2435, stack); with the desired vector rotated first 634 (2445) but `current` still a stack argument (ret 0x18);
+// both frame-to-world rotations through matrix_transform_vector in place 717 (2363); components first with the
+// in-place rotations 669 (2411, stack). Every preloading form frees EDI, which then takes the velocity pointer
+// (retail EBX), and `current` is spilled, so LTCG passes it on the stack. Retail keeps `wraps` in a stack byte
+// copied to BL.
 // @retail 0xc7840
 void function_c7840(vector3f const *desired, vector3f *current, transform4x3f const *frame, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

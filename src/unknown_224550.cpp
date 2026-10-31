@@ -130,6 +130,10 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // frame home of its own; the cache is kept in EBP where retail reloads it into EBX; scalar homes remain.
 // Inlining the tint into the body or passing it out by pointer gives retail's 0x60 frame but scores 520,
 // so the helper stays. (Earlier notes: 391 before round 56.)
+// Frame 0x50 versus retail 0x60; helper tint and second UV
+// overlap, angle uses an argument home, cache EBP replaces EBX, and scalar homes differ.
+// Earlier tint code in the body or caller tint output recovered frame 0x60 at 520.
+// Earlier 391 forms and their scores follow.
 // Frame pointer 597; size optimization 990; tint input-array parameter 435;
 // direct packed-tint return 435; byte flip selector 538.
 // UV result by value 553; bounds input by value 687; short sequence count 441; unsigned flip mask 435; paired UV defaults 439.
@@ -244,6 +248,9 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // the UV sets 381. Diagnostic (reverted at once): the cache read through a volatile cast at its last use 490
 // (1949 bytes) puts the cache in EBX from entry and the angle in a frame slot as in retail, so the
 // remaining root is our cache being allocated to EBP for the whole function.
+// Round 457: complete four-channel modulation then/fused with clamps, input-first/tint-first
+// products, original/looped seed RGB: 426/430/426/430/426/428/426/428.
+// Frame remains 0x50; original complete tint producer and all UV captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
