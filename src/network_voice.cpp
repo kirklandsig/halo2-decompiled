@@ -3115,6 +3115,9 @@ struct s_voice_route_choice
 // Round 112: a named XUID used by both radio-arm engine calls 375 (1288 bytes); with branch radio 418; with a
 // per-choice pointer 385; branch radio, pointer and XUID 417; the same with the NONE-nearest arm first 420
 // (aligned best of a 16-form screen, frame 0x50). Entry and tail rotation (talker EBP, zero EBX) unchanged.
+// Round 462: Consumed next-ordinal choice pointer/reference before headset, original/reused talker
+// mask 1075/1084; after headset 1079/1088; reference forms 1075/1084/1079/1088. All suppress
+// four-way expansion; original body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

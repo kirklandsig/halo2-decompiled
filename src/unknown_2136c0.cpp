@@ -124,6 +124,12 @@ void function_213970(void);
 // 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
 // definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
 // src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
+// Round 40 (lane 11, fast): without the size pragma (diagnostic) 158: the shape after the clears is retail's
+// (`or eax, -1`, the NONE stores among the language test, inlined getter calls) but the language read is
+// hoisted above the clears into ESI, where retail reads it into EAX after them and copies it to ESI only
+// after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
+// getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
+// clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

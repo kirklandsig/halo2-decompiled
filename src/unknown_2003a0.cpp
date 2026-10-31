@@ -1238,6 +1238,10 @@ struct s_squad_tree_definition
 // (0x201a50's form) 82 (324); the first-child field read at each use 31; parent/last declared at the loop top 31.
 // The matched examples of the folded-load/dead-add/copy shape (0x256b00, 0x26ace0) read the field three times
 // (a test and two lookups); neither pass has a natural third read.
+// Round 119 (lane 5, one-file harness, exact here): pass 3's parent pointer computed before the parent test 30
+// (retail's folded load, dead add and `mov eax, ecx` appear, but the parent lookup sits before the branch);
+// pass-4 index as `(long)i` 31; a pass-4 pointer to the parent field 31; pass-3 test through the local pool's
+// element 58; test-only parent locals with the use re-reading the field, pass 3/pass 4/both 31/31/31.
 // @retail 0x2009d0
 void function_2009d0(void)
 {
@@ -2114,6 +2118,9 @@ bool function_1e11b0(long actor_index, bool active);
 // unrotated loop, missing only the squad pointer's spill into the parameter's home and its back-edge reload);
 // that with actor/actor_index declared first 71, the parameter copied into a local 71, the word flag test 71.
 // File-local word/dword bitfield views of bit 7 72/69 (shift-then-mask). The same read matched 0x202e90.
+// Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
+// game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
+// flag test 62 (199).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2225,6 +2232,19 @@ bool function_1df5d0(short team_a, short team_b);
 // into `addss xmm0, [squad+0x10]`; small probes fold it only when no other merged value (the count) is live there.
 // A `real *` to the total used at every access (like `position`) puts the count sum first as retail but still loads
 // the total first (compile-only); the health sum alone in the loop, or without the count, still loads it first.
+// Round 119 (lane 5): the tracking node as a named pointer (`s_prop_node_view *node = prop_node_get(...)`,
+// the prop team through it) 84: it gives retail's unfolded node lookup, the pool load after it, the si-then-cx
+// argument order and the DX/AL registers of the +0x26 maximum, so only the health sum's extra load is left and it
+// shifts the rest by one instruction; with the health sum after the +0xc sum 82, where an aligned diff leaves only
+// the health add (`movss xmm1,[total]; addss xmm1,xmm0` against retail's in-place `addss xmm0,[total]`) and the
+// alignment pad. Health-add forms on the node pointer: total read at the loop top 126 (in place but held in a
+// register); `= health + total` 84; health before the count 84; a total reference/pointer declared before health
+// 131/131/131; inline health getter returning a variable 91 (forceinline 91, in the add 84) or a ternary 284;
+// `health * 1.0f` 84; ternary health in the add 289; one-member struct health 90; out-pointer helper 82; squad
+// written out by hand 82; hostile declared first 84; count declared before health 82. Without the node pointer:
+// typed squad fields 39; `actor->swarm` 39; count set before health 39. A forceinline add helper taking health
+// by value 82 (copy form kept). Matched in-place field adds add a parameter (0x1c9c80, 0x1e2570), a fresh load
+// (0xdf5f0) or an inline clamp's result (0x187510), never a plain multi-path local.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2862,6 +2882,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // local_2 at function scope 59 (578 bytes, reload stays); the follow-up test inverted 50; local_4 declared before
 // pending 50; local_3 declared before local_2 50. Diagnostic only: a `return` when no task is found gives the
 // follow-up call `mov eax, ebp` (167), so the reload follows how the paths join before the trigger part.
+// Round 119 (lane 5): the order/pending part as a forceinline or plain inline helper taking the index and squad
+// 50/50 (copy-propagated); the trigger part's squad re-fetched at the join through squad_get(arg_1)/(word)arg_1
+// 199/212 (the reload stays); the follow-up arm without the short casts 50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3157,7 +3180,7 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
-// score 318 (was 338): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
+// score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
 // and passed masked to the calls where retail keeps the third parameter in EBP, masks the index with AND,
 // keeps the squad address and the 0x98 offset in their own slots and passes the index unmasked; the frame
 // slots of the row, seat, chain and entry index differ.
@@ -3253,6 +3276,9 @@ void function_2011f0(long arg_0);
 // unthreaded `xor esi, esi`, arg_2 moves to EDI). The same set without the fresh memset read 365 (1312) [43];
 // the difficulty and placement forms alone 322 [139]. Left at 280 [31]: arg_2 EBX/row EBP (retail the reverse),
 // the seat/row frame slots swapped, the threaded `arg_0 = 0`.
+// Round 119 (lane 5): `long difficulty; if/else; switch ((short)difficulty)` 318 (identical); definition pointer
+// by if/else 361; placement index through `placement_entry->placement_index` 322; all three 359; a separate
+// `attempts` local instead of reassigning arg_0 384 (1348).
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

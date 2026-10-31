@@ -189,6 +189,11 @@ bool function_01dd60(long index, long *width, long *height)
 // inputs; index EAX/size ECX where retail has ECX/EAX, and the -1 folded into the shifts),
 // with the size computed before the entry pointer 22; a forced-inline size helper 27; favour
 // size (diagnostic) 21. A compile-only build folds the -1 inside every shift/multiply spelling.
+// Round 60 (no width reference, all 79 bytes and ret 0 unless noted): the one-expression multiply
+// packing with a select after the stores 22 (index in EAX); the packed word as one shift
+// expression with a named select 23; 0x1df20's three-statement packing with the select stored
+// directly and copied to the element 23 (width EDX, height ESI); that with an if/else store 40
+// (91 bytes); packing from the stored width/height fields 25. The shifts fold in every form.
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {

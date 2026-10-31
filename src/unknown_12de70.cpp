@@ -532,7 +532,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // count in a local read before the block 68; the index read through its address 51; the block re-read 51;
 // alone (no other change): the loop's block read at each use 27, the physical block re-derived into
 // its local in the loop 27, the page shift read into a local first 27, the address through an inline
-// helper 27 (all identical code); the pointer record cleared by memset 82.
+// helper 27 (all identical code); the pointer record cleared by memset 82. Round 31: the release
+// call's block re-read through the pool getter (as 0x12e210 does) 115 (the pool is reloaded,
+// 293 bytes); a named block local for the test and the pointer after the loop 51 (cache block
+// and physical index swap edi/ebp); the release address in a local before the call 27 and a
+// group local for the pointer clear 27 (both identical code); the time adjusted through the
+// physical block local without the field pointer 45 (the time is loaded, not addressed).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

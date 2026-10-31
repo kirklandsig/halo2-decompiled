@@ -591,6 +591,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the word copy through the mask pointer with the named test 77 (compare from memory, update
 // reloads); the word copy from the field with the store through the pointer 129; the word copy
 // through the pointer with direct stores 77 (the engine-index load then moves up past one store).
+// Round 216: Final signed-char/byte/short/word counters 97 each; with word saved mask 93 each. Word mask read-only, signed present, both signed accumulators, and read-only/both signed 77 each. All restored; shared post-loop mask reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4415,6 +4416,7 @@ void function_15fe20(long team_index, color3f *color);
 // retail's, but the own-team argument is pushed before the buffer address); with a long team
 // parameter 64; on the 61 form the weapon NONE default before the unit test 92 (2688 B, `or esi, -1`
 // placed as retail, both compares immediate), with the unit through engine_object_get 92.
+// Round 216: Type/timer/round-limit results before publication, seven subsets 659/644/662/687/660/684/670; all with the actual peer cases reversed 670. All restored; returned color transfers, NONE reuse and byte shift remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

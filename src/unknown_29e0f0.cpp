@@ -158,6 +158,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 245: complete squared/length metric deltas via the shared point difference or
 // native whole-vector initializer, eight non-original pairs 402/398/418/398/418/398/418/398.
 // Original scalar producers and entire body restored on the byte-endpoint/frame-0x64 graph.
+// Round 464: late per-group record default/endpoints/both/nearest-distance default
+// 403/448/430/398; record-distance/endpoints-distance/all 403/448/430; all with
+// complete matching-record search 423. Original per-group lifetimes and search restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

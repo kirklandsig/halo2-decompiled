@@ -520,12 +520,6 @@ struct s_online_game_invite;
 void online_game_invite_answer(DWORD controller_index, const s_online_game_invite *invite, long answer);
 
 /* joins the game a message invites the selected player to */
-// score 2 (was 2): retail stores the type before the second half of the
-// FILETIME copy, ours stores it after, so the two stores trade places.
-// Tried: the type set inside the answer call's argument 2; the time copied
-// high half first 5; the high half loaded into a local before the type store
-// 3 (it takes ebx); the message cleared at the case's start 24, after the
-// answer call or at the case's end 57; the invite pointer set at the top 39.
 // @retail 0x238f3f
 void __stdcall function_238f3f(long controller_index, void *message, unsigned __int64 session_id)
 {
@@ -550,8 +544,8 @@ void __stdcall function_238f3f(long controller_index, void *message, unsigned __
 		selection.friend_ = friend_;
 		*(unsigned __int64 *)&selection.friend_.sessionID = session_id;
 		selection.friend_.dwTitleID = invite->title_id;
-		selection.friend_.gameinviteTime = invite->time;
 		selection.type = 2;
+		selection.friend_.gameinviteTime = invite->time;
 		message = NULL;
 		online_game_invite_answer(controller_index, (s_online_game_invite *)&selection.friend_, 0);
 		selection.friend_.dwFriendState = 1;
