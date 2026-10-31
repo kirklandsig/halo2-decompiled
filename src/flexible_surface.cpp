@@ -494,6 +494,14 @@ static inline dword surface_random()
 // its pointer but retail 0x117dd0 does not), with random_index 193, with a split float tail 177; on a local copy
 // written back 174 (895), with the tail 191. Retail 0x117dd0 holds the old vector in registers, so it is not the
 // same inline sequence as 0x177d10. Helper removed.
+// Round 136 (lane 4, one-link harness exact at 139 and 104): tail with the cosines swapped, sinf, cosf last, a `wave`
+// split before or after `* 0.01f` (48 forms) 139 at best (sinf 160, split inside the cast 154-165); `old` copy or direct
+// global reads x dot3f / `(k + j) + i` projection x cross3f / scalar cross j,k,i or i,j,k x row order (48) 139 at best,
+// direct global reads with scalar cross terms 152; round 28's global-in-place scalar cross + random_index + sinf/cosf
+// tail split at `wave` 104 (--fast 104; scalar cross terms kept only with a match), with the cosines swapped, the fraction
+// first 189-191, a seed pointer local, sinf/cosf for the angle 105, separate sine/cosine 104; on the cross3f body:
+// sinf/cosf tail 160, split tail 165. At 104: frame 0x1c (retail spills cross j, keeps axis i in memory, global j/k in
+// xmm5/xmm4), seed update before the time product, tail cosine order.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -590,6 +598,14 @@ void function_117dd0(long index, vector3f *wind)
 // n.j*f.j + (n.i*f.i + n.k*f.k) 112 (gives retail's dot loads k, i, j and force registers, rest shifts), with
 // acceleration-first Verlet 106 (736), with the 78 order 112; dot k, i, j 105 (736); Verlet through
 // vector3d_from_points3d + vector3f_add 170 (776); else-loop vertex pointer with the 78 order 113.
+// Round 136 (lane 4, one-link harness exact at 80): retail keeps the Verlet x in xmm6 until the final add and reloads
+// all three normal components for the projection (ours writes x home and reloads normal i early into xmm6). Separate
+// `-=`/`+=` Verlet statements + `i + (k + j)` written dot + `tangent.i *= field` 148 (--fast; definition takes ESI, record
+// spilled); accel-first / `a + acc - b` / `acc + a - b` Verlet x dot3f either order / `(i + k) + j` / `j + (i + k)` x
+// written projection x drag field at each use / named drag / `force -= tangent * drag` x final add order (256 forms)
+// 80 best (same code), parenthesised dots 104-105 (736); previous copied first 96, previous scaled first 104, force block
+// before or inside the Verlet 168-200, previous copy before the Verlet 128; force/position/vertex declared outside the
+// loop, projected/tangent declared early or assigned, acceleration assigned 80 each.
 // @retail 0x118140
 void function_118140(long index)
 {

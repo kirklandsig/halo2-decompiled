@@ -2076,6 +2076,10 @@ struct s_player_creation_record
 // (diagnostic) 268; 0x14f270 with an early return 267; 0x14f270 with one function-scope globals
 // local 267 (0x14f270 36). Our link never inlines a variable-argument
 // 0x14f270 into this caller, recursive or not, though 0x14c880 takes a non-recursive one.
+// Round 136 (lane 4, retail's address order puts 0x14f190/0x14f270 after this function): 0x14f270 moved to the end of
+// the file + the plain call 267; moved with the written block 33; moved right after this function + the plain call 267,
+// with `inline` on it 267; 0x14f190 and 0x14f270 both moved after it + the plain call 267 (the variable call stays out
+// of line in every order).
 // @retail 0x14c090
 void __stdcall function_14c090(long index, bool reuse, s_player_creation_record const *record)
 {
