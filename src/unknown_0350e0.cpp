@@ -1743,15 +1743,23 @@ PRIVATE inline real clamp_2e9e0(real value)
     return value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
 }
 
-// score 508 (was 594): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
+// score 507 (was 508, 594 originally): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
-// scales multiplied by size into the two float args). Retail also re-reads the entry flags from memory after function_47fd0
+// scales multiplied by size into the two float args). Checked against retail block by block (0x2e9e0-0x2f2ca, 2026-10-31): every
+// field offset and size, condition direction, constant (0x45dbc0 1.0, 0x45dbbc 0.5, 0x45dc0c 2.0, 0x45dc54 pi/180, 0x45dddc pi,
+// 0x45dfa0 1/256), the 2e3f0 outputs, the 163ba0/13bb90/13b390/13be80/2f2d0/47fd0/131f40/480a0 argument orders and the loop shape
+// agree; the only other mismatches found are the slot flags read (now a dword like retail's 0x2eaa9 and 0x20d80) and the order of
+// the time/hash sum (retail h0*k, + time, + h1 at 0x2ecd6-0x2ed1f; the form below emits that order, the old one emitted h1 first).
+// Retail also re-reads the entry flags from memory after function_47fd0
 // (test byte [edi], 8), recomputes the opacity expression in each PIN arm, reads far_angle straight from the definition, and
 // loops with the count guard kept. What still differs: retail inlines D3DDevice_SetVertexData2f (0x2f17c-0x2f1ba) but the reduced
-// image calls it (full build may differ); ebx and ebp swapped (retail definition in ebx, NONE/time in ebp); stack slot order;
-// the time/hash sum is emitted h1 first (retail h0*k + time + h1); 0.0/1.0 are reloaded instead of kept in xmm5/xmm6.
+// image calls it (full build may differ); ebx and ebp swapped (retail definition in ebx, NONE/time in ebp); stack slot order and
+// frame (0x90 against 0x94; retail puts alpha at +0x28, tag +0x30, position +0x40, direction +0x4c, amount +0x6c, scale +0x84,
+// color +0x88 and shares +0x14 between time and size); the camera angle sum is emitted k, j, i (retail j, i, k at 0x2ed71-0x2edbb)
+// whatever order the terms are written in (3 orders, 507); 0.0/1.0 are reloaded instead of kept in xmm5/xmm6.
 // Tried: far_distance read in place (552), all clamps as PIN (543), declaration order of the out locals (no change),
-// attenuation hoisted together with animated (576), several spellings of the hash sum (548).
+// attenuation hoisted together with animated (576), several spellings of the hash sum (548), the flags dword kept in a local
+// (590), camera sums as separate double locals (no change).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -1772,7 +1780,8 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
         if (visibility <= 0.0f) return 0;
     }
     real context_alpha = 1.0f;
-    if ((context[4] & 2) && (context[4] & 1))
+    // retail loads the slot's flags as a dword (mov eax, [esi+4], 0x2eaa9), as 0x20d80 does, not a byte
+    if ((*(dword const *)(context + 4) & 2) && (*(dword const *)(context + 4) & 1))
         context_alpha = clamp_2e9e0(context[3] * g_5234c8);
     color3f animated = { 1.0f, 1.0f, 1.0f };
     vector3f delta;
@@ -1803,7 +1812,7 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
         dword seed = (dword)context >> 5;
         dword hash = 0xffffffff;
         function_163ba0(&hash, &seed, 4);
-        time = (hash & 0xff) * (1.0f / 256.0f) + time + ((hash >> 8) & 0xff);
+        time = ((hash >> 8) & 0xff) + ((hash & 0xff) * (1.0f / 256.0f) + time);
     }
     if (*(long *)(definition + 0x4c) > 0)
         attenuation *= function_13bb90((s_tag_data *)*(byte **)(definition + 0x50), time, 0.0f);
@@ -3114,19 +3123,22 @@ void matrix4x3_from_forward_and_up(transform4x3f *out, vector3f const *forward, 
 extern vector3f *g_4687bc;
 struct s_collision_result_1697c0
 {
-    byte unknown00[8];
+    long type;
+    real t;
     point3f point;
     byte unknown14[0x24 - 0x14];
     short unknown24;
-    byte unknown26[0x4c - 0x26];
+    byte unknown26[0x5c - 0x26];
 };
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
-PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, real x, real y, point3f const *origin,
+PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f const *offset, point3f const *origin,
     point3f *corner)
 {
-    real z = 0.0f;
+    real x = offset->x;
+    real y = offset->y;
+    real z = offset->z;
     if (matrix->scale != 1.0f)
     {
         x = matrix->scale * x;
@@ -3138,19 +3150,26 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, real x, re
     corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
 }
 
-// score 460 (was 952): the four corners are written out (retail has four copies of the scale test; it also
-// calls End out of line, which only happens once the corner code is this large - a counted loop, even one
-// the compiler unrolls, scores 465-496 and inlines End). Still differs: ours calls Begin out of line
-// (retail inlines Begin and calls only End; the inliner's choice follows the size of the corner code), and the
-// registers/spills of the corner math (retail keeps radius and -radius in stack slots 8 and 0xc, x in 4, z in
-// 0x10). Retail's vertex order is (-r,-r) (r,-r) (r,r) (-r,r); the old draft had x and y swapped.
+// score 394 (was 460, 952 originally): the four corners are written out (retail has four copies of the scale
+// test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
+// 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
+// (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
+// from forward object+0x70 / up object+0x7c, corner order (-r,-r) (r,-r) (r,r) (-r,r) (the old draft had x and y
+// swapped), vertex colour (1,1,1,alpha) then uv (0,0) (0,1) (1,1) (1,0), and z of vertices 1-3 taken from corner 3
+// (0x74; corners 1 and 2 never compute z). D3DDevice::Begin (the member form) lets the compiler inline Begin as
+// retail does (call 0x400fa0 plus the push-buffer words); D3DDevice_Begin keeps it out of line (457). Passing the
+// corner offset as one reused point3f (retail stores z at [esp+0x10] for corner 0 but multiplies a constant 0.0 in
+// the others) took 403 to 394. Still differs: frame 0xd0 vs 0xe0 (retail reserves the alpha spill at 0x78 and 12
+// more bytes below the 0x5c-byte collision result) and the registers/spills of the corner math (retail keeps
+// scale, forward.i and up.j in xmm5, xmm3, xmm4 across all four corners and radius / -radius in slots 8 and 0xc).
 // Tried: loop with ternaries (950), local point3f/sign array loops (465-496), shared x/y/z locals in four
 // blocks (456), block-scoped locals (653), pairs loop (906), sum operand permutations per axis (no change),
-// 0.0f - radius (464), a negative_radius local (464).
+// 0.0f - radius (464), a negative_radius local (464), -radius in the offsets (405), four separate offset
+// locals (396, frame 0xe4), copying collision.point to a local origin (398, real 12-byte copy), a scale local /
+// x *= scale / reordered x sum in the helper (no change).
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
-    (void)&opacity;
     s_collision_result_1697c0 collision;
     byte const *object = ((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object;
     collision.unknown24 = NONE;
@@ -3162,13 +3181,19 @@ void function_32ce0(long object_index, real opacity)
         matrix4x3_from_forward_and_up(&matrix, (vector3f const *)(object + 0x70),
             (vector3f const *)(object + 0x7c));
         point3f corners[4];
-        shadow_corner(&matrix, radius * -1.0f, radius * -1.0f, &collision.point, &corners[0]);
-        shadow_corner(&matrix, radius, radius * -1.0f, &collision.point, &corners[1]);
-        shadow_corner(&matrix, radius, radius, &collision.point, &corners[2]);
-        shadow_corner(&matrix, radius * -1.0f, radius, &collision.point, &corners[3]);
-        real fraction = *(real const *)(collision.unknown00 + 4);
-        real alpha = (1.0f - fraction) * opacity;
-        D3DDevice_Begin(D3DPT_QUADLIST);
+        point3f offset;
+        offset.x = radius * -1.0f;
+        offset.y = radius * -1.0f;
+        offset.z = 0.0f;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[0]);
+        offset.x = radius;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[1]);
+        offset.y = radius;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[2]);
+        offset.x = radius * -1.0f;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[3]);
+        real alpha = (1.0f - collision.t) * opacity;
+        D3DDevice::Begin(D3DPT_QUADLIST);
         D3DDevice_SetVertexData4f(9, 1.0f, 1.0f, 1.0f, alpha);
         D3DDevice_SetVertexData2f(3, 0.0f, 0.0f);
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[0].x, corners[0].y, corners[0].z, 1.0f);
@@ -3178,7 +3203,7 @@ void function_32ce0(long object_index, real opacity)
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[2].x, corners[2].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 0.0f);
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[3].x, corners[3].y, corners[3].z, 1.0f);
-        D3DDevice_End();
+        D3DDevice::End();
     }
 }
 
@@ -4376,17 +4401,27 @@ PRIVATE __forceinline real absolute_32350(real value)
     return value >= 0.0f ? value : 0.0f - value;
 }
 
-// score 506 (was 623): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
+// score 492 (was 623, 506): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
 // non-success exit; the flag 3d7f0 writes is the byte at [esp+0x13]), so a special object returns false; the draft
 // returned the flag. 31f50's 5th output feeds the depth, its 4th the *2 field (the draft had them swapped), the
 // two cross products are separate branches (cmov before), the frame points come from g_47fd18+0xc, and the final
-// pass is draw_light_source_pass. Still differs: (1) retail pushes esi/edi only after the early exits, ours at
-// entry, and its frame is 4 bytes smaller; (2) 0x4a1e0 takes source/camera/resource in eax/ecx/edx in retail (callee
-// unmatched, same as 0x31170); (3) retail tests the two pass bits as `shr; not; test bl, dl` with ebx = 1 held
-// for the pass inlined below (ours `shr; test 1`, constant 1 not in a register); (4) retail's |x| > |y| keeps
-// both absolute values and re-evaluates the winner in each arm (ja/jbe diamond), ours selects with a move.
-// Tried: the result as a volatile local byte (482; not kept, as it doesn't make the function match), if/else statements for the larger magnitude (531, ternary 524
-// before the frame-point change), `!(bit) || !(bit)` and `== 0` spellings of the gate (same shr/test form).
+// pass is draw_light_source_pass. A block-by-block walk of the rest against retail (2026-10-31) found no further
+// behaviour difference: constants (0.0002, 0.09, 0.9, 0.5, 2.0), field offsets, call argument orders, both
+// cross-product arms, the box fields and the g_509413/g_509414 stores all agree. The two pass bits are tested as
+// `!(bool)((~(flags >> n)) & 1)` (retail `shr; not; test`), as in 0x3d380. Still differs: (1) retail pushes
+// esi/edi only after the early exits, ours at entry, and its frame is 4 bytes smaller; the byte returned on the
+// failure exits is stored at entry and read back from memory in retail (the inlined pass's `enabled` shares its
+// slot), ours folds it to `xor al, al` and merges the exits, which is why retail has five epilogue copies;
+// (2) 0x4a1e0 takes source/camera/resource in eax/ecx/edx in retail (callee unmatched, same as 0x31170);
+// (3) retail holds the constant 1 in ebx for the whole inlined pass (`test bl, dl`, `and al, bl`, `mov [..], ebx`),
+// ours uses immediates; (4) retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm
+// (ja/jbe diamond), ours selects with a move (ternary and if/else compile the same, 523 with the origin change).
+// Tried: the result as a volatile local byte (482; not kept, as it doesn't make the function match), if/else
+// statements for the larger magnitude (531, ternary 524 before the frame-point change), `!(bit) || !(bit)` and
+// `== 0` spellings of the gate (same shr/test form), loading the origin once (`*(point3f *)g_47fd18 =
+// *(point3f *)(g_47fd18 + 0xc) = *origin;` gives retail's exact store sequence, 527; through a local copy 608
+// with the cross arms laid out the other way round; later xmm numbers move, so the score rises), every order of
+// the three dot-product terms (the compiler picks k, j, i anyway).
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {
@@ -4473,7 +4508,7 @@ bool __stdcall function_32350(long index, real input_alpha)
                 function_48ee0(g_47fd18, shape, g_47fda0);
                 g_485a30 = alpha;
                 function_40e90(0);
-                if (((byte)(g_4c1a48[2].flags >> 10) & 1) && ((byte)(g_4c1a48[1].flags >> 11) & 1))
+                if (!(bool)((~(g_4c1a48[2].flags >> 10)) & 1) && !(bool)((~(g_4c1a48[1].flags >> 11)) & 1))
                 {
                     draw_configured_pass_r18(10);
                     function_222a0();
