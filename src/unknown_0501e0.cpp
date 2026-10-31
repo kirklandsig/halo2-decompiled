@@ -187,6 +187,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // arms with the camera passed by pointer 302 (1081 bytes); arms with i, k, j definitions 305; arms with
 // three-statement rows and the camera pointer 310; a scaled copy through the existing vector3f_scale (in
 // place) and the existing matrix_transform_vector 285 (1160 bytes).
+// Round 460: Complete mutable/immutable view-depth carriers with original/branch/conditional/
+// immutable-conditional weight producers, 221/221/249/249/221/221/249/249. Original helper and body restored;
+// extra frame word and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
