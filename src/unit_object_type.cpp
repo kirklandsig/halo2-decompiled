@@ -2580,15 +2580,6 @@ struct s_unit_placement
 /* places the unit from the scenario: its +0xec and flags, and, when the
    placement says so, starts it dead (animation, damage, no weapons or
    grenades) */
-// score 10 (was 10): this round: no new form, and no lower score found. Every difference is one
-// of two callee conventions: retail calls 0xc98a0 with the direction in ECX and the unit, the
-// type and the value on the stack (its `ret 0xc`), ours pushes all four arguments, and retail
-// pushes 0xcaa60's unit while ours passes it in EAX. Both callees are in this file but outside
-// this queue, and a callee's declaration may not change, so retail's order is reported here
-// instead: 0xc98a0 takes its direction in ECX and its unit, type and value on the stack;
-// 0xcaa60 takes its unit on the stack. Everything else agrees: the frame, the placement stores,
-// the flags, the animation lookup and the later calls (292 bytes against retail's 291, the one
-// extra byte being the direction argument we push and retail keeps in ECX).
 // score 10 (was 10): Frameless entry and animation lookup agree; retail passes 0xc98a0's direction in ECX
 // (ours pushes it) and pushes 0xcaa60's unit (ours EAX). Animation owner 22; initial scale local 65;
 // scale/owner 65; chained zero stores 22; dead-placement guard 22; const animation 22; owner/const
@@ -2601,6 +2592,7 @@ struct s_unit_placement
 // Round 204: 0xcaa60 inline; shared flag-6 setter alone/inline; initial flag-12/15
 // setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
 // eight forms 10 each. Original callee declaration and all flag operations restored.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0xc42e0
 void __stdcall function_c42e0(long unit_index, void const *placement)
 {
@@ -3328,14 +3320,6 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 
 /* whether the object's root, simulated by Havok and not keyframed, has
    something in the way (0x168f40 from its main rigid body's position) */
-// score 12 (was 12): this round: no new form, and no lower score found. The only difference is
-// which callee-saved register holds which of the two long-lived values: retail keeps the root
-// index in EBP (saved in the prologue) and the rigid-body offset (index * 96) in EDI (saved
-// after the 0xb67a0 call), ours keeps the root index in EDI and the offset in EBP. Every other
-// instruction agrees - the loop, both header tests, the component lookup, the keyframe call and
-// the 0x168f40 call - and both are 292 bytes, so the allocator's order alone decides. Writing
-// the rigid-body member access out in place of the havok_component_rigid_body_get helper
-// compiles the same.
 // score 12 (was 12): root and rigid-body offset saved registers differ (a short index gives
 // retail's registers but tests at 16 bits before extending: 3 aligned differences, 293 bytes);
 // entry result 89; native short body index 12 at 293 bytes; root cursor/seed 110/96;
@@ -3347,6 +3331,7 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // bytes and an unsigned short one 13; a short loop variable 83 and an unsigned short one 18;
 // the root loop over the root itself 22; the loop variable outside the `for` 12; the root index
 // in a nested block 12; the rigid-body index declared before the root index 12.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -4294,14 +4279,6 @@ store:
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
-// score 4 (was 4): this round: no new form, and no lower score found. The four differing
-// instructions are only the order of the cone call's setup: retail spills the sampled speed
-// (fstp) first and then forms the forward pointer, the output pointer and the seed, ours forms
-// the forward pointer, spills, copies the seed and forms the output pointer last. The registers
-// agree (ECX forward, EAX output, EDI seed), so the argument values are right and only the
-// order differs; that order follows the cone helper 0x146320 (src/unknown_146240.cpp), which
-// itself scores 106 (544 bytes against retail's 546) and so decides the caller's setup order.
-// That file is not this lane's, so this is reported, not fixed.
 // score 4 (was 4): cone setup differs: retail spills sampled speed before forming the forward
 // pointer, then forms the output pointer before copying the seed. Ours swaps both pairs.
 // The 0x98 frame and every other instruction agree.
@@ -4315,6 +4292,7 @@ store:
 // Round 204: existing random-range call 38; raw generator, force-inline step declaration,
 // named normalized fraction, shared velocity addition and first/second/both library copies 4 each.
 // Frame and all other instructions agree; the cone argument setup remains.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
