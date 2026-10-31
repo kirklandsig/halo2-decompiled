@@ -919,6 +919,7 @@ real normalize2d(point2f *v);
 // the retry admission as `minimum < speed * 1.25f` 135; the retry success flag set after the
 // output copies 135 (same code). The compile-only harness gives the result BL, so it cannot screen
 // the LTCG memory-homing; the unmatched trajectory callee (frame 0x28 against 0x30) may feed it.
+// Round 216: Native direction/request/facing declarations at entry, seven subsets 135 each; all with entry result 135. Request scope changes lookup/copy registers, not DL residence; all restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1556,6 +1557,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // 215 -> 194: zero in xmm1 and the type-zero arms closer, entry homes unchanged); with the flag
 // declared after the normalization 305 (1188 B); radius renamed to sort before the stack points 238,
 // `center` declared beside `direction` 238, radius declared before the flag and result 238 (same code).
+// Round 216: Early origin/target/both/facing/origin-facing/target-facing/all point values before lookup 322/311/346/331/351/347/380; all with entry result 380. All restored; zero/radius and native input/vector homes remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -815,6 +815,14 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // pointer with the vector after/before it in the flag block, getter for the fixed test, `== false`, own
 // parameter read into a new local: 48 each (retail's code but for BL); one `&&` test with the getter twice
 // 53. Matched code has 263 `mov dl, [edx+N]` loads, so BL means our first body load stays live.
+// Round 139: the getter into a body local with no own-parameter read 41 (component in EDX, callers
+// lose matches); the slot pointer with the vector in the flag block and the byte in a named bool 48
+// (BL); that without the own-parameter read 47; the slot computed before one `flag1 || fixed` test
+// with the vector at the top 48; the body as a `hkRigidBody *const &` with the vector in the flag
+// block 46 (index moves to ECX). Diagnostic: the vector stores through an opaque pointer (forcing
+// the reload) still give BL 52, so a shared first body load is not what takes DL. In every form our
+// build never loads the fixed byte into the dying base register (ECX base -> DL, EDX/EAX base -> BL),
+// where retail does (`mov edx, [eax]; mov dl, [edx + 0x40]`).
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -3114,6 +3122,12 @@ struct s_1cf531
 // (same code); the 0.6 scale declared before the vector 25. Typed field at +0x30 and named flag18 bit
 // (kept, same code). Still differ: (B) element address data + offset in retail; (C) y stored after z;
 // (D) the corrected vector spills to 0x30 in retail (ours 0x40).
+// Round 139: the corrected vector computed in place in the impulse vector 46 (908 bytes; the store
+// goes to retail's 0x30, but the final product loads the impulse into a register where retail folds
+// a spill reload as its memory operand); that with the final product impulse-first 43; the impulse
+// as an __m128 with the product in a new vector 107 (frame 0x64, the copy forwarded from the scaled
+// vector), also with the copy in its own block 107; the surface components in named x/y/z locals
+// 27; the surface vector through havok_from_vector3d 27.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

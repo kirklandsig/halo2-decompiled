@@ -312,14 +312,8 @@ PRIVATE __forceinline void function_94151(s_type_f7e40b *reply, const s_session_
     reply->reason = reason;
 }
 
-// score 12 (was 12): the leave reason is computed without a branch (neg/sbb/add) where
-// retail tests the leave result and moves 8 or 9; the shorter body also moves every
-// branch displacement and the padding at the end.
-// success/failure locals 12/12; helper-owned reason 48; widened result 12;
-// separate decisions 61; two result tests 12; reply-field forms 44/72; inverted inner select 12.
-// One || condition then 8 / else 9 33 (the 9 is loaded above the je); 9 by default, 8 under the
-// || condition 32; 8 by default, 9 under the && condition 34; the one-condition form with a
-// short reason 25, a char reason 29.
+/* Answers a request to leave a session: 8 when the requesting member has left
+   or has nothing to leave (no member, or this machine's own), 9 when leaving failed. */
 // @retail 0x94150
 void network_message_handler_handle_leave_request(c_class_938e0 *handler, long address, const s_session_id *message)
 {
@@ -327,13 +321,14 @@ void network_message_handler_handle_leave_request(c_class_938e0 *handler, long a
 	if (session && function_058d70(session) && session->function_058d20())
 	{
 		long member_index = network_session_find_member_by_address(session, (const s_type_99af70 *)address);
-        long reason;
-        if (member_index == NONE || member_index == session->current_member)
-            reason = 8;
-        else if (network_session_member_leave(session, member_index))
-            reason = 8;
-        else
-            reason = 9;
+		bool success = true;
+		if (member_index != NONE && member_index != session->current_member)
+			success = network_session_member_leave(session, member_index);
+		long reason;
+		if (success)
+			reason = 8;
+		else
+			reason = 9;
 		s_type_f7e40b reply;
 		function_94151(&reply, message, reason);
 		function_07b140(handler->link, address, 10, sizeof(reply), &reply);
