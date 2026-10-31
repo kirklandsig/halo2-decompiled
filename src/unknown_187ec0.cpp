@@ -269,6 +269,11 @@ struct s_seat_animations
 // read through its address as in 0x1882d0 52 (same code); result declared before first 69
 // (0x188130 1); the array-select entry `&(first ? ... : ...)[i]` 62 (0x188130 3); `if (result)
 // break;` before the parent step 66 (185 bytes); count declared before result 61.
+// Round 135 (lane 4, fast with 0x188130): the existing 0x188690 called through an `inline` declaration 79
+// (186 bytes); 0x188690 taking the material class by value, called here with its other callers updated, 77
+// (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
+// with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
+// `i` declared at function scope 52 (same code).
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {
