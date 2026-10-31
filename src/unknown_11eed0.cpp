@@ -90,13 +90,18 @@ bool function_11eed0(
 	return reached;
 }
 
-PRIVATE __forceinline double function_11f0d1(real arg_0)
-{
-	return acos(arg_0 < -1.0f ? -1.0f : arg_0 > 1.0f ? 1.0f : arg_0);
-}
+real function_50650(real cosine);
 
 // score 2 (was 2): one product of the cross product has its factors in the opposite order:
 // ours keeps the forward vector's k field in the register, retail the target's i field.
+// Round 100 (lane 7): the clamped arccosine through the existing 0x50650 2 (kept; LTCG inlines it as
+// retail does). All 64 operand orders of the cross compile alike; of 144 one-expression and 72
+// split-statement dot products only the i-and-j-first groupings flip that product, and they change
+// the dot itself (29-84). The named `double s` makes this function's LTCG callers keep 8-byte stack
+// parity (0x1197b0's early ESI save); retail has none: its code here (float quotient, then a double
+// multiply per component that keeps the quotient on the x87 stack) is also what a double parameter
+// of an inlined helper gives, without that effect (0x1197b0 73, this function 2); `real s` or any
+// float or cast form folds the last multiply (89).
 // @retail 0x11f0d0
 void function_11f0d0(
 	vector3f *position,
@@ -123,7 +128,7 @@ void function_11f0d0(
 
 	d = forward->i * target->i + (target->j * forward->j + target->k * forward->k);
 	d = d < -1.f ? -1.f : d > 1.f ? 1.f : d;
-	angle = function_11f0d1(d);
+	angle = function_50650(d);
 	angle = angle * scale;
 	angle = angle + angle;
 	real limit = angle >= max_angle * max_angle ? max_angle : (real)sqrt(angle);

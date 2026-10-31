@@ -124,13 +124,10 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 }
 
 
-// score 381 (was 391): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
-// the frame is 0x50 against retail's 0x60 — the angle is stored in a dead
-// argument slot instead of a frame slot and the second UV set has no frame home of its own — and
-// the cache is kept in EBP where retail reloads it into EBX. Inlining the tint into the body or
-// passing it out by pointer gives retail's 0x60 frame but scores 520, so the helper stays.
-// score 391 (was 391): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
-// slot), cache EBP/EBX and scalar homes remain.
+// score 381 (was 381): Frame 0x50 versus retail 0x60; helper tint and second UV
+// overlap, angle uses an argument home, cache EBP replaces EBX, and scalar homes differ.
+// Earlier tint code in the body or caller tint output recovered frame 0x60 at 520.
+// Earlier 391 forms and their scores follow.
 // Frame pointer 597; size optimization 990; tint input-array parameter 435;
 // direct packed-tint return 435; byte flip selector 538.
 // UV result by value 553; bounds input by value 687; short sequence count 441; unsigned flip mask 435; paired UV defaults 439.
@@ -239,6 +236,9 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // in ESI for EBP); the definition's geometry as an s_draw_sprite_uv copied whole 478 (1914 bytes,
 // retail's dword moves); both 480 (1938 bytes, aligned 245 -> 214: one byte long); the tint owned by
 // the caller 532 (1994 bytes, frame 0x60); the flip as `flip = 0; if (...) flip = 1;` 454.
+// Round 457: complete four-channel modulation then/fused with clamps, input-first/tint-first
+// products, original/looped seed RGB: 426/430/426/430/426/428/426/428.
+// Frame remains 0x50; original complete tint producer and all UV captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

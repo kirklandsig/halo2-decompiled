@@ -379,7 +379,7 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 39 (was 96): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
+// score 39 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
 // the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
 // d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
@@ -552,6 +552,11 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // zero back 636 (aligned 83, 2807 bytes: retail's float loads and pointer stores for the normals),
 // plus planes 4/5 through it 615 (2837 bytes, aligned 100), plus a cleared error first 692, error
 // cleared first alone on the aligned-83 form 677, all with the camera-plane branch too 697.
+// Round 53: x0 as `depth * rect->x0` 83; x0 through the pointer declared after x1/y0/y1 659;
+// products in x0, y0, x1, y1 order through the pointer 87; the copy through a non-const rectangle
+// pointer with x0 through it 83, with x0 through the result 39 (same code). Compile-only: the x term
+// written `n.i * position.x` still loads position.x first in every plane; one plane pointer reused
+// for planes 0-3 49 (harness, forwards the zero distance).
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
