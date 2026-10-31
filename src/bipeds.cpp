@@ -4871,25 +4871,12 @@ extern real g_47f05c;
 /* lands or is knocked to the ground: a crouching biped standing up into a
    ceiling is lifted clear, the hit is remembered (+0x44c..), and a flag
    plays the knocked-down animation */
-// score 104 (was 124): frame 0xc and length 422 agree; only the point/handle input registers remain (retail takes
-// the point in EAX and the handle in ECX). Earlier: point/index input registers, upward-sum scheduling and cap loading.
-// Native word flags, entry point/velocity workspaces, explicit lift arms, separate contact
-// admissions, contact-index name, state scope, library point copy and immutable receiver
-// all 124; lift initialized from room 121 (subthreshold, restored). Complete upward sum
-// and its first pair 124; native overlapping contact fields, native state offset, both,
-// both with the upward pair and both with word flags 124. All executable forms restored.
-// Handle-first interface orders 97/97/97/97 (retail takes the point in EAX and the handle in ECX); other
-// interface orders 124/124/124/124. HELD: the handle-first order (handle, point, contact, knocked) changes the
-// call in 0xcaa60, which is in an open contributor PR (#858); apply it with both declarations and both calls
-// once #858 has landed or closed.
-// Round 198: Complete upward products, doubled extent and actual position-getter result:
-// seven subsets and immutable full form all 124; original body, interface and cap source restored.
-// Lane 17 round 5: the lift cap read from the global g_47f05c (retail loads it from .data and doubles it at run
-// time) 104 at 422 bytes, kept; the upward sum k-first (retail's j*j then k*k then i) 104, kept with it; on that,
-// the handle-first order (handle, point, contact, knocked, both declarations and both calls) MATCHES fast and
-// plain: still HELD for #858, restored. Named cap local 104; clamp as an if 104.
+// Matches with the handle first (handle, point, contact, knocked), the order Claude lane 17 found in round 5:
+// retail takes the point in EAX and the handle in ECX, and its callers 0xcaa60 and 0x9c610 set them up that way.
+// The lift cap is read from the global g_47f05c (retail loads it from .data and doubles it at run time), and the
+// upward sum is k-first (retail's j*j, then k*k, then i).
 // @retail 0xe4a20
-void __stdcall function_e4a20(point3f const *point, long arg_159e6d, long object_index, bool knocked)
+void __stdcall function_e4a20(long arg_159e6d, point3f const *point, long object_index, bool knocked)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
 
