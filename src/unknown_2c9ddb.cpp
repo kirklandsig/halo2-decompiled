@@ -337,6 +337,9 @@ void c_class_2c9e69::select_last_variant()
 // them apart only because its name arm reloads into EBX. Copies in both arms 36; name-arm
 // copy declared before the test 36, or at function top 36; name-arm copy only (text read
 // directly in the empty arm) 13 at 159 bytes, the name arm then exact except EDI for EBX.
+// Round 39: an early return for an absent datum 23; `else { name; if (text) ... }` 23; the arms swapped
+// (`variant != NONE` first, the empty copy kept) 30; the two lookups assigned after their declarations 23;
+// the variant named in the name arm 23.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

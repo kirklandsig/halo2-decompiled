@@ -17,6 +17,8 @@ real normalize2d(point2f *arg_0);
 // saving EBP, retail saves EBP and keeps the pointer there, so the point copy runs through EBP where
 // retail uses EBX; the body is also 21 bytes short of retail. Original body kept.
 // score 211 (was 211): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
+// frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // copies the input point a second time (at 0x28, through integer moves) for the two vector
 // differences and keeps the center at 0x34; ours has the center at 0x28 and the to-center vector at 0x34.
 // Round 90: radius read before the center copy 215 and the copied point as the actor-to-point
@@ -153,6 +155,10 @@ real normalize2d(point2f *arg_0);
 // a result local set true before the out-pointer test 278 (the same convention change); the center and
 // radius through s_slot_object_view's unknown030/unknown03c 211 (same code); `2.0f - distance` inside
 // the normalize-success block, where retail computes it, 270.
+// Round 247: complete input snapshot across both real modes, with native/library copy
+// and phase/entry collision storage, 255/255/255/255; the same four without output
+// self-address observation 250/250/250/250. All disturb two matched callers in the
+// reduced image. Original input observations, output access, scalar spill and body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

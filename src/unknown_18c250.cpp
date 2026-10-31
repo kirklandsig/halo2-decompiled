@@ -590,6 +590,8 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // share. What still differs: the frame stays 0x8c against retail's 0x80 and the datum/tag homes differ.
 // Original body kept.
 // score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Earlier 280 from 280: Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain. BLOCKED-BY 0xba300.
 // Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain.
 // Round 9 (lane 10): retail's case-3 failure byte is a dead store into the slot the audibility output
@@ -673,6 +675,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 279/556/279/492/279/492/556/756. Ordinary inline forms tie; forced audibility expansion
 // loses seven matched callers. All original declarations, definitions and body restored.
 // Root-location query now matches; datum/tag homes and the constant-one spill remain.
+// Round 247: complete object-phase spatial output at phase/entry scope, with native/
+// library marker-position and full-output transfers in all eight combinations, 371
+// each (frame 0xb0; reduced 0x21db80 loses). Original direct fields, receiver pair,
+// provider calls, output publication and complete body restored.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

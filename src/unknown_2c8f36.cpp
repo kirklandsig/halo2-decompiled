@@ -153,7 +153,7 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 {
 }
 
-// score 2 (was 12): only the loop's shared tail differs: retail copies the widget to ESI and tests ESI, ours
+// score 2 (was 2): only the loop's shared tail differs: retail copies the widget to ESI and tests ESI, ours
 // tests EAX before the copy (`test eax, eax; mov esi, eax`).
 // Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
 // and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
@@ -174,6 +174,10 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // next-or-first ternary helper 12.
 // Round 9: the shared next_wrapped (screen_widgets.h, a single-exit `result` set in an if/else) at the
 // entry and the step 2 (the same form took 0x22ebc3/0x22ec1b 12 -> 2).
+// Round 39: a done flag in the condition (`!done && widget`) 34 (90 bytes, unrotated); the step folded into the
+// condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
+// per failed test 2; the eligibility as a named bool 2. Harness: an early-return next-or-first helper at both 12
+// (retail's tail, entry coalesced into ESI); next_wrapped entry with that step 37 (98 bytes).
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -190,7 +194,7 @@ void c_button_widget_45d5d0::v8()
 	}
 }
 
-// score 2 (was 12): only the loop's shared tail differs: retail copies the widget to ESI and tests ESI, ours
+// score 2 (was 2): only the loop's shared tail differs: retail copies the widget to ESI and tests ESI, ours
 // tests EAX before the copy (`test eax, eax; mov esi, eax`).
 // Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
 // and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
@@ -211,6 +215,10 @@ void c_button_widget_45d5d0::v8()
 // a previous-or-last ternary helper 12.
 // Round 9: the shared previous_wrapped (screen_widgets.h, a single-exit `result` set in an if/else) at the
 // entry and the step 2 (the same form took 0x22ebc3/0x22ec1b 12 -> 2).
+// Round 39: a done flag in the condition (`!done && widget`) 34 (90 bytes, unrotated); the step folded into the
+// condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
+// per failed test 2; the eligibility as a named bool 2. Harness: an early-return previous-or-last helper at both 12
+// (retail's tail, entry coalesced into ESI); previous_wrapped entry with that step 37 (98 bytes).
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {
