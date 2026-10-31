@@ -171,9 +171,10 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
-// score 51 (was 61): the type-6 test now sets a named exclusion flag and the 0xbf9a0 probe is inverted, so
-// the 0x14a8e0 return is laid out after the requery as in retail; VC still threads the flag on every edge
-// (retail keeps it in BL) and the byte result is converted with setne.
+// score 53 (was 61): the 0xbf9a0 probe is inverted, so the 0x14a8e0 return is laid out after the requery as
+// in retail. MiniMax E (10-31): with the type-6 test also setting a named exclusion flag 51 (a test-set flag,
+// not kept without a match); VC still threads the flag on every edge (retail keeps it in BL) and the byte
+// result is converted with setne.
 // score 61 (was 61): VC threads the exclusion flag on every edge (retail keeps it in BL: `mov bl, 1;
 // jmp` in the scenery arm, `xor bl, bl` before 0xbf9a0 and `test bl, bl` again after it, so
 // &triangle->c takes EDI and the collision lives in its parameter slot: stored after the requery,
@@ -300,13 +301,8 @@ bool function_14b120(s_surface_query_source source, void *surface)
     if (object_index != NONE)
     {
         byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-        bool excluded = false;
-        if (object[0xaa] == 6)
-        {
-            excluded = function_10a0b0(object_index) != 2;
-        }
-        if (excluded)
-            return false;
+        if (object[0xaa] == 6 && function_10a0b0(object_index) != 2)
+            return result;
         if (!function_bf9a0(object_index, (long *)((byte *)triangle + 0xc),
             (long *)((byte *)triangle + 0x10)))
         {
