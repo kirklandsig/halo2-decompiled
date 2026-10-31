@@ -122,6 +122,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 320: both rigid-body flags read live through the model; repeated/shared byte type
 // and original/explicit object-bit result arms 117/111/114/117; explicit level tests
 // 117/111/114/117. Every form loses the matched caller; complete original body restored.
+// Round 457: selected-body const reference with repeated/shared type, original/explicit
+// object-bit arms and original/explicit upper-level arms: 96/136/93/136/96/136/93/136.
+// Shared-type forms lose the matched caller; the three-point forms are below the keep gate.
+// Original body and caller convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
