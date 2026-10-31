@@ -2246,6 +2246,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // no-contact arm with a conditional value 267 (1371 bytes); the contact test inverted 207 (1498
 // bytes). The matched normal block shows the shape retail's velocity block needs (i scaled through
 // a copy of the inverse, j and k in place in registers loaded before the branch).
+// Round 134 (m3 lane 4) on 91: the inline property setter building its property word before the search
+// (`s_havok_property_word word(value);` first) 155 at 1467 bytes: the three setter sites then are
+// retail's exactly (`xor edi, edi` before the search, `push edi` after the erase, shared tail), but with
+// the velocity block still 5 bytes long the loop padding shifts; worth retrying once the velocity block
+// fits. The velocity normalized through the normal block's length local and vector3f_scale 179; the
+// existing normalize_inline 175 (x87 order k, i, j); a normalized copy of the velocity (diagnostic) 211
+// (1474 bytes); compound `+=` velocity sums 97. All restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2803,6 +2810,15 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // Paired getter unchanged; all contracts restored.
 // Round 47: array operator[] at all five/first-only/late-three sites 10/7/10; array reference for the
 // bound/all reads 7/10; size reference 7; shared data pointer 171; final call scope 7. Original body restored.
+// Round 15 (m3 lane 2): 0x1d1010 declared (component, index, change), as every retail call sets the
+// component register last, 7 -> 5, but 0x1d24a0 920 -> 966 (and 0x1d1010 then needs 0x1d09d0's array-pointer
+// getter form): not kept (coordinator). On 5: kind tests through an inline rigid-body method wrapping the
+// virtual call 13; direct data[i] reads at all five sites 8; separate linear/angular inline getters 139;
+// named cap results 5; index declared before the change vector 5; one body pointer for the head test
+// and the velocity read 152. Compile-only: the order turns to
+// retail's only without the head kind test or without the capped velocity block (or with only one capped
+// velocity), so it follows the loop's size, not a spelling; 256 combinations of declaration, index,
+// increment, direct-read and initializer forms and unused locals never flip it.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {

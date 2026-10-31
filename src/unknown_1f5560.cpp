@@ -632,7 +632,10 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 67 (was 67): approach as its own statement after the arms (no gotos), struct copy of the
+// score 12 (was 67): layout, frame and code now as retail; left: both dot products evaluate their
+// y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
+// y,z), a value-numbering tie that flips with the CSE sharing of the current-point address.
+// Earlier state: approach as its own statement after the arms (no gotos), struct copy of the
 // direction and `remaining <` on the left give retail's length and code (frame 0x1c and entry
 // agree); left: retail lays the previous-point false arm and the approach call after the first
 // return (a jump-threaded copy) with the last-path projection falling into the shared test; ours
@@ -687,6 +690,16 @@ struct s_1f9762
 // Round 444: caller ordinary-inline difference/normalizer/query boundaries, seven
 // subsets 67 each; all with direction-valid-first guard 191. All declarations and
 // the complete body restored; native approach placement remains.
+// Round 38 (lane 1): kept 12: the last arm keeps only the distance test and its pointer choice moves
+// to `else if (!reached && direction_valid && unknown4d4)` after an `if (!last) { if (direction_valid)
+// { approach } }` (VC pulls the projection/return chain up behind the last arm only when the
+// approach's store is not the projection's IL predecessor). On that graph: the actor's own path
+// fields with a typed 0x528 start 23 (loses the +0x50c base); the previous point or the projection
+// index read through the actor's own fields beside `path` 4/4 (mixed views), with `dot3f(direction,
+// point)` first 2/2, with the other argument orders 4/2, with both mixes 10; compile-only screens
+// (~150 forms: else-if condition orders, declaration positions, names, previous-point if/else or
+// two calls, the path-records layout at +0x50c, a typed 0x4d8 vector, operand orders, a one-use
+// current-point pointer in the projection) keep y,z.
 // Round 14 (lane 2; fast, aligned in brackets, 30 at the start): only the first dot direction first
 // 67 [28] (retail's i product is direction first in the first dot, point first in the second; ours
 // the reverse); only the second 67 [30]; `last` as `field_2d <= field_2e + 1` 69; the previous-point
@@ -728,16 +741,19 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 		}
 		if (function_1e3920(actor_index) > distance)
 			reached = true;
-		else if (direction_valid && actor->unknown4d4)
-			projection_direction = &direction;
 	}
-	if (!last && direction_valid)
+	if (!last)
 	{
-		s_type_c3b527 *previous = path->field_2e > 0 ? &path->field_30[path->field_2e - 1].point : (s_type_c3b527 *)path->field_1c;
-		function_210be0(previous, &path->field_30[path->field_2e].point, &approach);
-		if (function_30bf0(&approach) > 0.0f)
-			projection_direction = &approach;
+		if (direction_valid)
+		{
+			s_type_c3b527 *previous = path->field_2e > 0 ? &path->field_30[path->field_2e - 1].point : (s_type_c3b527 *)path->field_1c;
+			function_210be0(previous, &path->field_30[path->field_2e].point, &approach);
+			if (function_30bf0(&approach) > 0.0f)
+				projection_direction = &approach;
+		}
 	}
+	else if (!reached && direction_valid && actor->unknown4d4)
+		projection_direction = &direction;
 	if (projection_direction)
 	{
 		real remaining = dot3f((vector3f *)&path->field_30[path->field_2e].point.point, projection_direction) - dot3f((vector3f const *)point, projection_direction);
@@ -880,6 +896,13 @@ real normalize2d(point2f *v);
 // retry outputs and horizontal-first pair declarations, masks 0..7: 212 each at 914/935 bytes.
 // Original chosen-speed initialization and complete body restored; retained DL result and
 // movement/request exits remain unresolved.
+// Round 38 (lane 1): validity reused for the trajectory result with one final `return validity`
+// and the request call returned from its arm 236 (877 B: every exit `mov al, bl`, retail keeps two
+// variables, BL validity and a DL trajectory result); the request call returned from its arm
+// alone 182 (919 B, result still memory-homed), also with the first-type test as its own `if` 182;
+// the retry admission as `minimum < speed * 1.25f` 135; the retry success flag set after the
+// output copies 135 (same code). The compile-only harness gives the result BL, so it cannot screen
+// the LTCG memory-homing; the unmatched trajectory callee (frame 0x28 against 0x30) may feed it.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1420,13 +1443,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
-// Round 16: retail's result sits at [esp+0x10] and its radius at [esp+0x14], ours the other way
-// round, and retail materialises both direction components before the x87 length.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),
 // spills the lateral term to the type slot, and puts radius/desired, then direction, below the
 // difference/transformed-origin slot.
+// Round 16: retail's result sits at [esp+0x10] and its radius at [esp+0x14], ours the other way
+// round, and retail materialises both direction components before the x87 length.
 // With ordinary input/side lifetimes: persistent target 313, both input points 297, shared
 // arccosine 296, late radius 312, frame pointer 401. Ordinary lifetimes: facing value 307; scalar
 // side 309; scalar center 306; origin constructed first 306; reused negative radius 329. Ordinary
@@ -1513,6 +1536,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // and origin-workspace-first masks 0..7: 257/286/286/279/257/286/286/279. Original projections, row
 // stores and complete body restored; natural input convention, zero/radius and direction homes
 // remain.
+// Round 38 (lane 1): the side offset as if/else arms with the products in each arm 270 (aligned
+// 215 -> 194: zero in xmm1 and the type-zero arms closer, entry homes unchanged); with the flag
+// declared after the normalization 305 (1188 B); radius renamed to sort before the stack points 238,
+// `center` declared beside `direction` 238, radius declared before the flag and result 238 (same code).
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

@@ -269,6 +269,9 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // const-reference 207/250/250/250/250/250; pointer/const-pointer with twice-used long sample
 // frames 222/222. Input aliases recover frame 0x2c but regress; original table fields,
 // observations, constructors and body restored. Destination/ordinal homes and getter expansion remain.
+// Round 241: early weighted output with long/dword/short/word contribution counts
+// 275/275/276/276; before getter 275/275/276/276. All result-storage diagnostics restored;
+// original Boolean, separate constructors, frame 0x30/0x2c and getter/ordinal differences remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

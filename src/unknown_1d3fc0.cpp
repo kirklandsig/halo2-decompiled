@@ -78,6 +78,8 @@ PRIVATE __forceinline void function_1d3fc1(vector3f *arg_0)
 // ordered by rank); `*=` for the k product or all three products the same code (compile-only listing).
 // Compile-only listing: with nothing after the forward normalization every component is load-multiply-store;
 // the preloads (ours k,j,i into xmm4-6, retail j,i) appear only once the dot reads forward afterwards.
+// Round 53: unnamed `j*j + i*i + k*k` 155; `j*j + (i*i + k*k)` 155; a named k square summed k, j, i 154;
+// the sum cast to double 155; the projection written `up->i = up->i - local_10 * forward->i` 149 (same code).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

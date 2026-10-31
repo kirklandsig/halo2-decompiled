@@ -263,12 +263,23 @@ struct s_seat_animations
 // and the per-arm entry pointer 78 (0x188130 17); that with `!result &&` in the while test instead of
 // the break 78 (17); with the count read inside the outer loop 84 (0x188130 1); with `type == 0` at each
 // use 88 (0x188130 18). Retail's EBP for animation is what keeps it a stack argument.
+// Lane 16 r48 (fast): no inner guard 65 (type in EAX, result in EAX, count in EBP; 0x188130 1, 0x1882d0
+// 23); no guard with `entry = &(first ? ... : ...)[i]` 63 (animation in EAX, type in ECX, two-local
+// frame; 0x188130 12), with count declared before result 71 (0x188130 matches), result declared first
+// 64 (0x188130 12), count computed from `type == 0` before first 80 (0x188130 1).
 // Round 95 (lane 8), on round 118's 52 form (no inner guard, per-arm entry, animation read once
 // through its address; reproduced 52, 0x188130 matches; its getter adds into ECX and copies to EAX
 // where retail forms the element with `lea ebx, [ecx + esi]; test ebx, ebx`): element_index also
 // read through its address as in 0x1882d0 52 (same code); result declared before first 69
 // (0x188130 1); the array-select entry `&(first ? ... : ...)[i]` 62 (0x188130 3); `if (result)
 // break;` before the parent step 66 (185 bytes); count declared before result 61.
+// Round 55 (lane 12): the compare through the class's operator== 55; the parent field typed as the
+// class 55; no inner guard with the per-arm entry and `first = !type` 78 (0x188130 17); the array-select
+// entry with count spelled from `type == 0` ahead of first 80 (0x188130 1); the getter as one ternary 65
+// (0x188640 22, 0x188690 18). One-file harness (same code as the build): the parameter in either other
+// order, getter early returns/nested test/forceinline/long index, the entry field as the class,
+// `index(element_index)` or a default-constructed index assigned after, and all 120 declaration orders
+// of the address-read form change nothing (the address-read form stays at its EBX/EBP/EAX rotation).
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {

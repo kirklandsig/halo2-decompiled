@@ -106,6 +106,9 @@ void function_16e2c0(long arg_0);
 // (own slot: the argument's home is no longer shareable); the address read with the saved index still
 // in the block 50; the address read after the current index, before/after the saved index 128/128; the
 // saved index as its own read of the global at entry 130. Restored.
+// Round 35 (lane 10, fast): saved index as long 83 (462 bytes), current index as word 123 (464) / long 101
+// (457); the BSP-globals store as a ternary 50 (same code); the unload argument written in the call 50 (same
+// code, kept: it drops a one-use element pointer).
 // Round 110 (fast): the range test through a forceinline validity helper taking the index 50; the BSP
 // count read into a local at entry 50; the range test before the NONE test in the disjunction 50 (the
 // same code); the structure-globals pointer as a ternary 50; the loaded BSP's list index read once into a
@@ -134,8 +137,7 @@ bool __stdcall function_11c1b0(short arg_0, bool arg_1)
         {
             if (arg_1)
             {
-                byte *local_3 = *(byte **)((byte *)g_4e0350 + 0x214) + g_4686c4 * 0x44;
-                cache_files_unload_structure_bsp((s_structure_bsp_reference *)local_3);
+                cache_files_unload_structure_bsp((s_structure_bsp_reference *)(*(byte **)((byte *)g_4e0350 + 0x214) + g_4686c4 * 0x44));
             }
             g_4686c4 = NONE;
             g_4e0348 = NULL;

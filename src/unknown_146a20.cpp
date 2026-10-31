@@ -121,6 +121,17 @@ bool g_47f05b;
 // the first placement as an explicit if/else on the block 34; the block typed as the fixed
 // allocator with the buffer at `block + 1` 34 (close to the listed `fixed + 1` form); g_479890
 // stored first 39.
+// Round 97 (lane 8, fast with 0x146b80/0x146e30/0x22c3e0/0x1c2690): retail's 0x4798b4 is the reference
+// count (+4) of the game's allocator object at 0x4798b0 (0x1473b0 returns it); the increment through
+// 0x1473b0 34 (same code), with g_479888 at both placements 38. The fixed class without the
+// intermediate base 31 (its vtable store moves up beside the abstract stores; 0x146b80 3). g_479888 at
+// both placements re-measured 38: retail's reload and layout, the 1 as three immediates, no base store.
+// An explicit `block ? new (block) ... : NULL` after the global stores 34 (same code).
+// Round 32 (lane 11, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0; retail's 0x453760 is the abstract class's
+// own vtable, eight pure slots, and 0x146b80 builds the same class at 0x105410 with the store dropped): the
+// fixed class flattened onto the abstract one 31 (0x146b80 3); `::new` 34; the refcount header as a member
+// in place of a base 34; the abstract constructor storing NONE before its zero loop 31 (0x146b80 4); the
+// masked size in a named local 34. The store is dropped in all (141 bytes).
 // Round 113 (lane 6, fast with 0x146b80/0x22c3e0 matched): a typed fixed pointer from g_479888 with the
 // buffer at `fixed + 1` 34 (same code), read after the three global stores 34; the first placement through
 // g_479888 with the buffer through `block` 36 (146 bytes by chance: block copied to EDX, the 1s immediates,

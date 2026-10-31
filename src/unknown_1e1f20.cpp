@@ -814,6 +814,15 @@ void swarm_leader_detach(long actor_index);
 // Y423: Absent-stop continuation with empty-memory continuation, false-count
 // dispatch first and ordinary-unit branch first, all eight subsets 261 fast
 // against unchanged fast 261 (ordinary 285). Original complete body restored.
+// Round 179 (plain 285; an LTCG link of this file with the callee closure, globals and the callers' files
+// reproduces the full listing exactly, where --fast does not): `value` as bool at the definition and all
+// eight declarations 286 plain; memory test through the entry actor with the body re-derived 1028 bytes,
+// with the participant index read per store 1044; joint_decline called (stays a call, 900 bytes); the
+// participant index read per store alone 996 bytes; the duplicate memory pointer re-derivation dropped:
+// identical code, kept. Without unknown_272b70's object (0x272b70 unresolved, so the 0x258600 ->
+// 0x258540 -> 0x258480 chain is compiled with unknown clobbers) the entry and slot loop take retail's
+// registers (actor EBP, index EDI, offset spilled to [esp+0x10]): the allocation follows what LTCG knows
+// about 0x258600's chain. The memory loop is joint_decline inlined, which its /Ob1 file prevents.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
@@ -832,7 +841,6 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		s_slot_memory_entry *memory = &actor_get(actor_index)->memory[memory_index];
 		if (memory->type != NONE)
 		{
-			memory = &actor_get(actor_index)->memory[memory_index];
 			byte *entry = g_502424->data + (memory->unknown4 & 0xffff) * 0xbc;
 			long slot = *(short *)((byte *)memory + 2);
 			*(long *)(entry + slot * 12 + 4) = NONE;

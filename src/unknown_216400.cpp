@@ -86,8 +86,7 @@ struct s_save_list_2164c0
     s_save_entry_2164c0 entries[4096];
 };
 
-/* counts in the list's next entry and returns it, NULL once the list is full */
-PRIVATE inline s_save_entry_2164c0 *append_save_entry_2164c0(s_save_list_2164c0 *list)
+PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *list)
 {
     s_save_entry_2164c0 *result = NULL;
     if (list->count != 4096)
@@ -97,14 +96,14 @@ PRIVATE inline s_save_entry_2164c0 *append_save_entry_2164c0(s_save_list_2164c0 
     return result;
 }
 
-// score 20 (was 32): frame 0x8ac and extent agree; with the helper handing out the list's next entry
-// (round 114) the list is in ECX and the scratch pairs before the format call, XFindNextSaveGame and
-// XFindClose are retail's. Left: retail tests a materialized bool (`cmp esi, 0x1000; setne al;
-// test al, al`), copies the count to EAX and stores the new count before forming the slot; ours
-// branches on the compare, forms the slot first and tests the returned pointer (`test edi, edi`).
-// Earlier (32): only registers differed: the append's list/count/result (ours edx/eax/cl, retail
-// ecx/esi/al, with the count copied to eax and the new count stored before the copy) and the scratch
-// pairs before the format call, XFindNextSaveGame and XFindClose. Deleting the append alone makes those pairs retail's; every form
+// score 20 (was 32): the helper returns the new element (NULL when the list is full) and the caller copies
+// into it: retail's length (662), list in ECX and retail's format-call and enumeration registers; only
+// the append's own instructions differ: retail materializes the room test (`setne al; test al, al`) with
+// the count in ESI copied to EAX, `lea edx, [eax + 1]` and the shift on the copy, and no NULL test.
+// Earlier (32): frame 0x8ac and extent agree (659 bytes plus 3 of fill); only registers differ:
+// the append's list/count/result (ours edx/eax/cl, retail ecx/esi/al, with the count copied to eax
+// and the new count stored before the copy) and the scratch pairs before the format call,
+// XFindNextSaveGame and XFindClose. Deleting the append alone makes those pairs retail's; every form
 // with a materialized result gives ours, every form without one gives retail's list ECX but no
 // setne/test. A byte scan finds retail's append sequence nowhere else.
 // Tried: memcpy into `&entries[count++]` 32 (kept, from 51); file path/directory/both receivers
@@ -365,9 +364,22 @@ PRIVATE inline s_save_entry_2164c0 *append_save_entry_2164c0(s_save_list_2164c0 
 // unknown_216b60.cpp so LTCG inlines it 32 (plain, same code); a count local post-incremented
 // in the copy and stored back after it 33; `entry.type` passed to 0x216e50 32; `entry.type`
 // set inside the type loop before leaving it 32.
+// Round 37 (lane 1): a nested inline index helper returning `list->count++` 51; an index local with a
+// NONE default 51; the index read through a second table pointer with the new count stored first 51;
+// the copy through an inline two-pointer copy helper 32; the list and entry typed as the shared
+// s_saved_game_location_table / s_saved_game_file_location (callers 0x12b450 and 0x215790 with it) 32
+// (same code); the permuter on the original body, 69 variants, best 32.
 // Round 177 (fast, append helper): the result declared `bool const` 32, as `char` 32, as `!(count ==
 // 4096)` 32 (all same code); the room test `4096 - list->count != 0` 51 (mov/sub before the setne);
 // `if (!result) return result;` before the copy 32 (same code).
+// Round 24 (lane 14): the append helper reshaped to return the new element pointer, the caller copying
+// into it 20 (kept; plain 20); with an early `return NULL` 20 (same code); the copy as `*slot = entry` 20
+// (same code); the helper returning the new index or NONE 47 (one instruction short; retail's `lea edx,
+// [eax + 1]`, store and `lea edi, [eax + ecx + 4]` tail); the index read, `count = index + 1`, then the
+// element 49; a bool result with the index or the element as an out parameter 51/32 (the materialized bool
+// puts the list back in EDX); a bool room test with the caller copying into `entries[count++]` 54 (the
+// bool folds); the count read before the 0x216e50 call (diagnostic, count in ESI) 62; the original append
+// helper returning the copied element 54 (its NULL test threads away, two instructions short).
 // Round 114 (lane 6): the append helper taking the count by value 33; a bool helper handing the entry
 // out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
 // caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
@@ -434,7 +446,7 @@ found:
                 {
                     entry.type = type;
                     function_216e50(data.szSaveGameName, type, &entry.language, entry.name);
-                    s_save_entry_2164c0 *slot = append_save_entry_2164c0(list);
+                    s_save_entry_2164c0 *slot = new_save_entry_2164c0(list);
                     if (!slot)
                         break;
                     memcpy(slot, &entry, sizeof(entry));

@@ -400,6 +400,9 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // 811-byte extent remain. The original unsigned word quotient, signed loops and memory operations
 // were preserved. Original positive Boolean convergence and complete body restored; padded-
 // count/byte-count and scalar homes remain.
+// Round 452: prior visited word used for admission and final store, dword/signed
+// masks with dword/byte/word flags, then shared global tests, eight forms 226 each.
+// They grow the frame to 0xf4; original field widths, mask, visits and body restored.
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {

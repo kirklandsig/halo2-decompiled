@@ -92,6 +92,11 @@ void function_2d140(long, real const *, long, long, s_filter_vector const *);
 // Harness only: top/bottom converted after grid row k (k = 1..6) moves each conversion after all three
 // stores of a row, never between (positional 6-9); the blends among the grid rows 7-104; the global
 // stores before the point/reciprocals/conversions/grid 206/181/93/77 (positional).
+// Round 96 (exact one-link harness, 6 there): the four bound and two reciprocal declarations in all 720
+// orders, min 6 (15 orders at 6, next 21); top/bottom converted inside the column 1 chains
+// (`... = local_14 = (real)g_4b9dd4;`) 7 (each conversion now lands one store after retail's instead of
+// one before); both reciprocals before the blends/before the column 1 chains 190/204, the y reciprocal
+// alone there 193/193; the grid as a flat real[36] 6; every chain written in reverse order 6 (same code).
 // @retail 0x22b8e2
 void function_22b8e2(s_22b8e2 const *arg_0, long arg_1, color4f const *arg_2)
 {

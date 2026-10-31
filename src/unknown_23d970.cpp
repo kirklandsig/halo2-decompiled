@@ -639,6 +639,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 114 (lane 6, fast): right or direction declared at function scope 57/57; the second product's
 // output through the output view (plain cross3f) 57; the forward copy as memcpy 57; the else branch's
 // cosine declared at function scope 57 (all identical code).
+// Round 133 (fast): the direction through the existing scaled_difference3f with a 1.0f scale 223 (1266
+// bytes); the forward copy field by field 232 (1274 bytes), as memcpy 57 (identical); memcpy with
+// cross3f_staged for the second product 217 (1270 bytes), for both products 221 (1272). The 3 extra bytes are
+// the second product's three `movss x, [forward]; mulss x, right` pairs, where retail copies right's register
+// and multiplies forward from memory (one byte shorter each). A one-file harness with the callee files gives
+// 362 at 1246 bytes here (not exact).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

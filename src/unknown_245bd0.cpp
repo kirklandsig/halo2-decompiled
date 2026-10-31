@@ -295,6 +295,15 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // taking the factor by const reference 57 (0x2461a0 4 -> 50); the radius added first in plane->d
 // 57; the best-* locals declared in reverse 59; plane declared before depth in the loop 57;
 // best_depth declared first 60.
+// Round 97 (lane 8, fast with 0x2461a0/0x19cb90/0x245bd0/0x245d80): the normalization test written
+// `g_45dbd8 < distance` 57 (same code); the difference scaled in place (unit z in the other arm) and
+// copied to the plane once 397 (456 bytes, helper outlined); the unit-z arm storing x and copying it to
+// y 61, storing y and copying it to x 57; that with the reciprocal in the call 57. Ours keeps n.k in the
+// scale's register (the k product goes in place on the scale), so both arms start with 1.0 in XMM0 and
+// it is hoisted above the fsqrt; retail keeps n.k in the z difference's register.
+// Round 32 (lane 11, fast with 0x19cb90/0x2461a0): the matching form's two keepable halves together (the
+// dot's inputs swapped and the unit-z zeros stored separately) 61; with the sum grouped j + (i + k) 61, flat
+// i, k, j 61, as i, k, j statements 61; flat i, k, j with the existing vector3f_scale 61.
 // Round 113 (lane 6, fast; all with the dot's inputs swapped and the unit-z zeros stored separately): the
 // sum as statements x, z, y 61, as `j + (i + k)` 61, as dot3f(&d, &d) 152, as length_sq3f(&d) 152, as
 // statements j, i, k 61. Diagnostics (not keepable): length_sq3f(&d) plus any otherwise unused direct read
