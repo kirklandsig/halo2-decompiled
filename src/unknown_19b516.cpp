@@ -220,6 +220,10 @@ void c_widget::v16()
 // Round 16 (lane 2): `while (widget != NULL)` 2; a free forceinline previous-or-last helper taking the
 // widget 2; the loop variable typed as the base class with its methods 2; the c_widget wrapper plain
 // inline 72 (55 bytes, called); an early return when the entry finds none, then a do-while 2.
+// Round 60: empty-entry guard with a helper-fallback if/else step 35; helper-fallback ternary step 35;
+// helper-fallback ternary entry 42; ternary entry and step 12; helper-fallback if/else step 35;
+// helper-fallback if/else entry 13; if/else entry and step 45; single-exit goto with if/else step 35.
+// Original executable body restored.
 // @retail 0x22ec1b
 void c_widget::v17()
 {
