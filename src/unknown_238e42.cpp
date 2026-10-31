@@ -977,6 +977,13 @@ bool __stdcall function_2399da(long controller_index)
 // EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
 // (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
 // 90. Plain: own rank read from the membership field at each use 90.
+// Round 43 (lane 10): one result path (task index preset to NONE, the deny and rank-3 dialogs fall
+// through to the task test) 90; the progress call written in both the remove and set arms 90; dispatch
+// remove / over-rank deny / `rank != 3` set / rank-3 dialog 90; task index declared before the slot
+// read 90; `membership` declared before `member` 90. Diagnostic: the rank store replaced by a constant
+// lets the identity take EAX (but the constant is CSE'd with `>= 2`, so it is no clean test). Also:
+// the non-remove arm as one block with over-rank and rank-3 guard returns 90; with the rank store
+// first in that block 91.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
