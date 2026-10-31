@@ -2299,6 +2299,9 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 // locals renamed four ways 10; the query test inverted 7; the angle wrap as a ternary 7.
 // Common selected-angle publication with byte/native-vector output, zero-angle initialization and fallback-range
 // initialization combinations 53/53/74/74/60/60/75/76. Original query buffer and body restored.
+// Round 59: a twelve-byte/two-component union 8; a two-component union 2; an indexed three-component union 8;
+// the twelve-byte union through its vector member 8; a named random result on the two-component union 2 and on
+// the twelve-byte union 8; a separate angle on the two-component union 5; range before the twelve-byte union 8.
 // @retail 0xcfec0
 void function_cfec0(long unit_index)
 {
