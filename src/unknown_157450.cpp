@@ -479,15 +479,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
-// score 29 (was 32): the present-team bit now has its own local, so the loop's mask update is
-// retail's load/or/store; the old team mask is still kept as a 32 bit value here and as a 16 bit
-// one in retail (retail spills a word and reloads it into ecx before the first post-loop test,
-// sharing it between the compare and the update), the post-loop compare and the update still use
-// different registers, and the input counter loop uses different ones too. A 16 bit mask local
-// gives retail's prologue and loop but splits the tail into a 16 bit load for the compare and a
-// 32 bit one for the update; taking the present teams out of the volatile local does give the
-// shared 32 bit reload, but then the player loop keeps them in a register and loses retail's
-// load/or/store.
+// Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
+// becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
+// both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
+// but splits the tail into a 16 bit load for the compare and a 32 bit one for the update; taking
+// the present teams out of the volatile local gives the shared 32 bit reload, but the player loop
+// then keeps them in a register and loses the load/or/store.
 // score 32 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
 // retail; the comparison and the update of the two masks use different registers, and the input
 // counter loop uses different ones too. Retail keeps the word mask in a register after the loop
@@ -612,9 +609,7 @@ void function_158140(void)
 
 		if (team != NONE)
 		{
-			dword team_bit = 1 << team;
-
-			present_teams |= team_bit;
+			present_teams |= 1 << team;
 			if (!(player->flags & 2))
 			{
 				playing_teams |= 1 << player->team;
