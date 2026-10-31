@@ -27,22 +27,18 @@ struct s_session_summary
 	long player_values248[16];
 	long player_values288[16];
 	long player_machines[16];
+
+	bool remove_machine(s_session_id *id);
 };
 long __stdcall function_063190(void *summary, long user);
 long session_summary_get_player_value(s_session_summary *summary, long player_index, long variant_index);
 long network_session_find_member(c_class_58d20 *session, const s_session_member_identity *identity);
 void network_session_disband_member(c_class_58d20 *session, long member_index);
 __declspec(noinline) long network_session_cancel_reservations(c_class_58d20 *session, const s_session_id *id);
-bool session_summary_remove_machine(s_session_summary *summary, s_session_id *id);
 bool network_session_host_set_summary(c_class_58d20 *session, const s_session_summary *summary);
 
-// score 9 (was 9): Frame and both scans agree; final summary address is reused rather than rematerialized.
-// only the summary address still differs: retail recomputes `lea eax,[esp+0x24]`
-// after the push, ours reuses the `ebx` copy of `&summary`.
-// Round 296: Explicit inline/noinline call-summary subsets for cancellation/removal/publication (all seven combinations) 9 each; named removal result 9. Complete body and declarations restored.
-// Round 44: post-remove pointer/reference 9 each; read-only source 9; one-element summary array 9;
-// output-pointer copy 9; direct tail session reads 9; final-call session local 9;
-// direct summary initialization 9. Opening body restored.
+/* disbands the other members that share the machine id, cancels its
+   reservations and takes the machine out of the published summary */
 // @retail 0x6d380
 void __stdcall function_06d380(c_session_client *client, const s_session_id *id)
 {
@@ -77,14 +73,11 @@ void __stdcall function_06d380(c_session_client *client, const s_session_id *id)
 		}
 	}
 	network_session_cancel_reservations(client->session, id);
-	c_class_58d20 *session = client->session;
-	s_session_summary *source = 0;
-	if (session_state_is_live(session) && session->flag49fd)
-		source = (s_session_summary *)session->data4a00;
+	s_session_summary *source = (s_session_summary *)client->session->get_data_4a00();
 	if (source)
 	{
 		s_session_summary summary = *source;
-		if (session_summary_remove_machine(&summary, (s_session_id *)id))
+		if (summary.remove_machine((s_session_id *)id))
 			network_session_host_set_summary(client->session, &summary);
 	}
 }
@@ -584,7 +577,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 	return result;
 }
 
-// score 55 (was 55): aligned frame agrees; the code is retail's apart from the colours. Retail takes the
+// score 22 (was 55): kept in round 184 (coordinator ruling): the variant address named before the summary
+// getter gives the session EBX as in retail, and 0x6e500 and 0x72700 match with it. Left: the opening's
+// second lea after the je (retail's comes before it) and a one-step scratch rotation through the summary
+// lea, the mask temp and the copy loop.
+// Before (55): aligned frame agrees; the code is retail's apart from the colours. Retail takes the
 // session in EBX (its callers copy it there) and gives the loop temporaries ESI/EDI; ours keeps the session
 // in ESI and the loop temporaries in EBX/EDI. Deleting the whole tail (live test, 0x4994 setter, machine
 // limit) moves it to EBX (diagnostic 244, 321 bytes); deleting either setter alone does not; a /Gd first
@@ -715,8 +712,8 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // test); the value alone before the loop 137; the variant alone before the member count 52. Named
 // copies inside the loop or a `long const *` to the value are propagated back (session ESI).
 // Round 183 (lane 3): `const byte *variant = session->data4db0;` declared before the summary getter and
-// passed to 0x6e910 gives the session EBX (index ESI, player EDI) and 22 (not kept: a one-use pointer local
-// while this function does not match); with it 0x6e500 and 0x72700 match in their recorded forms. Left:
+// passed to 0x6e910 gives the session EBX (index ESI, player EDI) and 22 (kept in round 184 by coordinator
+// ruling); with it 0x6e500 and 0x72700 match in their recorded forms. Left:
 // the opening's second lea after the je and a one-step scratch rotation through the summary lea, the mask
 // temp and the copy loop. The variant at function top, after the summary or in the loop block: ESI; the
 // summary as `flag49fd ? data4a00 : NULL` with the variant in the loop block: EBX but an if/else summary
@@ -746,6 +743,7 @@ bool function_06e720(c_class_58d20 *session)
 	{
 		if (!session->flag4f20 || !&session->data4f24 || !&session->data4f90)
 		{
+			const byte *variant = session->data4db0;
 			s_session_summary *summary = (s_session_summary *)session->get_data_4a00();
 			s_unknown_108 machines;
 			s_session_player players[16];
@@ -768,7 +766,7 @@ bool function_06e720(c_class_58d20 *session)
 			{
 				if ((session->player_mask & (1 << i)) && session->players[i].unknown14 != NONE)
 					function_6e910(&session->players[i], addresses,
-						session->data4db0, summary, (char)i, &players[i], session->value49c8);
+						variant, summary, (char)i, &players[i], session->value49c8);
 			}
 			session->set_data_4f24(&machines, (s_unknown_3648 *)players);
 			if (session_state_is_live(session) && session->value5dd0 != NONE)
