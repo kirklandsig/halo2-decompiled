@@ -442,6 +442,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // the scan loop; with the short link count 377 (1358 bytes, frame 0xe4; link count then takes EDI where
 // retail keeps `previous`); with `special` also false then set by an if 383; origin at the scan-loop top 400
 // (1418 bytes); origin shared with the previous-point ternary 386 (1407 bytes).
+// Round 120 (m3 lane 5): both builds return with ret 0x24. On the short link count (368, frame 0xe4,
+// 1368 bytes) the scalar slots are rotated against retail (ours count/previous index/previous at
+// +0x10/+0x14/+0x18, retail previous/count/previous index) and the entry zero sits in EDX where
+// retail's is `previous = NULL` in EDI. On that graph: `previous` renamed 368 and `count` renamed 368
+// (same code: names do not move these slots), `previous` declared before `previous_index` 368 (same
+// code), the node type named once (`short type = node->unknown10;` for every test and store) 349
+// (1388 bytes, frame 0xe4; the special test then threads straight into the first arm); the named
+// type on the original long-count body 354 (1395 bytes). Original body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

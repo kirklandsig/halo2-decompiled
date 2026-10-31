@@ -578,6 +578,9 @@ struct s_match_player_rating_collection
 // declared at function scope 113; team mode as byte or char 113; team mode read from the collection in the loop 113 (in both places 105); the compare reading the field 99; declared inside the condition's block 103;
 // loads and tests in one condition 104; the tests as continues 113; the key and active tests split from the rest 113; the selected skill read from the entry at the call 103; the key read from the collection 117;
 // the call passing (long)other_skill 16; other_team read before the tests 65; an int skill 113; a long skill with the field compared 99; a long skill and long team mode 92.
+// Round 103: the other rank as a ternary 106; the fields read through collection->players[i] without the entry pointer 16 (same code), with a 32-bit skill 113;
+// the id typed as the XUID it is with the guest test as XOnlineIsUserGuest 16 (same code), with a 32-bit skill 113; permuter 47 variants, none better.
+// Diagnostic: a 32-bit skill without its NONE test lets team mode keep BL (118; the load then sinks to the call).
 // @retail 0x74800
 long __stdcall function_74800(const s_match_player_rating_collection *collection, long selected)
 {
@@ -1489,6 +1492,11 @@ struct s_rating_summary
 // in place during the pushes, after lower; retail calls it right after the change), level and lower both there
 // 138; the team loop as the `type == 5` if-branch 317; the key stored before the session copy 88 (as before);
 // with the key read from the collection at that store 90.
+// Round 103 (m3 lane 7): the player entry's id typed as an XUID at +2 (guest test and 0xbad00000 compare on
+// xuid.dwUserFlags, identity as &player->xuid) 92 (same code); the team statistics pointer formed before the
+// change call 92; a typed 64-bit session field at +0x130 92; level renamed updated_level (sorts after the
+// compiler's tv temporaries) 92; the team entry's id typed as an XUID 92. Diagnostic: constant team statistics
+// arguments 212 (level then takes EBX in the team loop, the collection stays in memory).
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1788,6 +1796,14 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // cursor 709; both online clear cursors 709; identity-change/disconnected clear cursors 709;
 // invalid-user/disconnected clear cursors 709; all three clear cursors 709; all three clear
 // cursors with word remaining counts 709.
+// Round 103 (m3 lane 7; count is positional, so an aligned diff of the listing was tracked too: baseline 515):
+// the existing online_logon_connected() for the opening test 729 (2862 bytes = retail, retail's dec eax; aligned 479);
+// with the existing variant getter 0x192e60 in the first loop 763 (aligned 470), in all three loops 802 (2910);
+// the existing session-user getters 0x647a0/0x647d0 in the first loop 781 (not inlined, plain check too);
+// the existing clock helpers 0x75870/0x75890 932 (not inlined); on the getter form, delay as `> 3 ? 300000 : 2000`
+// 763 (retail's setle, aligned 468), with the last read time in a named local 749 (aligned 514). Leads: the slot
+// test's cmovne needs /arch:SSE (a file-flag decision), which shifts every later instruction in the positional
+// count; retail evaluates the last read time before the clock read and keeps it in ESI (elapsed-time shape).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

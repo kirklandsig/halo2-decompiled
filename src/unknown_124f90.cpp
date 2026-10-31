@@ -2819,6 +2819,9 @@ static inline short sound_voice_find_available_channel(char type)
 // written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
 // the not-found exit past a block that sets the driver default, which no form here reproduces.
 // A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
+// Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
+// scores 113/113/113/109/139/139/139/133.
+// Original executable source restored; no qualifying gain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3649,6 +3652,9 @@ struct s_128ca0
 // Round 235: native real incoming gain with direct/inner-part/location-value/both forms
 // 306/306/306/306; each with shared scale 295. Frame 0x494 recovered, gain and clamp
 // loads still differ; original signature, caller argument and executable body restored.
+// Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
+// scores 215/255/215/255/286/255/286/255.
+// Original executable source restored; no qualifying gain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4029,14 +4035,15 @@ void function_21b0e0(bool arg_0);
 long players_first_active_local_player(void);
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 
-/* the per-voice and per-channel value pointers of one spatialization pass, cleared when declared
+/* the per-voice and per-channel value pointers of one spatialization pass, cleared before use
    (a plain memset of a local this large makes VC realign the frame with `and esp, -8`; retail's
-   clears don't, and a clearing constructor or member function is the only form found that avoids it) */
+   clears don't, and a clearing member function is the only form found that avoids it; a clearing
+   constructor does too but changes 0x1c4590's registers through link-time code generation) */
 struct s_voice_value_table
 {
 	vector3f *values[0x40];
 
-	s_voice_value_table()
+	void clear()
 	{
 		memset(values, 0, sizeof(values));
 	}
@@ -4046,7 +4053,7 @@ struct s_channel_value_table
 {
 	vector3f *values[0x80];
 
-	s_channel_value_table()
+	void clear()
 	{
 		memset(values, 0, sizeof(values));
 	}
@@ -4092,6 +4099,8 @@ void function_125b40(void)
 			local_5.count = 0;
 			s_voice_value_table local_3;
 			s_channel_value_table local_4;
+			local_3.clear();
+			local_4.clear();
 			function_129100(&local_5, local_3.values, local_4.values);
 			long local_6 = players_first_active_local_player();
 			while (local_6 != NONE)

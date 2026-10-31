@@ -157,73 +157,6 @@ __forceinline void variant_string_get(long tag_index, long string_handle, word *
 
 /* fills a variant: its type and settings, its nine names and descriptions
    and its tables */
-// score 30 (was 172): Frame 0x408 and language/string homes agree; initial setup order and point-copy homes remain.
-// Coordinator review (KIMI1 r94): the 13 below needs a local copy of the points parameter (a duplicate local, kept
-// only with a match); the do-loop alone stays 30. Body back to its earlier form.
-// Intermediate ownership does not remove the tag spill. Shared output cursor 221; native array cursors 229;
-// independent string counters 221; direct countdown points copy 226;
-// shared cursor, independent counters and countdown copy 194.
-// Separate increasing-counter cursors 194; short counters 194; native array
-// cursors with countdown points 194; word table index 219 (frame 0x408,
-// variant EBP); existing shared lookup 327.
-// Separate points input cursor 228; direct string countdowns 194; both 228;
-// independent countdown output cursors 228; shared remaining-string counter 228.
-// Simultaneous output cursors 226; native string-array end bounds 263; shared increasing counter 194; score-array cursor 210; points-array end bound 191; shared counter/end bound 191; simultaneous cursors/end bound 222.
-// Tried string workspace scope 211; masked list index 217; byte string counters 194; independent
-// score counters 194; score upper clamps 226; unsigned score counter 194.
-// Round 109: Complete point memcpy 217; role-named buffer/counters 194; whole wide-buffer zero 248 (three sibling losses); direct list field 212; independent named cursors 194.
-// Explicit language last/first 194/194; explicit-language ordinary inline 433;
-// original lookup/table/both ordinary inline 481/194/481; readonly language inputs 194;
-// native wide workspace 194. Original lookup helpers, contracts and body restored.
-// Inner string workspace at helper entry 194; file-local lookup helpers 194; string-first helper 194;
-// native short range inputs 194; short ranges with file-local helpers 194 (fast); all restored.
-// Round 113: Intermediate wide-buffer entry scope 194; unloaded-table early return 194; table pointer before list 194; list receiver before language query 202; existing table helper output-first 194.
-// Round 123: Initializer-owned scratch 194; lookup-owned scratch 194; valid-list scratch 194; initializer scratch/native row cursors 194; initializer scratch/destination endpoint 191 (three-point gain dropped).
-// retained list receiver 235; retained table root 223; both receivers 235; source-end copy 200;
-// indexed source with destination cursor 221; both arrays indexed 221; list receiver/source end 241;
-// table root/source end 215.
-// List-index/language/list/table-root lexical homes separately and together 194 each;
-// receiver declaration at producer 194; independent point count 194; short score ordinal 241.
-// Round 201: Outer lookup output-first 194; existing bounded copy 194; unsigned string ordinals 194; entry point-destination cursor 223; intermediate buffer lexical order 194.
-// Round 210: Native wide-array helper outputs 194; signed-byte string ordinals 194; direct table
-// root 194; native table-reference input 194; unsigned language ordinal 194. Extra tag spill and
-// language/cursor homes remain.
-// Native range pointer/reference 172/172; table-helper range pointer/reference/value
-// after table 172/172/217, before table 220/220/220. Keep the genuine
-// twice-used range pointer; 791/782 bytes, original arithmetic and call values.
-// Outer/inner/both actual lookup output results 172/172/172; native range value 217;
-// outer tag-output-string/string-output-tag/output-string-tag orders 172 each;
-// range value with both output results 217. Complete original helpers restored.
-// Native table member long scalars/range pointer/range reference/short scalars 172 each;
-// the same four receiver contracts with native fixed-array output 172 each. Original helpers restored.
-// Round 207: uniform language-global reads 191; with native list field reads 36; with independent
-// description cursor 30. On that graph: points input cursor 141; independent description plus input
-// cursor 141; masked list ordinal 189; masked ordinal/input cursor 238; all three 238;
-// use-stepped point cursors 30; directly indexed point arrays 218. Plain and complete-image checked.
-// Round 210: entry point-input/output/both cursors 239/250/253; independent copy count with
-// entry input/output/both 239/250/253; signed-short copy count 30; entry input/unsigned count 239.
-// Round 213: point source before terminal fields/between fields/final score range/all score ranges
-// 142/142/167/192, each with shared or independent countdown; full-width masked ordinal 189,
-// with destination end 192, with late source cursor 238. Original body restored.
-// Round 136: defining-unit search/conversion/both inline 271,172,271;
-// the same with separate noinline 172,172,172;
-// outlined inline search with outlined conversion/both noinline 172,172.
-// List-index helper word/masked, word/direct, short/masked, unsigned/masked 51/51/51/30;
-// word/short index local 212/212; word index and helper 212; short index and helper 212.
-// Round 146: type declared second and field_8 by value (which 0x193ba0 and 0x193c70 need) 30;
-// the by-value field_8 needs no address-taken read.
-// Round 31 (lane 12): retail loads the point source into eax before the two field stores; ours keeps it
-// in its stack home (with or without the field_8 read). Plain field_8 read 220; indexed destination with
-// stepped source 30 (same code); stepped destination with indexed source 219 (frame 0x404); string loops
-// on the shared counter 30; name third in the parameters, as the callers' loads order it, 30 (callers
-// still match), the same with the plain field_8 read 220 (three callers lost).
-// Round 146: type declared second and field_8 by value (which 0x193ba0 and 0x193c70 need) 30;
-// the by-value field_8 needs no address-taken read.
-// KIMI1 r94: immutable points parameter with a local input cursor 13 (plain confirmed);
-// early/swapped input cursor 142 each; source cursor with indexed output 219, with or
-// without the immutable parameter; source/both header increments 30 each before the
-// cursor repair; points do-loop 30 before it; direct string countdowns and use-stepped
-// cursors 13 each (same code); scaled tag offset 220.
 // @retail 0x1936e0
 void function_1936e0(s_built_variant *variant, long type, s_variant_field_8 field_8, long description_string, long field_5a0, long const *points, long field_59c, long name_string)
 {
@@ -240,20 +173,15 @@ void function_1936e0(s_built_variant *variant, long type, s_variant_field_8 fiel
 	{
 		long string_list_index = strings->string_list_index;
 
-		char *output = variant->names[0];
-
 		for (long name_index = 0; name_index < 9; ++name_index)
 		{
 			variant_string_get(string_list_index, name_string, text);
-			utf16_string_to_utf8_string(text, output, sizeof(variant->names[0]));
-			output += sizeof(variant->names[0]);
+			utf16_string_to_utf8_string(text, variant->names[name_index], sizeof(variant->names[0]));
 		}
-		char *description_output = variant->descriptions[0];
 		for (long description_index = 0; description_index < 9; ++description_index)
 		{
 			variant_string_get(string_list_index, description_string, text);
-			utf16_string_to_utf8_string(text, description_output, sizeof(variant->descriptions[0]));
-			description_output += sizeof(variant->descriptions[0]);
+			utf16_string_to_utf8_string(text, variant->descriptions[description_index], sizeof(variant->descriptions[0]));
 		}
 	}
 	for (i = 0; i <= 5; i++)
@@ -270,12 +198,11 @@ void function_1936e0(s_built_variant *variant, long type, s_variant_field_8 fiel
 		variant->field_51c[i] = PIN(i + 10, i, 127);
 	variant->field_59c = field_59c;
 	variant->field_5a0 = field_5a0;
-	long *point_output = variant->points;
-	for (i = 16; i > 0; --i)
+	long const *point_input = points;
+	for (i = 0; i < 16; i++)
 	{
-		*point_output = *points;
-		++point_output;
-		++points;
+		variant->points[i] = *point_input;
+		++point_input;
 	}
 }
 

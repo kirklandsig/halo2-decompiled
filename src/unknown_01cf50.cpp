@@ -194,8 +194,10 @@ bool function_32ac0(void)
         D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
         g_4b82f4 = 0;
         D3DDevice_SetRenderState(D3DRS_SRCBLEND, 0);
-        function_0222d0(D3DRS_DESTBLEND, 0x303);
-        function_0222d0(D3DRS_BLENDOP, 0x8006);
+        dword destblend_state = D3DRS_DESTBLEND;
+        dword blendop_state = D3DRS_BLENDOP;
+        function_0222d0(*(D3DRENDERSTATETYPE const *)&destblend_state, 0x303);
+        function_0222d0(*(D3DRENDERSTATETYPE const *)&blendop_state, 0x8006);
         function_1cc30(23);
         result = true;
     }
@@ -2442,6 +2444,9 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
+// score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
+// inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
+// that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
 // @retail 0x4d830
 void function_4d830(s_render_transform_record const *record)
 {
@@ -2511,6 +2516,9 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
+// Coordinator review (MiniMax C): the lane's 16 needed a #pragma optimize("p") pair around
+// the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
+// divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -3039,6 +3047,11 @@ bool function_128c0(s_128c0_settings const *settings)
 }
 
 
+// score 62 (was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
+// so the surface pointer and the LockRect arguments are stored at other offsets; we hold pBits in a
+// register and set the flag there, where retail sets it in memory and keeps the pointer in the frame;
+// our loop hoists the left edge and counts the destination pointer up, where retail loads the left
+// edge from the global in every row and adds the pitch to the destination pointer.
 // @retail 0x13d80
 void function_13d80()
 {
