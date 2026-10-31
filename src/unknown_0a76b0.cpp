@@ -2569,12 +2569,6 @@ void function_e5300(long unit_index, long a);
 
 /* entering a vehicle's seat finished: the unit's visibility in the seat,
    and the seat's state */
-// score 77 (was 77): region-output routine inlines; pool/unit/output homes
-// and unsigned state test differ.
-// Round 256: caller-only noinline/direct hidden/entry storage subsets and early
-// zero 73 each in reduced image (unchanged preview 73); defining-TU noinline
-// with original/direct/entry/early-zero forms 40 each, confirmed full 40.
-// Defining noinline restored after it lost an existing match; original body kept.
 // @retail 0xea6b0
 void __stdcall function_ea6b0(long unit_index, long type)
 {
@@ -2589,11 +2583,12 @@ void __stdcall function_ea6b0(long unit_index, long type)
 		{
 			unsigned char *states;
 			long state_count;
+			long choices;
 			bool hidden = false;
 
-			function_ba690(unit->parent_object_index, &state_count, &states, NULL, NULL);
+			function_ba690(unit->parent_object_index, &state_count, &states, NULL, &choices);
 			if (*(long *)(seat + 0xac) < state_count)
-				hidden = states[*(long *)(seat + 0xac) * 8 + 1] < 3;
+				hidden = ((char *)choices)[*(long *)(seat + 0xac) * 8 + 1] < 3;
 			function_b9c60(unit_index, hidden);
 		}
 		function_d1360(unit->parent_object_index, unit->seat_index, 0, 0);
@@ -3393,6 +3388,14 @@ struct s_unit_request_seat_animation
 // does for cases 1 and 2, but case 3's block and the call move to the end and the mode default
 // becomes the dispatch's fallthrough), that with the branches swapped 103 (same code); the request
 // context set after its switch 137.
+// Round 61: a compile-only screen shows the rule: a merged block keeps the copy that falls into the
+// call, else the request switch's copy, so the request-1 block stays in the request branch. On the
+// shared action switch (103): the request default `return false` 124; the query failure and the action
+// default `return false` 82 (473 bytes: retail's layout, the 0xc0006c3 block and the call after the
+// request dispatch and the 0x120001b5/0x110001b4 blocks after the query's, but the false result moves
+// from DL to AL, the unit index from EBX to EBP, and the query failure exits inline), its declarations
+// moved 82/82, the call returned 139; the action default alone `return false` 121, the query failure
+// alone 119.
 // @retail 0xebb40
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 {
