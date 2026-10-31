@@ -1343,6 +1343,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // (383 bytes); shared inline flag helper for 0x56220/0x56380 94 (same code); per-channel `result = 0; if (...)`
 // helper 193 (411 bytes); values as dword 94 (same code). Screened, same code or worse: 27 order/traversal/helper
 // forms, 30 product spellings (count/size locals, two adds), mixed direct/pointer reads 368-372 bytes.
+// Round 8 (lane 17): BLOCKED-BY 0x56160 and 0x56380, whose matches pin the shared bool helper (retail materialises
+// the per-channel test in CL after the shift, ours in AL). The helper returning byte/char/a bool through a byte
+// return 94 each with 0x56160 68; returning long 123 (0x56160 103, 0x56380 123, 0x54990 5); `(!is_unknown00 ? 11 :
+// 13)` 94 (same code); a per-channel multiplier set by an if 110 (0x54990 13); `player == voice_get_unknown00()` 94.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {

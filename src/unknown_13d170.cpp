@@ -240,6 +240,9 @@ struct s_block_candidate
 // Round 242: Actual queued-candidate count long/dword/short/word, capacity-bound and
 // not-full admission 407/407/406/418/407/407/406/418. All recover frame 0x1054 but
 // grow code; original ring state and body restored, page-offset/tail homes remain.
+// Round 8 (lane 17): the segment arms as an else-if chain 370 (same code); busy as a ternary on the callback 371;
+// segment pages/time declared before the while 370; `if (!busy) scan else head = tail` 397 (1181 bytes); busy
+// assigned in each arm without an initializer 369.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

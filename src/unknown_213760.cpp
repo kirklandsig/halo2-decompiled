@@ -1278,6 +1278,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 449: native initialized validity slots byte/signed-byte/word/long
 // 270/270/263/271; with ordinary completion while 307/307/295/308.
 // Original Boolean slots, byte fill, completion helper and complete body restored.
+// Round 8 (lane 17), round 53's three match-only forms rebuilt at 7 (fast, aligned 5): on them a handle local at the top of
+// the resized block or before the write 114 (917 bytes: the write call then matches retail, handle into EAX first and
+// the flags zero in ECX, but the close call loses its `mov ecx, eax` copy); one handle local for resize/write/close 158,
+// write/close 159, resize/write 145, write only 156; checksum `&&` 78, `if (valid && a != b) valid = false;` 67, the
+// stored checksum read after the call 7, a ternary on the call 15, `valid = false; if (call)` 15; the flags as `0`
+// 133; the write's handle through `g_557c90[index]` or a const cast 7/7; the handle as an s_file_handle member 7.
 // @retail 0x213970
 void function_213970(void)
 {
