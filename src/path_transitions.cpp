@@ -170,7 +170,7 @@ short function_26fbf0(long object_index, s_object_marker *markers, short capacit
 }
 
 // @retail 0x26fe20
-short function_26fe20(long object_index, s_object_marker *markers, short capacity, long flags)
+short function_26fe20(long object_index, s_object_marker *markers, short capacity, word flags)
 {
     short count = 0;
     if (flags & 0x800)
@@ -270,10 +270,54 @@ bool function_26fc80(long actor_index, long object_index, real distance, void *p
     return result;
 }
 
-// score 165 (was 209): Frame and incoming actor/point homes agree; marker flags, cursor and SSE homes remain.
-// Round 428: repeated span snapshot 204; single result 189; both 185; existing point differences
-// in both geometry branches 191; with span 187; with result 167; all three 165 (656/660, kept).
-// Shared actor-position pointer with span 240. Original sum trees and call tuples preserved.
+/* point-to-segment squared distance; retail inlines the same helper in 0x1a83e0 (twice)
+   and 0x260670 (at 0x260c73), so whoever matches those should try this body */
+static __forceinline void scale_vector3d_bx(vector3f const *vector, real scale, vector3f *result)
+{
+    result->i = vector->i * scale;
+    result->j = vector->j * scale;
+    result->k = vector->k * scale;
+}
+
+static __forceinline real distance_squared_segment_bx(point3f const *start, vector3f const *segment, point3f const *point)
+{
+    real squared_distance;
+    real length_squared = segment->k * segment->k + segment->j * segment->j + segment->i * segment->i;
+    if (length_squared > 0.0001f)
+    {
+        /* delta is read and written only through a pointer, as segment is through the
+           helpers: that keeps the projection's operands in retail's order (delta first)
+           while the residual still updates the segment components in place */
+        vector3f delta;
+        vector3f *d = &delta;
+        d->i = point->x - start->x;
+        d->j = point->y - start->y;
+        d->k = point->z - start->z;
+        real t = (d->k * segment->k + d->j * segment->j + d->i * segment->i) / length_squared;
+        real clamped;
+        if (t < 0.f)
+            clamped = 0.f;
+        else if (t > 1.f)
+            clamped = 1.f;
+        else
+            clamped = t;
+        t = 0.f - clamped;
+        d->i += segment->i * t;
+        d->j += segment->j * t;
+        d->k += segment->k * t;
+        squared_distance = d->k * d->k + d->j * d->j + d->i * d->i;
+    }
+    else
+    {
+        vector3f offset;
+        offset.i = start->x - point->x;
+        offset.j = start->y - point->y;
+        offset.k = start->z - point->z;
+        squared_distance = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+    }
+    return squared_distance;
+}
+
 // @retail 0x26fe90
 bool function_26fe90(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point)
 {
@@ -288,38 +332,16 @@ bool function_26fe90(long actor_index, long object_index, real distance, s_objec
         short count = function_26fe20(object_index, markers, 32, character->marker_flags);
         for (short i = 0; i < count; i++)
         {
-            s_object_marker *marker = &markers[i];
-            real alignment = marker->matrix.forward.i * g_4687b0->i +
-                marker->matrix.forward.k * g_4687b0->k + marker->matrix.forward.j * g_4687b0->j;
-            if (alignment > 0.95f)
+            if (dot3f(&markers[i].matrix.forward, g_4687b0) > 0.95f)
             {
-                real span = marker->unknown6c;
                 vector3f segment;
-                segment.i = marker->matrix.up.i * span;
-                segment.j = marker->matrix.up.j * span;
-                segment.k = marker->matrix.up.k * span;
-                real squared_length = segment.k * segment.k + segment.j * segment.j + segment.i * segment.i;
-                real squared;
-                if (squared_length > 0.0001f)
+                scale_vector3d_bx(&markers[i].matrix.up, markers[i].unknown6c, &segment);
+                real squared = distance_squared_segment_bx(&markers[i].matrix.position, &segment, &actor->position);
+                if (best_distance > squared)
                 {
-                    vector3f delta;
-                    vector3d_from_points3d(&marker->matrix.position, &actor->position, &delta);
-                    real t = (delta.k * segment.k + delta.j * segment.j + delta.i * segment.i) / squared_length;
-                    if (t < 0.f) t = 0.f;
-                    else if (t > 1.f) t = 1.f;
-                    real negative = 0.f - t;
-                    real dy = segment.j * negative + delta.j;
-                    real dz = segment.k * negative + delta.k;
-                    real dx = negative * segment.i + delta.i;
-                    squared = dz * dz + dy * dy + dx * dx;
+                    best_distance = squared;
+                    best = i;
                 }
-                else
-                {
-                    vector3f delta;
-                    vector3d_from_points3d(&actor->position, &marker->matrix.position, &delta);
-                    squared = delta.k * delta.k + delta.j * delta.j + delta.i * delta.i;
-                }
-                if (best_distance > squared) { best_distance = squared; best = i; }
             }
         }
         if (best != NONE)
