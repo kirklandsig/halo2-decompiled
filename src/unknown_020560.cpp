@@ -1397,6 +1397,11 @@ long __stdcall function_3bf20(s_slot *slot, byte *data);
 // Round 88: availability before validity, direct/shared bit test 77/77; blocked polarity
 // and row pointer 68/68; availability before the slot 90; full counter there 90;
 // inline target 6; const slot 6. Early dependencies move the divide and bit work; restored.
+// Round 16: the counter's low dword read through its address at the global block top 6 (still
+// moves to its use); the counter read first with the amount and availability defaults stored
+// before the slot test 84 (it still moves); the counter read first with the slot test inverted 6;
+// the counter read right after the lookup call 6; the global and slot tests joined by `&&` with
+// one else 22 (the slot pointer is then computed before the global test).
 // @retail 0x3c270
 bool __stdcall function_3c270(dword value)
 {

@@ -105,6 +105,10 @@ void function_213970(void);
 // pair 226/225. All regress with every match preserved. Original conditional publications,
 // comparisons, calls, resets and whole body restored. Two complete storage blocks still require
 // coordinated changes to protected definitions outside this queue.
+// Round 26 (lane 14, fast): retail also inlines the cached language getter 0x11cae0 (ours calls it under
+// the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
+// between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
+// the string clear after the enable byte 142; the two session words cleared last 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

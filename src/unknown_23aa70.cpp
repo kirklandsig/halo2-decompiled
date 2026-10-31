@@ -276,6 +276,9 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // the whole gap); with the format read into a long local for the switch 175; the coordinates through a
 // coordinate pointer and the node through the full base expression 107 (636 bytes); the decode written
 // in both arms of the node test 261.
+// Round 6 (lane 17): formats 3 and 4 indexed with format 4 ending `if (!node) break;` 175, with format 4
+// returning after its node store 175, with format 4's node byte read before the decode 190 (636 bytes);
+// format 4's pointer declared `const *const` 62; formed as data + offset + index * sizeof in bytes 62.
 // Round 11 (m3 lane 2), one-file LTCG harness (base convention reproduced; format 4 indexed flips it:
 // the switch temp and every case's base take EDI and the node EBX, so the node is coloured before
 // the format-4 base once that base stays live to the late node read): formats 2/3/4 pointer or

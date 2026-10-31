@@ -59,7 +59,6 @@ void function_080de0(s_player_status_values *values, s_player_status_source cons
 void function_2b01a2(long value, s_widget_item *item);
 void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 
-#pragma optimize("g", off)
 PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 {
  long result;
@@ -75,8 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
-#pragma optimize("", on)
-// score 358 (was 358): the block order follows retail's apart from a few blocks, but stack offsets
+// score 330 (was 358): the block order follows retail's apart from a few blocks, but stack offsets
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -99,6 +97,23 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // code); the bit test inside each arm of the friends/players shift ternary 605; that ternary inverted
 // 359; the final text test inverted 496; separate title and suffix clears in retail's order 358.
 // Body restored.
+// Round 6 (lane 17): frame locals are ordered by reference density (count / size, densest nearest EBP):
+// one item-record reference fewer gives retail's buffer homes exactly (record flags merged into `|= 3`
+// 347 at 2328 bytes, aligned 22; no value4 store 360, aligned 23); retail's suffix has ~4 more references,
+// two of them the `lea` re-derived after 0x230134 where ours reuses ESI (open callee case). The explicit
+// record clear dropped (constructor clears it) 358; bitfield ORs 358; flags |= 2 before the copy 359;
+// value08 switch appending per case 330 (its default then speculates the text id: not retail's), with
+// whole sequences in one/both can_join arms 562/563/610; one empty-branch call with a chosen id 653;
+// direct setter calls without the text variable 533 (retail loads the id into EAX); received text as
+// if/else 662 at 2345 bytes (NONE test threaded as retail, registers ripple); state == 1 case 3 first or
+// default first 358/358, `if (can_join)` first 478, with the whole sequence in both arms 477 (that switch
+// then exactly retail's code), plus split clears 477, plus `|= 3` 477, plus received if/else 662.
+// The optimize pragma around the active-player helper removed (identical code). Kept: the value08 switch
+// appending in each case, 330: its extra message references move the message buffer to retail's home
+// (a side effect, not the cause: suffix still lacks the post-0x230134 re-derivations), and its default
+// now speculates the text id where retail branches. Remaining in order: the loop's `>> 10` arm (retail
+// out of line after the session lookup), the received arm's threading, the `!online` arm as the setter
+// call's fall-through host, suffix/record/title homes and the session/voice pointer slots.
 // Round 449: native four-member status output, existing range member and
 // uninitialized recent-player entry lifetime, all seven combinations 358;
 // complete graph with native status workspace also at entry 358. Original
@@ -277,15 +292,23 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                     ((c_widget *)list->get_screen())->function_230134(0x1900025a, message);
                     switch (presence.value04)
                     {
-                    case 2: ((c_widget *)list->get_screen())->function_230134(0x12000255, suffix); break;
-                    case 3: ((c_widget *)list->get_screen())->function_230134(0xd000254, suffix); break;
+                    case 2:
+                        ((c_widget *)list->get_screen())->function_230134(0x12000255, suffix);
+                        unicode_string_append(message, suffix, 256);
+                        message[255] = 0;
+                        break;
+                    case 3:
+                        ((c_widget *)list->get_screen())->function_230134(0xd000254, suffix);
+                        unicode_string_append(message, suffix, 256);
+                        message[255] = 0;
+                        break;
                     default:
                         if (can_join) ((c_widget *)list->get_screen())->function_230134(0xf000256, suffix);
                         else ((c_widget *)list->get_screen())->function_230134(0x13000257, suffix);
+                        unicode_string_append(message, suffix, 256);
+                        message[255] = 0;
                         break;
                     }
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
                 }
                 else if (presence.value08 == 2 || presence.value08 == 3)
                 {
