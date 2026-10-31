@@ -991,6 +991,8 @@ bool function_685f0(void *block, long *size, byte *destination, long capacity);
 // callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
 // off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
 // in edx; its body is contributor code).
+// Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
+// `mov edi, edx`) and this is its only caller, so no caller form was retried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
