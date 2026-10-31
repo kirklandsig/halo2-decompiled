@@ -276,6 +276,15 @@
 // result[12] zz5 term first, sqrt7 initialised 6 each; zz declared before sqrt15 and assigned after band2
 // or after xx_yy 6/6. Names and declaration order never move zz5's slot, and none of these statement or
 // operand orders moved the quadratic sqrt15 load ahead of the x87 z*z.
+// Round 33 (m3 lane 11): lane 14 r19's 6-point form rebuilt (fast 6, 0x146020 matched). A compile-only
+// /FAs build of this file reproduces both residual differences. Screened there: band3_21 or zz5
+// renamed (8 names) and band3_21 declared at five earlier places: no change; 80 single statement
+// moves and 150 random order/operand mixes in the quadratic block, 120 in the first block, and the
+// xz/x/difference stagings undone: the sqrt15 load never moves ahead of the x87 z*z. zz5 takes zz's
+// home (as retail) only when it is defined after the sqrt(21) product: with a named
+// `real band3_21 = (real)(sqrt21 * sqrt(2.0));` after sqrt105 and zz5 after it, fast 12 (band3_21's
+// home then lands below xx, yy and xy where retail has it above them, and the result[13] store slips
+// one place); 360 orders of the later statements keep that store slip.
 // Round 55 (lane 12; a one-file LTCG harness reproduces this function and 0x146020 exactly; 0x146020 matched in
 // every trial): legal forms only. The named sqrt3 root with band3_35 defined right after sqrt2 (before zz5) 55
 // (band3_35 then takes sqrt(15)'s slot as retail; a gain of 4, not kept); that with sqrt(35) named 77, with

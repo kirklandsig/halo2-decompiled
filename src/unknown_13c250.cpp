@@ -125,6 +125,9 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // instead of `__forceinline` 144; one unit pointer for the flag test and both slot reads 292
 // (886 bytes). A local weapons array between the lookups is scalarized (merge stays); 0x82d20's
 // reload comes from its address-taken weapons array, which this function lacks.
+// Round 241: three-handle table with separate/gathered slots, word/byte selectors and
+// qualified/plain counts 238/238/238/238/265/265/268/268. Grouped diagnostics restored;
+// original collection, pointer ranking and frame 0xd8 retained.
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {

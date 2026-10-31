@@ -74,84 +74,8 @@ long function_14de70(long arg_1);
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-// score 48 (was 48): frame 0x120, scalar homes and both definition-call setups agree. Left: the
-// parent index (+0x14) is held in a register from its NONE test into the parent lookup, where retail
-// compares it in memory and reads it again after the seat test (one byte longer), so every later call
-// and global field sits a byte off. Round 27: 0x22bfc0's and 0x22bff0's parameters put in the order
-// retail's caller sets them up, definition first (64 -> 48, both callees still match); before that the
-// tests nested 64 and the parent index read as dword 64. On the kept form (fast screens, which show the
-// same parent register): the test read as dword or as `((long const *)local_3)[5]`, the parent lookup
-// declared before the test, the 0x22bfc0 result through a local: the parent stays in a register each
-// time; the seat flag stored before the parent lookup reloads both fields (fast 521); a bool helper for
-// the two tests (fast 418).
-// Round 130 (plain): the parent read into a named local inside the block for the lookup and the later
-// 0xcbd50 call 94; with the seat index in a named local too 495 (1833 B); the seat index local alone
-// 75 (1825 B); the parent local for the first lookup only 48; nested tests with it 48. A compile-only
-// screen shows a field-typed read of the parent still merges with the pointer-arithmetic one. The same
-// split (compare in memory, re-read into the unit's register after the seat test) is in 0xd1080, while
-// matched 0xd0c10 keeps the parent in a register: retail gives the parent the register local_3 frees.
-// Earlier (113): the first branch span and mask/player register roles. Word lookup index 580; byte slot counter 314;
-// short suppression 173; cached seat selector 152; missing-player return 134 (plain).
-// caller depth 1/2/0 134/134/651; global optimization off 1911; const lookup 134;
-// typed lookup through getter / directly / depth one 134/113/134 (plain).
-// Mask/player ranks and parent/tag scheduling remain; initial parent value 113;
-// seat value 421; parent plus seat 131; direct queried flag 426; display presence 151;
-// target query value and primary/both color copies 113 each (plain).
-// Earlier: mask/player register roles and parent-load scheduling remain;
-// parent/seat/both references 131f; native current/parent-child tags 131f;
-// repeated secondary pass 446f; bulk sentinel initialization 527f; frame omission 131f.
-// sentinel loop 527f; typed selection arrays 298f; handle/rank/both snapshots 138/131/131f;
-// child test order 141f; wider selection scope 131f; cached zone count 145f (control 131f).
-// Native output sentinel/flag/scalar/pairs/full/scoped views 131f (control 131f);
-// the original prefix stores and all protected query interfaces are retained.
-// Earlier: mask/player roles and tag scheduling remain; current/parent/both tag values 113 each;
-// parent mode char 113; initialized display 274; native current/parent-child/all selectors 113/113/113 (plain).
-// Mask/player roles and parent/tag scheduling remain. First/second/both adjacent
-// field copies 113/113/113p; paired hands bytes and prefix copies 465p; checked player accessor / first
-// copy / all copies 519/519/518p.
-// Seat-word observation, native parent/child links, ordinary child for, combined links,
-// child for plus seat word and display/both workspace names each 131f (control 131f).
-// Earlier: BLOCKED-BY 0xcb430: retail passes the hands record to it in edi, ours in
-// esi, which swaps esi and edi (mask and player pointer) through the whole body.
-// Zone destination progress/color/both cursors 161/161/161; independent per-publication
-// divisors 216, plus progress/color/both cursors 208/208/208; both input/output cursors 160.
-// Mask/player register roles remain tied to the outside-queue hands output convention;
-// original score expressions and copy loops retained.
-// Round 204: Fresh records at every use: player 650; current object 726; both 977; parent 470;
-// player/parent 697; current/parent 785; all three 1094; all three plus child 1094. Every expanded lookup
-// graph regresses and is restored. Mask/player register roles and tag-call scheduling remain; protected
-// interfaces and all original values/calls preserved.
-// No-score-mode arm first, with display-failure/fraction-arm/workspace-lifetime combinations
-// 267/268/267/268/267/268/267/268f (unchanged control 131f). Original branches and workspace restored.
-// Round 225: own/rival/both native-size color copies, immutable player handle alone/
-// with each/both copies, and all plus immutable object receiver: 131f each,
-// unchanged fast control 131 versus full 113. Original copies and body restored.
-// Round 33 (plain checks; fast is unfaithful here, 70 on the unchanged source): retail reloads
-// local_3 into EAX after the 0x22bfc0 store, compares the parent in memory and reads it again
-// into EAX (0xd1080 shows the same split); ours reloads local_3 into ECX before the store and
-// keeps the parent in EAX. Nested tests 48; the parent lookup through the inline object_get 48;
-// the two tests in a named bool 48; `(void)&local_3` 48 (diagnostic); the seat flag stored first
-// in the block 520; the parent index in a named local for the test and the lookup 48.
-// Round 29 (fast, control 70): an inline seat getter returning the seat element or NULL 438; the
-// definition folded into the seat expression 70; the seat index in a short local 97 (the unit reload
-// then goes to eax after the result store as in retail, the parent to ecx); NONE-first tests 70; the
-// parent's header element through a pointer 70. Permuter: 48 tries, nothing better.
-// Round 20 (lane 15, fast; the reduced image gives 48 here): the seat word read into a short local before the
-// parent test 46 (the result store then comes first and the unit reloads into EAX as in retail, but the seat
-// is read before the parent and the parent is held in EAX), that local also passed to 0x22bff0 392 (1827 bytes);
-// the seat assigned inside the condition 48; the parent test nested with the seat local inside it 48; the 0x48
-// flag store first in the block (diagnostic) 520.
-// Round 47 (lane 16; fast is faithful, 48, only with 0x15fef0/0x15eb20/0x15f3a0 listed): a 600 s
-// permuter run, 47 tries, none better; the unit as a typed view struct (every field by name) 48
-// (same code); the seat tested before the parent 46 (the parent then loads into the unit's
-// register as retail's reload does); the condition inverted with an empty arm 48; the parent read
-// into a block local for the lookup 48; the lookup reading the parent through the unit fetched again
-// from the player 399 (1841 bytes, but the test block is then exactly retail's: store first, unit
-// reloaded into EAX, parent compared in memory). Diagnostics: the parent read through a typed field
-// view, the test through a pointer to local_3, a force-inline getter taking `long const &`: 48 each.
-// A scan of matched retail finds this compare-in-memory-then-reload of one field only after an
-// intervening store, or (0x114ec0) when an earlier test of the field sits on one path only; 0xd1080
-// (todo) shows the same split.
+/* fills the hud status record for a player: the unit, its seat in its parent and the weapons, then the
+   score display */
 // @retail 0x13992a
 void function_13992a(byte *arg_1, long arg_2)
 {
@@ -170,6 +94,8 @@ void function_13992a(byte *arg_1, long arg_2)
         if (*(long *)(local_2 + 0x2c) != NONE)
         {
             byte const *local_3 = (byte const *)OBJECT_DATUM_GET(*(long *)(local_2 + 0x2c));
+            /* the unit again, as a second view for the parent lookup (the parent is read twice, as retail) */
+            byte const *unit = (byte const *)OBJECT_DATUM_GET(*(long *)(local_2 + 0x2c));
             s_unit_weapon_hands local_4;
             bool local_5 = false;
             function_cb430(*(long *)(local_2 + 0x2c), &local_4);
@@ -202,7 +128,7 @@ void function_13992a(byte *arg_1, long arg_2)
                 g_4e6948->state == 2);
             if (*(long *)(local_3 + 0x14) != NONE && *(short *)(local_3 + 0x1fc) != NONE)
             {
-                byte const *local_7 = (byte const *)OBJECT_DATUM_GET(*(long *)(local_3 + 0x14));
+                byte const *local_7 = (byte const *)OBJECT_DATUM_GET(*(long *)(unit + 0x14));
                 byte const *local_8 = g_4e3b44[*(long *)local_7 & 0xffff].bytes;
                 byte const *local_9 = *(byte *const *)(local_8 + 0x1cc) + *(short *)(local_3 + 0x1fc) * 0xb0;
                 arg_1[0x48] = true;

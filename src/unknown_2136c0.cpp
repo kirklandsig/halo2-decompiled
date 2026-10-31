@@ -97,11 +97,18 @@ void function_213970(void);
 // src/unknown_213d20.cpp, with an extern in src/unknown_214c30.cpp; block B: g_55bd04/g_55bd08 in
 // src/unknown_12be90.cpp). Scalar zero stores before the clears 131, without the size pragma 158;
 // enabled flag before the NONE stores 131; NONE stores before the zero stores 131, without the pragma 161.
+// Round 37 (lane 1, fast): still BLOCKED-BY the global layout. Block A's NONE store between its two
+// arrays 131; the enable flag before the NONE stores 131; NONE stores and flag first 131; retail's
+// NONE/flag order right after the clears 131; the zero stores before the clears 131.
 // Round 210: Actual preference-difference decisions reused for refresh and dirty publication:
 // Boolean language/version/both 193/193/226; native language/version/both 185/185/221; byte/short
 // pair 226/225. All regress with every match preserved. Original conditional publications,
 // comparisons, calls, resets and whole body restored. Two complete storage blocks still require
 // coordinated changes to protected definitions outside this queue.
+// Round 26 (lane 14, fast): retail also inlines the cached language getter 0x11cae0 (ours calls it under
+// the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
+// between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
+// the string clear after the enable byte 142; the two session words cleared last 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

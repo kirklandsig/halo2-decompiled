@@ -827,6 +827,13 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // Round 207: completed sample copied to velocity then scaled in place, original/rate-angle/
 // per-use scale/both 208/265/211/262; the same four through the shared float scale
 // 220/207/220/207. Original sample, field stores, angle storage and includes restored.
+// Round 26 (lane 14, fast): the sampled vector's slot follows reference counts: two extra reads of it
+// (diagnostic only) put it at retail's [esp+0xc], sharing the forward copy's slot, 236 at 1415 B. Side
+// cross names cross_a/cross_b and z_ names, and the two crosses declared apart, 155 each (slot unchanged);
+// existing vector3f_scale into velocity 186 (1382 B, slot unchanged); vector3f_scale in place then a
+// copy 206 (slot fixed, the scale goes through memory); the same by hand 203; in place plus
+// `!(fabs(angle) < 0.0001f)` 200; copy then scale in place 220; `moved_away = false` set inside the
+// test 159 (retail's `xor dl, dl` ... `mov dl, 1`, a flag set in a test: only with a match).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

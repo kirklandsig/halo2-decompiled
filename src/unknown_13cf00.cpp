@@ -4,6 +4,8 @@
 #include "globals.h"
 #include "font_loading.h"
 // @flags /O2 /arch:SSE /Gr
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 
 struct s_unknown_13bf00;
 extern s_unknown_13bf00 *g_510c50;
@@ -16,12 +18,6 @@ void function_1a0180(long arg_1, long arg_2, word *arg_3);
 bool function_13ee20(word const *arg_1, long arg_2);
 void function_13e9c0(word const *arg_1, short_rectangle2d const *arg_2, short_rectangle2d *arg_3, short_rectangle2d *arg_4, real arg_5);
 void function_13ec70(color4f const *arg_1);
-
-class c_1fa50
-{
-public:
-	void function_1fa50(short_rectangle2d const *arg_1, void const *arg_2, void const *arg_3, long arg_4, real arg_5, long arg_6, void const *arg_7) const;
-};
 
 long function_122540(long font);
 
@@ -85,12 +81,12 @@ void function_13cf00(void)
 				local_13.green = 0.0f;
 				local_13.blue = 0.0f;
 				function_13ec70(&local_13);
-				((c_1fa50 *)local_11)->function_1fa50(&local_16, NULL, NULL, 0, 1.0f, 0, NULL);
+				function_1fa50(&local_16, (word const *)local_11, NULL, NULL, 0, 1.0f, 0, NULL);
 				local_13.red = 0.76078433f;
 				local_13.green = 0.92941177f;
 				local_13.blue = 1.0f;
 				function_13ec70(&local_13);
-				((c_1fa50 *)local_11)->function_1fa50(&local_6, NULL, NULL, 0, 1.0f, 0, NULL);
+				function_1fa50(&local_6, (word const *)local_11, NULL, NULL, 0, 1.0f, 0, NULL);
 			}
 		}
 	}
@@ -180,7 +176,7 @@ void function_13c780(void)
 						g_4e73a0.flags = 1;
 						function_13ec70(&local_15);
 						function_13ed50(&local_16);
-						((c_1fa50 *)local_11)->function_1fa50(local_12, NULL, NULL, 0, 1.0f, 0, NULL);
+						function_1fa50(local_12, (word const *)local_11, NULL, NULL, 0, 1.0f, 0, NULL);
 					}
 				}
 			}

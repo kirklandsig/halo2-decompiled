@@ -496,6 +496,14 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // first in the projection 59. Round 45: an inline declaration on the rotation helper 13;
 // scale/rotation/both declared earlier 13/13/13; descriptive scale/rotation names 13/13;
 // rotation declared before scale 13; sine/cosine declared earlier 13.
+// Round 16 (lane 2): the view angles passed to direction_from_angles straight from the entry 264
+// (1084 bytes, plain); with a same-file copy of the rotation helper standing in for the cross-file
+// inline (fast 13, same lines): the update test written inline 57 (1105 bytes); sinf for the
+// rotation's sine 21 and cosf for its cosine 21 (each gives retail's j row, vector.j loaded before
+// the vector.i store, but flips the earlier dot/cross product operands and keeps the k row);
+// cosf/sinf for the forward vector 60 (1105 bytes). A harness grid of 256 such spellings
+// (angles copy, update test, sin/sinf, cos/cosf, acos/acosf, fabs/fabsf) gave no form with retail's
+// product operands and both rows.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

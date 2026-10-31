@@ -258,6 +258,27 @@ static __forceinline bool structure_bsp_collision_available()
 // the requery under `if (!excluded)` with `found = false` otherwise 77 (263 bytes). The one-file LTCG
 // harness passes the surface in EAX (the real build in ESI) even with 0xd2bb0's file and the other
 // callers of 0x14ac60/0x14a8e0 linked, so it cannot screen this function.
+// Round 97 (lane 8, fast with 0xd2bb0 and the callees): the flag as the out-parameter of an inline
+// helper that also calls 0xbf9a0 (memory at threading time?) stays out of line 136 (251 bytes, ret 8,
+// 0xd2bb0 lost); forced inline 112 (302 bytes: 0x10a0b0 inlined, flag still threaded), single-exit
+// helper 112; a bool result with `return false` on the excluded arm 64; `result = 0x14a8e0(...);
+// return result;` 54 (same code plus a setne on that path: the lengths line up, no structural gain),
+// with a bool result 64, through `goto done` 56 (287 bytes); on it, `return false` on the excluded arm
+// 54, the final call reading the source's collision 54, `found` set from the type test only when there
+// is no object 92 (288 bytes, 0xd2bb0 5).
+// Round 32 (lane 11, fast; 0x14af40 has the same BL flag and inlines 0x10a0b0 where this calls it, so
+// a helper shared by the two was tried): the scenery test in a force-inline bool helper with
+// `if (!excluded && 0xbf9a0)` storing the 0x14a8e0 result and `if (excluded) return` 118 (307 bytes),
+// as plain inline 105 (245 bytes, out of line); the flag through a reference out-parameter 118; a helper
+// returning the 0xbf9a0 result with the flag through a pointer 118; the flag cleared, then set from
+// `!= 2` inside the type test 56 (288 bytes, setne and the direct exit stay; a flag set in a test).
+// Compile-only (/O2 without /GL) all of these, plain/force-inline/single-exit helpers, thread the flag.
+// Round 113 (lane 6, fast under the 0x14a8e0 reduced-image caveat): the flag as `type == 6 ? 0x10a0b0(...) != 2 : false` tested as `!excluded &&
+// 0xbf9a0` then `if (excluded) return result;` 56 (288 bytes, setne in the type test, threaded); that with a
+// bool result 59; plus the collision re-read from the source at the join 59; the 0x14af40 shape (`else if
+// (!excluded)` requery with its own lightmap call, `else if (found)` for the no-object case) 86 (296 bytes);
+// a function-scope flag cleared at entry and set in the type test, bool result 65. A scan of every matched
+// retail function finds no other `mov r8, 1; jmp` to a `test r8, r8` past a call: only 0x14af40 shares it.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {

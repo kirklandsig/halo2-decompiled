@@ -634,6 +634,12 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// score 34 (was 34): the group-flag load is the only content difference left in the block: ours is a
+// byte load with a mask (`movzx eax, byte ptr [eax+2]; and eax,3`), retail's is a word load
+// (`mov ax, word ptr [eax+2]`), and the three extra bytes shift every later block.
+// score 34 (was 42): masking the group flags into a dword local gives retail's `test al, 1` and
+// `test al, 2` with the group pointer in EAX, but the flags are loaded as a byte and masked
+// instead of retail's word load, and case 0x1200055f still lacks retail's zero store.
 // score 42 (was 42): the group-flag test is two bytes longer than retail's: ours shifts the flags byte
 // down by one before the second test (`shr al, 1; test al, 1`), retail tests bit 2 directly; retail
 // also clears the result in case 0x1200055f where ours does not (`function_value = 0.0f;` first in
@@ -724,8 +730,8 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
 			group_flags = group->flags;
-			bool second = (group_flags & 2) != 0;
-			if ((group_flags & 1) && second)
+			dword group_flag_bits = group_flags & 3;
+			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
 			{
@@ -911,6 +917,9 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// score 121 (was 121): retail keeps the initial velocity in xmm6 for the whole function and leaves
+// the ramp-down time in its stack slot; ours keeps the ramp-down time in xmm1 through the clamps
+// and loads the initial velocity late, so the argument list and the register use still differ.
 // score 121 (was 121): retail passes the initial velocity in xmm6 (one register for its whole
 // life, so ret 0x14) and keeps the ramp-down time in its stack slot throughout; ours keeps the
 // ramp-down time in xmm1 through the clamps and loads the initial velocity late (ret 0x18).
@@ -928,6 +937,9 @@ bool function_108530(long device_index, long name)
 // 121/121/121; file-local plain/inline/noinline 121/121/121; shared signed phase acceleration 121;
 // shared acceleration with file-local inline/noinline 121. Original routine and both calls restored.
 // initial velocity remains on the stack while ramp-down time occupies a register.
+// score 121 (was 121): retail passes the initial velocity in xmm6 with five stack floats and
+// returns 0x14; ours passes it on the stack (ret 0x18), and the clamped times land in other xmm
+// registers.
 // Isolated ramp-down zero/min/both if-clamps 121/121/121; const initial velocity 121;
 // all-read/all-read-write ramp-down references 121/130; shared velocity with stored initial 125;
 // entry velocity copy plus reused parameter 152. Original body restored.
@@ -1319,6 +1331,10 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// score 294 (was 294): our frame is 0x1c and retail's 0x20, and the index, header, state and result
+// homes still differ; the group path reloads the definition pointer from three base registers.
+// score 294 (was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
+// homes still differ, and the group path reloads the definition pointer from three base registers.
 // score 294 (was 294): Frame 0x1c versus 0x20 and index/header/state/result homes remain; the
 // group path still reloads the definition pointer from three base registers and adds the two
 // products in the opposite order.

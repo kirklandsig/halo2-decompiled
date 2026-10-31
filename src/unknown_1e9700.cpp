@@ -1,5 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "view_context_storage.h"
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 /* UNKNOWN_1E9700.CPP: a value of the difficulty table for the current
    campaign difficulty (lane M; called by the behaviors of 0x1a8000..0x1affff) */
 
@@ -903,8 +905,6 @@ s_entry_420 *function_1e8d50(long index);
 class c_1fa50
 {
 public:
- void function_1fa50(short_rectangle2d const *bounds, void const *clip, void const *position,
-  long line_gap, real scale, long color, void const *shadow) const;
  void function_1fb10(short_rectangle2d const *bounds, real scale) const;
 };
 
@@ -1029,7 +1029,7 @@ void function_1e6fe0(long local_player_index)
  limits.right = (short)(center_x + half_width);
  limits.bottom = (short)(center_y + half_height);
  if (function_1e9140((s_request_screen_bounds const *)&limits))
-  ((c_1fa50 const *)text)->function_1fa50(&limits, NULL, NULL, 0, 1.0f, 0, NULL);
+  function_1fa50(&limits, (word const *)text, NULL, NULL, 0, 1.0f, 0, NULL);
 }
 
 // @retail 0x1e90b0

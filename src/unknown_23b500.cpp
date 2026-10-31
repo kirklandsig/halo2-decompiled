@@ -59,6 +59,14 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
+// score 105 (was 105): addressing the weights through the neighbouring global's own symbol
+// (g_502248: four longs, the two shared values, then the twelve type records) still folds the
+// destination into a pointer induction (148), with the type records read as dwords or as reals,
+// so retail's integer table offset with its base in the displacement stays out of reach.
+// score 105 (was 105): the destination still folds into a pointer induction — a struct-typed
+// member access and a byte-offset access both canonicalise back to it — so retail's integer
+// table offset with its base in the displacement stays out of reach; the definition register
+// (ECX against retail's EAX) and the override block's extra lea esp, [esp] still differ.
 // score 105 (was 105): definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
 // Earlier (105): a block struct over the merged global, byte offsets taken from the array and
 // a real global struct all leave VC strength-reducing the destination into a pointer induction, so
