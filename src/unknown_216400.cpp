@@ -96,7 +96,7 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
     return result;
 }
 
-// score 20 (was 32): the helper returns the new element (NULL when the list is full) and the caller copies
+// score 20 (was 20): the helper returns the new element (NULL when the list is full) and the caller copies
 // into it: retail's length (662), list in ECX and retail's format-call and enumeration registers; only
 // the append's own instructions differ: retail materializes the room test (`setne al; test al, al`) with
 // the count in ESI copied to EAX, `lea edx, [eax + 1]` and the shift on the copy, and no NULL test.
@@ -384,6 +384,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
 // caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
 // copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
+// Round 138 (lane 4): a bool append helper (`bool result = list->count != 4096;`, then `long index =
+// list->count; list->count = index + 1;` and the memcpy into `entries[index]`) 51 (setne/test as retail, but
+// count EAX, result CL, list EDX); that with `long index = list->count++;` 51; the pointer helper with a named
+// `room` test and the index copy 49; the pointer helper as a list member function (`list->new_entry()`) 20 (same
+// code); the bool helper as a list member function 51.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

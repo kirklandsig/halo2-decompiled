@@ -147,6 +147,12 @@ struct c_aggregate : c_child
 // declared after starts/error/total 45; one function-scope index for all three loops 45 (frame
 // 0x8024); the get_info output declared at the inner loop top 45; the cleanup through blocks[k]
 // directly 45. BLOCKED by the build flag (frame 0x8020 needs a non-LTCG object).
+// Round 138 (lane 4; a one-file LTCG harness of this file reproduces the 0x8024 frame): the dispatch gate
+// with the type test first 49; the collection test with the error test first 50; each boundary stored after
+// its child (`starts[i + 1] = total;` in the loop, `starts[0] = 0;` first) 129; the release output initialized
+// to NONE at its declaration 78 (376 bytes); a named `room` argument 45 (same code). Harness only: renaming the
+// request, source, error, total, starts, blocks or child locals: the same code each (names do not move the
+// LTCG frame); nested gate/collection tests, a while dispatch loop, a block pointer argument same code.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
