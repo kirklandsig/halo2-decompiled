@@ -52,6 +52,11 @@ struct s_6ec83
 // first 223, the mask declared first 273. Machines pointer and short as settings fields 171
 // (slots right, the short's first store not widened); the existing pair getter for the 4da0
 // values 72 (227 scoped); out-parameter getters 13; renamed locals 13.
+// Round 32: pointer/short declarations swapped 13, both declared after the settings block 13 (local_9
+// for the pointer or local_10 for the short: 13 each, so the slot order is not by name); the short's
+// NONE as its declaration's initialiser 42, the pointer's 0 262 (both, harness, no gain); mask scoped
+// in an inverted guard 223; with the mask scoped: a players pointer local, the counter declared first,
+// the mask declared at the top and zeroed in the guard (harness, 217-219 positional, no gain).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

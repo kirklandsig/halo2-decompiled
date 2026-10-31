@@ -902,7 +902,7 @@ bool __stdcall function_2399da(long controller_index)
 // test, copying the requested rank into a local before that test, a has-identity flag and
 // four local declaration orders all score 90, so the colouring is fixed by the callee's
 // convention and the body stands.
-// score 90 (was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
+// Earlier (90, was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.
 // identity/rank registers and the extra move before removal remain; selection guard,
@@ -971,6 +971,12 @@ bool __stdcall function_2399da(long controller_index)
 // initialised locals at the top (diagnostic: symbol numbering) 90 each, so the EAX/ECX choice is not
 // a numbering tie; a 600 s permuter run, best 82 only by duplicating the whole rank dispatch into
 // both permission arms with a short cast (not applied).
+// Round 9 (lane 17, fast): the EAX/ECX swap is a tie between the requested rank and the identity at the
+// rank dispatch: once the rank is not in a register there, the identity takes EAX as in retail. Diagnostics
+// (volatile parameter reads, reverted at once): at the NONE test 32 (433 bytes; aligned 12 -> 8: identity
+// EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
+// (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
+// 90. Plain: own rank read from the membership field at each use 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

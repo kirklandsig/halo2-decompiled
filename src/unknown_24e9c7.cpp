@@ -118,10 +118,10 @@ struct s_24e9c7_bounds
 // score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
-// score 125 (was 125): reassociating the corner sums and splitting them into two steps both
+// Earlier (125, was 125): reassociating the corner sums and splitting them into two steps both
 // canonicalise back to retail's association, so what is left is the SSE schedule itself, the
 // eight-byte-higher stack homes and the sprite pointer staging; no source form found.
-// score 125 (was 125): result/kind/bitmap homes sit 8 bytes above retail's (retail keeps a spill at -8
+// Earlier (125, was 125): result/kind/bitmap homes sit 8 bytes above retail's (retail keeps a spill at -8
 // and an unused slot at -0xc above them), the 1.0 constant is in xmm4 where retail uses xmm5, and the
 // geometric SSE schedule differs. Tried: table read at each use 125 plain (743/743), real half width
 // 135f, direct height 135f, sprite pointer 133f, global optimization off 716f. Truncation helper at
@@ -181,6 +181,17 @@ struct s_24e9c7_bounds
 // assembly 125, with all corner origins initialized first 129; library move 240/240.
 // Basis-boundary counterparts 125/129/195/196. Original point reads, copies and geometry
 // restored; the early across spill and shifted scalar homes remain.
+// Round 9 (lane 17): a compile-only /O1 /FAs build reproduces this frame and code (with the two pointer
+// parameters' registers swapped). An 8-byte point local always homes below the four scalars (ours: the
+// back pair at -0x18, its y spilled at -0x14), while a spilled scalar homes above result; retail's -0xc/-8
+// are two scalar homes above result (-8 holds size * forward_i, then the scaled side y; -0xc is never
+// touched). 144 harness forms (scale read first, across as a point/scalars/scalars scaled in place, up and
+// back as points or scalars, `0.0f -` or unary minus, size sum order, named forward components) never
+// spill the across pair, so none reaches retail's two homes. Real (fast): back as two scalars 133 (frame
+// 0x44: back y at -8 above result -0xc); early across scalars scaled in place, scalar up/back, `0.0f -`
+// 155 (735 bytes); the same with separate side scalars 155; across built in the side point and scaled in
+// place with scalar back 139 (the listed form; side y spilled at -0x14); that scalar form with scale read
+// first 155.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
