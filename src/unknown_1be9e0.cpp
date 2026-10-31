@@ -160,6 +160,12 @@ static __forceinline long real_to_long(real value);
 // Round 56: inline definition 24; multi-exit finished result after the actor 60, in the
 // participant branch 24, eligible branch 93, property branch 62; continue result in the
 // participant/eligible/function scopes 72/91/119. Original returns and result lifetimes restored.
+// Round 118: the slot's data block typed through `slot->unknownc` 24 (same code: retail
+// addresses the slot itself); the countdown returning g_46fbe8 while it counts and the
+// count test returning g_46fbe8 on success, both failures falling to the node-level
+// g_46fbe4 87 (retail length, the shared g_46fbe4 return then sits after the count test);
+// that with the missing prop as an early return 128; with the node failure as an early
+// return 131; the missing prop and node failure sharing one final return 81.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

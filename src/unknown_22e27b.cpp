@@ -257,6 +257,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // with disposal false from its declaration and direction-first frame sum 96; timing locals initialised at their
 // declarations (frame time, next time, elapsed) with the frame declared before the loop 96; disposal declared
 // before an uninitialised restart flag cleared before the loop 111 (first difference +0xf).
+// Round 104 (lane 8, fast): fraction-first is aligned 35 (base 97), its loop scratch registers
+// retail's; there next_time renamed (advance_time/step_time) 207/207 (names move no register), and
+// the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
+// the base: the declared current/following key pointers used for delta/offset/scale 225 (644 bytes),
+// with the fraction before the delta 225; identical switch cases merged in all four switches 209.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

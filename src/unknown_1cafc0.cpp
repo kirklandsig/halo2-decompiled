@@ -373,7 +373,7 @@ c_type_709360 s_animation_state::variant_get(c_type_709360 animation_id)
 }
 
 // @retail 0x1cb410
-bool s_animation_state::channel_start(c_animation_channel *channel, c_type_709360 animation_id, long unknown08,
+inline bool s_animation_state::channel_start(c_animation_channel *channel, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e, dword channel_flags)
 {
 	bool result = false;
@@ -1373,7 +1373,7 @@ bool s_animation_state::update(animation_event_callback callback, long user, lon
 }
 
 // @retail 0x1cb490
-bool s_animation_state::channel_play(c_animation_channel *channel, c_type_709360 animation_id, dword channel_flags)
+inline bool s_animation_state::channel_play(c_animation_channel *channel, c_type_709360 animation_id, dword channel_flags)
 {
 	bool result = false;
 

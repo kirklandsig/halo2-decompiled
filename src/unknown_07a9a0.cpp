@@ -1153,6 +1153,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
 // score 766 (was 766): Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
 // Earlier: retail's frame is 0xb4 and it takes the session in EAX and the output pointer
 // on the stack, while ours has a 0xd4 frame and takes both on the stack; retail also calls the matched
