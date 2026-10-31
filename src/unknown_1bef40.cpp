@@ -142,6 +142,20 @@ short __stdcall function_1bef40(long actor_index)
 
 static __forceinline long real_to_long(real value);
 
+// score 6 (was 6): the reset's zero fields (0x4ac, 0x504) are still stored before the NONE fields
+// (0x5ac, 0x5b0) and the seed store still precedes the delay's doubling (retail doubles first); the
+// only form that reproduces retail's order makes the actor pointer volatile, which is not allowed.
+// score 6 (was 9): the reset's seven stores are written here in retail's order rather than through
+// the shared helper. Left: the zero fields (0x4ac, 0x504) are still stored before the NONE fields
+// (0x5ac, 0x5b0), and the seed store still precedes the delay's doubling (retail doubles first).
+// score 9 (was 17): the unset reference read into a local before it is stored keeps the time-globals
+// pointer load and the x87 scale spill in retail's order. Left: the seed store still precedes the
+// doubling (the draw helper is in include/unknown_0259d0.h) and the reset's store order is fixed in
+// include/slot_handler.h.
+// score 17 (was 19): the delay's doubling written as sample + sample (2.0f * sample gives 19) puts
+// the second draw's scale and the time-globals load in retail's order. Left: the seed store still
+// precedes the doubling, the reset's store order is fixed in include/slot_handler.h, and the
+// time-globals pointer still loads above the reference store.
 // score 19 (was 19): the delay's doubling and its +3 still sit one slot later than retail
 // (after the seed store and the conversion store); both draws first, the swapped operands and
 // the inline draws all cost more. The reset's store order is fixed in include/slot_handler.h.
@@ -185,12 +199,20 @@ bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 {
 	s_slot_0a *state = (s_slot_0a *)slot;
 	real sample = function_x82e52f(&g_4e7408->unknown0, __FILE__, __LINE__);
-	real delay = 3.0f + 2.0f * sample;
+	real delay = 3.0f + (sample + sample);
 	real sample2 = function_x82e52f(&g_4e7408->unknown0, __FILE__, __LINE__);
 	real wait = 0.5f * sample2;
 
-	actor_reset_state(actor_index);
-	state->reference = g_470fa0;
+	s_actor_view *actor = actor_get(actor_index);
+	actor->unknown50c = false;
+	actor->unknown5b4 = 0;
+	actor->unknown5b6 = 0;
+	actor->unknown5ac = NONE;
+	actor->unknown5b0 = NONE;
+	actor->unknown4ac = 0;
+	actor->unknown504 = 0;
+	s_reference unset_reference = g_470fa0;
+	state->reference = unset_reference;
 
 	state->unknown10 = (short)real_to_long(g_510c54->field_2_3 * delay);
 	state->unknown12 = (short)real_to_long(g_510c54->field_2_3 * wait);
