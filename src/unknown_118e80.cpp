@@ -329,6 +329,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // pool, no table local (--fast) 36. Left at 36: the forward dot's i product order, the final stores
 // (retail interleaves both copies, ours writes the forward copy through `lea ecx`), and the second
 // 0x11f0d0 call re-deriving &up (`lea esi`) where ours copies EBX.
+// Round 244: complete ordinary-path requested-forward values via native/const,
+// aggregate/const, memcpy/memmove and entry copy/memmove constructions
+// 295/295/264/264/295/314/295/314. Original input observations and body restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

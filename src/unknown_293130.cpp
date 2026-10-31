@@ -254,6 +254,12 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // Round 33 (m3 lane 11), fast: the rotation rows written k, j, i 52 and j, i, k 54; the cross
 // components computed 5, 4, 3 41 and 4, 5, 3 30 (same code); the cross components written inside
 // the rows (no local_3/4/5) 92 (1407 bytes). All restored.
+// Round 7 (m3 lane 18, fast, on the 30 form): the dot's first pair follows the vector names' order
+// (j before k: k, j; k before j: j, k) but the i product stays last in every naming order. cross3f(vector,
+// axis) for the three cross terms 67 (1409 bytes); rows written j, k, i 52; the dot named before the
+// projection factor 113; the angle field passed straight 41; memcpy for the vector copy 30 (same
+// code). Diagnostic only: the copy written field by field j, k, i 133 (SSE copies; the dot then sums
+// i first, i, j, k).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

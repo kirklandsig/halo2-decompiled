@@ -186,6 +186,9 @@ struct s_free_state_23d260
 // 355/343/339/370. All native direction producers and consumer changes restored; zero/side normalization remains.
 // Round 321: Complete native up-vector ownership with staged shared cross/forward snapshot/entry declaration subsets: 359/338/380/373/359/338/380/373.
 // Round 321: All lengthen the body; original publication, normalizer, projection, row accumulation and include set restored. Stacked notes merged.
+// Round 214: inverse movement setter 256; transformed position setter 102; world position setter
+// 102; inverse/transformed setters 277; inverse/world setters 277; both position setters 258; all
+// three setters 277; native world position update 195.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

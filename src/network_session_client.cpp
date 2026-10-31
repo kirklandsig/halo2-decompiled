@@ -694,6 +694,8 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // Round 97 (lane 8, fast with the inlined callees): the mask test with the bit first 55; the machine mask
 // stored after the copy loop 139 (495 bytes); the player-loop index declared with the buffers (no preset
 // pointers) 55; a short copy-loop index 153 (467 bytes); the summary declared after the buffers 55.
+// Round 51 (lane 16, fast with the inlined callees): the address copy as `if (n > 0) for (i = 0; i != n;
+// i++)` (the rolled-countdown form of 0x2be050) 114 (477 bytes), as a plain `for (i < n)` 114 (477 bytes).
 // Round 113 (lane 6, fast with the inlined callees): variant address and players base named before the
 // player loop 52; address pointer declared with the buffers 55; const session parameter 55; short copy index
 // 153 (467 bytes); 0x6ec80's preset stored pair plus the variant address named before the loop 46 (opening
