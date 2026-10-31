@@ -135,7 +135,10 @@ bool c_session_state_none::update()
 // session's register, which dies there). Retail's case table runs to type 18
 // (16-18 share the type 15 arm). Tried: the kind through a NONE default before
 // the test 5; the kind tests in the 0x58d70 condition 5; the kind read through
-// the member's parameters 5; a named member index 5.
+// the member's parameters 5; a named member index 5. Round 60: an unsigned kind 5;
+// the member index read before the 0x58d70 call 5 (the load is sunk, same code); the
+// kind declared at function scope 5; the switch on a named type local 5; the
+// `default: __assume(0)` label first 65 (the case blocks follow source order).
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {
