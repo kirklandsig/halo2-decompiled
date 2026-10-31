@@ -400,6 +400,12 @@ short *function_e70b0(long unit_index, short *value);
 // further on. The definition moved after 0x1afcf0 in this file 49 (fast and plain; other functions
 // unchanged); the existing typed actor_datum_get for the first lookup 49, for both lookups 49; the
 // delay product written random times ticks 49 (the same code each time).
+// Round 181 (lane 3): the rotation reaches the final call: retail keeps the 0x34 byte in DL and
+// loads ECX (the facing argument) before pushing it, ours keeps it in CL and pushes it first, so the
+// byte's colour and the actor's (ECX in retail) are one decision. The definition moved to the top of
+// the file 49; the action state read into a short value local 49; the random range given file and
+// line as 0x1bf0f0 does 49; a `__forceinline` declaration of 0xe70b0 here 49; an explicit short
+// conversion of the byte argument 49 (identical code each time).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
