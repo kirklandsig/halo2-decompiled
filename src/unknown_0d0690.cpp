@@ -64,6 +64,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // `if (i != 0) { if (power > 0) ... } else { copy; strength }` 38 (821 bytes: in-place add and retail's
 // lea copy, but the i == 0 block lands after the blend block); a 600 s permuter run on the colour-first
 // form, best 51 (it moved the strength back first).
+// Round 39 (lane 1): compile-only screens reproduce the add's operand order: any non-local load or float
+// arithmetic ahead of the strength read in the i == 0 arm gives the load-first add, and 200 combinations of
+// declaration order, count/lights locals, entry placement, `0.0f <` test, `strength + power`, `!i`, named
+// ratio and direct sky index, plus 63 mixes of `entry` and re-read entries pointers, all stay load-first.
+// Real build: light count read once 34; lights base local 39; named blend ratio 30; entry read before the
+// entry-count test 37; colour first with the light count local 125.
 // Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure, positional/aligned; base 10/16 = full 30):
 // colour copy first 105/5 (828 bytes: the copy is retail's, the strength add loads the entry first into
 // xmm0 and copies back); on it two to four extra used locals, `strength = entry + strength`, `if (!i)`,
@@ -1331,6 +1337,19 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (block, query, type) declared order 552 (identical); with `dword mask` named before the loop 559
 // (mask in eax as retail); with the result variable 554 (lost: block/query take edi/ebx and
 // parameters/record ebp/esi, retail's allocation exactly permuted).
+// Round 39 (lane 1, fast, 0x3db00 kept unless noted): the incoming register follows the callee-saved home
+// (ebx <- eax, edi <- edx), so the convention is decided by which web gets ebx. The existing input_normal
+// alias declared at the top 529 (identical); D9 + named mask + result variable 565 (0x3db00 lost); D13 with
+// the result declared at the top/after parameters/late, `result = true` first or last, mask named or not:
+// 554/565/553/549, 554/565/553/549, 559/557/526/525; on D9, result (top/late/none) x true first/last x
+// named mask x length from the copy x struct-copy normal (40 forms): best `bool result = false;` declared
+// right before the found test with `result = true;` first in the block 520 (2189 bytes, shape 271 -> 187,
+// block eax and query edx as retail, 0xd4080's call setup becomes retail's; it uses D9's one-use fade and
+// direction0 negated per component as 0xd4080 writes it), without fade 526, with copy + lighting_negate 598, both 605;
+// that 526 form with the base pin first 550, scale2 at its use 529, both 575, `result = true` last 559;
+// result at the top with true first: 549/545 (retail's ebp/esi/edi homes, result in bl, 0x3db00 kept).
+// Diagnostics: the normal copied before the loop (before or after the count read) gives block eax /
+// query edx; one more block read after the loop makes block a stack argument.
 // Selected ordinal 587; combined admission mask 570; unsigned scan 529; shared bias local 559
 // (caller lost); common blend weight 533.
 // frame 0x2c versus 0x28, stored result and block/query registers differ.
@@ -1490,6 +1509,11 @@ real function_30bf0(vector3f *vector);
 // rotation 434 (314/170), with the early square 448 (282/178).
 // The 0xd37f0 call is set up for its current convention (block in EDX, query in EAX; retail block EAX,
 // query EDX): BLOCKED-BY 0xd37f0's body, swapping its two parameters moves only the setup order.
+// Round 39 (lane 1, fast): the normalize helper through the existing in/out vector3f_scale 364 (identical);
+// (k, i, j) squared length 358 (as round 90); that plus the colour2 selects 434; with 0xd37f0 in its
+// late-result form (retail's convention) round 36's F6 452 (first difference +0x9c, 1837 bytes, aligned
+// 320 -> 219) and F6 without the axis pointer 445; under that convention the block lookup lands in eax
+// and the call setup is retail's, leaving the tag table load retail hoists above the NONE test.
 // Round 90: normal's squared length spelled k, i, j 358 (x87 runs i, k, j as retail; not kept: gain under 8); turned
 // vector rotated in place in direction2 429 (frame 0x40, 1870 bytes); squared length before the
 // clamps 458, with in-place rotation 456; 0xd37f0 block/query parameters swapped 436; tag fallback
@@ -1914,7 +1938,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
-// score 595 (was 761): frame 0x90 agrees and the first arm matches retail instruction for instruction
+// score 595 (was 595): frame 0x90 agrees and the first arm matches retail instruction for instruction
 // except its stack homes (lightmap +0x20 versus +0x34, mesh +0x2c versus +0x20, result/part, normal,
 // u/v/bsp/material slots: retail packs them jointly with the second arm's colours and normals); the
 // direct sample pointers are pushed as built (retail builds a, b, c in order, sharing vertices[0] * 5
@@ -1934,6 +1958,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // vector3f_scale 619 (3142 bytes), all three scalings 648 (3081 bytes, a pin block tail-merges); with
 // the result branch 614/624; lightmap declared first, second-arm base/normal declared with the dynamic
 // outputs 595/595 (identical); `result = 1` before the block lookup, cleared on success 601.
+// Round 39 (lane 1, fast): retail calls 0x24590 for both lengths and 0x13da30 in both arms (27 calls);
+// ours inlines the second length and the second-arm material lookup (25 calls), so its scaled normals stay
+// in registers where retail stores and reloads them. Sample strides as `vertices[k] * 5` on real/short
+// pointers 595 (identical); the colour pair cleared as two statements 595; base_valid set inside an `if`
+// on the first call 555 (3130 bytes, but aligned 874 -> 1011, the flag held in bl; a flag set in a test);
+// the 0.5 fallback as three statements 596; normal declared before base in the second arm 595.
 // Earlier (761): Frame 0x98 versus 0x90; status +0x40 versus +0x24, mesh
 // +0x24 versus +0x20, sample homes and material/magnitude expansion remain.
 // Earlier: Frame 0x90 agrees; result +0x3c versus +0x24, mesh +0x2c versus +0x20, and helper expansion

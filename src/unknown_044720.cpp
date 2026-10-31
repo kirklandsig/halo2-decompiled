@@ -200,6 +200,9 @@ void function_44720(void)
 // Round 44: lookup given `&g_4ba138[index]` (long index) 177, with level at the call 169; first test read through
 // `g_4ba138[(short)index]` with the entry pointer after it and level at the call 139 (508 bytes), plus the indexed
 // lookup 150; indexed lookup with the weight read at the call and level at the call 140 (503 bytes). Original kept.
+// Round 453: Ordinary inline query/submission/both contracts 107/107/107;
+// with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
+// Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -352,6 +355,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 446: Native center reference/own inline declaration/both 190/190/190;
 // each with the full table/dispatch ordinal 191/191/191; explicit stdcall with
 // original/reference center 190/190. Original definition, declaration and sole caller restored.
+// Round 453: Library entry/query/both center copies 190/202/202; bound position alone,
+// with entry/query/both 190/190/202/202; complete point-producer memmove 246 (caller 37).
+// All original native and component copies restored; entry/index and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

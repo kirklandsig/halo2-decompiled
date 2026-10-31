@@ -198,6 +198,12 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // y stored before x 140 (aligned 119); row index named in axis-first order 140 (aligned 121); both
 // coordinates read through the row index into named values 176 (970 B). Retail's lookup is
 // `shl eax,1` + two movsx loads, y copied through xmm0 and stored first.
+// Round 17 (m3 lane 2, fast): the corner helper's lookup through the existing function_120810 189
+// (966 bytes); with the edges through vector2d_from_points2d and an if/else inverse 182 (975
+// bytes); that with a plane pointer for the normal copy, dot and store 190; that with the axis in a
+// short local used for the store and the normal index 185; the axis local on the current body 160.
+// Retail's first corner keeps the axis in AX (re-extended at the lookup) and the side in CL; ours
+// keeps one sign-extended axis in ECX and the side in AL, so 4 corners x 2 bytes are missing.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

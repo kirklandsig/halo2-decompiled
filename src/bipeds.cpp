@@ -628,7 +628,13 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
-// score 281 (was 281): frame 0x16c agrees; early EBX save, state/change homes and Boolean tail differ.
+// score 280 (was 281): frame 0x16c agrees; early EBX save, state/change homes and Boolean tail differ.
+// Logic walk (2026-10-31): every callee and its argument order, the names triple, the type-0 names[0] choice
+// (0xdd51f-0xdd524), each `changed` path, the signed compares (0xdd4ed) and the constants 0.55/0/0.01 agree with
+// retail. Retail computes the state pointer before the Havok test (0xdd3b7-0xdd3c0) and spills it to [esp+0x20];
+// any early state local takes EBX here. Tried: +0x10a/+0x348 bits through bitfield views at every use, the state at
+// its one use and `changed |= function_111650(...) | action` 297 (1106 bytes; changed in BL and the late EBX save as
+// retail, but the 0x111650 call takes names in EAX where retail pushes both arguments, 0xdd79d-0xdd7a2).
 // Array zero initialization 300; long parent type 286; native byte flags/Boolean shifts 283;
 // array/type 301; array/bits 299; type/bits 282; all 300; Boolean result 281;
 // all/result 300; entry array with all/result 307; guarded exit 295; all/guard 300;
@@ -1091,10 +1097,9 @@ struct s_biped_collision
 /* the point a biped grabs from: its eye (its standing or crouching height
    up from its origin), moved to its head marker unless something is in
    the way */
-PRIVATE inline void biped_eye_raise(long arg_159e6d, real crouch, point3f *eye)
+PRIVATE __forceinline void biped_eye_raise(long arg_159e6d, s_biped *self, byte *self_definition, real crouch,
+	point3f *eye)
 {
-	s_biped *self = BIPED_GET(arg_159e6d);
-	byte *self_definition = BIPED_DEFINITION_GET(self);
 	point3f head;
 	vector3f forward;
 	vector3f up;
@@ -1150,17 +1155,31 @@ PRIVATE inline void biped_eye_raise(long arg_159e6d, real crouch, point3f *eye)
 PRIVATE __forceinline void biped_grab_eye(long arg_159e6d, point3f *eye)
 {
 	function_b9dd0(arg_159e6d, eye);
-	biped_eye_raise(arg_159e6d, function_e0dc0(arg_159e6d) ? 0.0f : BIPED_GET(arg_159e6d)->crouch, eye);
+	s_biped *self = BIPED_GET(arg_159e6d);
+	byte *self_definition = BIPED_DEFINITION_GET(self);
+
+	biped_eye_raise(arg_159e6d, self, self_definition, function_e0dc0(arg_159e6d) ? 0.0f : BIPED_GET(arg_159e6d)->crouch, eye);
 }
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 1497 (was 1638): Frame 0x7c versus retail 0xfc; the inner eye helper, flag homes and argument scheduling still differ.
+// score 636 (was 1497): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
 // conditional material 1566; workspace names 1566; case/setter/boost/names 1552.
 // Ground observations with case order 1497, setter 1510, default boost 1535, case/setter 1509.
 // Case order alone is below the eight-point gate; retain it only with the native ground observation cause, plain 1497.
+// Logic walk (2026-10-31): every block, call argument and constant agrees with retail (ground velocity and facing,
+// the speed_scale paths and 1/137, material, boost, the turning states, the 0x1e5bb0 arguments, cases 1-6 with
+// 0x183670, 0xe5d50, the 0.9/0.05/-0.25 steps and the final 0x1e6850). The 880 missing bytes are biped_eye_raise,
+// which retail expands here, in 0xde9d0 and in 0xdef60: as __forceinline this function is 651 full (1497), 0xde9d0
+// 319 (931) and 0xdef60 287 (995). It is applied (2026-10-31) with biped_eye_raise taking the biped and its
+// definition from its caller (the lookups hoisted as in retail's 0xdef60): 0xdc5c0 636, 0xde9d0 336, 0xdef60 279,
+// 0xcb500 110 and 0xcb500's caller 0x1e3b00 matches. With the helper doing its own lookups 0xdef60 took its mode
+// in DX and tested it before the lookup, which moved 0xcb500 to 129 and unmatched 0x1e3b00. Before the helper took the
+// lookups, `default: __assume(0)` (retail's unchecked jump table at 0xdc9ae), `long players` (movsx at 0xdc7cc) and
+// the 0xbc test in a bool local gave 633 (643 with the hoisted lookups); the five call arguments in named locals
+// (retail's stack slots 0xac/0xa4/0xa0) 651. Without the forced inline those forms give 1497-1534.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1379,6 +1398,25 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 // line); `byte *ragdoll` as 0xe4c10 writes it 201/193/220/128; bit-2 tests through a fresh lookup
 // 254/284; spin products all angle-first or all axis-first 122/122. Still differ: the seed load and the
 // magnitude's x87 interleave, spin product operands, +0x3ec clears through a pointer, mode byte/long loads.
+// Logic walk against retail (block by block, 0xde620-0xde9c9): no behaviour difference found. Checked: the
+// 0xbc bit-20 early return, strong = |impulse|^2 > 1.96 (0x45e5a8), the 0.5 scale (0x45dbbc) only when
+// flags_10a bit 2 is clear, flags_348 |= 2, the cross product up x velocity (0xde763-0xde7a5, signs and
+// operands), the 1/65535 and pi/2 constants (0x45dc50, 0x4123ec) and their multiply order, spin = axis * angle,
+// spinning = strong || !bit2 (0xde84f-0xde865), the strong block (0xe57e0, then for mode 3 the two byte clears
+// at +0x3f8/+0x3f9, 0x1ed340, 0xe18d0 with true), linear = mode != 3 || strong (0xde9c7 sets bl), the
+// 0xb7880 argument order and its NULL masks (0xde8cd-0xde8e9), the away test order (parent, +0x13c, modes 4/5,
+// +0x34b, strong || mode != 3, |impulse|^2 > 1.96) and 0xb75a0 (eax = 0, ecx = away, edx = up, location and
+// flag 0) with its > 0.0 normalize test (0x45dbd8 is 0). All callers/callees still match (0xd9640 the only
+// caller). Tried (2026-10-31): the away vector as a whole copy of the impulse then k = 0 (retail copies all three
+// dwords at 0xde97c-0xde997 and overwrites the third with xorps) and the +0x3ec block goes through a local pointer
+// (retail clears [ecx+0xd], [ecx+0xc] at 0xde885): both make the region identical to retail's, but the
+// score reads 132 (not kept) because the metric is positional and the spin-product pair below shifts the
+// rest by one line (the align edit blocks fall from 12 to 7). The remaining blocks are: the x87 square order
+// (retail j, k, i; every source order of the three terms, a separate squared local, and the order i/j/k
+// compile to k, j, i), the spin j/k products (retail loads axis.j/axis.k then mulss by the angle register;
+// angle*axis, axis*angle, all-axis-first, vector3f_scale all compile to movaps+mulss mem), and the mode load
+// at 0xde90e (mov cl; movzx eax, cl; cmp eax, 4/5; cmp cl, 3: long local 128, byte local 132, nested under the
+// parent/+0x13c tests 132, nested long 129, switch on the byte 138 because it becomes a range compare).
 // @retail 0xde620
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
@@ -1462,7 +1500,7 @@ apply:
 /* whether the biped can see a biped it would grab: a ray from its eye to
    the target's center (or to three points up the target's height) gets
    through */
-// score 931 (was 932): Frame 0x8c versus retail 0xac; the outer eye call expands, but the inner call still differs.
+// score 336 (was 931): Frame 0x8c versus retail 0xac; biped_eye_raise is now forced inline (retail expands it here), 931 before.
 // Outer-only inline 952; entry result 1038; scan result 1020; shared displacement 1031;
 // scan collision workspace 1031; role names 1031; native while scan 1031; combined entry result 1038.
 // Outer-only inline with scan/entry result 932/950; shared workspaces 952; all scan forms 932.
@@ -1618,16 +1656,22 @@ void function_dfd70(long arg_159e6d)
 /* a point on a biped: its eye (mode 0 at its origin, 1 standing, 2
    crouching, raised to its head marker unless something is in the way), or
    an offset from a point along a forward vector (mode 3) */
-// score 995 (was 995): Native 0x8c eye workspace remains out of line; incoming roles and object acquisition differ.
-// Existing helper forced inline 287 but loses a matched caller; forced zero/default/reverse/if-else/
-// origin-join/name/zero-default forms 292/287/287/282/287/287/292 on that rejected boundary.
-// Both existing helpers forced 287; late force-inline declaration 287: both lose the same caller.
-// Original helper boundary with zero/default/reverse/if-else/origin-join/name/zero-default forms
-// 1003/995/995/989/995/995/1003; the six-point if-else gain is dropped. Original body restored.
+// score 279 (was 995): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
+// own bytes take only `point` in EAX and the other five arguments on the stack (0xcb500's call at 0xcb56c-0xcb571,
+// the mode read from [esp+0xa4] at 0xdef9e) with the biped in EDI, its definition in EBX and the index in EBP. Ours
+// takes the mode in EBX, the forward vector in EDX and the offsets in ECX (ret 0xc); their registers force a scratch
+// register for the point copy, which pushes the definition to a stack slot.
+// Tried: the helper doing its own biped/definition lookups 287 (mode in DX, 0xcb500 129, 0x1e3b00 30); only `self`
+// hoisted 271 (0xcb500 111, 0x1e3b00 matches); definition passed at the call 288 (0xcb500 122); mode 3 as a separate
+// test after the point setup (arg in EBX, mode on the stack) 283 with 0xcb500 122; mode 3 as an else branch 264 with
+// 0xcb500 122; offsets in locals 271. The earlier forms with the helper out of line (zero/default/reverse/if-else/
+// origin-join/name/zero-default) scored 989-1003.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
 {
+	s_biped *self = BIPED_GET(arg_159e6d);
+	byte *self_definition = BIPED_DEFINITION_GET(self);
 	real crouch;
 
 	if (mode)
@@ -1658,10 +1702,10 @@ void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point
 		crouch = 1.0f;
 		break;
 	default:
-		crouch = function_e0dc0(arg_159e6d) ? 0.0f : BIPED_GET(arg_159e6d)->crouch;
+		crouch = function_e0dc0(arg_159e6d) ? 0.0f : self->crouch;
 		break;
 	}
-	biped_eye_raise(arg_159e6d, crouch, point);
+	biped_eye_raise(arg_159e6d, self, self_definition, crouch, point);
 }
 
 /* a biped's collision capsule: its bottom point, the vector to its top and
@@ -3578,6 +3622,14 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // 204. Every reassociated sum runs in reverse of retail (function-global order): the length written i, j, k
 // gives retail's k, j, i x87 order 181 (j, k, i 187); the rotate helper's dot reversed 210 (214 alone);
 // sqrtf/fabsf/cosf+sinf 185/185/184, with the i, j, k length 182 (sqrtf) and 180 (cosf+sinf, 887 bytes).
+// Logic walk (2026-10-31), no behaviour difference: against retail 0xe3910-0xe3c86 the offsets (forward 0x70,
+// up 0x7c, angular velocity 0x94, game_time_globals rate +4), the constants (1.0, 1e-4, 0.0 at 0x45dbc0/dc/d8),
+// the near-zero test (0xe3986 `ja` to speed = 0 with the axis left unnormalized, 0xe39b6), cos/sin/(1 - cos)
+// homes, both Rodrigues rotations (0xe3a00-0xe3abe forward; 0xe3ade-0xe3bb2 up, signs and terms), the two
+// 0x30bf0 calls (eax = forward at 0xe3ac3, eax = up at 0xe3c44), up = forward x (up x forward) at
+// 0xe3bb6-0xe3c3f and the reset of both vectors only when the length == 0.0 (0xe3c49-0xe3c7e) all agree. Dot sum
+// order is i,k,j (forward) then k,j,i (up) in retail; any of i,k,j / k,i,j / k,j,i gives the same 184 and
+// i,j,k / j,i,k / j,k,i the same 220, also with a separate helper copy for the up rotation.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -3968,11 +4020,22 @@ bool function_e4680(long arg_159e6d)
 bool function_1f5560(long actor_index, vector3f *facing);
 
 /* jumps: an upward kick to the definition's jump speed (less for a tired
-   player), relative to what the biped stands on; an actor may refuse.
-   Retail keeps the biped on the stack (ret 4): its address is taken */
-// score 224 (was 224): frame 0x24 versus 0x28; ground/result homes, entry saves and state observations differ.
-// Natural parameter 239; late success 221 (subthreshold), shared vector producers 224; CRT relative
-// copy 224; common result exit 222 (subthreshold); all velocity names 224; late/shared 221;
+   player), relative to what the biped stands on; an actor may refuse. The
+   biped index is read once from the stack argument (ret 4) */
+// score 210 (was 224): 640 bytes against retail 683, frame 0x24 versus 0x28. Walked against retail block by block
+// (callees, argument order, offsets, constants, condition directions, return values, store paths): behaviour agrees.
+// Remaining difference: on the actor path retail (0xe490c-0xe4929) reads the animation state name at
+// biped + *(short *)(biped + 0x12a) + 0x7c (the base is computed at entry into EBX, 0xe4799/0xe47af, and kept
+// across the whole function) and stores name == 0xa00003e || name == 0xd00003f into the result slot [esp+0x3c]
+// (the stack argument's own slot) before 0x1f5560, whose AL overwrites it at 0xe4934 with nothing reading it in
+// between: dead in effect, so the 55-byte gap and EBX taken by that base (riding then spills to [esp+0x13], EDI is
+// the definition) are not a behaviour difference. Plain forms (expression, if/else, via a local pointer) are compiled
+// away (224/229); only `volatile bool result` (174) or writing through the parameter's address (166) keeps it, both
+// refused for not matching. The ba1d0 output is its own local `raw`, copied to `velocity` (kicked and passed on, as
+// retail's [esp+0x14] copy) and `relative` (retail's re-stored ba1d0 slot [esp+0x20]); earlier: kicking the ba1d0
+// output itself with relative a copy (224). Natural parameter (no `reference`) 228; relative as scalars 207
+// (without the shared slot, restored). Tried earlier: late success 221 (subthreshold), shared vector producers 224;
+// CRT relative copy 224; common result exit 222 (subthreshold); all velocity names 224; late/shared 221;
 // natural parameter/common result/shared/CRT 234. All executable forms restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
@@ -3982,6 +4045,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 	byte *definition = BIPED_DEFINITION_GET(biped);
 	real jump;
 	vector3f ground;
+	vector3f raw;
 	vector3f velocity;
 	vector3f relative;
 	bool riding;
@@ -4000,8 +4064,9 @@ bool __stdcall function_e4770(long arg_159e6d)
 
 		jump = (1.0f - *(real *)(globals + 0x7c) * biped->unknown2e4) * jump;
 	}
-	function_ba1d0(arg_159e6d, &velocity, NULL);
-	relative = velocity;
+	function_ba1d0(arg_159e6d, &raw, NULL);
+	velocity = raw;
+	relative = raw;
 	if (riding)
 	{
 		relative.i -= ground.i;
@@ -4900,6 +4965,20 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
    (NONE for none): the one inside the grab window (function_e63b0), and when
    both are, the one with the smaller yaw when both are close, else the
    nearer; NONE when neither is */
+// score 112 (was 112): walked against retail block by block, no behaviour difference: the weapon slot byte at
+// +0x212 and the +0x218 table (0xe5be1-0xe5bfd), the flag inlined from function_cbd50 and function_1012c0
+// (definition byte +0x12f, bit 0; 0xe5c04-0xe5c34), previous == NONE at 0xe5c37, both function_e5d50 calls (object
+// first, then previous, offset = unit + 0x168, out pushed first; 0xe5c4d, 0xe5c83, 0xe5c95), function_e63b0 on
+// candidate then current (0xe5ca0, 0xe5cad), the 0.6 constant at 0x44ae8c, the gap test (+8, 0xe5cc6-0xe5cda), the
+// yaw magnitudes (+0, 0xe5cdc-0xe5d0a; the candidate wins only when |candidate yaw| < |current yaw|, a tie
+// keeps previous via 0xe5d36) and the three returns (candidate: 0xe5cbc, 0xe5d0f, 0xe5d23; previous: 0xe5d36; NONE:
+// 0xe5d3a) all agree; the caller 0x1515e0 (0x15165a-0x15166c) passes (unit, object, previous) and stores the
+// result. Remaining difference is allocation: retail keeps object_index in EBP and the result in the argument's
+// home slot ([esp+0x28], stored as imm -1 at 0xe5bf0), reloads [esi+0x44] for the weapon lookup (0xe5c0b) and tests
+// the first function_e63b0 result from its spill (0xe5cb2); ours holds -1 in EBP as the result, caches the data
+// pointer in ESI and calls function_e63b0 on current first. Tried: result as a reassigned parameter with the flag
+// before the unit lookup (391 bytes, 120), flat && conditions (127/132), inverted nesting (136/140), calls inside
+// the conditions (114, wrong: the second call becomes conditional).
 // @retail 0xe5bc0
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index)
 {

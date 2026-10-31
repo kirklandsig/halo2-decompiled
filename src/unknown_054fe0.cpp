@@ -1171,6 +1171,11 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 // helper's session read once through its address (re-reads in a compile-only build, not under LTCG); the
 // same in the outer qos helper; helpers with external linkage. A store through latency ahead of the check
 // also removes the reuse (compile-only), so retail's check sees member_count as possibly changed.
+// Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
+// session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
+// function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
+// guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
+// (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
 // Round 54 (lane 12, fast with 0x658c0/0x65770): an `include` flag set from the QoS query in place of
 // `continue` 126 (351 bytes); the channel lookup and the observer QoS test as two statements 67 (same code);
 // both on the (session, latency) order with the host read after the observer 108/86 (callers 140/19);
@@ -1184,6 +1189,11 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 // recipe (fast): helper session const 86; channel helper bound and flag tests as early returns 86; loop
 // condition `session->member_count > i` 86; all three helpers __forceinline 86; the channel helper alone
 // __forceinline 86.
+// Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
+// session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
+// function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
+// guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
+// (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
 // @retail 0x64480
 void network_session_get_member_latency(s_session_member_latency *latency, c_class_58d20 *session)
 {

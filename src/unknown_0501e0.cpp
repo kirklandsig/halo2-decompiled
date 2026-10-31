@@ -35,7 +35,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// score 221 (was 221): transform term order right/up/forward written point first and
+// score 221 (was 221): frame 0x18 versus 0x14; coefficient/input/result overlap remains.
+// Earlier: transform term order right/up/forward written point first and
 // coefficient first 221 each; the transform as three statements 304, which does use retail's
 // sum tree (forward*depth + up*height) + right*width; blend term order and squared-sum order
 // 221 each; depth limits written at their uses 230; orthographic dot product in point and
@@ -44,7 +45,6 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // up*height + right*width; retail materialises the coefficients of the first view in registers
 // and keeps the second point's offsets in the frame, ours folds the coefficients into the
 // products and keeps the second point's width in a register; frame 0x18 versus 0x14.
-// score 221 (was 221): frame 0x18 versus 0x14; retail keeps both transformed points in
 // registers and the second point's offset (with its scaled copy) in the frame, ours gives
 // the second view's x a frame slot of its own at [esp+8].
 // both inlined transforms, keeps the second point's offset in the frame and the first in
@@ -162,6 +162,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Independent scale overwrite orders ikj/jik/jki/kij with original ijk captures 244/222/222/244;
 // with live forward coefficient stream 250/241/250/250. Extra frame word and coefficient/result
 // overlap remain; original helper/body restored.
+// Round 452: shared vector scale copied/in-place, branch-owned, copied/source and library-copy
+// inputs 309/327/330/309; with live forward coefficients 298/314/318/298. Native
+// scalar consolidation does not match; original scalar helper and body restored.
 // T47: Plain weighted-point blend loop on retained separate-offset/depth-limit graph,
 // long/dword/short/word counters: view cursor 222/222/271/271; indexed view output
 // 226/226/271/271. Original complete helper and body restored.

@@ -737,6 +737,9 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // 1452/1361 bytes. Original APIs, both orientation passes, fields and arithmetic preserved.
 // DL210: independent normal/tangent/texture API inputs, masks 1,2,4,5,6,7; texture with native oriented scales, masks 5,7;
 // scores 432/424/422/432/424/436/422/422. Original source forms restored.
+// Round 244: retained binormal/position readonly values, complete aggregate
+// initializers and lexical role names, seven subsets 422/453/453/422/422/453/453;
+// entry uninitialized value workspaces 422. Original carriers and body restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

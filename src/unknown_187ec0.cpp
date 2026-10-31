@@ -273,6 +273,13 @@ struct s_seat_animations
 // read through its address as in 0x1882d0 52 (same code); result declared before first 69
 // (0x188130 1); the array-select entry `&(first ? ... : ...)[i]` 62 (0x188130 3); `if (result)
 // break;` before the parent step 66 (185 bytes); count declared before result 61.
+// Round 55 (lane 12): the compare through the class's operator== 55; the parent field typed as the
+// class 55; no inner guard with the per-arm entry and `first = !type` 78 (0x188130 17); the array-select
+// entry with count spelled from `type == 0` ahead of first 80 (0x188130 1); the getter as one ternary 65
+// (0x188640 22, 0x188690 18). One-file harness (same code as the build): the parameter in either other
+// order, getter early returns/nested test/forceinline/long index, the entry field as the class,
+// `index(element_index)` or a default-constructed index assigned after, and all 120 declaration orders
+// of the address-read form change nothing (the address-read form stays at its EBX/EBP/EAX rotation).
 // Round 135 (lane 4, fast with 0x188130): the existing 0x188690 called through an `inline` declaration 79
 // (186 bytes); 0x188690 taking the material class by value, called here with its other callers updated, 77
 // (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration

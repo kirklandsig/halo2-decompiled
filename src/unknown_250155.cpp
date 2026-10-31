@@ -1437,6 +1437,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (430); `indices[index_count] = i; index_count++;` 83; declarations index/player/indices/item 84, item/player/index/
 // indices, indices/player/index/item, player/item/index/indices 83 each; pointer `<` fills 154 (index_count in EDI in
 // both scans as retail, but the 0x199ef8 result takes EBX). A one-link harness with the callee files is not exact here.
+// Round 35 (lane 11, fast): the second branch's fill alone as `for (long j = index_count; j < 16; j++)` 107
+// (that branch then matches retail: index_count in EDI, guarded rep stosd, EDI reloaded; but the
+// 0x199ef8 result takes EBX there and mode moves to the stack, frame 0x58); with mode declared first 110;
+// the first branch's fill alone 169; both with the three qsort calls written out 169/163 (420 bytes).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {

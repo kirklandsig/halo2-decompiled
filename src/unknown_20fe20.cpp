@@ -1880,6 +1880,13 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
 // the source order); a compile-only harness keeps the exit order and the success block's load order
 // (weight, tag value, tag pointer; retail loads the tag pointer first) for a break with a retest, a found
 // flag, `tag_index[0]`, a copied tag and a weight pointer local.
+// Round 26 (lane 14, fast; faithful with the file plus 0x1a6fe0, 0x1a7ad0, 0x272ab0, 0x1c9e50, 0x20f1a0,
+// 0x1144a0, 0x114440, 0x20f040, 0x203330, 0x25d770 and 0x25d810 in the image: control 277; aligned 29):
+// the 0x40 failure as its own statement with the 0x80/0x100 groups under `if (eligible)` 277 (same
+// code); the same with `!actor` and the two lookups as separate failure statements 632 (2200 bytes,
+// registers reassigned from the prologue); the 0x40 failure as the else arm with the inverted test 632;
+// `!actor` and the lookups as two else-if failure arms each repeating the 0x40 test (diagnostic) 302;
+// the success stores tag first 277 (same code); `object[0x39d] <= 0` 277 (retail's `ja`, aligned 28).
 // Round 49 (lane 16, plain): the 0x80 group with no early clear and `else eligible = false` on
 // both failures 271 (the no-actor and squad-NONE exits then reach retail's shared clear-and-reload
 // tail, but the squad-entry-null exit does too and the group's early clear is gone; 2260 bytes);
