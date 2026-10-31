@@ -317,6 +317,10 @@ short function_239e50(short count, point2f const *points, short *indices);
 // copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
 // first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
 // case 1's dot by name or through the pointer in either term order.
+// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
+// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
+// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
+// case 1's difference as `line.d - dot` 43.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

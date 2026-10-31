@@ -1486,6 +1486,20 @@ PRIVATE __forceinline real const &component_time_step()
 // the same with the step on the right of both products 43; time-step reference declared first 142,
 // with the stop-first test 142; time step copied into a value local 99 (acceleration in xmm0 as
 // retail, but the step stays in a register instead of the memory multiply).
+// Round 115 (lane 6, fast): the stop-first test with the stop ticks and tick distance named 43; the time
+// step bound inside the scale helper between the exponent result and the mass division, the helper
+// returning the step 31 (the time-step global is then loaded before the mass test, still loaded before
+// its product); the helper scaling its own acceleration parameter 132 (the acceleration load hoisted);
+// the step as a value local at function scope 147 (479 bytes); `(velocity * delta_time)` as the first
+// factor of the stop distance 26. One-file LTCG harness screens (exact here, ~45 forms): every product
+// operand order, either test order, value/reference/pointer/struct-pointer reads of the step and the
+// stop distance's groupings give the load-first products; an intervening float store (to a file global
+// or through `ratio`) never folds the step either, and `(void)&local` changes nothing.
+// Lead (harness diagnostics): the product's operand order follows where the step's value is first defined.
+// A step value read before the exponent test and used only in the step product gives retail's in-place
+// `mulss xmm0, [mem]` with the scaled value in xmm0, but it is spilled across the power call (`mulss xmm0,
+// [esp+8]`, 160, 490 bytes); read after the exponent result 50; a constant multiplier also puts the scaled
+// value in xmm0. Retail loads the global right at the product, so its step read must rank earlier in another way.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
