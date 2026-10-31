@@ -476,6 +476,15 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // normal after the cross with swapped contact_cross arms 170; contact_cross as a function-like macro 124; 0x1f087b
 // as a macro 124. Built with the selected arms writing `support` (contact_cross, 0x1f087b or cross3f_staged):
 // `*out = support` in the arm 177/177/177, one `*out = support` after both arms 155/155/155 (aligned 111 -> 100).
+// Round 28 (lane 14), `--fast`: average.i as `a->i + b->i` 122 (same code); the averaging arm's two
+// direct copies 199 (1007 bytes, aligned 93 -> 75: that arm then exactly retail's), with average.i
+// swapped 199; the first cross written in both selected arms 316 (1026 bytes), with the two copies 337;
+// axis declared before the normal pointer 122 (same code); cross3f_staged in the selected arms 165 (975
+// bytes), with the two copies 178 (aligned 75), with the first cross staged too 178; the average through
+// vector3f_add(b, a) 170 (972 bytes: shared arm products hoisted above the branch), with the two copies 177
+// (aligned 70); the selected arms writing a `support` local copied to out once inside the selected
+// branch 190 (1000 bytes), with the two copies 251 (also with `support` local to that branch or through
+// cross3f_staged, 251 each).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)

@@ -1299,6 +1299,15 @@ bool function_0bfe60(dword const *flags, long bit);
 // round-7 form with a short total 135; with the mask tested before the player 135; with the slot
 // tests as a `continue` filter 38. A one-file harness with the D3D objects linked is not exact (60:
 // it cannot reproduce MakeRequestedSpace's register argument).
+// Round 28 (lane 14), `--fast`: round 7's row form rebuilt 38 (aligned 39; the pure permutation: counter/total EDI,
+// test index and player EBP, slot-field temps EBX, device EDI where retail has EBP, EDI, EBX/EDI and EBX); on it:
+// the test index as dword 38, the visibility-result outputs declared at the query block top 38, a const device
+// pointer 38, the test index, status, total, test+status, status+test and all three declared (uninitialized) at
+// function scope 38 each (symbol order does not move the colours), the test index declared after status 39, the
+// total declared at the query block top 155 (437 bytes), the store through a (word) cast 38. On the kept form: a
+// const row pointer 52 (same code). The XDK's D3DDevice_BeginVisibilityTest is a library function (no header
+// inline); no other file writes the 0x817c8 push. The draw result in its own `drawn` local clamped into the total
+// 96 (463 bytes), on the row form 136, with status declared first 136.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

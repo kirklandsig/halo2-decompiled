@@ -303,6 +303,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // the field 140, entries set after the advance 155, entries set before the loop 158, index declared before n
 // 141, the count as a short local 177 (480 bytes). A /Gd compile-only first pass loads cache_index into EBX
 // (block form) or EBP (indexed), so it does not predict the arrival register here.
+// Round 28 (lane 14), `--fast`: the indexed form rebuilt 144 (492 bytes, aligned 30: count CX and zero EAX where
+// retail has AX/ECX, so the six clears take the 5-byte EAX stores; first kept in EAX where retail loads it into
+// EDI and spills it; the cursor stored to mode's home before the copy where retail keeps entries in EDX and
+// stores the cursor at the loop head); the clears as two chained assignments per group or one chain of six 54/54
+// (same code) and on the indexed form 144/144 (same code); on the block form the cursor advanced before the
+// counters 58, a for loop over n 60, `0 < block->count` 54 (same code).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

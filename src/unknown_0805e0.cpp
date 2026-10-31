@@ -124,6 +124,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // test first (so it depends on the test block's frequency); test spellings, result and successor types change nothing.
 // Harness: an `if (index != NONE)` guard or a do-while around the `!result` loop, the existing iterate helper on a local
 // index, booleans computed before the test and (in the rotated loop) the copy after the loop all lose the hoist.
+// Round 28 (lane 14), `--fast`: a for loop stepping the index from a successor local with `continue` filters and an
+// early return 49 (aligned 27: index and successor share EAX, mask an immediate), with the && chain and an early
+// return 49; the while loop with the chain inverted into a `continue` and an early return 52, with the found block
+// returning directly 52; the successor for loop with `continue` filters, the result and `break` 51. The XDK's own
+// XOnlineAreUsersIdentical is the only header macro with two uses of the guest mask (its null-identity form is the
+// round 34 trial). Callers 0x1a303b/0x2b393c kept their matches in every preview.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -574,6 +580,13 @@ void function_1537f0(s_profile_record *record);
 // memory, its store hoisted out of the loop, and NONE moves into EBP); the flags field zeroed first 75 (251); the
 // identity zeroed dword by dword 80 (249); the XUID by memset with flags and timestamp as two stores 80 (236); the
 // first form with those two stores 85 (241).
+// Round 28 (lane 14), `--fast`: the tail clear dropped with the 0xff sentinel kept 78 (238 bytes); the identity
+// initialized `= { { 0, 0, 0 } }` 95 (282); the source as a one-element array 67 (same code); the tail cleared as
+// two memsets around the sentinel byte 125 (308); a plain `dword[3]` identity cast at the call 67 (same code, the
+// real build folds it as the harness did). Every existing struct with a 0x90-byte properties member was checked
+// (s_network_message_player_add, s_session_interface_user, s_network_session_player, the player settings
+// source/entry): none puts a 12-byte identity immediately before it, so round 34's two-member layout has no
+// existing type.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -972,6 +985,13 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // `lower < upper` 54, with the count path's flag store first 54. Harness, all with upper in EAX: four copy-loop index
 // spellings, a function-scope copy index, the eight declaration orders above the removal block (373), the count path
 // first, an unconditional count path (1155 bytes), short bounds, bounds without initializers, removed set in an else.
+// Round 28 (lane 14), `--fast`: round 149's plain entry with `removed > position` bounds, the explicit `>` arm and
+// the count path upper first clearing the flag 56 (aligned 25: entry load into ESI then EDX where retail loads EDX
+// and copies to ESI, upper in EAX where retail copies the count into ECX); on it the bounds renamed
+// last/first, high/low or upper_bound/lower_bound, `removed` renamed, the flag renamed 56 each (same code: the
+// names do not move registers); the count path without its flag store 355 (1162 bytes); the `>` arm without its
+// flag store 370 (1162); bounds and flag declared above the removal 378; the count path as a nested if with the
+// flag cleared in the outer else 391 (1178).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
