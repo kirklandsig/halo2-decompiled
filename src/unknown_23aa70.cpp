@@ -295,6 +295,8 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // indexed with the format-4 pointer 60 (as before: two points); `vertices + index` as the pointer 62 (same
 // code); the node byte read through a byte cast of the indexed record 175. A /Gd compile-only first pass
 // reloads every parameter per case here, so it shows nothing about the flip.
+// Round 99 (lane 8): the buffer read once inside each case 62; format 1 through a vertex pointer 62; a const buffer
+// pointer 62; format 3's position copied member by member 102; the default case's node test on its own line 62.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

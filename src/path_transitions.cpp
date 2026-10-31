@@ -529,6 +529,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // passed inline 278, case 5's actor test as an outer if 278 and case 2 reading the state's
 // pathfinding at each use 278 (all three same code). Retail loads actor_index into EAX at entry
 // (an enregistered stack parameter), which pushes pathfinding into EBX; ours loads it at the use.
+// Round 99 (lane 8): case 5 with the fallback in an `actor_index == NONE || !...` arm 278; the radius test
+// as `radius * 2.f < first_length` 278; `margin = radius * inverse` 278; the half-way branch first 277;
+// `if (!parent_point) break;` before the corner tests 278.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -297,6 +297,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // the field 140, entries set after the advance 155, entries set before the loop 158, index declared before n
 // 141, the count as a short local 177 (480 bytes). A /Gd compile-only first pass loads cache_index into EBX
 // (block form) or EBP (indexed), so it does not predict the arrival register here.
+// Round 99 (lane 8), indexed forms (index in EDX as retail; count CX and zero EAX where retail has AX and ECX):
+// rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
+// from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
+// copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

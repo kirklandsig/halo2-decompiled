@@ -124,6 +124,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // test first (so it depends on the test block's frequency); test spellings, result and successor types change nothing.
 // Harness: an `if (index != NONE)` guard or a do-while around the `!result` loop, the existing iterate helper on a local
 // index, booleans computed before the test and (in the rotated loop) the copy after the loop all lose the hoist.
+// Round 99 (lane 8), one-file LTCG harness exact against the build: the mask is hoisted in every `!result` loop
+// whatever the guest test's position, in `break` loops only with the guest test first, never with early returns.
+// Real: `while (!result && index != NONE)` with a successor local and `index = next` after the test 37, also as a for
+// loop with that increment 37 (both move the player argument to the stack, ret 8, and lose 0x1a303b and 0x2b393c);
+// the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
+// Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
+// `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -570,6 +577,9 @@ void function_1537f0(s_profile_record *record);
 // memory, its store hoisted out of the loop, and NONE moves into EBP); the flags field zeroed first 75 (251); the
 // identity zeroed dword by dword 80 (249); the XUID by memset with flags and timestamp as two stores 80 (236); the
 // first form with those two stores 85 (241).
+// Round 99 (lane 8): identity declared and zeroed once before the loop 83 (280 bytes, still folded), with the XUID
+// type 83 (280); the source declared before the identity 67; the XUID identity per iteration 67; the identity zeroed
+// after the entry pointer 67. No existing type has an identity followed by the 0x90-byte record.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -963,6 +973,11 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // `lower < upper` 54, with the count path's flag store first 54. Harness, all with upper in EAX: four copy-loop index
 // spellings, a function-scope copy index, the eight declaration orders above the removal block (373), the count path
 // first, an unconditional count path (1155 bytes), short bounds, bounds without initializers, removed set in an else.
+// Round 99 (lane 8): the tail (head repairs, links, time, fill) already matches; on round 111's plain-entry form
+// (rebuilt 54): bounds zeroed in a final else 54, `g_4cf978 > position` 56, upper before lower in the removal arm 58,
+// the count path's flag store first 54; harness: count path lower first 55, the mixed `function_7fd10(g_4cf980)` read
+// 52, lower and upper initialized to position 369 (1162 bytes); the existing 0x7f8b0 call for the fill 100 (1174 bytes:
+// the head repairs reorder and carry g_4cf97c in EAX, field56 through AL).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
