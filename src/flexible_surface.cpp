@@ -311,6 +311,8 @@ void function_117510(long index)
 // Round 35 (lane 10, fast): per-use link fields again 154 (742; first difference +0x8a: link materialized after one
 // folded read, link->a kept in EBX across the root's stack stores, a/link in EAX/EDX); with the rest length read
 // first 154, link as `definition->links + i` 154, vertex-record endpoints 154, a separate correction local 161.
+// Round 254: Complete endpoint correction helpers for first/second/both, plain component loops for
+// first/second/both, then both with shared difference 139/139/139/191/186/203/139/203. All restored.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -740,6 +742,8 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // Round 244: retained binormal/position readonly values, complete aggregate
 // initializers and lexical role names, seven subsets 422/453/453/422/422/453/453;
 // entry uninitialized value workspaces 422. Original carriers and body restored.
+// Round 254: Own-result scan ordinals on retained complete API inputs, cached/live count,
+// compound/break search and original/entry declarations 549/480/549/480/549/480/549/480. All restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

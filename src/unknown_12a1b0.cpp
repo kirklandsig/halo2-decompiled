@@ -994,47 +994,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
-// score 7 (was 14): only the record initialization's playback reload and 0xa4 byte still move up.
-// MiniMax C (10-31): flag OR through playing->loop 13 again (mixed access; not kept).
-// score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
-// byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
-// Earlier: Float/result/random spill homes and initialization scheduling differ.
-// Round 76: bounds pointer 74; with mask 132; direct previous 80; initialization swap 77; result name 74;
-// distance name 74; declarations swapped 188; split result 74; the pitch bounds read through a pointer to
-// the modifier's lower field indexed [0]/[1] with an entry NONE result and one return 68 (not kept: the
-// field-indexed pointer reads past the field it names); the entry result alone 71; entry mask 127.
-// Earlier field-bit mask form 77 (from 132).
-// Float/result/random homes and initialization scheduling remain. Entry result 71; available-mask name 77;
-// entry mask workspace 77; table reads at use 77; full-width track slot 231; playback record name 77; direct
-// distance expression 194; entry result with full-width slot 231. All restored; six-count result gain below
-// threshold.
-// Round 421: native short/real repeated class pitch 77/183; complete modifier copy 190;
-// shared lower pitch 74 (three-point gain rejected); short with record 190; real with lower 183;
-// scoped listener distance with record/real-and-lower 190/183. Original body restored.
-// Round 313: Computed modifier span, original/promoted previous: 77/131; with computed pitch offset
-// 77/131; entry result with span 71/126; with offset 71/126. Six-count gain rejected; original body
-// restored. Result-first recovers early spills; initialization and pitch scheduling remain.
-// Lane 17 round 2 (kept, 77 -> 14): short pitch-range local 149 alone (retail's block and tail, but the shift-form
-// flag test was 7 bytes long), with the 0x2000 mask test 45; loop links through a pointer 29; pitch bounds member
-// read through a pointer 26; entry result with one exit 20; named lower bound 16; 0x21cb90's parameters in
-// retail's setup order 14. Not kept: one-bit loop flag 29/14; flag set through playing->loop 28/13 (mixed access);
-// pitch sum orders 26 x4; renames for slot order 26 x5; direct distance 190; track declared at entry 111;
-// chained fade zeros 13 (stores in the wrong order); links declared after the record 14; handle before its
-// byte 14; flags before track index 14; resets before the fade zeros 14; callbacks before time 16.
-// Lane 17 round 5: links through a fresh pool lookup 245; chained fade zeros 13 (again); byte reset before the
-// chunk index 14 (no change: the scheduler, not source order, places these stores); track index and flag zero
-// before the source copy 35 (the copy stops the zero being folded, so the flag is ORed as in retail, but the
-// stores move above the copy); chained ring links 16; source copy after the ring links 192.
-// Lane 10 round 34: our scheduler keeps stores through `links` and through `playing` in order but reorders stores
-// through one pointer, so the order is set by the pointer mix, not the statement order. Flag OR through playing->loop
-// 13 (mixed access; the OR matches, the schedule does not); playback lookup after the listener query 52; flag zero
-// before the track index 14 (identical); every link field through playing->loop (no links pointer) 30 (state test
-// from the register); link stores split links/playing (track index and flag / permutation copy / ring / controller)
-// LLPP 14 (retail's OR, callbacks store moves), PPPP 18, LLLLPP 14, PPLL 17; chained fade zeros start-first 14,
-// chained NONE resets 14, both 14 (identical code).
-// Round 58: links reference/fixed links/fixed playing 14/14/14; fixed playback 7; track index through playing 10;
-// track and flag zero through playing 17; flag zero alone through playing 7 (kept); direct getter unknowna4 240;
-// second record/later-state playback pointers 7/7; simplified flag-zero split 7 (plain confirmed).
+// Creates one looping track sound; byte-matched at 832 bytes.
 // @retail 0x21b940
 long function_21b940(long looping_sound_index, long definition_index, long pitch_range_index, short track_index, short state, dword *seed)
 {
@@ -1072,7 +1032,7 @@ long function_21b940(long looping_sound_index, long definition_index, long pitch
 				playing->fade_end_time = 0;
 				playing->fade_start_time = 0;
 				playing->chunk_index = NONE;
-				playing->unknowna4 = NONE;
+				memset(&playing->unknowna4, 0xff, sizeof(playing->unknowna4));
 				playing->handle = NONE;
 				s_looping_track_links *links = &playing->loop;
 				links->track_index = (char)track_index;
@@ -1333,6 +1293,8 @@ struct s_looping_detail_request
 // Lane 10 round 34 (fast): count through a table pointer local 139; camera after the offset call 152; skip loop as a
 // counted for 139; result set before the random draw 197; diagnostic: a real extra test on the count makes the query
 // a call (124 with the extra compare), so the cause is still the call site's static frequency.
+// Round 254: Reduced common finalization with unavailable-player/completed-request exit and
+// bool/byte/char/long result carriers 139/168/168/185/139/168/168/185. All restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1599,6 +1561,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // against 168; the scalar slots come out permuted and the iterator index and `active` spill); with the 0xa0 request
 // 380; the count in the second for's init 377; the count declared before the 0x2000 test 377; one count local bounding
 // both loops 462 (1939 bytes).
+// Round 254: Reduced shared full request type with no/first/second/both long range counts,
+// first/second/both short counts and both byte counts 479/491/497/363/465/451/469/508. All restored.
+// Ordinary full-request/two-long-count form 370 at 1923 bytes; rejected against full 307.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

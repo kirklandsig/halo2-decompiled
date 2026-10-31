@@ -2816,6 +2816,9 @@ static inline short sound_voice_find_available_channel(char type)
 // written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
 // the not-found exit past a block that sets the driver default, which no form here reproduces.
 // A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
+// Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
+// scores 113/113/113/109/139/139/139/133.
+// Original executable source restored; no qualifying gain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3646,6 +3649,9 @@ struct s_128ca0
 // Round 235: native real incoming gain with direct/inner-part/location-value/both forms
 // 306/306/306/306; each with shared scale 295. Frame 0x494 recovered, gain and clamp
 // loads still differ; original signature, caller argument and executable body restored.
+// Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
+// scores 215/255/215/255/286/255/286/255.
+// Original executable source restored; no qualifying gain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
