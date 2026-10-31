@@ -212,7 +212,10 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
-// score 11 (was 39): the pool is read out of the global into two locals, the index is only
+// Not kept (MiniMax H, 10-31): 11 with the pool read out of the global into two locals (a second,
+// one-use `scan` copy for the search; 60 without it) and the index only assigned when a record is found:
+// a one-use duplicate local steering the second pool register, so kept only with a match. Its notes:
+// the pool is read out of the global into two locals, the index is only
 // assigned when a record is found and the datum's index is taken from the other local; retail's
 // two pool registers, the found path after the exit, the immediate tail stores and the scan
 // loop's padding now match byte for byte. Still differs inside the found block: retail keeps the
@@ -318,14 +321,11 @@ void function_07b430(void)
 {
 	if (g_4cf8d4)
 	{
-		long index = NONE;
 		s_record_pool *pool = g_4cf8d8;
-		s_record_pool *scan = g_4cf8d8;
-		long next_index;
+		long index = NONE;
 
-		while ((next_index = data_find_index(scan, index + 1)) != NONE)
+		while ((index = data_find_index(pool, index + 1)) != NONE)
 		{
-			index = next_index;
 			qos_release(data_datum_index(pool, index));
 		}
 		g_4cf8d8->valid = 0;
