@@ -3220,6 +3220,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // the 0x218ac0 pitch-range getter 49/78; definition by table read 78; a while loop with goto 214 (592 bytes).
 // Without the switch, dropping either `(bool)` swaps the registers too (120/136). 0x125e60 returning bool (callers
 // without `(byte)`) 78 with the for form (0x125e60 itself unchanged).
+// Round 9 (m3 lane 18, fast): 0x128020's loop-top `sounds = g_4e637c;` added to this body 49 (identical, the
+// load is CSE'd); a plain while loop with that loop-top reload 268 (636 bytes, not rotated); a for loop reading
+// the pool global in the init and increment with `case 1: continue;` 78 (retail's `sub eax, 0` and the pool
+// reload after the next-index ternary; only the index/pool EBX/EBP swap and the prologue load before `push
+// ebp`), with the entry pool through the named `sounds` local 78; `case 1: continue;` skipping a bottom
+// `sounds = g_4e637c;` 183 (572 bytes).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4029,6 +4035,15 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // with the 0x80 clear's result 147. Probes: a returning clear wrapper inlined across files by LTCG still realigns
 // (build/r40h/clr); in compile-only probes of this clear shape only /Os (or /Oi-, which calls memset) avoids the
 // `and esp, -8`; retail realigns 115 other functions with large clears, so retail's compiler does it too.
+// Round 9 (m3 lane 18; one-file LTCG probes build/r9/al): the frame realigns exactly when some large-local clear's
+// result is unused: memset statements, `long` clear loops (turned into rep stosd), ZeroMemory, a 0x7c-byte clear of
+// the array, clears through an LTCG-inlined helper's pointer parameters, a result assigned to a dead local, with or
+// without /arch:SSE and with a caller that keeps an 8-aligned stack; both results used (named or as arguments) never
+// realign but keep `mov reg, edi` copies. Fast trials: results named in retail's clear order (0x40 first) before the
+// count store 132 (521 bytes), after it 55 (retail's clear order, still two copies); named results with the long
+// restart cursor 77; named results at both calls with the long cursor 108 (527 bytes); only the first result named,
+// the second an argument 132 (521 bytes). Diagnostic only: favour-size pragma with statement clears and the long
+// cursor 274 (411 bytes).
 // @retail 0x125b40
 void function_125b40(void)
 {
