@@ -617,6 +617,12 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // add 174 (1064 bytes, 251 instructions as retail, structural 28, aligned 96 against 105: closest
 // shape; limits.j/k then share one register where retail keeps two copies, and on_z/y spill
 // differently); plus a chained limits.j/k 258, both 208.
+// Round 53 (lane 9, fast): jitter as on/off factors first with a plain long 233 (1020 bytes: limits.j/k
+// then share one register, so on_z and y are not spilled); `limits.k = limits.j` 221 (1045 bytes); the
+// projection dot with direction first in each product 132 (same code); the movement scaled by the field
+// at each use 172; length_squared summed k, j, i 144. Compile-only screens (magnitude3d inline, 512
+// spellings: scale local, length/projection/offset/control/limit/acceleration operand orders, volatile,
+// jitter factor and offset forms) never give retail's 1.0 in XMM3 or its k, j, i projection order.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -827,6 +833,15 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // Round 207: completed sample copied to velocity then scaled in place, original/rate-angle/
 // per-use scale/both 208/265/211/262; the same four through the shared float scale
 // 220/207/220/207. Original sample, field stores, angle storage and includes restored.
+// Round 53 (lane 9, fast; the score is a lockstep count, so a one-instruction shift in a region costs
+// the rest of it): `!(fabs(angle) < 0.0001f)` 173 (retail's exact `fld; fcompi; ja` test at 1382 bytes;
+// the rotation is then one instruction short and the turn block two short of retail); with moved_away
+// preset false and set in the test 176 (retail's `xor dl, dl` ... `mov dl, 1`; flag form, needs a match);
+// with the rotation done in place on the forward copy 178; with sin/cos of `angle * rate` and no rotation
+// local 156, the same on the original body 169. A /FAs frame probe (compile only) groups movement with
+// new_cross at -12 and original/rotated at -24 (retail: movement with original/rotated, new_cross alone);
+// declaration order and names never move it, one extra early read of original swaps movement and original.
+// Extra arithmetic tuples anywhere rotate the turn-block dot sums toward retail's j,k,i / j,i,k orders.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -105,6 +105,10 @@ void function_213970(void);
 // pair 226/225. All regress with every match preserved. Original conditional publications,
 // comparisons, calls, resets and whole body restored. Two complete storage blocks still require
 // coordinated changes to protected definitions outside this queue.
+// Round 53 (lane 9, fast): progress handle cleared by memset 146 (242 bytes); the language read at each use
+// (`get_current_language()` in the test and the store; the size pragma keeps its out-of-line copy) 129 (232 bytes,
+// two-point gain dropped); with the block-A clears after the block-B ones 129; with the NONE/flag stores first 129;
+// with the language call on the left of the comparison 129. Still BLOCKED-BY the separate global definitions.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

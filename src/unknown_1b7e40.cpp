@@ -136,6 +136,12 @@ bool function_25d9b0(long prop_index);
 // Round 451: Native iterator aggregate/entry scope/entry-result role-name subsets
 // 1/2/1+2/4/1+4/2+4/all, then late entry aggregate: 88/86/155/86/88/86/155/151, with faithful
 // callback/callee controls. Original descriptor and body restored.
+// Round 53 (lane 9, fast): retail's `xor eax, eax` zero epilogue is a tail-duplicated `priority = 0; return
+// priority;` (compile-only screens: `return 0` gives `xor ax, ax`). `if (ok) return priority; } return 0;` 105
+// (priority spilled, `xor ax, ax`); `if (ok) goto done; } priority = 0; done: return priority;` 91 (554 bytes:
+// retail's exact zero epilogue, but priority is spilled to the argument slot and the state kept in ESI, the
+// other way from retail), with priority initialized at its declaration 91, also without the fallback's own
+// zero store 91, with a long priority 91, with the state declared at the top 91.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
