@@ -303,6 +303,10 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // the data pointer, which retail re-reads); one pool local for both lookups 108 (pool in EBX,
 // NONE no longer a register); rider index as a ternary 26; no-rider arm first 60 (366); a named
 // rider pointer 26.
+// Round 59: the existing object accessor at the initial/both lookups 26/26; the existing header
+// accessor at the initial/both lookups 26/26; direct team reads 137; a pre-call pool with inline
+// masks 119; a post-test pool select 87; a single-exit pool refresh 83; a shared initial/rider
+// pool with the single-exit refresh 114. Original body restored.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {
