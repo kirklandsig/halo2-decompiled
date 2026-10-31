@@ -644,6 +644,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // record's two source reads swap); the machine pointer taken after the `unknown14 == NONE` test 186 (1071
 // bytes); the conflict scan's `memcmp(...) == 0` 32; the machine table filled with memcpy 32; the last
 // record's machine copied with memcpy 32 (all same code).
+// Round 26 (lane 15, fast): each update record as its own block-scoped local (the changed, removed and added
+// records), all three or only the removal, with role names or all named `update`, 32/32/32 (same code); on the
+// swap order above 36 (aligned 18/17 either way); the configuration pointer declared in the branch that compares
+// it 32, on the swap order 36.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
