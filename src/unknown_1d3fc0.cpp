@@ -107,6 +107,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // left normalization's first product becomes retail's movaps/mulss-from-memory and the length 922); on it
 // the k, j, i sum 154 (aligned 38), the cross product on the matrix fields directly 110 (same code),
 // compound `*=` products 110 (same code), cross3f_staged 179, dot3f(up, forward) 110 (same code).
+// Round 120 (m3 lane 5): forward's block is one instruction short (k preloaded, no skip-path reload),
+// which shifts every later line. The helper's k product reciprocal-first 119 (same code); its test as
+// `0.0001f > fabs(m)` 119 (same code); `left` declared after forward and up 119 (same code); forward
+// alone through the existing normalize_inline 121 (sums i, k, j, still preloads k); the loop's world
+// matrix as its own block-scoped transform 174 (frame 0x170). The preload order (k, j, i into
+// xmm4-6) follows the dot's term order, not the sum. Original body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

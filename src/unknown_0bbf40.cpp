@@ -346,6 +346,12 @@ s_object_gc_entry_ab g_440570[6] =
 // VC inverts the loop, testing the first entry's action at its constant address); that with an
 // `advance = !again` flag 181, with the query in the while condition 181; the index walk with
 // `advance = !again` on this body 131 (400 bytes).
+// Round 61: no retail code or data takes the address of g_4de2f4 or g_4de2ec, so the failure exit's
+// reload is the allocator's: the loop-top state lives in ESI, which the 0xbf1c0 call takes for its
+// output argument, and the level keeps EBP; ours keeps the state value in EBP and spills the level
+// (the frame's extra dword). The action-null exit as a break to the final clear 179 (330 bytes); the
+// level computed through g_4de2f4 at each use 110; the query failure clearing and returning in place
+// 110; the level declared before the buffers 110; the action-null exit clearing through g_4de2f4 125.
 // @retail 0xbf380
 void function_bf380()
 {

@@ -159,6 +159,10 @@ short __stdcall function_2551c0(long actor_index)
 // and axis-first projection terms 116 (814 bytes); matched 0x11d3b0's form (dot k, j, i) 43. Compile-only
 // (reproduces the pre-call SSE schedule): 216 forms (6 dot orders x 6 cross orders x 3 output forms, named
 // dot or not) never give retail's early a.k*v.i / v.j*a.i products (aligned 11-34 against 14).
+// Round 22 (lane 2, fast): the existing 0xe70b0 call for the tail's state test 70 (820 bytes; the tail
+// and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
+// five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
+// statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

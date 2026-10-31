@@ -130,6 +130,12 @@ void function_213970(void);
 // Diagnostic, size pragma removed 158: the preference tail is then retail's (version loaded to EAX, NONE
 // stores after the clears), but the language load is hoisted into ESI above the clears and ESI/EDI are
 // pushed at entry, where retail pushes EDI around its two block clears only and ESI after the language join.
+// Round 40 (lane 11, fast): without the size pragma (diagnostic) 158: the shape after the clears is retail's
+// (`or eax, -1`, the NONE stores among the language test, inlined getter calls) but the language read is
+// hoisted above the clears into ESI, where retail reads it into EAX after them and copies it to ESI only
+// after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
+// getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
+// clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

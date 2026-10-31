@@ -1286,6 +1286,10 @@ long function_146650(void);
 // target/movement/both vector setters 77/186/224; library target plus movement setter 186;
 // target setter plus library movement 77. The setters disturb the scalar/geometry allocation;
 // original producers restored. The three 12-byte home rotation and query setup remain.
+// Round 60: a direction pointer at all three calls 14; a direction reference 14; a post-writer
+// direction pointer at both queries 14; a pointer only at the first query 14; a target pointer 14;
+// a movement pointer 14; an ahead pointer 14; an offset pointer 14. Every listing is identical;
+// original executable body restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {

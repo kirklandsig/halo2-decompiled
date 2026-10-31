@@ -1514,6 +1514,12 @@ struct s_territory_tag
 // Round 56: inline definition 24; copy helper with masked player index 43, with
 // marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
 // index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
+// Round 11 (lane 18), fast: the copy helper with the tag index set per arm 65 (271 bytes; every line
+// after the 0xb7930 call is retail's, the NONE lands after the test); the helper with the initialised
+// index 43 (the chain's middle pointer takes ECX and every later scratch register rotates by one); the
+// chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
+// walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
+// marker index read once into a short local for the test and the copy 84 (281 bytes).
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

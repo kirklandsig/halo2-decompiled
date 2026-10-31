@@ -673,6 +673,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // function-scope index for the three loops 32; the swap given `&watcher->players` 32; a block-scoped
 // update pointer in each second-loop block 32; the session player as `session->players + i` 32 (all
 // identical code); the conflict scan without its flag (`break`, then `if (j < 16) continue;`) 230.
+// Round 34 (lane 13, LTCG harness, base 16 positional = 32): the session read before the initial count
+// harness 23 (aligned 18); the initial count read inside the live-session block harness 50 (1063 bytes); the
+// configuration as `const byte *` 32; the member count in a local for the machine copy 32; the swap's
+// update named in its own block 32 (the last three identical code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
