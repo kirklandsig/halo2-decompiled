@@ -529,6 +529,13 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // particle copies swapped 48; with them declared at the inner loop's scope and assigned after the
 // particle lookup 40; with them made just before the rotation test 352 (1187 bytes); indexed
 // definitions with scale first 113 (1136 bytes) and alone 115.
+// Lane 16 r48 (fast): long-indexed definitions 115 (1136 B); colour declared first 42; offset step before
+// the emitter step 42; offset declared before the emitter index 42; dword offset 42. A compile-only build
+// of this file reproduces both rotations op for op (9 ops from retail's 33): row i's terms in all six
+// orders and both groupings, member-wise copies in all six orders (these become float copies), `+=` or
+// swapped translation adds, the motion rotation first, swapped particle copies, scale first, colour or
+// result pointers first, the masks inline, the next index read after the callback and an emitter-first
+// body all leave row i at j,k,i; indexed definitions (long/short) 33/46.
 // Round 95 (lane 8): the zero store after the list test is the mark of an index that VC
 // strength-reduces into the offset (retail keeps only the offset IV), so retail likely indexed the
 // definitions; the indexed form `&(*(T **)(definition + 0x34))[index]` 115 (1136 bytes, aligned 38 ->

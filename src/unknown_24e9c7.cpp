@@ -115,6 +115,12 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
+// left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
+// xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
+// score 125 (was 125): reassociating the corner sums and splitting them into two steps both
+// canonicalise back to retail's association, so what is left is the SSE schedule itself, the
+// eight-byte-higher stack homes and the sprite pointer staging; no source form found.
 // score 125 (was 125): result/kind/bitmap homes sit 8 bytes above retail's (retail keeps a spill at -8
 // and an unused slot at -0xc above them), the 1.0 constant is in xmm4 where retail uses xmm5, and the
 // geometric SSE schedule differs. Tried: table read at each use 125 plain (743/743), real half width
@@ -171,6 +177,10 @@ struct s_24e9c7_bounds
 // width, with `0.0f -` 139; with unary minus 144; `0.0f -` alone (a listed form, as a base) 138;
 // negated-component locals scaled by size 138; scale read before size with `0.0f -` 137.
 // Round 322: Shared upper-origin point copy/value/twice-used coordinates/first vertex at assembly 168/147/190/147; at the height producer 153/146/189/147. Original corner sums, geometry and body restored; early across spill and shifted scalar homes remain.
+// Round 454: Complete center point on the live-table entry graph, native copy at corner
+// assembly 125, with all corner origins initialized first 129; library move 240/240.
+// Basis-boundary counterparts 125/129/195/196. Original point reads, copies and geometry
+// restored; the early across spill and shifted scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -604,6 +604,13 @@ PRIVATE __forceinline void graph_weapon_types_request(s_graph_tag *graph, long m
 // 445/445 with two losses. All rejected. Original Boolean method contract, class declaration, byte
 // status, both native hidden query publications and existing request helpers restored. Frame eight
 // versus twelve remains; retail ends ret 0x18.
+// Lane 18 round 6: positions agree to index 235 (33 differences); then retail's first request expansion reloads
+// the graph into EBP from its stack home at each loop preheader and failure join (`jmp` over `mov ebp, [esp+0x14]`)
+// and offsets EBX in place (`add ebx, 0x34`), where ours keeps the graph in EBP: 3 and later 7 instructions of
+// drift. Retail's fourth frame dword is the fallback query's return temporary (the primary's reuses a dead
+// parameter slot). Found names declared mode/class/type 419; type/class/mode 403 (loads in retail's order, graph
+// then kept in EBX with graph+0x34 in EBP); fallback query through the existing animation_id local 399 (same
+// code); graph pointer declared const 399 (same code); type/class/mode with a named inherited graph 403.
 // DL209: Returned graph reference with whole input/found/result record-view subsets 0-7: 399 each.
 // Original receiver and all records restored.
 // @retail 0x1cc3f0

@@ -774,7 +774,7 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
-// score 8 (was 12): retail's length and tail now; four products load the other operand (ours loads up.j
+// score 8 (was 8): retail's length and tail now; four products load the other operand (ours loads up.j
 // for the first cross's k term and the side cross's i term, up.i for the side cross's j term, and the
 // velocity for the dot's i term; retail loads forward each time). Kept: one `bool result` exit, the
 // failure arm first (`if (!(...)) { clears } else { ...; result = true; }`) and word_flags_set for the
@@ -814,6 +814,17 @@ __forceinline long vehicle_round(real value)
 // Round 48: shared up at both crosses 141; shared forward 204; both 209; forward-default axis 169;
 // angular copy/in-place scale 266/91; full forward snapshot 226; up snapshot with rate 146;
 // branch-scoped up at the first/side cross 150/109. Original body restored.
+// Round 132: the product choice follows the order VC first meets each field in dominating code (an
+// earlier read of one operand makes it the memory operand), so it moves with the condition and the
+// rounding (with the rounding out of line 3 flips, with a cast in its place 5). Five real trials,
+// all on the kept form: linear/angular/axis declared before strength with the side cross through
+// cross3f_staged 6; that with `result = true` before the increment 6; axis/angular/linear before
+// strength, staged side cross and De Morgan tests 9; linear/axis/angular before strength, staged side
+// cross, De Morgan tests and the axis if/else inverted 9; angular/linear/axis after strength,
+// `result = true` first and the staged side cross 6. A compile-only screen of 1500 random combinations
+// (declaration orders, flag helper, result placement, staged crosses, side scale+add, De Morgan,
+// inverted axis branch, side and rate declared early, named dot) found none under three flips; the
+// condition's spellings (casts, operand sides, `!= 0`) and local names give identical code.
 // Lane 13 round 28: dot3f(&velocity, &forward) 8 (same code); an up pointer used only at the first cross 4 (first
 // cross and the dot's i term then retail's); with cross3f_staged for the side cross 2 (only the side cross's
 // `a->k * b->j` still loads up.j; a one-use pointer, so kept only on a match); cross3f_staged for the side alone 6;
@@ -2256,13 +2267,14 @@ int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, t
 
 /* a wheel's spin advanced by its angular velocity, wrapped into the
    definition's period */
-PRIVATE inline void vehicle_wheel_spin_wrap(real *spin, real period)
+PRIVATE inline real vehicle_wheel_spin_wrap(real spin, real period)
 {
-	*spin = period > 0.001f ? (real)fmod(*spin, period) : 0.0f;
-	if (0.0f > *spin)
+	spin = period > 0.001f ? (real)fmod(spin, period) : 0.0f;
+	if (0.0f > spin)
 	{
-		*spin += period;
+		spin += period;
 	}
+	return spin;
 }
 
 /* the contact turned about its up axis by half the steering angle, in the
@@ -2285,6 +2297,12 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
+// score 71 (was 189): the contact definition as an element pointer, both steering
+// bits read early into named locals, and the spin wrap helper changed to take the
+// spin value and return the wrapped one; the contact loop now matches retail
+// instruction for instruction. Left: frame 0x34 versus 0x30 (one never-referenced
+// dword at the frame top) with the torque and loop-offset slots swapped, and the
+// spin tail spilling the period instead of re-reading it from the definition.
 // score 189 (was 189): frame 0x34 versus 0x30; native gear and incoming roles agree;
 // torque/contact homes, flag extraction and spin allocation remain. Shared workspace/in-place spin
 // and original bits 304/257/201/272/216; native short gear on the two legal graphs 187/202.
@@ -2364,20 +2382,22 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	}
 	for (i = 0; i < state->definition->contact_count; i++)
 	{
-		dword flags = state->definition->contacts[i].flags;
+		s_vehicle_contact_definition *contact_definition = &state->definition->contacts[i];
 		s_vehicle_contact *contact = &state->contacts[i];
 		quaternionf rotation;
+		bool turn_left = TEST_FIELD_BIT((contact_definition->flags >> 2) & 1);
+		bool turn_right = TEST_FIELD_BIT((contact_definition->flags >> 3) & 1);
 
 		contact->torque = torque;
 		if (braking)
 		{
 			contact->unknown83 = true;
 		}
-		if (TEST_FIELD_BIT((flags >> 2) & 1))
+		if (turn_left)
 		{
 			vehicle_contact_steer(state, contact, sine, cosine, &rotation);
 		}
-		else if (TEST_FIELD_BIT((flags >> 3) & 1))
+		else if (turn_right)
 		{
 			vehicle_contact_steer(state, contact, 0.0f - sine, cosine, &rotation);
 		}
@@ -2393,11 +2413,11 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	real spin = torque * dt;
 
 	vehicle->unknown360 += spin;
-	vehicle_wheel_spin_wrap(&vehicle->unknown360, *(real *)(definition + 0x20c));
+	vehicle->unknown360 = vehicle_wheel_spin_wrap(vehicle->unknown360, *(real *)(definition + 0x20c));
 	if (!(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit5)))
 	{
 		vehicle->unknown364 += spin;
-		vehicle_wheel_spin_wrap(&vehicle->unknown364, *(real *)(definition + 0x20c));
+		vehicle->unknown364 = vehicle_wheel_spin_wrap(vehicle->unknown364, *(real *)(definition + 0x20c));
 	}
 }
 

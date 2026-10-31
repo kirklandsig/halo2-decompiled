@@ -209,6 +209,15 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // kind/z_type and the count renamed 170 each; a `short` pending index 198; the active owner in a
 // loop-local 170; the pending size sum before the priority test 170. On the cursor form the cursor
 // stepped in the `for` increment 132 (823 B).
+// Round 33 (m3 lane 11), fast with 0x89d20, on the cursor form: `type = 4` after the active chain
+// query 58; `type = 3` after the pending chain query 60; the active cursor stepped in its own
+// statement 61; the active item priority declared before its loop 55; the active size zeroed before
+// its priority 54. Retail keeps type's home last (+0x34) with the cursor, entry and item slots 4 lower.
+// Round 55 (lane 12; a one-file LTCG harness with 0x89d20's file reproduces the build exactly): on the indexed
+// active chain, the pending item locals at the arm scope, the pending counter declared before its `for`, the
+// pending loop as a `while`, the active counter named j, both counters declared before their loops: 170 each
+// (identical code: type keeps EBX, the pending counter spills). Diagnostic only (harness compile; no pragma in
+// src): favour-size for this body 225/242 instructions, aligned 159 (much further from retail).
 // @retail 0x98150
 long c_handle_table_450cd0::v1(long a1, long max_count, void *output)
 {

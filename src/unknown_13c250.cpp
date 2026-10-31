@@ -153,6 +153,9 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // Round 231: complete priority-zero result, long / unsigned / short / enum
 // 176/176/181/176; each with ordinary cardinality 280/280/276/280. Original
 // ranking, inherited count and body restored; receiver reloads and ranking handoff remain.
+// Round 241: three-handle table with separate/gathered slots, word/byte selectors and
+// qualified/plain counts 238/238/238/238/265/265/268/268. Grouped diagnostics restored;
+// original collection, pointer ranking and frame 0xd8 retained.
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {

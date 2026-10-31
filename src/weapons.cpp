@@ -1988,6 +1988,9 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // index leaves the loop rolled (352 bytes). Original body with other-weapon pointer or unit pointer declared
 // first: same code; definition index read in the success block 580 bytes. Retail's pool-in-EBP slots appear
 // only when the pool global is treated as escaped, which changes 732 other functions.
+// Round 241: complementary outcome alone/unsigned tag/first long reserve/other long reserve/
+// both long reserves/tag-first/tag-other/tag-both 212/212/211/183/182/211/183/182.
+// Original body restored; magazine/transfer and pooled receiver homes remain.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
