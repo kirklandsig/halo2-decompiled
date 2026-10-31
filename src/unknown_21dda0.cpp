@@ -179,6 +179,10 @@ long sound_classes_match(long class_a, long class_b)
 // return then the named callback 3; a long result with early returns of it 132 (direct or
 // named callback); the index test moved into the outer condition as `(!source || ...)` gives
 // retail's block order and load timing, but the callback still takes EAX 3 (named or direct).
+// Round 10: index test as a positive outer `if` with the named callback inside 3; the call result in a
+// named match flag 3; `return !g_55e780;` 13; index test with an `else return false` 3; a function-scope
+// long result with the late direct callback 132 (the callback then takes EBP after the index test as in
+// retail, but the result needs a stack slot: one-file LTCG probe).
 // @retail 0x21e0b0
 long sound_voice_matches(s_voice_playing_sound const *sound, s_sound_voice const *voice)
 {

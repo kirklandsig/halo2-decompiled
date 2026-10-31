@@ -466,6 +466,12 @@ void function_3dd10(long object_index, bool force);
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
 // reloaded at the not-found exit) and the 1.0/0.0 load order.
+// Round 102 (lane 7): a one-file LTCG harness (this file plus the HSV and 0x3dd10 files) reproduces 84
+// exactly. First scan as `for (j = 0; j < choice_count; ++j)` 637 (1310 bytes, unrolled); bound read as
+// entry->count 646; through a scan helper writing last/weight/mask through pointers, plain inline 354
+// (called, 952 bytes), __forceinline 637, with entry->count 646; one `j` shared by both loops 637, with
+// the `!=` scan 84; a walking choice pointer 563 (1245 bytes); the mask set through a SET_FLAG macro 637.
+// Real --fast agrees for the `<` scan, shared j, walking pointer, forceinline helper and SET_FLAG forms.
 // Round 54: moving the inverse into the found branch gives retail's 1.0/0.0 load order and the
 // found-path subtraction (132f), but our not-found exit then rejoins the block's 1.0 load instead
 // of reloading it, so the tail sits 8 bytes short of retail's and every later branch target
@@ -696,6 +702,21 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 
+// Round 31 (lane D): score 91 (was 91): unchanged; retail keeps the destination pointer in EBX and
+// the source pointer in its stack slot, while ours keeps the source in EBX and the destination in
+// EDI (which also feeds the 0x131c20 result register), and retail counts the colours with a signed
+// 32-bit division by 24 (magic 0xAAAAAAAB) where our (long) cast gives the cheaper 16-bit-range
+// sequence. Measured this round: the multiply block written green, red, blue with the value first
+// 90 (one point better, not kept), the same block with green and blue exchanged 105 each, the
+// block with the value written after the component 91 each, the destination formed after the count
+// test 99, the source in a separate variable 179, a byte-pointer destination 179, a temporary copy
+// of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
+// destination 148 and a constant source 91; every one restored.
+// score 91 (was 91): unchanged. Retail keeps the destination pointer in EBX and the source pointer
+// only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
+// retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
+// (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
+// instruction sequence does not.
 // score 91 (was 91): retail tests the count against zero before it computes
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the

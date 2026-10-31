@@ -397,9 +397,13 @@ inline real item_real_random_range(real lower, real upper)
 {
 	dword *seed = &g_4e7408->unknown0;
 	*seed = *seed * 0x19660d + 0x3c6ef35f;
-	return lower + (upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f));
+	return ((upper - lower) * ((real)(*seed >> 16) * (1.0f / 65535.0f))) + lower;
 }
 
+// score 2 (was 6): the range helper's product written before the add (the
+// product and the lower bound added, not the lower bound and the product) puts
+// the x87 sequence in retail's order. Left: the last add still comes before the
+// owner's third field load, where retail has it after.
 // score 6 (was 6): the three x87 instructions around the effect call's argument
 // pushes are still one slot early here (the fxch st(1) after the first push 0,
 // the delay spill before the tag-index load and the fstp st(0) before the push
@@ -607,6 +611,9 @@ struct s_item_collision_bsp
 // output initializers, all eight subsets 252 each (1342/1361 bytes, frame 0xa4 versus 0xa0).
 // Original real factor, native outputs and complete body restored; protected plane-index
 // width, plane joins and pending spin-k homes remain.
+// Round 252: Spin/axis/final-output lexical name families in all seven subsets, then all with contact-
+// position naming 211/211/211/211/211/211/211/211. Original complete executable source restored; Protected
+// plane-index width, plane joins and pending spin-k homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1100,6 +1107,9 @@ struct s_item_flags_view_10b850
 // complete contact decisions in those domains 813/813/897/897. Original complete body restored.
 // Round 237: Lexical persistent/contact/motion families 1/2/3/4/5/6/7, then all with earlier constant settled declaration: 813/813/813/813/813/813/813/813.
 // Original executable body restored.
+// Round 252: Native accumulated-vector return with pointer/reference/value accumulator and additive inputs
+// 964/964/1106/964/964/1106/1092/1092. Original complete executable source restored; Frame 0x154 versus
+// 0x12c and Boolean/native workspace homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

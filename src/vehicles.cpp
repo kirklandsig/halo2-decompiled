@@ -2222,7 +2222,7 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 /* the physics of type 0 vehicles (the differential-steered ones): the
    engine drives each side's contacts, the turn trading torque between
    the sides */
-// score 101 (was 115): the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
+// score 101 (was 101): 115 before round 114; the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
 // alignment need LTCG had pushed onto this caller); before that, frame 0x14 against 0x10 (one dead
 // slot below gear_throttle; the four used slots agree but sit 4 higher); zero/scalar residency and
 // spin schedule remain. Kept earlier: live period receiver, native twice-used gear and result-first
@@ -2250,6 +2250,15 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // throttle's minimum in the f1950 call 115; engine_throttle renamed (diagnostic) 115, slots unchanged;
 // `if (gear == NONE) torque = 0; else ...` 138 (retail's arm order and per-path zero, but torque in xmm3 against
 // retail's xmm0, 697 bytes); call arm first 145.
+// Round 117 (fast; aligned 52 for the unchanged body): `if (gear == NONE) torque = 0; else ...` now 127 (zero
+// XMM6, product XMM5 and the negation's fresh zero as retail; torque XMM3), with `-torque`, the field-first
+// product, torque-first sides or `turn * torque_magnitude` 127 each (same code); the turn product written at both
+// uses 98 (aligned 32: every float register as retail; left the NONE arm laid out after `jne` with the zero set in
+// it, the right value copied to XMM0 before its store, and the spin temp stored before the period test), with the
+// NONE-first if/else 127, the call-first ternary 134, the NONE-first ternary 127, call arm first with an else
+// zero 134, magnitude declared first 127, a single-exit spin helper 121, an if/else result spin helper 98, the
+// zero-period exit first 103. Compile-only: every spin shape (local copy, ternary argument, fmodf, float fmod
+// overload, pointer argument, no helper, double local) stores the temp at each definition.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {

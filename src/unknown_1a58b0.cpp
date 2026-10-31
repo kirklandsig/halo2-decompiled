@@ -647,6 +647,8 @@ void function_1a6d80(void)
 // Round 88: call result local with the count stored first 6 (retail's ECX/EDX pointer registers,
 // but the count store comes first); count stored before the call 12; handler index read in the
 // call 26; output pointer locals 6; forceinline output setter 6.
+// Round 55: table entry pointer local 28 (104 bytes); call result local stored in order 6; short
+// handler index 7; handler index read after the table reads 20; count read before the node list 6.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

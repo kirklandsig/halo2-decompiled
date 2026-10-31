@@ -156,6 +156,9 @@ struct s_placement_2bc1
 // its short cast 5; position pointer local for the marker query 5; creation pointer local 5. Diagnostics:
 // without the team call 38 (the copy then uses EDX), without the event 142, without the final
 // call 39: the copy's register follows the allocation of the whole tail.
+// Round 55: early return when no object is created 5; the existing game_engine_get() for the engine
+// test 5; the out-of-line event sender 61 (not inlined); tag index read without the definition
+// local 5; event declared at the top of the marker block, filled in place 32.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {

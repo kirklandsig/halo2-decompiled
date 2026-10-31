@@ -248,6 +248,10 @@ long g_55e6c0;
 // the shifts: 97 as one expression, three statements, height first or a dword width; minus-one
 // multiplies 97 again; plain multiplies with separate subtractions 28 (subtraction folded in);
 // the width term between or before the shift terms 97 (the ORs are reassociated).
+// Round 183 (lane 3, fast): element count stored before the data pointer 41; kind stored after the
+// dimensions 29 (same code); height stored before width with kind first 30; the lock word cleared after
+// the element count 33; the clamp testing the upper bound first 151 (495 bytes). The loop and tail
+// match; the differing call and global lines are positional knock-ons of the folded packing block.
 // Round 93: destination-field accumulator 153; typed resource pointer 167; size macros 29;
 // parameter-address reads 29; unsigned packing dimension copies 29; direct typed Size publication 29;
 // signed packed carrier 29; named height part 29. Original packing restored.
