@@ -1605,10 +1605,17 @@ void __stdcall function_191fab(long definition_index, long value);
 void __stdcall function_1ca260(long actor_index, long player_index, long weapon_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 68 (was 68): request/weapon EBX/EBP homes and getter expansion differ.
+// score 72 (was 68): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
+// Round 23 (72): the six interrupt calls through a shared inline helper 178 (left out of line),
+// forceinline 72; modes declared before the weapon 72; the request cast at each use 72; weapon
+// declared after result and modes 135; weapon from the request before the alias 72; the player
+// value as an if/else 72. Locate-only: both getter calls replaced by an out-of-line call keep the
+// EBX/EBP swap (76), so the swap is not caused by the inlined getter; dead statements or an inline
+// unit getter do not stop the first getter call inlining (72 each). Retail calls the getter twice
+// here and in 0xe7fb0 (964 bytes); 0xccba0 (297) inlines the first, 0xee7f0 (171) both.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -3364,6 +3371,12 @@ struct s_unit_request_seat_animation
 // switch's 0x120001b5 block, ours after the call. All 36 case orders of the two switches 76; the
 // branches in the other order 76 (same code); the query branch setting the mode for one name
 // switch 139; early `return false` exits and a returned call 133.
+// Round 23 (76): `default` first in the mode switch 76, in the query switch 76; the request's mode
+// mapped to the current-action values (1 0x10000229, 2 0x1100022a, 3 0xb0006c4) and one shared
+// action switch 103 (477 bytes: the mode cases thread into the action switch's blocks, as retail
+// does for cases 1 and 2, but case 3's block and the call move to the end and the mode default
+// becomes the dispatch's fallthrough), that with the branches swapped 103 (same code); the request
+// context set after its switch 137.
 // @retail 0xebb40
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 {

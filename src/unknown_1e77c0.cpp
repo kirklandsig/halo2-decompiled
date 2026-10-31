@@ -529,6 +529,14 @@ struct s_request_profile
 // but the record goes through the stack); ticks/state interleaving t,s,s,t,s,t,t,s 100. Harness only: all
 // 70 ticks/state interleavings (best aligned 6, positional 74); the t,s,s,t,t,s,t,s order with seven loop
 // spellings 37-101; a one-store body (state only) unrolls with counter 2 and pointer at element 0.
+// Round 111 (lane 6; compile-only harness with the state global file-static reproduces ours): no loop header
+// (starts -2..6 with <, <=, != or offset tests, 108 forms) or ticks/state interleaving (all 70 for five spellings)
+// gives retail's counter 2 with the pointer on element 1's state and retail's store sequence; the sequence comes only
+// from element 1's ticks ahead of its state, which anchors the pointer on that ticks (+6) or on element 0's state
+// (+0, starts 1 and -1). Two-store bodies never unroll by themselves. Real build: elements i..i+3 from 0 with element
+// 1 state first 79 (542 B, retail counter/pointer/registers, element 1's ticks late); t0 t1 s0 s1.. from 0 91; i-1..i+2
+// from 1 ticks first 82 (540 B, retail registers, pointer +0, displacements 4 off), element 0 state first 91; a
+// per-element reset helper (ticks then state) 136.
 // Round 47 (lane 16, fast with 0x137e40/0x1e7a10/0x1e7a60): one group pointer to elements i-2..i+1
 // 91; each state from the existing 0x1e7a60 `== 3` 110; a dword counter 96 (rebased to 1); a short
 // counter 239 (599 bytes); a pointer local to the transition array before the loop 87 (the prologue
@@ -536,6 +544,11 @@ struct s_request_profile
 // +0xf -> +0x3b, but the IV starts at element 0 with the counter rebased to 3; retail: element 1,
 // counter 2); with that pointer the elements i..i+3 91, i-1..i+2 126, i-3..i 80 (the IV stays at
 // element 0, counter 3, whatever the spelling).
+// Round 133 (fast): an inner `j` loop over each group of four under a `i += 4` outer loop (retail's counter
+// fits a fully unrolled inner loop), `j = i; j < i + 4` / `j = 0; j < 4` 306/323 (both stay rolled, 399/380
+// bytes); all four elements state-first 136 (551 bytes: the IV at element 1's state and retail's EDX/EBX, but
+// counter 3 and each ticks store one element late), with each state from 0x1e7a60 `== 3` 139; the shared
+// local_player_next_inline for the outer loop (the file's next_request_player copies it) 96 (541 bytes).
 // @retail 0x1e73b0
 void function_1e73b0()
 {

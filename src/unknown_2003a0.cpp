@@ -1796,38 +1796,16 @@ extern s_reference g_471004;
 point3f *function_b9dd0(long object_index, point3f *point);
 void __stdcall function_2628f0(long actor_index, s_reference reference);
 
-PRIVATE __forceinline byte *squad_area_get(long palette_index, short area_index)
-{
-    byte *result = NULL;
-    byte *scenario = (byte *)g_4e0350;
-    if (palette_index >= 0 && palette_index < *(long *)(scenario + 0x168))
-    {
-        byte *palette = *(byte **)(scenario + 0x16c) + (word)palette_index * 0x38;
-        if (area_index >= 0 && area_index < *(long *)(palette + 0x30))
-            result = *(byte **)(palette + 0x34) + area_index * 0x88;
-    }
-    return result;
-}
-
-PRIVATE __forceinline void squad_area_consider(byte *squad, byte const *definition, byte *area,
-    short palette_index, short area_index, point3f const *point, real *nearest, s_reference *best)
-{
-    real distance = function_210ac0((s_type_c3b527 const *)(area + 0x24), point);
-    if (*(real *)(area + 0x34) + *(real const *)(definition + 0x50) > distance)
-    {
-        *(short *)(squad + 0x32 + (signed char)squad[0x30] * 4) = palette_index;
-        *(short *)(squad + 0x34 + (signed char)squad[0x30] * 4) = area_index;
-        ++squad[0x30];
-    }
-    else if (distance < *nearest)
-    {
-        *nearest = distance;
-        best->unknown0 = palette_index;
-        best->unknown2 = area_index;
-    }
-}
-
-// score 224 (was 224): main's body (m3 review of lane 10 r33). The r33 form below reached 7 (4 with the
+/* fills the squad's area list around its target unit (a player's unit when the definition sets 0x10):
+   up to ten areas whose reach covers the target, else the nearest one; the two area loops store that
+   pair in opposite orders in retail, so each loop writes out its own test */
+// Matches (was 224), lane 10 round 34: round 33's form with each area loop writing out its own nearest-area test
+// (retail stores the pair area first in loop 1, palette first in loop 2; one shared body follows source order in
+// both). Tried on the way: the shared helper storing area first 8; best through a whole s_reference copy 240;
+// area-first stores with the nearest last 12; nearest between the stores 10/11; loop 1 written out with loop 2
+// through the helper 4 (an earlier x87 add order flips); the helper area-first for loop 1 with loop 2 written out
+// 0; both written out 0 (kept); both written out without the negated table test 3.
+// Earlier (224): main's body (m3 review of lane 10 r33). The r33 form below reached 7 (4 with the
 // ternary negated), but all of it rests on squad_area_consider taking its two indices as `short const &`
 // so the inlined code re-reads entry+4/+6 after the distance call: with plain shorts the same form is 336.
 // Like a volatile read, that reference only steers re-reads, so it is kept only with a byte match.
@@ -1922,13 +1900,12 @@ void function_204450(long definition_index, long squad_index)
     if (definition[0x24] & 0x10)
     {
         long target = NONE;
-        s_record_pool_iterator players;
+        s_data_datum_iterator players;
         players.data = g_4e8c24;
         players.index = NONE;
-        byte *player;
-        while ((player = data_iterator_next_inlined(&players)) != NULL)
+        while (data_datum_iterator_next_inlined(&players))
         {
-            long unit_index = *(long *)(player + 0x2c);
+            long unit_index = *(long *)(players.datum + 0x2c);
             if (unit_index != NONE)
             {
                 function_b9dd0(unit_index, &point);
@@ -1951,12 +1928,29 @@ void function_204450(long definition_index, long squad_index)
         {
             for (short i = 0; i < *(long *)entries && (signed char)squad[0x30] < 10; i++)
             {
-                byte *entry = *(byte **)(definition + (squad[0x60] ? 0x60 : 0x58)) + i * 8;
-                short palette_index = *(short *)(entry + 4);
-                short area_index = *(short *)(entry + 6);
-                byte *area = squad_area_get(palette_index, area_index);
-                if (area)
-                    squad_area_consider(squad, definition, area, palette_index, area_index, &point, &nearest, &best);
+                byte *entry = !squad[0x60] ? *(byte **)(definition + 0x58) + i * 8 : *(byte **)(definition + 0x60) + i * 8;
+                byte *scenario = (byte *)g_4e0350;
+                if (*(short *)(entry + 4) >= 0 && *(short *)(entry + 4) < *(long *)(scenario + 0x168))
+                {
+                    byte *palette = *(byte **)(scenario + 0x16c) + (word)*(short *)(entry + 4) * 0x38;
+                    if (*(short *)(entry + 6) >= 0 && *(short *)(entry + 6) < *(long *)(palette + 0x30))
+                    {
+                        byte *area = *(byte **)(palette + 0x34) + *(short *)(entry + 6) * 0x88;
+                        real distance = function_210ac0((s_type_c3b527 const *)(area + 0x24), &point);
+                        if (*(real *)(area + 0x34) + *(real const *)(definition + 0x50) > distance)
+                        {
+                            *(short *)(squad + 0x32 + (signed char)squad[0x30] * 4) = *(short *)(entry + 4);
+                            *(short *)(squad + 0x34 + (signed char)squad[0x30] * 4) = *(short *)(entry + 6);
+                            ++squad[0x30];
+                        }
+                        else if (distance < nearest)
+                        {
+                            nearest = distance;
+                            best.unknown2 = *(short *)(entry + 6);
+                            best.unknown0 = *(short *)(entry + 4);
+                        }
+                    }
+                }
             }
         }
         else
@@ -1970,11 +1964,23 @@ void function_204450(long definition_index, long squad_index)
                 for (short i = 0; i < *(long *)(palette + 0x30) && (signed char)squad[0x30] < 10; i++)
                 {
                     byte *area = *(byte **)(palette + 0x34) + i * 0x88;
-                    squad_area_consider(squad, definition, area, *(short *)(local_b3aa32 + 0x38), i, &point, &nearest, &best);
+                    real distance = function_210ac0((s_type_c3b527 const *)(area + 0x24), &point);
+                    if (*(real *)(area + 0x34) + *(real const *)(definition + 0x50) > distance)
+                    {
+                        *(short *)(squad + 0x32 + (signed char)squad[0x30] * 4) = *(short *)(local_b3aa32 + 0x38);
+                        *(short *)(squad + 0x34 + (signed char)squad[0x30] * 4) = i;
+                        ++squad[0x30];
+                    }
+                    else if (distance < nearest)
+                    {
+                        nearest = distance;
+                        best.unknown0 = *(short *)(local_b3aa32 + 0x38);
+                        best.unknown2 = i;
+                    }
                 }
             }
         }
-        if (!squad[0x30] && (best.unknown0 != g_471004.unknown0 || best.unknown2 != g_471004.unknown2))
+        if (!squad[0x30] && !REFERENCE_EQUAL(best, g_471004))
         {
             *(s_reference *)(squad + 0x32) = best;
             squad[0x30] = 1;
@@ -1986,13 +1992,14 @@ void function_204450(long definition_index, long squad_index)
         {
             s_reference reference = *(s_reference *)((byte *)actor + 0x418);
             bool valid = false;
-            if ((reference.unknown0 != g_470fa0.unknown0 || reference.unknown2 != g_470fa0.unknown2) &&
+            if (!REFERENCE_EQUAL(reference, g_470fa0) &&
                 !(reference.unknown2 & 0x8000))
             {
+                long entry_index = reference.unknown0;
                 byte *palette = *(byte **)((byte *)g_4e0350 + 0x16c) + (word)reference.unknown2 * 0x38;
-                if (reference.unknown0 >= 0 && reference.unknown0 < *(long *)(palette + 0x28))
+                if (entry_index >= 0 && entry_index < *(long *)(palette + 0x28))
                 {
-                    byte *entry = *(byte **)(palette + 0x2c) + reference.unknown0 * 0x20;
+                    byte *entry = *(byte **)(palette + 0x2c) + entry_index * 0x20;
                     if (entry)
                     {
                         for (short i = 0; i < (signed char)squad[0x30]; i++)

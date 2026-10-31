@@ -289,12 +289,28 @@ short function_239e50(short count, point2f const *points, short *indices);
 // state before the distance 42; the normalizer reading j into a scalar before the length and
 // scaling that scalar 42 (j still folded as `mulss xmm0,[j]`); an explicit `default: break;` 42;
 // the shared header's union vector2f with that j-scalar normalizer 42.
+// Round 132 (an LTCG env link reproduces it): every order of the first/line/state declarations with
+// the scales as written or `*=` j first and the dot taking (normal, point) or (point, normal): 42 each
+// (24 forms); the normalizer scaling through a 2-D scale helper (normalize3d's shape) 42; dividing by
+// the length 42; the length's sum j first 42; the normal built in a local vector and assigned 71.
 // Round 110: a block-local point pointer in case 0 (fast) 42. One-file LTCG harness (aligned 35, positional
 // 42 as the build): normalize2d with the zero length set in an if arm and the scale in its else 42; j read
 // into a scalar after the reciprocal 42; the vector copied into a local first 72 (positional); the
 // reciprocal written at both scales 42; a single result set in the scale arm 42. Matched 0xde080's
 // normalizer keeps `movss xmm4,[v->i]; mulss xmm4,xmm0` (no commute), while ours commutes `v->j * inv`
 // into the reciprocal's register here: retail's reciprocal looks live past both scales.
+// Round 54 (lane 12, fast; compile-only reproduces both the SSE block and the integer allocation):
+// operand order follows which normal component is written by name first. line.n.i written by name with
+// line.n.j and the case-0 dot through a `vector2f *normal = &line.n` gives retail's whole SSE block (1.0 in
+// xmm5, 0 in xmm4, j loaded fresh into xmm2, `mulss xmm1, [p.x]`) 23 (first difference +0xe; not kept: a
+// by-name/pointer mix kept only with a match), also with case 1's dot through `normal` 23; the same with
+// the dot through the helper 44 (304 bytes); every normal access in case 0 through the pointer 39 (301),
+// with case 1 too 66; with a y-first field copy of the first point 44 (310). Left after the SSE block:
+// state/index/point colouring (ours EDX/ESI/ECX, retail ECX/EDX/ESI), which compile-only diagnostics tie to
+// case 1 and to the case-0 point pointer living across `lahf` (without either, retail's ECX/EDX and y-first
+// copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
+// first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
+// case 1's dot by name or through the pointer in either term order.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

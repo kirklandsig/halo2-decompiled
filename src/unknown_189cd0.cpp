@@ -71,6 +71,8 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // Post-playback notification object 118f; two-phase object 118f; full source-result join 118f;
 // result with notification object 118f; positioned-source-first admission 118f; admission with
 // notification 118f; admission with result 118f; all source/object lifetimes 118f (control 118f).
+// Round 55 plain: const spatialization data 21; const slot 21; const class 21; const tag data 21;
+// const class/spatialization 21; const slot/spatialization 21; const slot/class 21; all four 21.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

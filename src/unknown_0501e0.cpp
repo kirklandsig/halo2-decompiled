@@ -162,6 +162,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Independent scale overwrite orders ikj/jik/jki/kij with original ijk captures 244/222/222/244;
 // with live forward coefficient stream 250/241/250/250. Extra frame word and coefficient/result
 // overlap remain; original helper/body restored.
+// T47: Plain weighted-point blend loop on retained separate-offset/depth-limit graph,
+// long/dword/short/word counters: view cursor 222/222/271/271; indexed view output
+// 226/226/271/271. Original complete helper and body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

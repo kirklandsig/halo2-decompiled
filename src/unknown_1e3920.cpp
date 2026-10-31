@@ -626,6 +626,13 @@ real function_267370(long object_index);
 // output pointer 98; a named sample pointer for 0x1e3a00 and the zone test 254; up/left declared at the top
 // of the block 112. The compile-only /FAs model forms retail's -1 web (`or ecx, -1` at the resets, the
 // carrier compared against ECX) but keeps `type` in EDI there, so it does not explain the LTCG sharing.
+// Round 23 (plain checks, 98): retail's two crosses order their product operands differently from
+// each other (first cross: the first three products flipped against ours; second: the last four),
+// while ours compiles both alike. Locate-only: the first cross's global axis through a local pointer
+// 98 (same code). The marker point and zone test in their own block 98; `left` declared before `up`
+// 98; the zone result through a bool local 100; `carrier` declared first in the block 98; the first
+// cross plain (cross3f) with the second staged 114 (1727 bytes); the first staged with the second
+// plain 112.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {

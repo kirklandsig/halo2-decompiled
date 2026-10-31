@@ -528,6 +528,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // pointer in every operator, operand order, helper, free/__stdcall and naming form; with two stack copies
 // the right operand of `<`/`==` runs first. So retail's candidate-first order is not a reorder that only
 // LTCG's readonly knowledge makes.
+// Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
+// (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
+// written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
+// the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
