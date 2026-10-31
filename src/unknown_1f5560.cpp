@@ -920,6 +920,13 @@ real normalize2d(point2f *v);
 // output copies 135 (same code). The compile-only harness gives the result BL, so it cannot screen
 // the LTCG memory-homing; the unmatched trajectory callee (frame 0x28 against 0x30) may feed it.
 // Round 216: Native direction/request/facing declarations at entry, seven subsets 135 each; all with entry result 135. Request scope changes lookup/copy registers, not DL residence; all restored.
+// Round 40 (lane 11, fast): `if (valid == true)` with `return valid;` 138 (cmp bl, 1, but the invalid
+// exit is retail's unfolded `mov al, bl`: VC folds the value only from a test against zero); a copy
+// `bool result = valid;` tested, `return valid;` 135 (copy propagated, folded); the jump publication
+// as a __forceinline helper 135 (same code); the request arm returning its call with the movement
+// test as its own `if` 182 (919 B). Diagnostics, all reverted: the facing normalization removed 358,
+// the retry removed 485, the type scan removed 496; the result stays memory-homed in all three, so its
+// homing does not come from the retry call, the facing calls or the scan.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
