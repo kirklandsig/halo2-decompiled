@@ -427,6 +427,12 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // `(flags & 0x100) ? ...` with the movie flags still from `large` 275; both through the mask, no `large` 269; the
 // retry counter declared after the block pointer 260, before it 260; `!(seconds < 0.1f)` 244 (same code). The x87
 // `fcomp qword`/fnstsw compare and the 1.0f stores stay non-SSE while the file has no /arch:SSE.
+// Round 7 (lane 17, fast, in this file): the retry loop as `do { block = ...; if (!block) { retry or timeout
+// arm } } while (!block);` 315 at 1061 bytes (aligned 109 -> 123); the movie open as an if/else with a call
+// per arm 251 (aligned 120); the format's bits read as `function_1358c0(g_55ece8.format)` 245 at 1100 bytes
+// (aligned 109 -> 96: the call stays out of line as retail's, where `function_1358c0(10)` folds to a table
+// load; lead); that with the sound interface read once into a local 251 (aligned 107), with
+// `dword large = flags & 0x100` 278 (aligned 99).
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

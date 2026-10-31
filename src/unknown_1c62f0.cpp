@@ -77,136 +77,29 @@ void c_animation_channel::clear()
 	unknown0e = NONE;
 }
 
-// score 36 (was 36): incoming graph save and the late graph store still differ. With retail's
-// store order (graph after unknown0d) and the byte-pointer clear the body equals retail except that
-// the animation id is copied through ECX (retail: ESI, while CX holds unknown0e from an early load and
-// a late store), so ESI is never modified and LTCG passes graph straight in ESI (retail: ECX, then
-// push esi; mov esi, ecx); the four matched callers break. Early frame-position store kept (36).
-// store order (graph after unknown0d) and the byte-pointer clear the body equals retail except
-// that the animation id is copied through ECX (retail: ESI, while CX holds unknown0e), so ESI is
-// never modified and LTCG passes graph straight in ESI (retail: ECX, then push esi; mov esi, ecx);
-// the four matched callers break (only their graph argument register differs). Retail hoists the
-// unknown0e load above the graph store, which is what leaves ESI for the id copy; ours hoists the
-// id copy instead (its store moves above the graph and frame stores). Early frame-position store
-// kept (36).
-// Forms: sentinel/word/byte clear chains 41/41/43; two-byte memset 43; stored flags 41; stored-ID
-// result 76; renamed late graph 42; dword/long flags plus early frame 36/37; paired defaults 42;
-// identifier memcpy 36; metadata before resets 42; trailing defaults 41; redundant byte clear
-// removed 36; early derived state 38; explicit state bit 35; defaults plus memcpy 42;
-// validity-result 43; animation guard first 44; inline/noinline declarations 41; existing reset 43;
-// state memset 51; high-bit predicate 41; ID word copies 50; retail store order 51; counter from
-// bit 15 as conditional/ternary 43/43 (retail order 49/51); graph as a by-value class 43 (on the
-// stack); graph store first/after the NONE words 41/41, after the zero words/unknown0d/frame 42
-// each; inline definition in retail order 42, with graph copied to a local 42; nested validity
-// gates 36; separate invalid guards 42; eager validity tests 47; short-pair memset 50 (eager
-// validity and short-pair memset lose the four checked callers); early short metadata 43; early
-// flags word 41; early long metadata 43; named short promotion 36; success result/nested success
-// result 49/49; early invalid guard with early frame 36; role-named inputs 36; late rate/short
-// metadata/both 36/36/36; both with the success result 49; out-of-line member declaration 36/42;
-// immutable input ID 36/42; ID sentinel memset 50/51; direct state bytes 43/51.
-// Round 75: existing clear() then retail-order assignments 51; const graph 51; __fastcall member
-// declaration 51 (LTCG overrides it); retail order with the byte-pointer clear 42; eight orders of
-// the graph/frame/id/rate/unknown0e/unknown10 assignments 42 each.
-// Round 5: `unknown10 |=` the flag bit with plain byte clears 43 (the clear folds away, graph in EDX,
-// five callers lost); retail order with unknown0e before graph 42; `animation_id = c_type_709360()`
-// for the NONE pair, current/retail order 55/59 (the dword store absorbs both word stores); retail
-// order with unknown0e converted to a short local before graph 42 (propagated; retail's movsx
-// still holds CX across the id copy, ours copies the id first).
-// Round 113 (the compile-only /Gd pass loads graph once into ESI for every late-store order, which
-// is what makes it an ESI argument): retail order with the graph parameter cleared when the index
-// is NONE 51 (same code); graph store after unknown16/unknown08 43/40 (graph EDX, flags ECX);
-// after unknown0c/flags 51; frame first with graph late 39; retail order with the byte pair 42
-// (ESI argument, NONE in ECX as retail).
-// Round 95 (one-file harness, LTCG conventions reproduce: retail order passes graph in ESI there
-// too): on retail's order, graph copied to a local first, the parameter set to NONE when the id
-// is NONE, the last flags bits from the stored field, the frame store before graph 51 each in
-// the build (126 bytes, the matched callers lose); the current form with the last flags bits
-// from the stored field 36.
-// Round 30: retail's store order read from its listing (retail's clear()/reset() keep source
-// order) 51 (graph in ESI, five matched callers break); default-constructed id for the two NONE
-// stores 62 (dropped as dead); that order with unknown0e after unknown0d 51; unknown0e after
-// the id copy 36; flags stored next to the derived byte 36. Retail hoists the unknown0e load
-// above the graph store, which is what leaves ESI for the id copy. All restored.
-// Round 118 (one-file harness): all 120 orders of the graph/frame/id/rate/unknown0e stores after
-// unknown0d pass graph in ESI; so do the stores through a forced-inline initializer taking every
-// parameter (its argument copies are propagated) and the id NONE words and/or unknown0c/unknown0d
-// stored through pointers (as reset()/clear() do), which on retail's order give 43 in the build
-// (the matched callers lose). On the current order: the id words through a pointer 36; unknown0c/
-// unknown0d through a char pointer 34; both 34 (two-point gains, pointer locals: not kept).
-// from the stored field 36. Round 118 (one-file harness): all 120 orders of the late
-// graph/frame/id/rate/unknown0e stores pass graph in ESI, as do a forced-inline initializer taking
-// every parameter and pointer stores for the id words.
-// Round 30: retail's store order read from its listing 51 (graph in ESI, five matched callers
-// break); default-constructed id for the two NONE stores 62 (dropped as dead); that order with
-// unknown0e after unknown0d 51; unknown0e after the id copy 36; flags stored next to the derived
-// byte 36. Retail hoists the unknown0e load above the graph store, which is what leaves ESI for
-// the id copy.
-// Round 83: retail order 42 (callers lose); unknown0e stored right after unknown0d 42 (stored at
-// once, ECX free for the id copy); the two NONE id words as one chained assignment, retail
-// order/current 41/36; the two zero words chained 38.
-// Round 85: the byte pair as plain unknown10/unknown11 clears (no pointer) 43 (the four matched callers
-// lose); that with retail's order after an early graph store 43; id before rate before unknown0e 36;
-// frame store after unknown0d 41; frame, id, rate, unknown0e last in retail's order 41.
-// the id copy 36; flags stored next to the derived byte 36.
-// Round 42 (all with graph in ESI and the six matched callers off by 1-68): retail order with
-// unknown0e stored first/before unknown0d 40/42, graph stored last 42, id stored last 44; existing
-// reset() or clear() inlined first, then retail's assignments with or without frame/rate 51 (the
-// unknown10 clear is dropped, flags move to ECX); the graph/frame/id/rate/unknown0e/flag-bit stores
-// in a forced-inline helper taking unknown0e as a short (call-site conversion) 42.
-// Round 85: the byte pair as plain unknown10/unknown11 clears (no pointer) 43 (the four matched callers
-// lose); that with retail's order after an early graph store 43; id before rate before unknown0e 36;
-// frame store after unknown0d 41; frame, id, rate, unknown0e last in retail's order 41.
-// Round 203: identifier memmove early/retail 58/57; native default assignment
-// early/retail 68/68; defaults through copy_from 45/45; complete native
-// replacement assignment/copy_from 75/52. All lose five matched caller controls;
-// original body restored. Saved graph and identifier carriers remain.
-// Round 97 (lane 8, fast with 0x1cb410/0x1086e0/0x10fa80 and the other callers): flags declared before
-// graph (callers load ECX, then EDX, then EAX), definition and all 15 calls, 36 (same code); that with
-// retail's store order 42 (graph still an ESI argument; 0x1cb410 14, 0x1086e0 2); retail's order with
-// a dword flags parameter 42; with an early `return false` guard 42; that with unknown0e stored before
-// graph 42. In every retail-order form ours stores the id before graph (the id load takes ECX), so ESI
-// holds only graph and becomes its argument register; retail reuses ESI for the id after the graph store.
-// Round 32 (lane 11, fast with the six matched callers; retail's callers load ECX first, then EDX,
-// then EAX, but the matched callers already do so with this declaration, so no reorder was tried):
-// `long const` graph parameter 36 (same code); single-exit result 49 (127 bytes, callers lose); the
-// id copied right after the NONE pair 41; unknown0e stored before graph 43; rate stored before the
-// frame 42. Diagnostic only: size-preference pragma 56 (120 bytes).
-// Round 7 (m3 lane 18, fast with the six matched callers): retail's order with the id copied through
-// its parameter's address (`c_type_709360 const *id = &animation_id;`, so stores through this might
-// alias it) 42 (the id load is still hoisted above the graph store into ECX; graph an ESI argument;
-// 0x1086e0/0x1087c0 2, 0x10fa80 1, 0x10ec00 53, 0x1cb410 14); that with unknown0e stored after the
-// id 42; the current order with the id through its address 36 (same code); retail's order with the two
-// validity tests as nested ifs 42; that with the byte pair cleared by one chained assignment 51 (126 bytes).
-// Round 113 (lane 6, fast with the ten callers): retail's order with graph read once through its own
-// address at the late store 39 (graph becomes a stack argument, flags ECX, ret 0x18); flags declared before
-// graph with retail's order (diagnostic) 51 (graph still ESI); graph stored first, the rest in retail's order
-// 43 (callers lose); retail's order with `if (flags & 0x8000) unknown10 = 2;` 49 (128 bytes: keeps the clear
-// but also the branch, graph ESI); the current form with `(flags & 0x8000) ? 2 : 0` 36 (same code). The /Gd
-// compile-only first pass loads graph into ESI for retail's order whether `this` is a thiscall ECX or a
-// stack argument, and with an external call after the guard puts `this` in ESI and graph in EDI.
 // @retail 0x1c6470
 bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e)
 {
 	if (graph_tag_index != NONE && animation_id.index != NONE)
 	{
-		this->frame_position = 0.0f;
+		short *local_0 = (short *)&this->animation_id;
+		local_0[0] = NONE;
+		local_0[1] = NONE;
+		byte *local_1 = &this->unknown10;
+		local_1[0] = 0;
+		local_1[1] = 0;
 		this->graph_tag_index = graph_tag_index;
-		this->animation_id.graph_index = NONE;
-		this->animation_id.index = NONE;
-		this->unknown10 = 0;
-		byte *local_0 = &this->unknown10;
-		local_0[0] = 0;
-		local_0[1] = 0;
+		this->animation_id = animation_id;
 		this->unknown14 = 0;
 		this->unknown16 = 0;
 		this->unknown08 = unknown08;
 		this->unknown0c = unknown0c;
 		this->flags = flags;
 		this->unknown0d = unknown0d;
-		this->unknown0e = unknown0e;
+		this->frame_position = 0.0f;
 		this->rate = 1.0f;
-		this->animation_id = animation_id;
+		this->unknown0e = unknown0e;
 		this->unknown10 = (flags >> 14) & 2;
 		return true;
 	}

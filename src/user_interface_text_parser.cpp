@@ -517,6 +517,13 @@ done:
 // break` and the translator under `if (name_id != NONE)` 54; the four parse buffers as one two-dimensional
 // array (sym+offset constants) 54. Retail's translator takes the name in EDI (its matched body), so EDI's
 // late push is the call's argument register; the EBX hoist is the only thing the natural form lacks.
+// Round 181 (lane 3): a compile-only /O1 screen hoists 0x55c6e4 into a callee-saved register in all
+// six exit shapes tried (natural, copy on both paths, early null return, default copy and return,
+// both exits, per-case translator), so no exit shape removes it. Real build: the natural form 54
+// (173 bytes, every row aligned but the EBX hoist and the late tag load); an early copy-and-return
+// for a missing definition on the current form 77 (194 bytes); the default case copying and
+// returning 32 (same count); the natural form with the tag read before the variant call 57 (171
+// bytes) and just before the translator 45 (171 bytes).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

@@ -708,6 +708,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // 55; the player index declared at the function top 55; an explicit `continue` arm 55. Diagnostics: the
 // summary as a constant NULL gives the session EBX (129 overall); the summary's address
 // taken keeps ESI (55, same code), so the two summary field reads, not its stack home, tip the session.
+// Round 30 (lane 13, fast): the call's variant address and 0x49c8 value both named before the player
+// loop 130 (493 bytes): the session moves to EBX with retail's index ESI and player EDI, but the value
+// takes a stack slot (frame 0xec0); both named after the summary getter 71, before the member count
+// read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
+// test); the value alone before the loop 137; the variant alone before the member count 52. Named
+// copies inside the loop or a `long const *` to the value are propagated back (session ESI).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
