@@ -394,6 +394,10 @@ extern "C" void _ReadWriteBarrier(void);
 // missing. All callback values and original body restored.
 // DL209: Absolute-index scan/element API pairs 318/278/318/278/201/167; salted-handle APIs 174/185;
 // single condition-step scan/element pairs 203/180/203/180. All restored.
+// Round 250: Ordinary shared traversal with remaining-tick/control receiver subsets on three/four-
+// field iterators 151/152/151/151/152/151; complete receivers with positive callback completion
+// 166/166. Four-field frame 0x10 still lacks the second pool home. All matched controls survive;
+// original body, include and private helpers restored.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
