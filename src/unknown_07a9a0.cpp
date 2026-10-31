@@ -212,6 +212,19 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
+// score 11 (was 39): the pool is read out of the global into two locals, the index is only
+// assigned when a record is found and the datum's index is taken from the other local; retail's
+// two pool registers, the found path after the exit, the immediate tail stores and the scan
+// loop's padding now match byte for byte. Still differs inside the found block: retail keeps the
+// record size in ecx and the record data in esi and leaves a dead `add ecx, esi` behind the
+// load, ours keeps the size in edx and the data in ecx and pads the block with two int3 bytes.
+// score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
+// which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
+// layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
+// through the iterator's own pool field and reads the datum through a copy of it gives the same 58
+// (the copy folds into the iterator's field), the same when the step is left for LTCG to inline, and
+// 64 when the iterator's pool is kept live across the loop; the plain form with two pool locals
+// spills the copy to the stack (65).
 // score 39 (was 39): the scan uses the pool's own index search and datum index, so it keeps
 // retail's do-while shape and the hoisted count and bitmap; retail keeps the pool in two registers
 // (ebx for the scan, a hoisted `mov ebp, ebx` copy for the datum), lays the found path out after
@@ -305,11 +318,14 @@ void function_07b430(void)
 {
 	if (g_4cf8d4)
 	{
-		s_record_pool *pool = g_4cf8d8;
 		long index = NONE;
+		s_record_pool *pool = g_4cf8d8;
+		s_record_pool *scan = g_4cf8d8;
+		long next_index;
 
-		while ((index = data_find_index(pool, index + 1)) != NONE)
+		while ((next_index = data_find_index(scan, index + 1)) != NONE)
 		{
+			index = next_index;
 			qos_release(data_datum_index(pool, index));
 		}
 		g_4cf8d8->valid = 0;
