@@ -316,6 +316,10 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // caller 158, but the index is loaded into BX and re-extended per case, so format 4 forms a pointer again); as
 // `dword` 175; the decode written as a macro (no parameter temporaries) 175; the index read once through its own
 // address into a local used by every case 175; the bounds as three lo/hi pairs 175.
+// Round 43 (lane 10), format 4 indexed through `vertices` (175, flipped): case 4 written before case 3
+// 170 (620 bytes, still flipped: node EBX, switch temp/bases EDI, source on the stack); with format 3
+// indexed too 170; with format 2 indexed too 170; case 4 written first of all 175; the index parameter
+// renamed (vertex_index) 175. Format 3 indexed alone 60 again (gain under 3, not kept).
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)
