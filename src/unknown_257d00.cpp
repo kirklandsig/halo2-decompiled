@@ -1698,6 +1698,8 @@ void function_b7360(long object_index);
 // Empty-success leaf group before outer cases 0/4/7/8/10/5/9/13: 471 each, 1808/1848 bytes.
 // All eight have the original masked instruction prefix through the first table; full original case order, return graph and callback restored.
 // Round 322: Coupled movement-query publication with positive/negative success-or-fallback admission, bool/byte/short/long: 539/531/533/534 each. Original stores, returns, dispatch and body restored; entry actor/output carriers and length deficit remain.
+// Typed-array actor/command/both acquisitions, original/early actor-object observation, then both acquisition
+// orders: 471/471/471/470/470/470/477/478. Original complete executable source restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2163,6 +2165,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 238: complementary dispatch-ready/same-unit/facing-incomplete decisions, seven
 // subsets 491/491/491/493/493/493/493; all as long 583 (fast control 491; full 478).
 // Original internal decisions, byte completion, iterator and every vector/call restored.
+// Complete actor-object/motion/position observations, seven subsets and case-owned position with both other
+// values: 629/624/645/617/637/667/674/653. Original complete executable source restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

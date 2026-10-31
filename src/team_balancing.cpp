@@ -563,6 +563,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // (496 bytes). Harness only: the spread queries through an inline forwarding member 9 aligned (unchanged order),
 // an inline (candidate, reference) value comparison helper unchanged, a volatile address of the reference or of a
 // candidate pointer (diagnostic) still reference first: no form evaluated the candidate's count_spread first.
+// Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
+// 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
+// condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
+// clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
