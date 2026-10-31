@@ -990,6 +990,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
+// MiniMax C (10-31): flag OR through playing->loop 13 again (mixed access; not kept).
 // score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
 // byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
 // Earlier: Float/result/random spill homes and initialization scheduling differ.
