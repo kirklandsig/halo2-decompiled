@@ -1868,6 +1868,9 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
 // failure (`eligible = false`) is the group's last statement, so it reaches the
 // shared tail like retail's instead of keeping a private block; the 0x39d test
 // is `!(object[0x39d] > 0)`, which gives retail's `ja`.
+// MiniMax I (10-31) review: the run's 453 -> 419 (fast) came from the `blocked` flag alone, a one-use
+// local (kept only with a match): the same changes with the 0x40 test as an if/else (`eligible = false`
+// in the if) 453, the flag's condition inlined into `if (!(...))` 650. The body stays as it was.
 // score 277 (was 277): 2265 bytes against 2243. The 0x40 test's failure keeps
 // its own `reload definition; eligible = false; jmp` block where retail jumps
 // into the shared `eligible = false; reload` tail (and its no-actor path into
@@ -1968,7 +1971,7 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
         }
         if ((bool)((*(dword *)(object + 0x134) >> 3) & 1))
             eligible = false;
-        if ((object[0xaa] || !(object[0x39d] > 0)) && eligible &&
+        if ((object[0xaa] || !object[0x39d]) && eligible &&
             (previous_index == NONE || function_114440(object_index) !=
              *(long *)(g_4f9398->data + (previous_index & 0xffff) * 0x54 + 0x4c)))
         {
@@ -2052,10 +2055,11 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
             if (eligible)
             {
                 word flags = *(word const *)(request + 0xa);
-                bool blocked = (flags & 0x40) && (!actor ||
+                if ((flags & 0x40) && (!actor ||
                     (actor_behavior_find_level(*(long *)(object + 0x12c), 0x22) == NONE &&
-                     actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE));
-                if (!blocked)
+                     actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE)))
+                    eligible = false;
+                else
                 {
                     if (flags & 0x80)
                     {
@@ -2071,28 +2075,22 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
                     if (eligible && (flags & 0x100))
                     {
                         eligible = false;
-                        if (source)
+                        if (source && *(long *)(source + 0x13c) != NONE)
                         {
-                            long source_player_index = *(long *)(source + 0x13c);
-                            if (source_player_index != NONE)
+                            if (*(short *)(object + 0x138) == 1)
+                                eligible = true;
+                            else if (!audio_team_is_hostile(*(short *)(object + 0x138)))
                             {
-                                if (*(short *)(object + 0x138) == 1)
-                                    eligible = true;
-                                else if (!audio_team_is_hostile(*(short *)(object + 0x138)))
+                                byte *player = g_4e8c24->data + (*(long *)(source + 0x13c) & 0xffff) * 0x21c;
+                                switch (*(short *)(object + 0x138))
                                 {
-                                    byte *player = g_4e8c24->data + (source_player_index & 0xffff) * 0x21c;
-                                    switch (*(short *)(object + 0x138))
-                                    {
-                                    case 2: eligible = player[0x88] == 0; break;
-                                    case 3: case 7: eligible = player[0x88] == 1; break;
-                                    }
+                                case 2: eligible = player[0x88] == 0; break;
+                                case 3: case 7: eligible = player[0x88] == 1; break;
                                 }
                             }
                         }
                     }
                 }
-                else
-                    eligible = false;
             }
             if (eligible)
             {
