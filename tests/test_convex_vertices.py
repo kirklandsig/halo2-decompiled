@@ -22,7 +22,7 @@ def test_convex_block_queries(solver_images, precision, alias, va, name):
     entries = {s.va for s in symbols.find(name)}
     assert len(entries) == 1
     masks, selected_lanes, counts = set(), set(), set()
-    for seed in range(128):
+    for seed in range(192):
         rng = random.Random(seed)
         data = bytearray(b'\xcd' * 65536)
 
@@ -33,6 +33,15 @@ def test_convex_block_queries(solver_images, precision, alias, va, name):
         put(OBJECT + 0x30, 'Ii', BLOCKS, block_count)
         for block in range(8):
             for coordinate in range(3):
+                if seed >= 128:
+                    # Integer transfers must preserve signaling-NaN payloads,
+                    # subnormals and signed zero, including when output aliases
+                    # coordinates consumed by a later unrolled iteration.
+                    bits = [0, 0x80000000, 1, 0x807fffff, 0x7f800001,
+                            0xff800123, 0x7fc12345, 0xffc54321]
+                    put(BLOCKS + block * 48 + coordinate * 16, '4I',
+                        *(rng.choice(bits) for _ in range(4)))
+                    continue
                 values = [rng.uniform(-10, 10) for _ in range(4)]
                 if seed < 16:
                     values = [0.0] * 4
@@ -50,6 +59,8 @@ def test_convex_block_queries(solver_images, precision, alias, va, name):
             direction[seed % 3] = float('nan')
         put(DIRECTION, '4f', *direction)
         count = [-3, 0, 1, 2, 3, 4, 5, 7, 8, 9, 12, 15][seed % 12]
+        if seed >= 128:
+            count = [16, 17, 19, 20, 21, 23, 24, 31][seed % 8]
         counts.add(count)
         for ordinal in range(max(0, count)):
             put(INDICES + ordinal * 2, 'H', rng.randrange(32))

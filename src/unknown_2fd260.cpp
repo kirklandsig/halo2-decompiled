@@ -22,7 +22,7 @@ public:
 
 	// a vertex by index, with its index in the fourth term tagged with the
 	// bits of 0.5
-	void fetch_vertex(int index, __m128 *vertex) const
+	void fetch_vertex(int index, __m128 *const &vertex) const
 	{
 		vertex_block_2fd260 const *block = &blocks[index >> 2];
 		int const lane = index & 3;
@@ -145,7 +145,8 @@ void convex_vertices_2fd260::function_2fd260(__m128 const *direction, __m128 *su
 }
 
 // the vertices for a list of indices
-// The second unrolled z store and saved receiver reload remain exchanged.
+// Keep the destination pointer bound through the inline helper; this preserves
+// the coordinate-store and receiver-reload order in the unrolled loop.
 // @retail 0x2fd430
 void convex_vertices_2fd260::function_2fd430(unsigned short const *indices, int count, __m128 *vertices) const
 {
