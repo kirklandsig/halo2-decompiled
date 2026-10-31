@@ -386,6 +386,10 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // `if (!append) break;` 51 (662 bytes: setne/test now, but bool CL, count EAX, list EDX against
 // retail's AL/ESI/ECX); the same over a count local stored `count + 1` 51; diagnostics with the room
 // flag tested again after the copy, written out or from an inline room helper, 51/51 (same registers).
+// Round 114 (lane 6): the append helper taking the count by value 33; a bool helper handing the entry
+// out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
+// caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
+// copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
