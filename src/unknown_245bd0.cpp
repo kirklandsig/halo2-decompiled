@@ -304,6 +304,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // Round 32 (lane 11, fast with 0x19cb90/0x2461a0): the matching form's two keepable halves together (the
 // dot's inputs swapped and the unit-z zeros stored separately) 61; with the sum grouped j + (i + k) 61, flat
 // i, k, j 61, as i, k, j statements 61; flat i, k, j with the existing vector3f_scale 61.
+// Round 113 (lane 6, fast; all with the dot's inputs swapped and the unit-z zeros stored separately): the
+// sum as statements x, z, y 61, as `j + (i + k)` 61, as dot3f(&d, &d) 152, as length_sq3f(&d) 152, as
+// statements j, i, k 61. Diagnostics (not keepable): length_sq3f(&d) plus any otherwise unused direct read
+// of d.j, before or after the sum, 4 (only the sum's x/z order differs: z first); the same with dot3f or the
+// reverse dot 4; a direct read of d.i instead 21; direct reads of d.j and d.k 164 (670 bytes). So the y
+// product is a copy of the scale exactly when d.j is read directly somewhere before the normalization while
+// i and k are read only through the vector's address (helpers or a pointer), as the listed pointer form.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

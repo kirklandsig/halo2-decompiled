@@ -272,6 +272,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // with separate/reused offset storage: 299/299/297/297/299/299/297/297.
 // Normalizing before plane publication recovers frame 0x90 but grows to 1039/1001 bytes;
 // origin retention, ray loads and plane homes still differ. All original source restored.
+// Round 454: Existing scaled-add hit-point producer 196, with native normal publication 275;
+// entry hit-point storage 196/275. Existing scale/add producers 202/272, with entry point
+// storage 202/272. All frames remain 0x84; original point products, normal stores and body restored.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

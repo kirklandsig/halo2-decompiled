@@ -568,6 +568,10 @@ void function_1537f0(s_profile_record *record);
 // Round 106: identity value-initialized 67; that without the tail clear and sentinel 78 (238 bytes); identity
 // declared and zeroed after the entry pointer 67; no tail clear with the links and flags stored before the
 // 0x7f8b0 call 81; the entry pointer passed as the view 67.
+// Round 6 (lane 17): identity zeroed once before the loop 83 (280 bytes); view built in a local view and
+// copied into the entry 128 (311 bytes); without the tail clear and sentinel: links as four statements in
+// retail's store order 78, identity zeroed after the entry pointer 78, identity zeroed once before the
+// loop 81 (244 bytes). Original body restored.
 // Round 111: flags and timestamp as two plain stores 73 (273 bytes); identity declared and zeroed right before
 // the entry pointer 67; the link stores as four statements in retail's order 67; the identity as the XDK XUID
 // type 67; the entry pointer as `g_4cf98c + i` 67. An LTCG harness copy of round 34's two-member local object
@@ -959,6 +963,11 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // Round 106: round 149's plain entry rebuilt 71 (aligned 39); it without the flag initialization (each arm sets
 // the direction) 390; time stored through the dword member 66; time read through a zeroed FILETIME 66; the NONE
 // link stores as `(short)NONE` 66; g_4cf97c named once for the next_other store 66.
+// Round 6 (lane 17): round 149's plain-entry form rebuilt 71 (upper coalesced with the count in EAX);
+// on it the `<` arm first with `>` as its else-if 336, bounds initialized to position 71; the hour
+// stamp through an inline helper 66 (71 on the plain-entry form); the shift block as a forceinline
+// helper taking (lower, upper, downward) 66 (71); flags cleared before the link stores 157 (1167
+// bytes); the zeroed time local declared before the entry pointer 70 (75). Original body restored.
 // Round 111: the four head repairs on the globals directly (no named copies) 49 kept: the link stores, the
 // g_4cf988 load and the time and identity-copy registers then match. On it: round 149's plain entry with
 // `removed > position` bounds, an explicit `>` arm and the count path upper first clearing the flag 54 (only

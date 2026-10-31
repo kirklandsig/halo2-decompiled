@@ -358,6 +358,12 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // at the not-ready exit 282 (1069 bytes); the state as `(s_slot_23 *)slot` 172 (same code). Retail
 // still keeps the scaled actor index in ESI from entry and reloads `slot` into EBX late; ours keeps
 // `slot` in ESI from the 0x1e4be0 call and spills the index.
+// Round 25 (fast): the state read from `slot` at every use 172 (CSE'd, same code); `view` renamed
+// `fields`, `node` renamed `prop`, `character` renamed `traits` 172 each (same code: names don't move
+// the node/view or index/character slots); prop index tested through actor_get before the actor
+// pointer 272; has_markers cleared before its test re-measured 273 (aligned 130 vs 133). Retail's
+// early state stores go through the `&state->unknown11` temporary ([eax - 2]), so its `slot` is not
+// live across the middle. Opening body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

@@ -520,6 +520,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Round 46: one vertices base for the case 1/6 corners 280; writable start-out parameter 279;
 // reversed entry declarations 278; case 5 fallback first 278; shared function-scope position 278.
 // Diagnostics: no actor in case 2 326, extra actor tests 360, actor declared first 278 (no entry load).
+// Round 6 (lane 17): the actor test as a function-scope bool used in case 5 364 (1292 bytes; aligned
+// 200 -> 139: retail's `push ebx; mov ebx, eax` entry and the actor loaded at entry, but compared there
+// with setne where retail keeps the value in EAX and compares in case 5); that bool at the top of case 5
+// 278; a short type local for the switch 280; `(long)` switch operand 278; const surface pointer 278.
 // Round 448: Call-site interpolation constructors (t01-t08) rejected as helper expansion;
 // existing shared helper constructor with native origin/direction/output capture
 // (t09-t16) 268/368/362/389/372/385/383/396/268/436/436/436/416/436/436/436.

@@ -3895,8 +3895,8 @@ void function_147af1(long first, long second, c_render_window *window);
 struct s_2f800_view;
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 
-// score 34 (was 34): two store orders and the tail differ. The counter g_4ba038 is stored
-// after the kind byte, and the g_4ba010 clear sinks past the camera copy; both land where
+// score 8 (was 34): two store orders differ (the tail and 0x13680's call now agree). The counter
+// g_4ba038 is stored after the kind byte, and the g_4ba010 clear sinks past the camera copy; both land where
 // retail puts them once g_4ba038 and g_4ba010 are address-taken (diagnostic only, 26), so
 // retail keeps them in an address-taken struct (0x4ba074 is the only immediate retail takes
 // in 0x4ba000-0x4ba07f) whose members are defined in other lanes' files. The tail pushes the
@@ -3955,6 +3955,11 @@ void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 // named source local 153; the flag passed from the frame's copy 34; native mode-word/auxiliary-
 // word/final-byte parameter widths 34 (auxiliary-word forms lose caller 0x2b790); the whole camera
 // struct as the copy destination 34; the frame-records field as the first copy's destination 34.
+// Round 26 (lane 14, fast; g_4ba010 sits right after g_view_context_storage and both are defined
+// in src/unknown_02c560.cpp, so the address-taken block can't be declared here: BLOCKED-BY the
+// storage definitions there): the camera default moved down to the frame copy 113 (loses 0x2b790);
+// counter as `g_4ba038 = g_4ba038 + 1` 8; the first copy into frame_records with its sizeof 8; flag
+// clear after the three render calls 23; the view copy before the scalar stores 80 (loses 0x2b790).
 // @retail 0x2ba10
 void function_2ba10(s_2f970_view const *view, long cluster, long player,
     byte const *camera, bool enabled, long leaf, bool invalid, vector3f const *sky_color,
