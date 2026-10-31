@@ -409,6 +409,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // EBP caches the last argument); object read as a raw byte offset from the pool data 77 (folded back
 // into the shared header address); the in/out mask parameter's own address instead of the local copy
 // 87 (152 bytes; the copy is retail's).
+// Round 17 (m3 lane 2, fast): the entity store moved into the arms (index in the unflagged arm,
+// NONE in the flagged arm and on the NONE path) with a bool/long result 78/96 (188/203 bytes);
+// bool result with one `index != NONE && !flagged` test and the clear in its else 77; a header
+// pointer local after the store, flagged arm first 75; bool result with the clear-in-test then
+// memory retest 53 (177 bytes); a validity bool cleared in the flagged arm and retested 73.
+// Compile-only screens: word/short/dword index casts, pointer arithmetic or byte offsets for the
+// test or the object read all keep one data load; only the memory retest splits it (and then also
+// reloads the table global, which retail keeps in EDX).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

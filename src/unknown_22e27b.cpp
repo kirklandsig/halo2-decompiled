@@ -245,6 +245,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 105: the post-loop block is rotated the same way (retail zero EAX, next ECX, current EDX,
 // direction EDI). Per-pass direction local 96; current-frame local 98; both 98; direction-first
 // lookahead sum 96; direction-first sums in both places 96 (identical code).
+// Round 17 (m3 lane 2, fast): an animation-state pointer for every member read 96 (identical
+// code); the same pointer only in the active branch 228 (661 bytes); `next_time <= time` 100; the
+// boundary disposal as `if (flag && type == 0) { dispose = true; break; }` 96; the flag-3 test as
+// `== 0` 96; 1-8 unused initialised locals at the top (diagnostic: symbol numbering) 96 each, so
+// the rotation is not a numbering tie.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
