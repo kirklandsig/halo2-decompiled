@@ -1852,6 +1852,12 @@ struct s_summary_player_sort_entry
 // lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
 // member-index homes and the saved registers differ.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
+// 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
+// current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
+// three extra homes match 0x5a680 inlined with (NULL, &index) and its membership result kept; round 5
+// found the full build calls it from this /Ob1 file and a local inline copy would be a twin, so the function
+// stays BLOCKED-BY 0x5a680 as well as by the cmovne (/arch:SSE) noted below.
 // Earlier: Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers differ.
 // Round 216: complete state-field observations 378; with native membership/player/selected-member
 // references 378/378/377; membership-player/membership-member/player-member 378/377/377;

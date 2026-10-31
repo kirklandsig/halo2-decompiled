@@ -1359,6 +1359,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // 6); flag first with the step in the for statement 111 (channels in EBP, 0x54990 1; flag still BL);
 // a named per-channel size in the arm 94; nested initialized/have-player tests 94; `2 + (flag ? 13 :
 // 11) * value` 94; a countdown counter `remaining = 16 .. > 0` 94 (all four the same code).
+// Round 10 (lane 17): flag, total, cursor 111 (0x54990 1; channels moves to EBP but the flag still takes BL, so
+// channels being live at the flag's definition is not what keeps retail's flag in AL); the flag declared at
+// function entry and assigned in place 94; the getter result named before the compare 94; total, flag, cursor 108
+// (0x54990 1); cursor, flag, total 99 (350 bytes); the cursor `s_voice_channel const *` 94 (same code).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {

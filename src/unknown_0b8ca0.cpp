@@ -228,6 +228,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // build the data stays in eax for every lookup spelling, even with the update tail deleted.
 // Round 55: no noinline 4; inline target 4; inline activation/update/list-update declarations 4/4/4;
 // component reference 4; const object and type 4; explicitly masked getter index 4.
+// Round 31: the pool data read into a component-array local before indexing 4; `if (disable) goto
+// update;` ahead of the activation 4; the address written index-first, `index * size + data` (diagnostic,
+// identical code, so the evaluation order of the lookup is not the cause) 4; the type read from the
+// header at each of its three uses 61; the component index re-read through OBJECT_GET 55. Matched
+// 0x11bce0 makes the same lookup with the data loaded after the index scaling, as ours does here.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {

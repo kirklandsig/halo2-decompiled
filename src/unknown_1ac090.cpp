@@ -930,6 +930,11 @@ struct s_1ac612
 // 0x26f8f0 helper (retail inlines it here; its /Ob1 file keeps it out of line even with an inline or
 // __forceinline declaration) 206/206/206; best-index renames (best_index, winner, zz_index) 29;
 // forward product in the helper's operand order 137; up product after the forward test 29, both 137.
+// Round 41 (lane 10): the closing cleanup is the body of the existing 0x26def0 with a NONE owner
+// (retail calls 0x26def0 out of line at 0x1ac270/0x1ad400 but has this body in line here); the call
+// itself stays out of line 301 (918 bytes); the body as a file-local forceinline helper 29, as a
+// plain inline helper 29; through actor_datum_get with the location-record field names 29; best
+// index at function scope with the selection block after the first one 273 (984 bytes).
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)

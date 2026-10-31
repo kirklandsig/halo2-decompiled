@@ -157,6 +157,9 @@ bool g_47f05b;
 // Round 22 (m3 lane 2, fast with 0x146b80/0x22c3e0 matched): `_ReadWriteBarrier()` after the three global stores 41,
 // the same with g_479888 at both placements 41 (144 bytes); `g_4798b4++` before the constructions 48 (137 bytes); the
 // size-only constructor 35, with the barrier after / before the global stores 41/34.
+// Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
+// buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
+// named const 34 (same code); the pool address named after the first construction 34 (same code).
 // @retail 0x146a20
 void function_146a20(void)
 {

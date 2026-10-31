@@ -245,6 +245,21 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// score 645 (was 645), coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
+// locals (the 0x44 setting read early, the 0x11cd20 result held until after the side test), kept only with a match;
+// without them the sum splits and store reorders below score 643 (fast), under the 8-point bar. Its tried forms:
+// score 268 (was 271): the left vector is built before the forward copy, so the three stores
+// land where retail puts them; left: the second normalize's j product keeps the other operand
+// order, the avoidance vector and the left vector still swap their 12-byte slots, the 0x5d0
+// flag store, the steering block's sums and the local_16 dot's x87 order differ.
+// score 271 (was 291): the distance from the side test is held in a local and written into the
+// struct after the test, so its value stays in a register across the test; left: the left vector
+// and the avoidance vector still swap their 12-byte slots, the steering block's sums, the local_16
+// dot's x87 order, the 0x5d0 flag store and the second normalize's j product differ.
+// score 291 (was 300): the settings word at local_2+0x44 is read before the local_16 branch, as
+// retail does (it keeps it in xmm1 across the branch); left: the left vector and the avoidance
+// vector still swap their 12-byte slots, the steering block's sums, the local_16 dot's x87 order,
+// the 0x5d0 flag store and the second normalize's j product differ.
 // score 300 (was 300): the actor flag updates are the existing setters 0x1e4290 (clear 0x800)
 // and 0x1e4260 (set 2), which retail inlines here (they are `inline` at their definitions), and the
 // side test reads the left vector, which is initialised from local_8 as sibling 0x29a190 writes it
