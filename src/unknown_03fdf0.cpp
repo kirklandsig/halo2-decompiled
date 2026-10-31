@@ -313,6 +313,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
 // from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
 // copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
+// Round 21 (m3 lane 2, fast), indexed form with `long count = field;` for the copy size and advance and the guard and
+// loop still on the field: retail's count handling exactly (short load to AX, `cmp ax, <zero>`, `movsx eax, ax` in
+// place), but the index takes ECX and the zero EDX, so first keeps EDX across the copy and entries is spilled: 140
+// (495); the count declared after `current = first` 166; before the clears 139 (508 bytes, frame 0x4c, zero ESI);
+// entries then count first in the block 140; copy source as the field address, entries after the advance 155; the
+// copy as `sizeof * count` into `&g_4ba138[first]` 140; through the metadata view 140.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
