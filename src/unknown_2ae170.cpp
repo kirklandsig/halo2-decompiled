@@ -1046,6 +1046,7 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 // level declared first 227; whole-file float-consistency pragma diagnostic 224 (all fast). Lead:
 // retail's level in EBP bounced through a stack temp before each addss, the offset and send level
 // copied as integers into homes, and the store-reload pushes are /Op code generation (see 0x2aefe0).
+// Round 216: Direct normalized route bit in word/short/byte/dword carriers 236/236/242/241; raw bit mask carriers 237/237/253/248. All restored; frame, mode/input-level homes and x87 tail remain.
 // @retail 0x2af450
 void c_sound_effects::add_effect_sends_split(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
