@@ -296,6 +296,10 @@ struct s_z_state_world
 // edx swapped (world and database in ecx), 18 in every spelling: state local, identifier declared
 // first, object local, database and index locals, state-test helper, unsigned identifier, entity
 // table types; database read from the global in the state block 11 (sunk past the test).
+// Round 60: the records inside a nested table struct at 0x2098 11; the record by pointer addition
+// 11; the active test and the dispatch joined in one condition 13; an object pointer local for the
+// identifier read 11; the size and data read into named locals before the dispatch 35 (the callers'
+// convention flips: 0xa9640, 0xa96d0, 0xa9770, 0xa98b0, 0xa9940 and 0xa9570 lose their match).
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -330,7 +334,7 @@ bool function_a9820(long *block, long index)
 // (same code); the identifier read before the state test 22; the world local used for both reads 18
 // (the database is then updated in place, but in ECX with the world). A permuter run produced no
 // variant below 11. Still the database pointer in ECX where retail keeps it in EDX.
-// score 11 (was 11): the database pointer takes ECX where retail keeps it in EDX, and ours takes the
+// Earlier: the database pointer takes ECX where retail keeps it in EDX, and ours takes the
 // record address before the active test and reads the byte through it (`lea eax, [eax + ecx + 0x20ac]`,
 // `mov cl, byte ptr [eax + 6]`), while retail reads the byte from the array and takes the address after.
 // Early definitions 31; direct dispatch 13; const record 11; record reference 11; separate index mask 11;
@@ -348,6 +352,7 @@ bool function_a9820(long *block, long index)
 // The permuter could not finish a run here: it builds the whole program for its baseline and the
 // machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
 // builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
+// Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
 // @retail 0xa99f0
 void function_a99f0(long index, long *block)
 {

@@ -211,7 +211,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 882 (was 899): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 882 (was 882): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
 // Frame pointer 1207; size preference 1436; native object fields 866;
@@ -284,6 +284,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `1 << type`, sphere loop). The type read at each use, no type local 903 (3695 bytes); that without
 // the unit_index volatile 938, without the actor volatile 978, without both 999; that with the skip
 // flag assigned before each inflation block 949.
+// Post-admission restricted/classification/device default subsets 1..7:
+// 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
+// Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
+// all original constant lifetimes, qualifiers, buffers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

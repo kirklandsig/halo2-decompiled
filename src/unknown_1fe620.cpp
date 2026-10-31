@@ -12,7 +12,7 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
-// score 373 (was 378): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // Round 28 lead (not kept: needs one-use locals): retail reads the third draw's bounds (+0x14/+0x18) before the
 // first draw and keeps them on the x87 stack; with them read into locals ahead of the draws, all three draws through
 // local_10 (the random-state local: one seed store after the third draw, as retail) and the lower bounds written as
@@ -118,6 +118,10 @@ static __forceinline long real_to_long(real value);
 // `(local_11 & 0x80000000) > 0` gives retail's `test eax, 0x80000000 ... jbe` (341; `!= 0`, `>> 31`,
 // `(long) < 0`, `>= 0x80000000` 342/342/347/341). Left on the probe: the cross product's inputs
 // colour xmm3/xmm2/xmm1 where retail has xmm1/xmm4/xmm3 (one extra movaps in retail).
+// Round 253: Retail-backed blend/actor/entry order with early third-range bounds, coherent angular seed
+// owner and per-use cap subsets; scores 373/424/438/350/447/449/449/384.
+// Original executable source restored; no qualifying gain.
+// The 350 form uses one-use early range captures and did not match; restored under the exact-match gate.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
