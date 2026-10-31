@@ -244,6 +244,12 @@ void c_session_state_pre_game::enter(long a, long b, long c)
 // bytes); `if (!result)` split from the live test 65; `bool result;` declared first 65; the
 // 0x6e6b0 test as its own `if (result)` 69; one early `return result` for the three guards 63 (183
 // bytes, the same plan with `xor bl, bl; mov al, bl` exits).
+// Round 31 (lane 13, fast): with 0x6e720 taking the session in EBX (diagnostic: both 0x6e910 call values
+// named before its member count read, 0x6e720 65) the current body is 63 (183 bytes, result in BL) and
+// `if (058d20 && 6e720 && 6e6b0) { stop; network_session_set_mode; result = true; }` MATCHES (retail's push ebx / mov ebx,
+// esi and stack-byte result); with 0x6e720 as it is (ESI) that form is 69 (174 bytes). Only 0x6e720's
+// session register is left; with 0x6e720 given EBX another way (its 0x49c8 argument as a constant, a
+// diagnostic) that form matches too.
 // @retail 0x6e500
 bool c_session_state_start_game::update()
 {
@@ -815,6 +821,11 @@ void c_session_client::function_06dbc0()
 // early return or joined into the condition 45/45 (diagnostic: a hand copy of the helper); memcmp size
 // as sizeof(s_session_id), an equal-id return before the call and a return after it 43 each
 // (identical). BLOCKED-BY 0x58d90: retail inlines that existing helper, ours stays out of line (/Ob0).
+// Round 31 (lane 13): compile-only, a second 0x6d380 call or 0x58d90 called out of line give retail's
+// `push ebx; mov ebx, ecx`; 0x58d90's result-variable switch as a forceinline helper (early return,
+// joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
+// explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
+// (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
@@ -1865,6 +1876,15 @@ bool network_session_host_become_leader(c_class_58d20 *session);
 // NONE duration sentinel 131; preparation and duration in one gate 138; completion nested in
 // the success arm 97; bool readiness with the failure arm first and combined mode gate 96.
 // Original body restored.
+// Round 31 (lane 13, fast): on the EBX diagnostic of 0x6e720 (both 0x6e910 values named before its member
+// count read) the current body is 104 (433 bytes: the integer pending spills); a bool ready set in each arm
+// 62 (424 bytes, only the block order), failure arm written first 62, ready false at its declaration 97;
+// `bool ready = 6e720 && 6e6b0; if (ready) { countdown; ready = remaining == 0; } else unknown18 = 0;`
+// MATCHES (a compile-only screen of 8 arm forms found it as the only one with retail's order: failure,
+// join, mode-3 body, countdown, leave). With 0x6e720 as it is (ESI): that form 94 (426 bytes), with a long
+// ready 63, `long pending = !6e720 || !6e6b0` refined in the countdown arm 71 (435 bytes). Only 0x6e720's
+// session register is left; with 0x6e720 given EBX another way (its 0x49c8 argument as a constant, a
+// diagnostic) that form matches too.
 // @retail 0x72700
 bool c_session_state_start_match::update()
 {

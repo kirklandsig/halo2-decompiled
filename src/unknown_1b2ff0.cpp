@@ -168,50 +168,6 @@ bool __stdcall function_1b3070(long actor_index, s_squad_choice *choice)
 
 real function_1f8940(long actor_index);
 
-// score 27 (was 27): frame and active-getter prefix agree; selected reference enters EBX before validation.
-// Earlier forms and observations:
-// actor-data load and early selected-reference transfer still differ.
-// frame and prologue agree; selected-reference transfer and follow setup remain.
-// Earlier forms:
-// the selected reference still enters EBX before its validity comparison.
-// Earlier: actor-data load and early selected-reference transfer still differ.
-// late selected value 44; late value/native result 97; native/short/byte result
-// 97/94/134; sentinel operands 44; active-test result 122; native request fields 44.
-// the active test reads through the getter, as the other actor
-// updates do, which gives retail's actor-data load (EDX, LEA ESI) and request
-// schedule; the found reference still enters EBX right after the selection call,
-// where retail keeps it in EAX until just before the follow call. Calling the
-// state-2 getter 120 (stays a call); actor declared inside the active block 50;
-// reference declared then assigned 27; a selected copy in the found branch 27;
-// reference as a scalar 27 (diagnostic); direct release and exit on the not-found
-// path 51; reference declared at function scope 27.
-// Earlier actor/reference forms:
-// Actor object reference/const view 44/44; candidate/flag/index/joint names 44/44/44/44;
-// result from reference validity 116; successful-selection arm first 71.
-// actor-data load and selected-reference transfer still differ.
-// Const reference/early reference/output-first declarations/const scratch 44;
-// choice failure from test 123; nested reference gate 44; inclusive cancel limits 48;
-// aggregate-zero request 89 (446 bytes).
-// This round:
-// Member equality low/high first 92/92; combined follow/cancel 27; native follow result 27;
-// nested count domain 33; owner/path/both output defaults 113/63/120.
-// Earlier request/reference forms:
-// Selection/follow inline states 27/27/27; noinline states 27/27/27;
-// mixed inline/noinline states 27/27. Original declarations restored.
-// Earlier: actor-data load and selected-reference transfer still differ.
-// failed result first 34; failed result chain 27; shared cancellation count 27;
-// native cancellation limit 89; const reference and count 27; result chain and count 27;
-// cancel completion test 27; named cancel result 27.
-// Round 85: reference assigned inside the sentinel test 27; result/active stores swapped 34;
-// other index and flag declared before the scratch 27; follow-and-cancel as a forceinline
-// helper 27 (plain inline stays out of line); actor pointer for the active store 130.
-// Request clear before scratch 71; all constants before scratch 76; full request before scratch 75;
-// kind/numerics/flags before scratch 68/68/77; choice fields before constants 30;
-// constant prefix with range before choice 77. Scratch/request staging restored.
-// Round 14 (exact LTCG harness): a copy of the reference for the follow call, the cancel call or both 27;
-// the follow result in a local 27; the found arm first 54; the sentinel test as a long compare 27, as
-// field compares 72 (130 instructions); the reference declared at function scope 27; the outputs declared
-// at the top, before the scratch or swapped, the scratch after the request 27; the request at the top 50.
 // @retail 0x1b3380
 bool __stdcall function_1b3380(long actor_index, s_slot *slot)
 {
@@ -247,10 +203,15 @@ bool __stdcall function_1b3380(long actor_index, s_slot *slot)
             actor_get(actor_index)->unknown040 = false;
             result = false;
         }
-        else if (REFERENCE_EQUAL(function_2626b0(actor_index, reference, other_index, scratch, unknown, true), g_470fa0))
+        else
         {
-            if (actor->unknown5b4 > 4 || (actor->unknown26c != NONE && actor->unknown5b4 > 2))
-                function_262800(actor_index, reference, false);
+            s_reference selected = reference;
+            reference = function_2626b0(actor_index, selected, other_index, scratch, unknown, true);
+            if (REFERENCE_EQUAL(reference, g_470fa0))
+            {
+                if (actor->unknown5b4 > 4 || (actor->unknown26c != NONE && actor->unknown5b4 > 2))
+                    function_262800(actor_index, selected, false);
+            }
         }
         ai_scratch_buffer_release(scratch);
     }

@@ -696,6 +696,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // with native point setter 648; early offset and point setter 682; those four with
 // the staged shared cross product 647/633/648/682. Frames shrink to 0x21d4/0x21cc;
 // original endpoints, pivot timing, helper operations and complete body restored.
+// Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
+// 704/594/727/669/726/660/742/755. Original complete executable source restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
