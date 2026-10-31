@@ -196,6 +196,10 @@ void __stdcall swarm_delete(long arg_0);
 // the definition-index read with the ternary limit 72 (289 bytes; the tag then takes EBX), the limit as an
 // explicit if/else 53, the definition index read between the allocation and its NONE test 93; the existing
 // character getter with the tag pointer declared before the result 44 (same code).
+// Round 54 (lane 16, plain): the swarm getter at each use in place of the record pointer 149 (338 bytes);
+// the record stores in struct order (actor, position, counts, first creature, event count, gather point,
+// flags) 82; the NONE pair chained 44 (same code); a long loop index 75; the creature count read once into
+// a short local for the test and the copy 44 (same code).
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

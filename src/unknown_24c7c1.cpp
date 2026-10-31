@@ -599,6 +599,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // before the font 114 (same code); as bools so declared 191 (aligned 112 -> 111: timer/tutorial at
 // -0xe/-0xd, scripted still at -2 where retail has -0xf/-0xe/-0xd); tutorial colour as `flag ? a4 :
 // (b6 & 1) ? a8 : a4` 114 (same code); count as `split_screen ? 3 : 4` 479; short height 114 (same code).
+// Round 54 (lane 16, fast; base 114): the tutorial colour as `!flag_1384 && (b6 & 1) ? a8 : a4` 114 (same code);
+// `left` declared `short const` at its assignment 114 (same code); both 114; both with a bool timer 191 (1888
+// bytes); the tutorial colour reading g_510c94 at each use (no `globals` local) 114 (same code).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
