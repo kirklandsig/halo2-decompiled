@@ -37,6 +37,9 @@ typedef void *(__stdcall *texture_allocate_proc)(long size, long alignment);
 // early null and the field order still differ); with that, result starting as the header and cleared with the buffer 42 (failure
 // path as retail), result = header at the top 69 (header moves to eax), result set in both arms
 // or the test inverted 69, the lock store first 31 (43 with the header result).
+// The failure result rewritten 69 (181 bytes); the result declared before allocation 28; the buffer
+// before aligned 28; all declarations at entry 28; the result before Lock/Data 33/35; a promoted
+// height with the failure result 66 (182), with Lock first 31. Body restored.
 // @retail 0x23e340
 D3DTexture *function_23e340(short width, short height, short format,
 	texture_allocate_proc allocate, long *size, void **data, D3DTexture *header)

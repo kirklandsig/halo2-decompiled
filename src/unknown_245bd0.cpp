@@ -412,6 +412,8 @@ PRIVATE inline real shape_dot_reverse(vector3f const *a, vector3f const *b)
 // Round 447: Existing difference helper first/second input copies and complete scalar publication,
 // seven subsets 140/171/186/4/140/171/186; native vector publication 184. Projection sum order remains.
 // Original executable source and all trial helper/interface changes restored.
+// Array views for the difference, direction, c, a and their combinations 4 each; the grouped array
+// projection 11 (434 bytes); the shared scaled-difference helper with an array projection 4. Body restored.
 // @retail 0x2461a0
 bool function_2461a0(
 	s_sphere const *sphere,
