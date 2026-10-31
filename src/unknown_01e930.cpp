@@ -439,6 +439,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // mask local for the open and the size ternary on `flags & 0x100` 269 (frame 0x3c, aligned 111; diagnostic, a
 // local/direct mix), with the per-arm open 278. Retail's movss 1.0 stores and fld/fcompi timeout compare need
 // /arch:SSE, which this file's flags lack (build flags are the user's decision).
+// Round 256: Shared width/height/both short locals 255/254/257; promoted long locals 256/255/259;
+// both short/long at entry 257/259. Original dimension reads and complete body restored; frame
+// 0x3c and clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

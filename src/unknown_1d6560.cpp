@@ -139,6 +139,15 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // component or the local, switch/result kind-7 path, header pointer) and two with the body formed at its uses
 // loads the index into EAX in every one. Retail loads the header data first and keeps it live into case 0
 // (EDX), which costs EBP for the body array; no form here keeps it.
+// Round 56 (lane 16): a /Gd compile-only screen predicts the register parameters (it agrees with the build for the
+// two-read body, the one-read flip and the form below). Of ~150 one-read forms (orders of object_index, type,
+// rigid body and result; long/byte/short/const type; case 0 through the component or object_index; a header
+// pointer; a split rigid-body pointer; the kind-7 test as a switch, switch with default, single-exit switch,
+// ternary or if/return), only the if/ternary kind-7 tests keep component EAX / index ECX, and they compile to
+// `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
+// kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
+// object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
+// both switches 125 (284 bytes, caller 194).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

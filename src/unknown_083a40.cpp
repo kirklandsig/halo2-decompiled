@@ -673,6 +673,9 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // function-scope index for the three loops 32; the swap given `&watcher->players` 32; a block-scoped
 // update pointer in each second-loop block 32; the session player as `session->players + i` 32 (all
 // identical code); the conflict scan without its flag (`break`, then `if (j < 16) continue;`) 230.
+// Round 120 (lane 6, fast): `machines` declared at function scope 32; `collection` declared after `source`
+// 32; a `player_mask` local for the second loop's test and the conflict scan 32; the live test through the
+// existing function_058d70 32; the second loop's player fields read at each use 32 (all identical code).
 // Round 34 (lane 13, LTCG harness, base 16 positional = 32): the session read before the initial count
 // harness 23 (aligned 18); the initial count read inside the live-session block harness 50 (1063 bytes); the
 // configuration as `const byte *` 32; the member count in a local for the machine copy 32; the swap's

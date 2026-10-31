@@ -445,7 +445,7 @@ struct s_squad_iterator
 
 s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 
-// score 74 (was 92): the scan index, declared with the block's other locals, ends the zero
+// score 74 (was 74): the scan index, declared with the block's other locals, ends the zero
 // register and gives retail's walk registers and stores, but it is live across the walk and takes
 // a stack slot (push ecx frame, 347 bytes), so the flags go to EBX where retail keeps them in memory.
 // Before: no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
@@ -493,6 +493,11 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // count` 92. Diagnostics: the scan as a forceinline bool helper (found returns true) gives retail's threaded
 // exits at 336 bytes, 94 (zero register kept); without `next = 0` as well 96 (zero register gone, walk
 // squad/definition swapped): the zero register is that constant coalesced with a scan-local index.
+// Round 56 (lane 16, fast): the index declared in the scan block 92 (337 bytes: retail's prologue and the flags in
+// memory, `or dword [esp+0x10], 1`, but squad/definition EAX/ECX swapped and EBP a zero register that is also the
+// index); with a found flag 94 (336, retail's threaded exits); without the `next = 0` store (diagnostic) the zero
+// register goes, 92 (the store's constant is what VC shares with the index); definition declared before squad 92;
+// the header stores in another order 92.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2233,6 +2238,17 @@ bool function_1df5d0(short team_a, short team_b);
 // per path with `else health = 0.0f` 126 (851); the perception count read before the health division 178.
 // In all of retail the unfolded `imul 0x3c; add; mov [+8]` node lookup appears only here and in 0x2761d0/0x25d810,
 // where the node pointer has more than one use.
+// Round 56 (lane 16): a named `s_prop_datum *target = prop_ref_get(tracking_index)` for the team lookup gives retail's
+// node block (`add eax, edx; mov edx, [eax+8]`, prop pool loaded after) and the +0x26 maximum's EDX/EAX, leaving only
+// the health sum (one instruction longer, 84 positional; a one-use pointer, not kept); prop_ref_get's prop_index view
+// 39 (same code). On the named-target body: `total = health + total` 84, health sum before the count sum 84, after
+// the +0xc sum 82, count declared first 84, `count = 1` first 84, typed value10 84, function-scope health 84, the
+// perception count read before the division 180; permuter 600 s, nothing better. Compile-only screen (exact for this
+// block): 72 sum-order/count-type/declaration/assignment-order combinations, the call's sum before the health sum,
+// an inverted unit test, a named member count, health before the walk, an else-zero health: none folds the total
+// into `addss xmm0, [squad+0x10]`; small probes fold it only when no other merged value (the count) is live there.
+// A `real *` to the total used at every access (like `position`) puts the count sum first as retail but still loads
+// the total first (compile-only); the health sum alone in the loop, or without the count, still loads it first.
 // Round 119 (lane 5): the tracking node as a named pointer (`s_prop_node_view *node = prop_node_get(...)`,
 // the prop team through it) 84: it gives retail's unfolded node lookup, the pool load after it, the si-then-cx
 // argument order and the DX/AL registers of the +0x26 maximum, so only the health sum's extra load is left and it
@@ -2879,6 +2895,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // local before the loop 124 (593); one shared 0x202e90 call after the chain with the task, follow-up and flag set
 // per arm 180 at 578 bytes (the follow-up call then gets retail's `mov eax, ebp`, but the first arm loses its own
 // call site); the first test inverted with the first-arm call in the else 50.
+// Round 56 (lane 16, fast): the trigger part's definition through the existing 0x203330 getter 50 (same code);
+// local_2 at function scope 59 (578 bytes, reload stays); the follow-up test inverted 50; local_4 declared before
+// pending 50; local_3 declared before local_2 50. Diagnostic only: a `return` when no task is found gives the
+// follow-up call `mov eax, ebp` (167), so the reload follows how the paths join before the trigger part.
 // Round 119 (lane 5): the order/pending part as a forceinline or plain inline helper taking the index and squad
 // 50/50 (copy-propagated); the trigger part's squad re-fetched at the join through squad_get(arg_1)/(word)arg_1
 // 199/212 (the reload stays); the follow-up arm without the short casts 50.
