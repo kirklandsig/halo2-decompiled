@@ -2633,9 +2633,10 @@ void function_119280(long object_index, dword flags, s_damage_report const *repo
 }
 #pragma inline_depth(255)
 
-/* reports damage to the object it hit (units and type 12 objects) */
+/* reports damage to the object it hit (units and type 12 objects); callers set up its register arguments
+   last to first, and retail's 0xdc0a0 leas the report, then the accumulator, then the data */
 // @retail 0xd9490
-void function_d9490(s_damage_report *report, s_type_1e6529 const *data, s_damage_region_accumulator const *accumulator,
+void function_d9490(s_type_1e6529 const *data, s_damage_region_accumulator const *accumulator, s_damage_report *report,
 	long object_index)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
@@ -2988,7 +2989,7 @@ void __stdcall function_d82e0(s_type_1e6529 *data, real damage, long object_inde
 
 			memset(&child_accumulator, 0, sizeof(child_accumulator));
 			function_d82e0(data, damage, child_index, &child_accumulator);
-			function_d9490(&report, data, &child_accumulator, child_index);
+			function_d9490(data, &child_accumulator, &report, child_index);
 			if (g_4e6948->mode == 4)
 				report.flags &= ~1;
 			function_d9640(&report, child_index);
@@ -3235,7 +3236,7 @@ void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node
 
 		s_damage_report report;
 
-		function_d9490(&report, data, &accumulator, objects[i]);
+		function_d9490(data, &accumulator, &report, objects[i]);
 		if (g_4e6948->mode == 4)
 			report.flags &= ~1;
 		function_d9640(&report, objects[i]);
@@ -3440,10 +3441,9 @@ void function_155b60(long unit_index);
 
 /* kills an object outright with the globals' default damage (falling,
    for one), reporting it as maximum damage */
-// score 3 (was 8): only the order of the three `lea`s that set up the d9490 call differs: retail leas report
-// (eax), accumulator (edi), data (esi); this leas accumulator, data, report. Setting `data.flags |= 4` right after
-// `data.unknown54 = 1.0f` (before the accumulator stores) is what moved the `or edx, 4` to retail's place (8 -> 3).
-// Tried: locals declared in the order report/accumulator/data (3), a report pointer local passed to d9490 (3).
+// Setting `data.flags |= 4` right after `data.unknown54 = 1.0f` (before the accumulator stores) puts the `or edx, 4`
+// in retail's place. The `lea`s for 0xd9490 come out in retail's order (report, accumulator, data) only with its
+// parameters in the order data, accumulator, report.
 // @retail 0xdc0a0
 void function_dc0a0(long object_index)
 {
@@ -3487,7 +3487,7 @@ void function_dc0a0(long object_index)
 			accumulator.unknown08 = NONE;
 			accumulator.flags = 0x49;
 			accumulator.unknown18 = 3.4028235e38f;
-			function_d9490(&report, &data, &accumulator, object_index);
+			function_d9490(&data, &accumulator, &report, object_index);
 			if (unknown)
 				report.unknown50 = 0;
 			function_d9640(&report, object_index);
