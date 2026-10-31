@@ -119,6 +119,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // logarithms 87 (the height count then takes the height argument's slot, where retail spills the common
 // count); on that, both long copies after the mask 100 (0x136140 125), y copied at entry and x after the mask
 // 93 (0x136140 6), x at entry and y after the mask 93 (0x136140 28).
+// Round 104 (lane 8, fast): the tail tests without `else` 111 (251 bytes); a named high mask (used
+// twice) 82 (identical); the height logarithm first 100 (0x136140 lost); the y shift folded into each
+// branch's lookup 82 (identical); the branch test on `common_bits <= 6` 82 (identical).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

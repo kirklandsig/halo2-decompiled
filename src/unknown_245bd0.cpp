@@ -334,6 +334,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
 // difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
 // `j + (k + i)` 61; k, i, j statements 61.
+// Round 12 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80): the squared distance through a two-point
+// helper with its own difference vector (vector3d_from_points3d + length_sq3f, the form other files carry)
+// beside the normal's difference 307 (776 bytes: the subtractions are not merged), with the normal's
+// difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
+// vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
+// file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
@@ -419,6 +425,8 @@ PRIVATE inline real shape_dot_reverse(vector3f const *a, vector3f const *b)
 // Round 447: Existing difference helper first/second input copies and complete scalar publication,
 // seven subsets 140/171/186/4/140/171/186; native vector publication 184. Projection sum order remains.
 // Original executable source and all trial helper/interface changes restored.
+// Array views for the difference, direction, c, a and their combinations 4 each; the grouped array
+// projection 11 (434 bytes); the shared scaled-difference helper with an array projection 4. Body restored.
 // @retail 0x2461a0
 bool function_2461a0(
 	s_sphere const *sphere,

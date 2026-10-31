@@ -490,6 +490,12 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // (aligned 70); the selected arms writing a `support` local copied to out once inside the selected
 // branch 190 (1000 bytes), with the two copies 251 (also with `support` local to that branch or through
 // cross3f_staged, 251 each).
+// Round 120 (m3 lane 5): our two selected arms already store j/k from the same registers; what stops
+// the tail merge is where the g_4687b0 reload lands (ours right after the normal pointer's last use,
+// retail after the out->i store). `b` declared before `a` 228 (1002 bytes); 0x1f087b as plain
+// `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
+// (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
+// (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -569,8 +575,8 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// MiniMax E run 26: score 182 (was 182): retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // score 182 (was 182): Frame 0x28 and retained EDI/EBX convention agree; initial dot displacement bytes and rotation SIMD scheduling remain.
+// Earlier: retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // frame 0x28 and state/output registers agree; the initial state-dot
 // displacement bytes (retail reads the old up through the ESI address it keeps, ours folds
 // [EDI+0x108]/[EDI+0x104]: the six extra bytes) and the rotation SSE schedule remain.
@@ -688,6 +694,10 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Round 48 (lane 9): contact_cross as a function-like macro 342; the state dot through dot3f, either argument
 // order, 262/262 (ESI loads and up in XMM5/6/7 as retail, but state moves from EDI to EBX and caller 0x1e5af0
 // drops to 20); the state dot accumulated j, k, i 185; as k + (j + i) 184.
+// Round 462: One complete original-up value for all active consumers, native/library copies
+// after/before ground normal, original/removed one-use aliases: 314/314/325/325/314/314/325/325.
+// Frames 0x38 or 0x34 versus 0x28; original observations, aliases, helper graph and full body
+// restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -1587,6 +1597,14 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // products then match, the i term flips), `selected`/`highest` declared first in the block 220, the same with
 // the `real` length 223, the contact list read at each use 222, the not-supported arms written first 250,
 // the velocity after `flying` 221, and (with the `real` length) the motion pointer read before the reset 294.
+// Round 120 (m3 lane 5): a per-arm `better` result tested once after the arms 240 (same layout: the
+// flag/no-flag arms stay inline and still share one height test); unknown58/selected/highest as one
+// chained NONE store 284; the airborne test as `(flags & 8) || (flags & 0x10)` 312 (that block is then
+// retail's branchy sequence exactly, but the component moves from EBX to ESI), with the movement as
+// `real` 311, with the contact list read at each use 232 (1072 bytes, component back in EBX; the NONE
+// locals still store after the count test); the flying test's planar dot i-first or with each
+// product's operands swapped 230/230 (same code: the speed dot still computes j before k).
+// Diagnostic, not kept: 0x1f1df0 out of line at both calls 301 (1005 bytes). Original body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

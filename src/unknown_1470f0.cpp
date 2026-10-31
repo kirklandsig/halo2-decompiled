@@ -75,7 +75,12 @@ extern "C" void _ReadWriteBarrier(void);
 // entry/reversed receiver declarations 7; eager first receiver 7; named second/first upper predicates
 // 7; standalone third range 7; no barrier 49 (109 bytes: all three share one call), with the inclusive
 // third 49; a forceinline inclusive range helper for all three 44 (135), without the barrier 43
-// (123); second and third nested under the first's else 9, with the inclusive third 9.
+// (123); second and third nested under the first's else 9, with the inclusive third 9. Round 55: four
+// plain calls with `>= || ==` ends in all three ranges 29, with a plain `>=` second 29; the second and the
+// fallback sharing one receiver call through a label 43; the barrier in the second arm instead of the first
+// 49; the third and the fallback sharing the final call 49. A one-file LTCG screen of 194 forms (call sharing
+// x end test x barrier arm, and four plain calls) found none below 9 but the inclusive third; four plain calls
+// give retail's second block and fallback but join the first range to the second's call.
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {
@@ -225,6 +230,9 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // (same code), as `(long)m_buffer + m_size` 8; first end inline with a barrier in the first arm 60
 // (153 bytes); first end as a long local 44 (the == folds away); first start named too 8; the
 // equality test before the >= 10; permuter, 59 tries, none lower.
+// Round 61: first-only return 8; nested named end with the first return 70; nested plain inclusive
+// end 43; const end 8; one shared end 8; shared start/end 8; start named after end 8; concrete
+// page_count end 8; void * end 8. Original body restored.
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {

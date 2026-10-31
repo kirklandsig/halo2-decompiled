@@ -265,6 +265,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // two false stores (`mov byte ptr [ebp-1], 0`) missing. The true-only test is a diagnostic (retail stores both
 // values). On the fraction-first form: restart as an explicit if/else 207 (same as the expression); next time
 // scoped to the `for` 206; no per-pass disposal reset 207.
+// Round 104 (lane 8, fast): fraction-first is aligned 35 (base 97), its loop scratch registers
+// retail's; there next_time renamed (advance_time/step_time) 207/207 (names move no register), and
+// the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
+// the base: the declared current/following key pointers used for delta/offset/scale 225 (644 bytes),
+// with the fraction before the delta 225; identical switch cases merged in all four switches 209.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

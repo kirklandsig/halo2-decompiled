@@ -360,6 +360,15 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // read straight from the global, a short or late tick count, a const scale, `v = v * s` and a dot
 // product for the length change nothing; vector3f_scale + vector3f_add for the correction give
 // retail's scale register (XMM1) and i product but interleave the sums.
+// Round 140 (lane 4): the rate products as the components' first assignments, then adds/subtracts and a
+// late conversion 105 (381 bytes, the loads fold into the products); the tick count and conversion named
+// before the rate 33 (ticks take XMM3 and scale in place, the rate moves to XMM4); deltas assigned i, j, k
+// 79 and k, j, i 79 (both screen-only before); a 600 s permuter run, 72 tries, none below 32; `short ticks`
+// with the conversion after the chains 73 (369 bytes).
+// Round 103 (lane 8): the conversion after the chains with the tick products written `tick_scale * v.c` 73
+// (369 bytes); velocity declared after the tick scale 32 (identical); each rate chain as one expression
+// `v.c = s.c * rate + p.c - q.c` 107 (345 bytes); the conversion between the velocity copies and the chains
+// 72 (369 bytes); the delta through the existing vector3d_from_points3d 77.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

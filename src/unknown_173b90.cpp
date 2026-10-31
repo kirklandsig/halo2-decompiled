@@ -563,6 +563,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // sites 124 (1138 bytes); that on the indexed form with scale first 119 (1140 bytes, every rotation
 // row reorders); const emitter definition and particle pointers 42; the particle loop as a do/while
 // under its existing `if` 42; the emitter definition computed before the first-particle read 42.
+// Round 140 (lane 4): the reload pairs follow where the emitter definition is formed relative to the
+// emitter lookup: formed first, with scale first, 45 (reloads and 1.0 stores as retail, the outer
+// address computation then leads); the offset advanced before the next index 42 (same code); the
+// offset declared first 42 (same code); the offset as `dword` 42; the transform test read once into a
+// bool for both tests 326 (1156 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1357,6 +1362,12 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// score 102 (was 102): this round: the availability flag written as `query(view) == 0` 102 (the
+// same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
+// bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
+// availability flag lives in bl because its NONE sentinel lives in ebp and frees ebx; ours keeps
+// the sentinel in ebx, so the flag lands in al and the same-view in bl instead of a stack byte.
+// The sentinel's register and the Boolean homes remain.
 // score 102 (was 102): frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // (coalesced; later NONE tests use immediates) and the availability flag in bl; ours keeps the
 // sentinel in ebx, the owner in edi and the flag in al, and tests the definition's bit 9 as a

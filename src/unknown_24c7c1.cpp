@@ -612,6 +612,15 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // renamed (diagnostic) 115 with its home unchanged at -0x2c (retail -0x34); the rectangles at function
 // scope 115. The one byte the bool timer loses is `left`: retail stores it as a 16-bit memory local
 // (`mov word ptr [ebp-0x3c], ax`) where ours spills a dword, so the bool timer needs that form too.
+// Round 40 (lane 11, fast; unchanged source 115 fast, 114 plain): retail stores `left` once with a word move
+// (`mov word ptr [ebp-0x3c], ax`), so it is a memory local there, not a spilled register (ours spills it as a
+// dword); with the bool timer that word store is retail's missing byte (the bool form is otherwise retail's
+// flag code, bytes at -0xf/-0xe/-0xd but for the scripted flag at -2). Retail frame from EBP down: split
+// screen, bounds/origin, the three flags, line height, loop index with the flash scalar, height, text bounds,
+// colour, top (spilled in the loop), left, player, view, count, message height, font, field_24. Tried: one
+// colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
+// (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
+// block top / first 115/115; bool timer with the loop index at the block top 191.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

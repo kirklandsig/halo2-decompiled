@@ -51,6 +51,11 @@ static inline s_player_datum *player_get(long player_index)
 // the shared first-local-player helper 3 (kept: identical code); the pointer set under the test and tested 16.
 // Every form without a pointer local (direct copy, memcpy, a typed table, value/out/flag lookups, a reused
 // index) loads the index into esi (16).
+// Round 12 (lane 18): the record with its real field layout (two reals, a 16-byte map, a short; 4-byte aligned) 3,
+// that with the direct copy 16; `&table[index]` 3; byte arithmetic with sizeof 3, direct 16; the copy as the
+// declaration's initializer 3; the record declared before the pointer 3; the index as dword (cast or local) 3,
+// direct with the cast 16; a table-base pointer local at the top 3; the global declared with its size 3; the
+// permuter (58 annealed tries) best 3.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -425,6 +430,9 @@ s_seat_animation_entry *function_188130(long tag_index, long index, long type, s
 // parent step before the lookup 35; the entry index as a class local at the top 22.
 // Round 108: both material parameters as the material class, read directly (no parameter reference), 14;
 // 0x1883e0 stays 118 (its own parameters keep short/long). Not kept (unmatched index wrappers).
+// Round 12 (lane 18): 1-7 unused initialised locals at the top 22 each (register choice, not operand numbering);
+// the element getter as a ternary 23 (0x188640 22, 0x188690 18), with `elements + index` 22, with an else arm 22
+// (0x188640/0x188690 lose), with the bounds test nested 22; the loop testing the assignment directly 22.
 // @retail 0x1882d0
 s_seat_animation_entry *function_1882d0(long type, short element_index, long index, short entry_element_index)
 {
@@ -655,6 +663,11 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 77 (was 77): retail's own clone takes the point in EAX and the forward vector in ECX and
+// pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
+// from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
+// items.cpp, unknown_246f10.cpp). Retail also calls 0x1883e0 with twelve stack arguments where
+// ours passes thirteen: BLOCKED-BY 0x1883e0 (another file).
 // score 77 (was 77): frame 0x48 agrees; first counter spill recovered; effect/forward inputs and second scan differ
 // (BLOCKED-BY 0x1883e0, see below). Earlier forms and observations:
 // Point setter 89; component loop 317; origin value 150; description position 105;

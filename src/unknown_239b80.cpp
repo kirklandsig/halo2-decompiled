@@ -40,7 +40,7 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 	return false;
 }
 
-// score 5 (was 101): loop setup stores [esp+0x10]/[esp+0x18] in another order (retail stores
+// score 5 (was 5): loop setup stores [esp+0x10]/[esp+0x18] in another order (retail stores
 // previous*4, loads the output, then current*8 and current*4; ours current*8 first), and the
 // first intersection's x product loads the plane before the point. A compile-only build of this
 // file reproduces both; the product operand orders follow the whole function (a no-op product in
@@ -78,6 +78,8 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // point-first numerator and plain inline 5; normal-i/first-x locals 110/180; named x/y products
 // 9/7; y product with point/plane parameter orders 7; both named products 9; defaulted y product 7.
 // Original helper and body restored.
+// Round 119 (lane 5): `count` used without the `original_count` copy 178 (699); negative counter declared first 7;
+// sides declared before the copy buffer 5; result declared after the early exits 168 (680); short counters 118.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -334,6 +336,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // Round 54 (lane 16, fast): `points + i` for every `&points[i]` 42; case 0 setting the state before the
 // distance store 42; the normalizer's zero test as `fabs((double)m)` 43; case 1 as `if (fabs(...) <
 // epsilon) break; state = 2;` 42; the loop condition `state <= 1` 43.
+// Round 56 (lane 16, fast): case 0's `vector2f *normal = &line.n` for j's store, the normalize and the dot 44
+// (304 bytes); permuter 600 s (71 variants), nothing below 42. Retail pushes ESI only after zeroing state and
+// index, so its ESI holds just case 0's point pointer. The NONE case as `default:` 98 (285 bytes); the loop on
+// `i < count` with `if (state >= 2) break;` before the switch 99 (312); `state != 2` in the loop test 43; a long
+// count parameter (diagnostic, callers not changed) 83.
 // Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
@@ -765,6 +772,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // distance local) 133; the previous side stored before the previous point at the loop end 129 (same code); the
 // result declared after the flags and mask 132; the side test as `previous_inside != inside` 129 (same code); the
 // current side `bool const` 129 (same code). Diagnostic only: an `if (count > 0)` guard around the loop 211.
+// Round 56 (lane 16, fast): the previous side as `= false; if (distance >= 0) = true` 130; the inside test written
+// as `distance >= 0.f` at the append 265 (874 bytes); the side flags renamed (side/previous_side, last_inside,
+// was_inside) 129 each (same code and slots: the names do not move the byte flags here).
+// The NONE result arm written first (`if (result == NONE) memcpy ...; else {...}`) 129 (same code).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
