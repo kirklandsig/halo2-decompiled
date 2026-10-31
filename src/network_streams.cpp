@@ -1321,6 +1321,11 @@ bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb 
 // result declared before `self`, declared then assigned, the count in a local 108 each; forceinline
 // count helper 108; count `> 0` 116; a `window` pointer local 291; the count written out (diagnostic)
 // 248, as `!=` 252 (count then in EAX, result in DL).
+// Round 120 (lane 6, fast; aligned 50): the failure as `result = false; m_unknown05 = true; return
+// result;` 107 (same code); the scan as a while loop with its own increment 107 (same code); the scan's
+// terminal test as `result |= (flags & 2) != 0` 110 (aligned 72); the copy loop's fragment as one
+// ternary 134; the scan stopping at the terminal fragment (`result = (flags & 2) != 0; if (result)
+// break;`) 102 (807 bytes, aligned 78: retail scans on past it).
 // @retail 0x95840
 bool __stdcall function_095840(s_network_stream_header *header, long *message_type, long *message_size, void *message_data)
 {

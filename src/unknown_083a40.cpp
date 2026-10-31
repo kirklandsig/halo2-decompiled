@@ -673,6 +673,9 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // function-scope index for the three loops 32; the swap given `&watcher->players` 32; a block-scoped
 // update pointer in each second-loop block 32; the session player as `session->players + i` 32 (all
 // identical code); the conflict scan without its flag (`break`, then `if (j < 16) continue;`) 230.
+// Round 120 (lane 6, fast): `machines` declared at function scope 32; `collection` declared after `source`
+// 32; a `player_mask` local for the second loop's test and the conflict scan 32; the live test through the
+// existing function_058d70 32; the second loop's player fields read at each use 32 (all identical code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
