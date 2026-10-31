@@ -109,6 +109,10 @@ void function_213970(void);
 // (`get_current_language()` in the test and the store; the size pragma keeps its out-of-line copy) 129 (232 bytes,
 // two-point gain dropped); with the block-A clears after the block-B ones 129; with the NONE/flag stores first 129;
 // with the language call on the left of the comparison 129. Still BLOCKED-BY the separate global definitions.
+// Round 26 (lane 14, fast): retail also inlines the cached language getter 0x11cae0 (ours calls it under
+// the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
+// between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
+// the string clear after the enable byte 142; the two session words cleared last 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

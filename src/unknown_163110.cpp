@@ -806,6 +806,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // order 115, point-first products 115; the intersection scaled through a value-first scale helper
 // (i = s * i, j = j * s, k = k * s) 115. Retail's first-plane block loads camera.i early and the
 // normal's i late (ours the reverse); its denominator copies delta for i and k and folds the normal.
+// Round 243: Existing normal-copy setters and overlap-safe bounds transfer,
+// subsets 1..7 460/502/526/495/508/565/569; all with native negated input 569.
+// Original transfers and complete body restored; coefficient preload and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -177,6 +177,10 @@ struct s_24e9c7_bounds
 // width, with `0.0f -` 139; with unary minus 144; `0.0f -` alone (a listed form, as a base) 138;
 // negated-component locals scaled by size 138; scale read before size with `0.0f -` 137.
 // Round 322: Shared upper-origin point copy/value/twice-used coordinates/first vertex at assembly 168/147/190/147; at the height producer 153/146/189/147. Original corner sums, geometry and body restored; early across spill and shifted scalar homes remain.
+// Round 454: Complete center point on the live-table entry graph, native copy at corner
+// assembly 125, with all corner origins initialized first 129; library move 240/240.
+// Basis-boundary counterparts 125/129/195/196. Original point reads, copies and geometry
+// restored; the early across spill and shifted scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

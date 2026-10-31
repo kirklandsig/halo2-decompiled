@@ -373,6 +373,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the quad through a forceinline helper 348 (not inlined under the region's inline_depth(0)); the
 // point parameter renamed to sort after the size 18; the size computed after 0x1cf50 26; the size's
 // address taken 18. All restored.
+// Round 134 (m3 lane 4): the size local named half_size 18; the size held in the scale parameter
+// (diagnostic) 29 (the y fold stays, so it is not the size's symbol or slot); the size computed after
+// 0x1cf50 26 (as before); the last quad's texture calls through D3DDevice:: 18; the size as a
+// `real const &` 18. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

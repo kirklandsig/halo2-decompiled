@@ -310,6 +310,9 @@ void __stdcall function_1160c0(real dt)
 // Round 208: Prediction rows xzy/yxz/yzx/zxy/zyx: 217/217/187/187/218; reverse prediction with
 // velocity rows jik/jki/kji: 218/217/217. Original row order restored; two forms keep 0xa4 but
 // regress, the others enlarge the frame. Segment/previous/axis homes and rotation schedule remain.
+// Round 242: Long/word/signed-byte/byte node ordinals 290/180/282/282;
+// with invariant reciprocal 296/190/279/279. Original short induction,
+// reciprocal scope and complete body restored; segment/previous/axis homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

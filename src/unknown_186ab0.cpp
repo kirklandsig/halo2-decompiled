@@ -249,6 +249,9 @@ void player_action_initialize(s_player_action *arg_0);
 // 0xcbec0's body reproduces [edx + edi]; only a unit read inside the loop gives base first, but then the
 // lookup is scheduled after the NONE normalization (retail has it first), and that body out of line no
 // longer gives retail's 0xcbec0. The score-1 source is saved as build/r53/186ab0.s1.cpp in the m3-lane9 tree.
+// Round 243: Native persistent toggle/pulse/hold byte fields, subsets 1..7
+// 134/134/134/134/134/134/134; all signed byte 134. Original Boolean fields,
+// latch graph and complete body restored; comparison/count and cold output scheduling remain.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

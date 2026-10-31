@@ -1396,9 +1396,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// score 134 (was 141): the retained mask is a plain local and the pre-loop statements run capacity,
+// size, written, mask: the bit (EBP), size (EBX), count (ECX), the frame order i/written/kept/size/bit
+// and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
+// `written = 0` and the PIN test (retail `test edi, edi`, immediate store), so the capacity-fail exit
+// gets its own `xor eax, eax` epilogue and the code is 460 bytes against 449.
 // Round 19: unchanged; retail keeps the player bit in EBP and the queue count in ECX, ours
 // caches the count in EBP and moves the bit to EBX; no new form was found.
-// score 141 (was 141): the convention now agrees with retail (queue ESI, player EAX copied to
+// Earlier, at 141: the convention now agrees with retail (queue ESI, player EAX copied to
 // EDI, cursor EDX before the player as the declared order, the rest on the stack, `ret 0xc`): the
 // result is computed before the header stores, so EDI holds it after the loop. Still differs:
 // retail keeps the player bit in EBP and the queue count in ECX (ours caches the count in EBP and
@@ -1428,6 +1433,19 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // product in EBX and the player back in EDI).
 // Round 198: one final mask snapshot dword/word after header 142/142, before result 141/141,
 // after result 141/141; snapshot with written before size 168/168.
+// Round 98 (lane 8; LTCG env link of this file, 0x56380 built in the same link; env rows
+// positional/aligned, volatile base 128/54): the 24 orders of mask/size/written/capacity with a
+// volatile or plain mask, named or inline bit, single exit or direct returns: with a plain mask,
+// every order that computes the mask before the size passes the player on the stack (0x56380 lost);
+// capacity/size/written/mask 122/27 (kept, check 134), size/capacity/written/mask and
+// size/written/capacity/mask 125/33; direct returns 154+. On the kept order: the first cursor byte
+// stored in each include_mask arm 151/58 (475 bytes; retail's test-before-store order); the mask
+// declared inside the capacity test 127/49 (449 bytes, bit in memory); both 127/45; written declared
+// there 157/77; capacity test as an early `goto done` 122/27; long/dword types 122/27;
+// `entry_size <= capacity` 122/29; bit-first loop test 122/27; mask and written before the
+// has-player test 150/82; has-player in a named bool 122/27; written at function scope 141/134
+// (0x56380 lost); `2 + written * entry_size` 122/27; a direct `return NONE` 162/242; the inactive
+// queue as an early `goto done` 122/27; one `||` failure test 139/40.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1446,10 +1464,10 @@ long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *outpu
 			result = NONE;
 			goto done;
 		}
-		volatile dword kept = (1 << queue->count) - 1;
+		capacity -= 2;
 		long entry_size = include_mask ? 13 : 11;
 		long written = 0;
-		capacity -= 2;
+		dword kept = (1 << queue->count) - 1;
 		if (capacity >= entry_size)
 		{
 			for (long i = 0; i < queue->count; i++)

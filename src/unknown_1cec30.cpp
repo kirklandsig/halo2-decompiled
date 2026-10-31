@@ -2246,6 +2246,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // no-contact arm with a conditional value 267 (1371 bytes); the contact test inverted 207 (1498
 // bytes). The matched normal block shows the shape retail's velocity block needs (i scaled through
 // a copy of the inverse, j and k in place in registers loaded before the branch).
+// Round 134 (m3 lane 4) on 91: the inline property setter building its property word before the search
+// (`s_havok_property_word word(value);` first) 155 at 1467 bytes: the three setter sites then are
+// retail's exactly (`xor edi, edi` before the search, `push edi` after the erase, shared tail), but with
+// the velocity block still 5 bytes long the loop padding shifts; worth retrying once the velocity block
+// fits. The velocity normalized through the normal block's length local and vector3f_scale 179; the
+// existing normalize_inline 175 (x87 order k, i, j); a normalized copy of the velocity (diagnostic) 211
+// (1474 bytes); compound `+=` velocity sums 97. All restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
