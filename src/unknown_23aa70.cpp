@@ -298,6 +298,11 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // indexed with the format-4 pointer 60 (as before: two points); `vertices + index` as the pointer 62 (same
 // code); the node byte read through a byte cast of the indexed record 175. A /Gd compile-only first pass
 // reloads every parameter per case here, so it shows nothing about the flip.
+// Round 8 (lane 17), formats 3 and 4 indexed through `vertices` locals (175, 624 bytes: exactly retail's code
+// with EBX and EDI swapped, the node in EBX unsaved, the switch temp and every base in EDI, the source on the
+// stack, ret 8; 0x14a8e0 269): format 4's coordinates as a `short position[3]` member 175; the default case
+// written first 175 (same code); the decode helpers taking long coordinates 175; the switch on
+// `source->buffer->format` 175; `source->buffer` at every use 186 (632 bytes, 0x14a8e0 99).
 // Round 99 (lane 8): the buffer read once inside each case 62; format 1 through a vertex pointer 62; a const buffer
 // pointer 62; format 3's position copied member by member 102; the default case's node test on its own line 62.
 // @retail 0x23ac30
