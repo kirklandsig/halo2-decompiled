@@ -285,6 +285,15 @@ struct s_z_state_world
 	long state;
 };
 
+// score 11 (was 11): this round: the fast check reads 11 at 120/120 bytes again and no new form was
+// tried; the difference is still the database pointer in ECX where retail keeps it in EDX and the
+// active byte folded as `mov cl, [eax + edx + 0x20b2]`.
+// score 11 (was 11): this round: reading the active byte from the array element with the database
+// read early still folds the byte as retail does (`mov cl, [eax + edx + 0x20b2]`) and keeps the
+// database in EDX, but the database load is hoisted above the object lookup and the record address
+// comes out as `add eax, edx` with the 0x20ac folded into every field offset (19). Taking the record
+// pointer before the active test does not change that (19). A named world pointer moves the world to
+// ECX and the state to EDX (21). Still the database pointer in ECX where retail keeps it in EDX.
 // score 11 (was 11): the entity pointer is materialised in EAX and the record is read through it;
 // retail folds the address into the load itself.
 // The fold is the scheduler's rewrite of `lea; mov cl, [eax+6]`; ours can't do it because the
