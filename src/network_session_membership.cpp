@@ -753,6 +753,11 @@ union s_60403
 // load/or/store instead of `or [esp + 0x18], eax`, the third loop's head padding, and the
 // previous/current EBX/EBP swap), that with the late mask 362 (aligned 84, the mask then shares
 // the map pointer's slot as in retail).
+// Round 181 (lane 3): the map pointer and discriminator renamed to sort as retail's slots 149
+// (identical code: these are spill slots, names don't order them); the previous-header ternary
+// with the pointer arm first 151; the two maps declared before the header stores 149 (identical);
+// one `previous + 0xc` base pointer for the three member reads 437 (1522 bytes); the third loop's
+// player pointer declared before the old player 152.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

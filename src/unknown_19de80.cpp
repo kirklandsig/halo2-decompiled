@@ -313,10 +313,10 @@ static inline bool teams_enabled_19e1c0()
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
 // and its ESI result register, but it merges the four name/team copy tails into one block, where
 // retail keeps a copy of the length and clamp in each case and shares only the copy itself.
-// score 390 (was 390): this round confirmed the blocker is the frame: the `volatile` result keeps the
+// Earlier: this round confirmed the blocker is the frame: the `volatile` result keeps the
 // frame at 0x208 where retail has 0x204, and a plain result merges the four name/team copy tails
 // (701); the team loops and the token/remaining register homes still differ.
-// score 390 (was 390): the switch-side-time branch now returns the remaining length directly,
+// Earlier: the switch-side-time branch now returns the remaining length directly,
 // the team branches keep the event's team in a local; frame 0x208 versus 0x204 and the copy tails differ.
 // Depth one with plain result 709; depth one with original result 443; unsigned mode 443;
 // opponent eligibility continue 443; opponent text initialized after scan 459; all restored.
@@ -384,6 +384,12 @@ static inline bool teams_enabled_19e1c0()
 // team+fallback 620/450/457; all counts 674; all with ordinary final result 691.
 // Original result storage and complete body restored; frame 0x208 versus 0x204,
 // capacity/token/result allocation and separate name-copy tails remain.
+// Round 181 (lane 3): the plain result keeps the token in EDI and leaves `remaining` on the stack
+// (retail: remaining EBP, token_length EDI, event EBX, token reloaded per test), which is what lets
+// the name/team tails merge. Plain result with the switch-side-time branch clamping into the result
+// 732 (1129 bytes); the volatile result with that clamp 431 (1398 bytes); the plain result with
+// every token test read through the parameter's address 691 (identical to the plain result); the
+// event teams read at each use 394; a long opponent counter 421.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

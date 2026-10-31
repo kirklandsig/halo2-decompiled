@@ -328,6 +328,19 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // velocity stores and deltas then run j, i where retail runs i, j), i, k, j 47, k, i, j 62, k, j, i 62,
 // j, k, i 49; subtractions i, j, k grouped before the products j, i, k / i, j, k / j, k, i 96/93/97, the
 // same with subtractions j, i, k 96/92/97 (375-378 bytes); one to three dead real locals 43 (identical).
+// Round 181 (lane 3; ~4000 statement orders screened in a compile-only harness that reproduces this
+// body's SSE code): with a named squared length, the rate stage j, k, i, the conversion, then k's
+// subtraction, i's subtraction/scale/delta, j's subtraction/scale, k's scale and the j, k deltas gives
+// retail's whole prediction block except k's tick product (ours multiplies into the ticks register,
+// retail in place in XMM2 and then copies to XMM3): 46 (366 bytes). That order with the delta scaled in
+// place j, k, i before the three sums 42 (all products ahead of the sums as retail, but the scale lands
+// in XMM0 and the products in its copies). Round 24's untried lead (j subtract/scale, i
+// subtract/scale/delta, j delta, k) 50; j and i subtractions first then i and j scales 86; the rate
+// stage j, k, i with j's subtract/scale/delta first 52 (369 bytes). Screen only: every order that puts
+// k's tick product ahead of j's keeps it in place but swaps the j/k delta registers; the conversion
+// read straight from the global, a short or late tick count, a const scale, `v = v * s` and a dot
+// product for the length change nothing; vector3f_scale + vector3f_add for the correction give
+// retail's scale register (XMM1) and i product but interleave the sums.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
