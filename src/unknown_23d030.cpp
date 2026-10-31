@@ -203,6 +203,11 @@ struct s_free_state_23d260
 // at the function's top, each and all together, 102 (same code); the normalize test as `!` 121 (1328
 // bytes) and as `0.f ==` 102 (same code); the roll update with the zero arm first 107. The zero stays
 // in XMM3 and the clamp constants in XMM1 in every form.
+// Round 23 (m3 lane 2, fast): on lane 16's normalize3d + yaw cosine/sine form (276 here too: retail's x87 length,
+// but the side.i copy is scheduled right after the forward.j store, before forward.k, which shifts everything after
+// by one instruction; zero still XMM3 and the divide after the lahf) the up stores written k, i, j 274; j, k, i 257;
+// i, k, j 286; j, i, k 283; i, j, k 285; side.j assigned before side.i 257 (the copy stays early and side.i is then
+// squared first), with side.k last as well 257; side.j before side.i on the original body 102 (same code).
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

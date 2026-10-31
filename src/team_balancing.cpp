@@ -567,6 +567,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
 // condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
 // clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
+// Round 23 (m3 lane 2, fast): an inline `operator<` on the solution (`candidate < *reference`) 188 (420 bytes, not
+// inlined under /Ob1), as a free inline operator 185 (422 bytes); the equality named first as a bool 67; the candidate
+// through a `s_balance_solution const *trial = &candidate;` pointer 67; the test as a forceinline optimizer member taking
+// the candidate (reference selected inside) 67. The candidate's count_spread still runs last.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -825,6 +829,15 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
 // named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
 // written at the open slots, the fill and the call) 74.
+// Round 23 (m3 lane 2, fast): the function moved ahead of 0x91e30 34; the maximum updated through a
+// forceinline `long *` helper 34 (the address is promoted); `unsigned long` total 35 (`jae`); the fill value
+// copied into its own local 34 (propagated); the fill as a pointer walk 63 (199 bytes, no rep stosd);
+// `(dword)` on the fill value 34. A permuter run (42 tries) reached 8 only with a value-changing
+// `(short)next_party` fill and swapped call arguments. Diagnostic, not keepable: `(short)next_party` in the
+// fill alone gives 7 with retail's roles (player count EAX, extra count EDX, every loop register as
+// retail); adding the clamp written as `(imbalance - open_slots < 0 ? 0 : imbalance - open_slots)` gives 5
+// (left: `lea ebx, [eax + edx]` against `[edx + eax]`, the movsx and its byte). So the roles follow whether
+// the rep stosd value is the maximum variable itself (ours) or a separate value loaded at the fill (retail).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

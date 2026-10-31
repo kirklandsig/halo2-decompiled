@@ -767,6 +767,10 @@ union s_60403
 // Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
 // at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
 // named `dword bit = 1 << i;` in the emission loop 149 (same code).
+// Round 23 (m3 lane 2, fast): the current member count named once (`member_count`, the mapping and member loop
+// bounds) 204 (frame 0x98); the previous count named for the mapping and removal loops 366 (1482 bytes); both 342;
+// the previous member address named in the outer mapping loop 149 (same code); the previous header as an if/else
+// store 364; the header through a local set in an if/else (0x609e0's form) 149 (same code). Current stays in EBX.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
