@@ -528,6 +528,13 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // pointer in every operator, operand order, helper, free/__stdcall and naming form; with two stack copies
 // the right operand of `<`/`==` runs first. So retail's candidate-first order is not a reorder that only
 // LTCG's readonly knowledge makes.
+// Round 135 (lane 4): a compile-only screen shows the order of two count_spread calls ranks their `this`
+// expressions, not the operands: `&best` (this + 0x2668) before the reference variable before `this` (current)
+// before the stack candidate, in both operand orders; a pointer local to the candidate (declared before or after
+// the reference), a storage-array candidate, a cast to const and forceinline helpers taking (reference,
+// candidate) or (candidate, reference) still query the candidate last (its address is propagated first). Real
+// builds: the reference pointer non-const 67; that with `candidate.cost() < reference->cost()` 67; with both
+// spread tests reference-left 65; count_spread non-const 67; the selection as a reference variable 67.
 // Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
 // (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
 // written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
@@ -541,6 +548,12 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // `continue` on `candidate > reference` and on equal spreads with `candidate cost >= reference
 // cost` 100 (512 bytes; first difference +0x7), the same with the reference on the left 100; the
 // candidate spread named and used in both tests (three queries) 80 (512 bytes).
+// Round 55 (lane 12; a one-file LTCG harness of this file reproduces the build exactly): the test in a
+// forceinline (candidate, reference) helper written `b > a || (b == a && cost)` 65, `a < b || (b == a && cost)`
+// 66; the qualified call `candidate.s_balance_solution::count_spread()` 67; `a - b < 0 || (a - b == 0 &&
+// cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
+// last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
+// first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -789,6 +802,16 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 0x7e210 781), with that parameter order 70; `result = false;` with the call as the test 82 (204
 // bytes); `player_count > i` 34; open slots computed after next_party 34; pre-increment in both
 // loops 34.
+// Round 55 (lane 12; the one-file LTCG harness of this file reproduces the build exactly): total and open slots
+// computed after the copy loop 96 (162 bytes), with the sum written extra first 96; total after the copy loop and
+// open slots just before the call 87 (172 bytes); open slots after the fill 87 (170 bytes); `open_slots =
+// team_count * maximum_team_size;` then `open_slots -= total;` 34 (same code). In the compile-only all-stack
+// first pass player count always takes a callee-saved register (EBX, or EDX/EBP when the sums move) and extra
+// count EAX or ECX, never EDX, so LTCG gives player count the leftover EDX.
+// Round 135 (lane 4, fast with 0x91e30): `bool result = false; if (balance_teams_by_count(...)) {...}` 82
+// (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
+// named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
+// written at the open slots, the fill and the call) 74.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

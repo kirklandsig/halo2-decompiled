@@ -292,7 +292,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 172 (was 193): frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
+// score 172 (was 172): frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
 // (retail rematerialized into EBX) and scratch (retail in node's slot) homes remain.
 // Earlier: aligned frame 0x1634 versus 0x162c and actor/slot/scratch homes remain.
 // Round 16: retail takes the actor index from its first stack argument into EBX, keeps the
@@ -358,6 +358,19 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // at the not-ready exit 282 (1069 bytes); the state as `(s_slot_23 *)slot` 172 (same code). Retail
 // still keeps the scaled actor index in ESI from entry and reloads `slot` into EBX late; ours keeps
 // `slot` in ESI from the 0x1e4be0 call and spills the index.
+// Round 17 (m3 lane 2, fast): retail's tail has ESI = actor_index (reloaded for the search) and
+// EBX = slot (reloaded at the unknown04 test); ours keeps EBX = actor_index and ESI = slot
+// throughout. view renamed fields 172 and node renamed prop_node 172 (same code: the 4-byte spill
+// slots node/view and character/offset stay swapped); the node state read into a block local
+// before the marker call 153 (that block becomes retail's; one-use call result, not kept), with
+// state assigned at the top 153, with the three clears through slot->unknownc and state declared
+// at the movement block 285 (1055 bytes); the prop index tested through a fresh actor_get 272.
+// Round 25 (fast): the state read from `slot` at every use 172 (CSE'd, same code); `view` renamed
+// `fields`, `node` renamed `prop`, `character` renamed `traits` 172 each (same code: names don't move
+// the node/view or index/character slots); prop index tested through actor_get before the actor
+// pointer 272; has_markers cleared before its test re-measured 273 (aligned 130 vs 133). Retail's
+// early state stores go through the `&state->unknown11` temporary ([eax - 2]), so its `slot` is not
+// live across the middle. Opening body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

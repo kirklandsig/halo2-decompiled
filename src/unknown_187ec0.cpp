@@ -277,6 +277,18 @@ struct s_seat_animations
 // loop 65 (0x188130 3), without the guard 67 (0x188130 3); `return &entries[i]` from the inner loop with a
 // final `return NULL` 89 (145 bytes, 0x188130 17); animation as a const reference parameter 55 (same code);
 // the inner guard written `!result && i < count` 66 (0x188130 12).
+// Round 55 (lane 12): the compare through the class's operator== 55; the parent field typed as the
+// class 55; no inner guard with the per-arm entry and `first = !type` 78 (0x188130 17); the array-select
+// entry with count spelled from `type == 0` ahead of first 80 (0x188130 1); the getter as one ternary 65
+// (0x188640 22, 0x188690 18). One-file harness (same code as the build): the parameter in either other
+// order, getter early returns/nested test/forceinline/long index, the entry field as the class,
+// `index(element_index)` or a default-constructed index assigned after, and all 120 declaration orders
+// of the address-read form change nothing (the address-read form stays at its EBX/EBP/EAX rotation).
+// Round 135 (lane 4, fast with 0x188130): the existing 0x188690 called through an `inline` declaration 79
+// (186 bytes); 0x188690 taking the material class by value, called here with its other callers updated, 77
+// (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
+// with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
+// `i` declared at function scope 52 (same code).
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {

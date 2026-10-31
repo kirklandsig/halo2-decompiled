@@ -539,6 +539,19 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // the loop by `break`. Trials: `return g_46fbe4;` for the proximity exit 76; that with the if/else
 // branchy def 226 (872 bytes); with the false-then-field def 133; the negated flag (`scan = true;
 // if (type == 6) scan = !field;`) 100 (aligned 18); the false-then-field flag as a long 210 (877).
+// Round 55 (lane 12, fast): `special = true;` preset, then `if (!(type == 6 && byte)) { special = false; scan }`
+// 187 (aligned 11: the only form found whose special path jumps over the scan to the tail as retail's does, with
+// NONE in EBX; left: the preset stores 1 to the slot before the test, and the flag stays in memory at the tail,
+// retail splits it, CL outside the scan and the slot inside, so retail's 10.0f temp reuses the slot); that with
+// the flag a long 192 (aligned 11), declared at function scope 211; `special = type == 6 ? byte != 0 : false`
+// with `special = false` at the scan's start 97 (aligned 11); `special = byte != 0; if (type != 6) special =
+// false;` with the scan's false 126 (862 bytes). Harness (this file plus its callees' files; same layouts as the
+// build): `&&`, if/else arms, the inverted if/else with `else special = true`, a single-exit inline flag getter
+// all lay the tail's first block after the special path; only a preset-true flag keeps the scan between.
+// Round 135 (lane 4, fast): the type test named (`bool turret = ... == 6;`) 47 (same code); `if (type == 6 &&
+// byte) special = true; else { special = false; scan }` 200 (872 bytes, flag memory-only); the vehicle type read
+// into a short local 47 (same code); `& (actor->unknown268 == true)` 47 (same code); `special = false; if (type
+// == 6 && byte) special = true; else { scan }` 202.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

@@ -184,6 +184,8 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // (1.0f / 65535.0f)` 70 (same code as 0x82e52f's), with field_10 after the cache update 147, with field_10
 // first 133. Everything after the compare is a scratch-register rotation that starts at field_10's temp
 // (ECX here once the seed pointer is dead, EDX in retail's order while it is live).
+// Round 51 (lane 16, fast with 0x248cc0): field_10 first with the fifth draw in its own brace scope 133
+// (876 bytes), with the cache compare block in its own brace scope 133 (both still split the compare).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
