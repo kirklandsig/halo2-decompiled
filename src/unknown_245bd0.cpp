@@ -304,6 +304,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // Round 32 (lane 11, fast with 0x19cb90/0x2461a0): the matching form's two keepable halves together (the
 // dot's inputs swapped and the unit-z zeros stored separately) 61; with the sum grouped j + (i + k) 61, flat
 // i, k, j 61, as i, k, j statements 61; flat i, k, j with the existing vector3f_scale 61.
+// Round 7 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80; the sphere helper forced inline where noted):
+// the difference scaled in place and copied to the plane after the arms (unit z into the difference) 205
+// (720 bytes: the difference goes to the frame), copied inside the scale arm 212 (726); a separate normal
+// built in both arms and copied 205 (720); a pointer to the plane's normal for both arms and the dot 57
+// (same code); the squared distance declared before the difference 57; the helper without `inline` 57
+// (still inlined, same code).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
