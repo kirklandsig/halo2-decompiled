@@ -95,6 +95,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
 // ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
 // restored; early EBP and read-size/count/cursor homes remain.
+// Round 33 (lane 14, fast): the token loop after the success test with a NULL first token at block scope 127
+// (the NULL path is threaded to the end, EBP still saved at the loop guard); the success test as one goto to
+// the block's exit 128; next declared at the block top 128 (same code); counters declared before the token
+// array 126 (retail's zero-store order: counters, first, last element); with 0x1a1480's size and success
+// parameters swapped (retail's ebx/eax/ecx setup) 126. Diagnostic only (reverted at once): the three read
+// outputs volatile 102, size then takes retail's lowest home and three-read clamp, so the clamp and the size
+// home need a volatile size, a form the rules forbid; EBP's late save is independent of it.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
