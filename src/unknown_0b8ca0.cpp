@@ -1507,6 +1507,12 @@ done:
 // Round 14 (0xa73b0's lookup forms): definition read at each use with a datum local 33 (236 bytes);
 // definition local with a datum local 33; long stride with the placements pointer 27 (236 bytes, the
 // product then extends the index into eax); the product's operands either way round, no effect (17/27).
+// Round 101 (lane 7), `--fast`: palette address at the call 37 (240 bytes); a screen of palette offset short/long x
+// palette local/at the call x size short/long x placement offset short/long 17/17/27/27/37/37/26/26 (short palette
+// offset) and 17/17/27/27/25/25/32/32 (long); short type 115 (267 bytes); a named datum local 33 (236 bytes: size
+// sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
+// definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
+// palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
