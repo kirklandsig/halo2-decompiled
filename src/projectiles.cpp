@@ -815,40 +815,44 @@ void function_fcbc0(long definition_index, point3f const *point, vector3f const 
 	effect_new_from_parameters(&parameters);
 }
 
-/* the effect values of an effects block's effect (+0x58), NONE without one */
+/* the effects and sounds of an effects block's effect (+0x58), three of
+   each, NONE without one:
+   0x1883e0 gives sounds as its "first" values and effects as its "second"
+   (retail passes the effect slots it reads back, the fifth argument, ecx
+   and edx, as 0x1883e0's second_value04, second_value and second_value0c) */
 // @retail 0xfd740
 void function_fd740(point3f const *point, byte const *effects, long index, long element_index,
-	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c,
-	long *second_value0c)
+	long *effect0, long *sound0, long *effect1, long *sound1, long *effect2, long *sound2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
 	if (effect_index != NONE)
 	{
-		function_1883e0(effect_index, false, point, g_47d8e0, element_index, index, 0, first_value04, second_value04,
-			first_value, second_value, first_value0c, second_value0c);
+		function_1883e0(effect_index, false, point, g_47d8e0, element_index, index, 0, sound0, effect0,
+			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (first_value04)
-		*first_value04 = NONE;
-	if (second_value04)
-		*second_value04 = NONE;
-	if (first_value)
-		*first_value = NONE;
-	if (second_value)
-		*second_value = NONE;
-	if (first_value0c)
-		*first_value0c = NONE;
-	if (second_value0c)
-		*second_value0c = NONE;
+	if (effect0)
+		*effect0 = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (effect1)
+		*effect1 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (effect2)
+		*effect2 = NONE;
+	if (sound2)
+		*sound2 = NONE;
 }
 
 /* the same for what a projectile hit: ignoring distance for multiplayer
-   objects the network owns */
+   objects the network owns. The three sounds come first (the stack
+   arguments) and the three effects after them (ecx, edx and edi in retail) */
 // @retail 0xfd7d0
 void function_fd7d0(long object_index, point3f const *point, byte const *effects,
-	long index, long element_index, long *first_value04, long *second_value04, long *first_value, long *second_value,
-	long *first_value0c, long *second_value0c)
+	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
+	long *effect1, long *effect2)
 {
 	long effect_index = *(long const *)(effects + 0x58);
 
@@ -863,22 +867,22 @@ void function_fd7d0(long object_index, point3f const *point, byte const *effects
 			if (g_4e6948->state == 2 && g_4e6948->mode != 4 && *(long *)((byte *)object + 0xd4) != NONE)
 				ignore_distance = true;
 		}
-		function_1883e0(effect_index, ignore_distance, point, g_47d8e0, element_index, index, 0, first_value04, second_value04,
-			first_value, second_value, first_value0c, second_value0c);
+		function_1883e0(effect_index, ignore_distance, point, g_47d8e0, element_index, index, 0, sound0, effect0,
+			sound1, effect1, sound2, effect2);
 		return;
 	}
-	if (first_value04)
-		*first_value04 = NONE;
-	if (second_value04)
-		*second_value04 = NONE;
-	if (first_value)
-		*first_value = NONE;
-	if (second_value)
-		*second_value = NONE;
-	if (first_value0c)
-		*first_value0c = NONE;
-	if (second_value0c)
-		*second_value0c = NONE;
+	if (sound0)
+		*sound0 = NONE;
+	if (effect0)
+		*effect0 = NONE;
+	if (sound1)
+		*sound1 = NONE;
+	if (effect1)
+		*effect1 = NONE;
+	if (sound2)
+		*sound2 = NONE;
+	if (effect2)
+		*effect2 = NONE;
 }
 
 /* sticks a projectile to what it hit; location is the hit's s_location, which the
