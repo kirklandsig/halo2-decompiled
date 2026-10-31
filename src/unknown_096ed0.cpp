@@ -213,6 +213,11 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // query 58; `type = 3` after the pending chain query 60; the active cursor stepped in its own
 // statement 61; the active item priority declared before its loop 55; the active size zeroed before
 // its priority 54. Retail keeps type's home last (+0x34) with the cursor, entry and item slots 4 lower.
+// Round 38 (m3 lane 10, fast): on the indexed active chain (170: active loop as retail; in the pending
+// loop ours keeps type in EBX, the vtable in ESI and spills the index, where retail spills type and keeps
+// the index in ESI and the vtable in EBX): the active callback through the peers local 218 (816 bytes);
+// handles_count declared before type 170; type as a dword 170; pre-increment in both chain loops 170;
+// the active arms as `if (item_priority <= 0.0f) blocked = true; else if (priority < item_priority)` 211.
 // @retail 0x98150
 long c_handle_table_450cd0::v1(long a1, long max_count, void *output)
 {

@@ -273,6 +273,10 @@ struct s_seat_animations
 // read through its address as in 0x1882d0 52 (same code); result declared before first 69
 // (0x188130 1); the array-select entry `&(first ? ... : ...)[i]` 62 (0x188130 3); `if (result)
 // break;` before the parent step 66 (185 bytes); count declared before result 61.
+// Round 38 (m3 lane 10, fast): the entries pointer selected once per outer pass, before the guarded inner
+// loop 65 (0x188130 3), without the guard 67 (0x188130 3); `return &entries[i]` from the inner loop with a
+// final `return NULL` 89 (145 bytes, 0x188130 17); animation as a const reference parameter 55 (same code);
+// the inner guard written `!result && i < count` 66 (0x188130 12).
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {
