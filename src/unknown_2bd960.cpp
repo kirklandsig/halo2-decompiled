@@ -648,6 +648,10 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Parameter names in either sort order 2; polygon test nested 9 fast; loop index
 // declared at the top 9 fast; count stored as one expression and halved from the
 // field 9 fast; while loop 9 fast (the restore pair unchanged in each).
+// Round 117 (fast, the restore pair read in each): loop bound `i != half` 9; step products as
+// `32 * (i + 1)` and `32 * i` 9; hill copied into a local at entry 9; `(short)index + 11` 9; a
+// test of index ahead of the count test (diagnostic) 33 with the pair unchanged, so the pair does
+// not follow the next use; const-qualified parameters 9; a 600 s permuter run, 54 variants, none below 9.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
