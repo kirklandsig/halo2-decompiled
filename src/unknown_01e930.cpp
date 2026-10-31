@@ -418,6 +418,11 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Together aligned 109 -> 74 but 322 at 1061 bytes: frame 0x44 (retail packs start with the first clock temporary
 // and the second clock temporary with the memory status, ours the other way), two zero stores to the status slot
 // at entry unexplained, D3DDevice_IsBusy out of line in every unrotated loop form, the size constant 10 in ebp.
+// Lane 18 round 6: the calls line up by position through SwitchToThread; after it ours trails by 13 instructions
+// (the rotated loop's second allocation call and the failure exit placed after the loop). Size query called with
+// `g_55ece8.format` (stays a call, 10 not in EBP) 245; that plus long width/height in 0x23e340 and its
+// declaration 252; do/while retry loop 315 (1061 bytes, unrotated, D3DDevice_IsBusy a call); the same with the
+// attempts branch ending in `continue` 315; do/while plus the format-field query 311. Original body restored.
 // Round 109 (lane 6, fast; the body re-checked against retail field by field, no value difference): the size as
 // `(flags & 0x100) ? ...` with the movie flags still from `large` 275; both through the mask, no `large` 269; the
 // retry counter declared after the block pointer 260, before it 260; `!(seconds < 0.1f)` 244 (same code). The x87

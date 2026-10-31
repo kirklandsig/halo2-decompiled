@@ -195,6 +195,9 @@ static inline void quaternion_transform_vector(
 // Round 228: two-argument in-place helper with pointer/reference quaternion and vector
 // contracts 290/290/290/290; each with independent cross scalars 313/313/313/313.
 // Original helper contracts and complete body restored.
+// Round 242: Complete shared scale/add-scaled output pipeline with staged-cross/shared-dot/
+// independent-half subsets 0..7 363/363/358/361/355/356/349/350. Native half storage recovers frame
+// 0x24 but grows code; original helper and body restored, quaternion/cross spill overlap remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

@@ -141,6 +141,12 @@ short __stdcall function_2551c0(long actor_index)
 // first in the loop 70; direction first in the loop 70.
 // Round 20 (lane 15, fast): `0.f < length` 43 (same code); the best update as direction, found, score 48 and as
 // direction, score, found 47; the distance part named (`reach`) 56 (815 bytes); the loop as `i != 8` 109 (814 bytes).
+// Round 36 (lane 10, fast), the rotation helper in the forms of other files' rotations: matched 0x1ecf50's
+// forceinline helper (named dot3f dot, then the projection) 56 (815 bytes), the same as plain inline 56; the
+// projection dot j, k, i with the j/k outputs projection-first 43; the dot i + (j + k) with crosses j, k, i
+// and axis-first projection terms 116 (814 bytes); matched 0x11d3b0's form (dot k, j, i) 43. Compile-only
+// (reproduces the pre-call SSE schedule): 216 forms (6 dot orders x 6 cross orders x 3 output forms, named
+// dot or not) never give retail's early a.k*v.i / v.j*a.i products (aligned 11-34 against 14).
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
