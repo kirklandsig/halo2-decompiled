@@ -531,6 +531,15 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // top 47 (aligned 40); allow_exit declared after the actor lookup 52 (44); `!!actor->unknown268`
 // in the bitwise def 47 (same code); the iterator declared at the outer block's top 47 (same code);
 // the seat index in a long 196.
+// Round 55 (lane 12, fast): `special = true;` preset, then `if (!(type == 6 && byte)) { special = false; scan }`
+// 187 (aligned 11: the only form found whose special path jumps over the scan to the tail as retail's does, with
+// NONE in EBX; left: the preset stores 1 to the slot before the test, and the flag stays in memory at the tail,
+// retail splits it, CL outside the scan and the slot inside, so retail's 10.0f temp reuses the slot); that with
+// the flag a long 192 (aligned 11), declared at function scope 211; `special = type == 6 ? byte != 0 : false`
+// with `special = false` at the scan's start 97 (aligned 11); `special = byte != 0; if (type != 6) special =
+// false;` with the scan's false 126 (862 bytes). Harness (this file plus its callees' files; same layouts as the
+// build): `&&`, if/else arms, the inverted if/else with `else special = true`, a single-exit inline flag getter
+// all lay the tail's first block after the special path; only a preset-true flag keeps the scan between.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

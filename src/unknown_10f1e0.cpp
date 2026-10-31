@@ -458,6 +458,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // Round 235: complete/conditional native pair-admission bool/byte, shift/shared mask
 // tests 37/42/37/42/37/42/37/42. The mask still splits the update; original admission
 // and complete executable body restored.
+// Round 25 (fast): bit_vector_test re-measured 42 (aligned 24); with a long node index local used by
+// the test, 0x1d90e0 and the set (nested ifs) 128, the same with the shift test 122, with a short
+// local 45; the first marker query's result named 42 (same code); iterator a tested before b 46.
+// The set still reuses the test's value numbers across 0x1d90e0. Body restored.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

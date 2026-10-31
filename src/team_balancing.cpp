@@ -532,6 +532,12 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
 // written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
 // the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
+// Round 55 (lane 12; a one-file LTCG harness of this file reproduces the build exactly): the test in a
+// forceinline (candidate, reference) helper written `b > a || (b == a && cost)` 65, `a < b || (b == a && cost)`
+// 66; the qualified call `candidate.s_balance_solution::count_spread()` 67; `a - b < 0 || (a - b == 0 &&
+// cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
+// last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
+// first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -773,6 +779,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // to NONE before the call 34; declared there with its NONE initializer 65 (190 bytes); open slots
 // computed just before the call 87 (170 bytes), with imbalance at the top too 87; next_party declared
 // after the array and index 34.
+// Round 55 (lane 12; the one-file LTCG harness of this file reproduces the build exactly): total and open slots
+// computed after the copy loop 96 (162 bytes), with the sum written extra first 96; total after the copy loop and
+// open slots just before the call 87 (172 bytes); open slots after the fill 87 (170 bytes); `open_slots =
+// team_count * maximum_team_size;` then `open_slots -= total;` 34 (same code). In the compile-only all-stack
+// first pass player count always takes a callee-saved register (EBX, or EDX/EBP when the sums move) and extra
+// count EAX or ECX, never EDX, so LTCG gives player count the leftover EDX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
