@@ -64,6 +64,8 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// score 439 (was 439): retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
+// Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // Round 30 (lane D): the permuter found no better form, so the body is unchanged. What still differs:
 // retail calls 0x5b080 where this body expands it and expands the elapsed-time helpers 0x75870/0x75890
 // where this body calls them, retail's frame is 0x3e4 against our 0x3e8, and the result byte and the

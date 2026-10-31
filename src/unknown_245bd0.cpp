@@ -322,6 +322,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // vector3f_scale in place 176 (696 bytes); the sum grouped `i + (k + j)` 61, `k + (j + i)` 57. Harness
 // screens (exact here): the eight other flat/parenthesized groupings 57-61; vector3f_scale with the
 // reciprocal in the call 57, with length_sq3f 152.
+// Round 117 (fast): the listed pointer form still matches; its pointer sum alone (original dot and
+// chained zeros) 123, with i and j through the pointer and k direct 169. With the dot's inputs swapped
+// and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
+// difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
+// `j + (k + i)` 61; k, i, j statements 61.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

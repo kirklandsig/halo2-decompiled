@@ -7447,7 +7447,7 @@ void __stdcall function_1f490(long unused, long font, long character, long color
 extern dword g_5093b4;
 dword g_5093b8;
 dword __cdecl pack_color3f(color3f const *color);
-void function_25a10(vector3f const *direction, point3f const *position, byte const *state);
+void function_25a10(byte const *state, point3f const *position, vector3f const *direction);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 
 // @retail 0x132d0
@@ -7484,7 +7484,7 @@ void __stdcall function_132d0(s_frame_view_2c560 const *frame)
     if (((byte const *)frame)[0x26c])
     {
         memcpy(&g_48574c, ((byte const *)frame) + 0x14c, 0x120);
-        function_25a10(&g_4b9dac, &g_4b9da0, (byte const *)&g_48574c);
+        function_25a10((byte const *)&g_48574c, &g_4b9da0, &g_4b9dac);
     }
 }
 
