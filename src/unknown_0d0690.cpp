@@ -55,7 +55,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // the blend registers, the color0 store, the in-place strength add and the sete collision test match.
 // Left: the i == 0 block loads the strength before the colour copy, so the copy advances ebp (retail
 // copies through `lea eax, [ebp + 4]` first), and 0x131c20's `&color` is formed in edi and copied to ecx
-// (retail: ecx, then edi). Round 36 (lane 1, fast; aligned = difflib count over the listing): colour copy
+// (retail: ecx, then edi). Round 96: a colour output pointer for blending and packing 30 (identical);
+// consuming the returned blend pointer 194; colour first with the strength-sum operands reversed 121;
+// the shared three-component setter for that copy 163; an entry-colour pointer for copy and blend 168;
+// the output pointer for both in-place arguments, and also for the copy, 30 each (identical);
+// the entry-colour pointer for the copy alone 168. Original copies and call restored.
+// Round 36 (lane 1, fast; aligned = difflib count over the listing): colour copy
 // first 121 (828 bytes, aligned 5: only the load-first strength add and the edi/ecx pair differ); colour
 // first with the copy field by field 163, `0.0f < power` test 121, add re-read as `((real *)entry)[4]` 121,
 // typed colour entry { color4f color; real strength; } 121, typed light record (yaw/pitch/count/colours)
