@@ -711,6 +711,9 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
 // test); the value alone before the loop 137; the variant alone before the member count 52. Named
 // copies inside the loop or a `long const *` to the value are propagated back (session ESI).
+// Round 117 (lane 6, fast with the inlined callees): player loop bounded by `i != 16` 56; player index declared at
+// function scope 55 (same code); the team argument as plain `i` 55 (same code); `dword` player index 56; `short`
+// player index 128 (492 bytes).
 // Round 183 (lane 3): `const byte *variant = session->data4db0;` declared before the summary getter and
 // passed to 0x6e910 gives the session EBX (index ESI, player EDI) and 22 (kept in round 184 by coordinator
 // ruling); with it 0x6e500 and 0x72700 match in their recorded forms. Left:

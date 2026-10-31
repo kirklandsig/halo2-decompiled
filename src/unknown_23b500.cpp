@@ -63,11 +63,11 @@ struct s_spawn_scenario_23aea0
 // (g_502248: four longs, the two shared values, then the twelve type records) still folds the
 // destination into a pointer induction (148), with the type records read as dwords or as reals,
 // so retail's integer table offset with its base in the displacement stays out of reach.
-// score 105 (was 105): the destination still folds into a pointer induction — a struct-typed
+// Earlier (105): the destination still folds into a pointer induction — a struct-typed
 // member access and a byte-offset access both canonicalise back to it — so retail's integer
 // table offset with its base in the displacement stays out of reach; the definition register
 // (ECX against retail's EAX) and the override block's extra lea esp, [esp] still differ.
-// score 105 (was 105): definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
+// Earlier (105): definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
 // Earlier (105): a block struct over the merged global, byte offsets taken from the array and
 // a real global struct all leave VC strength-reducing the destination into a pointer induction, so
 // retail's integer offset with its base in the displacement is not reachable from this side.
@@ -153,6 +153,11 @@ struct s_spawn_scenario_23aea0
 // stepping by six (`i < 12; i += 6`) 105; one type loop through a source record pointer and
 // `types[type - 2]` 123; a walking source pointer with dword copies 255 (278 bytes). One-link
 // screens with the global unresolved (an external symbol) still fold it into a pointer induction.
+// Round 40 (screen, base 100): a per-type memcpy in one type loop 257 (279 bytes), in the two-by-six loops
+// 145 (406 bytes), into `&g_502258[type * 3 - 4]` 257; `long index = type * 3` named in the nested loops 98
+// (aligned 25), in one loop 252; a named dword source record pointer 118; a types pointer two records below
+// the array 157 (378 bytes); a two-dimensional view 100; real-typed fields in one type loop 100: always the
+// pointer induction.
 // @retail 0x23aea0
 void function_23aea0()
 {

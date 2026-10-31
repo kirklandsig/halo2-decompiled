@@ -58,6 +58,11 @@ void function_1d6ad0(s_havok_component *arg_0, s_physics_model_owner *arg_1);
 // only where eax holds a live value; nothing visible is live in eax here).
 // Tried: field read through the owner at each use 9; mask declared first 9;
 // existing bit_vector_fill 9 (188 under the old inline_depth(0) pair, now removed).
+// Round 55 (plain checks; --fast moves the component into EBX here): memset before the node
+// list local 9; `dword local_2[8] = { 0 };` at the memset 20 (the rest still ECX); loop counter
+// declared before its for 9; memset through a forceinline wrapper 9; node list local read before
+// the section call 22. Diagnostics: the first loop from 1 keeps ECX; the memset ahead of the
+// section call gives EAX (shared with its `false` push).
 // @retail 0x1d5940
 long __stdcall function_1d5940(s_havok_component *arg_0, bool arg_1, bool arg_2, bool arg_3)
 {

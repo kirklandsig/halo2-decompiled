@@ -630,6 +630,12 @@ struct s_player_axes_153d10
 // cross3f, cross3f_staged or the cross through forward/up 41; no axis pointers 35 and the axis
 // pointers after the cross 10 (all six up first); only forward or only up declared before the
 // cross 8/6 (three products flip).
+// Round 38 (plain): up pointer declared before forward 6; cross rows in i, k, j order 10; only an up
+// pointer (cross and dots of up through it, forward through axes) 16; up read through its pointer in
+// the j row only, every other read through axes 102; delta declared before the axes 2. A compile-only
+// screen of the whole SSE block (exact here: 2, 6, 10, 16 as the plain checks) over ~1100 spellings of
+// each cross/dot read through forward/up or axes and both pointer orders found none at 0 (best 10);
+// a few spellings fix the cross alone but then reorder the dots.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
