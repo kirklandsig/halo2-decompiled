@@ -1560,6 +1560,14 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// score 307 (was 307): extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
+// reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
+// score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
+// retail's layout: the original body is restored.
+// score 307 (was 307): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
+// playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
+// once into a stack slot. The definition, index and ring homes still differ.
 // score 307 (was 307): frame 0x11c versus 0x128 (the detail request is passed on as the 0xa0-byte sound play state,
 // this file's view stops at 0x90; retail also keeps the playback pointer in EDI, ours in a slot); retail reads each
 // pitch-range loop's count once into a stack slot; definition, index and ring homes still differ.
@@ -1910,6 +1918,13 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
+// score 335 (was 335): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
+// a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
+// and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
+// locals in a different order and the gap cannot be closed by padding;
+// retail reads the track value and the source scale before the clear, the one-fill clear and the
+// inlined 0x221810 (BLOCKED-BY 0x221810, another file) and the inlined 0x12a420 at the
+// stop_channel site remain.
 // score 335 (was 335): frame 0x4b4 versus 0x4bc (retail reads the track value and the source scale before the
 // clear), the one-fill clear, 0x221810 inlined (BLOCKED-BY 0x221810) and 0x12a420 inlined at the stop_channel site remain.
 
@@ -2123,6 +2138,10 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// score 615 (was 615): the entry and the homes through the creation call still differ, the gains
+// clear uses retail's store form (retail stores [ebp+0xc4..] from eax), the energy loop keeps its
+// padding jump in retail, the track loop holds the state in EBX and the track in EBP, and the
+// impulse bits are still tested twice unmerged with the field_c_4 = 0 reload.
 // score 615 (was 615): entry and homes retail's through the creation call; the gains clear (memset's
 // lea form, retail stores [ebp+0xc4..] from eax), the energy loop's padding (jmp + 8 bytes in retail), state held
 // in EBX and track (not track_definition/i) in EBP in the track loop, the impulse bits tested twice unmerged and
