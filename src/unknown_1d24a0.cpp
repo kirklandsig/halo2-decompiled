@@ -105,7 +105,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
+// score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
 // (xor/dec/jne/add): retail's scale helper is unrolled. The helper as three statements gives retail's frame
 // 0x1d4 and the same 32 calls with matching instruction counts between calls in all but four segments, but
@@ -218,6 +219,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // the residual helper alone 913; the two linear-block residual subtracts through the same helper too 906,
 // either one alone 902 (same code); on 902 a long scale counter 933; the attached object index read once into
 // a named local 926. A renamed second activity bool moves no byte slot.
+// Round 455: Shared scaled accumulation at radial correction/planar projection/both/planar correction/
+// radial-planar corrections/both planar sites/all: 941/917/941/917/941/917/920; all with existing
+// point-difference producer 920. Frame remains 0x1f0; original residuals, helpers and body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

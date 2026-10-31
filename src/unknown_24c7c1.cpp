@@ -595,6 +595,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // beside split_screen). On the bool timer (LTCG env link, aligned counts against 123 for the base):
 // tutorial colour as if/else 131, tutorial ternary inverted 121, `height` declared before the flags
 // 126 (1901 bytes), scripted tested first 235; long timer with the tutorial if/else 133.
+// Round 35 (lane 11, fast; unchanged source 114 fast): the three message flags declared uninitialised
+// before the font 114 (same code); as bools so declared 191 (aligned 112 -> 111: timer/tutorial at
+// -0xe/-0xd, scripted still at -2 where retail has -0xf/-0xe/-0xd); tutorial colour as `flag ? a4 :
+// (b6 & 1) ? a8 : a4` 114 (same code); count as `split_screen ? 3 : 4` 479; short height 114 (same code).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

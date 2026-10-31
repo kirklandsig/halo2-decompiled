@@ -188,6 +188,8 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // bytes); the 0x173ba0 mask as `0xf80f & ~field_44` 70; the child's unknown08 as one ternary store 98;
 // `field_02 += 1` 70; `NONE != child` 70. Compile-only with field_10 first, all split: a label before
 // the compare, a flags read between, the sample through a named local, operands swapped, a cache local.
+// Round 51 (lane 16, fast with 0x248cc0): field_10 first with the fifth draw in its own brace scope 133
+// (876 bytes), with the cache compare block in its own brace scope 133 (both still split the compare).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

@@ -528,6 +528,13 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // pointer in every operator, operand order, helper, free/__stdcall and naming form; with two stack copies
 // the right operand of `<`/`==` runs first. So retail's candidate-first order is not a reorder that only
 // LTCG's readonly knowledge makes.
+// Round 135 (lane 4): a compile-only screen shows the order of two count_spread calls ranks their `this`
+// expressions, not the operands: `&best` (this + 0x2668) before the reference variable before `this` (current)
+// before the stack candidate, in both operand orders; a pointer local to the candidate (declared before or after
+// the reference), a storage-array candidate, a cast to const and forceinline helpers taking (reference,
+// candidate) or (candidate, reference) still query the candidate last (its address is propagated first). Real
+// builds: the reference pointer non-const 67; that with `candidate.cost() < reference->cost()` 67; with both
+// spread tests reference-left 65; count_spread non-const 67; the selection as a reference variable 67.
 // Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
 // (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
 // written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
@@ -785,6 +792,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // team_count * maximum_team_size;` then `open_slots -= total;` 34 (same code). In the compile-only all-stack
 // first pass player count always takes a callee-saved register (EBX, or EDX/EBP when the sums move) and extra
 // count EAX or ECX, never EDX, so LTCG gives player count the leftover EDX.
+// Round 135 (lane 4, fast with 0x91e30): `bool result = false; if (balance_teams_by_count(...)) {...}` 82
+// (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
+// named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
+// written at the open slots, the fill and the call) 74.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

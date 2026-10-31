@@ -965,6 +965,12 @@ bool __stdcall function_2399da(long controller_index)
 // Round 2 of lane 18: validity test through an inline helper (as 0x24b5bc's file has it) 90; flat
 // dispatch (remove, deny, rank 3, set) 90; set-rank first with deny and rank-3 returns 95; removal
 // re-deriving the identity from the selection 147; one shared controller-mask local 176.
+// Round 17 (m3 lane 2, fast): rank read through a pointer to the parameter 90; the permission test
+// as a named bool 90; task index declared at the top 90; `own_rank >= rank` 90; the over-rank
+// denial first (`rank != NONE && rank > own_rank`) then remove/rank-3/set 95 (437 bytes); 1-8 unused
+// initialised locals at the top (diagnostic: symbol numbering) 90 each, so the EAX/ECX choice is not
+// a numbering tie; a 600 s permuter run, best 82 only by duplicating the whole rank dispatch into
+// both permission arms with a short cast (not applied).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

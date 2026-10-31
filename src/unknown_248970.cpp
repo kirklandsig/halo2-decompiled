@@ -60,6 +60,9 @@ public:
 // head and zeroes the offset after the zero-trip test.
 // At 102 (was 198): the three coordinate differences stayed in the x87 stack until the end of
 // the loop body, so the squared sum was followed by the radius multiply and the three pops at the
+// Frame 0x14 and entry agree; delayed coordinate cleanup and child allocation/link homes remain.
+// Earlier score 102 (was 198): the three coordinate differences stay in the x87 stack until the end of
+// the loop body, so the squared sum is followed by the radius multiply and the three pops at the
 // end; retail frees the differences right after the square root (fstp st(3) and two fstp st(0)),
 // and neither a nested block nor writing each difference out at every use freed them that early
 // (106); the child loop still takes the pool pointer in edi where retail takes ebx.
@@ -71,6 +74,9 @@ public:
 // swapped, the activation branch lays the active arm first, the viewer's maximum and x87
 // cleanup differ, and the child loop's offset and counter homes are swapped.
 // At 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
+// Earlier score 102 (was 198): the position copy writes the location member, the activation branch
+// Earlier score 172 (was 198): the head snapshot and the loop's head are separate locals, so the
+// Earlier score 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
 // retained head/position homes and x87 cleanup differ.
 // Earlier metadata/head/count homes differed.
 // Earlier convention mismatch: activation was stacked with six words, while
@@ -247,6 +253,7 @@ public:
 // (both move the location into EBX and the flag to the stack: 0x175270 100); the break test right
 // after the allocation (init unconditional) 95 and before the init's own test 95 (the test still
 // threads); the init stores through DATUM at each use 136 (749 bytes, location in a register).
+// Round 455: On the recovered head/count/frame graph, separate allocation result 124; shared initialization/link receiver 171; plain remaining count 118; both 157; readonly metadata counterparts 124/171/118/157. Original body restored.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

@@ -1370,6 +1370,11 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // on a re-fetched matrix, gives no fold in either, but rows j/k then end with the forward product
 // (retail starts them with it); dropping any one marker-arm copy also removes the fold; duplicated
 // copies, copy order, dead locals (1..8), `!= 0`/`-1`/`1.f` spellings and declaration placement do not.
+// Round 51 (lane 16; compile-only screen of this file, which reproduces the node arm: 19 differing SSE
+// lines for the unchanged source): a file-local rotation helper in all 6 input-load orders x 3 row
+// orders 19..54 (i, j, k loads and i, j, k rows stay best); with up-first rows (0x163db0's matched plane
+// rows) 19 (same code); unused reads of the node matrix axes before the rotations 19/28 (diagnostic);
+// the node arm first in source (marker test inverted) 44.
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
@@ -1651,6 +1656,9 @@ extern s_object_list *g_4de2f4;
 // Round 30 (lane 13, fast): the tint copied with memcpy 49 (same code); rgb copies in the order
 // first, second, pair_second, pair_first 52; second, first, pair_first, pair_second 54; the tint copied
 // between the second and third copies 59 (1612 bytes), after the first copy 55 (1612 bytes).
+// Round 51 (lane 16, fast with 0xbab40/0xbad50/0x131d60/0xc0b00): the pointer read at the second 0x131d60
+// call and `light->fraction` at the first 49. 0xbab40 (ours, 28) with the 1.0 case's own `return enabled`
+// 117, with a named early result too 115 (this function stays 49 with either).
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
 {
