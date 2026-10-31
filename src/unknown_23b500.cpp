@@ -158,6 +158,15 @@ struct s_spawn_scenario_23aea0
 // (aligned 25), in one loop 252; a named dword source record pointer 118; a types pointer two records below
 // the array 157 (378 bytes); a two-dimensional view 100; real-typed fields in one type loop 100: always the
 // pointer induction.
+// Round 62 (lane 12, fast): in retail, 18 of the 21 loops that keep an integer offset with the global in
+// the displacement compare unsigned (`dword` or sizeof-count counters, `jb`: 0x137c20, 0x193010, 0xe99a0,
+// 0x6bff0); this one and 0x238b4a (three tables) use `jl`. A standalone compile of this body gives the
+// integer offset (unrolled by six, `cmp eax, 144; jb`, rebased to 0) only for a zero-based `dword` counter
+// over a struct-typed global; through the cast `dword` array, or from a start of 2, it counts down with a
+// pointer, and every signed counter folds the global into the pointer. Real: one zero-based loop to
+// `NUMBEROF(globals->types)` 141 (375 bytes, countdown); the inner batch counter `dword` 105 (same code);
+// both batch counters `dword` 141; one type loop to `2 + NUMBEROF(globals->types)` 141; the scenario read
+// first 110.
 // @retail 0x23aea0
 void function_23aea0()
 {

@@ -112,6 +112,13 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 461: shared doubled shift count long/short 88/100; both remaining coordinate parts
 // long, direct/long/short count 82/88/100; native short parts 87/94/91. Original
 // arithmetic, coordinate captures and full body restored; count homes and promotions remain.
+// Round 62 (lane 12, fast, with 0x136140): a compile-only screen of this body under /O2 /arch:SSE /Gr turns
+// every minimum form (`a > b ? b : a`, `a < b ? a : b`, `c = a; if (a > b) c = b;`, if/else, `c = b;
+// if (a <= b) c = a;`, a long result) into cmov, so retail's jle/mov branch still points at a non-SSE object.
+// A `MINIMUM` macro beside the file's `MAXIMUM` 82 (same code); that with the existing log2_floor for both
+// logarithms 87 (the height count then takes the height argument's slot, where retail spills the common
+// count); on that, both long copies after the mask 100 (0x136140 125), y copied at entry and x after the mask
+// 93 (0x136140 6), x at entry and y after the mask 93 (0x136140 28).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

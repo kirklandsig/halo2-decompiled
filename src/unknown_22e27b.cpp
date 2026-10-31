@@ -257,6 +257,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // with disposal false from its declaration and direction-first frame sum 96; timing locals initialised at their
 // declarations (frame time, next time, elapsed) with the frame declared before the loop 96; disposal declared
 // before an uninitialised restart flag cleared before the loop 111 (first difference +0xf).
+// Round 62 (lane 12, fast): next time's home flips with each of two changes. Plain body with the expression
+// restart: [ebp-0xc] (96); plain body with `if (type == 0 && (bit 1 || bit 2)) restart = true;` in both
+// boundary blocks: EBX, 226 (645 bytes); the fraction right after the elapsed clamp with the expression
+// restart: EBX, 207; the fraction there with the true-only restart: [ebp-0xc], 197 at 645 bytes, and then the
+// prologue, the timing homes, the zero cached in EBX and the whole loop head are retail's, with only retail's
+// two false stores (`mov byte ptr [ebp-1], 0`) missing. The true-only test is a diagnostic (retail stores both
+// values). On the fraction-first form: restart as an explicit if/else 207 (same as the expression); next time
+// scoped to the `for` 206; no per-pass disposal reset 207.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

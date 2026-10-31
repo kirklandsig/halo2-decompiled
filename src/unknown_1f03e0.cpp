@@ -1523,7 +1523,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 230 (was 230): Frame 0x28 agrees; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// score 221 (was 230): Frame 0x28 and the 1066-byte length agree; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
 // The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
 // forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
@@ -1578,6 +1578,15 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // passes it in ECX); shape_dot as a macro 230; the five accept assignments written in each of the three arms 361.
 // Round 248: complete native request/result/tuning-field identities, four double-magnitude
 // forms 230 each; four real-magnitude counterparts 233 each. Original body and types restored.
+// Round 62 (lane 12, fast): the velocity pointer declared after the four reset stores 221 (kept, plain
+// 221, retail's length; the second 0x1f1df0 call is still inlined). Airborne as `(flags & 8) || (flags & 0x10)`
+// (a compile-only screen gives retail's `xor al, al / mov al, 1` for it) 312 on the old body, 311 with the
+// `real` length, 308 on the real-length velocity form (the component pointer moves from EBX to ESI); the
+// selected contact's normal through `byte *contact = contacts + (short)selected * 0x48` 241 on the real-length
+// body (retail's separate `add eax, 0x28` appears); on the kept form: the `real` length 224 (the loop's k/j
+// products then match, the i term flips), `selected`/`highest` declared first in the block 220, the same with
+// the `real` length 223, the contact list read at each use 222, the not-supported arms written first 250,
+// the velocity after `flying` 221, and (with the `real` length) the motion pointer read before the reset 294.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
@@ -1589,11 +1598,11 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
     *(dword *)(out + 4) &= ~1;
     if (!preserve)
     {
-        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         history->normal = *g_4687b0;
         history->material = g_47d8e0;
         history->unknown58 = NONE;
         history->unknown70 = 0.0f;
+        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         bool flying = ((**(dword **)request >> 3) & 1) != 0;
         long selected = NONE;
         long highest = NONE;
