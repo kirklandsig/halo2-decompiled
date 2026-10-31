@@ -2284,6 +2284,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // (`*(s_havok_property_word const *)&value`, as the out-of-line setter does) 163 (1467 bytes); the speed
 // sum before the velocity sums 91 (same code);
 // the result written through `body->unknown30` with no pointer local 99.
+// Round 464: success-boundary velocity/speed/other-contact default subsets
+// 339/192/305/284/412/337/411; velocity and speed at material admission with
+// late other-contact zero 411. Original default lifetimes and helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
