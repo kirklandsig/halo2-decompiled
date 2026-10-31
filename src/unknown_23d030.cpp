@@ -191,6 +191,9 @@ struct s_free_state_23d260
 // length in a named local 103 [59]; side declared at the top 102 [59]; `if (!normalize_inline(&side))` 121
 // [59] (1328 bytes); normalize3d with the yaw cosine/sine locals re-measured 276 [66] (x87 length exact,
 // the rotation's products then change operand order). The zero carrier stays XMM3 in every form.
+// Round 214: inverse movement setter 256; transformed position setter 102; world position setter
+// 102; inverse/transformed setters 277; inverse/world setters 277; both position setters 258; all
+// three setters 277; native world position update 195.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

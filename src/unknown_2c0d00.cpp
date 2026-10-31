@@ -257,6 +257,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // the calibrated control; original confidence defaults, query storage, qualifiers and body restored.
 // Round 321: Mask-owned output selection with word obstacle/byte sphere/Boolean moving subsets 0-7: 948/947/960/959/949/948/963/962f (control 866, full 899).
 // Round 321: Frame/actor/unit homes remain; all original Boolean, masks, qualifiers and body restored.
+// Round 35 (lane 11): location and raised point as plain locals instead of the grouping struct 888 fast
+// but 906 plain (fast misleads here; frame 0x2cb4). All three volatiles dropped 1014f (aligned 630 -> 583;
+// settings in EBX, zero in EDI), that with the settings volatile kept 1014f (same code), plus self_unit
+// declared first 1014f. On the plain-local form (fast): all volatiles dropped 1005 (frame 0x2cb0, aligned 525); no unit_index volatile 924; no actor
+// volatile 974 (aligned 524); no settings volatile 904; raised at function scope 888; location declared
+// before the actor block 888. Ours hoists the object-table global load to the entry for both lookups;
+// retail loads it inside each block (four loads against three).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *volatile settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -792,10 +799,7 @@ PRIVATE __forceinline real normalize_offset_direction_2c(point2f *v)
     if (fabs(magnitude) < 0.0001f)
         magnitude = 0.0f;
     else
-    {
-        real inverse = 1.0f / magnitude;
-        scale_offset_direction_2c(inverse, v, v);
-    }
+        scale_offset_direction_2c(1.0f / magnitude, v, v);
     return magnitude;
 }
 
@@ -1127,168 +1131,66 @@ __declspec(noinline) real normalize2d(point2f *v);
 
 real function_11cc90(vector2f const *a, vector2f const *b);
 
-// score 172 (was 172): frame 0x34 and the first 0x3e bytes agree; retail keeps the shared return-true block
-// (round 79: register-masked diff 27 lines; side directions forward y from the x87 stack, `fst [y]`,
-// and keep it in xmm0 across the length test)
-// after the length test (both final compares jump back to it), forwards x87 values in the direction
-// normalizations, and rounds the second side through memory before its clamp.
-// Round 144: VC keeps the last of the merged `return true` blocks; with both final compares as
-// `return a < b;` the early block sits after the length test as retail's (al 85 against 88) but the
-// tail becomes `mov eax, 1` / `xor eax, eax` returns, 371; distance compare alone 254, angle alone 254;
-// one `result` assigned from each compare, returned once 172 (identical); `result = false; if (c) result
-// = true;` in each 226; length test `<= 0.0f` / `0.0f >=` 172/172; body under `if (length > 0)` with
-// `return true` last 243.
-// Round 76: signed angles through the existing function_11cc90 (single-result form there) 419, masked 90;
-// with explicit true/false distance return 332; distance compare first < second 407; angle compare
-// first sum < negated second sum 270; with both explicit returns 240; distance sums target first 172
-// (kept); single-exit result 440; direct direction initialisers 409; length test as <= 0 or 0 < length
-// unchanged; the file's other normalize helper unchanged; distances computed per pair 240. On 172: side
-// dots through dot_product2d 372 (1480 bytes, masked 27), plus if-form clamps 358, plus no volatile on
-// the first side 363 (1465 bytes, masked 22, frame 0x38: the first side gets its own slot); no volatile
-// alone 379; clamps as if statements 379; clamps first side first 397.
-// Earlier: frame 0x3c versus 0x34 and angular/planar homes differ.
-// Zero-first length guard 342; cross before angle 413; direct angle selection 403;
-// frame pointer 458; shared side dot products 384.
-// Nested expansion zero 1163, one 342; global optimization off 2011; size policy 518;
-// ordinary signed-angle inline 342.
-// Earlier: Frame 0x3c versus 0x34 and angular homes remain; direct perpendicular inputs 383; existing shared angle target pair 403, all four 419, endpoint pair 385; all shared angles plus direct perpendicular inputs 440 (fast).
-// Earlier: frame 0x3c versus 0x34 and angular homes remain;
-// early endpoint wrap 365; target-angles first 387; endpoint direction reuse angular 374,
-// distance 360, both 376; angular reuse with direction or projection names each 374 (fast).
-// Round 122: Perpendicular reuse at first/second angular endpoint 402/393; first/second distance
-// endpoint 346/350; first endpoint in both branches 382.
-// Frame 0x3c versus 0x34 and angular homes remain; direct perpendicular inputs 383; existing shared angle target pair 403, all four 419, endpoint pair 385; all shared angles plus direct perpendicular inputs 440 (fast).
-// frame 0x3c versus 0x34 and angular homes remain;
-// Round 342: first-clamp tests 342; second-clamp tests 342; separate second-clamp scalar 410;
-// second angular endpoint reuse 373; second distance endpoint reuse 360.
-// Round 54: first/second directions initialised directly 376 (x87 forwarding matches, y preload
-// missing), through normalize_local2d_2c 342/376, out-of-line normalize2d 414, plain first side 374.
-// Round 194: shared branch vectors all/targets/endpoints 361/350/342; endpoint-first
-// shared declarations and entry scope 361/361; shared vectors with ordinary first side
-// 374, native result 385, both 387. Original workspaces and qualifier restored.
-// Lane 9 r23: shared normalize2d_fast for the side directions/the direction 172/172 (same code);
-// volatile on the second side instead of the first 397; normal as two scalars 236; second side
-// computed before the first 392. Retail keeps the first direction's y in XMM0 from its subtraction
-// (fst/movss) and stores the second side through memory, the first side in the direction's slot.
-// Lane 9 r25: `<= 0.0f` length test and `>= 0.0f` side test 172 (retail's comiss operand order, but the
-// merged return-true block still sits at the end); both results returned as comparisons 370 (the
-// return-true block moves to retail's place but the results widen to eax), angle or distance result
-// alone 254/254; one result assigned in both branches 172; `if (!(a < b)) return false; return true;`
-// at both ends 171 (retail's final `ja`); nested body with one return true 243; result = true with
-// false assignments 424.
-// Round 10 (lane 10): y-first squared length for the side directions and swapped cross operands
-// in 0x11cc90 give identical code; final compares as `c ? true : false` identical. Lead: side dots
-// through dot_product2d with no volatile, if-form clamps and the SECOND side computed first 350
-// (1465 bytes, frame 0x34, the first side shares the direction slot, aligned 22); plus length
-// test `<= 0.0f` and side test `>= 0.0f` (retail's comiss orders) 349 (aligned 19); plus both
-// final compares `return a < b;` 339 (early true block in place, aligned 13: left are the 32-bit
-// return values that no longer merge into it and the second normalization's hoisted x load).
-// On that lead: `(bool)` returns 349; one value return only 373; `if (!(c)) return false` 349;
-// nested body with final `return true` 362; shared `return false` after an if/else 361;
-// single-exit result 376; explicit y-first side expressions 358.
-// Round 150 (fast): the lead rebuilt (`<=` length test, dot_product2d sides second first, if-form clamps,
-// `>=` side test, both finals `return a < b;`) 339 at 1467 bytes, aligned 13. Its first difference: in both
-// side normalizations ours loads x before the magnitude test and scales it in place (`x * inverse`, no
-// else-arm load) where retail scales `inverse * x[mem]` and loads x in the else arm, as it does in the
-// direction's normalization. On the lead: side directions through normalize_local2d_2c (both/first only)
-// or normalize2d_fast 339/339/339 (identical code); finals as `c ? true : false` 349 (1465 bytes, AL
-// returns but the true block back at the end); first side computed first 354; first clamp first 353.
-// Vector declaration order 172; split direction declarations 172; second-side declaration first 172;
-// direct distance comparison 172; angle-wrap order 191; named angle sums 172;
-// named side product 172; nested single result 414.
-// Native unsigned/signed byte returns with original tests, terminal comparison values and
-// a shared narrow result 172/172/172/172/172/172; shared-dot second-side-first ordinary
-// storage with narrow value returns 350/350 at 1465 bytes. Original bool contract restored.
-// Round 382: both direction constructions before normalization, first/second
-// construction and normalization orders, with original/late perpendicular:
-// 178/395/386/395/178/395/386/395. Original complete producer sequence restored.
-// Round 251: complete side-direction first/second-input staging 411/409;
-// entry-direction first/second-input staging 410/410; side/entry first-first,
-// first-second, second-first, second-second 472/472/457/471. Original outputs and body restored.
-// Round 384: scale helper output-pointer result with original/result-first/guard normalizer
-// 172/172/172; ordinary scale with result-first/guard normalizer 172/172;
-// complete native scale results with original/result-first/guard normalizer 460/460/460.
-// All helper result contracts and original complete normalizer restored.
-// Round 220: Normalizer complete input via native/readonly/component/library copy
-// 518/518/172/518; each with zero-length guard return 518/518/172/518.
-// Original normalizer and complete body restored; true-return host and y forwarding remain.
-// Round 172 DL: Native vector storage for sides/entry/both/angular/distance/all,
-// then sides/all with the native normalizer, 172 each. Shared real totals with
-// one final comparison, angular arm first, if/value/result/entry-if/entry-value
-// 279/398/269/279/398; distance arm first if/value/entry-result 417/399/407.
-// All original types, tests, helper calls and complete body restored;
-// early true-return host and side-direction forwarding remain.
-// Round 174: shared false exit/distance-first/both 243/386/402; later
-// perpendicular alone/false-exit/distance-first/both 180/251/394/410; all with
-// ordinary first-side storage 378. Original body and qualifier restored; early
-// true host and side-component forwarding remain.
-// Round 175: Return produced by the initial length test/native scale input/both/symmetric side
-// product terms/result with terms/scale with terms/all/all with if-form clamps
-// 359/470/466/172/359/470/466/471. Native scale input loses both matched geometry siblings;
-// all original helper inputs, qualifier, branch returns, arithmetic and body restored.
-// Round 37: one completion goto with bool/byte/char/short result assigned by the zero-length
-// guard 172/189/189/194; default success at entry 414/421/421/429. Original returns, geometry,
-// helper calls, operation trees and first-side qualifier restored; early true host still differs.
-// Round 79: length test `!(0.0f < length)` 172 (same code); side directions by direct initialisers
-// 380 (aligned 74 -> 70: forwarding, no y preload); both 380; plus no first-side volatile 365;
-// `0.0f <` test with no first-side volatile 379.
-// Round 301: Existing shared magnitude inside the retained normalizer, with distance roots,
-// side dots, both, ordinary first side, ordinary/distance, ordinary/dots and all:
-// 172/172/372/372/379/379/363/363. Original magnitude graph, qualifier, projections and body restored.
-// Round 45: squared-length producer/reciprocal declaration/scalar home names,
-// seven subsets and all native declarations before producers, 172 each. Original
-// normalizer and complete body restored; early true host and side Y transport remain.
+/* true when the first corner is the better way round from the origin to the
+   endpoint (always when the two coincide): by the angles turned when both
+   corners lie on one side of the line, by the distance through each otherwise */
 // @retail 0x2c2a70
 bool function_2c2a70(point2f const *origin, point2f const *endpoint,
     point2f const *first, point2f const *second, point2f const *target)
 {
     point2f direction;
     vector2d_from_points2d(origin, endpoint, &direction);
-    if (!(normalize_offset_direction_2c(&direction) > 0.0f))
-        return true;
-    point2f normal = { 0.0f - direction.y, direction.x };
-    point2f first_direction, second_direction;
-    vector2d_from_points2d(first, origin, &first_direction);
-    normalize_offset_direction_2c(&first_direction);
-    vector2d_from_points2d(second, origin, &second_direction);
-    normalize_offset_direction_2c(&second_direction);
-    volatile real first_side = first_direction.y * normal.y + first_direction.x * normal.x;
-    real second_side = second_direction.y * normal.y + second_direction.x * normal.x;
-    second_side = fabs(second_side) < 0.001 ? 0.0f : second_side;
-    first_side = fabs(first_side) < 0.001 ? 0.0f : first_side;
-    if (!(first_side * second_side < 0.0f))
+    bool result;
+    if (normalize_offset_direction_2c(&direction) <= 0.0f)
+        result = true;
+    else
     {
-        point2f target_first, target_second, endpoint_first, endpoint_second;
-        vector2d_from_points2d(first, target, &target_first);
-        normalize2d(&target_first);
-        vector2d_from_points2d(second, target, &target_second);
-        normalize2d(&target_second);
-        vector2d_from_points2d(first, endpoint, &endpoint_first);
-        normalize2d(&endpoint_first);
-        vector2d_from_points2d(second, endpoint, &endpoint_second);
-        normalize2d(&endpoint_second);
-        real first_target_angle = function_11cc90((vector2f const *)&target_first, (vector2f const *)&first_direction);
-        real first_endpoint_angle = function_11cc90((vector2f const *)&first_direction, (vector2f const *)&endpoint_first);
-        real second_target_angle = function_11cc90((vector2f const *)&target_second, (vector2f const *)&second_direction);
-        real second_endpoint_angle = function_11cc90((vector2f const *)&second_direction, (vector2f const *)&endpoint_second);
-        if (second_endpoint_angle > 0.0f)
-            second_endpoint_angle -= 6.2831854820251465f;
-        if (first_endpoint_angle < 0.0f)
-            first_endpoint_angle += 6.2831854820251465f;
-        if (first_target_angle + first_endpoint_angle < 0.0f - (second_target_angle + second_endpoint_angle))
-            return true;
-        return false;
+        point2f normal = { 0.0f - direction.y, direction.x };
+        point2f first_direction, second_direction;
+        vector2d_from_points2d(first, origin, &first_direction);
+        normalize_offset_direction_2c(&first_direction);
+        vector2d_from_points2d(second, origin, &second_direction);
+        normalize_offset_direction_2c(&second_direction);
+        real second_side = dot_product2d(&second_direction, &normal);
+        real first_side = dot_product2d(&first_direction, &normal);
+        if (fabs(second_side) < 0.001)
+            second_side = 0.0f;
+        if (fabs(first_side) < 0.001)
+            first_side = 0.0f;
+        if (first_side * second_side >= 0.0f)
+        {
+            point2f target_first, target_second, endpoint_first, endpoint_second;
+            vector2d_from_points2d(first, target, &target_first);
+            normalize2d(&target_first);
+            vector2d_from_points2d(second, target, &target_second);
+            normalize2d(&target_second);
+            vector2d_from_points2d(first, endpoint, &endpoint_first);
+            normalize2d(&endpoint_first);
+            vector2d_from_points2d(second, endpoint, &endpoint_second);
+            normalize2d(&endpoint_second);
+            real first_target_angle = function_11cc90((vector2f const *)&target_first, (vector2f const *)&first_direction);
+            real first_endpoint_angle = function_11cc90((vector2f const *)&first_direction, (vector2f const *)&endpoint_first);
+            real second_target_angle = function_11cc90((vector2f const *)&target_second, (vector2f const *)&second_direction);
+            real second_endpoint_angle = function_11cc90((vector2f const *)&second_direction, (vector2f const *)&endpoint_second);
+            if (second_endpoint_angle > 0.0f)
+                second_endpoint_angle -= 6.2831854820251465f;
+            if (first_endpoint_angle < 0.0f)
+                first_endpoint_angle += 6.2831854820251465f;
+            result = first_target_angle + first_endpoint_angle < 0.0f - (second_target_angle + second_endpoint_angle);
+        }
+        else
+        {
+            point2f target_first, endpoint_first, target_second, endpoint_second;
+            vector2d_from_points2d(target, first, &target_first);
+            vector2d_from_points2d(endpoint, first, &endpoint_first);
+            vector2d_from_points2d(target, second, &target_second);
+            vector2d_from_points2d(endpoint, second, &endpoint_second);
+            real first_distance = (real)sqrt(length_sq2f(&target_first)) + (real)sqrt(length_sq2f(&endpoint_first));
+            real second_distance = (real)sqrt(length_sq2f(&target_second)) + (real)sqrt(length_sq2f(&endpoint_second));
+            result = first_distance < second_distance;
+        }
     }
-    point2f target_first, endpoint_first, target_second, endpoint_second;
-    vector2d_from_points2d(target, first, &target_first);
-    vector2d_from_points2d(endpoint, first, &endpoint_first);
-    vector2d_from_points2d(target, second, &target_second);
-    vector2d_from_points2d(endpoint, second, &endpoint_second);
-    real first_distance = (real)sqrt(length_sq2f(&target_first)) + (real)sqrt(length_sq2f(&endpoint_first));
-    real second_distance = (real)sqrt(length_sq2f(&target_second)) + (real)sqrt(length_sq2f(&endpoint_second));
-    if (first_distance < second_distance)
-        return true;
-    return false;
+    return result;
 }
 
 #include "globals.h"
@@ -1474,6 +1376,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 45: complete four-field scalar input snapshots, short/long metadata
 // subsets 0/1/2/4/3/5/6/7, 459/461/470/470/461/461/470/461. Frame 0x10c
 // recovered, radius/zero homes still differ; match-only forms and full body restored.
+// Round 35 (lane 11): the file's direction normalizer now passes `1.0f / magnitude` straight to the
+// scale helper as 0x2c2910/0x2c2740 do (that matched 0x2c2a70); here it gives an in-place y product
+// (444 -> 458), so this body calls the file's other normalizer, normalize_local2d_2c (444, identical code).
+// Also (fast): normalize2d_fast 444 (same code); out-of-line normalize2d 562; step through a pointer with
+// short type/link locals set for a typed step, type re-read through it at the emit, output element at
+// the emit 509 (frame 0x104, 1686 bytes); that with a long type local 515.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
@@ -1519,7 +1427,7 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                     {
                         point2f direction;
                         vector2d_from_points2d(&origin, (point2f *)&points[candidate].point.point, &direction);
-                        real distance = normalize_offset_direction_2c(&direction);
+                        real distance = normalize_local2d_2c(&direction);
                         if (!(distance > 0.0f))
                             break;
                         s_avoidance_trace trace;
