@@ -1174,6 +1174,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // Round 122 (fast, aligned 16): no-model parent through slot_handler.h's object_get/object_node_matrix 234;
 // with the current and render-branch lookups through object_get too 234/234; 0xbfed0 declared inline here 234,
 // and with its separate noinline declaration removed 234 (still called, the caller still trusts its ESI).
+// Round 121 (m3 lane 5, fast): retail rematerialises 0x55eeb4 at every use (memcpy destination, both
+// mask-call arguments, the sample mask); the stored/empty test as nested ifs 234; the amount by if/else
+// 234; orientations defaulted at the declaration with `else stored = false` 402 (1367 bytes); `stored`
+// declared first 236; the no-model parent matrix by array indexing 234.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

@@ -110,6 +110,14 @@ static __forceinline long real_to_long(real value);
 // Round 314: Adjustment distance snapshot with bool/byte/short/long outcomes, without/with motion-
 // scale snapshot: 437/433/437/433/448/444/452/448. Short and long recover frame 0x48 but retain wrong
 // third-input ownership and regress. Original frame 0x4c body restored at 378.
+// Round 121 (m3 lane 5, fast): +0x38 as a named local read with the other limits (used twice) 375
+// (xmm7 loaded before the draws as retail); with all three draws through the random-state local 434;
+// draws 1/3 through it only 423; the 0x70e test nested 373; the prop flag set by an if 415. Probe on
+// round 28's lead (early +0x14/+0x18 locals, lower bounds as arguments, +0x3c per use, the resolver as
+// 0x210850's if/else) with the +0x38 local: 342 at 1861; there the sign test as
+// `(local_11 & 0x80000000) > 0` gives retail's `test eax, 0x80000000 ... jbe` (341; `!= 0`, `>> 31`,
+// `(long) < 0`, `>= 0x80000000` 342/342/347/341). Left on the probe: the cross product's inputs
+// colour xmm3/xmm2/xmm1 where retail has xmm1/xmm4/xmm3 (one extra movaps in retail).
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
