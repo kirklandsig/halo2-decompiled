@@ -1212,6 +1212,11 @@ static inline long render_memory_allocate(long bytes)
 // reordered (permutations first, both callers) 1; the count read back through node_count 1; the output
 // pointer as a conditional argument 27; the byte count as a conditional expression 54; bytes declared
 // before the count call 15. Every parameter position, __stdcall/__cdecl and flag set keeps eax.
+// Round 10: model index and lod address-taken 1; node count and extra bytes address-taken 1; the count read
+// back through node_count 1; the output pointer as a conditional expression 27; bytes assigned in an else 54.
+// One-file LTCG probe (this file + 0x137650/0x137800's files): an entry calling this function directly
+// also gets eax, so the caller does not fix it; unused extra parameters are dropped and every position of
+// the permutations still gets eax.
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)

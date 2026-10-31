@@ -2994,6 +2994,9 @@ struct s_2a2f0_record
 // Round 451: Current metadata/time/both/fallback-tag/metadata+fallback/time+fallback/all outside the
 // five-draw loop, then all with readonly strip: 325/280/369/268/390/338/333/333. Independent
 // dimensions and ordinary counts in every trial; original body restored.
+// Round 460: Complete native strip value at loop entry/dimensions/texture/draw,
+// mutable/immutable pairs 304/304/304/304/289/289/288/288. Independent dimensions and ordinary counts;
+// original table, pointer and complete body restored; bounded count copy remains.
 // @retail 0x2a2f0
 void __stdcall function_2a2f0(long tag, real alpha)
 {
