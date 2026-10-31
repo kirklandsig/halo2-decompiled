@@ -35,7 +35,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// score 221 (was 221): frame 0x18 versus 0x14; coefficient/input/result overlap remains.
+// score 221 (was 221): first transform sum/product order and register numbering (retail: forward*depth +
+// up*height first, coefficients loaded into registers, right.i kept in xmm7 for both views), frame 0x18 versus
+// 0x14 (retail spills the blend scale at [esp] where it is computed). Earlier: transform term order
+// right/up/forward written point first and
+// frame 0x18 versus 0x14; coefficient/input/result overlap remains.
 // Earlier: transform term order right/up/forward written point first and
 // coefficient first 221 each; the transform as three statements 304, which does use retail's
 // sum tree (forward*depth + up*height) + right*width; blend term order and squared-sum order
@@ -45,6 +49,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // up*height + right*width; retail materialises the coefficients of the first view in registers
 // and keeps the second point's offsets in the frame, ours folds the coefficients into the
 // products and keeps the second point's width in a register; frame 0x18 versus 0x14.
+// Earlier note: frame 0x18 versus 0x14; retail keeps both transformed points in
 // registers and the second point's offset (with its scaled copy) in the frame, ours gives
 // the second view's x a frame slot of its own at [esp+8].
 // both inlined transforms, keeps the second point's offset in the frame and the first in
@@ -168,10 +173,15 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // T47: Plain weighted-point blend loop on retained separate-offset/depth-limit graph,
 // long/dword/short/word counters: view cursor 222/222/271/271; indexed view output
 // 226/226/271/271. Original complete helper and body restored.
+// Round 27 (lane 14): scaled copy + the existing matrix_transform_vector 309 (1179 bytes, copies in memory);
+// weights as `local_4 = local_5 = 1.f` 221 (same code); orthographic clamp written inside the sqrt argument
+// 215 (retail clamps into a fresh value: input stays in xmm0, the result is written per arm; six points, not
+// kept); with the dot through the existing dot3f either argument order 215/215; with the zero local dropped
+// 215 (aligned 230). Kept: dot3f for the hand-accumulated dot and 0.f in place of the zero-only local 221
+// (aligned 238 -> 232).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
-    real local_14 = 0.f;
     vector3f local_0;
     vector3f local_1;
     for (long component = 0; component < 3; ++component)
@@ -190,8 +200,8 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
         second_depth_limit > local_3.i * local_3.i &&
         second_depth_limit > local_3.j * local_3.j)
     {
-        real local_4 = local_14 - local_2.k;
-        real local_5 = local_14 - local_3.k;
+        real local_4 = 0.f - local_2.k;
+        real local_5 = 0.f - local_3.k;
         real local_6;
         if (arg_1)
             local_6 = 1.f / (local_5 + local_4);
@@ -222,9 +232,7 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
             local_10.j = arg_0[1].field_0.y - arg_0[0].field_0.y;
             local_10.k = arg_0[1].field_0.z - arg_0[0].field_0.z;
             real local_11 = function_30bf0(&local_10);
-            real local_12 = g_4b9dac.j * local_10.j;
-            local_12 = g_4b9dac.k * local_10.k + local_12;
-            local_12 += local_10.i * g_4b9dac.i;
+            real local_12 = dot3f(&g_4b9dac, &local_10);
             real local_13 = 1.f - local_12 * local_12;
             local_13 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
             arg_2->field_c = (real)(sqrt(local_13) * arg_2->field_c * local_11);

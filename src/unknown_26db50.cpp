@@ -459,6 +459,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// MiniMax E run 26: score 90 (was 90): retail converts the ring with cvtsi2ss and reloads it from the stack for the x87 product while ours uses fild directly, and retail lays the spoke and ring counters out one dword apart from ours; the eight-way product's register allocation and the ring/phase schedule still differ.
 // score 90 (was 90): frame 0xd8 agrees; the ring conversion (fild where retail converts in SSE) and the
 // rotation schedule (one spilled component, register homes) differ; 1085 bytes against 1089.
 // Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`

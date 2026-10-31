@@ -403,6 +403,12 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // Round 452: prior visited word used for admission and final store, dword/signed
 // masks with dword/byte/word flags, then shared global tests, eight forms 226 each.
 // They grow the frame to 0xf4; original field widths, mask, visits and body restored.
+// Round 8 (lane 18, fast, aligned counts in brackets, base 111 [65]): the word count as `(count + 31) >> 5`
+// at the top with bytes as `((count + 31) >> 5) * sizeof(dword)` 224 [73] (796 bytes, frame 0xec: the
+// shifted value is shared and kept, where retail keeps count + 31 in EBX and shifts it again after the
+// copies); bytes and base from a word-count local 224 [73]; the word count declared after base 224 [73];
+// base as `&bits[((count + 31) >> 5) * index]` 111 [65] (same code); the round 85 memcmp-break loop
+// re-measured 125 [57] (810 bytes), with the shifted-count head 228 [73].
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {

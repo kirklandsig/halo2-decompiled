@@ -292,7 +292,14 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 172 (was 193): frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
+// score 147 (was 172): frame 0x162c agrees; the actor offset is in ESI as retail. Left: the result
+// is set with setne (retail `mov al, 1` before the branch, `xor al, al` on the missing-prop exit),
+// the view/actor-offset/character/actor spill homes rotate (retail 0x14/0x18/0x1c/0x20, ours
+// 0x1c/0x14/0x20/0x18), 0x25d690 is called after the first pushes, and in the search tail retail
+// keeps the actor index in ESI, the reference in EDI and the slot in EBX with scratch spilled (ours
+// scratch EBX, reference ESI, slot EDI, the index reloaded at each use).
+// Earlier 172 (was 193): frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
+// frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
 // (retail rematerialized into EBX) and scratch (retail in node's slot) homes remain.
 // Earlier: aligned frame 0x1634 versus 0x162c and actor/slot/scratch homes remain.
 // Round 16: retail takes the actor index from its first stack argument into EBX, keeps the
@@ -358,25 +365,39 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // at the not-ready exit 282 (1069 bytes); the state as `(s_slot_23 *)slot` 172 (same code). Retail
 // still keeps the scaled actor index in ESI from entry and reloads `slot` into EBX late; ours keeps
 // `slot` in ESI from the 0x1e4be0 call and spills the index.
+// Round 17 (m3 lane 2, fast): retail's tail has ESI = actor_index (reloaded for the search) and
+// EBX = slot (reloaded at the unknown04 test); ours keeps EBX = actor_index and ESI = slot
+// throughout. view renamed fields 172 and node renamed prop_node 172 (same code: the 4-byte spill
+// slots node/view and character/offset stay swapped); the node state read into a block local
+// before the marker call 153 (that block becomes retail's; one-use call result, not kept), with
+// state assigned at the top 153, with the three clears through slot->unknownc and state declared
+// at the movement block 285 (1055 bytes); the prop index tested through a fresh actor_get 272.
 // Round 25 (fast): the state read from `slot` at every use 172 (CSE'd, same code); `view` renamed
 // `fields`, `node` renamed `prop`, `character` renamed `traits` 172 each (same code: names don't move
 // the node/view or index/character slots); prop index tested through actor_get before the actor
 // pointer 272; has_markers cleared before its test re-measured 273 (aligned 130 vs 133). Retail's
 // early state stores go through the `&state->unknown11` temporary ([eax - 2]), so its `slot` is not
 // live across the middle. Opening body restored.
+// Round 8 (lane 18): the result computed as `actor->prop_index != NONE` and tested for the missing-prop
+// exit, in place of the volatile result: 194 (actor offset in ESI, setne), with `if (!result) return
+// result` 194, as a ternary 194, both exits in one test 287 (1050 bytes), preset true then false for
+// the missing prop 278 (folds); with `has_markers = false` right before its test 147 (kept, plain).
+// On 147: three declaration orders of the function-scope locals 147 each; scratch declared in the
+// search block 147; the limit select as `distance < limit ? distance : limit` 147, `limit <= distance ?
+// limit : distance` 146, `distance > limit ? limit : distance` 145.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
-    volatile bool result = true;
     s_actor_view *actor = actor_get(actor_index);
-    if (actor->prop_index == NONE)
+    bool result = actor->prop_index != NONE;
+    if (!result)
         return false;
     if (!*((bool *)actor + 0x40))
         return result;
 
     byte *character;
     s_slot_23_data *state;
-    bool has_markers = false;
+    bool has_markers;
     s_object_marker markers[32];
     short marker_indices[32];
     s_2605d0_request request;
@@ -389,6 +410,7 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
         state->unknown0f = false;
         state->unknown10 = false;
         state->unknown11 = 0;
+        has_markers = false;
         if (!*((bool *)actor + 0x3c) && actor->unknown227)
             has_markers = function_1ac610(actor_index, &prop_node_state(node)->position,
                 markers, marker_indices);

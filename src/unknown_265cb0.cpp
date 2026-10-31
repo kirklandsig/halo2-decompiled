@@ -363,7 +363,8 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// score 152 (was 152): result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
+// score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
+// Earlier: result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
 // result/range homes, inverse SIMD groups and seat-threshold reloads remain.
 // Round 57: retail's result stores are a spill of a long result (dword store, `mov ax, word` reload at
 // each tail-duplicated exit). Plain long result 241 (result home +0xc); short return type with every
@@ -506,6 +507,9 @@ real function_30bf0(vector3f *vector);
 // Round 240: reusable mode test/all-axis origin scalars/all-axis point scalars and their pairs/all
 // 323/346/319/364/342/380/395; all with ordinary result 395. Original input observations and
 // complete body restored; mode caching grows the frame to 0x354.
+// Round 246: native actor basis fields in all seven nonempty subsets, then all
+// with the native occupant basis, 152 each. Original padding, receiver expressions
+// and complete body restored; result/range/projection homes remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1701,7 +1705,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
+// score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
 // the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
 // frame is 0x84 against 0x80 since the visible flag became a stack byte, and the result/level slots,
@@ -1811,6 +1816,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 240: complementary established/visibility/both/retention/established-retention/visibility-retention/
 // all decisions 502/560/562/505/505/560/562; byte complementary direct decisions 562.
 // Original independent searches, shared positive producer and all body values restored; frame 0x84/0x80 remains.
+// Round 455: Late retention constant 558; with early scoring zeros 573; with late visibility constant 565;
+// both 569; complete predicate role names on each graph 558/573/565/569. Late visibility recovers
+// frame 0x80, but all regress. Original observations, calls, defaults and body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -1808,6 +1808,12 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // Round 450: complete live marker fields alone/node-first/matrix-live/both
 // 215/218/223/223; with staged cross 215/218/223/223. All lose the matched caller;
 // original point, marker, normalizer and cross producers restored.
+// Round 51 (lane 16, fast with 0x178360): the inverse scaling through the existing vector3f_scale and
+// the null-scale zero position through real_point3d_set 77 (identical code, kept); the offset through
+// vector3d_from_points3d 190 (752 bytes), with vector3f_scale too 189; the output position zeroed
+// through real_point3d_set and then assigned 109 (766 bytes: the position pointer local gives retail's
+// `lea eax, [esi + 0x2c]` stores). A compile-only build does not model this function (retail keeps
+// forward in xmm2-4 across the LTCG 0x11d000 call).
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -1829,22 +1835,14 @@ void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *
 			offset.j = marker->position.y - matrix->position.y;
 			offset.k = marker->position.z - matrix->position.z;
 			if (matrix->scale != 1.0f)
-			{
-				real inverse = 1.0f / matrix->scale;
-
-				offset.i = inverse * offset.i;
-				offset.j = inverse * offset.j;
-				offset.k = inverse * offset.k;
-			}
+				vector3f_scale(&offset, 1.0f / matrix->scale, &offset);
 			position.x = matrix->forward.k * offset.k + matrix->forward.j * offset.j + matrix->forward.i * offset.i;
 			position.y = matrix->left.k * offset.k + matrix->left.j * offset.j + matrix->left.i * offset.i;
 			position.z = matrix->up.k * offset.k + matrix->up.j * offset.j + matrix->up.i * offset.i;
 		}
 		else
 		{
-			position.x = 0.0f;
-			position.y = 0.0f;
-			position.z = 0.0f;
+			real_point3d_set(&position, 0.0f, 0.0f, 0.0f);
 		}
 		real i = marker->forward.i;
 		real j = marker->forward.j;
@@ -3022,6 +3020,13 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the loop is then retail's except the cached mode push; left are the system in EDI, colour A in EBX, colour B
 // spilled and the type object in ESI, retail ESI/spilled/EDI/EBX), that with the mode read per call 109 (register
 // effect index, 0x176f60 25), with the mode declared after the colour call 117, with a signed mode 90.
+// Round 8 (lane 18, fast; 0x176f60 matches unless given): on this cached-mode form, both colours declared
+// inside the type-query block 93; the next index declared before the lookups 93; the particle-location
+// cursor declared before the definition test 93. Mode read per call re-measured 108 (0x176f60 25): it gives
+// retail's 0x54 frame, but the definition takes EBX across the loop (retail spills it to [esp+0x10] and
+// reloads it per call) and both indices become register arguments. The node-flag test with an explicit
+// `!= 0` 93; the cached mode declared first 94. Lead: 0x175a80 (its colour callee,
+// unmatched, in a file held this round) sets which registers this call's setup may keep.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
