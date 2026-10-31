@@ -1299,6 +1299,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // resize uses a rotating temp (ECX), shifting the header address and the close copy by one. On the 6 form the resize or
 // the write local read through `g_557c90[index]` 6/6; on the 7 form bytes declared first with
 // `sizeof(empty_header)` 7; the file pointer declared after the open wait 258 (7 form) / 245 (6 form).
+// Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
+// the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
+// write handle 120.
 // @retail 0x213970
 void function_213970(void)
 {
