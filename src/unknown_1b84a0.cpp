@@ -173,6 +173,9 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // inline 7; short facing mode 44; short mode with inline facing callee 44; long facing mode 46; long mode
 // with inline facing callee 46; release result used for completion 7; release result with short mode 44;
 // release result with long mode 46; original executable source restored.
+// Round 59: the facing mode through a field reference/pointer 7 each; the release reference through a field
+// reference/pointer 7 each; one actor-index address read at the facing/release call 7 each; the data block
+// through its array's address 7; one actor-index reference shared by all three calls 7. All neutral.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {

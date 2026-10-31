@@ -1192,6 +1192,11 @@ void c_game_engine_markers::v21(long object_index)
 // absolute index after, object local and cause local 130, with unit inside and cause local 129; on the team at each
 // call: arms swapped 119, one options local for both tests 119, mode and type tests joined 119; slot_object_get
 // with the index first, a header-array local or a pointer add 40 each (same code), `(word)` index 109.
+// Round 43 (one-file LTCG link of this file with the callee closure, 0x101280's file and the build's inlining
+// ballast object, equal to the full listing): the event test with the slot range first about 47 (harness 33
+// against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
+// at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
+// matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
@@ -1578,6 +1583,9 @@ void function_2422d0(long slot)
 // const object pointer/table-entry address 7; slot-field address 60; the object getter at each
 // use 86 (reloads after the call); index or object local renamed to sort first or last 7 each;
 // the reject arm first 7; the rejected count advanced in its own statement 7.
+// Round 53: function-scope object index reused for the second loop's element 7; permuter (58
+// variants) 7; lookup written without the inline getter 7 (diagnostic); a `long i` per loop 7;
+// `dword` object index 7; the eligibility result in a named bool 79.
 // @retail 0x2423f0
 bool function_2423f0()
 {

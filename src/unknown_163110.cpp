@@ -379,7 +379,7 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 39 (was 96): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
+// score 39 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
 // the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
 // d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
@@ -552,6 +552,29 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // zero back 636 (aligned 83, 2807 bytes: retail's float loads and pointer stores for the normals),
 // plus planes 4/5 through it 615 (2837 bytes, aligned 100), plus a cleared error first 692, error
 // cleared first alone on the aligned-83 form 677, all with the camera-plane branch too 697.
+// Round 43 (one-file LTCG link of this file and its callee objects, equal to the full listing; current
+// form 39 there): any one-expression distance sum is reordered by the compiler (all 24 term orders 73);
+// the existing matrix_transform_vector + dot3f for the transform 43 (dot3f(normal, position) 51, the
+// rows kept with dot3f 65, the source plane's d read back 62); the existing plane_distance_to_point for
+// the error tests 43, dot3f in them 43; camera alias dropped 39 and `if (camera->has_plane)` 39 (same
+// code). Retail's planes 2 and 3 alone sum z, y, d * scale, x: the separate top/bottom helper gives 17;
+// with a position pointer local (`point3f const *position = &matrix->position;` before the sum) in that
+// helper 15, in the side helper 21, in both 42; with a normal pointer in the error helper as well 11
+// (left: the identifier load order and the x-term operand order of planes 1 and 3; fast agrees, 11).
+// The x-term and error-test operand orders follow the compiler's temporary numbering (dead copies of
+// depth, diagnostic only, rotate the error tests with period 8: 7 extra gives 9 on the 17 form), the
+// identifier load order does not (dead copies before it change nothing); x0/x1/y0/y1 through rect,
+// the copy through a non-const rect, depth read before the copy or before the identifier 22/24/22/29/18.
+// On the 11 form, x0 through rect gives retail's identifier store and load order and all four error-test
+// orders, but x0 is then multiplied as `depth * [x0]` (16; the four corner lines in any order 16-22, the
+// copy field by field 678, depth read at the product 651); one dead temporary ahead of the copy
+// (diagnostic only) restores the x0 product, and the floor over 128 dead-temporary placements is 6:
+// plane 1's x term and the plane 2/point 3 and plane 3/point 0 error tests keep the other operand first.
+// Round 53: x0 as `depth * rect->x0` 83; x0 through the pointer declared after x1/y0/y1 659;
+// products in x0, y0, x1, y1 order through the pointer 87; the copy through a non-const rectangle
+// pointer with x0 through it 83, with x0 through the result 39 (same code). Compile-only: the x term
+// written `n.i * position.x` still loads position.x first in every plane; one plane pointer reused
+// for planes 0-3 49 (harness, forwards the zero distance).
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {

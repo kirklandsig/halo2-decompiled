@@ -303,10 +303,22 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // the field 140, entries set after the advance 155, entries set before the loop 158, index declared before n
 // 141, the count as a short local 177 (480 bytes). A /Gd compile-only first pass loads cache_index into EBX
 // (block form) or EBP (indexed), so it does not predict the arrival register here.
+// Round 28 (lane 14), `--fast`: the indexed form rebuilt 144 (492 bytes, aligned 30: count CX and zero EAX where
+// retail has AX/ECX, so the six clears take the 5-byte EAX stores; first kept in EAX where retail loads it into
+// EDI and spills it; the cursor stored to mode's home before the copy where retail keeps entries in EDX and
+// stores the cursor at the loop head); the clears as two chained assignments per group or one chain of six 54/54
+// (same code) and on the indexed form 144/144 (same code); on the block form the cursor advanced before the
+// counters 58, a for loop over n 60, `0 < block->count` 54 (same code).
 // Round 99 (lane 8), indexed forms (index in EDX as retail; count CX and zero EAX where retail has AX and ECX):
 // rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
 // from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
 // copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
+// Round 40 (reduced-relink screen, base 49 on its scale): 36 combinations of the block pointer or indexed
+// blocks, the count as the field, a long at the top of the `if` or a short before the clears, the entries
+// cursor before the copy or after the advance, a separate index or `first + n`, and the block pointer before
+// or after the clears: nothing below the current body; indexed with a short count before the clears and the
+// cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
+// `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -657,6 +657,22 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // first); `++*count;` as its own statement at the four second-loop sites 32 (same code); both 49; the
 // swap callee as (collection, player, update, other) with the key pointer first 44, with the count
 // statements 36.
+// Round 59 (lane 12, one-file harness with unknown_084a90.cpp, exact: 32): `long unknown14` read
+// before the NONE test and used in the test, the conflict scan and the last record 104 (1054 bytes,
+// fast agrees), with the last record's controller index read at its store 108, with the scan
+// reading the field 104; the find-slot/swap/remove/add tail as an inline helper on the collection
+// 555 (not inlined), forceinline 32 (same code); the occupied key copied from
+// `&collection->players[i]` 32 and from `collection->players[update->player_index].key` 32 (same code).
+// Round 36 (lane 10, fast): one function-scope update pointer for both loops 32; `slot`/`occupied` at
+// function scope 32; the occupied record through its own scoped pointer 32, the last record likewise 32,
+// both 32 (all same code). Retail loads `updates` last in the swap and occupied set-ups and groups
+// (collection + offset) first in the occupied key, as if that sum were treated as loop-invariant.
+// Round 42 (lane 1, fast with 0x69260/0x84e90): the three spots share one pattern: retail reuses the
+// register just freed (ECX for the preheader cursor before the offset, ECX for `updates` after the slot
+// push) where ours takes another free one (EDX), so the scheduler moves the store or the load. One
+// function-scope index for the three loops 32; the swap given `&watcher->players` 32; a block-scoped
+// update pointer in each second-loop block 32; the session player as `session->players + i` 32 (all
+// identical code); the conflict scan without its flag (`break`, then `if (j < 16) continue;`) 230.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

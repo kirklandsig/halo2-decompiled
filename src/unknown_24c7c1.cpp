@@ -443,6 +443,11 @@ void __fastcall function_24cdaf(void)
 // tick pointer name 6; increment result name 6; both role names 6; minimum intrinsic 6;
 // nested countdown guards 6; messages indexed at each use 6; the field read twice in the
 // saturation 27; a short reference for the ticks 6; nested expiry tests 6; a named elapsed time 6.
+// Round 19: the countdown as a forceinline helper 6; the tick and expiry update as a forceinline
+// helper taking the player 6; early-return guards 6; the tick address from a forceinline accessor 6;
+// the tick locals declared at the function top 6. Diagnostics: one pointer variable for both
+// counters 18 (the pointer takes ECX in both); without the message loop the tick block keeps
+// ECX/EAX; the value variable shared with the countdown 40 (split again, tick block unchanged).
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {
@@ -599,6 +604,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // before the font 114 (same code); as bools so declared 191 (aligned 112 -> 111: timer/tutorial at
 // -0xe/-0xd, scripted still at -2 where retail has -0xf/-0xe/-0xd); tutorial colour as `flag ? a4 :
 // (b6 & 1) ? a8 : a4` 114 (same code); count as `split_screen ? 3 : 4` 479; short height 114 (same code).
+// Round 54 (lane 16, fast; base 114): the tutorial colour as `!flag_1384 && (b6 & 1) ? a8 : a4` 114 (same code);
+// `left` declared `short const` at its assignment 114 (same code); both 114; both with a bool timer 191 (1888
+// bytes); the tutorial colour reading g_510c94 at each use (no `globals` local) 114 (same code).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

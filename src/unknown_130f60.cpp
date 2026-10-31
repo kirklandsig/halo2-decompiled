@@ -175,7 +175,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 324 (was 355): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
 // clamp, and clamp combinations 410/414/420/402/410/414/420; all with disjoint clears before common
 // remaining initialization 454 (fast control 402; full 444).
@@ -222,6 +222,25 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // angles copy the frame drops to 0x28 (retail 0x30). On the kept form (fast 336): the weight
 // clamped in its own statement 406 (1845 bytes); `remaining = remaining * (1 - weight)` 337; the
 // reciprocal written inline in each row 336 (same code).
+// Round 58 (lane 12; none kept): the final third remaining weight read from the field at both uses
+// 379 plain (353 fast, 1874 bytes); the pitch cosine read from the angles copy 304 plain (264 fast,
+// 1901 bytes: retail's first accumulation and the inner loop-head padding, but retail reads the
+// source's pitch there, and the mixed reads are not kept); the yaw sine and cosine from the copy 265
+// fast; every angle read from the copy 359 fast. Compile-only screens (control 159 aligned lines):
+// operand order, if/else clamp, PIN macro and an out-colour pointer in the accumulate helper 159;
+// the weight statement first 177; a clamped-weight local 284; scope moves of weight, magnitude,
+// reciprocal, j, i and the sample/axis order 159; 1/2/3 unused locals 159/157/157; an angles-to-vector
+// inline helper (one caller) by value 169-176, by pointer with the copy adjusted 145. The second and
+// third accumulations keep a rotated height/distance/intensity colouring in every form.
+// Round 52 (lane 16; fast control 336, retail's ESI shrink-wrap there): the body's own differences are the
+// reciprocal scale's j row (retail loads j then multiplies by the reciprocal; ours copies the reciprocal; any
+// spelling, row order, vector3f_scale, normalize_inline: same) and the loop accumulations' products (retail
+// colour * weight for red, weight * colour for green and blue; ours colour first everywhere; helper body orders,
+// weight-first products, a clamped local, if/else clamp, reference/scalar/weight-first helper parameters: same).
+// The products follow the symbol set: reading the angles from the local copy everywhere gives retail's products
+// compile-only but changes the angle reads (359 fast); the existing direction_from_angles on the copied angles
+// with yaw turned and pitch zeroed 371, on the source angles and the turned copy 334 (1885 bytes, the x87 order
+// differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

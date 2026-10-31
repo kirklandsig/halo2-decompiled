@@ -391,6 +391,9 @@ struct s_surface_object_header
 // the byte read as `object[offset + (index & 31)]` 8; the masked index named first 8; no object
 // or values locals 8; the comparison reversed 9; the object read before the flags test 58.
 // The compile-only build reproduces this block and keeps it for every spelling of the case.
+// Round 19: the record address as byte arithmetic on the data 8; the record written in full at
+// both uses 8; a named region index with the object left a common subexpression 8; the
+// permutation read through a forceinline helper 8; the two index locals declared surface first 10.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0

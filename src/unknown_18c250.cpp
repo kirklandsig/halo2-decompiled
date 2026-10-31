@@ -88,9 +88,13 @@ static inline vector3f *cross3f(vector3f const *a, vector3f const *b, vector3f *
 	return result;
 }
 
-static inline vector3f *function_x84d9e8(vector3f *vector, vector3f const *axis, real sine, real cosine)
+/* the axis and the vector are taken into locals in that order: it sets the order of the cross
+   product's operand loads (0x18c250) */
+static inline vector3f *function_x84d9e8(vector3f *vector_in, vector3f const *axis_in, real sine, real cosine)
 {
 	vector3f cross;
+	vector3f const *axis = axis_in;
+	vector3f *vector = vector_in;
 
 	cross3f(axis, vector, &cross);
 	vector->i = cosine * vector->i + sine * cross.i;
@@ -99,28 +103,6 @@ static inline vector3f *function_x84d9e8(vector3f *vector, vector3f const *axis,
 	return vector;
 }
 
-// score 6 (was 6): cross-product operand preloads and SSE allocation remain.
-// shared cross-product interface 6;
-// plain component rotation loop 47;
-// shared cross product and component loop 47;
-// cosine vector snapshot 35;
-// rotation output vector snapshot 136;
-// shared cross product and cosine vector 35;
-// shared cross product and rotation output 136;
-// shared cross product with distinct rotation input and output 134;
-// void rotation return 6; cosine-in-place i/j/k/i+j/i+k/j+k 12 each;
-// sine-in-place cross i 15; single-precision trig 46; scalar trig results 6;
-// value-returning cross 123; reference cross interface 6; array component cross 6.
-// Axis/input/both scalar snapshots 48/53/56; paired products 34;
-// cross inputs by value axis/input/both 150/157/193; rotation axis by value 150.
-// Round 70: retail loads axis j for the i-row first product and vector i for the j-row one; VC picks
-// the loaded operand itself (all 64 product operand orders and all helper parameter orders give this
-// code or worse). Axis/vector pointer aliases in the helper 11 (fixes those two, flips the k-row
-// second product), vector alias first 12; axis local before the call 39; point-typed helper 6;
-// input alias 13; cross/rotation statement orders 7-39; helper in another file 6; angle wrapper 38.
-// Round 26: components computed k, j, i into locals before the stores 6; both helpers forceinline 6;
-// axis/vector aliases in the cross helper 11 (only the k-row second product then loads the axis),
-// with that product's operands swapped 11; aliases for the i and j rows only 46.
 // @retail 0x18c250
 bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {
@@ -582,6 +564,8 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Round 30 (lane D): assigning the root-location result to the destination, and keeping it in a local
 // instead, both score 279; a local copy of the sound type for the type-1 test scores 289, the flag test
 // through the flag0 bitfield and the type mask shifted as an unsigned 1 both score 279 with the same
@@ -590,6 +574,8 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // share. What still differs: the frame stays 0x8c against retail's 0x80 and the datum/tag homes differ.
 // Original body kept.
 // score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Earlier 280 from 280: Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain. BLOCKED-BY 0xba300.
 // Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain.
 // Round 9 (lane 10): retail's case-3 failure byte is a dead store into the slot the audibility output
@@ -673,6 +659,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 279/556/279/492/279/492/556/756. Ordinary inline forms tie; forced audibility expansion
 // loses seven matched callers. All original declarations, definitions and body restored.
 // Root-location query now matches; datum/tag homes and the constant-one spill remain.
+// Round 247: complete object-phase spatial output at phase/entry scope, with native/
+// library marker-position and full-output transfers in all eight combinations, 371
+// each (frame 0xb0; reduced 0x21db80 loses). Original direct fields, receiver pair,
+// provider calls, output publication and complete body restored.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

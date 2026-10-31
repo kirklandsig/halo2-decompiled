@@ -122,6 +122,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 320: both rigid-body flags read live through the model; repeated/shared byte type
 // and original/explicit object-bit result arms 117/111/114/117; explicit level tests
 // 117/111/114/117. Every form loses the matched caller; complete original body restored.
+// Round 457: selected-body const reference with repeated/shared type, original/explicit
+// object-bit arms and original/explicit upper-level arms: 96/136/93/136/96/136/93/136.
+// Shared-type forms lose the matched caller; the three-point forms are below the keep gate.
+// Original body and caller convention restored.
+// Round 10 (lane 17): a /Gd first-pass harness loads the rigid-body index into EAX for every one-read-type form
+// (208 orderings, byte/long type, case 0 through the local or the component, header local), into ECX only with the
+// two reads, which is the flip. One read with case 0 through the object_index local 136 (216 bytes, caller 213); the
+// kind-7 test as a plain if 100 (260 bytes, sbb select); parameters (component, owner, level, kind, index) as the
+// caller's setup order implies 96 (same code, caller kept), with the one-read body 136, with a single-exit kind-7
+// path 100 (caller 13).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -339,6 +349,9 @@ struct s_flag_word_bits
 // 261/298/257/298/278/280/278/280; availability-first with later policy, complementary policy, both
 // and direct bounds: 274/296/297/318. Four-point 257 rejected; original method, class declaration
 // and clamp restored. Frame/status/group homes remain.
+// Round 249: Complementary availability/application/both truths, bool
+// 258/261/292 and byte 258/261/292; both with availability declared first
+// 279/279. Three-point best rejected; original status domains and complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

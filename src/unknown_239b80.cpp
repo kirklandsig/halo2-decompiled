@@ -317,12 +317,27 @@ short function_239e50(short count, point2f const *points, short *indices);
 // copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
 // first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
 // case 1's dot by name or through the pointer in either term order.
+// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
+// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
+// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
+// case 1's difference as `line.d - dot` 43.
+// Round 29 (lane 14): count EBX and points EDI agree with retail (ECX is only written), so the rotation
+// is body-internal. A case-0 `vector2f *normal = &line.n` for the normalize and the dot 42 (same code),
+// for the dot only 42 (same code), with j's store too 44 (304 bytes), with i's store instead 69 (305);
+// case 1's distance as `line.d - dot` 43.
 // Round 7 (lane 17, fast): the normal built from the existing vector2d_from_points2d (first minus point,
 // i = delta.y, j = -delta.x) 86 (316 bytes: the negation is an SSE subtract from zero); the loop on
 // `i < count` with `if (state >= 2) break;` after the switch 101 (311); case 0 in matched 0x23a2b0's own
 // inline form (named length, `*=` scales, `else length = 0.f`, the dot by name) 56 (j still scaled in the
 // reciprocal's register); normalize2d spelled as matched 0xde080's (scale inside `!(fabs(m) < eps)`,
 // `v->i * inv`) 42 (same code); the normalizer's result tested implicitly 42 (same code).
+// Round 54 (lane 16, fast): `points + i` for every `&points[i]` 42; case 0 setting the state before the
+// distance store 42; the normalizer's zero test as `fabs((double)m)` 43; case 1 as `if (fabs(...) <
+// epsilon) break; state = 2;` 42; the loop condition `state <= 1` 43.
+// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
+// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
+// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
+// case 1's difference as `line.d - dot` 43.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -746,6 +761,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // original indexed walk with point memcpy/memmove 129/337. Native intersection on the cursor
 // graph with native/memcpy append 235/235; complete memmove publications 298.
 // All original indexed traversal, native stores, copies and helper contracts restored.
+// Round 54 (lane 16, fast): the previous side computed straight from its distance expression (no previous
+// distance local) 133; the previous side stored before the previous point at the loop end 129 (same code); the
+// result declared after the flags and mask 132; the side test as `previous_inside != inside` 129 (same code); the
+// current side `bool const` 129 (same code). Diagnostic only: an `if (count > 0)` guard around the loop 211.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

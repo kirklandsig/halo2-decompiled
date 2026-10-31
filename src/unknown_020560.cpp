@@ -74,6 +74,8 @@ PRIVATE __forceinline long texture_floor(real value)
 // bias assigned in the arm without its zero default 65; ignored call result named 4; bitmap
 // narrowed to short at the floor 16. Harness: the second floor's asm decides it (an asm copy
 // that clobbers EDX in place of ECX gives EAX here).
+// Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
+// clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -851,7 +853,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 589 (was 604): Frame 0x18/0x2c, input/selection homes, override layout and fraction retention differ.
+// score 589 (was 589): Frame 0x18/0x2c, input/selection homes, override layout and fraction retention differ.
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
 // The one-point nearest gains are ineligible; original scalar producers and arithmetic restored.
@@ -866,6 +868,8 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Round 450: one sample-table observation on cursor/end traversal 594; complete query
 // value 729; both 727; live count 604, with table/query/both 594/729/727; entry delta 604.
 // Singleton/multi-record shared table scope 589 (kept, plain; 2127/2122 bytes).
+// Round 248: pointer-end scans with direct ordinals, pointer/ordinal exclusions and shared
+// table ends 736/723/713/737/679/693/735/850; all original traversals restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1299,6 +1303,15 @@ bool function_0bfe60(dword const *flags, long bit);
 // round-7 form with a short total 135; with the mask tested before the player 135; with the slot
 // tests as a `continue` filter 38. A one-file harness with the D3D objects linked is not exact (60:
 // it cannot reproduce MakeRequestedSpace's register argument).
+// Round 28 (lane 14), `--fast`: round 7's row form rebuilt 38 (aligned 39; the pure permutation: counter/total EDI,
+// test index and player EBP, slot-field temps EBX, device EDI where retail has EBP, EDI, EBX/EDI and EBX); on it:
+// the test index as dword 38, the visibility-result outputs declared at the query block top 38, a const device
+// pointer 38, the test index, status, total, test+status, status+test and all three declared (uninitialized) at
+// function scope 38 each (symbol order does not move the colours), the test index declared after status 39, the
+// total declared at the query block top 155 (437 bytes), the store through a (word) cast 38. On the kept form: a
+// const row pointer 52 (same code). The XDK's D3DDevice_BeginVisibilityTest is a library function (no header
+// inline); no other file writes the 0x817c8 push. The draw result in its own `drawn` local clamped into the total
+// 96 (463 bytes), on the row form 136, with status declared first 136.
 // Round 56 (lane 12): the SDK's begin-test call in the plain full build 158 (still out of line;
 // retail holds the push header only here); the global test as an early-return guard 52; the count
 // reassigned before the set 66; a pointer local to the whole visibility table for count, slots and

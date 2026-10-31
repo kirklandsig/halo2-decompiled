@@ -46,22 +46,25 @@ PRIVATE __forceinline real function_29b4c0(real arg_0, real arg_1, real arg_2)
 PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     vector3f const *arg_1, real arg_2, vector3f *arg_3)
 {
-    real local_0 = (real)sin(arg_2);
-    real local_1 = (real)cos(arg_2);
-    real local_2 = (arg_1->i * arg_0->i + arg_1->k * arg_0->k + arg_0->j * arg_1->j) * (1.0f - local_1);
-    vector3f local_3;
-    local_3.i = arg_1->k * arg_0->j - arg_1->j * arg_0->k;
-    local_3.j = arg_1->i * arg_0->k - arg_1->k * arg_0->i;
-    local_3.k = arg_0->i * arg_1->j - arg_1->i * arg_0->j;
-    real local_4 = arg_1->i * local_2 + local_1 * arg_0->i - local_3.i * local_0;
-    real local_5 = local_1 * arg_0->j + local_2 * arg_1->j - local_3.j * local_0;
-    real local_6 = arg_1->k * local_2 + local_1 * arg_0->k - local_3.k * local_0;
-    arg_3->i = local_4;
-    arg_3->j = local_5;
-    arg_3->k = local_6;
+    real sine = (real)sin(arg_2);
+    real cosine = (real)cos(arg_2);
+    real projection = (arg_1->i * arg_0->i + arg_1->k * arg_0->k + arg_0->j * arg_1->j) * (1.0f - cosine);
+    real cross_i = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
+    real cross_j = arg_0->k * arg_1->i - arg_0->i * arg_1->k;
+    real cross_k = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
+    real i = arg_0->i * cosine + projection * arg_1->i - cross_i * sine;
+    real j = arg_0->j * cosine + projection * arg_1->j - cross_j * sine;
+    real k = arg_0->k * cosine + projection * arg_1->k - cross_k * sine;
+    arg_3->i = i;
+    arg_3->j = j;
+    arg_3->k = k;
 }
 
-// score 308 (was 389): length 1706 agrees; frame 0x24 versus 0x2c (local_11 and the rotation spills share
+// score 267 (was 308): frame 0x2c agrees (1713 bytes against 1706); the sqrt/acos temporaries sit at +0x14
+// where retail keeps them with the yaw at +0xc (local_11 at +0x10, the final pitch in the scale parameter's
+// home), the XMM numbering from the 1.0 constant on, the yaw clamp (retail clamps it in its stack home) and
+// the rotations' register and slot assignment differ.
+// Earlier (308): length 1706 agrees; frame 0x24 versus 0x2c (local_11 and the rotation spills share
 // local_6's slot, retail gives local_11 [esp+0x10] and a spill [esp+0x14] of their own); normalization
 // register numbers, the turn-rate clamps (retail clamps the yaw in its stack home, keeps 0.01745329 in xmm7)
 // and the rotation differ.
@@ -165,6 +168,22 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Normaliser scaling J first as `j = j * scale` then `i = scale * i` 401 (0x29b990 9); J alone as
 // `j = j * scale` 389 and as `j = scale * j` 389 (same code); k zeroed after the length 393; magnitude
 // initialised at declaration with both angles zeroed only in the else arm 397. Original helper and body restored.
+// Round 54 (lane 16, fast): the actor's +0x658/+0x660 angle fields read at each use (no local_15) 310 (1711
+// bytes; the degree factor then loads into XMM7 as in retail); with each delta before its limit 310 (same
+// code); the pitch accumulated in local_9 (no local_11) 324; both angles initialised at declaration 368 (1723
+// bytes, frame 0x2c); per-use fields with both turn limits as `limit = 2pi; if (field_34 > 0) limit = ...` 295
+// (kept: retail's default-then-override shape), with the first limit (pi/2) in that form too 297 (retail's first
+// limit is an if/else with jmp); on 295, the rotation helper in the projection-first form with three scalar
+// cross terms and rows `v.i * cos + projection * axis.i - cross_i * sin` (src/unknown_2551c0.cpp's unit-axis
+// rotation shape) 267 (kept: frame 0x2c, first difference +0x6e; the projection's term order compiles the same);
+// on 267: descriptive helper names 267 (same code), the yaw renamed or the normalizer's length and local_11
+// renamed to sort last 267/267 (same code), both angles initialised at declaration 369, the existing cross3f for
+// the second axis 295 (1737 bytes), the turn test's product delta-first 267 (same code).
+// Round 29 (lane 14): retail's frame holds two scalar slots at +0x10/+0x14 (first pitch value, sines, one
+// rotation spill) apart from the XY vector (+0x18); the first copy's slot (+0x20) carries the rotation input
+// and result, ours uses the second copy's. Fast: the rotation input, the cross axis or the first pitch value
+// at function scope 308/308/308 (same code); the XY vector initialised after the second normalization 384;
+// both rotations in place on the first copy 311 (frame 0x34); a later XY read (diagnostic) gives frame 0x28.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
@@ -193,16 +212,16 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         real local_13 = local_2->field_30 > 0.0f ? local_2->field_30 * 0.01745329238474369f : 1.5707963705062866f;
         local_8 = function_29b4c0(local_8, -local_13, local_13);
         local_9 = function_29b4c0(local_9, -local_13, local_13);
-        real local_14 = local_2->field_34 > 0.0f ? local_2->field_34 * 0.01745329238474369f : 6.2831854820251465f;
-        real local_15 = *(real *)((byte *)local_0 + 0x658);
-        real local_16 = local_8 - local_15;
-        if (!(0.0f > local_15 * local_16)) local_14 *= arg_4;
-        local_8 = local_15 + function_29b4c0(local_16, -local_14, local_14);
-        local_14 = local_2->field_34 > 0.0f ? local_2->field_34 * 0.01745329238474369f : 6.2831854820251465f;
-        local_15 = *(real *)((byte *)local_0 + 0x660);
-        local_16 = local_9 - local_15;
-        if (!(0.0f > local_15 * local_16)) local_14 *= arg_4;
-        local_9 = local_15 + function_29b4c0(local_16, -local_14, local_14);
+        real local_14 = 6.2831854820251465f;
+        if (local_2->field_34 > 0.0f) local_14 = local_2->field_34 * 0.01745329238474369f;
+        real local_16 = local_8 - *(real *)((byte *)local_0 + 0x658);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x658) * local_16)) local_14 *= arg_4;
+        local_8 = *(real *)((byte *)local_0 + 0x658) + function_29b4c0(local_16, -local_14, local_14);
+        local_14 = 6.2831854820251465f;
+        if (local_2->field_34 > 0.0f) local_14 = local_2->field_34 * 0.01745329238474369f;
+        local_16 = local_9 - *(real *)((byte *)local_0 + 0x660);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_16)) local_14 *= arg_4;
+        local_9 = *(real *)((byte *)local_0 + 0x660) + function_29b4c0(local_16, -local_14, local_14);
         vector3f rotation_input = *arg_2;
         function_29b6c0(&rotation_input, g_4687b0, local_8, &local_7);
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);

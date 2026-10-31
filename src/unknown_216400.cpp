@@ -96,7 +96,7 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
     return result;
 }
 
-// score 20 (was 32): the helper returns the new element (NULL when the list is full) and the caller copies
+// score 20 (was 20): the helper returns the new element (NULL when the list is full) and the caller copies
 // into it: retail's length (662), list in ECX and retail's format-call and enumeration registers; only
 // the append's own instructions differ: retail materializes the room test (`setne al; test al, al`) with
 // the count in ESI copied to EAX, `lea edx, [eax + 1]` and the shift on the copy, and no NULL test.
@@ -380,10 +380,21 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // puts the list back in EDX); a bool room test with the caller copying into `entries[count++]` 54 (the
 // bool folds); the count read before the 0x216e50 call (diagnostic, count in ESI) 62; the original append
 // helper returning the copied element 54 (its NULL test threads away, two instructions short).
+// Round 117 (fast): an inline room test plus an inline `count++` index helper, the caller breaking then
+// copying into `entries[index]` 54 (654 bytes, retail's lea/shift/store tail, no setne); a bool append
+// helper `result = count != 4096; if (result) { index = count++; memcpy } return result;` with
+// `if (!append) break;` 51 (662 bytes: setne/test now, but bool CL, count EAX, list EDX against
+// retail's AL/ESI/ECX); the same over a count local stored `count + 1` 51; diagnostics with the room
+// flag tested again after the copy, written out or from an inline room helper, 51/51 (same registers).
 // Round 114 (lane 6): the append helper taking the count by value 33; a bool helper handing the entry
 // out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
 // caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
 // copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
+// Round 138 (lane 4): a bool append helper (`bool result = list->count != 4096;`, then `long index =
+// list->count; list->count = index + 1;` and the memcpy into `entries[index]`) 51 (setne/test as retail, but
+// count EAX, result CL, list EDX); that with `long index = list->count++;` 51; the pointer helper with a named
+// `room` test and the index copy 49; the pointer helper as a list member function (`list->new_entry()`) 20 (same
+// code); the bool helper as a list member function 51.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

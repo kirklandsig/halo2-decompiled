@@ -317,6 +317,23 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // reverse dot 4; a direct read of d.i instead 21; direct reads of d.j and d.k 164 (670 bytes). So the y
 // product is a copy of the scale exactly when d.j is read directly somewhere before the normalization while
 // i and k are read only through the vector's address (helpers or a pointer), as the listed pointer form.
+// Round 115 (lane 6, fast): length_sq3f(&d) with the test written `distance_squared < r * r` 152; dot3f(&d, &d)
+// with that test 152; the difference made in the plane normal, length_sq3f(&plane->n) and the existing
+// vector3f_scale in place 176 (696 bytes); the sum grouped `i + (k + j)` 61, `k + (j + i)` 57. Harness
+// screens (exact here): the eight other flat/parenthesized groupings 57-61; vector3f_scale with the
+// reciprocal in the call 57, with length_sq3f 152.
+// Round 59 (lane 12, exact one-file LTCG harness, 143 forms): the squared distance as j,k,i / i,k,j /
+// k,i,j / i,j,k flat, `j + (i + k)`, i,k,j statements, length_sq3f or dot3f(&d, &d), crossed with
+// shape_scale3d with a scale local or the reciprocal in the call or vector3f_scale, the unit-z zeros
+// chained either way or stored separately, and either dot order: 57 (12 forms: the j,k,i sum or
+// i,k,j statements with any scale/dot form and the chained y-first zeros), 59 (12), 61 (84), 152 (30),
+// 162 (6, 671 bytes); i,k,j statements with the reciprocal in the call, separate zeros and the
+// swapped dot 61 (fast agrees).
+// Round 117 (fast): the listed pointer form still matches; its pointer sum alone (original dot and
+// chained zeros) 123, with i and j through the pointer and k direct 169. With the dot's inputs swapped
+// and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
+// difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
+// `j + (k + i)` 61; k, i, j statements 61.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

@@ -36,6 +36,9 @@ extern s_cache_copy_request g_55be24[2];
 // Round 39: the else arm as one ternary 42; a real numerator before the total test 50, at the top 58;
 // the middle range before the high range 15.
 // No other unsigned conversion in retail follows an fild (byte scan), so no matched model for the order.
+// Round 57 (exact one-file harness): `(double)` casts on both operands, on the denominator, on the
+// numerator, a long double numerator 3/3/3/3 (same order); implicit numerator 2; completed and total
+// as two separate globals 2; numerator assigned then `/=` and a reciprocal product both longer.
 // @retail 0x2148b0
 bool function_2148b0(real *progress)
 {

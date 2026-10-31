@@ -1320,7 +1320,7 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
     }
 }
 
-// score 130 (was 267): only the mapped loop's rescale test after 0x1b2c0 differs: retail reloads the word
+// score 130 (was 130): only the mapped loop's rescale test after 0x1b2c0 differs: retail reloads the word
 // (`mov ax,[ebx]; test ah,8`), ours tests memory (`test byte [ebx+1],8`). Earlier: frame 0x28 and sampler agree;
 // deferred index and post-store descriptor rereads remain.
 // Earlier: frame and sampler agree; deferred index and post-store descriptor rereads remain.
@@ -1427,6 +1427,21 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // (not counted): word/short/bitfield/struct-copy locals, `!= 0`, `(x >> 8) & 8` and casts all fold to the
 // memory test.
 // Review: the remapped arm's one-use `index` local written at the call instead, 130 (same).
+// Round 138 (lane 4; a one-file LTCG harness of this file plus unknown_131e50.cpp reproduces it): the rescale
+// test through an inline rescale helper taking the descriptor 130; through an inline descriptor getter 130; a
+// named masked word `word rescale = *(word const *)entry & 0x800;` 130; the word read before the 0x1b2c0 call
+// and tested after it 193 (spilled); a bool read before the call 247. Harness only: `!= 0`/`== 0x800` tests,
+// a short read, a word cast, the call result kept 130 each. Every live-across-call form spills to the stack;
+// retail's unfolded `mov ax` needs a second use of the reloaded word between the two calls (not found).
+// Round 27 (m3 lane 15, plain; `--fast` fails on this file; 130 since round 115, 267 before): retail's
+// AX is dead after its test and its store reloads the word after the pack call, so the test's load must
+// have a second use the optimizer drops (retail's entry shows the same unfolded form for `remapping`, which has two real uses).
+// `(bool)((word >> 11) & 1)` 135; `bool rescale = (word & 0x800) != 0` 135; the word read once after
+// 0x1b2c0 into a local used for the test and as the store's packed 126 (`test edi, 0x800`, kept in EDI
+// across the pack call where retail reloads); the test in the loop condition, flag first/count first
+// 170/171 (rolled loop, 1203/1202 bytes). Compile-only: short/indexed spellings, a word reference at the
+// loop top or after the call, four rescale statements and a do/while all fold to the memory test; the
+// test inside the component loop gives `mov ax, [..]; and ax, 0x800` and one test per component.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {

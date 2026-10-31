@@ -633,6 +633,12 @@ real function_267370(long object_index);
 // 98; the zone result through a bool local 100; `carrier` declared first in the block 98; the first
 // cross plain (cross3f) with the second staged 114 (1727 bytes); the first staged with the second
 // plain 112.
+// Round 58 (lane 12, plain checks; --fast builds this function at 416): the carrier's first arm
+// re-reading the parent index from the object 403 (frame 0x8c); the carrier's first test on the
+// parent index instead of the pointer 335 (1712 bytes); one 0x118e80 call with a ternary index
+// argument 107; the held bit as one bool expression 194; a named location pointer for the zone test
+// 100. Diagnostic (fast only, unfaithful here): `(short)NONE` in the shared zone helper leaves the
+// `or edi, -1` / `cmp ax, di` sharing unchanged.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1619,7 +1625,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
-// score 263 (was 263): Frame 0x14 and actor ESI agree; input EDI/EBX, pool retention and scalar homes remain.
+// score 251 (was 263): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
+// rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
 // retail's code; the actor index stays in EDI instead of EBX and the object pool is reloaded instead
 // Frame 0x14 and actor ESI agree; input EBX/object-pool EDI allocation and scalar/ammunition homes remain.
@@ -1691,6 +1698,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // DL210: byte/signed-byte/unsigned-dword ammunition ordinals 263/263/323; paired real-array
 // role names 263, with those ordinals 263/263/323; readonly real weapon input pair 263.
 // Original ordinal, array names, mutability and complete body restored.
+// Round 52 (lane 16): the ammunition minimum read from the options field at each use (no `minimum` local) 263 ->
+// 251 plain (kept; the actor index moves to retail's EBX). On 251 (fast): the random draw written inside the rounds
+// expression 251; the two slot helpers reading the slot field at each use 251; probability defaulting to 0.1 before
+// the options test 288; the weapon pair as an initializer 251; the options lookup before the actor pointer 300; a
+// named seed pointer for every random draw (on 263) 333; the counter increment as `+= 1` (on 263) 263 (same code);
+// the weapon pair declared at function scope (on 263) 263 (same code). Our callee closure has no stub and nothing
+// writes or takes the address of the object-pool global, so retail's held pool register is allocation, not a blocker.
 // Lane 9 r52 (fast): retail loads the object-pool global once into EDI above the inlined 0x1e5240's NONE
 // test and re-reads its data field at every lookup; ours CSEs the data field and reloads the global (the
 // callees in that span are leaves, so it is not a callee summary). `inline` on 0x1e53e0 265 (0x2758b0
@@ -1767,13 +1781,12 @@ void function_1e2a90(long actor_index)
 							fraction *= 0.5f;
 						function_101a10(weapons[i], fraction);
 					}
-					short minimum = *(short *)(weapon_options + 0x94);
-					if (minimum > 0 || *(short *)(weapon_options + 0x96) > 0)
+					if (*(short *)(weapon_options + 0x94) > 0 || *(short *)(weapon_options + 0x96) > 0)
 					{
 						dword random = _random(&g_4e7408->unknown0, NULL, 0);
 						short rounds[2];
 						memset(rounds, 0, sizeof(rounds));
-						rounds[0] = (short)((((short)(*(short *)(weapon_options + 0x96) + 1) - minimum) * random >> 16) + minimum);
+						rounds[0] = (short)((((short)(*(short *)(weapon_options + 0x96) + 1) - *(short *)(weapon_options + 0x94)) * random >> 16) + *(short *)(weapon_options + 0x94));
 						if (g_4e6948->state == 1 && g_4f55e0)
 							rounds[0] = (short)(rounds[0] * 0.5f);
 						function_1018b0(weapons[i], rounds);

@@ -465,12 +465,27 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the test, 0x1d90e0 and the set (nested ifs) 128, the same with the shift test 122, with a short
 // local 45; the first marker query's result named 42 (same code); iterator a tested before b 46.
 // The set still reuses the test's value numbers across 0x1d90e0. Body restored.
+// Round 42 (lane 1): retail's fused set after a mask test needs the visited words to be clobberable
+// by the calls between the test and the set: with the mask test, the clear through the existing
+// bit_vector_fill gives retail's index-first `or [eax], edx` set, but our LTCG keeps that call out of
+// line 213 (466 bytes; also with a forceinline declaration 213); with the entry written as
+// `state->node_count() != 0` the fill inlines and the set is load/OR/store again 42 (shift test 37,
+// identical code); the visited words and both markers as one local aggregate also give the fused set
+// but realign the frame 190 (with the inlined fill 190); 0x1d90e0's marker matrix non-const 42.
+// Diagnostics: a volatile node-index read in the set 42, an opaque no-argument call before it 47.
 // Round 8 (lane 18, fast): with the mask test, a fresh node index read at the set (volatile diagnostic,
 // reverted) still gives the mask-first load/OR/store set, so it is not the index's value number;
 // mask test with `mask & word` operands 42; mask test with the set as `mask | word` 42, both swapped
 // 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
 // the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
 // unmatched: a lead if retail's set needs a call that may write the vector.
+// Round 118 (lane 5, fast with 0x113ba0/0x113c60): the visited words grouped with both markers in one
+// local struct (so the markers' escape covers the vector) with the mask test 190 (frame realigned to 8;
+// the set is still mask-first load/OR/store, so the vector's escape does not give retail's fused set and
+// 0x120220, which can only reach the markers, is a weak lead); a `break` on each arm's iterator call 37
+// (same code); the state parameter renamed to sort before the tag table's name 37 (back-edge reloads
+// unchanged, so names do not order them); that per-arm break with the mask test 42; the graph and
+// iterator setup shared ahead of an if/else call 167.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

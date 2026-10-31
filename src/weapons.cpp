@@ -2597,6 +2597,10 @@ long __stdcall function_fda00(long weapon_index, s_scenario_weapon_view *placeme
 // after this function 3; one short index for all three loops 3; the definition read after the
 // field resets 110. A true result declared first 3, or just before the reset 3; loop indices
 // declared at the top 3; the +0x17e word as a named field 3; magazine index declared in its loop 3.
+// Round 43: the reset called before the +0x17e store 11 (that store cannot pass the reset's); the reset's
+// two words as one chained assignment 3; a __forceinline redeclaration of 0x105be0 above this function 3
+// (0x105e80 then inlines it); the barrel loop indexing weapon->barrels[i] directly 100; the reset storing
+// value250 first 4 (stores follow source order, `pop esi` stays second).
 // @retail 0xfdad0
 bool __stdcall function_fdad0(long weapon_index, void *placement, bool *flag)
 {
@@ -2884,6 +2888,11 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // XMM2 is re-zeroed); that with the fallthrough switch 405. Retail recomputes the definition only on the
 // 0x1d0007ba path. A 27-value LTCG test switch keeps the `jg` root with loop, fallthrough, goto and return
 // cases.
+// Round 53: retail's left subtrees all use the `jg` form; only the spine to 0x1d0007ba falls through. One
+// switch with the activity cases first or last and `default: return false;` 430/430; the if before the
+// switch with `default: return false;` 425; the activity cases before 0x0b0005a9 409; the activity-first
+// switch on `(dword)name` 409 (`ja` root). Compile-only: activity cases first/last, with a returning
+// default, separate activity cases and the default first all keep the `jg` root.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {

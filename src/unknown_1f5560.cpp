@@ -634,7 +634,8 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 12 (was 12): Frame and block layout agree; dot-product term/operand order remains.
+// score 12 (was 12): layout, frame and code now as retail; left: both dot products evaluate their
+// Frame and block layout agree; dot-product term/operand order remains.
 // Earlier: layout, frame and code now as retail; left: both dot products evaluate their
 // y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
 // y,z), a value-numbering tie that flips with the CSE sharing of the current-point address.
@@ -709,6 +710,16 @@ struct s_1f9762
 // ternary with its arms reversed 92, with the first dot swapped 92; diagnostics, one-caller helpers
 // (not keepable): the previous point as a forceinline accessor 67 [28], the approach computation
 // as a forceinline helper returning whether it has length 67 [36].
+// Round 101 (lane 8; exact one-link LTCG harness, fast-confirmed): the first dot's arguments
+// reversed 10, the `next` local dropped 10, the projection as one condition 10 (each fixes only the
+// first dot's x-term); field_1c typed as the point record x `next` x remaining/one condition/two
+// named dots x both argument orders x `previous` local, 96 forms 10-12; the point's dot named first
+// 12 (canonicalised); `field_2e >= field_2d - 1` 13, `field_2d <= field_2e + 1` 14, `field_2e >= 1`
+// 14; path-point or current-point accessors 10-12; char/long/short index locals in the approach
+// 12/45/8 (short flips y/z but loads a word, 19 fast), in the direction arm 137-140; renames 12; the
+// projection as an inline helper in all parameter and argument orders 10. Diagnostic: the path read
+// through an embedded member at the projection only, first dot reversed, 2 (a mixed read); the second
+// dot's x-term never moved in 12 forms on that graph.
 // Round 456: Native persistent path reference on recovered block graph, readonly path, actual point value at projection and first-dot operand graphs:
 // 12/10/108/108/12/10/108/108. Original executable body and supporting declarations restored.
 // @retail 0x1f9760
