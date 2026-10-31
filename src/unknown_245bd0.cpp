@@ -311,6 +311,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // reverse dot 4; a direct read of d.i instead 21; direct reads of d.j and d.k 164 (670 bytes). So the y
 // product is a copy of the scale exactly when d.j is read directly somewhere before the normalization while
 // i and k are read only through the vector's address (helpers or a pointer), as the listed pointer form.
+// Round 117 (fast): the listed pointer form still matches; its pointer sum alone (original dot and
+// chained zeros) 123, with i and j through the pointer and k direct 169. With the dot's inputs swapped
+// and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
+// difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
+// `j + (k + i)` 61; k, i, j statements 61.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

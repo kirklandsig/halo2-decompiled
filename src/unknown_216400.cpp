@@ -380,6 +380,12 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // puts the list back in EDX); a bool room test with the caller copying into `entries[count++]` 54 (the
 // bool folds); the count read before the 0x216e50 call (diagnostic, count in ESI) 62; the original append
 // helper returning the copied element 54 (its NULL test threads away, two instructions short).
+// Round 117 (fast): an inline room test plus an inline `count++` index helper, the caller breaking then
+// copying into `entries[index]` 54 (654 bytes, retail's lea/shift/store tail, no setne); a bool append
+// helper `result = count != 4096; if (result) { index = count++; memcpy } return result;` with
+// `if (!append) break;` 51 (662 bytes: setne/test now, but bool CL, count EAX, list EDX against
+// retail's AL/ESI/ECX); the same over a count local stored `count + 1` 51; diagnostics with the room
+// flag tested again after the copy, written out or from an inline room helper, 51/51 (same registers).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

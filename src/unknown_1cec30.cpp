@@ -2837,6 +2837,10 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // retail's only without the head kind test or without the capped velocity block (or with only one capped
 // velocity), so it follows the loop's size, not a spelling; 256 combinations of declaration, index,
 // increment, direct-read and initializer forms and unused locals never flip it.
+// Round 117 (fast; the matched 0x1d1c10 loop gives retail's [data + offset] with the same getter):
+// the head kind code in a named local 7; a rigid-body local for the head test 8; the velocity pair
+// declared with the change vector 7; the 0xbba20 call before the change vector 22; the index named
+// rigid_body_index as in the siblings 7.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {
