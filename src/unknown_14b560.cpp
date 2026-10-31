@@ -2258,6 +2258,9 @@ static __forceinline long player_round_ticks(real value)
 // Round 239: complementary readiness/admission/lunge ownership, seven nonempty
 // subsets and the complete byte graph, all eight 701. Original producers, request
 // storage, fields, call tuples and complete body restored; frame remains 0x4c.
+// Round 244: complete native action/button lvalues and readonly unit receiver,
+// seven subsets all 701; complete graph with candidate addresses at each call
+// 708. Original reference carriers, candidate, receiver and complete body restored.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -2698,6 +2701,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // The status block in its own braces 103, the entry pointer through players_globals_14f2e0() 103,
 // the busy store through the entry local 103 (all the same code); last_unit = NONE declared at the
 // function's top 157 (612 bytes); `if (last_unit == NONE) return;` before the second loop 103.
+// Round 244: joint busy/retry-failure byte, signed-byte and paired short/long
+// carriers 193/193/193/193/193/193/198/190 (fast control 193, 592 bytes);
+// paired long saves only three and is dropped. Existing-sibling control remains
+// 193; full baseline 103. Original predicate domains and body restored.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
