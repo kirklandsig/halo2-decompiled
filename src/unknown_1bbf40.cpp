@@ -557,6 +557,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // bitwise operands field first 47 (same code); `special = false; if (type == 6 && byte) special = true;`
 // then `if (!special) { scan }` 202 (872 bytes). A compile-only build of this file alone puts NONE in EDI
 // (not predictive for this function).
+// Round 44 (lane 1, fast): if/else arms with `special = actor->unknown268 != 0` in the special arm and `special =
+// false` opening the scan 200 (872 bytes: the field is re-read at the tail, but the arm stores 1 to the slot and
+// the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
+// g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
+// datum-index `continue` as a nested if 47 (same code).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

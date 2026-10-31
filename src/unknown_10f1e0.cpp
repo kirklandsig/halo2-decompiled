@@ -479,6 +479,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
 // the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
 // unmatched: a lead if retail's set needs a call that may write the vector.
+// Round 44 (lane 1, fast): 0x120220 is at 2 (not the blocker); bit_vector_test re-measured 42; on the shift
+// test: the model as `long const *` read as model[1] 37; the entry tests as guard-clause returns 37; the
+// render-model argument named before the call 37; `if (graph && graph->node_count != 0)` for the ternary
+// 121 (520 bytes); each arm breaking on its own call result (no `found`) 37.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

@@ -597,6 +597,11 @@ void function_1537f0(s_profile_record *record);
 // Round 99 (lane 8): identity declared and zeroed once before the loop 83 (280 bytes, still folded), with the XUID
 // type 83 (280); the source declared before the identity 67; the XUID identity per iteration 67; the identity zeroed
 // after the entry pointer 67. No existing type has an identity followed by the 0x90-byte record.
+// Round 44 (lane 1, fast): an XUID identity with the source declared first 67; the link stores before the
+// identity and the 0x7f8b0 call 100 (284 bytes); the entry's flags/time clear first 71 (273); a function-scope
+// XUID identity zeroed in the loop 67; the XUID identity zeroed right before the call 67. A compile-only build
+// folds the identity even with the record initializer out of line, so only an identity inside a larger local
+// object stays in memory (round 34); no existing 0x9c-byte type was found.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1007,6 +1012,13 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // the count path's flag store first 54; harness: count path lower first 55, the mixed `function_7fd10(g_4cf980)` read
 // 52, lower and upper initialized to position 369 (1162 bytes); the existing 0x7f8b0 call for the fill 100 (1174 bytes:
 // the head repairs reorder and carry g_4cf97c in EAX, field56 through AL).
+// Round 44 (lane 1, fast): round 149's plain-entry form rebuilt with `downward = true` first 54. A compile-only
+// /Gd build reproduces this prefix exactly (upper in EAX, forward copy index EBP); deleting the backward copy
+// (diagnostic) frees EAX: its index `i = upper - 1` coalesces with upper (`dec eax`, retail `lea eax, [ecx - 1]`).
+// On the current body: backward copy as `for (i = upper; i > lower; i--) g[i] = g[i - 1]` 373 (upper ECX, but the
+// copy's strength reduction changes); backward/forward copies through a per-iteration element pointer 107/66;
+// forward copy as `for (i = lower; i < upper; i++) g[i] = g[i + 1]` 371; the copy arms swapped 70. Screened only
+// (upper stays EAX): count-path orders, declaration orders, ternary spellings, a shared index, `--i` loops.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
