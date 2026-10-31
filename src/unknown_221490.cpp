@@ -485,7 +485,7 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
-// score 79 (was 79): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
+// score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
@@ -561,6 +561,17 @@ bool sound_driver_voice_create_buffer(
 // (diagnostic: play still BL, frame grows); three_d defined first 180 (retail's `mov al, cl; shr ecx, 1;
 // and cl, 1` shape, but voice_index takes EBP, the zero EBX and both bools spill); three_d first ahead of
 // the voice reference 181. Retail computes play destructively in ECX, so flags' last use is play.
+// Round 37 (lane 10): retail computes the 3D flag first (byte copy `mov bl, cl`, play in place in ECX),
+// so the 3D flag is defined first in the source; then the voice index (with the result coalesced into
+// it) outranks it for the last callee-saved register. 3D flag defined first 180 (599 bytes: the voice
+// index takes EBP, the zero EBX, both bools spill), with the count stored before the clear 180; that with
+// no result (two returns) 164 (flags arrive in EAX, caller 0x191420 loses); that with a long result
+// 161 (618: the 3D flag takes BL and play the stack byte as retail, but the result becomes a separate
+// sign-extended copy spilled after the range test); flags as a byte parameter 70 (caller loses: xor cl, cl).
+// Compile-only screens (about 60 forms, 3D flag first): voice index or result read/assigned anywhere,
+// globals local dropped, voice pointer, natural stack locals, bool/flags spellings and widths, a second
+// test of the 3D flag: the voice index or input mixbin always outranks the 3D flag unless the result is
+// a separate long. Play first keeps BL whatever else changes.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

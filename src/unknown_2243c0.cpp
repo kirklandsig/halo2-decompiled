@@ -284,6 +284,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // accessor retained; fallback EDX masking and stage/pass/unfused-load homes remain.
 // Round 321: Actual search ordinal as found/exhausted result with twice-used stage/pass values and entry/producer declaration subsets: all eight 141 at 544/544 bytes.
 // Round 321: Original separate candidate result, parameter uses, lookup and mask lifetimes, helpers and body restored; fallback/register homes remain. Stacked notes merged.
+// Round 115: retail's chain lookup is `lea eax,[eax+edx*2]; movzx eax,word [eax]` and the pass element's
+// address is computed and left unused; the matched 0x17420 gets that load from a packed-range struct pointer
+// read through its inline index()/count(). Chain/entry through that struct's index() 117 (same code); flags
+// read after the search loop 132; the three pointer fields zeroed in one chained assignment 117; the head in
+// 0x16b90's direct-indexing shape 117; search result written straight into the context 136. Reference
+// locals for the lookups compile identically (compile-only, not counted).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
