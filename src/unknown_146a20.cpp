@@ -132,6 +132,13 @@ bool g_47f05b;
 // fixed class flattened onto the abstract one 31 (0x146b80 3); `::new` 34; the refcount header as a member
 // in place of a base 34; the abstract constructor storing NONE before its zero loop 31 (0x146b80 4); the
 // masked size in a named local 34. The store is dropped in all (141 bytes).
+// Round 7 (m3 lane 18, fast with 0x146b80/0x22c3e0 matched): the pool address read from g_479888
+// before the fixed construction 43 (140 bytes); the block typed as one layout struct (fixed
+// allocator, buffer, pool) read from g_479888 at each placement 38 (144 bytes); the fixed placement
+// from g_479888 with the buffer from `block` 36 (146 bytes: reload on the constructed arm, but the 1s
+// become immediates, no base store); the layout struct through `block` with the pool through
+// g_479888 34 (same code). Diagnostic only (header): a global read in the fixed base constructor,
+// between the two vtable stores, still drops the base store.
 // @retail 0x146a20
 void function_146a20(void)
 {

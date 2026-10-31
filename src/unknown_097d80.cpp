@@ -139,6 +139,10 @@ struct c_aggregate : c_child
 // frame (produced, loop 2's cursor and loop 3's count in one slot) and leaves request in EBP (retail
 // EBX) and the end bound loaded first; the starts store first, nested tests, a source copy, the
 // bounds declared end first, a block-pointer walk and a `!error` gate don't move either there.
+// Round 7 (m3 lane 18, fast): produced renamed written (a name sorting after the compiler's
+// temporaries) 45 (frame 0x8024); the dispatch bounds declared end first 45 (same code); the
+// dispatch child read after the bounds 45; the cleanup indexing blocks[k].items[j] directly 45; the
+// collection loop guarded by `if (child == 0 || error != 0) continue;` 55.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -171,6 +171,12 @@ void c_animation_channel::clear()
 // `long const` graph parameter 36 (same code); single-exit result 49 (127 bytes, callers lose); the
 // id copied right after the NONE pair 41; unknown0e stored before graph 43; rate stored before the
 // frame 42. Diagnostic only: size-preference pragma 56 (120 bytes).
+// Round 7 (m3 lane 18, fast with the six matched callers): retail's order with the id copied through
+// its parameter's address (`c_type_709360 const *id = &animation_id;`, so stores through this might
+// alias it) 42 (the id load is still hoisted above the graph store into ECX; graph an ESI argument;
+// 0x1086e0/0x1087c0 2, 0x10fa80 1, 0x10ec00 53, 0x1cb410 14); that with unknown0e stored after the
+// id 42; the current order with the id through its address 36 (same code); retail's order with the two
+// validity tests as nested ifs 42; that with the byte pair cleared by one chained assignment 51 (126 bytes).
 // @retail 0x1c6470
 bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e)
