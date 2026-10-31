@@ -211,7 +211,10 @@ struct s_window_manager_1248
    fifth, index 4, is shared by all controllers) and three single windows
    that only take index 4. function_148262 maps a channel and an index to one
    of them. The profile being edited (g_54e5d0, at +0x1038) is defined on its
-   own. */
+   own, as are 0x54d5a0 (value08), 0x54e49c (mf04), 0x54e7cc (m1234) and
+   0x54e7fc (m1264), and the other files read them by those names; 0x1476c7
+   clears them through these members, since retail keeps those stores in order
+   with the stores to the rest of the object. */
 class c_window_manager
 {
 public:
@@ -254,15 +257,22 @@ public:
 	long mf04;
 	byte mf08[0x130];
 	/* the profile being edited (g_54e5d0) */
-	byte unknown1038[0x1220 - 0x1038];
+	s_profile_edit profile_edit;
 	bool m1220;
 	byte unknown1221[3];
 	long m1224;
 	long m1228;
 	long m122c;
 	long m1230;
-	byte unknown1234[0x1248 - 0x1234];
+	/* g_54e7cc */
+	bool m1234;
+	byte unknown1235;
+	byte m1236[0x10];
+	byte unknown1246[0x1248 - 0x1246];
 	s_window_manager_1248 main_menu_music;
+	byte unknown125c[0x1264 - 0x125c];
+	/* g_54e7fc */
+	dword m1264;
 };
 
 extern c_window_manager g_54d598;

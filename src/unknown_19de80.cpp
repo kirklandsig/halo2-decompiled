@@ -384,6 +384,12 @@ static inline bool teams_enabled_19e1c0()
 // team+fallback 620/450/457; all counts 674; all with ordinary final result 691.
 // Original result storage and complete body restored; frame 0x208 versus 0x204,
 // capacity/token/result allocation and separate name-copy tails remain.
+// Round 181 (lane 3): the plain result keeps the token in EDI and leaves `remaining` on the stack
+// (retail: remaining EBP, token_length EDI, event EBX, token reloaded per test), which is what lets
+// the name/team tails merge. Plain result with the switch-side-time branch clamping into the result
+// 732 (1129 bytes); the volatile result with that clamp 431 (1398 bytes); the plain result with
+// every token test read through the parameter's address 691 (identical to the plain result); the
+// event teams read at each use 394; a long opponent counter 421.
 // Lane 18 round 6: retail's 4 frame bytes past the text buffer hold the inlined teams test's dead byte store (ours
 // makes it too), so the volatile result is the extra slot. A plain result with one shared inline copy helper
 // (length, clamp, copy; four callers) 691 (same code as the plain result); the opponent loop's team as long 421
