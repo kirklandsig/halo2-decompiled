@@ -275,6 +275,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // restored. Base/state and player/unit homes remain.
 // DL209: Case-owned failure guards in reset/inventory/capability group subsets 1-7: 620 each; all
 // with ordinary player pointer 786. Original cases and qualifier restored.
+// Round 459: Uniform caller unit-field observations, bool/byte/short/long return carriers, inherited/plain
+// player pointer 760/683/659/661/786/865/650/669. Original unit snapshot, cases and qualifiers restored.
+// All executable trial forms restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
