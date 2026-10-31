@@ -51,19 +51,20 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 102 (was 198): the three coordinate differences stay in the x87 stack until the end of
+// score 102 (was 102): Frame 0x14 and entry agree; delayed coordinate cleanup and child allocation/link homes remain.
+// Earlier score 102 (was 198): the three coordinate differences stay in the x87 stack until the end of
 // the loop body, so the squared sum is followed by the radius multiply and the three pops at the
 // end; retail frees the differences right after the square root (fstp st(3) and two fstp st(0)),
 // and neither a nested block nor writing each difference out at every use frees them that early
 // (106); the child loop still takes the pool pointer in edi where retail takes ebx.
-// score 102 (was 198): the position copy writes the location member, the activation branch
+// Earlier score 102 (was 198): the position copy writes the location member, the activation branch
 // lays the viewer arm first and the viewer's influence starts at zero, so the prologue, the
 // copy and the viewer loop agree; the x87 cleanup and the child loop's registers still differ.
-// score 172 (was 198): the head snapshot and the loop's head are separate locals, so the
+// Earlier score 172 (was 198): the head snapshot and the loop's head are separate locals, so the
 // frame is 0x14 and the prologue agrees; the settings store and the position's z store are
 // swapped, the activation branch lays the active arm first, the viewer's maximum and x87
 // cleanup differ, and the child loop's offset and counter homes are swapped.
-// score 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
+// Earlier score 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
 // retained head/position homes and x87 cleanup differ.
 // Earlier metadata/head/count homes differed.
 // Earlier convention mismatch: activation was stacked with six words, while
@@ -233,6 +234,7 @@ public:
 // allocation result with live/early count 282/283. All restored; frame and x87 homes remain.
 // Round 321: Whole-scan maximum on the retained child byte-offset graph; short viewer/closed coordinate phase/child-count snapshot subsets: 251/250/251/250/241/246/241/246.
 // Round 321: Frames stay 0x0c or 0x10 versus 0x14; original influence publication, live count, distance tree and body restored.
+// Round 455: On the recovered head/count/frame graph, separate allocation result 124; shared initialization/link receiver 171; plain remaining count 118; both 157; readonly metadata counterparts 124/171/118/157. Original body restored.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
