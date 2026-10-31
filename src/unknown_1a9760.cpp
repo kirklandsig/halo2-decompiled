@@ -57,6 +57,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 53: the short-vector arm first (`if (fabs < eps) local_4 = 0; else ...`) 104; `local_8 * k` 104;
 // the dot with the negated component first in each product 104; `0.5f * v` 104; the unknown456 store just
 // before the magnitude 108. Harness: all but the last compile byte-identically.
+// Round 251: Native direction input/selection/output memcpy, seven subsets, 104 each; complete memmove 233.
+// Original body and include restored; half/offset XMM allocation and x87/SSE projection scheduling remain.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

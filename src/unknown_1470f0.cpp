@@ -139,6 +139,12 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // 0x147160's shared first/third dispatch with inclusive ends and the barrier 9 (not kept: redundant
 // end tests), without the barrier 49; four plain calls with inclusive / exclusive ends 38/29;
 // shared dispatch with exclusive ends 47.
+// Round 10: four plain calls with inclusive first/second ends 41, exclusive-or-equal first and inclusive
+// second 30, inclusive first and exclusive-or-equal second 51; first/third shared dispatch with exclusive-or-
+// equal ends and no barrier 47; the third end as `&((byte *)m_buffer)[m_size]` 19. One-file LTCG probe: the
+// third block's end is `add edx, eax` (retail `add eax, edx`) in every form tried (operand order, long or
+// pointer sums, size-first or difference tests); with the shared dispatch the second block's start always
+// takes EDX (retail EAX) and its vtable EAX (retail EDX).
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {

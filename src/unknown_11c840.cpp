@@ -37,6 +37,8 @@ void function_1ea9c0(long arg_0, long arg_1);
 // 0x1ea9c0 (its retail convention takes the tag index in eax and pushes the byte flag; every
 // other line here only follows the 2-byte shift). Round 24: the flag declared bool 19 (xor dl,
 // dl), a named group tag 19, an explicit default 19, `false` 19, a guarded do-while 19.
+// Round 28: descriptive names 19; the lookup assigned in the loop condition 19; a for loop over
+// the iterator 19; a named part table 19; the matched 0x12c640 iterator idiom 19.
 // @retail 0x11c840
 void function_11c840()
 {

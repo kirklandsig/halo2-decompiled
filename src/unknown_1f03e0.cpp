@@ -476,6 +476,11 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // normal after the cross with swapped contact_cross arms 170; contact_cross as a function-like macro 124; 0x1f087b
 // as a macro 124. Built with the selected arms writing `support` (contact_cross, 0x1f087b or cross3f_staged):
 // `*out = support` in the arm 177/177/177, one `*out = support` after both arms 155/155/155 (aligned 111 -> 100).
+// Round 102 (m3 lane 8; one-link LTCG harness, exact once 0x1201a0's object is linked): 23 forms of 0x1f087b's product
+// order (i/j/k, k/j/i, k/i/j, j/k/i) x store order (i/j/k, k/j/i, i/k/j) x arm order never give retail's first-cross
+// XMM1/XMM2/XMM0. Fast: `selected != 0` arm first 164 (975 bytes); helper computing k, i, j and storing i, k, j 164 (975
+// bytes); storing k, j, i 122 (same count); computing and storing k, j, i 165 (975 bytes); both arms into `support` with
+// one `*out = support` 190 (1000 bytes), with the averaging arm's direct copies too 1031 bytes (harness).
 // Round 28 (lane 14), `--fast`: average.i as `a->i + b->i` 122 (same code); the averaging arm's two
 // direct copies 199 (1007 bytes, aligned 93 -> 75: that arm then exactly retail's), with average.i
 // swapped 199; the first cross written in both selected arms 316 (1026 bytes), with the two copies 337;

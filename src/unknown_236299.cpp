@@ -660,6 +660,10 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // the three xmm registers rotated and the bottom added into a copy of y0): right and bottom named
 // sums 85; height, y store, width, x store 19; an aggregate initialiser after both extents 85;
 // a size point local 19; the other corners stored last to first 21.
+// real[4][2] array 8; const extents 8.
+// KIMI1 r94: width/height output helper 86; height-first output helper 85;
+// ordinary inline extents helper 86; returned point extents 118; bounds corner
+// helper 86; reversed corner helper 86; width-only and height-only helpers 86 each.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {
