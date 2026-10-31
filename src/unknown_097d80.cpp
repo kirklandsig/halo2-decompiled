@@ -157,6 +157,10 @@ struct c_aggregate : c_child
 // dispatch gate with the type test first 49; the dispatch inner loop as `while (first < end)` with a
 // post-increment 45; the capacity named before the call 45. Still BLOCKED by the build flag (frame 0x8020
 // needs `produced` to share a slot, which only a non-LTCG object gives).
+// Round 32 (m3 lane 14, fast): loop 2 walking a `starts` pointer (`start[0]`/`start[1]`) 120 (389 bytes);
+// loop 2 over a block pointer with a countdown from `starts[i + 1] - starts[i]` 50; `*source` read into a
+// local in loop 1 147 (389 bytes); the type test first in the dispatch gate 49; `blocks + total` in loop
+// 1's call 45 (same code). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -672,6 +672,18 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// score 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
+// against retail's 1444); retail keeps the shared direction/normalise/output chain between case 2 and case 1 and holds
+// two copies of the remembered-prop code (case 1's copy cross-jumps into case 2's) where ours shares one block.
+// Retail copies the marker position and the case 3 and 5 points as three dwords where ours copies three floats, and
+// retail calls 0x1ffe00 with both arguments on the stack where our build passes the first in EAX (that callee is
+// declared in src/unknown_1ff010.cpp, not this lane's file).
+// Tried: struct-assignment point copies 360 (1388 bytes); duplicated remembered blocks with a separate fail exit 361;
+// the shared chain moved inside the switch between cases 2 and 1 322 (byte-identical: the layout follows the flow
+// graph, not the text); the chain written inside case 2 333; the marker position as a struct assignment 333 (the
+// same addresses, the copied dwords in another register order); case 1's own remembered copy jumping into case 2's
+// 1e3b00 call 379 (the prologue's register choice flips); the Boolean homes made retail's (point_valid set once at
+// the aim-at-point label, `point_valid = result = false`) 321, restored because the gain is under 8.
 // score 276 (was 276): frame 0x8c agrees; Boolean homes, point/case-tail transport and aiming workspace remain.
 // Earlier: frame 0x8c and movement-record addressing agree; Boolean role homes and point/case-tail transport differ.
 // frame 0x8c and movement-record addressing agree; Boolean role homes and point/case-tail transport differ.

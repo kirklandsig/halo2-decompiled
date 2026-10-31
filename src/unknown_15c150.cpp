@@ -7,20 +7,9 @@
 
 // @flags /O2 /arch:SSE /Gr
 
-/* a player (0x21c bytes); its flags are a word, whose high byte 0x14d8b0 tests */
-struct s_transition_player
-{
-	short salt;
-	word flags;
-	byte unknown04[0x1ac - 0x4];
-	short unknown1ac;
-	byte unknown1ae[0x21c - 0x1ae];
-};
-typedef char assert_transition_player_size[(sizeof(s_transition_player) == 0x21c) ? 1 : -1];
-
 struct s_transition_player_iterator
 {
-	s_transition_player *player;
+	s_event_player *player;
 	s_record_pool *data;
 	long datum_index;
 	long absolute_index;
@@ -213,7 +202,7 @@ void function_15c550()
 				{
 					long index = iterator.datum_index & 0xffff;
 					long lives = options->value1b8;
-					iterator.player->unknown1ac = (short)(lives ? lives : NONE);
+					iterator.player->lives = (short)(lives ? lives : NONE);
 					if (g_55e4d0[globals->engine_index])
 					{
 						long entity = globals->slots[(short)index];

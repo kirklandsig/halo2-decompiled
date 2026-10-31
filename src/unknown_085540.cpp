@@ -1030,6 +1030,14 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
+// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
+// ring cursor stays in esi across the first read and the used count is updated through a register,
+// so the read's offset is still forwarded in edx instead of reloaded and the header size still
+// lands in si. Retail's dx load of the size kills the remainder left in edx by the idiv, which is
+// what forces its reload; ours keeps the remainder for the second read. The permuter ran without
+// finding a better form. The header home, the size register, the forwarded cursor and the grouped
+// case-1 stores remain.
 // score 72 (was 72): retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at

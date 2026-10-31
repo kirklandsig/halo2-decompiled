@@ -1221,6 +1221,16 @@ done:
 __declspec(noinline) void function_17aec0(short node_index, s_effect_datum *effect, transform4x3f *matrix);
 
 // score 11 (was 11): the node index is masked after the branch that tests the high bit, retail masks it before the call
+// Round 44 (lane 1, fast): the copy through the file's effect_object_node_matrix 37 (esi shrink-wrapped);
+// the copied index as `short` 28 (effect esi/index edx as retail, re-test not threaded); the copy kept and
+// `node_index` re-tested 28 (the copy in the test's block stops threading); the threaded ternary with the
+// parameter as its NONE arm 35, with a `long` index 35 (threaded as retail, but effect edx/index esi); the
+// index masked into a variable before the high-bit test and passed to the call 47 (96 bytes: the convention
+// moves to effect eax/node ecx and 0x17af30 goes to 29). Threaded forms always colour the effect first.
+// Also: `short index = node_index;` at the top with `if (node_index != NONE) index = node_index & 0x7fff;` after
+// the call 38, `short index = NONE;` at the top 40 (both thread the re-test with retail's effect esi/index edx,
+// but the copy or the `or edx, -1` stays at entry instead of on the NONE path); one index assigned in the call
+// branch and by the threaded ternary 35 (the call branch's value becomes its own web).
 // @retail 0x17aec0
 void function_17aec0(short node_index, s_effect_datum *effect, transform4x3f *matrix)
 {
@@ -1248,6 +1258,11 @@ void function_17aec0(short node_index, s_effect_datum *effect, transform4x3f *ma
 // with the node read once through its address 31 (flag cl, matrix on the stack), with the
 // current body 13 (0x178bc0 2: its setup follows the declared order), plain 37; a word or
 // long node parameter, plain body, 37.
+// Round 44 (lane 1, fast): the `node` copy dropped (parameter read directly) 13 (same code); the condition
+// inverted 13 (same code); the copy as memcpy 13; a `word` node parameter (0x178bc0 pushes a zero-extended
+// word) 13; the reread moved into the copy's initialization (one read, all uses on the copy) 37 (the node
+// becomes an eax argument again, 0x178bc0 50); diagnostic only, the reread moved to the 0x17aec0 call 31
+// (convention kept, the node then takes ecx and `push esi` is shrink-wrapped).
 // @retail 0x17af30
 void function_17af30(bool field_b4, short node_index, s_effect_datum *effect, transform4x3f *matrix)
 {
