@@ -180,6 +180,9 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 83, all on the direct entry store (aligned 3: only `second` loads before the entry store, retail
 // after both table bases): chain lookup folded into the pass expression 47; tables re-read into its
 // local after the store 47; `second` read through its address 47; named chain index 47.
+// Round 115 (after 0x17170 matched; the tail is still BLOCKED-BY 0x18a90): chain table read into a pointer
+// before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
+// `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -851,74 +854,34 @@ PRIVATE __forceinline void store_shader_mask(byte *state, word packed, long inde
     }
 }
 
-// score 157 (was 157): Frame 0xc versus retail 0x10; entry/value homes and deferred descriptor observations remain.
-// frame 0xc versus 0x10, value/entry homes and delayed selector reads differ.
-// Distinct branch-counter homes 157; shared writer input mask alone/with counters 185; common store
-// alone/with counters 294; shared bank result alone/with body entry steps 311; decoded register test 177.
-// frame 0xc versus 0x10; table/entry homes and selector rereads differ.
-// Ordinary writer inline 513; packed/index formal domains 189/181; shared complement 214;
-// global optimization off 621; frame pointer 207; branch table lifetimes 184; inline depth two 157.
-// selector observation and table/entry frame homes still differ.
-// selector-storage writer 177f; writer offset input 188f.
-// selector-use output indices 230f; signed byte cursors 163f.
-// byte cursors 190f; byte mapping slot 189f.
-// word source-kind 157f; special-slot result 180f.
-// Frame 0xc versus 0x10 and selector reloads remain; mapped rejection/body step 155; bank-first writer 196; XOR masked store 201; separate clear/merge 157; empty-range exit 210 (fast).
-// Branch entry lifetimes 234; actual remapping-field reference 161; direct completion 155;
-// early mapped index 206; signed value table 155 (fast, with body entry steps). Two-point gains dropped.
-// Round 122: Direct/mapped native dword selector 189/202; unsigned slot 155; middle remap observation
-// 158; source-kind memory first 155; all with body entry steps.
-// Direct/mapped signed selector 157/157; special category first 170;
-// ordinary/special bank-one-first arms 159/167.
-// Actual value/entry/remap table fields singly, all three pairs and all together 157 each;
-// all native table fields with native entry bits and body cursor steps 155; two-point gain dropped.
-// Round 226: ordinary bank-zero output pointer 157; ordinary bank-one output pointer 157; special
-// bank-zero output pointer 157; special bank-one output pointer 157; both ordinary destinations
-// 157; both special destinations 157; all four destinations 157; all destinations with named
-// masked value 202.
-// Complete mapping-root observation alone/with value table/with remapping word/both 159/197/160/212;
-// the same four graphs with native unsigned slot 159/197/160/212 (all with ordinary body steps).
-// Direct/mapped/both word-field observations 199/177/185; each with consistent value-table fields 208/192/186; both with remapping-root observations alone/with value fields 185/186. Original body, dynamic bounds and shared writer restored.
-// Round 249: signed writer mask/value/both 155 each with body cursor steps;
-// each with a shared complement 201; both signed inputs with a shared masked
-// value 185, with both computed parts 187. Two-point forms dropped; helper/body restored.
-// Round 201: Native packed-range parameter and entry record: direct/count accessor/selector
-// fields/both 155/189/185/199; the same four with complete remapping fields 155/189/185/199. Two-point
-// body-step lead rejected; complete source restored.
-// DL159: actual direct/mapped/both selector field references 199/177/185; signed source field reference 157, with direct/mapped/both selectors 199/177/185; complete field graph with body cursor steps 185. Original copied fields, dynamic bounds and writer retained.
-// Round 206: Native ordinary/special/dirty output fields, individually, all three pairs and all
-// together 157 each; complete output fields with body cursor steps 155. Two-point gain rejected.
-// Round 30 (fast): retail's direct loop re-reads the entry word after the output store (for the dirty bit),
-// stores through a computed address (lea) and keeps the value table in EBX: that is a store written with
-// the index derived inside from a reference to the entry word, not a precomputed index. A file-local
-// forceinline store taking `word const &packed` for the direct loop alone gives that loop retail's shape
-// 191 (695 bytes; the mapped loop then tests 0x200 twice); with the value masked at the top of it 183, the
-// masked value passed by the caller 183 (both move the state parameter from EAX to EDX); plus the mapped
-// loop in 0x176a0's shape (value/mask locals, the call in both arms, remap byte added first) 226 at frame
-// 0x10 as retail (the direct loop's counter then takes EBX); one counter declared for both loops 226.
-// Match-only (a one-caller helper); original body restored.
-// Round 257: Existing writer category/ordinary-bank/special-bank completion graphs,
-// independently and combined, 157 in six forms; special-first completion with/without
-// bank returns 170/170. Original complete writer and both live-bound walks restored.
-// Round 289: Actual external descriptor bitfield subsets (direct destination, mapped source slot, mapped source kind); complete native entry cursor:
-// [155, 155, 155, 155, 155, 155, 155, 155]. All executable source and temporary types restored.
-// Round 220: Whole four-byte descriptor values in direct/mapped/both paths, native or memcpy,
-// 180/191/186 each; one complete refill workspace, native/memcpy 186/186. All regress; original
-// descriptor observations, live bounds, entry steps, helper, calls and complete body restored.
-// Round 42 (lane 16): direct loop through a `word const &` store reading the index at each use 191
-// (retail's store shape); plus mapped loop with value/mask locals, store in both category arms, index
-// `remap + field` 207; direct loop with value/mask locals and the entry step at the end of the body 191
-// (values in EBX with a stack home and the counter in memory as retail; frame 0xc); plus that mapped
-// loop 226 (frame 0x10 as retail, but the counter takes a register again); one counter for both loops
-// 209; store as a macro: original calls 291, mask/value locals 198, direct reads 209. With the original
-// store: entry step at the end of both bodies 155; plus direct value/mask locals 155; plus the mapped
-// value/mask locals and store in both category arms 168.
-// Round 437: Symmetric preserved/incoming operand graphs 1-7 with body cursor steps 155 each; all-
-// commuted graph with one shared masked input 185, matched writer sibling 88. Two-point forms
-// rejected; full writer and both walks restored.
-// Round 445: Per-leaf preserved-result lifetimes alone/shared incoming mask/named indexed
-// dirty bit/both 157/185/157/185; same four with ordinary body cursor steps 155/185/155/185.
-// Two-point reductions rejected; complete shared writer and both original walks restored.
+/* the same store, reading the output index from the descriptor word at each use */
+PRIVATE __forceinline void store_descriptor_mask(byte *state, word const &packed, dword mask, dword value)
+{
+    if ((packed & 0x3c0) != 0x200)
+    {
+        if (!(packed & 0x400))
+        {
+            *(dword *)(state + 0x144c + ((packed >> 6) & 15) * 4) = (*(dword *)(state + 0x144c + ((packed >> 6) & 15) * 4) & ~mask) | (value & mask);
+            *(dword *)(state + 0x1518) |= 1 << ((packed >> 6) & 15);
+        }
+        else
+        {
+            *(dword *)(state + 0x146c + ((packed >> 6) & 15) * 4) = (*(dword *)(state + 0x146c + ((packed >> 6) & 15) * 4) & ~mask) | (value & mask);
+            *(dword *)(state + 0x151c) |= 1 << ((packed >> 6) & 15);
+        }
+    }
+    else if (!(packed & 0x400))
+    {
+        *(dword *)(state + 0x14d0) = (*(dword *)(state + 0x14d0) & ~mask) | (value & mask);
+        *(dword *)(state + 0x1518) |= 0x100;
+    }
+    else
+    {
+        *(dword *)(state + 0x14d4) = (*(dword *)(state + 0x14d4) & ~mask) | (value & mask);
+        *(dword *)(state + 0x151c) |= 0x100;
+    }
+}
+
 // @retail 0x17170
 void function_17170(byte *state, word const *range)
 {
@@ -927,26 +890,33 @@ void function_17170(byte *state, word const *range)
     word remapping = shader_remapping(state)->packed;
     if (!(remapping & 0xfe00))
     {
-        for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+        for (long i = 0; i < (*range >> 9); entry += 4, ++i)
         {
-            word packed = *(word const *)entry;
-            store_shader_mask(state, packed, (packed >> 6) & 15, g_467068[entry[2] & 7], values[entry[3]]);
+            dword mask = g_467068[entry[2] & 7];
+            dword value = values[entry[3]];
+            store_descriptor_mask(state, *(word const *)entry, mask, value);
         }
     }
     else
     {
         byte const *mapping = *(byte **)(*(byte **)(state + 0x20) + 0x24) + (remapping & 0x1ff) * 4;
-        for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+        for (long i = 0; i < (*range >> 9); entry += 4, ++i)
         {
             word packed = *(word const *)entry;
-            long slot = packed & 7;
-            short source = *(short const *)(mapping + slot * 4);
-            if (source == NONE || ((packed >> 3) & 7) == *(long *)(state + 0x300 + source * 4))
+            short const *source = (short const *)(mapping + (packed & 7) * 4);
+            if (*source == NONE || ((packed >> 3) & 7) == *(long *)(state + 0x300 + *source * 4))
             {
-                long index = (packed >> 6) & 15;
+                dword mask = g_467068[entry[2] & 7];
+                dword value = values[entry[3]];
                 if ((packed & 0x3c0) != 0x200)
-                    index += *(signed char *)(state + 0x1520 + slot);
-                store_shader_mask(state, packed, index, g_467068[entry[2] & 7], values[entry[3]]);
+                {
+                    long index = *(signed char *)(state + 0x1520 + (packed & 7)) + ((packed >> 6) & 15);
+                    store_shader_mask(state, packed, index, mask, value);
+                }
+                else
+                {
+                    store_shader_mask(state, packed, (packed >> 6) & 15, mask, value);
+                }
             }
         }
     }
@@ -1350,7 +1320,9 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
     }
 }
 
-// score 267 (was 267): Frame 0x28 and sampler agree; deferred index and post-store descriptor rereads remain.
+// score 130 (was 267): only the mapped loop's rescale test after 0x1b2c0 differs: retail reloads the word
+// (`mov ax,[ebx]; test ah,8`), ours tests memory (`test byte [ebx+1],8`). Earlier: frame 0x28 and sampler agree;
+// deferred index and post-store descriptor rereads remain.
 // Earlier: frame and sampler agree; deferred index and post-store descriptor rereads remain.
 // Frame and sampler agree; deferred index and post-store descriptor rereads remain.
 // Direct descriptor pointer/reference 267/267; mapped pre-rescale reload 267; mapped descriptor across pack 263 (not kept: a gain under 8);
@@ -1446,6 +1418,15 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // Round 445: Native short/word/byte/signed-char four-channel rescale ordinals with
 // long outer ordinals 356 each, with bounded short outer ordinals 355 each.
 // Bodies shrink to 1166/1167 versus 1196/1225; original complete body and writer restored.
+// Round 115: the direct loop through store_descriptor_mask (index read from the descriptor at each use; also
+// 0x17170's direct loop) and the mapped loop in 0x176a0's shape (word `packed`, `short const *source`, store in
+// both category arms, index `remap + field`) 130, kept. On it: `slot`/`component` locals dropped 130; the
+// re-read moved from after the pack call to after 0x1b2c0 126 (one word kept in EDI; retail reloads it twice);
+// loop-top `packed` for the test only 193 (spilled; retail reloads it from the entry, as if 0x1b2c0 kept memory)
+// and for the test and store 239; that as a dword 305; `word const &packed` to the entry 254. Compile-only
+// (not counted): word/short/bitfield/struct-copy locals, `!= 0`, `(x >> 8) & 8` and casts all fold to the
+// memory test.
+// Review: the remapped arm's one-use `index` local written at the call instead, 130 (same).
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
@@ -1469,7 +1450,7 @@ void function_19ca0(byte *state, word const *range)
             color4f color;
             color.red = values[0]; color.green = values[1]; color.blue = values[2]; color.alpha = values[3];
             dword value = pack_color4f(&color);
-            store_shader_mask(state, *(word const *)entry, (*(word const *)entry >> 6) & 15, mask, value);
+            store_descriptor_mask(state, *(word const *)entry, mask, value);
             entry += 4;
         }
     }
@@ -1478,10 +1459,10 @@ void function_19ca0(byte *state, word const *range)
         byte const *mapping = *(byte **)(definition + 0x24) + (remapping & 0x1ff) * 4;
         for (long i = 0; i < (*range >> 9); ++i)
         {
-            dword packed = *(word const *)entry;
+            word packed = *(word const *)entry;
             long slot = packed & 7;
-            short source = *(short const *)(mapping + slot * 4);
-            if (source != NONE && ((packed >> 3) & 7) != *(long *)(state + 0x300 + source * 4))
+            short const *source = (short const *)(mapping + slot * 4);
+            if (*source != NONE && ((packed >> 3) & 7) != *(long *)(state + 0x300 + *source * 4))
             {
                 entry += 4;
                 continue;
@@ -1499,9 +1480,14 @@ void function_19ca0(byte *state, word const *range)
             color.red = values[0]; color.green = values[1]; color.blue = values[2]; color.alpha = values[3];
             dword value = pack_color4f(&color);
             packed = *(word const *)entry;
-            long index = (packed >> 6) & 15;
-            if ((packed & 0x3c0) != 0x200) index += *(signed char *)(state + 0x1520 + (packed & 7));
-            store_shader_mask(state, packed, index, mask, value);
+            if ((packed & 0x3c0) != 0x200)
+            {
+                store_shader_mask(state, packed, *(signed char *)(state + 0x1520 + (packed & 7)) + ((packed >> 6) & 15), mask, value);
+            }
+            else
+            {
+                store_shader_mask(state, packed, (packed >> 6) & 15, mask, value);
+            }
             entry += 4;
         }
     }

@@ -25,6 +25,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // force/object renamed (reset, stale; entity, body) 27; special declared before type 26 (tail
 // order as retail, special still in esi); named sample/update timestamps 27, with update first
 // 218; the other entry orders of update elapsed/object/force/update 169-240.
+// Round 57: read-only byte object 27; the existing object type and flag field 27;
+// object declaration hoisted 27; update declaration hoisted 27; object/update declarations
+// hoisted 27; object/update/force declarations hoisted 27; special/type declarations split
+// with original assignment order 27; a multi-use clamped sample interval 27. Body restored.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
