@@ -1991,6 +1991,9 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // Round 241: complementary outcome alone/unsigned tag/first long reserve/other long reserve/
 // both long reserves/tag-first/tag-other/tag-both 212/212/211/183/182/211/183/182.
 // Original body restored; magazine/transfer and pooled receiver homes remain.
+// Round 251: Remaining-expression / counter-first / both / compound reserve store / remaining-compound /
+// counter-compound / all / all with magazine roots 180/130/180/124/180/130/180/180. Original restored;
+// magazine/transfer and pooled receiver homes remain.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
