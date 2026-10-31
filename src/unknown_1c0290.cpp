@@ -333,6 +333,11 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 // bool result single exit 26; const state/actor 26; chained time stores 34. Matched 0x1b4490 has the
 // same head without the reset and gets retail's eax/ecx: the offset's life into the reset decides it.
 // BLOCKED-BY 0x1f86a0 (retail inlines it at link time; its /Ob1 file keeps ours out of line).
+// Round 11 (lane 17): the existing 0x146650 game-time getter for both reads 26; time stores first 35
+// (133 bytes); all 120 orders of the five slot stores 26 or more; 0x1f86a0 itself inlined at link time
+// (its file built without /Ob1, a diagnostic only) 26, as is its body as a forceinline copy, so the
+// reset's form is not the cause. The reset's five zero stores decide it: with one zero store (or only
+// the NONE stores) the entry takes retail's EAX index / ECX slot.
 // @retail 0x1c0430
 bool __stdcall function_1c0430(long actor_index, s_slot *slot)
 {
