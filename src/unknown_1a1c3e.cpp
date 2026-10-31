@@ -307,6 +307,11 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // accessor at the initial/both lookups 26/26; direct team reads 137; a pre-call pool with inline
 // masks 119; a post-test pool select 87; a single-exit pool refresh 83; a shared initial/rider
 // pool with the single-exit refresh 114. Original body restored.
+// Round 57 (m3 lane 9): without the friendly-team call ours keeps the data pointer for the rider lookup, so only
+// retail's partial reload of the array pointer after the call is missing (a load our build never inserts on
+// one path); a global store in 0x1df560 (diagnostic) changes nothing (26). The array pointer in a local at the
+// rider block start 26 (sunk); the same local for the first lookup only 26; an unsigned mask 26; a char team
+// local 121; a byte result 26.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {

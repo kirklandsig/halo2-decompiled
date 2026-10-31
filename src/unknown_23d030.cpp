@@ -203,6 +203,12 @@ struct s_free_state_23d260
 // at the function's top, each and all together, 102 (same code); the normalize test as `!` 121 (1328
 // bytes) and as `0.f ==` 102 (same code); the roll update with the zero arm first 107. The zero stays
 // in XMM3 and the clamp constants in XMM1 in every form.
+// Round 120 (m3 lane 5): `side` declared with `side.k = 0.f` at the function's top 102; the movement's
+// yaw cosine/sine as named locals on this graph 291 (movement x87 then retail's apart from the k load,
+// but the side/up block recolours and ours runs four instructions short ahead of it); the roll
+// rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
+// 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
+// Original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

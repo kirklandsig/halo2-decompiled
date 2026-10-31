@@ -184,6 +184,15 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // and result, ours uses the second copy's. Fast: the rotation input, the cross axis or the first pitch value
 // at function scope 308/308/308 (same code); the XY vector initialised after the second normalization 384;
 // both rotations in place on the first copy 311 (frame 0x34); a later XY read (diagnostic) gives frame 0x28.
+// Round 120 (m3 lane 5): retail clamps every value in place (the yaw in its +0xc stack home: load,
+// conditional stores, reload; the pitch and both turn deltas in their own registers), where ours
+// copies each into a separate result register first. The yaw clamp written as direct conditional
+// assignments 290 (1732 bytes; that clamp then has retail's in-home shape); the clamp helper as an
+// in-place pointer helper at all four uses 292 (1726 bytes; every clamp then has retail's shape, but
+// the zero moves XMM1 -> XMM2 and the rest shifts); the helper updating its value parameter and
+// returning it 267 (same code); the normalizer's length local renamed to sort before the local_N
+// names 267 (same code: its slot stays +0x14); the first length from the normalizer's return (no
+// out-parameter) 295. Original body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -332,6 +332,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // first EAX kept across the copy, entries ESI spilled at once); with a named long count 140 (count
 // AX/EAX as retail, but the index arrives in ECX with the zero in EDX, first in EDX); that with the copy
 // source as the field and entries set after the advance 155 (index arrives in EAX, scaled in EBX).
+// Round 34 (lane 13, LTCG harness through 0x404b0, harness positional; base 49 = 54, indexed form 125 at
+// 492 bytes, aligned 30): on the indexed form geometry declared at the loop-body top 125, `geometry !=
+// NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
+// material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
+// declared first 49 (identical, 54).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

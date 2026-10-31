@@ -52,7 +52,7 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 95 (was 102): the prologue, the position copy and the whole viewer loop agree since the
+// score 95 (was 95): the prologue, the position copy and the whole viewer loop agree since the
 // distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
 // after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
 // the reverse), tests the allocation twice, builds the handle from the element's own salt and the
@@ -262,6 +262,8 @@ public:
 // change); the separate allocation local alone 118 (frame 0x10); the link through the parameter itself instead of
 // the cast copy 248/118 (identical: the copy is propagated); the location read once through its address with the
 // in-place link, with/without the separate allocation 220/254 (the location still lives in EBX; 0x175270 21).
+// Round 465: native pool/allocation/link pointer role-name subsets 1..7, then all four child
+// pointer roles, 95 each; original identities and full body restored. Child pool/NONE ranks still exchange.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

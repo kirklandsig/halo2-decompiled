@@ -633,6 +633,10 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
+// callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
+// success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
+// constant, and the path pointer and the obstacle, search and step homes differ.
 // score 675 (was 675): the frame 0x1f88 and the length agree, but retail keeps the success result
 // in a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and
 // the path pointer and the obstacle, search and step homes differ.

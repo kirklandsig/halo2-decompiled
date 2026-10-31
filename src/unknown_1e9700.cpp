@@ -14,6 +14,7 @@ void function_1fa50(short_rectangle2d const *bounds, word const *text, void cons
 #include <xmmintrin.h>
 #include "slot_handler.h"
 #include "input_record.h"
+#include "unknown_157450.h"
 
 real function_1e96a0(short column, short row);
 
@@ -379,6 +380,12 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // field 85 (and 0x15b7c0/0x15b3a0 lose their match through the declaration);
 // the field read after the index 83, or inside the index expression 85; a row
 // pointer indexed by the field at each use 64 (0x15b3a0 and 0x1ea770 lose theirs).
+// Round 11 (lane 17): the team path through the existing function_x340af0() and
+// datum_get_absolute_inlined() (kept: same code, no parameter reuse); the first engine test
+// through game_engine_get() 13; the clamp as two ifs 13, upper bound first 19; a plain delta
+// parameter 18 (its movsx is then hoisted to entry, the field read folds); the field read
+// through its address without volatile 85; the volatile read after the index 83 (statistics is
+// then hoisted), inside the subscript or as a row offset 85 (folded).
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -394,16 +401,10 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	if (g_55e4d0[g_4e9ae8->engine_index] && g_4e9ae8->value28 != NONE)
 		function_b58c0(g_4e9ae8->value28, 1 << index);
 	if (counter != NONE) function_1968b0(index, NONE, counter, *entry);
-	if (by_team)
+	if (by_team && function_x340af0())
 	{
-		by_team = false;
-		if (g_55e4d0[g_4e9ae8->engine_index]) by_team = g_4e6948->flags184.bit0;
-	}
-	if (by_team &&
-		index != NONE && index >= 0 && index < g_4e8c24->high_water_index)
-	{
-		byte *player = g_4e8c24->data + index * g_4e8c24->size;
-		if (*(short *)player && (char)player[0xc0] != NONE)
+		byte *player = datum_get_absolute_inlined(g_4e8c24, index);
+		if (player && (char)player[0xc0] != NONE)
 			function_1e9df0(field, counter, (char)player[0xc0], statistics, delta);
 	}
 }
