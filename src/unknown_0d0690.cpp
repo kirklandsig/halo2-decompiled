@@ -1721,6 +1721,9 @@ dword function_015cd0(long index, dword entry);
 // bitmap block 83; zero-result arm first 68; named first texture 4; inverted 0xd1680 test 19.
 // Neither register moves with dead locals added, the flag block, the request arm or the palette
 // call removed, or the two functions' definitions swapped: the cause looks outside this body.
+// Round 118: the buffer declared in the conversion block 4; a short result 19; the bsp globals
+// pointer in a local 4; the bitmap tested before the status 4; the result declared after the
+// buffer 4 (a compile-only build keeps the same two registers in every form).
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
