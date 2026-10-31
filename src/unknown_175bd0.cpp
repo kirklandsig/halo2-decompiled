@@ -1819,6 +1819,11 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // the direction inputs read j, k, i 81, read k, j, i 80; the cross product into a `left` local then
 // assigned 143 (792 bytes). 0x11d000 is a leaf using only xmm0/xmm1, so any of xmm2-xmm5 can carry
 // forward across it; retail picks xmm4/2/3 (the marker's k lands in xmm5 where ours takes xmm2).
+// Round 42 (lane 1, fast with 0x178360): node copy first re-viewed (107: the hoisted extension also
+// moves the markers base to EBX in the matrix arm; the xmm rotation is unchanged); with one marker
+// pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
+// else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
+// indexings 77 (identical); the zero position as a chained assignment 79.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {

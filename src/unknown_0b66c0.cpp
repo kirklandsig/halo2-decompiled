@@ -226,6 +226,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // before the start 39 gives retail's body colouring (start EDI, walk EDX, counter ECX, the push of EBX
 // around the scan only), but LTCG then passes start in EDI and 0xb5f10 differs (35); the same test order
 // with `start += string` 40 (start back in ECX). Retail tests the start first.
+// Round 42 (lane 1, fast with 0xb5f10/0xb61d0): LTCG passes a parameter in a callee-saved register only
+// when the body leaves it unmodified (0xb61d0 gets `this` in ESI, its modified start in EAX), so retail's
+// ECX -> EDI start is a modified start coloured EDI. A modified local copy of the start (tests, sum and
+// `+= (long)string`) 28 with 0xb5f10 6 (scan counter ECX as retail, but the walk takes EDI and the copy
+// EDX, so the start arrives in EDX); the copy declared before `result` 28 (0xb5f10 6); the copy with a
+// plain string parameter 41 (104 bytes, 0xb5f10 35); the copy taken inside the sign tests 28 (0xb5f10 6);
+// copies of both start and count 51 (92 bytes, 0xb5f10 104).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -546,6 +553,13 @@ bool function_7af40(s_type_99af70 const *address);
 // `return false` in an else, then the state and copy 32 (same code: the blocks merge first); `if
 // (!opened) return false;` before the state and copy 32 (same code); retail's reads with the path read
 // once through its own address into a named source between the counter and the state store 111.
+// Round 42 (lane 1, fast with 0xb40b0/0xb5f10): on retail's endpoint reads the two pre-call stores sink
+// together in source order: state, counter, copy 111 (state stored before the counter at the call); the
+// path read once through its own address into a named source between the counter and the state store
+// 111 (taking the parameter's address does not pin the counter store). Without the reads: the flag folded
+// into the clearing store (`flags = flag ? 0x40 : 0`) with counter, copy, state 32 (243 bytes; the counter
+// still splits, into ECX); that with the open call re-reading `connection->endpoint` 40 (239 bytes), and
+// with counter, state, copy 104 (258 bytes, 0xb40b0 61).
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {

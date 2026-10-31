@@ -579,6 +579,11 @@ bool sound_driver_voice_create_buffer(
 // first descriptor at block level after the pairs and mix bins 110 (frame 0x98); the count stored before
 // the descriptor block 71 (scheduling only); the 3D buffer as a force-inline helper taking play, with its
 // own pairs, mix bins and descriptor 104 (frame 0x88, play still BL).
+// Round 101 (lane 8; exact LTCG harness with 0x191420's object, harness scale 65 = 71): retail reloads
+// play into BL right after the 3D test (play's range split once the 3D bool dies). play built by
+// `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
+// both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
+// code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
