@@ -379,10 +379,27 @@ short *function_e70b0(long unit_index, short *value);
 // second named actor lookup 49. Retail: 8 matched functions load an actor index into EDX with the
 // data base in ECX (0x1a80e0, 0x1b5aa0, 0x258660, ...), 15 into ECX (0x1aeb60, 0x1a93c0, ...); no
 // frame or prologue feature separates the two groups.
+// Round 132 (an LTCG env link with 0xe70b0's object reproduces it): with 0xe70b0 left out of line the
+// first 97 instructions are retail's (index EDX, actor data ECX), so the swap follows the inlined
+// action-state read. At the call: its result in a pointer local 110 (437 bytes); called alone and the
+// local compared 49; `7 !=` 49; the unit index in a local 49; `state->unknown34 != 0` 49.
 // Round 110 (fast): the final block as a guard return 49; the action query's out value tested in place of
 // the returned pointer 49; `7 != ...` 49; `0 < state->timer` 49 (the same code each time). Diagnostic, not
 // kept: the actor address written offset first (`(index & 0xffff) * size + data`) 49, so the operand order
 // of the address expression does not decide the ECX/EDX tie either.
+// Round 98 (lane 8; LTCG env link with the ballast and 0xe70b0's object, equal to the full listing):
+// the swap comes from the LTCG-inlined 0xe70b0 action query. Linked without 0xe70b0's object (the
+// query stays an external fastcall call) the same source gives retail's roles (index EDX, actor ECX,
+// temporaries EDX) for the first 97 rows; 0xe70b0 written with a unit local, or the query spelled out
+// in place (diagnostics), keep the swap. Trials: `(short)state->unknown34` 49; `short action = 0;`
+// 49; the timer block as one `> 0 && !--timer && ...` condition 49 (identical code each time); the
+// query result in a named `short const *` 105 aligned 49 (436 bytes); re-measured in the env: the
+// query called, then `action != 7` 49, slot cast before the actor 49 (identical code).
+// Round 24 (lane 14): every differing row is ours with the scratch registers rotated (ECX/EDX at the
+// entry, EAX/EDX and ECX/EAX in the later blocks), as if retail's allocation started one register
+// further on. The definition moved after 0x1afcf0 in this file 49 (fast and plain; other functions
+// unchanged); the existing typed actor_datum_get for the first lookup 49, for both lookups 49; the
+// delay product written random times ticks 49 (the same code each time).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

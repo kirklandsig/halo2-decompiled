@@ -512,6 +512,9 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // compare-then-pass); every promoted/short/int team local folds the add and sinks the EDI save 31; short
 // const & / pointer to the field 25; clump_get named 3, in the argument 31; team or side getter by index 31,
 // by clump pointer 3; prop between clump and side 26, before both 45.
+// Round 92: read-only/immutable clump pointer, split clump/side assignments, side-before-clump
+// declaration, const side, early iterator declaration, and inline predicate/lookup declarations each 3.
+// Original body and declarations restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -2130,6 +2133,13 @@ void function_269250(long clump_index, long actor_index)
 // are no longer hoisted); target-clear arm through prop_get at each use 220; the existing prop walk
 // struct 3; node iterator declared beside the prop iterator 3. On the opening body the deletion arm as
 // `if (unit) continue; break;` 89 (identical code).
+// Lane 16 r48 (fast): the 3 form under s_prop_pool_storage leaves only the pool registers (ours node pool
+// EDI / prop pool EBP; retail the other way). Under separate pool globals the 3 form matches but
+// 0x25d770 2 and 0x25d810 91 (335 B; result/actor registers permute): 0x25d770's walk as a for loop 114
+// (208 B, the step is duplicated); the prop pool defined in this file instead of globals.cpp 2/91; prop
+// declared before datum in 0x25d770 2/91; both pools as one two-element array 252 (709 B: the pools are
+// no longer hoisted; 0x26aaf0 0 -> 70). Ours gives the pool the loop references first the first
+// callee-saved register (reverse order with the struct); retail gives the prop pool it in all three.
 // Lane 14 r22: unit flag renamed to sort before the group flag 89 (slots unchanged); the completion
 // test as the prop loop's condition (`(!changed || unit) && next`, the removal arm `continue`) 111
 // (741 B, but the entry is not threaded past the test); the removed flag rechecked 3 (both flag slots

@@ -155,6 +155,14 @@
 // case 0 inline first); with the sine arguments from the global point 701; with both shape pointers
 // NULL then one if/else at entry 638 (entry exact but frame 0x58), plus global sine arguments 593
 // (frame 0x60), plus the trig factors as named doubles 591; with the plain sixth product 638.
+// Round 26: s1 from the global point with the 8.2x phase, sin x and both cosines as named `real`
+// locals 701, as `double` locals 694 (forward-substituted, no factor stack); the same reading the
+// local copy v1: `real` 581 (identical), `double` 651; both shape pointers NULL then one if/else 622
+// (2622 bytes), plus the sines from the global point 604 (frame 0x60). Retail rounds s0 to float before
+// an SSE `* 0.03`; ours folds `* 0.5 * 0.03` in x87.
+// Round 40: `if (shape0) inv = ... else inv = ...` in the first mode switch 707 (2663 bytes); input copies d then c
+// 580 (one point); the maxima as one expression 760; camera shifts read before the old20/old30 copies 581 (same
+// code); md before mc 666.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -483,7 +491,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 512 (was 615): frame 0x9c against retail's 0xac (retail has a second home for the blended
+// score 284 (was 284): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
+// ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; the
+// state clamp keeps the index in the state's register (jle) where ours uses the bound's (jg); slots
+// differ (state width +0x54 against +0x4c, tint +0x7c against +0x78).
+// Earlier (512): frame 0x9c against retail's 0xac (retail has a second home for the blended
 // width, a spill of the first edge point's y and the width at +0x4c where ours rotates it to +0x2c),
 // the pool global reloaded per use, the zero colour stored as integers and the 0x80 flag test.
 // earlier: the frame 0xac and the body length 2596 agree; retail stages
@@ -584,6 +597,29 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // dx/dy 593; memset + scale if + object index + those sums 582 (best aligned: retail's loop head and
 // pool reloads; the score is positional); with the clamp as if/else on a state-initialised index 596;
 // width declared first or renamed 582 (same code). Every `flags00 & 0x80` spelling gives cmp/js.
+// Round 26 (kept, 284): endpoint fades through a `faded` local stored own-first 480 (chained own-first
+// 578: the own store narrows to a byte store); on that, memset zero colour 592, plus scale `1.0f` then
+// if 588, plus `state_width` with `width = state_width` 480 (after the colour 531), plus the state
+// record indexed by `point->state` 461, plus an `object_index` local 458 (gives the `test byte, 0x80`),
+// plus u/v stores in vertex order 458, plus the tint as a three-component loop 282 (retail length).
+// Each part removed alone (on 282, with the pixel stored to vertex 0 first): 320/588/518/562/301/308/
+// 290/458; the pixel order itself 284 (-2, not kept); u/v chained again on the kept 284 form 292.
+// Other forms: interpolation inline for the colour/width blends 679 (on 512); clamp as an if/else chain
+// 604 and with `<` 588 (on the 588 form), `<=`/PIN identical (on 461). On 282: case 0 points as struct
+// copies 535, second point first 466, chained copy 535; dy assigned first in cases 1/2 279, plus the
+// points declared `second, first` or after the normal 279; `real dy, dx` 282; length sums i,j / i,j,k
+// side / i,j,k normal / dy,dx 282/400/282/282. On 284: second point assigned first in every case 479,
+// with the stores second-first 479; u/v setup with v first 304.
+// Lead: second point assigned first in cases 1/2 and 4 only 386 (frame 0xa8, retail's y spill and blend
+// registers appear; edge point/half-width XMM permutation and the u/v slot order left); in all cases 479,
+// with second-first stores 479; cases 0+1/2 567, 0+4 474, 4 365, 1/2 398. Renamed pixel locals or
+// `v_width` do not move slots (284/386).
+// Clamp as `if (state < 0) index = 0; else { index = state; if (index > max) index = max; }` 279 (the
+// clamp is then retail's exactly; -5), with dy first in cases 1/2 276; zero-default clamp 579, ternary
+// then if 584; the exact clamp with second point first in 1/2 and 4 381 (with dy first 381).
+// Round 40 (case 0 edge points): first as `first = point->position; first.z += half_width;` and second likewise
+// 535 (2668 bytes), second first 561; first as a struct copy only 468, second only 505; `half_width +
+// point->position.z` 284 (same code). The one-file LTCG harness gives 290 here, so it was not used.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -613,15 +649,18 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         if (state_index != point->state)
         {
             width = 0.0f;
-            color.alpha = color.red = color.green = color.blue = 0.0f;
+            memset(&color, 0, sizeof(color));
         }
         else
         {
-            s_ribbon_state *state = &definition->states[state_index];
-            real scale = (state->flags & 0x20) ? point->scale : 1.0f;
-            width = state->width;
+            s_ribbon_state *state = &definition->states[point->state];
+            real scale = 1.0f;
+            if (state->flags & 0x20)
+                scale = point->scale;
+            real state_width = state->width;
             if (state->flags & 0x10)
-                width *= point->scale;
+                state_width *= point->scale;
+            width = state_width;
             real *lower = (real *)&state->lower;
             real *upper = (real *)&state->upper;
             real *out = (real *)&color;
@@ -639,26 +678,27 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                 upper = (real *)&next->upper;
                 for (long j = 0; j < 4; ++j)
                     next_color[j] = (upper[j] - lower[j]) * scale + lower[j];
-                width += (next_width - width) * transition;
+                width = (next_width - state_width) * transition + state_width;
                 for (long k = 0; k < 4; ++k)
                     out[k] += (next_color[k] - out[k]) * transition;
             }
         }
-        if (source->object_index != NONE && !(definition->flags00 & 0x80))
+        long object_index = source->object_index;
+        if (object_index != NONE && !(definition->flags00 & 0x80))
         {
             point3f tint = *g_468710;
-            byte *object = *(byte **)(g_4e0300->data + (source->object_index & 0xffff) * 12 + 8);
+            byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
             byte *object_tag = g_4e3b44[(*(long *)object) & 0xffff].bytes;
             byte *markers = *(byte **)(object_tag + 0x98);
-            function_bad50(source->object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
-            color.red *= tint.x;
-            color.green *= tint.y;
-            color.blue *= tint.z;
+            function_bad50(object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
+            for (long c = 0; c < 3; ++c)
+                (&color.red)[c] *= (&tint.x)[c];
         }
         real half_width = width * 0.5f;
         s_ribbon_vertex *outer = &vertex[1];
-        vertex[0].u = outer->u = u;
+        vertex[0].u = u;
         vertex[0].v = v;
+        outer->u = u;
         outer->v = v_width;
         point3f first, second;
         vector3f normal;
@@ -773,9 +813,17 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
     }
     vertex -= input->vertex_count;
     if (!(definition->flags00 & 1) && source->point_count[input->slot] > 2)
-        vertex[0].color = vertex[1].color = vertex[0].color & 0xffffff;
+    {
+        dword faded = vertex[0].color & 0xffffff;
+        vertex[0].color = faded;
+        vertex[1].color = faded;
+    }
     if (!(definition->flags00 & 2))
-        vertex[input->vertex_count - 1].color = vertex[input->vertex_count - 2].color = vertex[input->vertex_count - 1].color & 0xffffff;
+    {
+        dword faded = vertex[input->vertex_count - 1].color & 0xffffff;
+        vertex[input->vertex_count - 1].color = faded;
+        vertex[input->vertex_count - 2].color = faded;
+    }
     return true;
 }
 
@@ -835,6 +883,18 @@ void __stdcall function_43720(s_43740_input *input)
 // definition and call 67; tag field read at each use 62 (identical); shader pointer local 67, with
 // the lookup rereading the field 67, with every tag use read from the field 67 (each still folds the
 // read to [definition + 0x68] but makes the definition a stack argument held in EBP).
+// Round 26: retail's EAX test / EBP copy head needs the tag's test read and the body's reads to be
+// separate values: field test with the group lookup (field) before the index call (field) 68, or a
+// tag local read before the call for the lookup only 68 (both split like retail but the tag outranks
+// a parameter: ret 8, 0x42b20 60); either with the record's tag from the local 40 (head through the
+// index call identical; the tag then lives across the texture call where retail re-reads the field,
+// and it mixes local and field reads of one value); 36-form grid of those splits x normal read x slot
+// local x fill order 68-70; early-return guard 68; recomputed count argument 68; tag local used
+// everywhere 63, masked in place 62. The normal read through the stored shader (member, local,
+// accessor inline) still folds to +0x68 under LTCG (compile-only harness gives [ecx+0x2c]) 67/70.
+// Round 40: record filled slot, shader, normal, count, tag, bitmap, then source and definition 64; with the normal
+// read through the stored shader 67 (213 bytes, 0x42b20 62); filled count, shader, normal, slot, tag, source,
+// definition, bitmap 63; arrays indexed through the stored slot 62 (same code); texture test as an early return 62.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

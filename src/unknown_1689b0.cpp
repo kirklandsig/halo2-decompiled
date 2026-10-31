@@ -10,6 +10,7 @@
 #include "segment_sphere.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vehicle_ray.h"
 
 #define FLAG(bit) (1 << (bit))
 #define TEST_FLAG(flags, bit) (((flags) & FLAG(bit)) != 0)
@@ -739,13 +740,6 @@ struct s_palette_168f40
 	s_material_168f40 *materials;
 };
 
-struct s_vehicle_ray
-{
-	point3f point;
-	vector3f vector;
-	real t;
-};
-
 // @retail 0x168f40
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 	long ignore_object_index, long ignore_object_index2)
@@ -834,6 +828,9 @@ bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 // `return true;` there 25; point/vector read directly in the plane distances 124; the k/j
 // plane terms through `instanced_plane->plane` 177 (both k products then load the plane
 // first, as retail; j does not, and the stepping block grows); the j operands swapped 25.
+// Round 57: plane->n products 25; a typed normal pointer for all/k-only/j-only products
+// 25/25/25; normal k/j with plane i 56; direct entry k-only/j-only 25/25; return the existing
+// result from the successful correction branch 24 (one-point gain and 2168 bytes, restored).
 // @retail 0x1697c0
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision)

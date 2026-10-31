@@ -358,6 +358,7 @@ bool function_1f1ee0(s_shape_carrier_contact const *contact, s_shape_state *stat
 }
 
 real function_30bf0(vector3f *v);
+real function_1201a0(vector3f *v, vector3f const *fallback);
 
 PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
@@ -371,7 +372,14 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // score 122 (was 122): the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
 // request dies at the base argument as in retail); left: `lowest` is stored after `selected` (retail first),
 // the first cross keeps i/j/k in XMM0/1/2 (retail XMM1/2/0) so the two selected arms are not tail-merged
-// (28 bytes), and the averaging path's copies, sum order and dot order.
+// (28 bytes), and the averaging path's copies, sum order and dot order (round 112: dot_average and the
+// compare are now retail's; left there are average.i's operands, dot_a's i, k, j term order and the copies).
+// Round 112: the two dots through the existing dot3f 124 (aligned 113 -> 106: dot_average's terms come out
+// i, k, j as retail); plus the average summed i, j, k and `dot_a < dot_average` 124 (aligned 95: dot_a then
+// first and dot_average/compare exactly retail's; dot_a's terms stay j, i, k); plus the normalize tail as the
+// existing function_1201a0 call 124 (same code as the written-out tail); plus `lowest` declared before
+// `selected` 122 (kept: aligned 93, first difference at +0xd5); dot_a as dot3f(desired, a) 122 (same code;
+// kept, so both dots take desired first).
 // Round 106: 0x1f2e60's (base, stepping) order at its definition and all four calls 122 (kept); on it,
 // `lowest` declared before `selected` 120 (prefix exact through +0xd5; two points, not kept); `*out = *a` /
 // `*out = average` in the two arms with no `support` join 197 (both copies then exactly retail's; 1005 bytes),
@@ -472,8 +480,8 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
 {
-    long selected = NONE;
     real lowest = 0.0f;
+    long selected = NONE;
     long component_index = *(long *)(request + 0x40) & 0xffff;
     byte *component = g_51e9b8->data + component_index * 0xa0;
     for (long i = 0; i < count; i++)
@@ -512,13 +520,13 @@ void function_1f2a80(byte const *request, bool moving,
             else
             {
                 vector3f average;
+                average.i = b->i + a->i;
                 average.j = b->j + a->j;
                 average.k = b->k + a->k;
-                average.i = b->i + a->i;
                 function_30bf0(&average);
-                real dot_a = a->i * desired->i + desired->k * a->k + a->j * desired->j;
-                real dot_average = desired->i * average.i + desired->k * average.k + desired->j * average.j;
-                if (dot_average > dot_a)
+                real dot_a = dot3f(desired, a);
+                real dot_average = dot3f(desired, &average);
+                if (dot_a < dot_average)
                     support = *a;
                 else
                     support = average;
@@ -539,16 +547,7 @@ void function_1f2a80(byte const *request, bool moving,
             *out = *g_4687b0;
         break;
     }
-    real length = (real)sqrt(out->i * out->i + out->j * out->j + out->k * out->k);
-    if (!(fabs(length) < 0.0001f))
-    {
-        real inverse = 1.0f / length;
-        out->i *= inverse;
-        out->j = inverse * out->j;
-        out->k *= inverse;
-    }
-    else
-        *out = *g_4687b0;
+    function_1201a0(out, g_4687b0);
 }
 
 PRIVATE __forceinline byte function_1f1462(dword arg_0)
@@ -556,6 +555,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
+// MiniMax E run 26: score 182 (was 182): retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // score 182 (was 182): Frame 0x28 and retained EDI/EBX convention agree; initial dot displacement bytes and rotation SIMD scheduling remain.
 // frame 0x28 and state/output registers agree; the initial state-dot
 // displacement bytes (retail reads the old up through the ESI address it keeps, ours folds
@@ -1178,6 +1178,9 @@ PRIVATE inline void shape_rotate_vector(matrix3x3 const *matrix, vector3f const 
 // orientation copies 37. On the dual-helper graph, symmetric left/up/forward
 // products, transverse sums, all products L-U-F/F-L-U/U-L-F and accumulators
 // 79/73/22/22/73/73/73/79. Entire original helper, body and copies restored.
+// Round 92: existing 0x2477b1 for the second rotation 15, for both 82; rotation helpers swapped 44;
+// private-helper orders input/matrix/out, input/out/matrix, matrix/out/input and out/matrix/input 82
+// each, out/input/matrix 9; pointer-return helper 9. Original helper, calls and include set restored.
 // @retail 0x1f0450
 void __stdcall function_1f0450(s_shape_state *history, byte *out, s_shape_carrier_contact const *contact)
 {
@@ -1258,6 +1261,7 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
+// MiniMax E run 26: score 418 (was 418): retail zeroes xmm6 rather than xmm0 for the speed store and keeps the contact counter at the bottom of the frame while the component pointer takes the dead request argument slot; initialising the counter between the two NONE stores reproduces the store order (417) but the two homes stay swapped, and a non-volatile counter is worse (530). The contact-dot term order and the material-call expansion still differ.
 // score 418 (was 421): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
@@ -1498,6 +1502,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
+// MiniMax E run 26: score 230 (was 230): the movement length as a real makes the x87 prologue byte-identical to retail and moves the first difference from +0x65 to +0x8b, but the body grows ten bytes (233); retail's contact dot is (n.k*v.k + n.j*v.j) + (v.x*n.i) and ours computes a different term and operand order, and MSVC canonicalises the multiply operands either way.
 // score 230 (was 230): Frame 0x28 agrees; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
 // expansion remain. Our build inlines 0x1f1df0 at the second call (after 0x1f2250) where retail

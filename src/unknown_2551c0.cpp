@@ -147,6 +147,12 @@ short __stdcall function_2551c0(long actor_index)
 // the rotation helper, each of its 18 in turn: the projection's j product 49 (815 bytes), its i product 78 (820
 // bytes), its k product 116, the six cross products 109 each, the outputs' cosine products 109-138, projection and
 // sine products 109-123; source permuter (600 s, 43 tries) no gain.
+// Round 36 (lane 10, fast), the rotation helper in the forms of other files' rotations: matched 0x1ecf50's
+// forceinline helper (named dot3f dot, then the projection) 56 (815 bytes), the same as plain inline 56; the
+// projection dot j, k, i with the j/k outputs projection-first 43; the dot i + (j + k) with crosses j, k, i
+// and axis-first projection terms 116 (814 bytes); matched 0x11d3b0's form (dot k, j, i) 43. Compile-only
+// (reproduces the pre-call SSE schedule): 216 forms (6 dot orders x 6 cross orders x 3 output forms, named
+// dot or not) never give retail's early a.k*v.i / v.j*a.i products (aligned 11-34 against 14).
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

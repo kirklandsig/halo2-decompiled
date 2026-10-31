@@ -4,6 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
+#include "vector2f_products.h"
 #include "globals.h"
 #include "unknown_1fa590.h"
 #include "unknown_26c380.h"
@@ -21,20 +22,9 @@ struct s_sector_edge
 	word sectors[2];
 };
 
-struct vector2f
-{
-	real i;
-	real j;
-};
-
 static inline real dot_product2d(point3f const *point, vector2f const *vector)
 {
 	return point->x * vector->i + point->y * vector->j;
-}
-
-static inline real cross_product2d(vector2f const *a, vector2f const *b)
-{
-	return a->i * b->j - a->j * b->i;
 }
 
 static inline void vector2d_from_points3d(point3f const *p0, point3f const *p1, vector2f *out)
@@ -143,7 +133,8 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 	return success;
 }
 
-// score 404 (was 404): frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// score 443 (was 443): frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
 // and EDI, and retail keeps a byte local at [esp+0xe] where ours has a long zero at
 // [esp+0x14].
@@ -214,6 +205,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // removed alone/with magnitude/with planar/with both 404/404/495/495.
 // Original helpers, result contracts and body restored; frame 0x5c versus 0x64,
 // independent normal homes, byte state and separate output tails remain.
+// Round 245: complete point/vector captures via native/const copies, aggregate inputs
+// and complete output publication 412/412/453/453/458/458/464/464; mixed input
+// constructions 492/488. Native copies gain 31 but demote matched 0x26ccb0;
+// output publication demotes eight controls. Original helper and entire body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

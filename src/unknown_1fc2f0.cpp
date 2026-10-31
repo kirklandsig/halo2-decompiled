@@ -312,6 +312,21 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // first assigned by the tick products: conversion after the chains 64 (retail's first 0x5a bytes, but the ticks
 // stay the copied left operand), at the top 43 (same code as now), through local_scale3d 64, `(real)ticks` in
 // each product 64; `short ticks` 43; the squared length summed j, k, i (diagnostic) 43, identical code.
+// Round 98 (lane 8; LTCG env link with the ballast, equal to the full listing; env rows
+// positional/aligned, base 39/46): tick products and deltas in all 6x6 orders with the conversion at
+// the top or after the chains: none below 39/46, late conversions 58+ (369 bytes); the state velocity
+// copied into its own vector and the chains written j,i,k / i,j,k / j,k,i into the result vector:
+// the compiler still schedules i, j, k (identical code, best 39/46); correction added as
+// `correction.c + state->velocity.c` 39/46; through the existing vector3f_scale + vector3f_add 39/46;
+// local_scale3d + vector3f_add 39/46; delta scaled in place by vector3f_scale then vector3f_add 64/55.
+// Round 24 (lane 14, fast), all on round 108's 47 form (components loaded first, rate stages j, i, k,
+// subtract-and-scale i, j, k, named squared length): the correction through the existing vector3f_scale 47
+// and the delta scaled in place with vector3f_add 47 (both the same code: the products and adds still
+// interleave, retail does all three products first); `short ticks` 47 (same code); subtract, scale and
+// delta per component i, j, k 48 (aligned 39 -> 33: delta i in XMM4 as retail, the tick products still
+// i, j, the delta j copy in XMM5 where retail first moves velocity k into XMM3); the same per component
+// j, i, k 58 (369 bytes: retail's j, i tick products, first difference +0x65, but velocity j is stored
+// before i). Untried lead: j's subtract and scale, then i's with its delta, then j's delta, then k's.
 // Round 23 (lane 15, fast): the correction through the existing vector3f_scale 43 (identical); per
 // component `state->velocity.c + delta.c * scale` 97 (351 bytes); a predicted point (j, i, k) then
 // `(predicted - p2c) * ticks` 73 (369 bytes: retail's j-first chains and in-place XMM3 ticks, but the

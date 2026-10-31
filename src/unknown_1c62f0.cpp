@@ -160,6 +160,30 @@ void c_animation_channel::clear()
 // early/retail 68/68; defaults through copy_from 45/45; complete native
 // replacement assignment/copy_from 75/52. All lose five matched caller controls;
 // original body restored. Saved graph and identifier carriers remain.
+// Round 97 (lane 8, fast with 0x1cb410/0x1086e0/0x10fa80 and the other callers): flags declared before
+// graph (callers load ECX, then EDX, then EAX), definition and all 15 calls, 36 (same code); that with
+// retail's store order 42 (graph still an ESI argument; 0x1cb410 14, 0x1086e0 2); retail's order with
+// a dword flags parameter 42; with an early `return false` guard 42; that with unknown0e stored before
+// graph 42. In every retail-order form ours stores the id before graph (the id load takes ECX), so ESI
+// holds only graph and becomes its argument register; retail reuses ESI for the id after the graph store.
+// Round 32 (lane 11, fast with the six matched callers; retail's callers load ECX first, then EDX,
+// then EAX, but the matched callers already do so with this declaration, so no reorder was tried):
+// `long const` graph parameter 36 (same code); single-exit result 49 (127 bytes, callers lose); the
+// id copied right after the NONE pair 41; unknown0e stored before graph 43; rate stored before the
+// frame 42. Diagnostic only: size-preference pragma 56 (120 bytes).
+// Round 7 (m3 lane 18, fast with the six matched callers): retail's order with the id copied through
+// its parameter's address (`c_type_709360 const *id = &animation_id;`, so stores through this might
+// alias it) 42 (the id load is still hoisted above the graph store into ECX; graph an ESI argument;
+// 0x1086e0/0x1087c0 2, 0x10fa80 1, 0x10ec00 53, 0x1cb410 14); that with unknown0e stored after the
+// id 42; the current order with the id through its address 36 (same code); retail's order with the two
+// validity tests as nested ifs 42; that with the byte pair cleared by one chained assignment 51 (126 bytes).
+// Round 113 (lane 6, fast with the ten callers): retail's order with graph read once through its own
+// address at the late store 39 (graph becomes a stack argument, flags ECX, ret 0x18); flags declared before
+// graph with retail's order (diagnostic) 51 (graph still ESI); graph stored first, the rest in retail's order
+// 43 (callers lose); retail's order with `if (flags & 0x8000) unknown10 = 2;` 49 (128 bytes: keeps the clear
+// but also the branch, graph ESI); the current form with `(flags & 0x8000) ? 2 : 0` 36 (same code). The /Gd
+// compile-only first pass loads graph into ESI for retail's order whether `this` is a thiscall ECX or a
+// stack argument, and with an external call after the guard puts `this` in ESI and graph in EDI.
 // @retail 0x1c6470
 bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e)

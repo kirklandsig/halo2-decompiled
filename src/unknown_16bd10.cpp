@@ -289,6 +289,11 @@ bool camera_velocity_profile_new(s_camera_velocity_profile *profile, real total_
 // bytes); const aggregate-initialized arrays 49 (same code); the rate terms and the acceleration terms as two
 // named partial sums, ramp + distance or distance + ramp, 51/51; every product of the six-term sum
 // parenthesised 49 (same code); the sum explicitly grouped left to right in the written order 55.
+// Round 36 (lane 10, fast): the sum as three calls of a forceinline per-segment helper (ticks * rate + ticks *
+// ticks * acceleration) taking the rate and acceleration by value 49, taking the arrays and a segment index
+// 49; the helper factored `(acceleration * ticks + rate) * ticks` 72 (261 bytes); the three calls as one
+// statement and two += 62 (268 bytes); the by-value helper with PIN tick clamps 96. Compile-only, every one
+// of these (and both call orders) still spills one coefficient where retail spills three.
 // @retail 0x16be50
 real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, long ticks)
 {
@@ -843,6 +848,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// score 236 (was 236): this round found the first difference at the switch's dispatch —
+// the default jump target (the code after the switch) is not where retail puts it, so the
+// four case bodies are laid out differently and the whole switch region differs with it.
 // score 236 (was 236): frame 72 agrees; the camera mode and the object index are read into
 // named locals before the switch and the test; direction preload, length/zero XMM roles and
 // flag stores still differ.

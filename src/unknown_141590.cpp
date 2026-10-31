@@ -195,6 +195,9 @@ static inline void quaternion_transform_vector(
 // Round 228: two-argument in-place helper with pointer/reference quaternion and vector
 // contracts 290/290/290/290; each with independent cross scalars 313/313/313/313.
 // Original helper contracts and complete body restored.
+// Round 242: Complete shared scale/add-scaled output pipeline with staged-cross/shared-dot/
+// independent-half subsets 0..7 363/363/358/361/355/356/349/350. Native half storage recovers frame
+// 0x24 but grows code; original helper and body restored, quaternion/cross spill overlap remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -807,6 +810,14 @@ void function_143250(
 // Round 447: Third-band retained late rows [0,1,4] by columns in six row orders, then descending columns across rows and within each row
 // 1791/1795/1795/1790/1795/1791/1812/1803. Rotation admission and basis/matrix spill homes remain.
 // Original executable source and all trial helper/interface changes restored.
+// Lane 10 round 34: retail passes rotation in EAX, coefficients in ECX, result in ESI and the order on the stack
+// (ret 4); ours stacks rotation and the order (ret 8). --fast pins conventions from the last full build, so only
+// plain checks show them. Plain: the parameters in retail's call-setup order (result, order, rotation,
+// coefficients; definition, declaration and four calls) 1781, rotation still stacked; 0x22850's coefficient loop
+// written as three per-channel calls as retail has them (and as its second half does) 1781 here, 0x22850 237->254;
+// the eight leading terms and the matrix as plain locals 2116 (frame 0x300 as retail, rotation still stacked).
+// Fast: rotation-first orders (rotation, order, result, coefficients) and (rotation, result, order, coefficients)
+// 1781 each (convention pinned); round 19's body 2266 (rotation stacked there too).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

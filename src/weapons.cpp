@@ -1988,6 +1988,9 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // index leaves the loop rolled (352 bytes). Original body with other-weapon pointer or unit pointer declared
 // first: same code; definition index read in the success block 580 bytes. Retail's pool-in-EBP slots appear
 // only when the pool global is treated as escaped, which changes 732 other functions.
+// Round 241: complementary outcome alone/unsigned tag/first long reserve/other long reserve/
+// both long reserves/tag-first/tag-other/tag-both 212/212/211/183/182/211/183/182.
+// Original body restored; magazine/transfer and pooled receiver homes remain.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
@@ -3090,6 +3093,7 @@ struct s_ammo_conversion_entry
 };
 
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
+// Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
 // Earlier: frame 0x24 versus 0x20; destination/tag saved roles and conversion staging differ.
 // Frame 0x24 versus 0x20, destination/tag homes and conversion staging remain.
@@ -3206,6 +3210,9 @@ struct s_ammo_conversion_entry
 // Round 319: Capacity-failure continue with cached count, conversion-first arm and
 // twice-used offered quantity subsets 210/207/196/207/210/207/196/207. All
 // restored; frame 0x20 agrees but destination/tag and conversion homes remain.
+// Round 455: Actual persistent source header pointer/reference, with acquisition declaration priority
+// and retained-rounds constant lifetime: 209/211/209/211/209/211/209/211, 713/720 bytes.
+// Original lookup graph, declarations, transfer expressions and complete body restored.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3607,7 +3614,8 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
         if (weapon->parent_index != NONE) weapon_index = weapon->parent_index;
     return weapon_index;
 }
-// score 1420 (was 1420; round 449 reached 1408 but is not kept, see the review line): Frame 0x3c versus 0x38 and pool/dual/scalar homes remain.
+// score 1420 (was 1420): Frame 0x3c/0x38 and pool/offset/dual/scalar homes remain.
+// Earlier score 1420 (was 1420; round 449 reached 1408 but is not kept, see the review line): Frame 0x3c versus 0x38 and pool/dual/scalar homes remain.
 // Earlier: frame 0x3c versus 0x38; pool/offset registers and dual/scalar homes remain.
 // Long blocked fast 1518, barrel active 1513, down/up 1506, overheated 1520; depth one 1521;
 // combined blocked/down/up 1470 plain (fast 1500).
@@ -3718,6 +3726,9 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Review of round 449 (m3): not kept: the 1408 form needs every flag bit read as `(bool)((byte >> n) & 1)`,
 // a cast that changes no value, and blocked/up retyped short -> byte by score; both are kept only with a byte
 // match. Code back to the masks and short carriers; the subset scores above still stand.
+// Round 455: Actual persistent header element as pointer/reference, with entry activity declaration
+// and readonly tag subsets: 1545 each, 5780/5684 bytes, frame 0x3c. Original complete body,
+// lookup graph, activity declaration and metadata restored.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {

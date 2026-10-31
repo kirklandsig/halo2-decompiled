@@ -530,6 +530,11 @@ extern point2f *g_468778;
 // Round 238: complementary rejection result bool/byte/short/long 394/394/403/401;
 // those domains with actor-first acquisition 419/419/406/404. Original positive
 // bool result, lookup order, early distance and complete body restored.
+// Round 37 (lane 1, fast): no facing pointer, the facing read through the prop view 401; the settings
+// threshold field in a named local 406; the actor before the settings call 413; that with
+// `if (!settings || f13 || f14 || f2d) return false;` and a direct final return 393 (1549 bytes, frame
+// 0x40 and all four pushes at entry as retail; ours keeps arg_0/actor/settings/slot in EBX/EDI/ESI/EBP,
+// retail in EDI/EBP/memory/ESI with the prop in EBX); the slot pointer declared first there 393.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -781,6 +786,19 @@ static __forceinline long real_to_long(real value);
 // object/facing value pairs 555/583/544; all scalar values 603; all native vector
 // values 574. Original pointers, fresh reads, arithmetic, query aliases and body
 // restored; frame 0x58, early rejection and magnitude/query homes remain.
+// Lane 18 round 6: the first 66 instructions agree; retail's false exit after the `goto local_7` jump shifts
+// positions by 3-5 to about index 430. Retail keeps the actor in ESI into the velocity block, forms the facing
+// address late (`add eax, 0x2c`, later `lea esi, [eax+0x2c]`) and spills the AI object pointer (velocity read
+// at +0x88). Then-arm `return local_2;` with a final `return false;` 510; false-initialised result without the
+// else arm 496; object pointer local for the six velocity reads 409 (1918 bytes); facing field read at each use
+// 513 (1941 bytes); both 524; `facing` declared in the else arm only, the then-arm copy read from the field
+// 477 (1906 bytes). Original body restored.
+// Round 37 (lane 1, fast): the existing magnitude3d call for the written-out object-speed root 482
+// (1886 bytes: our LTCG keeps the call, retail inlines it here and calls it in 0x1aa0d0); result
+// preset false without the else 496 (frame 0x54); no facing pointer, the prop view's facing read at
+// each use (retail addresses it off the view) 513 (1941 bytes); that with an object pointer and
+// `object->velocity` reads (retail spills the object pointer, not object + 0x88) 524; the object
+// pointer alone 409.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

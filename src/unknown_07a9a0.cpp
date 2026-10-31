@@ -1214,6 +1214,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // DL196: input group/rating/machine-user base subsets
 // 853/855/907/856/850/855/856; all bases with admitted member-rating observation 856.
 // Original executable body and all supporting contracts restored.
+// T47: Uniform session-state observations / membership maximum selection / flattened
+// complete type dispatch subsets 766/766/766/888/888/888/888; all with dword histogram
+// 931. Original body, selectors and all protected declarations restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

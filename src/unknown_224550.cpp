@@ -109,9 +109,9 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 	{
 		color3f seed_color;
 		unpack_color3f(arg_0->color,&seed_color);
-		tint.red=tint.red*seed_color.red*2.0f;
-		tint.green=tint.green*seed_color.green*2.0f;
-		tint.blue=tint.blue*seed_color.blue*2.0f;
+		tint.red=seed_color.red*tint.red*2.0f;
+		tint.green=seed_color.green*tint.green*2.0f;
+		tint.blue=seed_color.blue*tint.blue*2.0f;
 	}
 	tint.red=arg_2->red*tint.red;
 	tint.green=arg_2->green*tint.green;
@@ -124,6 +124,11 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 }
 
 
+// score 381 (was 391): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
+// the frame is 0x50 against retail's 0x60 — the angle is stored in a dead
+// argument slot instead of a frame slot and the second UV set has no frame home of its own — and
+// the cache is kept in EBP where retail reloads it into EBX. Inlining the tint into the body or
+// passing it out by pointer gives retail's 0x60 frame but scores 520, so the helper stays.
 // score 391 (was 391): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
 // slot), cache EBP/EBX and scalar homes remain.
 // Frame pointer 597; size optimization 990; tint input-array parameter 435;
@@ -226,6 +231,14 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // effect); the tint written in the body (helper removed) with both 460 (frame 0x60, tint and UV slots
 // swapped), the tint renamed either way 460. Retail re-reads the cache parameter from its stack slot
 // into EBX where ours keeps it in EBP. Restored.
+// Round 56 (lane 12, fast; plain 381 confirmed): the interval count computed before the `count > 0`
+// test as `intervals = count; if (flags & 8) intervals--;` 387 (1937 bytes, retail's length and test
+// order; as a ternary there 393); with the seed products written seed_color * tint * 2 381 (kept,
+// 1937 bytes). On 381: the sequence pointer in a local 496; frames read before the count re-read
+// 490; the in-place loop clamp 429 (1961 bytes; tint code then retail's but the colour parameter
+// in ESI for EBP); the definition's geometry as an s_draw_sprite_uv copied whole 478 (1914 bytes,
+// retail's dword moves); both 480 (1938 bytes, aligned 245 -> 214: one byte long); the tint owned by
+// the caller 532 (1994 bytes, frame 0x60); the flip as `flip = 0; if (...) flip = 1;` 454.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
@@ -266,9 +279,11 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache
 			if(context->sequence)
 			{
 				long count=context->sequence->count;
+				long intervals=count;
+				if(definition->flags&8)
+					intervals--;
 				if(count>0)
 				{
-					long intervals=(definition->flags&8)?count-1:count;
 					real frame=function_246cd0(&definition->frame,values->values)*(real)intervals;
 					long index=function_016ae0(frame);
 					s_draw_sprite_frame const *frames=context->sequence->frames;

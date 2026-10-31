@@ -1,6 +1,8 @@
 // @flags /O2 /arch:SSE /Gr
 #include "projection_storage.h"
 #include "view_context_storage.h"
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 /* UNKNOWN_157450.CPP: the game engine globals: the lifecycle callbacks of
    entry 22 and the team bookkeeping */
 
@@ -479,6 +481,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
+// becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
+// both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
+// but splits the tail into a 16 bit load for the compare and a 32 bit one for the update; taking
+// the present teams out of the volatile local gives the shared 32 bit reload, but the player loop
+// then keeps them in a register and loses the load/or/store.
 // score 32 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
 // retail; the comparison and the update of the two masks use different registers, and the input
 // counter loop uses different ones too. Retail keeps the word mask in a register after the loop
@@ -4058,6 +4066,9 @@ static __forceinline long nonnegative_15ce70(long value)
 // subtype as if/else 475; the ternary clamp alone 541 (retail's setle/dec/and, but 2126 B);
 // the if/else subtype alone 543 (retail's branches, 2110 B); `minimum < penalty ? penalty :
 // minimum` for the delay 471 (identical).
+// Round 241: uniform presence/self/both decisions 575/559/560; with native statistics
+// ordinal 572/552/544; both with override join 560, also staged decoding 560.
+// Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
@@ -4390,6 +4401,15 @@ void function_15fe20(long team_index, color3f *color);
 // rival text cleared before its player lookup 85. 0x7f720 returning color3f by value (all calls
 // in the image changed, then restored) gives 46 with no local, but matched 0x7f790 then takes a
 // 0x18 frame (retail 0xc), so retail's callee keeps the pointer form.
+// Lane 16 r48 (fast; aligned difflib counts in brackets): both team colours through locals plus the two
+// individual reorders 42 [22]; on that, the weapon default before the unit test 73 at 2688 B [20: left the
+// byte shift count, the unit index in EAX for retail's ECX, the -1 register compares and the pool-first
+// unit lookup]; engine_object_get for the unit 73 (same code); existing unit_get_current_weapon 73 [22];
+// named unit index 73 (same code); `(short)iterator.index` as the shift count 72 [19, retail's
+// `mov cl, byte`]; a long slot 74 [15, the charge tail becomes retail's]. A compile-only screen of ~70
+// tail forms (default before/inside/after the slot read, named index, getter helpers, NONE-checking
+// getters, short/long/char slot, if/ternary) never compares against the -1 register; simpler bodies do,
+// until the compared index feeds the masked lookup.
 // Lane 14 r22: `1 << (iterator.index & 0xffff)` in the zone presence loop alone 87; both team colours
 // through a new by-value inline helper (color3f, short team; with that shift) 61 (the copies are
 // retail's, but the own-team argument is pushed before the buffer address); with a long team
@@ -4859,8 +4879,6 @@ void function_13ec70(color4f const *color);
 class c_1fa50
 {
 public:
-    void function_1fa50(short_rectangle2d const *bounds, void const *clip, void const *position,
-        long line_gap, real scale, long color, void const *shadow) const;
 };
 PRIVATE color3f const score_text_color = { 0.4588235318660736f, 0.729411780834198f, 1.0f };
 PRIVATE color3f const alternate_score_text_color = { 0.8078431487083435f, 0.5607843399047852f, 0.8705882430076599f };
@@ -4900,7 +4918,7 @@ void __stdcall function_15e530(c_1fa50 const *text, real alpha, point2f const *p
     bounds.bottom = (short)y;
     function_13edb0(font_index, NONE, 2, 0, &color, &shadow);
     function_13ec70(&color);
-    text->function_1fa50(&bounds, 0, 0, 0, 1.0f, 0, 0);
+    function_1fa50(&bounds, (word const *)text, 0, 0, 0, 1.0f, 0, 0);
     text_style_clear();
 }
 

@@ -458,6 +458,13 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // Round 235: complete/conditional native pair-admission bool/byte, shift/shared mask
 // tests 37/42/37/42/37/42/37/42. The mask still splits the update; original admission
 // and complete executable body restored.
+// Round 115 (all with the mask test, 545 bytes; the set after 0x1d90e0 then computes the mask before the word
+// address and splits into load/OR/store): signed visited words 42; target declared before marker 42; model
+// as a `long const *` read as model[1] 42; hand mask test with the mask on the left 42, on the right 42.
+// Round 25 (fast): bit_vector_test re-measured 42 (aligned 24); with a long node index local used by
+// the test, 0x1d90e0 and the set (nested ifs) 128, the same with the shift test 122, with a short
+// local 45; the first marker query's result named 42 (same code); iterator a tested before b 46.
+// The set still reuses the test's value numbers across 0x1d90e0. Body restored.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1349,6 +1356,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // Native pairs reserve frame twelve and 1269 bytes; entry pool/state allocation and count joins
 // remain. Original byte success, canonical statuses, signed counts, queries and argument handling
 // restored.
+// Round 243: Complete success/depletion/interruptibility status enums, subsets
+// 1..7 381/173/386/172/403/174/384; all with entry success constant 384. Original byte
+// result, Boolean statuses, queries, parameter observation and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1473,11 +1483,11 @@ bool __stdcall function_110ab0(long unit_index)
 // score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
-// score 450 (was 450): this round found no gain - retail keeps the pool pointer live in ECX and the data in
+// Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
 // ESI, rematerialises the unit pointer for the query, reloads the data from the pool and writes the
 // depletion with setle into the flag slot, while ours keeps the unit in a register and initialises the
 // result byte differently; the retail-shaped query joins score 330 or worse.
-// score 450 (was 450): Frame eight versus twelve, requested/state ownership and result joins remain.
+// Earlier: Frame eight versus twelve, requested/state ownership and result joins remain.
 // Earlier 453 (was 478): frame 8 versus 12 and requested/state registers still differ.
 // Predicate names 478; byte result 538; byte depleted/overlay 453; global optimization off 1195;
 // merged interruptible cases 473; byte depleted alone 458; byte overlay alone 477; merged cases with bytes 456.
@@ -1552,6 +1562,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 451/451/471/473; with the early overlay observation 506/495/512/504. Short/long overlay forms
 // recover frame twelve but regress to 1833/1825 bytes. Overlay moves were exact-match-only.
 // Original observations, paired queries, results, dispatch and complete body restored.
+// Round 243: Reused long/word/dword header ordinal and long byte offset,
+// at entry 491/469/491/489 and within controlled admission 495/461/495/476.
+// Original pool observations and body restored; frame/state/request/result homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1883,6 +1896,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // curve values alone/main/pair/all 790 each; all with immutable animation IDs 790. Complete
 // comparison listings unchanged. Original constructors, helpers, inputs and float grouping
 // restored; frame 0xcc versus 0xd4 and first-angle/overlay expansion remain.
+// Round 243: Complete two-use center predicate byte/short/long/dword storage
+// 790/848/786/786; complementary bool/byte/short/long 844/844/836/831. Long/dword gain
+// only four at 3392 bytes and are dropped. Original predicate, helper and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

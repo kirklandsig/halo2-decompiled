@@ -153,6 +153,8 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 // 2; a named turn-angle local instead of reusing arg_4 2; the two limits in separate locals 39;
 // one-expression angle sum 34 (with separate limits 2); a named object pointer after/before the
 // actor lookup or first 2/2/13; 0x11cc90's parameters declared (b, a) 2; all three first forms 2.
+// Round 91: internal forceinline/plain helper linkage, the helper after its caller, point-reference subsets,
+// an output reference and an actor reference 2 each; all restored.
 // @retail 0x29c860
 void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	point2f const *arg_3, real arg_4, vector3f *arg_5)

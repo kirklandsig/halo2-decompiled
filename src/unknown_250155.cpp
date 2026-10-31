@@ -1362,7 +1362,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
-// score 116 (was 116): extra frame dword, count homes and counted tail stores remain;
+// score 83 (was 83): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
+// index_count/item_count slots are swapped; branch two gives EDI to the 0x199ef8 result and keeps
+// index_count in memory (`inc dword ptr`), where retail keeps index_count in EDI through both scans and
+// reloads player_count from its slot; that asymmetry is the lead for the slot swap and the fills.
+// Earlier first line: extra frame dword, count homes and counted tail stores remain;
 // common guarded fill 172; common fill/shared query 166; definite comparator 124;
 // byte selected count 145; signed-char predicates 116.
 // frame 0x58 versus 0x54; query/count homes, scalar tail stores and final row registers differ.
@@ -1416,6 +1420,23 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Round 447: Native query output-pointer contracts, seven parameter subsets; all with shared mode-one output storage
 // 116/116/116/116/116/116/116/123. Extra query frame dword, count homes and scalar tail fills remain.
 // Original executable source and all trial helper/interface changes restored.
+// Round 32 (lane 11): the tail rows through a pool array pointer read once per datum, indexed in each arm
+// (retail's three word stores, hoisted 0xffff, `or word, -1`) with `indices[i]` and no cursor 88; plus the
+// query result in its own local and an if/else maximum (retail stores count first) in branch one 86, in
+// both branches through item_count (frame 0x54) 83 (kept). On the earlier forms: index for-loop fills,
+// mode-one query through item_count, indices[i] tail 171 (index_count EBX all through, mode on the stack);
+// that with the fill index scoped/per-loop i/mode first/i first 171 each, `else if (i < player_count)` 173;
+// scan+fill as a force-inline helper taking the count by address 171 (inline: out of line, 243); rows
+// written in full in each arm on the cursor/indexed/t1 forms 144/145/172 (172 with five declaration
+// orders). On the kept form: index for-loop fills 172; the three qsort calls written out (retail's
+// tail-merged pushes) 119 (one extra reload shifts the rest); both 174; index_count/item_count renamed
+// (aaa/zzz) 83/83/83 (slots do not move). Compile-only, the index fill always gives index_count a
+// whole-body register and homes mode (216 combinations of fill/qsort/scan/maximum/loop-index/qsort
+// placement/declaration order); only a pointer `<` fill keeps retail's homes, but as a pointer rep stosd.
+// Round 35 (lane 11, fast): the second branch's fill alone as `for (long j = index_count; j < 16; j++)` 107
+// (that branch then matches retail: index_count in EDI, guarded rep stosd, EDI reloaded; but the
+// 0x199ef8 result takes EBX there and mode moves to the stack, frame 0x58); with mode declared first 110;
+// the first branch's fill alone 169; both with the three qsort calls written out 169/163 (420 bytes).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -1431,10 +1452,18 @@ void c_matchmaking_list::v3()
 	if (mode != 3 && (mode < 1 || teams))
 	{
 		long count = function_199ebc();
+		long maximum;
 
 		item_count = 0;
-		item_count = function_199dc9((long)&player_count, (long)&item_count, 0) ? item_count : 0;
-		item_count = count > item_count ? count : item_count;
+		maximum = function_199dc9((long)&player_count, (long)&item_count, 0) ? item_count : 0;
+		if (count > maximum)
+		{
+			item_count = count;
+		}
+		else
+		{
+			item_count = maximum;
+		}
 		for (i = 0; i < 16; i++)
 		{
 			if (function_19a951(i))
@@ -1459,10 +1488,18 @@ void c_matchmaking_list::v3()
 			*empty = NONE;
 		if (mode == 1)
 		{
-			long count = 0;
+			long maximum;
 
-			count = function_199dc9(0, (long)&count, 0) ? count : 0;
-			item_count = player_count > count ? player_count : count;
+			item_count = 0;
+			maximum = function_199dc9(0, (long)&item_count, 0) ? item_count : 0;
+			if (player_count > maximum)
+			{
+				item_count = player_count;
+			}
+			else
+			{
+				item_count = maximum;
+			}
 		}
 		else
 		{
@@ -1480,30 +1517,27 @@ void c_matchmaking_list::v3()
 			qsort(indices, index_count, sizeof(long), compare);
 	}
 	record_pool_release_all(data);
-	long *selected = indices;
 	for (i = 0; i < item_count; i++)
 	{
 		long datum_index = record_pool_allocate(data);
 
 		if (datum_index != NONE)
 		{
-			s_matchmaking_datum *datum = &((s_matchmaking_datum *)data->data)[datum_index & 0xffff];
+			s_matchmaking_datum *datums = (s_matchmaking_datum *)data->data;
 
 			if (i < index_count)
 			{
-				datum->player = (short)*selected;
+				datums[datum_index & 0xffff].player = (short)indices[i];
 			}
 			else if (i >= player_count)
 			{
-				datum->player = NONE;
+				datums[datum_index & 0xffff].player = NONE;
 			}
 			else
 			{
-				datum->player = 16;
+				datums[datum_index & 0xffff].player = 16;
 			}
 		}
-		if (i < index_count)
-			++selected;
 	}
 	function_24c0c4((c_widget *)this);
 	((c_widget *)this)->c_widget::v11();

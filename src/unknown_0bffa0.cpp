@@ -443,71 +443,23 @@ static __forceinline void point_add_scaled_c35a0(point3f const *point, vector3f 
     result->z = point->z + vector->k * scale;
 }
 
-// score 8 (was 34): the magnitude sums k, i, j against retail's k, j, i, and the BSP index and pointer
-// take BX/EBP where retail uses BP/EBX. Earlier (34): the x87 magnitude popped k and summed i, k, j
-// rather than retaining k and summing k, j, i; the inverse-times-i load, BSP word load and loop-entry
-// padding also differed.
-// Shared vector3f_add_scaled 34; scale then add 100; nested scale/add 100; shared scaled-add with
-// per-use BSP globals and a loop-local structure 34; force-inline normalize 34; both helpers force-inline 34;
-// force-inline difference 34; point outside the loop 34; inline target 34; inline caller 34;
-// early default length 34. Round 80: normalize3d 79; the direction declared first / after the result
-// 34/34; the three globals read in retail's load order 36; read before the length test 123. Diagnostic
-// (not a keepable form): the subtraction written through a pointer local to the direction 12 (ours
-// then keeps k on x87 and squares it first, as retail; sum i before j, the scale's inverse-times-i
-// load and the BSP index word load remain).
-// early default length 34. Round 10 (lane 14): normalize3d 79 (the sum stays i, k, j); the direction
-// declared first 108; the BSP pointer declared first 36; the length declared before the direction 34; the
-// step and distance declared after the normalize 116. Round 12 (lane 14): normalize3d again 79 (sum i, k, j,
-// frame 0x1c; matched 0xaa4d0 gets retail's k, j, i from the same two helpers); the BSP index read at its use
-// 36 (retail's word load, but in BX with the BSP pointer in EBP); with the BSP pointer at its use too 37;
-// with the structure at its use 36; all three globals at their use 37; the BSP pointer alone at its use 34;
-// the result declared after travelled/step 34.
-// Lane 18 r1: the magnitude's three terms are reordered by rank whatever the text (all 12 sum spellings
-// give the same code; a parenthesised pair is summed first); the direction written k, j, i by hand 94
-// (then i is kept on x87), through a pointer local 80 (k kept, sum k, i, j). Scale as `(1.0f / m) * i`
-// then `j * inverse`, `k * inverse` (another file's normalize) 94: retail's scale block and loop-entry
-// jump exactly, but the sum j, i, k; the scale statements in all six orders with either operand order
-// 34-37; the BSP index read at its use with the BSP pointer declared first 37 (word load, in BX); the BSP
-// pointer a local with the index and structure read at use 36 (DI); BSP pointer and index locals with the
-// structure at use 36 (index back to a dword load).
-// Round 91 (lane 7, one-file LTCG harness, exact here): the cause is how the difference is stored;
-// with the subtraction written as a component loop `direction.n[c] = end->n[c] - start->n[c]` (matched
-// 0xfa580's form) ours keeps k and squares it first like retail: the loop alone 80, with normalize3d
-// 74; the BSP index read at its use alone 36; loop plus the index at its use 12 (sum k, i, j against
-// k, j, i; the j scale folded instead of i; BSP index/pointer in BX/EBP), not kept (it writes the
-// helper's body out); on that, the BSP pointer first 13, the structure at its use 12, all three
-// globals at their use 13, counter `i` 12, direction declared first 12, three indexed statements
-// without the loop 85; the difference through a helper returning its output 34 (normalize3d 79);
-// `while (length > travelled && !result)` 102. Diagnostic only: a normalize summing
-// `i*i + (j*j + k*k)` with the subtraction through a pointer 8.
-// Round 175 (harness, exact here; plain where marked): the step clamp without the `next` local 34, as
-// `step *= 2.0f` and an if 68; the point declared at the function top / first 34/34; a normalize
-// summing `k*k + j*j + i*i` (also `(k*k + j*j) + i*i`, `i*i + j*j + k*k`) 34 (the order is re-sorted);
-// the difference through the existing vector3f_assign 74 (plain; retail's i and j scale, k scaled in
-// place), with the BSP index at its use 75. On the component-loop form (not kept, it writes the
-// difference helper out) with the BSP index at its use: normalize3d 75, the projectile normalize 75,
-// sums `i + (j + k)` 77, `k + (j + i)` 77, `j + (k + i)` 12, `(k + j) + i` 8 (left: the scale folds j
-// where retail folds i, and the BSP index/pointer registers); on 8, every local/at-use/order mix of
-// the three BSP globals 8-76 and the scale spellings 8/8/11/79/79.
-// Lane 18 r1: the magnitude's three terms are reordered by rank whatever the text (all 12 sum spellings
-// give the same code; a parenthesised pair is summed first); the direction written k, j, i by hand 94
-// (then i is kept on x87), through a pointer local 80 (k kept, sum k, i, j). Scale as `(1.0f / m) * i`
-// then `j * inverse`, `k * inverse` (another file's normalize) 94: retail's scale block and loop-entry
-// jump exactly, but the sum j, i, k; the scale statements in all six orders with either operand order
-// 34-37; the BSP index read at its use with the BSP pointer declared first 37 (word load, in BX); the BSP
-// pointer a local with the index and structure read at use 36 (DI); BSP pointer and index locals with the
-// structure at use 36 (index back to a dword load).
-// Round 47 (lane 16; kept, 34 -> 8: the direction through the existing scaled_difference3f with a
-// scale of 1.0f, whose component loop gives retail's difference (k kept on x87 and squared first),
-// and the BSP index read at its use): the helper alone 76 (the index local is then loaded as a
-// dword and the loop head loses its alignment jump); on the kept form the BSP pointer declared
-// first 9, the BSP pointer at its use 9, the structure at its use 8 (pointer EBX as retail, index
-// DI / structure EBP), all three at their use 9, normalize3d 75. Left: the magnitude sums k, i, j
-// (normalize_inline pairs i with k; retail pairs j with k) and the index/pointer take BX/EBP where
-// retail uses BP/EBX (with three locals declared structure, index, pointer the registers are retail's).
-// Round 32 (lane 10, fast counts): normalize3d with the BSP index read at its use 80; the difference
-// through vector3f_assign with normalize3d 79; the direction declared first with normalize3d 79; a
-// `short const` BSP index 34 (same code); `break` for the found exit 34 (same code).
+/* scales v to unit length and returns its old length, or 0 for a vector too short to normalize */
+static inline real direction_normalize_c0840(vector3f *v)
+{
+    real m = (real)sqrt(v->k * v->k + v->j * v->j + v->i * v->i);
+    if (!(fabs(m) < 0.0001f))
+    {
+        real inverse = 1.0f / m;
+        v->i = inverse * v->i;
+        v->j = inverse * v->j;
+        v->k = inverse * v->k;
+        return m;
+    }
+    return 0.f;
+}
+
+/* steps along the segment from start to end, doubling the step up to 0.1, until a point lies in a
+   BSP leaf with a cluster: that point and its distance along the segment */
 // @retail 0xc0840
 bool function_c0840(point3f const *start, point3f const *end, point3f *out, real *distance)
 {
@@ -516,10 +468,9 @@ bool function_c0840(point3f const *start, point3f const *end, point3f *out, real
     real step = 0.001f;
     vector3f direction;
     scaled_difference3f(start->n, end->n, 1.0f, direction.n);
-    real length = normalize_inline(&direction);
+    real length = direction_normalize_c0840(&direction);
     if (length > 0.0f)
     {
-        s_match_globals *structure = g_4e0348;
         s_bsp3d *bsp = g_4e033c;
         while (!result && length > travelled)
         {
@@ -528,7 +479,8 @@ bool function_c0840(point3f const *start, point3f const *end, point3f *out, real
             if (g_4686c4 != NONE)
             {
                 long leaf = function_14a280(bsp, 0, &point);
-                if (leaf != NONE && *(short *)(*(byte **)((byte *)structure + 0x30) + leaf * 8) != NONE)
+                short cluster = leaf != NONE ? *(short *)(*(byte **)((byte *)g_4e0348 + 0x30) + leaf * 8) : NONE;
+                if (cluster != NONE)
                 {
                     *distance = travelled;
                     *out = point;
@@ -1411,6 +1363,11 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // existing vector3f_rotate_into_axes on the rotation member 525 (759 bytes); the light index read
 // through the alias at the 0x16a8e0 and 0x1cac60 calls too 38 (same code here); the second / first
 // rotation alone through vector3f_rotate_into_axes 388 / 390 (894 bytes).
+// Round 51 (lane 16; compile-only screen of this file, which reproduces the node arm: 19 differing SSE
+// lines for the unchanged source): a file-local rotation helper in all 6 input-load orders x 3 row
+// orders 19..54 (i, j, k loads and i, j, k rows stay best); with up-first rows (0x163db0's matched plane
+// rows) 19 (same code); unused reads of the node matrix axes before the rotations 19/28 (diagnostic);
+// the node arm first in source (marker test inverted) 44.
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
@@ -1684,6 +1641,14 @@ extern s_object_list *g_4de2f4;
 // (harness, where the unchanged source gives 50). Diagnostics on the
 // callee (harness): 0xbab40 returning true straight from its 1.0 case or without its recursive call
 // leaves this at 50; only a body small enough to inline moves it (393).
+// Round 111 (lane 6, fast): the fraction pointer from a second view of the light record (re-indexed from the pool)
+// 310 (1607 B; the light index moves to the stack and the later read is still folded to [ebp + 0xd0]); the first
+// blend's fraction read through that view 283; the colours declared before the tint 49; colours declared first,
+// second, pair_first, pair_second 49; pair_second, pair_first, second, first 49. 0xbab40 saves EBX/ESI/EDI/EBP as
+// retail does, so its body is not what keeps EBX from the pointer.
+// Round 51 (lane 16, fast with 0xbab40/0xbad50/0x131d60/0xc0b00): the pointer read at the second 0x131d60
+// call and `light->fraction` at the first 49. 0xbab40 (ours, 28) with the 1.0 case's own `return enabled`
+// 117, with a named early result too 115 (this function stays 49 with either).
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
 {

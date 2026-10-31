@@ -156,6 +156,10 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 // the state test inverted inside the session arm 37; the result set before the timeout or first
 // copy's calls 95/115; an early return for type != 9 72; a new inline search helper at the timeout
 // site only, the first site only or both 20/37/20 (inlined copies merge before layout).
+// Round 16 (lane 2), retail's arm order (state 0, players match, timeout) with the timeout copy made
+// different in source: its session argument named first 37; its search pointer named first 37; the
+// timeout read into a named elapsed value inside an else arm 37; the players-match result named in
+// the else arm 37; its flag tested `!= 0` 37 (all merged before layout, 176 bytes).
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

@@ -1737,6 +1737,8 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
+// alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
 // score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
 // and the product loads the hit fraction where retail loads the distance.
 // Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
