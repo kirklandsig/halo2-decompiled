@@ -1705,7 +1705,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
+// score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
 // the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
 // frame is 0x84 against 0x80 since the visible flag became a stack byte, and the result/level slots,
@@ -1815,6 +1816,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 240: complementary established/visibility/both/retention/established-retention/visibility-retention/
 // all decisions 502/560/562/505/505/560/562; byte complementary direct decisions 562.
 // Original independent searches, shared positive producer and all body values restored; frame 0x84/0x80 remains.
+// Round 455: Late retention constant 558; with early scoring zeros 573; with late visibility constant 565;
+// both 569; complete predicate role names on each graph 558/573/565/569. Late visibility recovers
+// frame 0x80, but all regress. Original observations, calls, defaults and body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

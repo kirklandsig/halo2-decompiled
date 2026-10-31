@@ -102,7 +102,7 @@ __forceinline void function_28e774(point3f const *arg_0, point3f const *arg_1, v
 	arg_2->k = arg_0->z - arg_1->z;
 }
 
-// score 4 (was 8): 2416 bytes as retail; left are the alignment dot's i product (retail
+// score 4 (was 4): 2416 bytes as retail; left are the alignment dot's i product (retail
 // local_14->i * field_80.i) and the case-four y sum (retail placed_point.y first); until round 15 also
 // case five's facing dot (retail sums j, i, k; ours j, k, i once case six adds through vector3f_add). At 68 case six's i
 // add also differed (retail loads field_80.i and stores it at once; ours folded `addss xmm1, [edi]`
@@ -220,6 +220,16 @@ __forceinline void function_28e774(point3f const *arg_0, point3f const *arg_1, v
 // the location result (a steering volatile, not applied).
 // Also on 8: case four's placed point declared before its function_b9a90 call 8 (same code); local_14
 // as `vector3f const *` 8 (same code).
+// Round 17 (m3 lane 2) on 4: the alignment dot's i order follows how many symbols are created
+// before local_14 (code-neutral screens: one fewer there, none fewer after, gives retail's); the
+// case-four sums follow field creation order (a statement creates its right side's fields first,
+// inline helpers their left side first; the newer operand loads first), so retail's x and y need
+// placed_point.x read before the offset's i exists and local_13.j created before placed_point.y.
+// local_14 taken from local_1 before local_12 2 (only the y sum left); one typed pointer for
+// local_1/local_12 66; that plus a case-seven velocity pointer 2; local_14 first with the offset
+// through function_28e774 then k = 0 2 (y right, x flips); that with the sum written out (x
+// placed-first, y offset-first) 4 (the facing dot flips); local_12 dropped with casts at its uses
+// 66, with that offset 6.
 // @retail 0x28e770
 void __stdcall function_28e770(long arg_0, long arg_1)
 {

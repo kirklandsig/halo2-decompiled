@@ -564,6 +564,13 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 445: Separate producer/processing count long/short/word/byte 261/263/263/279;
 // the same four with independent native short request initialization 261/263/263/279.
 // All increase frame or extent; original complete body and helpers restored.
+// Round 35 (lane 11, fast): the entry test as the existing local_player_exists(listener) with the camera
+// taken inside it and no NULL test 295 (retail's `cmp edi, -0x48` / `setne al; test al, al` tests, aligned
+// 159 -> 150); plus the existing local_player_exists-style scan local_player_first_index() 293 (retail's
+// scan); plus that index in a local before the camera 292 (scan and camera formation now retail's, aligned
+// 137: left are the BSP spilled to [esp+0x14] in place of ESI, a zero kept in ESI and frame 0x14c); plus
+// the definition read through `bsp` 262 (BSP in EBX, listener EDI, stride ESI: retail ESI/EBX/EDI;
+// aligned 181); plus listener declared before bsp 262 (same code).
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
