@@ -221,7 +221,7 @@ struct s_session_member_properties
 	byte data[0xc8];
 };
 
-static inline long network_session_time_now(void)
+static __forceinline long network_session_time_now(void)
 {
 	if (g_510548)
 		return g_51054c;
@@ -3738,6 +3738,9 @@ struct s_network_session_list;
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *id);
 bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
 
+// score 49 (was 136): the session is kept in ESI instead of being reloaded from its
+// parameter, the host is staged in EBX at the 0x7ab10 call instead of retail's ESI copy,
+// and the mode store uses EDX where retail uses ECX.
 // score 136 (was 136): host/session staging, clock boundary and cleanup placement differ;
 // size preference 233; gated identity 142; long result 160; failure-path result 192; address name 136.
 // host/session homes, cleanup placement and clock expansion differ;
@@ -3779,56 +3782,62 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
   network_session_close(existing);
  if (g_transport_globals.initialized && g_transport_globals.started)
   function_07a9b0();
+ const long key_index = session->value38;
  XNADDR identity = g_4cf793;
- if (g_4cf792)
- {
-  network_session_release_key(session);
-  if (transport_security_register_key(session->value38, local, false, kid, key))
-  {
-   network_session_set_key(session, local, kid, key);
-   s_type_99af70 address;
-   if (function_07ab10(session->value38, &address, local, 0x3e9, (const XNADDR *)host))
-   {
-    const byte *raw_address = (const byte *)&address;
-    if (*(word *)(raw_address + 0x12) != 4 || *(dword *)raw_address != 0x7f000001)
-    {
-     long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)host);
-     if (channel != NONE)
-     {
-      session->value18 = mode;
-      memset(&session->update_count, 0, 0x14b0);
-      session->update_count = NONE;
-      session->flag48 = false;
-      memset(&session->value4c, 0, 0x2494);
-      session->value4c = NONE;
-      session->member_index = NONE;
-      memset(session->member_states, 0, sizeof(session->member_states));
-      session->current_member = NONE;
-      session->time78b0 = -network_session_time_now();
-      session->flag78ac = true;
-      s_session_remote remote;
-      memset(&remote, 0, sizeof(remote));
-      remote.id = count;
-      memcpy(remote.address04, identities, count * 12);
-      memcpy((byte *)&remote + 0xc4, values, count * 4);
-      memcpy((byte *)&remote + 0x104, other_values, count * 4);
-      remote.has_address = reserve;
-      if (reserve)
-       *(long *)((byte *)&remote + 0x150) = timeout;
-      memcpy(remote.address144, id, sizeof(*id));
-      memcpy(remote.key188, &identity, sizeof(identity));
-      if (extra)
-       memcpy((byte *)&remote + 0x154, extra, 0x2c);
-      function_61050(session, channel, host, &remote, &address);
-      result = true;
-      goto done;
-     }
-     result = false;
-    }
-   }
-  }
- }
+ const XNADDR *host_address = (const XNADDR *)host;
+ if (!g_4cf792)
+  goto release;
  network_session_release_key(session);
+ if (!transport_security_register_key(session->value38, local, false, kid, key))
+  goto release;
+ network_session_set_key(session, local, kid, key);
+ {
+  s_type_99af70 address;
+  if (!function_07ab10(key_index, &address, local, 0x3e9, host_address))
+   goto release;
+  {
+   bool unusable = false;
+   if (*(word *)((const byte *)&address + 0x12) == 4)
+    unusable = *(dword *)&address == 0x7f000001;
+   if (unusable)
+    goto release;
+  }
+  long channel;
+  channel = network_observer_attach_channel(session->observer, session->value10, host_address);
+  if (channel == NONE)
+  {
+   result = false;
+release:
+   network_session_release_key(session);
+   goto done;
+  }
+  session->value18 = mode;
+  memset(&session->update_count, 0, 0x14b0);
+  session->update_count = NONE;
+  session->flag48 = false;
+  memset(&session->value4c, 0, 0x2494);
+  session->value4c = NONE;
+  session->member_index = NONE;
+  memset(session->member_states, 0, sizeof(session->member_states));
+  session->current_member = NONE;
+  session->time78b0 = -network_session_time_now();
+  session->flag78ac = true;
+  s_session_remote remote;
+  memset(&remote, 0, sizeof(remote));
+  remote.id = count;
+  memcpy(remote.address04, identities, count * 12);
+  memcpy((byte *)&remote + 0xc4, values, count * 4);
+  memcpy((byte *)&remote + 0x104, other_values, count * 4);
+  remote.has_address = reserve;
+  if (reserve)
+   *(long *)((byte *)&remote + 0x150) = timeout;
+  memcpy(remote.address144, id, sizeof(*id));
+  memcpy(remote.key188, &identity, sizeof(identity));
+  if (extra)
+   memcpy((byte *)&remote + 0x154, extra, 0x2c);
+  function_61050(session, channel, host, &remote, &address);
+  result = true;
+ }
 done:
  return result;
 }
