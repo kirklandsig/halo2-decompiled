@@ -204,6 +204,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // condition (`bool result = start >= 0 && ...; if (result)`) 44 (0xb5f10 41); a non-volatile local
 // copy of the string for the scan and the add 60 (83 bytes, 0xb5f10 80); a `byte` result 41
 // (0xb5f10 41); `result = true` before the copy 40 (same code).
+// Round 26 (lane 15, fast): the string as the text struct of 0xb61d0 (`s_text512_ab const *volatile`, scanning and
+// adding its bytes; callers cast as they do for find) 40 (same code), without the volatile 41 (104 bytes, 0xb5f10
+// 35); a named end offset (`long end = start + count;`) before the test 43 (101 bytes); `start = (long)string +
+// start` 40 (same code); the string added before the count increment 36 (0xb5f10 6, as listed above).
 // Round 132 (an LTCG env link of this file reproduces it and 0xb5f10 exactly): `string + start` gives
 // retail's body except that start lives in EDX and the walk in EDI (retail: walk EDX, start EDI), so
 // LTCG passes start in EDX. With it, the length loop as `while (length < 0x1ff && *string++)` 28, a

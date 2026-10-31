@@ -3025,6 +3025,13 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // the loop is then retail's except the cached mode push; left are the system in EDI, colour A in EBX, colour B
 // spilled and the type object in ESI, retail ESI/spilled/EDI/EBX), that with the mode read per call 109 (register
 // effect index, 0x176f60 25), with the mode declared after the colour call 117, with a signed mode 90.
+// Round 8 (lane 18, fast; 0x176f60 matches unless given): on this cached-mode form, both colours declared
+// inside the type-query block 93; the next index declared before the lookups 93; the particle-location
+// cursor declared before the definition test 93. Mode read per call re-measured 108 (0x176f60 25): it gives
+// retail's 0x54 frame, but the definition takes EBX across the loop (retail spills it to [esp+0x10] and
+// reloads it per call) and both indices become register arguments. The node-flag test with an explicit
+// `!= 0` 93; the cached mode declared first 94. Lead: 0x175a80 (its colour callee,
+// unmatched, in a file held this round) sets which registers this call's setup may keep.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

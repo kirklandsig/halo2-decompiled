@@ -473,6 +473,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // identical code); the visited words and both markers as one local aggregate also give the fused set
 // but realign the frame 190 (with the inlined fill 190); 0x1d90e0's marker matrix non-const 42.
 // Diagnostics: a volatile node-index read in the set 42, an opaque no-argument call before it 47.
+// Round 8 (lane 18, fast): with the mask test, a fresh node index read at the set (volatile diagnostic,
+// reverted) still gives the mask-first load/OR/store set, so it is not the index's value number;
+// mask test with `mask & word` operands 42; mask test with the set as `mask | word` 42, both swapped
+// 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
+// the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
+// unmatched: a lead if retail's set needs a call that may write the vector.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
