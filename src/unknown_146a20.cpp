@@ -137,6 +137,11 @@ bool g_47f05b;
 // g_479888 with the buffer through `block` 36 (146 bytes by chance: block copied to EDX, the 1s immediates,
 // no vtable store); neither local (diagnostic, listed) 38 (reload on the constructed arm as retail, 1s
 // immediates); a buffer local read from g_479888 before the global stores 38.
+// Round 100 (lane 8, one-file harness exact with unknown_22c0a0.cpp): diagnostic only, a compiler barrier at the end of
+// the abstract constructor keeps the base vtable store (12 at 147 bytes; 0x146b80/0x22c3e0 lose), and with the size-only
+// constructor it is an exact 0, so the kept store is the last difference. Forms: the size-only buffer as
+// `(byte *)this + sizeof(*this)` 35; the size-only constructor setting the buffer in its body after a NULL base argument
+// 35; an explicit upcast at the publish 35; `byte *block` 34 (same code); the fixed allocator in a typed local first 38.
 // @retail 0x146a20
 void function_146a20(void)
 {

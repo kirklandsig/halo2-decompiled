@@ -284,6 +284,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // accessor retained; fallback EDX masking and stage/pass/unfused-load homes remain.
 // Round 321: Actual search ordinal as found/exhausted result with twice-used stage/pass values and entry/producer declaration subsets: all eight 141 at 544/544 bytes.
 // Round 321: Original separate candidate result, parameter uses, lookup and mask lifetimes, helpers and body restored; fallback/register homes remain. Stacked notes merged.
+// Round 100 (lane 8, fast): the second and third element pointers bound to `void const *const &` locals 127 (the second
+// element is then unfused as retail), the third alone 128, the second alone 128, the second plus the third's field through
+// a `long const &` 127, the third's field through a `long const &` alone 135.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
