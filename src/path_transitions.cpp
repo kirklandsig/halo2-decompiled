@@ -472,12 +472,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 }
 
 // score 278 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
-// Earlier score 278 (was 278): frame 0x40 and length agree; early root EBX retention, actor ownership and paired-edge float/vector scheduling remain.
+// Earlier (278): frame 0x40 and length agree; early root EBX retention, actor ownership and paired-edge float/vector scheduling remain.
 // Earlier: Frame 0x40 agrees; early root EBX retention and float/vector scheduling remain.
 // Earlier 278 (was 278): frame 0x40 agrees; early pathfinding EBX ownership and float scheduling differ.
 // entry root retention and floating-point scheduling differ;
 // result first 299; surface first 299; vector names 299; vector helper 299;
-// Earlier score 278 (was 278): frame 0x40 and length agree. Retail loads actor_index into EAX at entry (case
+// Earlier (278): frame 0x40 and length agree. Retail loads actor_index into EAX at entry (case
 // 5 tests it first) and so moves pathfinding into EBX (pushed at entry); ours loads actor_index in
 // case 5 and keeps pathfinding in EAX, which re-colours every case; paired-edge float/vector
 // scheduling also differs. Tried: result first 299; surface first 299; vector names 299; vector helper 299;
@@ -536,6 +536,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Round 99 (lane 8): case 5 with the fallback in an `actor_index == NONE || !...` arm 278; the radius test
 // as `radius * 2.f < first_length` 278; `margin = radius * inverse` 278; the half-way branch first 277;
 // `if (!parent_point) break;` before the corner tests 278.
+// Round 40 (reduced-relink screen, base 275): a case-5 `actor` copy, `*= -1.f`, the existing vector3f_scale for
+// the negation, one vertices pointer for case 5, the actor test as a case-5 bool 275 each (same code); case 2
+// before case 5 349; case 5's direction before its position 275 (aligned 198 -> 168: case 5's tails become
+// retail's, case 2 is re-coloured). The corner pointers in all 24 declaration orders: a, b, c, d 290 (1285
+// bytes, aligned 123: actor_index loaded into EAX at entry and pathfinding homed in EBX as retail, case 5
+// exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
+// other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
+// and case 2's declaration orders, compile identically (286-290).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
