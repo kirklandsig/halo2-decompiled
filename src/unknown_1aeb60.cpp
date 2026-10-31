@@ -410,6 +410,9 @@ short *function_e70b0(long unit_index, short *value);
 // the file 49; the action state read into a short value local 49; the random range given file and
 // line as 0x1bf0f0 does 49; a `__forceinline` declaration of 0xe70b0 here 49; an explicit short
 // conversion of the byte argument 49 (identical code each time).
+// Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
+// lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
+// mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

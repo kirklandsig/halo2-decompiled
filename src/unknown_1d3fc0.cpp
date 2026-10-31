@@ -87,6 +87,18 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // i/j subtotal and post-normalization forward/up/both receivers:
 // 157/169/157/157/157/150/160/119. Both receivers retained at 119, 923/922 bytes
 // after the plain whole-image check; all other forms restored. Original math and game calls preserved.
+// Round 10 (one-file LTCG probe and compile-only screen, both reproduce this loop): one helper always gives
+// all four normalizations the same square order (j-square form j,k,i; plain sums reassociate to k,j,i or
+// j,k,i; a statement sum keeps its order), so retail's forward j,i,k with the others k,j,i needs two forms.
+// The helper as `m = k*k; m += j*j; m += i*i;` gives retail's sums for up, up and left (153 alone: forward
+// stays one instruction short, shifting everything after it); a forward-only form summing j,i,k with the
+// products written k, i, j gives retail's j/i registers (xmm4/xmm5) and, with the pointer receiver kept,
+// retail's cross (148; 150 with the header normalize3d for the other three; 153 with normalize3d for
+// forward; an `else m = 0` forward form 148). 144 forward forms (sum form x product statement order x operand
+// order): the operand order never matters, the statement order only permutes the preload registers, and
+// every form preloads k; retail loads only j and i, scales k as `mulss xmm6, [k]` into the reciprocal's
+// register and reloads k on the short-vector path. Division, a temporary vector, the existing scale helper,
+// `>=`/`>` tests, a magnitude return and an else all keep the k preload. Forward's shape is the gate.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

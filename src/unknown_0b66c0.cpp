@@ -220,6 +220,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Env grid (start += string / string + start / named source x count++ or ++count x one or nested
 // tests, 12 forms): start in ECX for its whole life (40) or in EDX (28, 0xb5f10 6) only; retail
 // colours start after the scan's counter and walk (EDI) and still receives it in ECX.
+// Round 118 (lane 5, fast with 0xb5f10/0xb61d0): `string + start` with start renamed to sort after the
+// scan's walk 28 (start in EDX, 0xb5f10 6; names do not move it); with a const start 28 (0xb5f10 6); the
+// length on the left of `>= count + start` 29 (0xb5f10 6). Lead: `string + start` with the count tested
+// before the start 39 gives retail's body colouring (start EDI, walk EDX, counter ECX, the push of EBX
+// around the scan only), but LTCG then passes start in EDI and 0xb5f10 differs (35); the same test order
+// with `start += string` 40 (start back in ECX). Retail tests the start first.
 // Round 42 (lane 1, fast with 0xb5f10/0xb61d0): LTCG passes a parameter in a callee-saved register only
 // when the body leaves it unmodified (0xb61d0 gets `this` in ESI, its modified start in EAX), so retail's
 // ECX -> EDI start is a modified start coloured EDI. A modified local copy of the start (tests, sum and
@@ -539,6 +545,14 @@ bool function_7af40(s_type_99af70 const *address);
 // state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
 // the return); the destination named before the counter 111; the path read into a named source between
 // the counter and the state store 111. VC splits the counter whenever any store precedes the call.
+// Round 118 (lane 5, fast with 0xb40b0/0xb5f10): with retail's endpoint reads, the counter alone in the
+// open arm, an `opened` flag, and the state store and copy under `if (opened)` before `return opened` 104
+// (the only form so far with retail's in-place `inc` and its state store sunk to the call, but the flag
+// lives in EBX across the copy, the address arrives in EAX and 0xb40b0 differs); that flag form on the
+// current endpoint code 107 (counter split again); the counter alone in the open arm with the close and
+// `return false` in an else, then the state and copy 32 (same code: the blocks merge first); `if
+// (!opened) return false;` before the state and copy 32 (same code); retail's reads with the path read
+// once through its own address into a named source between the counter and the state store 111.
 // Round 42 (lane 1, fast with 0xb40b0/0xb5f10): on retail's endpoint reads the two pre-call stores sink
 // together in source order: state, counter, copy 111 (state stored before the counter at the call); the
 // path read once through its own address into a named source between the counter and the state store
@@ -660,6 +674,10 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // before the restore 10; both negative paths returning result 37; only the blocked path returning
 // result 44; result from a second sentinel test after the restore 75; success-first direct negative
 // return 30; error/sentinel else-if chain 50. Original body restored.
+// Round 118 (lane 5, fast): `if (sent != -2) goto return_exit;` then the restore and a second goto 10
+// (same code); the would-block arm ending in its own `goto return_exit` 10 (same code); the count as
+// `written ? send : 0` 44; `result = true` after the partial-position update 30; `sent = 0` then
+// `if (written)` 47. Every same-CFG spelling keeps the restore exit ahead of the shared false exit.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {
