@@ -250,6 +250,12 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
+// Round 30 (lane D): no better form found. The permuter ran 50 tries and its best was 258 against the
+// 261 baseline (three points, below the retention margin), and two flag reads were tried: bit 5 through
+// a byte bitfield view and the flag byte's mask tested directly both score 275, so the word bitfield
+// view stays. What still differs: our frame is 0x1c against retail's 0x18, the current and entry roles
+// are rotated between EDI and ESI, the next-group base is retained in an extra spill, and the policy
+// and availability bytes take the two frame slots the other way round. Original body kept.
 // score 261 (was 261): Frame 0x1c versus 0x18; current/entry/status homes and next-group spill remain.
 // flag 1 read through a word bitfield view gives retail's load-and-shift;
 // frame 0x1c versus 0x18 and the current/entry roles and next-group spill still differ.

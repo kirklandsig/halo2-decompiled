@@ -582,6 +582,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// Round 30 (lane D): assigning the root-location result to the destination, and keeping it in a local
+// instead, both score 279; a local copy of the sound type for the type-1 test scores 289, the flag test
+// through the flag0 bitfield and the type mask shifted as an unsigned 1 both score 279 with the same
+// code, and the mask shifted the other way scores 285. A build without the type shift has frame 0x88,
+// so the extra dword is the spill of the literal 1 that the flag test, the type-1 test and the shift
+// share. What still differs: the frame stays 0x8c against retail's 0x80 and the datum/tag homes differ.
+// Original body kept.
 // score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Earlier 280 from 280: Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain. BLOCKED-BY 0xba300.
 // Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain.
