@@ -272,6 +272,9 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 241: early weighted output with long/dword/short/word contribution counts
 // 275/275/276/276; before getter 275/275/276/276. All result-storage diagnostics restored;
 // original Boolean, separate constructors, frame 0x30/0x2c and getter/ordinal differences remain.
+// Round 460: Positive admission bool/byte/short/long, then paired positive/nonzero admissions,
+// 207/207/207/207/343/343/337/337. Original direct frame tests, constructors and body restored;
+// frame 0x30/0x2c, weighted getter and ordinal homes remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
