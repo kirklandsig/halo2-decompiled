@@ -171,6 +171,9 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
+// score 51 (was 61): the type-6 test now sets a named exclusion flag and the 0xbf9a0 probe is inverted, so
+// the 0x14a8e0 return is laid out after the requery as in retail; VC still threads the flag on every edge
+// (retail keeps it in BL) and the byte result is converted with setne.
 // score 61 (was 61): VC threads the exclusion flag on every edge (retail keeps it in BL: `mov bl, 1;
 // jmp` in the scenery arm, `xor bl, bl` before 0xbf9a0 and `test bl, bl` again after it, so
 // &triangle->c takes EDI and the collision lives in its parameter slot: stored after the requery,
@@ -297,18 +300,26 @@ bool function_14b120(s_surface_query_source source, void *surface)
     if (object_index != NONE)
     {
         byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-        if (object[0xaa] == 6 && function_10a0b0(object_index) != 2)
-            return result;
-        if (function_bf9a0(object_index, (long *)((byte *)triangle + 0xc),
+        bool excluded = false;
+        if (object[0xaa] == 6)
+        {
+            excluded = function_10a0b0(object_index) != 2;
+        }
+        if (excluded)
+            return false;
+        if (!function_bf9a0(object_index, (long *)((byte *)triangle + 0xc),
             (long *)((byte *)triangle + 0x10)))
+        {
+            found = function_1697c0(0x4800005, &collision->point, g_4687bc, NONE, NONE,
+                (s_collision_result_1697c0 *)local_collision);
+            source.collision = local_collision;
+            collision = (s_structure_collision_result const *)source.collision;
+        }
+        else
         {
             return function_14a8e0((s_structure_collision_result const *)source.collision,
                 *(long *)((byte *)triangle + 0xc), triangle);
         }
-        found = function_1697c0(0x4800005, &collision->point, g_4687bc, NONE, NONE,
-            (s_collision_result_1697c0 *)local_collision);
-        source.collision = local_collision;
-        collision = (s_structure_collision_result const *)source.collision;
     }
     if (found)
         result = structure_get_lightmap_triangle(collision, triangle);
