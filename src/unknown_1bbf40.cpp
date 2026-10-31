@@ -552,6 +552,16 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // byte) special = true; else { special = false; scan }` 200 (872 bytes, flag memory-only); the vehicle type read
 // into a short local 47 (same code); `& (actor->unknown268 == true)` 47 (same code); `special = false; if (type
 // == 6 && byte) special = true; else { scan }` 202.
+// Round 117 (fast): `special = false; if (type == 6 && byte) special = true; if (!special) { scan }` 202, with
+// `special = false` at the scan's start 200; the bitwise def with that false 68; `special = byte != 0; if (type
+// != 6) special = false;` with it 126; `special = false; if (type == 6) special = byte != 0;` with it 97 (861
+// bytes, aligned 14: NONE in EBX and the scan as retail; left the setne def stored to the slot on the special
+// path, the tail reading the slot, and the 10.0 temp's homes).
+// Round 31 (lane 13, fast): the special path as the else of `if (type != 6 || !byte) { special = false;
+// scan }` 200 (872 bytes); preset true with that `||` test 187; `if (special == false)` 47 (same code); the
+// bitwise operands field first 47 (same code); `special = false; if (type == 6 && byte) special = true;`
+// then `if (!special) { scan }` 202 (872 bytes). A compile-only build of this file alone puts NONE in EDI
+// (not predictive for this function).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

@@ -703,12 +703,31 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // bytes: retail's copy prologue, but the mask read folds into the test), with that the bit-first mask test,
 // a distinct copy index name or a mask local in the loop 108 each. Diagnostic on the 46 form: the 0x49c8
 // argument as a constant gives EBX/ESI/EDI with only the copy prologue (count spill before the leas) left, 25.
+// Round 19 (lane 2, fast with the inlined callees): the summary read directly under its flag (no
+// getter) 55; the summary as 0x72330's live-and-flag ternary 131; the opening test in conjunctive form
+// 55; the player index declared at the function top 55; an explicit `continue` arm 55. Diagnostics: the
+// summary as a constant NULL gives the session EBX (129 overall); the summary's address
+// taken keeps ESI (55, same code), so the two summary field reads, not its stack home, tip the session.
 // Round 30 (lane 13, fast): the call's variant address and 0x49c8 value both named before the player
 // loop 130 (493 bytes): the session moves to EBX with retail's index ESI and player EDI, but the value
 // takes a stack slot (frame 0xec0); both named after the summary getter 71, before the member count
 // read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
 // test); the value alone before the loop 137; the variant alone before the member count 52. Named
 // copies inside the loop or a `long const *` to the value are propagated back (session ESI).
+// Round 117 (lane 6, fast with the inlined callees): player loop bounded by `i != 16` 56; player index declared at
+// function scope 55 (same code); the team argument as plain `i` 55 (same code); `dword` player index 56; `short`
+// player index 128 (492 bytes).
+// Round 31 (lane 13, compile-only first-pass harness): 0x6e500 and 0x72700 both match once this function
+// takes the session in EBX (see their notes), so this register is all that blocks them. Diagnostics that
+// give retail's EBX/ESI/EDI: one more in-loop index use (`value49c8 + i`), the variant or summary argument
+// NULL, the 49c8 argument replaced by a player field. The session cannot take EDI (live across `rep stosd`),
+// so whichever of session and loop index ranks first takes ESI; retail's index outranks the session by less
+// than one call-block use. No flip from: typed member-machine field, typed machine-list struct, both (6
+// forms); the preset stored pair with or without the live test, with the summary moved or the variant named
+// (10); 250 random combinations of 12 natural dimensions (opening, buffer/memset order, summary position,
+// count local, index scope, mask/slot spellings, nested tests, `players + i`, nested tail); const parameter,
+// function-scope or shared index, the size macro (5). Frame alignment comes from the players memset (no
+// effect). Flags: only /O1 and /Os give EBX, with different code.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

@@ -221,6 +221,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 238: reused active flag/active gain/inactive gain field lvalues, seven
 // subsets 886 each; all with flag binding at its first update 886. Original
 // field accesses, helpers, scans and complete body restored.
+// Round 249: Complete sound/portal/default table snapshots, masks 1..7,
+// 970/937/973/948/982/924/987; all with query metadata before its producer 988.
+// Original observations and complete body restored; exact-length 924 has the wrong frame.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

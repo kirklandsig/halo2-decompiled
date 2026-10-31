@@ -575,6 +575,13 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 	return local_0;
 }
 
+// score 90 (was 141): the object-plus-radius sum is written at both of its uses, the timing
+// default is a ternary, and the heading vector is declared ahead of the object index; the frame is
+// 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
+// retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
+// adds the field first), the length and projection stack slots (retail's are four bytes higher),
+// the object lookup against the vector copies, and the timing call's argument loads and the
+// request stores.
 // score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
@@ -631,6 +638,17 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 40 (on the 95 form): 0x110ab0 swapped for another stdcall bool(long) callee 96 (same rotation, so it
 // is the caller's); guard as an early return 95, inner guard part as an early return 95; the 0x1e4a50 element
 // kept as a byte pointer with its +4 radius read in both sums 208.
+// Round 31 (lane D): score 89 (was 90): the request stores are ordered as retail orders them (the
+// object index into the arguments, then the direction, then the request type), which is the only
+// change; the frame is 0x54 and the length is retail's 963. Still differs in the 0x110ab0 argument
+// register (ECX where retail uses EAX) and the scratch-register rotation after it, the object lookup
+// against the vector copies, the sum's operand order and its stack slot (retail's is four bytes
+// higher), the length's stack slot, the timing call's argument loads and the projection's stack slot.
+// Measured this round on this body: the request stores as short, long, type 89, long, type, short
+// 89, type, short, long 90, short, type, long 90, type, long, short 90; the sum's operands in the
+// other order 89 (MSVC keeps the radius first either way); the sum named inside the projection test
+// 222 and named in the outer scope 221; the timing locals hoisted out of their block 89; the object
+// lookup before the vector copies 94 (964 bytes). All restored.
 // Round 19 (lane 13): the radius read early and accumulated (`radius += size` or `radius = size + radius`)
 // after the projection test, with the else-arm default 211/211 (the read is still forwarded and the
 // 0x1e4a50 call sinks below the test), with the early default 139; the else-arm default with the
@@ -657,9 +675,10 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 	if (local_0->unknown5ac != NONE && local_0->unknown5b0 == 2 &&
 		!function_110ab0(local_0->unknown018) && local_0->unknown5d0)
 	{
-		long local_1 = local_0->unknown5ac;
-		s_slot_object_view *local_2 = object_get(local_1);
 		vector3f local_3 = local_0->unknown5ec;
+		long local_1;
+		local_1 = local_0->unknown5ac;
+		s_slot_object_view *local_2 = object_get(local_1);
 		local_3.k = 0.f;
 		vector3f local_4 = local_0->unknown290;
 		local_4.k = 0.f;
@@ -669,22 +688,20 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 			heading_length = function_30bf0(&local_4);
 		if (heading_length > 0.f)
 		{
-			real local_23 = 0.4f;
 			real local_6 = *(real *)((byte *)function_1e4a50(local_0->unknown054) + 4);
-			real local_9 = local_2->unknown03c + local_6;
 			vector3f local_7;
 			vector3d_from_points3d(&local_0->position, &local_2->unknown030, &local_7);
 			real local_8 = function_255741(&local_7, &local_3);
 			if (local_8 > 0.f)
 			{
-				if (local_9 + local_5 > local_8)
+				if (local_2->unknown03c + local_6 + local_5 > local_8)
 				{
 					vector3f local_10;
 					local_10.i = 0.f - local_3.j;
 					local_10.j = local_3.i;
 					local_10.k = 0.f;
 					real local_11 = local_7.j * local_10.j + local_7.i * local_10.i + local_7.k * local_10.k;
-					if (fabs(local_11) < local_9 * 0.6f)
+					if (fabs(local_11) < (local_2->unknown03c + local_6) * 0.6f)
 					{
 						s_slot_object_view *local_12 = object_get(local_0->unknown018);
 						if (local_12->type == 0)
@@ -725,14 +742,12 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 							}
 							short local_19, local_21;
 							real local_20, local_22;
-							if (unit_animation_get_timing(local_0->unknown018, 0x7000101, local_18, &local_19, &local_20, &local_21, &local_22))
-								local_23 = local_20 * 1.33f;
-							if (local_23 > local_8)
+							if ((unit_animation_get_timing(local_0->unknown018, 0x7000101, local_18, &local_19, &local_20, &local_21, &local_22) ? local_20 * 1.33f : 0.4f) > local_8)
 							{
 								s_unit_request local_24;
-								local_24.type = 0x29;
-								*(short *)local_24.arguments = local_17;
 								*(long *)(local_24.arguments + 4) = local_0->unknown5ac;
+								*(short *)local_24.arguments = local_17;
+								local_24.type = 0x29;
 								function_e6900(local_0->unknown018, &local_24);
 							}
 						}

@@ -283,6 +283,8 @@ void function_245400(s_source_245400 const *source, long index,
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
 // home and the side bytes still differ.
+// Earlier at 203 (MiniMax H): no new in-file form moved it; retail declares 0x245540 with its
+// matrix and source the other way round, and that declaration and its call live in src/unknown_245850.cpp.
 // Earlier at 203 (from 203): the frame is 0x24 against retail's 0x2c and the source receiver's home
 // differs; retail declares 0x245540 with its matrix and source the other way round, and that
 // declaration and its call live in src/unknown_245850.cpp.

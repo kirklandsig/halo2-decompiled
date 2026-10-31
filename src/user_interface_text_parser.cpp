@@ -530,6 +530,13 @@ done:
 // for a missing definition on the current form 77 (194 bytes); the default case copying and
 // returning 32 (same count); the natural form with the tag read before the variant call 57 (171
 // bytes) and just before the translator 45 (171 bytes).
+// Round 9 (lane 17, fast): a compile-only /O1 screen of 128 combinations (tag/variant/name declaration
+// orders, retail or numeric case order, `goto done` or a NONE-guarded call, shared or repeated copy,
+// `if (globals)` or `if (!globals) goto done`, the buffer named in a local or not) keeps 0x55c6e4 in a
+// register on at least one path in every one. Real: tag first, NONE guard, early goto and a named
+// buffer 57 (171 bytes); the name declared before the tag with a named buffer 54 (173 bytes); the name
+// first, NONE guard and repeated copy 68 (189 bytes); tag first, repeated copy and early goto 44 (178
+// bytes); numeric order, NONE guard, repeated copy, early goto and a named buffer 72 (189 bytes).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

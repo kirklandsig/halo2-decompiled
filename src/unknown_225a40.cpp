@@ -97,6 +97,36 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// score 16 (was 16): this round: six more shapes of the case-0 entry address (the scaled offset in
+// a local computed before the tag lookup, the definition in a local, the entry pointer in a local
+// taken from the shared helper, the entry address as a byte pointer, the unsigned scaled offset,
+// and the entry pointer without the helper) all compile to the same folded bytes at 165 bytes; two
+// more shapes of the impulse helper (the parameter address in a named pointer, the index stored
+// before the call) either move the index store ahead of the call or change nothing. Retail's
+// matched 0x225df0 reads the same entry address in the folded form (`mov eax, [edi + ecx + 0x3c]`)
+// while retail's 0x225ab0 materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`), so
+// the two retail functions differ in the addressing they picked. Still the folded member load
+// against retail's materialised entry address, the tag mask before the index scaling, and the
+// parameter address copied through EDX where retail copies it through EAX.
+// score 16 (was 16): this round: four more shapes of the case-0 entry address as an integer sum
+// with the index term first (the entry pointer taken from the sum, the label read through the
+// integer address, the entry pointer in a local) and the base term first; all compile to the same
+// folded bytes at 165 bytes. Still the folded member load against retail's materialised entry
+// address, the tag mask before the index scaling, and the parameter address copied through EDX
+// where retail copies it through EAX.
+// score 16 (was 16): this round's nine more shapes for the case-0 entry address: the index
+// term first, the base term first, the two operands swapped, the base in a local, the scaled
+// index in a local, the scaled index and the base in locals, the entry pointer in a local, the
+// address computed as an integer and the label read through that integer; all of them compile
+// to the same folded bytes at 165 bytes. Still the folded member load against retail's
+// materialised entry address, the tag mask before the index scaling, and the parameter address
+// copied through EDX where retail copies it through EAX.
+// score 16 (was 16): the entry index scaling and the tag mask hoisted out of the switch, the
+// scaled index as a local and the sum written out all compile to the same folded bytes; the
+// permuter ran to its time limit (78 tries, best equal to the baseline) and produced no
+// candidate. Still the folded member load against retail's materialised address, the tag mask
+// before the index scaling, and the parameter address copied through EDX where retail copies
+// it through EAX.
 // score 16 (was 16): retail materialises the entry address (`add eax, [edx + 0x70]`,
 // `mov eax, [eax + 0x3c]`) and scales the entry index before the tag mask, our build folds
 // the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`),

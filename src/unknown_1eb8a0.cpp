@@ -271,6 +271,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // direction/sample residence and coefficient schedules remain.
 // DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
 // scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
+// all with the activation workspace declared at entry 642. Original initializers and complete body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

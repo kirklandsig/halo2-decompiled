@@ -448,13 +448,13 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
 
 real g_557c70;
 real function_30bf0(vector3f *v);
-void function_c7840(vector3f const *desired, vector3f *current, transform4x3f const *frame, real rate,
+void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate,
     vector3f *velocity, real const *limits, real max_speed, real acceleration);
 
-// score 4 (was 4): the dot product's last term still loads the facing component into
-// the register where retail loads the forward one, and the call to 0xc7840 sets up its
-// null frame argument before the address of the desired vector where retail does it after.
-// The call-setup order follows the unmatched callee 0xc7840 (BLOCKED-BY 0xc7840). The dot
+// score 2 (was 4): the dot product's last term still loads the facing component into
+// the register where retail loads the forward one. Before round 117 the call to 0xc7840 also set up its
+// null frame argument before the address of the desired vector where retail does it after;
+// the call-setup order followed the unmatched callee 0xc7840 (fixed by its parameter order). The dot
 // term flips because the then-arm's struct copy of the forward vector counts as a later
 // read of its first component (compile-only: copying another vector there removes the flip,
 // reading forward.k there moves it to the k term); copying from a re-fetched object fixes the term but
@@ -466,6 +466,12 @@ void function_c7840(vector3f const *desired, vector3f *current, transform4x3f co
 // forward/facing values 255/232; facing plus default 227; forward plus default 253;
 // const limits 4; control value 237; control plus default 240; terms in i, j, k order 4;
 // cross product with plain up/forward reads 8/6/10 (both).
+// Round 117: 0xc7840's parameters as (frame, current, desired, ...), the order retail's setup at all four
+// calls implies, 4 -> 2 (kept). Then: a forward pointer before the if for the copy 203, for the dot and the
+// copy 203; the dot through dot3f 4; `!(dot <= threshold)` 175; settings declared before the object 4.
+// Compile-only diagnostics: every dot and copy spelling keeps the flip; it follows whichever forward
+// component the then-arm reads, and goes away only with `facing` declared after `threshold` (no retail
+// evidence for that order).
 // @retail 0x1faf80
 bool function_1faf80(vector3f *facing, long object_index, void const *settings_pointer,
     vector3f const *control, real threshold, real *turn)
@@ -520,7 +526,7 @@ bool function_1faf80(vector3f *facing, long object_index, void const *settings_p
     if (settings[9] == 0.0f)
         *forward = desired;
     else
-        function_c7840(&desired, forward, NULL, g_510c54->rate, (vector3f *)object->unknown094, limits, settings[8], settings[9]);
+        function_c7840(NULL, forward, &desired, g_510c54->rate, (vector3f *)object->unknown094, limits, settings[8], settings[9]);
     return true;
 }
 
@@ -553,7 +559,7 @@ void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *t
         byte *settings = *(byte **)(state + 8);
         real limits[4] = { -3.1415927410125732f, 3.1415927410125732f, -3.1415927410125732f, 3.1415927410125732f };
         vector3f *velocity = (vector3f *)(ticks + 1);
-        function_c7840(g_4687b0, up, NULL, g_510c54->rate, velocity, limits,
+        function_c7840(NULL, up, g_4687b0, g_510c54->rate, velocity, limits,
             *(real *)(settings + 0x88), *(real *)(settings + 0x8c));
         vector3f axis = *velocity;
         real angle = function_30bf0(&axis) * g_510c54->rate;
