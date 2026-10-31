@@ -654,6 +654,9 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // registers rotated: the bottom sum copies y0 instead of adding into height);
 // chained corner stores 86; the bottom as `height += bounds->y0` 23; corners as a
 // real[4][2] array 8; const extents 8.
+// KIMI1 r94: width/height output helper 86; height-first output helper 85;
+// ordinary inline extents helper 86; returned point extents 118; bounds corner
+// helper 86; reversed corner helper 86; width-only and height-only helpers 86 each.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

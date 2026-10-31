@@ -416,6 +416,10 @@ extern "C" void _ReadWriteBarrier(void);
 // pool pointer used by the release call gives 158; the length stays 473 in all of them. Still
 // the frame of 0xc against retail's 0x14, retail's second home for the pool pointer and its
 // register-held datum index.
+// Round 250: Ordinary shared traversal with remaining-tick/control receiver subsets on three/four-
+// field iterators 151/152/151/151/152/151; complete receivers with positive callback completion
+// 166/166. Four-field frame 0x10 still lacks the second pool home. All matched controls survive;
+// original body, include and private helpers restored.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

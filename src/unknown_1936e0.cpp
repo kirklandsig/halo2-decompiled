@@ -158,6 +158,8 @@ __forceinline void variant_string_get(long tag_index, long string_handle, word *
 /* fills a variant: its type and settings, its nine names and descriptions
    and its tables */
 // score 30 (was 172): Frame 0x408 and language/string homes agree; initial setup order and point-copy homes remain.
+// Coordinator review (KIMI1 r94): the 13 below needs a local copy of the points parameter (a duplicate local, kept
+// only with a match); the do-loop alone stays 30. Body back to its earlier form.
 // Intermediate ownership does not remove the tag spill. Shared output cursor 221; native array cursors 229;
 // independent string counters 221; direct countdown points copy 226;
 // shared cursor, independent counters and countdown copy 194.
@@ -217,6 +219,11 @@ __forceinline void variant_string_get(long tag_index, long string_handle, word *
 // still match), the same with the plain field_8 read 220 (three callers lost).
 // Round 146: type declared second and field_8 by value (which 0x193ba0 and 0x193c70 need) 30;
 // the by-value field_8 needs no address-taken read.
+// KIMI1 r94: immutable points parameter with a local input cursor 13 (plain confirmed);
+// early/swapped input cursor 142 each; source cursor with indexed output 219, with or
+// without the immutable parameter; source/both header increments 30 each before the
+// cursor repair; points do-loop 30 before it; direct string countdowns and use-stepped
+// cursors 13 each (same code); scaled tag offset 220.
 // @retail 0x1936e0
 void function_1936e0(s_built_variant *variant, long type, s_variant_field_8 field_8, long description_string, long field_5a0, long const *points, long field_59c, long name_string)
 {
