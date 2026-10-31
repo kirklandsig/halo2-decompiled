@@ -113,6 +113,10 @@ void function_213970(void);
 // the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
 // between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
 // the string clear after the enable byte 142; the two session words cleared last 131.
+// Round 30 (lane 14, fast; still BLOCKED-BY the separate global definitions): the language local declared at
+// the top 131; the last block word (g_55c02c) cleared first 131; the string and request clears after the
+// scalar zero stores 131; the adjacent bool cleared just before the string clear 145 (242 bytes); block A's
+// NONE store between block A's clears and block B's first clear 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
