@@ -1314,6 +1314,11 @@ void function_1e3b60(long actor_index);
 // and 0x1c83c0 stop matching); in 0x262ba0, which spills the actor because a loop bool
 // takes EBX: 0x2641c0 inlinable 26 (0x264210 lost), plain maximum word 26, call result
 // only clearing the sample flag 26, sample/update flags at the loop top 26.
+// Round 21 (m3 lane 2, fast): in 0x262ba0 the `update` bool takes EBX (the only callee-saved
+// byte register) across the 0x2640c0/0x2641c0 calls, so the actor stays a stack parameter; retail
+// keeps the three flags in stack bytes. Tried there: sample/update as two assignments 26 (0x262ba0
+// 424), declared after the node call 26, update declared first 26 (422), sampled_one before
+// maximum 26, the update test nested 26.
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)

@@ -259,6 +259,12 @@ done:
 }
 
 // score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
+// Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
+// in a named engine local 32, with the tag read after it 32; on the one-copy form the output local 54
+// and the engine local 54 (the buffer address still hoisted into EBX at the definition test). In all
+// of retail's size-built game code only this function and unmatched 0x2ca284 both push an address
+// constant and load it into a register (0x2ca284 has calls between its uses), so no matched sibling
+// shows the idiom.
 // (saved in the prologue) for its two uses, the translator's pushed argument and the copy's
 // EAX source; retail pushes it as an immediate and moves it into EAX again. VC7.1 /O1 always
 // keeps a twice-used address constant in a callee-saved register when one use is on every
