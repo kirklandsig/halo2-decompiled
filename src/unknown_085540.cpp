@@ -865,6 +865,11 @@ bool function_1995a0(const byte *source, dword source_size, byte *destination, l
 // the first partial memset 112; explicit field stores 118; aggregate `= { 0 }` 9; named-type value
 // initialization 17; early data address with two partial memsets 18; header outside the loop 18;
 // named positive-count test 18; terminal size memset 18. All restored because none matched.
+// Round 137 (lane 4), each with the named data pointer (2): `header.offset = offset;` before the size in both arms
+// 56 (the offset stores merge into the head); the offset stored once in the head before the kind 126 (414 bytes;
+// stores keep program order); two partial memsets 18 again (head store order is retail's, but the zero is a shared
+// constant: `cmp eax, ecx` and the terminal `mov word [esp+0x16], cx`), with `remaining >= 1` 21, `0 < remaining`
+// 18; `= { 0 }` in place of the memset 9 (409 bytes); permuter 2.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {

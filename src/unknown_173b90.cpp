@@ -550,6 +550,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Helper shapes (row statements jki/kij, unconditional copy, copied parameter, component locals, row locals,
 // `+=` rows), inline datum getters and index types (long/dword/int/short/word, pointer arithmetic), each in all
 // four states: no form gives retail's left/forward/up row i with forward/up/left rows j and k.
+// Round 137 (lane 4): scale first 40; indexed definitions 115, with scale first 113 (1136 bytes: every difference
+// before the first rotation is retail's, the rotations differ from the helper copy's store order on, ours i first,
+// retail j first); on that, the particle copies swapped 121, declared before the particle lookup and assigned after
+// it 113 (same code).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
