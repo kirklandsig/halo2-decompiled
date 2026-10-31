@@ -572,6 +572,13 @@ bool sound_driver_voice_create_buffer(
 // globals local dropped, voice pointer, natural stack locals, bool/flags spellings and widths, a second
 // test of the 3D flag: the voice index or input mixbin always outranks the 3D flag unless the result is
 // a separate long. Play first keeps BL whatever else changes.
+// Round 118 (lane 5, fast with 0x191420, plain check): the anonymous storage struct (with its union and
+// reference aliases) replaced by plain locals: the six pairs and the mix bins at the block top, the
+// first descriptor in its own block and the 3D pairs before the 3D descriptor 71 (retail's 0x80 frame
+// and every slot offset; kept). Plain locals with both descriptors at block level 132 (frame 0x70); the
+// first descriptor at block level after the pairs and mix bins 110 (frame 0x98); the count stored before
+// the descriptor block 71 (scheduling only); the 3D buffer as a force-inline helper taking play, with its
+// own pairs, mix bins and descriptor 104 (frame 0x88, play still BL).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -586,47 +593,43 @@ short sound_driver_voice_new(
 		s_sound_driver_voice &voice = globals->voices[voice_index];
 		bool play = (flags & 2) != 0;
 		bool three_d = flags & 1;
-		struct
-		{
-			DSMIXBINS mixbins;
-			union { DSBUFFERDESC first; DSMIXBINVOLUMEPAIR pairs_second[5]; };
-			DSBUFFERDESC second;
-			DSMIXBINVOLUMEPAIR pairs_first[6];
-		} storage;
-		DSBUFFERDESC &description = storage.first;
-		memset(&description, 0, sizeof(description));
+		DSMIXBINVOLUMEPAIR pairs[6];
+		DSMIXBINS mixbins;
 
-		globals->voice_count = voice_index + 1;
-		description.dwSize = sizeof(description);
-		description.dwFlags = DSBCAPS_FXIN2;
-		description.dwInputMixBin = input_mixbin;
-		if (SUCCEEDED(IDirectSound_CreateSoundBuffer(globals->direct_sound, &description, &voice.submix, NULL)))
 		{
-			DSMIXBINVOLUMEPAIR (&pairs)[6] = storage.pairs_first;
-			DSMIXBINS &mixbins = storage.mixbins;
+			DSBUFFERDESC description;
+			memset(&description, 0, sizeof(description));
 
-			IDirectSoundBuffer_SetVolume(voice.submix, 0);
-			pairs[0].dwMixBin = 0;
-			pairs[0].lVolume = 0;
-			pairs[1].dwMixBin = 1;
-			pairs[1].lVolume = 0;
-			pairs[2].dwMixBin = 2;
-			pairs[2].lVolume = 0;
-			pairs[3].dwMixBin = 3;
-			pairs[3].lVolume = 0;
-			pairs[4].dwMixBin = 4;
-			pairs[4].lVolume = 0;
-			pairs[5].dwMixBin = 5;
-			pairs[5].lVolume = 0;
-			mixbins.lpMixBinVolumePairs = pairs;
-			mixbins.dwMixBinCount = 6;
-			IDirectSoundBuffer_SetMixBins(voice.submix, &mixbins);
-			IDirectSoundBuffer_Play(voice.submix, 0, 0, 0);
+			globals->voice_count = voice_index + 1;
+			description.dwSize = sizeof(description);
+			description.dwFlags = DSBCAPS_FXIN2;
+			description.dwInputMixBin = input_mixbin;
+			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(globals->direct_sound, &description, &voice.submix, NULL)))
+			{
+				IDirectSoundBuffer_SetVolume(voice.submix, 0);
+				pairs[0].dwMixBin = 0;
+				pairs[0].lVolume = 0;
+				pairs[1].dwMixBin = 1;
+				pairs[1].lVolume = 0;
+				pairs[2].dwMixBin = 2;
+				pairs[2].lVolume = 0;
+				pairs[3].dwMixBin = 3;
+				pairs[3].lVolume = 0;
+				pairs[4].dwMixBin = 4;
+				pairs[4].lVolume = 0;
+				pairs[5].dwMixBin = 5;
+				pairs[5].lVolume = 0;
+				mixbins.lpMixBinVolumePairs = pairs;
+				mixbins.dwMixBinCount = 6;
+				IDirectSoundBuffer_SetMixBins(voice.submix, &mixbins);
+				IDirectSoundBuffer_Play(voice.submix, 0, 0, 0);
+			}
 		}
 		result = voice_index;
 		if (three_d)
 		{
-			DSBUFFERDESC &buffer_description = storage.second;
+			DSMIXBINVOLUMEPAIR buffer_pairs[5];
+			DSBUFFERDESC buffer_description;
 			memset(&buffer_description, 0, sizeof(buffer_description));
 
 			buffer_description.dwSize = sizeof(buffer_description);
@@ -634,20 +637,17 @@ short sound_driver_voice_new(
 			buffer_description.dwInputMixBin = input_mixbin;
 			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(SOUND_DRIVER_GLOBALS->direct_sound, &buffer_description, &voice.buffer, NULL)))
 			{
-				DSMIXBINVOLUMEPAIR (&pairs)[5] = storage.pairs_second;
-				DSMIXBINS &mixbins = storage.mixbins;
-
-				pairs[0].dwMixBin = 6;
-				pairs[0].lVolume = 0;
-				pairs[1].dwMixBin = 8;
-				pairs[1].lVolume = 0;
-				pairs[2].dwMixBin = 7;
-				pairs[2].lVolume = 0;
-				pairs[3].dwMixBin = 9;
-				pairs[3].lVolume = 0;
-				pairs[4].dwMixBin = 10;
-				pairs[4].lVolume = 0;
-				mixbins.lpMixBinVolumePairs = pairs;
+				buffer_pairs[0].dwMixBin = 6;
+				buffer_pairs[0].lVolume = 0;
+				buffer_pairs[1].dwMixBin = 8;
+				buffer_pairs[1].lVolume = 0;
+				buffer_pairs[2].dwMixBin = 7;
+				buffer_pairs[2].lVolume = 0;
+				buffer_pairs[3].dwMixBin = 9;
+				buffer_pairs[3].lVolume = 0;
+				buffer_pairs[4].dwMixBin = 10;
+				buffer_pairs[4].lVolume = 0;
+				mixbins.lpMixBinVolumePairs = buffer_pairs;
 				mixbins.dwMixBinCount = 5;
 				IDirectSoundBuffer_SetMixBins(voice.buffer, &mixbins);
 				voice.unknown00 = input_mixbin;
