@@ -241,6 +241,8 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // compile-only but changes the angle reads (359 fast); the existing direction_from_angles on the copied angles
 // with yaw turned and pitch zeroed 371, on the source angles and the turned copy 334 (1885 bytes, the x87 order
 // differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
+// Round 217: Complete native output value assignments at original zero initialization, seven subsets,
+// then all with readonly tag receiver: 539/539/546/533/564/564/599/599. Original library clears and output lifetimes restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

@@ -1410,6 +1410,8 @@ struct s_1ba091
 // the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
 // the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus
 // `byte specified = flags & 0x20` (retail's masked byte, spilled to F+3) 238.
+// Round 217: Mirrored read-only root equality with member/original payload and bool/byte/word/long
+// comparison-result domains: 198/198/198/198/202/202/201/201. Original equality, payload and carriers restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

@@ -574,7 +574,7 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 	settings->mixbins.dwMixBinCount++;
 }
 
-// score 328 (was 328): The 0x130 versus 0x94 frame and repeated conversion coalescing remain; restore the full opening body.
+// score 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
 // Earlier: frame 0x130 versus 0x94; our LTCG CSEs and hoists the identical 0x12aff0(-64, 0, -64)
 // conversions (6 calls versus retail's 15; BLOCKED-BY 0x12aff0: retail's callers treat it as opaque).
 // Round 75: SetMixBins (retail calls 0x37c5e4) for SetMixBinVolumes 449 (kept); the existing 0x2216f0 with a
@@ -688,12 +688,15 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // hoists its 15 identical (-64, 0, -64) calls, which ours hoist out of the loops (BLOCKED-BY 0x12aff0).
 // Round 248: initialized descriptor role-name permutations and two routing-table name positions
 // 320 each (fast control 320, full 328); original complete body restored.
+// Round 217: Complete descriptor value initialization at declaration and by assignment, first/second/
+// third/all for each: 307/314/314/299/307/314/314/299. Unselected value-production forms restored.
+// Selected native descriptor value production: 2aeb20-t04; original scopes and game-call inputs retained.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
 	long const muted_mixbins[4] = {6, 8, 7, 9};
-	s_mixbin_settings mixbins = {0};
-	s_mixbin_settings second = {0};
+	s_mixbin_settings mixbins = s_mixbin_settings();
+	s_mixbin_settings second = s_mixbin_settings();
 
 	m_buffers = buffers;
 	memmove(&m_settings, settings, sizeof(m_settings));
@@ -720,7 +723,7 @@ void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effe
 	IDirectSoundBuffer_SetVolume(m_buffers->buffer1c, -6400);
 
 	{
-		s_mixbin_settings third = {0};
+		s_mixbin_settings third = s_mixbin_settings();
 		sound_mixbins_initialize(&third);
 		for (word mixbin_index = 0; mixbin_index < 4; ++mixbin_index)
 			c_sound_effects::add_send(muted_mixbins[mixbin_index], 0, -64.0f, &third);

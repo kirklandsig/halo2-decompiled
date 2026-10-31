@@ -3276,6 +3276,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // lifetimes restored; mode-bound register and state expansion remain.
 // Round 451: Byte/signed-byte success crossed with bool/byte/signed-byte/word/long rescale storage:
 // 1194/1194/1194/1194/1202/1202/1187/1187. Original status carriers restored.
+// Round 217: Complete span/scaled-endpoint/center-term expression boundaries, seven subsets,
+// then all with immutable normalization reciprocal: 1083/1083/1083/1083/1083/1083/1083/1083. Original arithmetic-expression spellings restored.
+// Selector 3 and full-word alpha, exact-only sampler/upper-default/live-field subsets: 1085/1092/997/1102/1122/1147/1124/1170. No nonmatching selector-3 form retained.
+// Clean upper-default clamp with original/full-word alpha: 1099/1100.
+// All clean forms restored too; no eligible gain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
