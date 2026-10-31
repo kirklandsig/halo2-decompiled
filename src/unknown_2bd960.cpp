@@ -1507,6 +1507,9 @@ struct s_territory_tag
 // a ternary 41; placement declared first 24; tag index at function scope 48; placement at
 // function scope 24; the test without the short cast 51; player declared at the block top
 // 24; the created object in its own local 24; an early NONE return 62.
+// Round 56: inline definition 24; copy helper with masked player index 43, with
+// marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
+// index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

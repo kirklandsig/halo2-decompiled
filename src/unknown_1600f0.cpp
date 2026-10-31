@@ -8,6 +8,8 @@
 #include "globals.h"
 #include "engine_peer.h"
 #include <string.h>
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #define FLOOR(n, floor) ((n) < (floor) ? (floor) : (n))
@@ -1005,7 +1007,7 @@ struct s_game_engine_globals_connections_view
 };
 
 /* builds a player's row of the scoreboard at a position */
-// score 73 (was 170): everything before +0x397 matches; in the time and connection columns VC adds the
+// score 73 (was 73): everything before +0x397 matches; in the time and connection columns VC adds the
 // score width before the name width (ours `add cx, word ptr [score]`, retail `add cx, bx` and the
 // score through `lea`), so their scratch registers differ.
 // Earlier (score 170, was 170): this round's reduced-image listing (1227 bytes, frame 0x6d0 against retail's
@@ -1150,6 +1152,26 @@ struct s_game_engine_globals_connections_view
 // word-compared, though its time column is retail's); quality declared in the connection block 73.
 // Same code as 73 (screened): name width assigned first or from the column flags, int/dword widths,
 // renamed width locals, a cast on the name+score partial sum.
+// Round 23 (plain checks; the reduced image scores the unchanged body 265): short name width with
+// its casts dropped 111 (retail's name column adds the width as a dword `lea`, so it is a long);
+// only the score/time widths cast in the time/connection sums 73 (same code); `(short)(position[0]
+// + name_width)` and `(short)(position[0] + time_width + name_width)` partial sums 73 (same code);
+// score width declared last 73 (same code); a named score-column offset (`name_width + 0x2d`) in
+// the three later sums 267.
+// Round 49 (lane 16, plain): the rest is the time and connection sums: ours folds the score width's
+// stack home into the 16-bit add (position + score, then name), retail adds the name width first and
+// the score width last from a register. A compile-only build gives retail's order, and ours as soon
+// as the score width's address escapes, so whole-program codegen treats it as a memory variable
+// where retail did not. Tried (whole-program build): time width assigned first 79 (prologue swaps);
+// time width, then name width from the score flag, then score width 79; the 0x2d before the widths
+// in both sums 73 (same code); the time column's left as score left + score width 73 (same code);
+// the connection entry passed directly 73 (same code).
+// Round 25 (plain): time column stored left, right, top, bottom 75; that order in the time and
+// connection columns 75; name width first defined as 0xd8 and then reduced by the time and score
+// widths, in two statements 73 or one 73; connection entry written in the call (no pointer local) 73
+// (identical, kept). Screened alike (same code): sum text order, casts, parenthesised partial sums, width
+// declaration order x assignment order x name-width expression x ternary/if, bool/byte/char column flags.
+// Only a short score width gives retail's time block (162 above: its entry and width test are wrong).
 // @retail 0x1603f0
 void game_engine_player_row_build(short const *position, real alpha, long player_index, word const *name, long place,
 	long score, long seconds, bool hide_connection, bool show_icon, bool hide_place, color3f const *color, bool dim,
@@ -1261,11 +1283,9 @@ void game_engine_player_row_build(short const *position, real alpha, long player
 	row->connection.valid = false;
 	if (!hide_connection)
 	{
-		s_68a90_entry *entry =
-			&((s_game_engine_globals_connections_view *)g_4e9ae8)->connections[player_index & 0xffff];
-
 		quality = 1;
-		if (function_68a90(entry, &quality))
+		if (function_68a90(&((s_game_engine_globals_connections_view *)g_4e9ae8)->connections[player_index & 0xffff],
+			&quality))
 		{
 			bounds.left = position[0] + (short)time_width + (short)name_width + (short)score_width + 0x2d;
 			bounds.top = position[1];
@@ -1352,7 +1372,7 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
-// score 680 (was 689): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one
+// score 680 (was 680): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
 // this round's reduced listing shows the frame at 0x790 against retail's 0x79c
@@ -1497,6 +1517,12 @@ PRIVATE inline long score_string_list_1608e0()
 // volatile 721 (2858 bytes, aligned 411/426); height and fade count not volatile 752 (2826 bytes,
 // aligned 405/428); title bounds field by field from x/y or from row_position 680/680; the origin
 // point with neither volatile 720 (2858 bytes, aligned 391/406: the best structure so far).
+// Round 25 (fast, equal to the full build here): retail keeps the fade count in its own slot (0x44, not
+// reloaded), a dim byte (0x58, 0 stored early and 1 later), the masked player index (0x5c) and a byte with
+// dead stores at each inlined 0x15eaf0 (0x17); its team-name block is the existing 0x19eae0 with 0x1a0180
+// inlined in it (name[0] cleared twice). Dim as false then set 680; team name through 0x19eae0 874 (kept out
+// of line, 2682 bytes); team activity through 0x15eaf0 681; dim false declared after the place 681; masked
+// player index named for the pointer and the score lookups 717, with the early dim 708.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
@@ -1706,7 +1732,6 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 class c_1fa50
 {
 public:
-    void function_1fa50(short_rectangle2d const *, void const *, void const *, long, real, long, void const *) const;
     void function_1fb10(short_rectangle2d const *, real) const;
 };
 void function_163400(s_text_widget_a const *widget);
@@ -1734,77 +1759,13 @@ PRIVATE __forceinline void score_text_161420(byte const *widget, long valid)
         g_4e73a0.flags = 0;
         g_4e73a0.justification = widget[8] ? 2 : 0;
         function_13ec70((color4f const *)(widget + 0x24));
-        ((c_1fa50 const *)(widget + 0x38))->function_1fa50((short_rectangle2d const *)(widget + 0xa), NULL, NULL, 0, 1.0f, 0, NULL);
+        function_1fa50((short_rectangle2d const *)(widget + 0xa), (word const *)(widget + 0x38), NULL, NULL, 0, 1.0f, 0, NULL);
     }
 }
 
-// score 122 (was 122): BLOCKED-BY 0x1fa50. Retail's team-text loop is indexed like the other three;
-// its text calls load the text into ECX before the bounds push, i.e. retail calls the drawer as a free
-// function taking (bounds, text, clip, position, line_gap, scale, color, shadow) with the text in ECX
-// (0x1fa30's own convention, bounds in EAX and text in ECX, agrees). Our member call leaves the
-// receiver until after the pushes, so the bounds take ECX and the scratch registers rotate.
-// Earlier (score 122, was 122): Team-text induction base and receiver scheduling remain.
-// Round 50: indexed team text 148 (retail's 0x2ec base, but 12 bytes long: each widget's rectangle
-// temporary rotates ecx/eax/edx where retail keeps edx and loads the receiver before the push);
-// text helper as plain inline 148/122; receiver named before the color call 148; per-iteration
-// team row pointer 120.
-// Team-text induction and receiver setup remain.
-// Earlier score 122 (was 122): Team-text induction base and receiver scheduling remain.
-// Earlier 122 (from 219): background address scheduling agrees after the consistent rectangle-first
-// draw interface; team/player text induction bases and scratch-register scheduling still differ.
-// Earlier at 219 (from 255): Frame 0x293c agrees; background address scheduling and scratch-register rotation
-// remain. Persistent row cursors: team background 305; player background 257; team text 219 (plain kept);
-// player text 246; both backgrounds 304; both text passes 249 (fast).
-// Rectangle-first interface 122; background/text/both validity-offset-first forms 219 each;
-// rectangle/generic-text/both input contracts and unsigned offsets 219 each. On the new interface:
-// indexed team text 148; both text cursors 150; player cursor with indexed team 139; explicit
-// justification arms 122. Original team-text cursor retained.
-// typed text 1411; team reference 120; advanced cursor 282; typed reference 1411; native text
-// inputs bounds/receiver/validity/color first 150 each.
-// Text-state store orders SJF/FSJ/FJS/JSF/JFS 122/130/130/122/130;
-// last-widget cursor/with justification first 122/122; default justification 436.
-// DL131: Team-text induction and receiver setup remain; compile-time validity 1411, ordinary inline
-// text 122, indexed byte team/player/both rows 120/148/146; validity with team/player/both
-// 1411/1414/1414; coordinated inline draw/color/both 122 each. Two-point form rejected; original
-// executable source and all outside declarations restored.
-// Existing default text drawer 475; byte offset 475; indexed team 466; player row 490; both rows 481;
-// validity exit 475; mutable panel 475; both rows and byte offset 481. The shared drawer stays out of
-// line.
-// Round 262: non-template rectangle/widget-prefix text contracts 122/122;
-// with indexed team traversal 148/148; widget-prefix byte/short validity offsets
-// 122/122; ordinary inline prefix and invalid-widget exit 122/122. Restored.
-// Round 184: plain consecutive-header loops, background/text/both 559/555/830;
-// both with short/dword/byte counters 830 each; text loop with indexed team 539;
-// both loops with actual indexed team-row receiver 830. All stay rolled.
-// Existing default drawer with coordinated inline/force-inline declarations 122/122;
-// ordinary inline plus indexed team 148, force-inline plus reused row 120 (two-point gain dropped).
-// All helper bodies, external declarations and original traversal restored; team induction and
-// receiver/bounds scheduling remain.
-// Round 413: actual text receiver/word buffer/color/text bounds as the single member base
-// 150 each; each with indexed team traversal 148. All are 1863/1851; original helper and body restored.
-// Round 189: Actual widget/validity and validity/widget pointer contracts 172/172; sole validity
-// member base in both orders 156/156; indexed team fields with all four contracts 154 each.
-// Bounds/receiver scheduling and team induction remain. Original helper and body restored.
-// Round 107: retail's team loop is indexed (counter incremented before the row pointer, as in the
-// player loop); indexed, ours is 12 bytes longer because each widget's bounds temporary takes ECX
-// where retail keeps EDX and loads the receiver before the push, so the justification rotates into
-// EDX/ECX (`mov [moffs], edx` is a byte longer than eax's form) and the player loop head gets padded.
-// Draw through the existing 0x1fa30 (out of line) 475; one justification variable shared by a
-// row's widgets 122 (copy-propagated); preamble through the existing 0x13edb0 (out of line) 425;
-// receiver named before the draw 122; typed template drawer 1411 (not inlined).
-// Round 440: Pointer-only team/player text/icon traversal masks 1/2/3/4/5/6/7 score 217/154/230/488/511/504/524;
-// complete graph with guarded team range 539. Every native traversal and helper restored.
-// Round 110: preamble and draws through the existing 0x13edb0/0x1fa30 by __forceinline
-// redeclarations 593 (1604 bytes, not inlined); indexed team text 148; justification local 122, with
-// indexed team 148; invalid-widget early exit with indexed team 148. Diagnostic, restored at once:
-// 0x1fa50 as that free function at its definition and every call, plus the indexed team loop: MATCH,
-// 0x1fa30/0x1fa50/0x1fb10 and every caller of 0x1fa50 unchanged (plain).
-// Round 129: indexed team text 148 again (1863 B but aligned 104 -> 60: retail's 0x2ec base; what
-// remains is scratch rotation: retail takes AL for every later justification and EDX/ECX for each
-// text call with the receiver before the push, ours rotates CL/DL/AL); the font/style block as a
-// call to the existing 0x13edb0 425, with indexed team 416 (not inlined, 1754/1767 B); indexed team
-// with a short counter 252; player row pointer per iteration 148 (1832 B), with indexed team 140
-// (1851 B, aligned 251).
+// The text drawer 0x1fa50 is a free function taking the bounds before the text (0x1fa30's own register
+// convention: bounds in EAX, text in ECX), so each text call loads the text before the bounds push, and the
+// team-text loop is indexed like the other three (lane 5 round 110's finding).
 // @retail 0x161420
 void function_161420(long player_index, real alpha)
 {
@@ -1857,14 +1818,12 @@ score_background_161420(data + 0x270, 0x60);
 score_text_161420(data + 0x144, 0x60);
 score_text_161420(data + 0x1a8, 0x60);
 score_text_161420(data + 0x20c, 0x60);
-    s_game_engine_score_row const *team_row = panel.teams;
     for (long team = 0; team < panel.team_count; ++team)
     {
-        score_text_161420((byte const *)&team_row->place, 0x44);
-        score_text_161420((byte const *)&team_row->name, 0x60);
-        score_text_161420((byte const *)&team_row->score, 0x44);
-        score_text_161420((byte const *)&team_row->time, 0x44);
-        ++team_row;
+        score_text_161420((byte const *)&panel.teams[team].place, 0x44);
+        score_text_161420((byte const *)&panel.teams[team].name, 0x60);
+        score_text_161420((byte const *)&panel.teams[team].score, 0x44);
+        score_text_161420((byte const *)&panel.teams[team].time, 0x44);
     }
     for (long player = 0; player < panel.player_count; ++player)
     {

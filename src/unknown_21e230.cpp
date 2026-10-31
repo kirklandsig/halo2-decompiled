@@ -22,6 +22,10 @@
 // entry-index result stdcall/cdecl 12/12. Original void interface and body restored.
 // Round 46: volume store before bin store 22; bin-index postincrement and separate increment before
 // volume 25 each; preincrement/+=/count+1/1+count 8 each; const scalar input 8. Original body restored.
+// Round 53: a DSMIXBINS pointer local 8; a count reference 8; an element pointer for the bin store 8;
+// a DWORD index for the bin store 8; a long-cast count 8. Diagnostics (not kept): /Op 8, the decibels'
+// address taken 8, the conversion written out or split 8: every form compiles to the same code, the
+// decibels load always ahead of the count load.
 // @retail 0x21e230
 void sound_mixbins_add(s_mixbin_settings *settings, long mixbin, real decibels)
 {

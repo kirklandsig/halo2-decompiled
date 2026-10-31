@@ -146,6 +146,12 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // gain values, 566/557/566/557. Three- and seven-point gains rejected; original body restored.
 // DL204: staged routing-result bool/byte/short/long 532 each; guarded interval and
 // conditional-absolute delta forms 589/544/589/544 (reduced control 532, full 545). Restored.
+// Lane 10 round 34: retail sends the voice mixbins through a two-case switch on the channel mode (`sub eax, 0;
+// je; dec eax; jne`, case 1 with two calls whose second call is cross-jumped with case 0's one call), where our
+// counted loop gives a countdown loop. Switch cases 0 then 1 (or 1 then 0) with their own calls: retail's block
+// and branch shape, fast 532 (aligned difference 462 -> 434), plain 568 at 1879 bytes (aligned 481 -> 441;
+// the positional score rises with the shorter body). Fallthrough case 1 into case 0 545 fast; a plain real gain
+// selected through the pointer 566 fast, with the fallthrough switch 559.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

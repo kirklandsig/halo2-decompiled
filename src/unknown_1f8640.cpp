@@ -420,6 +420,15 @@ struct s_1f8a70_actor
 // each; all with unit phase scope 228; signed long 411, returned mode output 412; three-choice enum
 // 411/412, scoped enum 411/412. Round 215: route short/word/signed-byte/byte 420/366/416/336; each with
 // returned unit-output consumption 416/371/422/350.
+// Lane 18 round 6: route_mode looks like a spilled short (dword stores, movsx word reads) with EDI holding NONE.
+// On the frame-0x80 graph (case 3 also setting route_mode = 1 after the destination and node, in case 5's
+// order, so the two tails merge as retail; `default: result = false;` and `failed: result = false;`) 270,
+// aligned 44: positions slip by one from the first exit (no `xor bl, bl` / `mov al, bl`) and by up to 13 in the
+// mode switch, where retail places the route dispatch after case 5's tail and cases 6-7 after it. Value fix and
+// false stores without the case 3 reorder 423; with short route_mode 431 (route takes EDI, NONE does not);
+// first-exit `result = false;` in its branch without an initializer 270 (still folded); unit mode tested through
+// the returned pointer 333; on that graph case 5 moved last in the mode switch 451, and the failure-label
+// store dropped (default store kept) 380 (frame 0x84 again). Original body restored.
 // Round 208: Scratch path receiver reuse with unit-output/source-settings/default-lifetime masks
 // 0..7: 228/232/228/232/258/262/258/262. Original receiver, scopes and defaults restored; frame 0x84
 // and result/output homes remain.

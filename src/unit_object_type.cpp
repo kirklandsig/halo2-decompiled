@@ -1455,6 +1455,20 @@ void function_d0d20(long unit_index)
 // Primary-only/secondary-only default-first results 56/57. Primary getter consumed directly
 // after the ordinary secondary reads 58; with the secondary default-first 61. Original body
 // restored; incoming unit home, second pool reload and weapon-result diamonds remain.
+// Round 180: both reads as 0xcbd50 calls with pool-local arguments now 51 (identical code: EDI argument,
+// if/else reads); with one parameter address read at the guard 48 (EBP, ret 4, default-first reads; the
+// inlined reads reuse the guard's unit, the second argument the first's) and with UNIT_GET arguments 66;
+// the address read alone 40. Guard x argument grid, all with the address read: guard through a named pool
+// unit with pool arguments 34 (157 bytes: the arguments reuse the guard's unit and the inlined reads
+// reload inside their tests), UNIT_GET arguments 63, mixed 48/36; guard as two pool lookups with
+// pool-then-UNIT_GET arguments 34, other mixes 43-50; guard as two UNIT_GET lookups with mixed arguments
+// 46-66. A `long [2]` result array 63-74, the two reads as a two-slot loop 84 (186 bytes).
+// Round 96: both 0xcbd50 calls (retail's stack argument in EBP, ret 4 and default-first results) with the
+// first argument through a block-scoped pool local 48, through a pool-local unit pointer 48; the existing
+// inlined current-weapon getter (unknown_1e1f20.h) for the first weapon with a pool-local second
+// argument 48 (load order changes, the second weapon read reuses the guard's unit); the guard through
+// the pool local with UNIT_GET arguments 57 (141 bytes, unit in EDI); first argument pool-local, second
+// UNIT_GET 74. With 0xcbd50 the inlined lookups always merge with a UNIT_GET guard or argument.
 // @retail 0xd1540
 void __stdcall function_d1540(long unit_index)
 {
@@ -2297,6 +2311,11 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 
 /* once: sets the unit's flag 21 and a random angle at +0x2d8 around its
    actor's direction (or its own facing) */
+// score 2 (was 5): the angle's temporary now sits in the vector's first component, as in retail, so only the
+// frame differs (0xc against retail's 0x10: retail gives the vector the twelve bytes the actor writes, ours
+// eight, so its frame is four bytes longer). Tried: a twelve-byte vector (vector3f, real[3], a plain
+// three-real struct) 8 (frame 0x14, the vector at esp+0xc); the twelve-byte vector in an inner scope 8; the
+// angle in a separate local 5; a sixteen-byte vector 8.
 // score 5 (was 5): only frame 0xc versus retail 0x10 and the angle temporary home remain; x87 adds now agree.
 // Earlier at 20: Frame 0xc versus 0x10 (retail keeps the atan2 temp in the query buffer's first dword,
 // ours with range) and the last two x87 adds (retail adds the bound before the angle) differ; the query
@@ -2318,24 +2337,25 @@ void function_cfec0(long unit_index)
 
 	if (!TEST_FIELD_BIT((unit->flags_134 >> 21) & 1))
 	{
+		real actor_vector[2];
 		real range;
-		byte unknown[8];
 
 		bit_vector_set(&unit->flags_134, 21, true);
-		if (unit->actor_index != NONE && function_1e3370(unit->actor_index, unknown))
+		if (unit->actor_index != NONE && function_1e3370(unit->actor_index, actor_vector))
 		{
 			unit->unknown2d8 = 0.0f;
 			range = 0.43633232f;
 		}
 		else
 		{
-			real angle = (real)atan2(unit->forward.j, unit->forward.i);
+			/* the angle keeps the vector's first component, as in retail */
+			actor_vector[0] = (real)atan2(unit->forward.j, unit->forward.i);
 
-			if (angle > 3.1415927f)
+			if (actor_vector[0] > 3.1415927f)
 			{
-				angle -= 6.2831855f;
+				actor_vector[0] -= 6.2831855f;
 			}
-			unit->unknown2d8 = angle;
+			unit->unknown2d8 = actor_vector[0];
 			range = 1.7453293f;
 		}
 		unit->unknown2d8 += function_259d0(&g_4e7408->unknown0, 0, 0, -range, range);
@@ -2562,6 +2582,14 @@ void function_cce00(long unit_index, short starting_profile_index, bool reset, b
 // Round 178: bits 26/27 as unit_action_active calls (as matched 0xcc170 now has them) 111: LTCG inlines just those
 // two and calls the rest, retail's own split, and the two tests re-read +0x346 as retail does, but the hand loop's
 // unit lookup still merges with the entry one (retail re-looks it up after the calls), 297 bytes.
+// Round 179: the 26/27 calls with the unit local declared only after the tests (entry test through UNIT_GET) 111
+// (same code: the post-call lookup still merges).
+// Round 180: all nine tests as unit_action_active calls (26/27 inlined with retail's per-test +0x346 reads),
+// result first, with the post-call unit through a pool local 111, the entry test through it 111, both 111,
+// neither 111 (our LTCG copy-propagates the pool local, so the post-call lookup still merges); plus 0xcbd50
+// per hand on that unit 107 (294 bytes), with a UNIT_GET argument and no unit local 79 (retail's slot cursor
+// and counter, but 0xcbd50 stays out of line). BLOCKED-BY 0xe6fe0 (contributor): retail's callers treat it
+// as possibly writing memory (pool and index*12 kept, data and unit reloaded after the calls), ours as not.
 // Round 130: the two hand-written bit tests are 0xe6fe0's body: unit_action_active(unit_index, 26/27)
 // gives retail's per-test reloads (our LTCG inlines exactly those two calls, as retail; the later ones
 // are cold) and 0xcbd50 per hand with a UNIT_GET argument gives the slot cursor and counter: 79
@@ -2870,6 +2898,13 @@ void function_c5740(long unit_index, bool start)
 // matched 0xcf040 (11): 0xcbd50 alone 121, with a unit local 121, with if/else arms and a short-
 // parameter material lookup 121, the same with a long material parameter 125 (0xcf040 228); a char
 // slot index in the original body 99.
+// Round 180: the material lookup through the existing global_material_get 94 (identical code, kept), as a
+// named material local 94; with 0xcbd50 for the slot weapon 121 (ret 0xc again); a pool snapshot 94; the
+// unit or material parameter read once through its address 94/94. Diagnostics: no material argument to
+// 0x188180 flips the convention (material in a register, 331 bytes, 115); a (word) argument 94. Retail
+// pushes the material slot's raw dword to 0x188180 (its seventh parameter is a short there, a long in
+// our declaration and definition), reloads the pool's data after 0x1012c0 (our LTCG treats that matched
+// callee as read-only) and keeps the definition index in EBP.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -2895,12 +2930,7 @@ void __stdcall function_ceee0(long unit_index, long definition_index, short mate
 			return;
 		}
 	}
-	byte *material = 0;
-	if (material_index != NONE && material_index >= 0 && material_index < *(long *)((byte *)g_4e034c + 0x150))
-	{
-		material = *(byte **)((byte *)g_4e034c + 0x154) + material_index * 0xb4;
-	}
-	long tag_index = *(long *)(material + 0x64);
+	long tag_index = *(long *)(global_material_get(material_index) + 0x64);
 	if (tag_index != NONE)
 	{
 		function_189060(unit_index, NONE, 1.0f, g_468788, g_4687a8, tag_index);
@@ -3478,46 +3508,20 @@ void function_c6990(long unit_index)
 
 /* the entry animation (of five) whose end point on the vehicle's seat is
    nearest the unit's center; the seat marker's position and that point */
-// score 31 (was 31): Frame and spatial arithmetic agree; constant, seat flag and call scheduling differ.
-// Boolean bit conversion 49; complete bool/byte/short seat-bit polarity 103/103/119;
-// entry result 44, distance 49, both 45; shared point difference 62.
-// Pointer table walk 50, plus seat polarity 103, shared difference 63, both entry constants 46.
-// Both point library copies 49, plus shared difference 62; entry result with library copies 44;
-// entry result with pointer walk 45. The 44/408-byte form fails the minimum-eight rule; restored.
-// On entry result: distance before the seat bit 45; point pointers after the constants 44; seat
-// bit declared last 45; the seat label read into a local before the call 41 (one-use local, no
-// match); a 600 s permuter run reached 34 only by swapping the label and table arguments (wrong
-// call). Retail stores the seat bit before reading the marker name; ours keeps it in AL until the
-// call, and every later temporary then takes the next register (EAX/ECX/EDX rotated).
-// Round 228: winning table ordinal long/short 91/101; entry long/short 90/100;
-// missing-result-first comparison with the same four lifetimes 109/117/108/116.
-// Original result value, complete spatial arithmetic and body restored.
-// Round 50: the seat looked up before the unit 31 (kept: the seat bit is then stored before
-// the marker name is read and everything from the call on matches); seat, seat bit, unit 32;
-// seat, unit, distance, seat bit 31; unit, seat, distance, seat bit 49; a named marker-name
-// field at seat +8 49, with the seat first 31; result and distance first, then seat, unit, bit
-// 29 (only `or ebp` and the distance store move; below the margin); the bit read through the
-// whole seat expression with the seat pointer after it 162 (453 bytes). Only the prologue differs
-// now: retail looks the unit up first (and spills it) and the vehicle second, yet still reads
-// the marker name after the bit store.
-// Round 178, all with the unit looked up first (49 alone: its spill then matches, but the marker name
-// loads into ECX ahead of the bit, which stays in AL until the call): a named vehicle local 49; the bit
-// as `!(TEST_FIELD_BIT(...))` (0xcd6a0's form) 49; the bit declared first, assigned after the inits 50;
-// distance and result initialized before the unit 44; a `bit5` seat-flags bitfield member 49 (same
-// code); the bit computed inside the marker test after the call 96.
 // @retail 0xc7160
 long __stdcall function_c7160(long unit_index, short seat_index, long a, long vehicle_index, long b)
 {
 	point3f *marker_position = (point3f *)a;
 	point3f *position = (point3f *)b;
-	s_unit_seat_definition *seat = &UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(vehicle_index)))[seat_index];
-	s_unit *unit = UNIT_GET(unit_index);
-	bool blocks = !((*(dword *)&seat->flags >> 5) & 1);
-	real best_distance = 3.4028235e38f;
 	long result = NONE;
+	s_unit *unit = UNIT_GET(unit_index);
+	s_unit_seat_definition *seat = &UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(vehicle_index)))[seat_index];
+	bool blocks = !((*(dword *)&seat->flags >> 5) & 1);
+	long marker_name = *(long *)((byte *)seat + 8);
+	real best_distance = 3.4028235e38f;
 	s_object_marker marker;
 
-	if (function_b8d30(vehicle_index, *(long *)((byte *)seat + 8), &marker, 1, false))
+	if (function_b8d30(vehicle_index, marker_name, &marker, 1, false))
 	{
 		if (marker_position)
 		{
@@ -6700,7 +6704,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
-// score 350 (was 367): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
+// score 254 (was 310): the control tests 0x8000000/0x4000 are plain mask tests (retail `test eax, imm`), flag 2 of
 // +0x10a goes through s_unit_flags_10a_view (load, shift, test), the zoom is a short compared against
 // the stored field (cmp bx; the field is then read, not the local, for the NONE tests), the zoom sound is read
 // before the level count, and the second loop's weapon index is NONE then an `if`. Still differs: frame 0x24 versus 0x28 (retail keeps the second loop's `first`
@@ -6711,6 +6715,14 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // volatile goes only on parameters and locals here.
 // Tried: the flags passed as *(long *)&flags 252; with the volatile reads: bit mask computed before the pointer
 // 249, the pointer read volatile 254.
+// Round 179: the four action-bit tests as unit_action_active calls (retail inlines 0xe6fe0 there, reloading +0x346
+// per test) 310 -> 254, kept; the second loop's weapon through the existing 0xcbd50 254 (same code), kept. Still
+// differs: frame 0x24 versus 0x28 (retail writes the flags word once from CX into a stack slot and pushes it as a
+// dword, builds it with 16-bit ops, spills `first` and uses EBX/EDX where ours uses EDX/EDI); 0x113da0/0x113df0
+// results tested as AL in retail (ours EAX); 0xd1540 takes the unit on the stack in retail. Tried: 0x100430's
+// `value` as word (definition and declaration) 257; the zoom block's weapon as NONE then if, with the scales from
+// the stored byte field 293; only the scales from the byte field `(real)unit->unknown240` 253; the zoom block's
+// weapon through 0xcbd50 293 (retail re-reads the header data pointer there, ours keeps it).
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -6877,37 +6889,17 @@ bool __stdcall function_c58f0(long unit_index)
 			{
 				continue;
 			}
-			s_unit *holder = UNIT_GET(unit_index);
-			short index = (&holder->current_weapon_index)[hand];
-			long weapon_index = NONE;
-
-			if (index != NONE)
-			{
-				weapon_index = holder->weapon_object_indices[index];
-			}
+			long weapon_index = function_cbd50(unit_index, (&UNIT_GET(unit_index)->current_weapon_index)[hand]);
 			bool held = function_110ab0(unit_index);
 
 			if (unit->unknown1ec > 0)
 			{
 				held = false;
 			}
-			/* retail looks the unit up again after 0x110ab0 for these three tests */
-			s_unit *bit_holder = UNIT_GET(unit_index);
-			if (TEST_FIELD_BIT((*(dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4) >> 22) & 1) ||
-				TEST_FIELD_BIT((*(dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4) >> 26) & 1) ||
-				TEST_FIELD_BIT((*(dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4) >> 27) & 1))
+			if (unit_action_active(unit_index, 0x16) || unit_action_active(unit_index, 0x1a) ||
+				unit_action_active(unit_index, 0x1b) || unit_action_active(unit_index, first ? 8 : 0x12))
 			{
 				held = true;
-			}
-			else
-			{
-				dword const *bits = (dword const *)((byte *)bit_holder + bit_holder->unknown346 + 4);
-				long bit = first ? 8 : 0x12;
-
-				if (bits[bit >> 5] & (1 << (bit & 0x1f)))
-				{
-					held = true;
-				}
 			}
 			dword control = unit->unknown148;
 			word flags;
@@ -7132,6 +7124,13 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // helper reading v's components into locals first (i, j, k or i, k, j) 669/671, but our LTCG then moves
 // a parameter to the stack and matched 0x1e5af0 (43) and 0x1faf80 (4 -> 211) break; plus the prediction
 // as an in-place unit-axis rotation of a copy (0x2551f0's helper shape) 721; plus named predicted angles 718.
+// Round 180: the direction helper replaced by the shared direction_from_angles 700 (identical code, but not
+// kept: the include and the dropped static helper move image-dependent 0x24cf66 from 114 to 115); the
+// world-to-frame rows as dot3f calls 700 (identical), both 700; the rows computed into locals before the stores
+// 700, the same in both helpers 700 (VC still folds the vector's loads). Reading v's components first (i, j, k)
+// 650 and copying v into a local vector first 618 (2479 bytes) both make our LTCG pass `current` on the stack
+// (ret 0x18), which breaks matched 0x1e5af0 (43, plain) and 0x1faf80 (4 -> 211): rejected. Retail keeps
+// `current` in EDI with the components preloaded; find what keeps it a register parameter.
 // @retail 0xc7840
 void function_c7840(vector3f const *desired, vector3f *current, transform4x3f const *frame, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -7810,6 +7809,7 @@ struct s_unit_melee_collision
 // locals copied as words by retail (material_index) but as dwords by ours, and the callee-saved registers
 // retail pops before the player-timer tail. Tried: aim read as unit->unknown168 (548 with range inlined, 518
 // otherwise), range read at each use (+30), hit_t = 0.0f (+6).
+// Round 180: the impact's material test through the existing global_material_get 504 (2209 bytes, kept).
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
@@ -8005,8 +8005,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		}
 	}
 impact:
-	if (material_index != NONE && material_index >= 0 && material_index < *(long *)((byte *)g_4e034c + 0x150) &&
-		*(byte **)((byte *)g_4e034c + 0x154) + material_index * 0xb4)
+	if (global_material_get(material_index))
 	{
 		function_ceee0(unit_index, damage_index, material_index, &point, &normal);
 		if (self_damage_index != NONE)

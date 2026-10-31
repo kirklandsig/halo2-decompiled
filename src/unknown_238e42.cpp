@@ -894,6 +894,14 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// score 90 (was 90): this round: the difference is purely the register colouring of the two
+// values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
+// eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
+// ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
+// later jump). Copying the identity into a local, reading the own rank before the identity
+// test, copying the requested rank into a local before that test, a has-identity flag and
+// four local declaration orders all score 90, so the colouring is fixed by the callee's
+// convention and the body stands.
 // score 90 (was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.

@@ -10,6 +10,8 @@
 #include "unknown_234c64.h"
 #include "unknown_030290.h"
 #include "globals.h"
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 
 void unicode_string_copy(word *destination, const word *source, long maximum_count);
 void function_22d2ee(word *string, long maximum_length);
@@ -1527,13 +1529,6 @@ bool function_13ee20(word const *string, long font);
 void function_235d69(short_rectangle2d const *rectangle, real depth,
 	short_rectangle2d const *screen, color4f const *color);
 
-class c_1fa50
-{
-public:
-	void function_1fa50(short_rectangle2d const *bounds, void const *clip,
-		void const *option, long flags, real scale, long count, void const *data) const;
-};
-
 byte g_51ec04;
 
 /* Draws widget text with cursor progression, projection and tab stops. */
@@ -1654,7 +1649,7 @@ void function_22cd48(c_class_22cc8e *text, short_rectangle2d const *bounds,
 		}
 		real scale = (last.x - first.x) * text->value20 / (real)(bounds->right - bounds->left);
 		if (function_13ee20(buffer, g_4e73a0.font))
-			((c_1fa50 const *)buffer)->function_1fa50(&projected, &projected_clip, 0, 0, scale, 0, 0);
+			function_1fa50(&projected, (word const *)buffer, &projected_clip, 0, 0, scale, 0, 0);
 	}
 	if (g_51ec04)
 	{

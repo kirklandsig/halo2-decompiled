@@ -96,7 +96,7 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 
 /* slot type 0x23, update: once the actor stands at its prop's position, it
    turns to face it; then it lets the prop go */
-// score 7 (was 47): only argument temporaries differ: the 0x1f4f40 short argument is converted into DX
+// score 7 (was 7): only argument temporaries differ: the 0x1f4f40 short argument is converted into DX
 // and pushed after `mov eax, ebp` (retail converts AL in place into AX and pushes it first), and the
 // 0x262800 reference is loaded into EAX (retail ECX).
 // Earlier (47): the actor index, actor, view and state registers differ (retail EBP/EDI/EBX/ESI,
@@ -163,7 +163,16 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // early store and return 79, view through the index getter after/before the node 74/88, one shared store
 // 52; the guard clause 7. On 7: the final call under a positive test 7, `(short)` cast 7, the type byte
 // declared signed char 7, a positive test around the 0x1f4f40 call 7.
+// Round 23 (lane 15, plain): the type byte in a named char local, tested and passed 11; the 0x262800
+// reference read into a local first 7 (its temporary moves EAX -> EDI, retail ECX); the state pointer
+// declared before the actor 9; the readiness in a named bool stored and tested 22 (byte setcc); the
+// completion store shared after an `if (view)` block 51 (276 bytes). At 0x1afb30's call to 0x1f4f40
+// our build converts the byte in place as retail does; here EAX holds the actor index too early.
 // Lane 16 r46 (plain): the 0x262800 reference copied into a named local first 7 (its temp moves to EDI).
+// Round 213: inline facing callee 7; inline release callee 7; inline node test 7; both call contracts
+// inline 7; short facing mode 44; short mode with inline facing callee 44; long facing mode 46; long mode
+// with inline facing callee 46; release result used for completion 7; release result with short mode 44;
+// release result with long mode 46; original executable source restored.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {
@@ -356,6 +365,12 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // before the marker call 153 (that block becomes retail's; one-use call result, not kept), with
 // state assigned at the top 153, with the three clears through slot->unknownc and state declared
 // at the movement block 285 (1055 bytes); the prop index tested through a fresh actor_get 272.
+// Round 25 (fast): the state read from `slot` at every use 172 (CSE'd, same code); `view` renamed
+// `fields`, `node` renamed `prop`, `character` renamed `traits` 172 each (same code: names don't move
+// the node/view or index/character slots); prop index tested through actor_get before the actor
+// pointer 272; has_markers cleared before its test re-measured 273 (aligned 130 vs 133). Retail's
+// early state stores go through the `&state->unknown11` temporary ([eax - 2]), so its `slot` is not
+// live across the middle. Opening body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

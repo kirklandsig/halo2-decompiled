@@ -50,7 +50,7 @@ static inline byte *perception_iterator_next_256bd0(s_290c50_iterator *iterator)
 {
 	byte *entry = NULL;
 	s_data_datum_iterator *records = (s_data_datum_iterator *)iterator;
-	if (g_4f55d0->active && data_datum_iterator_next(records))
+	if (data_datum_iterator_next(records))
 		entry = records->datum;
 	iterator->object_index = records->datum_index;
 	return entry;
@@ -62,7 +62,14 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
-// score 201 (was 201): frame 0x114 versus 0x110, cached activity and actor/geometry/selection homes remain.
+// score 179 (was 201): the activity test is the loop's condition, so the frame is 0x110 and the
+// activity byte is re-read at every pass as retail does; the first block's register homes differ.
+// Round 34: the activity test moved into the while condition and the step helper no longer reads
+// the global (it steps the iterator and copies its index): retail's frame 0x110 at 179/1074, the
+// loop reloads the byte and takes retail's cmovne; the first block's register homes remain.
+// Round 34 (lane A, machine 3): an early return of the initial g_470c44 (to leave EAX free for
+// the b8d30 argument, as retail does) gives 277 with a 0x118 frame, and the returned global and
+// the grouped case forms regress the same way, so the loop-condition form is kept.
 // Round 15: shared iterator declaration 205; base-record view 208; conditional entry selection 263;
 // existing point-distance helper 204; variant field reread 207; character field reread 202;
 // both fields reread 281; character reread and base-record view on the helper graph 201 (kept).
@@ -269,7 +276,7 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 					s_290c50_iterator iterator;
 					swarm_iterator_new(&iterator);
 					byte *entry;
-					while ((entry = perception_iterator_next_256bd0(&iterator)) != NULL)
+					while (g_4f55d0->active && (entry = perception_iterator_next_256bd0(&iterator)) != NULL)
 					{
 						real distance = distance_sq3f((point3f const *)(entry + 8), &position);
 						if (minimum > distance)

@@ -417,6 +417,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Compile-only screens: word/short/dword index casts, pointer arithmetic or byte offsets for the
 // test or the object read all keep one data load; only the memory retest splits it (and then also
 // reloads the table global, which retail keeps in EDX).
+// Round 25 (fast): the field store and attach as a call of the existing 0xbb780 (inlined) 49 (same
+// code); with an early bool result 77, flagged arm first 75; bool result with the clear-in-test and
+// memory retest, 0xbb780 on the stored/local index 67/53. Data and index still shared. Restored.
+// Round 35 (lane 10, fast): early bool result set after the attach 77 (160 bytes, header address shared, EBP
+// caches the last argument), with the flagged arm first 75; on the long result, `result = false` before the
+// index clear 50, the object read through a one-use header pointer 49, the header test indexed by a (word)
+// cast 54 (182 bytes).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
