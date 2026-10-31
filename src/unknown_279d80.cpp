@@ -1971,6 +1971,12 @@ void function_27dd10(void)
 // flags, destination index, flags and last shared or per pass (32 forms; the 0x2898b0 form matched
 // that function) best 4 (flags and last per pass, with or without the destination index: the same tie in
 // two places), the rest 22-83; on the two best, declarations by kind or by pass, count first or last 4.
+// Round 100 (lane 7, --fast): the per-arm apply reading the blend weight into a local at its top 2,
+// in the blend-1 arm (all three components) 147; the flags test as `!= 0` 2; the apply index in a
+// named local 2. Compile-only screens: the walk's bound as an if or with the compare reversed, the
+// frame-state saves or restores reversed and the pass counters as a switch keep the tie and change
+// matched neighbours; a constant subtraction before the blend-1 rotation apply (semantics changing)
+// is the only form that gives retail's order.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2050,6 +2056,9 @@ void function_2818e0(void)
 // flags, destination index, flags and last shared or per pass (32 forms; the 0x2898b0 form matched
 // that function) best 4 (flags and last per pass, with or without the destination index: the same tie in
 // two places), the rest 22-83; on the two best, declarations by kind or by pass, count first or last 4.
+// Round 100 (lane 7, --fast): the per-arm apply reading the blend weight into a local at its top 2,
+// in the blend-1 arm 2; the blend-2 rotation through a pointer local to the destination rotation
+// 352; the flags test as `!= 0` 2; the apply index in a named local 2.
 // @retail 0x281b60
 void function_281b60(void)
 {

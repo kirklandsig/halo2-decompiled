@@ -778,6 +778,15 @@ static __forceinline long real_to_long(real value);
 // each use (retail addresses it off the view) 513 (1941 bytes); that with an object pointer and
 // `object->velocity` reads (retail spills the object pointer, not object + 0x88) 524; the object
 // pointer alone 409.
+// Round 181 (lane 3): aligned through the moved early exit only 170 rows differ: our code is
+// retail's apart from the early false exit's place (retail puts it after the first `goto local_7`
+// jump; ours is last) and the object/facing/query homes. Retail stores the true result once
+// (`mov byte [esp+0x13], 1`) and reloads it at the end, so its result is not folded to a constant
+// even though the false path has its own exit. The result preset true with the false arm first
+// 399 (the true store hoists to the entry, the exit stays last); an early `return false` with the
+// result declared true before it 510 (frame 0x54: the result folds); the facing pointer declared
+// after the flag and vector 384 (identical); the near-facing flag set before its copy 384
+// (identical); that copy read from the view directly 397.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
