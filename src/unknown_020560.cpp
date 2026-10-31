@@ -1299,6 +1299,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // round-7 form with a short total 135; with the mask tested before the player 135; with the slot
 // tests as a `continue` filter 38. A one-file harness with the D3D objects linked is not exact (60:
 // it cannot reproduce MakeRequestedSpace's register argument).
+// Round 56 (lane 12): the SDK's begin-test call in the plain full build 158 (still out of line;
+// retail holds the push header only here); the global test as an early-return guard 52; the count
+// reassigned before the set 66; a pointer local to the whole visibility table for count, slots and
+// row 52; the frame counter read at each use 125.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
