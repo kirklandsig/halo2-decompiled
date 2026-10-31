@@ -5,6 +5,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+real magnitude3d(vector3f const *vector);
 struct s_247fd0;
 struct s_object_2470e0;
 struct s_unknown_13bf00;
@@ -51,19 +52,30 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 102 (was 102): Frame 0x14 and entry agree; delayed coordinate cleanup and child allocation/link homes remain.
+// score 95 (was 102): the prologue, the position copy and the whole viewer loop agree since the
+// distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
+// after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
+// the reverse), tests the allocation twice, builds the handle from the element's own salt and the
+// pointer difference (0x2483f0's body) where data_datum_index reads the pool's size, and loads the
+// head and zeroes the offset after the zero-trip test.
+// At 102 (was 198): the three coordinate differences stayed in the x87 stack until the end of
+// the loop body, so the squared sum was followed by the radius multiply and the three pops at the
+// Frame 0x14 and entry agree; delayed coordinate cleanup and child allocation/link homes remain.
 // Earlier score 102 (was 198): the three coordinate differences stay in the x87 stack until the end of
 // the loop body, so the squared sum is followed by the radius multiply and the three pops at the
 // end; retail frees the differences right after the square root (fstp st(3) and two fstp st(0)),
-// and neither a nested block nor writing each difference out at every use frees them that early
+// and neither a nested block nor writing each difference out at every use freed them that early
 // (106); the child loop still takes the pool pointer in edi where retail takes ebx.
-// Earlier score 102 (was 198): the position copy writes the location member, the activation branch
+// At 102 (was 198): the position copy writes the location member, the activation branch
 // lays the viewer arm first and the viewer's influence starts at zero, so the prologue, the
 // copy and the viewer loop agree; the x87 cleanup and the child loop's registers still differ.
-// Earlier score 172 (was 198): the head snapshot and the loop's head are separate locals, so the
+// At 172 (was 198): the head snapshot and the loop's head are separate locals, so the
 // frame is 0x14 and the prologue agrees; the settings store and the position's z store are
 // swapped, the activation branch lays the active arm first, the viewer's maximum and x87
 // cleanup differ, and the child loop's offset and counter homes are swapped.
+// At 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
+// Earlier score 102 (was 198): the position copy writes the location member, the activation branch
+// Earlier score 172 (was 198): the head snapshot and the loop's head are separate locals, so the
 // Earlier score 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
 // retained head/position homes and x87 cleanup differ.
 // Earlier metadata/head/count homes differed.
@@ -234,6 +246,13 @@ public:
 // allocation result with live/early count 282/283. All restored; frame and x87 homes remain.
 // Round 321: Whole-scan maximum on the retained child byte-offset graph; short viewer/closed coordinate phase/child-count snapshot subsets: 251/250/251/250/241/246/241/246.
 // Round 321: Frames stay 0x0c or 0x10 versus 0x14; original influence publication, live count, distance tree and body restored.
+// Round 30 (lane 13, fast, on the 95 form): the allocation in its own local assigned to the head
+// after the init 118 (location becomes a register argument); local_0 as the loop head (no copy)
+// 248 (same); offset and head declared in the for-init 94 (only the two zero stores reorder); the
+// handle as 0x2483f0's salt-and-difference form in a forceinline helper 268, written in place 267
+// (both move the location into EBX and the flag to the stack: 0x175270 100); the break test right
+// after the allocation (init unconditional) 95 and before the init's own test 95 (the test still
+// threads); the init stores through DATUM at each use 136 (749 bytes, location in a register).
 // Round 455: On the recovered head/count/frame graph, separate allocation result 124; shared initialization/link receiver 171; plain remaining count 118; both 157; readonly metadata counterparts 124/171/118/157. Original body restored.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
@@ -254,11 +273,9 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 			s_player_state const *local_6 = 0;
 			if (local_3 != NONE && g_4686c4 != NONE)
 				local_6 = (s_player_state const *)((byte const *)(g_4e9bd4 + local_3) + 0xb8);
-			double local_7 = (double)position->x - local_6->position.x;
-			double local_8 = (double)position->y - local_6->position.y;
-			double local_9 = (double)position->z - local_6->position.z;
-			double local_4 = sqrt(local_9 * local_9 + local_8 * local_8 + local_7 * local_7);
-			real local_10 = (real)(local_4 * local_6->radius);
+			vector3f offset;
+			vector3d_from_points3d(&local_6->position, position, &offset);
+			real local_10 = magnitude3d(&offset) * local_6->radius;
 			real local_11 = 0.f;
 			if (g_510c50 && ((byte *)g_510c50)[5])
 				local_11 = 1.f;

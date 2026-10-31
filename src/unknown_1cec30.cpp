@@ -924,6 +924,10 @@ void function_1d1540(s_havok_component *component);
 // Reset/rebuild inline/noinline contracts, original then aligned-copy/fixed-or-flag-first graphs
 // 81/81/81/81/81/81/81/81/88/88/88/88/27/27/27/27. Original executable source restored. All four 27
 // forms still lose matched 0x1d1b60 at 59 in the reduced image.
+// Round 28 (lane G): the declaration order does not decide the argument registers: with retail's
+// order (transform, index, component) and the old order kept only for the caller in another file,
+// the score is still 81 here and 38 in 0x1d0c20, and matched 0x1d1b60 stays matched, so the order
+// was left as it is. What still differs: retail keeps the component in EBX, ours on the stack.
 // Both-inline paired form: plain 27 at 220 bytes; matched 0x1d1b60 loses 59; rejected.
 // Round 158: assigned copy + body pointer + m_fixed first 88 at 230 (retail's code; a /Gd first
 // pass loads the component once into ebx, yet it stays a stack argument); same with set() 88; flag5
@@ -1013,6 +1017,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // 38, with 0x1d0cf0's retail body 40; that with a volatile read of 0x1d0cf0's component at the
 // 0x1d1540 call/the 0x1d1260 call/the second body fetch 40/40/40. Round 89: through the existing
 // component_matrix_frame converter 38 (same code, kept), with 0x1d0cf0's retail body 40.
+// Round 28 (lane G): retail's arguments here are (matrix, index, component) as in 0x1d0cf0; the
+// declaration order does not change the registers LTCG picks (0x1d0cf0 81 and this 38 either
+// way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
@@ -1486,6 +1493,20 @@ PRIVATE __forceinline real const &component_time_step()
 // the same with the step on the right of both products 43; time-step reference declared first 142,
 // with the stop-first test 142; time step copied into a value local 99 (acceleration in xmm0 as
 // retail, but the step stays in a register instead of the memory multiply).
+// Round 115 (lane 6, fast): the stop-first test with the stop ticks and tick distance named 43; the time
+// step bound inside the scale helper between the exponent result and the mass division, the helper
+// returning the step 31 (the time-step global is then loaded before the mass test, still loaded before
+// its product); the helper scaling its own acceleration parameter 132 (the acceleration load hoisted);
+// the step as a value local at function scope 147 (479 bytes); `(velocity * delta_time)` as the first
+// factor of the stop distance 26. One-file LTCG harness screens (exact here, ~45 forms): every product
+// operand order, either test order, value/reference/pointer/struct-pointer reads of the step and the
+// stop distance's groupings give the load-first products; an intervening float store (to a file global
+// or through `ratio`) never folds the step either, and `(void)&local` changes nothing.
+// Lead (harness diagnostics): the product's operand order follows where the step's value is first defined.
+// A step value read before the exponent test and used only in the step product gives retail's in-place
+// `mulss xmm0, [mem]` with the scaled value in xmm0, but it is spilled across the power call (`mulss xmm0,
+// [esp+8]`, 160, 490 bytes); read after the exponent result 50; a constant multiplier also puts the scaled
+// value in xmm0. Retail loads the global right at the product, so its step read must rank earlier in another way.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

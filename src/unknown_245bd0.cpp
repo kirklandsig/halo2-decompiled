@@ -304,6 +304,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // Round 32 (lane 11, fast with 0x19cb90/0x2461a0): the matching form's two keepable halves together (the
 // dot's inputs swapped and the unit-z zeros stored separately) 61; with the sum grouped j + (i + k) 61, flat
 // i, k, j 61, as i, k, j statements 61; flat i, k, j with the existing vector3f_scale 61.
+// Round 7 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80; the sphere helper forced inline where noted):
+// the difference scaled in place and copied to the plane after the arms (unit z into the difference) 205
+// (720 bytes: the difference goes to the frame), copied inside the scale arm 212 (726); a separate normal
+// built in both arms and copied 205 (720); a pointer to the plane's normal for both arms and the dot 57
+// (same code); the squared distance declared before the difference 57; the helper without `inline` 57
+// (still inlined, same code).
 // Round 113 (lane 6, fast; all with the dot's inputs swapped and the unit-z zeros stored separately): the
 // sum as statements x, z, y 61, as `j + (i + k)` 61, as dot3f(&d, &d) 152, as length_sq3f(&d) 152, as
 // statements j, i, k 61. Diagnostics (not keepable): length_sq3f(&d) plus any otherwise unused direct read
@@ -311,6 +317,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // reverse dot 4; a direct read of d.i instead 21; direct reads of d.j and d.k 164 (670 bytes). So the y
 // product is a copy of the scale exactly when d.j is read directly somewhere before the normalization while
 // i and k are read only through the vector's address (helpers or a pointer), as the listed pointer form.
+// Round 115 (lane 6, fast): length_sq3f(&d) with the test written `distance_squared < r * r` 152; dot3f(&d, &d)
+// with that test 152; the difference made in the plane normal, length_sq3f(&plane->n) and the existing
+// vector3f_scale in place 176 (696 bytes); the sum grouped `i + (k + j)` 61, `k + (j + i)` 57. Harness
+// screens (exact here): the eight other flat/parenthesized groupings 57-61; vector3f_scale with the
+// reciprocal in the call 57, with length_sq3f 152.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

@@ -413,6 +413,12 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // count bytes >> 2 238 (`sar ebx, 2`, not folded back to `>> 5`); sizeof with >> 2 238; words << 2
 // with >> 2 111 (folded, same code); a padded-count local with sizeof bytes 224 (796 bytes); a
 // padded-count local with the masked byte form 208.
+// Round 8 (lane 18, fast, aligned counts in brackets, base 111 [65]): the word count as `(count + 31) >> 5`
+// at the top with bytes as `((count + 31) >> 5) * sizeof(dword)` 224 [73] (796 bytes, frame 0xec: the
+// shifted value is shared and kept, where retail keeps count + 31 in EBX and shifts it again after the
+// copies); bytes and base from a word-count local 224 [73]; the word count declared after base 224 [73];
+// base as `&bits[((count + 31) >> 5) * index]` 111 [65] (same code); the round 85 memcmp-break loop
+// re-measured 125 [57] (810 bytes), with the shifted-count head 228 [73].
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {
