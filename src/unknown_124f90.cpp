@@ -4026,14 +4026,15 @@ void function_21b0e0(bool arg_0);
 long players_first_active_local_player(void);
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 
-/* the per-voice and per-channel value pointers of one spatialization pass, cleared when declared
+/* the per-voice and per-channel value pointers of one spatialization pass, cleared before use
    (a plain memset of a local this large makes VC realign the frame with `and esp, -8`; retail's
-   clears don't, and a clearing constructor or member function is the only form found that avoids it) */
+   clears don't, and a clearing member function is the only form found that avoids it; a clearing
+   constructor does too but changes 0x1c4590's registers through link-time code generation) */
 struct s_voice_value_table
 {
 	vector3f *values[0x40];
 
-	s_voice_value_table()
+	void clear()
 	{
 		memset(values, 0, sizeof(values));
 	}
@@ -4043,7 +4044,7 @@ struct s_channel_value_table
 {
 	vector3f *values[0x80];
 
-	s_channel_value_table()
+	void clear()
 	{
 		memset(values, 0, sizeof(values));
 	}
@@ -4089,6 +4090,8 @@ void function_125b40(void)
 			local_5.count = 0;
 			s_voice_value_table local_3;
 			s_channel_value_table local_4;
+			local_3.clear();
+			local_4.clear();
 			function_129100(&local_5, local_3.values, local_4.values);
 			long local_6 = players_first_active_local_player();
 			while (local_6 != NONE)
