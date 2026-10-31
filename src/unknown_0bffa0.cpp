@@ -1161,27 +1161,6 @@ void function_c0110()
     }
 }
 
-// score 6 (was 6): the last flag update holds the object in ecx and the flags in eax, retail the
-// reverse. light_partition_clear after the & 8 test with the light from g_4e030c->data and the pool
-// read at each use (kept); the same with a pool local 59, through the s_light_ab pointer 80; flags
-// through a ternary, a typed object, a dword view, a pointer to the flags 6/6/6/6; flag test negated 7;
-// object fetched after the flag 8; datum iterator 6; entry declared in the loop 6; a 600 s permuter
-// run (59 tries), none below 6. Round 72: `|=`/`&=` on the object's flags in each arm 68 (the
-// result test is threaded away); the flags read in each arm 58; the iterator declared before the
-// object 6; the flags as `((dword *)object)[1]` 6; the clear arm first 7; `dword flags = 0;`
-// declared before the object 6. Round 95: the loop leaving through `!remaining` in its condition 6;
-// the object read as `*(byte **)(g_4e0300->data + i * 12 + 8)` (the file's form) 6, with `remaining`
-// declared before it 8; a set-or-clear ternary on the field 68; the light index read directly instead
-// of through a reference local 6 (kept). Round 52: explicit per-arm stores, direct per-arm stores,
-// and direct stores with an index reference 87/87/87; a direct store ternary 6; the object or flags
-// live at entry 6/6; flags declared before the object 6; separate original and updated flag values 6.
-// Round 26: the object typed as the file's light object with `flag6` set or cleared in each arm 68,
-// `flag6 = remaining` 60; the header read through the file's object header type (kept) 6; signed
-// flags 6; the object through an inline getter 6.
-// Round 91 (lane 7, harness exact): the object declared at function scope 6; the entry as bytes 6;
-// the flags masked then set when remaining 45; a plain `while (entry = ...)` 6; the iterator declared
-// before `remaining` 6; the object index read from the light at the lookup / the loop test / the
-// guard 6/6/6.
 // @retail 0xc3260
 void __stdcall function_c3260(long light_index, bool clear_object_flag)
 {
@@ -1206,12 +1185,11 @@ void __stdcall function_c3260(long light_index, bool clear_object_flag)
                 break;
             }
         }
-        dword flags = *(dword *)(object + 4);
+        dword *flags = (dword *)(object + 4);
         if (remaining)
-            flags |= 0x40;
+            *flags |= 0x40;
         else
-            flags &= ~0x40;
-        *(dword *)(object + 4) = flags;
+            *flags &= ~0x40;
     }
     record_pool_release(g_4e030c, light_index);
 }

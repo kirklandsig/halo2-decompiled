@@ -49,6 +49,11 @@ s_player_state *function_16f3a0(long index);
 // product written memory-first 28. Retail multiplies a register by a writable global only
 // here and at 0x224fd0 (no matched model); compile-only screens give x/y right only when
 // the negation is an expression at each use, which then multiplies z in place.
+// Round 31: the named height plus the negated read written at the x and y uses 101 (one
+// subtraction, all three products copy the height, z in place; compile-only keeps z right
+// there but not in the real build); the named height defined after y for z only 101; a const
+// pointer to the camera storage for every camera read 66; the forward vector copied to a local
+// 142 (copied to the stack); feet seeded with the eye sums and updated with `+=` 66.
 // @retail 0x1396c7
 void function_1396c7(long a, point2f *point)
 {
