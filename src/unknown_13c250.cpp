@@ -132,6 +132,15 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // same array appended in three statements 138 (same code: the slot reads still share the unit pointer);
 // either with the count not volatile 258/273, the base so 273; the found unit kept and the lookups after the
 // walk under `if (unit != NONE)` 138 (same code).
+// Round 256: Cached candidate end with natural for, preferred switch case and default-rank
+// producer in all eight combinations: 181/328/177/177/185/350/196/196. Original collection,
+// ranking and body restored; receiver reloads and append-count observations remain.
+// Round 104 (lane 8, fast): one volatile read per append (`n = count; list[n] = x; count = n + 1`) 207
+// (822 bytes); index ranking over a count copy with 0x5000720 as a switch case setting the preferred
+// candidate 362 (996 bytes); both slots read inside the 0xcbd50 arguments 144 (identical); the flag
+// read as the declared bitfield 188; the fallback's second field in its own local 144 (identical).
+// Retail's count (memory-resident, yet the first append stores 1) fits an append helper taking the
+// count's address that only LTCG inlines; no such existing helper was found.
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {

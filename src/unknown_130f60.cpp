@@ -243,6 +243,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
 // Round 217: Complete native output value assignments at original zero initialization, seven subsets,
 // then all with readonly tag receiver: 539/539/546/533/564/564/599/599. Original library clears and output lifetimes restored.
+// Round 21 (m3 lane 2; fast control 336): scale rows i, k, j 338; k, i, j 338; the magnitude from the direction's
+// squares 327 fast (1.0 in XMM6 as retail, first difference +0x8b, direction homes swap) but 374 plain (1894 bytes);
+// named i/j products stored after the k row 339; `opposite.k = 0` after the magnitude 344. Compile-only: no row
+// order, operand order, division, pointer or reciprocal placement gives retail's load-first j row.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

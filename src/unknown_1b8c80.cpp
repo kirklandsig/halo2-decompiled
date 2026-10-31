@@ -244,6 +244,10 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // read-only flags, both 3/3/3. Original complete body restored.
 // Round 42: unit/seat/object/paired field-address locals 3/3/3/3; const actor pointer 3;
 // read-only full definition 3; separate occupied flag 62; read-only count 3. Restored.
+// Round 56 (lane 9, fast): the definition pointer itself kept and its flags read at the test 3; the
+// 0xc8200 test nested under `!function_1b8d80(...)` 3; `result |= function_c8200(...)` there 31; the
+// c8200 arguments read through `(&seats[i])->` 3; a block-scoped seat pointer for the c8200 arguments 73
+// (380 bytes). A one-file LTCG harness is not exact here (349-361 bytes).
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -610,6 +614,11 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 23: the slot read once through its address before or after the
 // actor lookup 6/6, the same without the barrier 44/44; the barrier before
 // the actor lookup 44, at the head of the NONE block 43, first 44.
+// Round 56 (lane 9, one-file LTCG harness, exact here): actor, barrier, then the state 6; no state local
+// (the slot cast at each use) 6, without the barrier 41; the point copied through a pointer to it 6;
+// the state declared `register` (as 0x1b8070's) 6, without the barrier 41, actor first without it 41.
+// Without the barrier the only causes are the slot load (retail: entry block) and, from it, our register
+// compare of +0x26c where retail compares memory (ECX is busy there).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

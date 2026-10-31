@@ -242,6 +242,12 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // Round 89: shared object-velocity receiver 199; second output pointer 163; nonrotating receiver 162;
 // change renamed scaled_change and displacement renamed offset 10 each; second linear pointer 164;
 // const change and const scale 10 each; force-inline point-velocity helper 10 (0x109e00 still matched).
+// Round 31 (0x109e00 matched each time): a nonrotating velocity receiver pointer also used for the
+// output copy 162 (compile-only: it gives the x add retail's copy-then-memory form but reorders the
+// rotating block); `result` declared first 12; the change built by statements 10 (identical);
+// previous velocity declared with the offset and the moved transform at its call 10; the delta as
+// `-change.i` 52. Compile-only screens of 128 local-declaration combinations (headers, platform index,
+// definition, velocity pointer, declaration places) found none that flips only the two x adds.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {

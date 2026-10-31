@@ -825,6 +825,12 @@ void function_1c54b0(char const *variants, long object_index)
 // Round 89, with the flag after the discard call: entity-array pointer 75; island_index renamed
 // active_island 18; increment in the outer for clause 18; scoped object, entity or flags locals 18 each;
 // inner while 18; const entity count 18; function-scope flag cleared after the index update 63.
+// Lane 10 round 42 (a compile-only harness reproduces ours and the 18 form exactly; every one of 60
+// declaration orders and 27 name sets keeps EBP for the count with the flag after the call, and the island
+// index is reloaded before the world in every form): `if (!removed) island_index++;` 91; flag set in an
+// else arm without an initialiser 73; island-array local with the flag after the call 18; function-scope
+// flag cleared at the top of each iteration 18; `entity_count == count` with the flag after the call 18;
+// a 600 s permuter run (71 tries), none below 4.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -910,6 +916,10 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // declared first here and function_1c2690 before function_1c27a0 there 1; function_1d1540 declared
 // before function_b8840 in src/bipeds.cpp 1; function_278f00 before function_146bf0 in
 // src/unknown_0b8ca0.cpp 1; function_278f00 before function_1c51c0 in src/unknown_1c39c0.cpp 1.
+// Round 61: attempt declared before force 3; callee declaration at the TU top 1; consistent inline
+// declaration 1; byte callee result 1; the other caller's function_146da0 declaration first 1;
+// callee declared before function_278f00/function_146bf0 1; function_146bf0/callee/function_278f00
+// order 1; callee after both 1. Original declarations restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1099,6 +1109,11 @@ struct s_1c4040
 // In the diagnostic custom regime: fixed-island direct read with a two-use retry local 31; the
 // complementary array-direct read 31; adding a two-use active local 31; world declared before the
 // record 31; block-scoped world 32. Original body and declaration order restored.
+// Lane 10 round 42: the convention follows where LTCG enters the object code's large call cycle, which
+// this function, 0x146bf0 and 0x278f00 belong to through 0xb8540 (BLOCKED-BY 0xb8540: its body is disabled,
+// see src/unknown_0b8540.cpp); the island-scan count in EDX rather than ECX follows from DL. Body trials:
+// separate index for the island scan 8; island element read at each use 150; entity read through the
+// priority view at both uses 143; fixed island read at each use 78; for-scoped indices 8.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1507,6 +1522,11 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // reordered to (component, index, change) in src/unknown_1cec30.cpp for the register-argument order.
 // Round 42 (0x1d10b0's file on the avoid list again): index declared before the mirror 3; mirror declared with
 // the selection locals 3; index declared outside the for 3; int index 3; fill loop counting into count 139.
+// Lane 10 round 42: the EBX compare comes from the mirror's zero (with no mirror at all the entry test is
+// retail's `test eax, eax`, 125 diagnostic; no reload in the impulse path 106 diagnostic); index initialised
+// before the selection 162; mirror zeroed before the selection 166; mirror stored at the top of each iteration
+// 111; default-NONE selected index in place of the goto 3; selected index stored before the count 5.
+// BLOCKED-BY 0x1d10b0 (its file on the avoid list).
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

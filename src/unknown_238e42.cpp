@@ -520,12 +520,6 @@ struct s_online_game_invite;
 void online_game_invite_answer(DWORD controller_index, const s_online_game_invite *invite, long answer);
 
 /* joins the game a message invites the selected player to */
-// score 2 (was 2): retail stores the type before the second half of the
-// FILETIME copy, ours stores it after, so the two stores trade places.
-// Tried: the type set inside the answer call's argument 2; the time copied
-// high half first 5; the high half loaded into a local before the type store
-// 3 (it takes ebx); the message cleared at the case's start 24, after the
-// answer call or at the case's end 57; the invite pointer set at the top 39.
 // @retail 0x238f3f
 void __stdcall function_238f3f(long controller_index, void *message, unsigned __int64 session_id)
 {
@@ -550,8 +544,8 @@ void __stdcall function_238f3f(long controller_index, void *message, unsigned __
 		selection.friend_ = friend_;
 		*(unsigned __int64 *)&selection.friend_.sessionID = session_id;
 		selection.friend_.dwTitleID = invite->title_id;
-		selection.friend_.gameinviteTime = invite->time;
 		selection.type = 2;
+		selection.friend_.gameinviteTime = invite->time;
 		message = NULL;
 		online_game_invite_answer(controller_index, (s_online_game_invite *)&selection.friend_, 0);
 		selection.friend_.dwFriendState = 1;
@@ -977,6 +971,13 @@ bool __stdcall function_2399da(long controller_index)
 // EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
 // (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
 // 90. Plain: own rank read from the membership field at each use 90.
+// Round 43 (lane 10): one result path (task index preset to NONE, the deny and rank-3 dialogs fall
+// through to the task test) 90; the progress call written in both the remove and set arms 90; dispatch
+// remove / over-rank deny / `rank != 3` set / rank-3 dialog 90; task index declared before the slot
+// read 90; `membership` declared before `member` 90. Diagnostic: the rank store replaced by a constant
+// lets the identity take EAX (but the constant is CSE'd with `>= 2`, so it is no clean test). Also:
+// the non-remove arm as one block with over-rank and rank-3 guard returns 90; with the rank store
+// first in that block 91.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

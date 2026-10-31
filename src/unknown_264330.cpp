@@ -521,6 +521,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 0xa0) and 0x264210 then inlines it too and stops matching. Ours also inlines 0x25c820 at the release
 // label where retail calls it out of line (tail-merged with case 1's call); the release pair written in
 // each case 583 (inlined at every site). The actor index stays stacked: ours gives EBX to the index copy.
+// Round 21 (m3 lane 2, fast; EBX goes to the `update` bool in the walk, the only callee-saved byte
+// register, as it lives across the 0x2640c0/0x2641c0 calls): `sample = true; update = true;` 424;
+// sample/update declared after the node call 420; update declared first 422; sampled_one declared
+// before maximum 420; the update test nested under `if (sample && update)` 420.
+// Round 256: Case priorities beginning with 1 10423/14023/14203/14230/13042/13402/13420/14320 give
+// 422/422/425/419/449/452/457/445; one-point form rejected. Original cases and body restored;
+// frame and actor homes remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
