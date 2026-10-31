@@ -476,6 +476,15 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // normal after the cross with swapped contact_cross arms 170; contact_cross as a function-like macro 124; 0x1f087b
 // as a macro 124. Built with the selected arms writing `support` (contact_cross, 0x1f087b or cross3f_staged):
 // `*out = support` in the arm 177/177/177, one `*out = support` after both arms 155/155/155 (aligned 111 -> 100).
+// Round 28 (lane 14), `--fast`: average.i as `a->i + b->i` 122 (same code); the averaging arm's two
+// direct copies 199 (1007 bytes, aligned 93 -> 75: that arm then exactly retail's), with average.i
+// swapped 199; the first cross written in both selected arms 316 (1026 bytes), with the two copies 337;
+// axis declared before the normal pointer 122 (same code); cross3f_staged in the selected arms 165 (975
+// bytes), with the two copies 178 (aligned 75), with the first cross staged too 178; the average through
+// vector3f_add(b, a) 170 (972 bytes: shared arm products hoisted above the branch), with the two copies 177
+// (aligned 70); the selected arms writing a `support` local copied to out once inside the selected
+// branch 190 (1000 bytes), with the two copies 251 (also with `support` local to that branch or through
+// cross3f_staged, 251 each).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -877,6 +886,8 @@ struct s_flags_1f0870
 // Round 48 (lane 9): flying through the mode-bit helper 0x1f1462 590; no `mode` local 592; flags dword and damping
 // declared first 594; the enabled test through the flag view 591; one by-value flag-bits copy for all four tests
 // 625; contact_cross as a function-like macro 621; 0x1f087b or shape_dot as macros 590/590.
+// Round 248: complete native input/result-history/tuning-record field views, seven subsets
+// and all with a twice-used history timestamp, 590 each. All types and executable body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1261,8 +1272,10 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
-// MiniMax E run 26: score 418 (was 418): retail zeroes xmm6 rather than xmm0 for the speed store and keeps the contact counter at the bottom of the frame while the component pointer takes the dead request argument slot; initialising the counter between the two NONE stores reproduces the store order (417) but the two homes stay swapped, and a non-volatile counter is worse (530). The contact-dot term order and the material-call expansion still differ.
-// score 418 (was 421): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// score 418 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// Retail keeps zero in XMM6 and count at the frame bottom, component in the dead request slot;
+// count initialization between the NONE stores 417, unqualified count 530; homes remain swapped.
+// Contact-dot order and material-call expansion still differ.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
 // Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
@@ -1346,6 +1359,9 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // minus 418 (same code: `xorps`/`subss` either way); the flag test as `((flags >> 1) & 1) != 0` 418; a named
 // `height - 0.001f` 419; the flag named before the loop in shift form 426; contact_cross as a macro 508; shape_dot
 // as a macro 418.
+// Round 248: coherent complete-state first parameter with initial-point helper views, repeated
+// normal observation and native request/tuning fields 418/418/460/460/418/418/460/460.
+// Caller stays 230; all seven matched file controls survive. Original contract and body restored.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
@@ -1502,8 +1518,9 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// MiniMax E run 26: score 230 (was 230): the movement length as a real makes the x87 prologue byte-identical to retail and moves the first difference from +0x65 to +0x8b, but the body grows ten bytes (233); retail's contact dot is (n.k*v.k + n.j*v.j) + (v.x*n.i) and ours computes a different term and operand order, and MSVC canonicalises the multiply operands either way.
 // score 230 (was 230): Frame 0x28 agrees; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
+// forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
 // expansion remain. Our build inlines 0x1f1df0 at the second call (after 0x1f2250) where retail
 // calls it at both sites; retail also lays the not-supported arms of the contact loop out after the
@@ -1554,6 +1571,8 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // the flag/no-flag skip tests as one ternary, nested in one `else`, or the no-flag arm as two tests 230/230/230
 // (same code); the no-flag arm first 252; 0x1f2250's input parameter declared last 230 (same code: ours already
 // passes it in ECX); shape_dot as a macro 230; the five accept assignments written in each of the three arms 361.
+// Round 248: complete native request/result/tuning-field identities, four double-magnitude
+// forms 230 each; four real-magnitude counterparts 233 each. Original body and types restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

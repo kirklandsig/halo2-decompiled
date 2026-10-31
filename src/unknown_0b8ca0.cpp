@@ -1691,7 +1691,8 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
-// score 285 (was 285): the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
+// score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Earlier: the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
 // +0x76 (pool in EBX, -1 in EAX). Retail inlines the node matrix lookup (0xb8bd0's body, here called
 // out of line because its file is /Ob1) and re-derives pool->data into EBX after the ancestry loop
 // for both the parent and the header, where ours takes the header from the entry's pool->data.
@@ -1779,6 +1780,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // Round 205: Shared rotation/axis providers 332/332; shared point provider alone/rotation/axis 542/431/447;
 // rotation/axis with the native activity member 315/330; rotation with the earlier inverse phase 334.
 // All restored; frame, accepted table transport and node-query expansion remain.
+// Round 247: both real header stores through native byte members, with saved activity,
+// complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
+// Four-point lead is below the gate; original header type, byte stores, activity
+// observation, root fields, node query, shared transforms and full body restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
