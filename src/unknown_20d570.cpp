@@ -85,12 +85,18 @@ void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, lon
 // identical code); record initialised to NULL at its declaration 222 (callers change).
 // Only this lookup differs: retail colours pool/record eax, index/field edx (lea), ours
 // index/record/field eax (add).
+// Round 11 (lane 18), fast scores (the fast build gives 23 where the plain check gives 21): the tag
+// header global read at each use instead of the globals local 23; the first lookup as a byte pointer
+// with offset fields (the sibling files' form for this pool) 23; the tag pointer set in both arms
+// instead of initialised 195; the record declared first 23; the object through the existing
+// object_get 23 (identical code; kept: it replaces that helper's body written out). All identical
+// code except the tag arms: the lookup's colouring does not follow any local form tried.
 // @retail 0x20d570
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 {
 	if (g_4f55d0->active)
 	{
-		s_slot_object_view *object = (s_slot_object_view *)((s_object_header_view *)g_4e0300->data)[arg_2 & 0xffff].object;
+		s_slot_object_view *object = object_get(arg_2);
 		s_cue_source *source = (s_cue_source *)arg_3;
 		s_cue_globals_view *globals = (s_cue_globals_view *)g_4e034c;
 		s_cue_tag *tag = NULL;

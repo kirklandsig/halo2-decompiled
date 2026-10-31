@@ -40,7 +40,7 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 	return false;
 }
 
-// score 5 (was 101): loop setup stores [esp+0x10]/[esp+0x18] in another order (retail stores
+// score 5 (was 5): loop setup stores [esp+0x10]/[esp+0x18] in another order (retail stores
 // previous*4, loads the output, then current*8 and current*4; ours current*8 first), and the
 // first intersection's x product loads the plane before the point. A compile-only build of this
 // file reproduces both; the product operand orders follow the whole function (a no-op product in
@@ -78,6 +78,8 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // point-first numerator and plain inline 5; normal-i/first-x locals 110/180; named x/y products
 // 9/7; y product with point/plane parameter orders 7; both named products 9; defaulted y product 7.
 // Original helper and body restored.
+// Round 119 (lane 5): `count` used without the `original_count` copy 178 (699); negative counter declared first 7;
+// sides declared before the copy buffer 5; result declared after the early exits 168 (680); short counters 118.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
