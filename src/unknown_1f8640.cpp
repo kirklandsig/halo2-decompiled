@@ -367,7 +367,8 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 228 (was 228): frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
+// score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
+// Earlier: frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
 // Round 46 leads (aligned diff 59 at 228): retail's failure block stores result = false itself and the
 // route switch has a real default storing false (`default: result = false; break;` and `failed:
 // result = false;` give frame 0x80, aligned 50, positional 415). VALUE BUG: retail's case 3 jumps into
@@ -420,6 +421,15 @@ struct s_1f8a70_actor
 // each; all with unit phase scope 228; signed long 411, returned mode output 412; three-choice enum
 // 411/412, scoped enum 411/412. Round 215: route short/word/signed-byte/byte 420/366/416/336; each with
 // returned unit-output consumption 416/371/422/350.
+// Lane 18 round 6: route_mode looks like a spilled short (dword stores, movsx word reads) with EDI holding NONE.
+// On the frame-0x80 graph (case 3 also setting route_mode = 1 after the destination and node, in case 5's
+// order, so the two tails merge as retail; `default: result = false;` and `failed: result = false;`) 270,
+// aligned 44: positions slip by one from the first exit (no `xor bl, bl` / `mov al, bl`) and by up to 13 in the
+// mode switch, where retail places the route dispatch after case 5's tail and cases 6-7 after it. Value fix and
+// false stores without the case 3 reorder 423; with short route_mode 431 (route takes EDI, NONE does not);
+// first-exit `result = false;` in its branch without an initializer 270 (still folded); unit mode tested through
+// the returned pointer 333; on that graph case 5 moved last in the mode switch 451, and the failure-label
+// store dropped (default store kept) 380 (frame 0x84 again). Original body restored.
 // Round 208: Scratch path receiver reuse with unit-output/source-settings/default-lifetime masks
 // 0..7: 228/232/228/232/258/262/258/262. Original receiver, scopes and defaults restored; frame 0x84
 // and result/output homes remain.
@@ -436,6 +446,10 @@ struct s_1f8a70_actor
 // unit-mode test 333, both 432, `result = false;` inside the first exit with no initializer 270 (same
 // code), `return false;` there 270; the fix with the real default only 380; t2 with the returned test
 // 436. Retail's first exit keeps the constant in BL; every form here folds it to `xor al, al`.
+// Round 246: early active/arrival/mode test-result subsets on the dword-selector
+// graph 430/308/434/442/449/442/449; all with explicit failed false 435. The mode
+// result recovers frame 0x80 and pool/data entry order at 442, first +0x33, but the
+// first false still lacks BL and length grows to 1672. Original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

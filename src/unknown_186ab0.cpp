@@ -239,6 +239,19 @@ void player_action_initialize(s_player_action *arg_0);
 // through the float overloads; pragma removed 569 (0x14d040 inlined); copy orders 9/11/11/5, struct
 // block copy 8; SIB call-site forms (result local, unit index local) 1; permuter 600 s, 21 tries, none
 // below 1. Non-flag latch spellings (else first, named pressed bool, store first) all keep the arm inline.
+// Round 53 (lane 9, fast with every callee listed; the reduced image then scores it as the full build):
+// lane 11's round-27 form reproduced at 1 (1515 bytes); still only the inlined 0xcbec0 count read [edx + edi]
+// against retail's [edi + edx]. On it: the +0x28/+0x214 four-byte copy as a real short/char/char struct
+// member instead of the long cast, with the output copy as a long cast/a struct copy 1/1 (identical code);
+// the cycle loop written out with the unit looked up inside it 316. Diagnostics (all reverted): new-field
+// stores to the control record, the player record or the unit, dropped or duplicated selection stores and dead
+// temporaries before the call or at entry never flip the order. Compile-only probe with an inlinable copy of
+// 0xcbec0's body reproduces [edx + edi]; only a unit read inside the loop gives base first, but then the
+// lookup is scheduled after the NONE normalization (retail has it first), and that body out of line no
+// longer gives retail's 0xcbec0. The score-1 source is saved as build/r53/186ab0.s1.cpp in the m3-lane9 tree.
+// Round 243: Native persistent toggle/pulse/hold byte fields, subsets 1..7
+// 134/134/134/134/134/134/134; all signed byte 134. Original Boolean fields,
+// latch graph and complete body restored; comparison/count and cold output scheduling remain.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

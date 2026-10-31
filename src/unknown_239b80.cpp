@@ -299,6 +299,12 @@ short function_239e50(short count, point2f const *points, short *indices);
 // reciprocal written at both scales 42; a single result set in the scale arm 42. Matched 0xde080's
 // normalizer keeps `movss xmm4,[v->i]; mulss xmm4,xmm0` (no commute), while ours commutes `v->j * inv`
 // into the reciprocal's register here: retail's reciprocal looks live past both scales.
+// Round 25 (fast): a `vector2f *` local to line.n in case 0, with only the i store through it 69 (305
+// bytes), the same with j scaled first 73 (308); i store, normalize and dot through it 73; only the j
+// store through it 44 (304 bytes: retail's exact normalize block, constants XMM5/XMM4; the dot's
+// `mulss xmm1, [p.x]` fold and the state/index/point registers remain); both stores 53; normalize/dot
+// argument alone 42 (same code). Compile-only diagnostic: the reciprocal kept live past both scales
+// gives retail's XMM numbering. Opening body restored.
 // Round 54 (lane 12, fast; compile-only reproduces both the SSE block and the integer allocation):
 // operand order follows which normal component is written by name first. line.n.i written by name with
 // line.n.j and the case-0 dot through a `vector2f *normal = &line.n` gives retail's whole SSE block (1.0 in
@@ -311,6 +317,12 @@ short function_239e50(short count, point2f const *points, short *indices);
 // copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
 // first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
 // case 1's dot by name or through the pointer in either term order.
+// Round 7 (lane 17, fast): the normal built from the existing vector2d_from_points2d (first minus point,
+// i = delta.y, j = -delta.x) 86 (316 bytes: the negation is an SSE subtract from zero); the loop on
+// `i < count` with `if (state >= 2) break;` after the switch 101 (311); case 0 in matched 0x23a2b0's own
+// inline form (named length, `*=` scales, `else length = 0.f`, the dot by name) 56 (j still scaled in the
+// reciprocal's register); normalize2d spelled as matched 0xde080's (scale inside `!(fabs(m) < eps)`,
+// `v->i * inv`) 42 (same code); the normalizer's result tested implicitly 42 (same code).
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -730,6 +742,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // compiles identically (120-form screen); mask first 132; side flags before the result 132; the
 // fraction default before the deltas 240 (880 bytes); one named copy size 129; one inline
 // append-and-dedupe helper for both tails 129; `points + count - 1` / `&points[count] - 1` 129.
+// Round 453: Plain current-point cursor with native/memcpy/memmove publication 280/280/306;
+// original indexed walk with point memcpy/memmove 129/337. Native intersection on the cursor
+// graph with native/memcpy append 235/235; complete memmove publications 298.
+// All original indexed traversal, native stores, copies and helper contracts restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

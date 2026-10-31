@@ -257,6 +257,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 886/813/977/826/976/934/1081; all with by-value publication 1240. Original helper contracts and body restored.
 // Round 237: Plain scalar/merge/color native component loops 1/2/3/4/5/6/7, then all with normalized publication loop: 618/616/619/616/619/616/620/620.
 // Original executable body restored.
+// Round 242: shared two-source range conditional/nested/result/guard forms with word palette
+// 619/619/675/618, with byte palette 708/708/670/708. Original helpers and body restored;
+// palette/record and zero/SSE accumulator carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

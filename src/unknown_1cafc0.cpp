@@ -538,6 +538,9 @@ PRIVATE __forceinline void graph_weapon_types_request(s_graph_tag *graph, long m
 	graph_weapon_type_request(graph, DEFAULT_WEAPON_NAME, DEFAULT_WEAPON_NAME, DEFAULT_WEAPON_NAME);
 }
 // score 399 (was 399): Frame eight versus twelve and independent hidden-result homes remain; request graph/name allocation still differs.
+// Aligned only 90 (round 27): retail packs the primary query's hidden result into the dead mode slot and gives
+// the fallback's its own frame dword (+0x18); ours packs both into the set slot. In the request expansions
+// retail holds &graph->mode_count in EBX and reloads the graph from its home (EBP), ours keeps the graph in EBP.
 // frame eight versus twelve; primary/fallback result homes entry +16/+16 versus retail +4/-4.
 
 // Earlier 399 (was 399): frame 8 versus 12 and hidden-result homes still differ.
@@ -604,8 +607,18 @@ PRIVATE __forceinline void graph_weapon_types_request(s_graph_tag *graph, long m
 // 445/445 with two losses. All rejected. Original Boolean method contract, class declaration, byte
 // status, both native hidden query publications and existing request helpers restored. Frame eight
 // versus twelve remains; retail ends ret 0x18.
+// Lane 18 round 6: positions agree to index 235 (33 differences); then retail's first request expansion reloads
+// the graph into EBP from its stack home at each loop preheader and failure join (`jmp` over `mov ebp, [esp+0x14]`)
+// and offsets EBX in place (`add ebx, 0x34`), where ours keeps the graph in EBP: 3 and later 7 instructions of
+// drift. Retail's fourth frame dword is the fallback query's return temporary (the primary's reuses a dead
+// parameter slot). Found names declared mode/class/type 419; type/class/mode 403 (loads in retail's order, graph
+// then kept in EBX with graph+0x34 in EBP); fallback query through the existing animation_id local 399 (same
+// code); graph pointer declared const 399 (same code); type/class/mode with a named inherited graph 403.
 // DL209: Returned graph reference with whole input/found/result record-view subsets 0-7: 399 each.
 // Original receiver and all records restored.
+// Round 27 (lane 14): fallback query through the existing animation_id 399 (same code); bool success 447;
+// primary/both queries through animation_id 399/399 (same code, copy propagated); fallback into a block-scope
+// initialized local 414 (temps still share the set slot).
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

@@ -133,9 +133,23 @@ bool function_25d9b0(long prop_index);
 // lookups assigned to it) 110 (retail's head, actor EBX/node EBP, but that pointer spilled, frame 0x10),
 // declared first 110. Any extra value live from entry, or a split node, gives retail's actor/node registers;
 // retail gets them without a stack slot.
+// Round 26 (lane 14, fast, file and callees in the image, control 86): the 0x26f060 call now agrees. One
+// extra actor read inside the loop (diagnostic: `|| actor->unknown07c == 99` in the decline test) gives
+// retail's actor EBX/node EBP at 551 bytes (116); an extra actor read in the evaluation or one node read
+// fewer there keeps ours. The evaluation as early `return 0`s with `return priority` last 128 (570
+// bytes); the near distance read once into a local 90; an invitation element pointer for the joint and
+// participant reads, with or without the index local, 148/148 (aligned 78: the pointer is kept in EDI
+// where retail recomputes the index); the loop's new prop stored in prop_index 86 (same code); the gate
+// as `return priority` / `return 0` 105 (priority spilled, state in ESI, `xor ax, ax`).
 // Round 451: Native iterator aggregate/entry scope/entry-result role-name subsets
 // 1/2/1+2/4/1+4/2+4/all, then late entry aggregate: 88/86/155/86/88/86/155/151, with faithful
 // callback/callee controls. Original descriptor and body restored.
+// Round 53 (lane 9, fast): retail's `xor eax, eax` zero epilogue is a tail-duplicated `priority = 0; return
+// priority;` (compile-only screens: `return 0` gives `xor ax, ax`). `if (ok) return priority; } return 0;` 105
+// (priority spilled, `xor ax, ax`); `if (ok) goto done; } priority = 0; done: return priority;` 91 (554 bytes:
+// retail's exact zero epilogue, but priority is spilled to the argument slot and the state kept in ESI, the
+// other way from retail), with priority initialized at its declaration 91, also without the fallback's own
+// zero store 91, with a long priority 91, with the state declared at the top 91.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
