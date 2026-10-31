@@ -94,6 +94,12 @@ struct s_9cca0
 // retail's order, so this waits on 0x184440's body (BLOCKED-BY 0x184440).
 // Tried: the first zeroing through the member array 9; the tag in a local 58;
 // the tag test on the input 9; the vectors copied with memcpy 9; `&field_7e` 9.
+// Round 19: the global flag read into a named bool before the event 53; the marker stored
+// before the tag 10; the input as a typed struct 9 (same code); the vectors copied by component
+// through source pointers 50; the tag stored first after the zeroing 31. Diagnostics in 0x184440:
+// without its set_location call, or with a non-recursive stand-in for it, the test moves above
+// the k store as in retail but the vector copies then store i early (12), so the escape comes
+// through the recursive set_location and is not the whole difference.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

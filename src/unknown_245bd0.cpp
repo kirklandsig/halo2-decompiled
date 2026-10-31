@@ -329,6 +329,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // i,k,j statements with any scale/dot form and the chained y-first zeros), 59 (12), 61 (84), 152 (30),
 // 162 (6, 671 bytes); i,k,j statements with the reciprocal in the call, separate zeros and the
 // swapped dot 61 (fast agrees).
+// Round 117 (fast): the listed pointer form still matches; its pointer sum alone (original dot and
+// chained zeros) 123, with i and j through the pointer and k direct 169. With the dot's inputs swapped
+// and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
+// difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
+// `j + (k + i)` 61; k, i, j statements 61.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

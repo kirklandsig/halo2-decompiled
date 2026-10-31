@@ -160,6 +160,10 @@ PRIVATE __forceinline void scripted_vector_scale(vector3f const *vector, real sc
 // only 31, in the up scaling only 32 (both 377 bytes); the first sum before the up scaling with the
 // cross pointers 81 (362 bytes), with all pointers 86 (360). The last adds accumulate in the up
 // registers in every form (retail in the forward ones).
+// Round 93: forward-only cross pointer/reference 8; staged cross, unit scaled add, velocity-first,
+// late or mutable pointer and forward-up declarations 8 each on that base; both sums forward with
+// publication 84; up-alias cross 111; forward-alias 130; single accumulator and second-sum-forward
+// 85 each (caller conventions changed). One-use aliases not kept; original restored.
 // @retail 0x10b010
 void function_10b010(long object_index, real forward_speed, real left_speed, real up_speed)
 {

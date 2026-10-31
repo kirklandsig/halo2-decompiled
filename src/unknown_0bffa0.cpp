@@ -1375,6 +1375,10 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // orders 19..54 (i, j, k loads and i, j, k rows stay best); with up-first rows (0x163db0's matched plane
 // rows) 19 (same code); unused reads of the node matrix axes before the rotations 19/28 (diagnostic);
 // the node arm first in source (marker test inverted) 44.
+// Round 19 (lane 2, fast with 0xc0840/0xc28b0/0x14a280): the node matrix declared at the function
+// top 38; both rotation outputs addressed from one forward pointer (`forward + 1` for up) 40; the far
+// point from apply_point's returned position 45; the node arm as a forceinline helper taking the light
+// 40; the body under one enabled test instead of the early return 38 (same code).
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
