@@ -1433,6 +1433,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (aaa/zzz) 83/83/83 (slots do not move). Compile-only, the index fill always gives index_count a
 // whole-body register and homes mode (216 combinations of fill/qsort/scan/maximum/loop-index/qsort
 // placement/declaration order); only a pointer `<` fill keeps retail's homes, but as a pointer rep stosd.
+// Round 136 (lane 4): memset fills 164 (stosd + stosb, index_count in EBX); the mode-3 qsort block inside branch two 131
+// (430); `indices[index_count] = i; index_count++;` 83; declarations index/player/indices/item 84, item/player/index/
+// indices, indices/player/index/item, player/item/index/indices 83 each; pointer `<` fills 154 (index_count in EDI in
+// both scans as retail, but the 0x199ef8 result takes EBX). A one-link harness with the callee files is not exact here.
 // Round 35 (lane 11, fast): the second branch's fill alone as `for (long j = index_count; j < 16; j++)` 107
 // (that branch then matches retail: index_count in EDI, guarded rep stosd, EDI reloaded; but the
 // 0x199ef8 result takes EBX there and mode moves to the stack, frame 0x58); with mode declared first 110;
@@ -2017,6 +2021,10 @@ extern dword g_54d5b8;
 // layout for all of these and for an if/else-if chain (VC builds no compare tree from it): retail's
 // layout looks like case 4 hosting the whole call/store/return with the other cases as stubs that
 // jump back into it.
+// Round 136 (lane 4): case 4 `if (g_51ec99) { store; return; } dialog = 0xad;` 53 (165); its own call under
+// `if (!g_51ec99)` then the store and return 81 (call after case 4 as retail, pushes 0xad and the state register); the
+// flag test before `dialog = 0xad` 37; `dialog = 0xad; if (!g_51ec99) break;` then its own store and return 48 (163);
+// the call under the flag then a jump to the store, with `case 1:` 83 (178).
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2882,7 +2890,7 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
-// score 61 (was 100): frame 0x754 agrees; the item-loop receiver reload (retail: once after the loop),
+// score 61 (was 61): frame 0x754 agrees; the item-loop receiver reload (retail: once after the loop),
 // row-loop text lookup (retail inlines it; widget/counter registers swapped), animation byte
 // (retail movsx) and the final receiver reloads differ.
 // Tried: category descending 237; title default first 244; bitmap index long 237; title widget scopes
@@ -2946,6 +2954,13 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // push block) 61, kept. On it: the row text through find_child 161 (`this` leaves ESI); the animation
 // bit as a plain signed shift 78 (folds to `test byte`); the row bitmap through find_bitmap 74; the row
 // text index uncast 77; the searching flag stored directly 78.
+// Round 136 (lane 4): retail's row lookup is `find_child(6, (short)(i + 4), false)` (every matched variable-index caller
+// calls find_text out of line, and this function's bitmaps already use find_child): 161 (879; item loop, row loop and
+// section 2 as retail, but section 1's bitmap takes ESI from `this` and the tail keeps `this` in ESI); on it: row-scoped
+// text and bitmap / text / bitmap 171/161/171, sections 1-2 through find_child(6, 2/3) 161, declarations bitmap,text,i /
+// i,text,bitmap / i,bitmap,text 161 each, find_bitmap for section 1/2/both 161, the animation bit as `((char)x >> 1) & 1`
+// / `(x >> 1) & 1` / ANIMATION_FLAG of `(char)x` 161 (874) / 161 (874) / 161 (retail's `movsx byte` read is unique).
+// Diagnostics without the item loop / the appearance copy: find_text still called (not the inline budget).
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {
