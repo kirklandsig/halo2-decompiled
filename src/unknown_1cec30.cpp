@@ -2188,7 +2188,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 91 (was 109): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
+// score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
 // three), the speed products the same way (retail scales j, k in place), and the property value 0 kept
@@ -2246,6 +2246,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // no-contact arm with a conditional value 267 (1371 bytes); the contact test inverted 207 (1498
 // bytes). The matched normal block shows the shape retail's velocity block needs (i scaled through
 // a copy of the inverse, j and k in place in registers loaded before the branch).
+// Round 37 (lane 10, fast): retail's velocity scale and its speed scale both read as (s * i, j * s,
+// k * s); no existing helper has that order. The velocity through the existing normalize_inline 175
+// (its length order differs, first difference +0x2d5); through the function's `length` local and
+// vector3f_scale like the normal block 179; the inline setter passing its value through its address
+// (`*(s_havok_property_word const *)&value`, as the out-of-line setter does) 163 (1467 bytes); the speed
+// sum before the velocity sums 91 (same code);
+// the result written through `body->unknown30` with no pointer local 99.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2803,6 +2810,17 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // Paired getter unchanged; all contracts restored.
 // Round 47: array operator[] at all five/first-only/late-three sites 10/7/10; array reference for the
 // bound/all reads 7/10; size reference 7; shared data pointer 171; final call scope 7. Original body restored.
+// Round 37 (lane 10): the final call's setup needs 0x1d1010 as (component, index, change) (7 -> 5 in round
+// 15, not kept: 0x1d24a0 920 -> 966), whose call lines include contributor function 0xe0ef0 (BLOCKED-BY
+// 0xe0ef0). The [offset + data] order never flips in the full build when the loop shrinks: without the
+// angular cap 333 (492 bytes), without the head kind test 171 (653), without the last change block 185
+// (600), without the pre-loop impulse block 227 (628), without the cap and the last block 425 (410); all
+// keep [offset + data] (the reduced-harness size lead does not carry over). Plain compile-only builds keep
+// it for direct data[i] reads and an explicit `data + i * 0x60` at all five sites as well. Candidate forms:
+// the index declared before the change vector 7; the velocity pair declared before the head kind test 7;
+// `angular, linear` declared in that order 7; the entry tests as one early return 7; the velocities through
+// the existing out-of-line linear/angular getters 274 (551 bytes, calls kept; the head read then turns to
+// [data + offset]).
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {
