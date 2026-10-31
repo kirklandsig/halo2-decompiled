@@ -1177,6 +1177,21 @@ void c_game_engine_markers::v21(long object_index)
 // at each call, no player local, 100; the player pointer from a re-read `unit->player_index` with the
 // team at each call 119 (CSE'd back); the team at each call with the unit fetched again for the event
 // block's player index 117 (446 bytes; options still in EDX), with v30's per-arm team and a const player 117.
+// Round 7 (m3 lane 18, fast with 0x2411b0/0x240ee0 matched): a g_4e0300 header local held across the type
+// test and used for both slot lookups 40 (entry still index EAX, header ECX); the type test's result in
+// a short local 40; the absolute index written at each call on the kept form 93; one options local for
+// the mode test, the engine-type compare and the event type 46; an early return on the mode only 40.
+// Round 113 (lane 6, fast with v24/v30): the object index read once through its own address for the type
+// test 40 (same code), with the team at each call 119; one header-array local for the slot and unit fetches
+// 104; the event declared at function scope 40 (same code); the team at each call rebuilt (119, 430 bytes:
+// retail's flag test and player pointer, the options pointer held in EDX from entry).
+// Round 100 (lane 8, one-file harness exact, six re-run as real fast trials): a grid of the team local or the team at
+// each call, the unit fetched before the slot, the absolute index after the player pointer, an object local for the
+// slot, the unit fetched inside the slot test and a separate cause-player local (48 forms): best 40 (same code); unit
+// first 120, object local 119, unit inside the slot test 118, team at each call with unit first 119, with the
+// absolute index after, object local and cause local 130, with unit inside and cause local 129; on the team at each
+// call: arms swapped 119, one options local for both tests 119, mode and type tests joined 119; slot_object_get
+// with the index first, a header-array local or a pointer add 40 each (same code), `(word)` index 109.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

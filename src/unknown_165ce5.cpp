@@ -1550,6 +1550,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Review of round 30 (m3): not kept: the 48/122 set needs `else if (zoomed)` after `if (scoped)`, a test
 // that is always true inside `if ((zoomed || scoped) && ...)`; with a plain `else` it is 306 (fast). Code
 // back to the original; the movzx, active-preset and callback findings above still stand alone.
+// Round 98 (lane 8): BLOCKED-BY the build's stand-in caller (tools/build.py): an LTCG env link of the
+// generated translation unit equals the full listing only while the entry calls the stand-in that
+// calls this function; with only 0x165dc1's stand-in (retail's one caller) the same source saves
+// ESI/EDI after the unit test and restores them at the loop exit, as retail (no other object
+// matters: all 1772 others linked still shrink-wrap). Env rows with the stand-in, base 157/116: each
+// look angle divided then clamped in its own statement 160/119; the mode lookup after the spring
+// defaults 173/129; `first_weapon = user->weapons` 157/116 (identical); spring defaults declared
+// d, c, b, a 161/127; user flags read and set directly without the flags local 157/116 (identical).
 // Round 24 (lane 14, fast; aligned counts by sequence alignment, base 116): the movzx flag test (a named
 // `long` copy of the channel byte, two bit tests), the active preset and the `== 0 ? right : left` callback
 // together 358 (2199 bytes, aligned 109); with the overlay set read once (negative flags) 372; those three
@@ -1558,6 +1566,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // once 306 (2190 bytes, aligned 53: two instructions short, retail's `cmp zoomed; je` in the else arm); the
 // positive bools alone on the original body 401. Unit/mode slots (ours -0x18/-0x1c), the look homes and
 // shared reciprocal and the ESI/EDI save region are unchanged by all of them.
+// Round 8 (lane 18, fast, aligned counts in brackets, fast control 220 [79], full 218): a `#pragma optimize("p", on)`
+// diagnostic (reverted) gives retail's two look divisions with the rate reloaded between them, but
+// copies the look-history pair through x87 and grows the body to 2212 bytes, 343 [77]; look rates as
+// one s_view_angles 216 [72] (frame 0x30); that declared first 216 [72]; with unit and mode declared
+// before their assignments 216 [72]; with the pitch as `x * (-1.0f / rate)` 219 [79]; the two look
+// locals' addresses taken as a no-op (diagnostic) 220 [79]; the loop index declared in the for 220 [79].
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -199,36 +199,6 @@ void function_194d30(s_bitstream *stream, vector3f const *up, vector3f const *fo
 	function_195720(stream, real_to_long((angle - -k_pi) * 40.42535400390625f), 8);
 }
 
-// score 6 (was 56): only the magnitude sum's order differs: ours j*j + i*i, then k*k; retail i*i +
-// k*k, then j*j. Round 127: normalize_decoded_direction's sum grouped k*k + (i*i + j*j) (shared with
-// 0x194d30) 56 -> 6 at retail's 449 bytes; i*i + (j*j + k*k) and j*j + (i*i + k*k) 56/56 (k kept on
-// x87); the normalization inside the shared decoder 6.
-// Earlier (score 56): only the normalization differs, as in 0x194d30: ours keeps the decoded k on
-// the x87 stack and squares it first; retail pops it and sums i, k, j from memory (a block boundary
-// before the normalization), then scales the normalized vector in place. Round 13: the shared grid
-// decoder in place of this function's hand-written copy of it, 96 -> 56. Earlier, on that copy:
-// single-expression grid values 126 (1/63*2 folds into one constant); x finished before y 96;
-// `vector3f_scale` with the magnitude call 96; the old decoder helper 114 (aligned 34 -> 26); that
-// helper as plain inline 344 (not inlined). Plain component loops (rows/normalization/output in
-// seven subsets) 114/96/114/96/96/96/96; all with complete normalized value 155 at 489 bytes.
-// Row/output forms are 440 bytes; no count gain or missing store/reload recovery.
-// retail keeps 1/63 in xmm2 and 2 in xmm3 and finishes x (both products) before
-// converting y; ours keeps 1/63 in xmm0 and scales x and y by two late. Retail also pops the decoded k
-// and sums i, k, j from memory (a block boundary before the normalization), and scales the normalized
-// vector in place. Single-expression grid values 126 (1/63*2 folds into one constant); x finished
-// before y 96; `vector3f_scale` with the magnitude call 96; the existing decode_direction_194d30
-// helper 114 (aligned 34 -> 26: the final scale then matches retail and the hand-written decode copy
-// goes; the decode registers and x87 reload remain); that helper as plain inline 344 (not inlined).
-// Plain component loops (rows/normalization/output in seven subsets) 114/96/114/96/96/96/96; all
-// with complete normalized value 155 at 489 bytes. Row/output forms are 440 bytes; no count gain or
-// missing store/reload recovery. Original body and normalizer restored.
-// DL190: Whole face value/native output stores, setter, aggregate 175/175/205; memcpy face with the same boundaries 175/175/205. Original face with setter/aggregate 96/136. Complete face snapshot adds spills; grid reciprocal, last-component reload and output carriers remain. All restored.
-// Round 434: complete scalar normalizer inputs with sqrt/fabs, sqrt/fabsf, sqrtf/fabs,
-// sqrtf/fabsf 32 each; const input/output snapshots with those APIs 56 each. The
-// components passed as scalar parameters in the orders ikj/jik/jki/kij/kji 28/34/32/55/55,
-// output-first ijk/ikj 32/28 (not kept: a parameter order chosen to steer the loads). On ikj,
-// shared output scale/reversed products/direct magnitude query 28/28/97; in-place copy/native
-// scaled value 58/58. Original normalizer restored.
 // @retail 0x195070
 void function_195070(s_bitstream *stream, vector3f *out, real lo, real hi, long bits)
 {
@@ -237,11 +207,9 @@ void function_195070(s_bitstream *stream, vector3f *out, real lo, real hi, long 
 		long index = (long)function_1959c0(stream, k_direction_bits);
 		vector3f direction;
 		decode_direction(index, &direction);
-		normalize_decoded_direction(&direction);
+		normalize_inline(&direction);
 		real magnitude = function_194ff0(stream, lo, hi, bits);
-		out->i = magnitude * direction.i;
-		out->j = magnitude * direction.j;
-		out->k = magnitude * direction.k;
+		vector3f_assign(out, magnitude * direction.i, magnitude * direction.j, magnitude * direction.k);
 	}
 	else
 		*out = *g_4687a4;

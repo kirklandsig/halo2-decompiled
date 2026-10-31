@@ -1226,7 +1226,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 137 (was 149): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
 // the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then
@@ -1290,6 +1290,10 @@ long function_2197f0(real gain);
 // the first branch with divisions 207 (636 bytes), plus a fade_out local 207; a fade_out local with the
 // inverse 141 (670 bytes); the time sum product-first 137 (identical). Left: the else branch and the first
 // branch are retail's code with XMM2/XMM3 (and the 1.0 constant's register) swapped.
+// Round 40 (one-file LTCG harness, exact: 137): the ambience test inverted with the branches swapped 137 (elapsed
+// stays XMM2, retail XMM3); a fade_out local for the tests and the product 141 (670 bytes); the time sum product-first
+// 137, `inverse * (elapsed - hold) * fade_out` 137 (same code); `(elapsed - hold) * (inverse * fade_out)` 172; the
+// reciprocal computed before the fade-out tests 187 (656 bytes).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2781,6 +2785,19 @@ static inline short sound_voice_find_available_channel(char type)
 // result false after the search, true on success, `if (!result)` failure 132; bool result with the search
 // index re-tested after a break loop 104 (retail's found-path-after-loop layout: VC places a loop's break
 // target after the function's other blocks). Original byte-result body restored.
+// Lane 16 r50 (fast): bool result with an `assigned` flag tested before the failure calls 123 (flag in a
+// stack byte); the defaults before `if (channel != NONE) { buffer selection }` and then a failure-first
+// `if (channel == NONE || (buffer_index == NONE && (priority & 2 || requested != NONE))) { failure } else
+// { commit }`: byte result 151, bool result 126 (435 B: retail's block order and `xor bl, bl ... mov al, bl`
+// failure, but NONE hoisted into EBP at entry and the not-found exit unthreaded), with `return true` after
+// the commit 123; the defaults assigned inside the channel block 113 (threaded, failure back after the
+// loop), with `return true` 139; only the driver default before the channel test 107 (430 B, retail's
+// layout, `or ebp, -1` shared with the channel compare, but the not-found exit unthreaded and the channel
+// spilled); that with the driver default before the search 135; the search returning from its loop on
+// those 141/113; the kept form with the driver default before the channel test 132; the failure calls
+// written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
+// the not-found exit past a block that sets the driver default, which no form here reproduces.
+// A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3144,7 +3161,7 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 49 (was 86): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
 // declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
 // compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
 // sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
@@ -3190,6 +3207,26 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // EBP/EBX), `case 1: goto next;` in the do-while 78, case 1 first 78, case 0 ending in continue 78, long mode 89,
 // the switch on the ternary 89, an if/else mode 78, `default: continue;` 49 (dropped); empty case 1 with or
 // without `default: __assume(0)`, case 1 first, cases 1 and 2: 49 (empty cases are dropped).
+// Round 18 (m3 lane 2, one-file LTCG harness, exact 49): on the for loop with `case 1: continue;` (78, retail's
+// `sub eax, 0` with the index in EBP and the pool/voice/range pointers in EBX): range index operands swapped 78;
+// range as pointer arithmetic 78; `NONE == (short)...` 78; mode as if/else 78, inverted ternary 84; `(short)`
+// permutation argument 78; `NONE ==`/`NONE !=` tests 78/78; a do-while whose condition advances (continue goes
+// to the advance) 78, with the pool global 78; pool local in the for init 78; the sibling 0x128020's loop-top pool
+// read 78, its sound pointer at the loop top 167; bool-returning 0x125e60 78. One-target forms (`default:
+// continue;`, `case 0` ending in continue, `case 1: continue; default: continue;`) 49 (`test ax, ax`).
+// Round 40 (one-file LTCG harness, exact: 49; the for/continue and two-label forms confirmed with --fast): a for
+// loop with `case 1: continue;` 78 (retail's `sub eax, 0` and pool reload after the next-index ternary; only the
+// sound index and the pool/voice/range pointers swap EBX/EBP); on it, the range pointer written at both calls 31
+// (registers right, address computed after the class-flag call), computed before the mode 24, the class-flag test
+// without `(bool)` 72 and flag4 without TEST_FIELD_BIT 98 (registers right, the tests fold to `test byte`), both 97;
+// `case 1: case 2: continue;` 17, cases 1, 2 and 3 17, `case 3: continue;` 17 (registers right, `test eax, eax`
+// for `sub eax, 0`), `case 2: continue;` 78, `case 1:` then `case 2:` each continuing 113; case 1 as an empty inline
+// or out-of-line call 78/78; default placed first or last 78; mode as if/else 78, switch on the ternary 89;
+// early-continue start test 78, plus the value_ac test 78; reason, voice index, voice, definition or range declared
+// at the top 78 each; voice arms swapped 108; the existing for-form find helper 49 (same code), with the for loop 78;
+// the 0x218ac0 pitch-range getter 49/78; definition by table read 78; a while loop with goto 214 (592 bytes).
+// Without the switch, dropping either `(bool)` swaps the registers too (120/136). 0x125e60 returning bool (callers
+// without `(byte)`) 78 with the for form (0x125e60 itself unchanged).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3994,6 +4031,15 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // differ), `= {}` arrays 139, memset results in two named locals 77. Compile-only: statement clears realign
 // with clears of 0x40 bytes too, with `__declspec(align(4))` arrays, long/char element views, a returning clear
 // wrapper (inline/forceinline) or the player loop as a for loop.
+// Round 18 (m3 lane 2, fast): the arrays declared 0x80 first 55; the batch declared before the arrays 55; memset
+// of `&local_3[0]`/`&local_4[0]` 55; the batch declared and its count cleared before the arrays 55, with the long
+// restart cursor 76 (same +0x10a padding shift). The caller chain 0x12b450 <- 0x12b690 <- 0x12190 is matched up to
+// the startup code, so a caller's stack alignment cannot explain the missing realignment.
+// Round 40: long restart cursor 76; the restart call without its `(short)` 55 (same code); the 0x40 clear as a
+// statement with the 0x80 clear's result as the argument 123, with the long cursor 158; the 0x40 array `= {0}`
+// with the 0x80 clear's result 147. Probes: a returning clear wrapper inlined across files by LTCG still realigns
+// (build/r40h/clr); in compile-only probes of this clear shape only /Os (or /Oi-, which calls memset) avoids the
+// `and esp, -8`; retail realigns 115 other functions with large clears, so retail's compiler does it too.
 // @retail 0x125b40
 void function_125b40(void)
 {

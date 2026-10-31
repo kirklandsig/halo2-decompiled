@@ -337,6 +337,10 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 void function_11bed0(s_location *location, point3f const *point);
 
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
+// Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
+// line here and our build inlines it, and the datum and element register homes follow from that;
+// the loop body is retail's otherwise. The only forms that keep the call out of line are the
+// implied-test ones the 2026-10-30 ruling rejects, so the native-iterator body stands.
 // Earlier: native iterator keeps the initial called scan and subsequent inline scan; location lookup still expands.
 // Published pool per use 161; shared bitmap scan 161; plain for 161; reused absolute slot 161;
 // shared next-datum advance 116; source receiver 160; bool datum iterator 134 (fast). Native iterator 93 fast/plain.
@@ -991,6 +995,9 @@ void sound_playback_set_chunk(long sound_index, long definition_index, char pitc
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
 // score 7 (was 14): only the record initialization's playback reload and 0xa4 byte still move up.
+// MiniMax C (10-31): flag OR through playing->loop 13 again (mixed access; not kept).
+// score 14 (was 14): only the record initialization's store schedule differs (the playback reload, the 0xa4
+// byte and the loop-flag byte move up) and the flag set is a plain store where retail ORs it in.
 // Earlier: Float/result/random spill homes and initialization scheduling differ.
 // Round 76: bounds pointer 74; with mask 132; direct previous 80; initialization swap 77; result name 74;
 // distance name 74; declarations swapped 188; split result 74; the pitch bounds read through a pointer to
@@ -1276,6 +1283,10 @@ struct s_looping_detail_request
 
 // score 127 (was 127): return result first restores entry load allocation; the first-player expansion remains (retail
 // calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
+// Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
+// and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
+// the rest of the body is retail's. The out-of-line forms are the implied-test ones the 2026-10-30
+// ruling rejects, so the body stands.
 // Round 8: the first-player query stays inlined whatever the else arm's shape: the next-player step
 // through the out-of-line 0x14de10 (diagnostic) 97 with the query still inlined; the skip loop as a
 // for, `while (skip-- > 0)`, an inverted count test and a guarded do-while all unchanged (154 fast).

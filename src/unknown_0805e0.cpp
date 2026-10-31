@@ -124,6 +124,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // test first (so it depends on the test block's frequency); test spellings, result and successor types change nothing.
 // Harness: an `if (index != NONE)` guard or a do-while around the `!result` loop, the existing iterate helper on a local
 // index, booleans computed before the test and (in the rotated loop) the copy after the loop all lose the hoist.
+// Round 99 (lane 8), one-file LTCG harness exact against the build: the mask is hoisted in every `!result` loop
+// whatever the guest test's position, in `break` loops only with the guest test first, never with early returns.
+// Real: `while (!result && index != NONE)` with a successor local and `index = next` after the test 37, also as a for
+// loop with that increment 37 (both move the player argument to the stack, ret 8, and lose 0x1a303b and 0x2b393c);
+// the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
+// Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
+// `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -561,6 +568,10 @@ void function_1537f0(s_profile_record *record);
 // Round 106: identity value-initialized 67; that without the tail clear and sentinel 78 (238 bytes); identity
 // declared and zeroed after the entry pointer 67; no tail clear with the links and flags stored before the
 // 0x7f8b0 call 81; the entry pointer passed as the view 67.
+// Round 6 (lane 17): identity zeroed once before the loop 83 (280 bytes); view built in a local view and
+// copied into the entry 128 (311 bytes); without the tail clear and sentinel: links as four statements in
+// retail's store order 78, identity zeroed after the entry pointer 78, identity zeroed once before the
+// loop 81 (244 bytes). Original body restored.
 // Round 111: flags and timestamp as two plain stores 73 (273 bytes); identity declared and zeroed right before
 // the entry pointer 67; the link stores as four statements in retail's order 67; the identity as the XDK XUID
 // type 67; the entry pointer as `g_4cf98c + i` 67. An LTCG harness copy of round 34's two-member local object
@@ -570,6 +581,9 @@ void function_1537f0(s_profile_record *record);
 // memory, its store hoisted out of the loop, and NONE moves into EBP); the flags field zeroed first 75 (251); the
 // identity zeroed dword by dword 80 (249); the XUID by memset with flags and timestamp as two stores 80 (236); the
 // first form with those two stores 85 (241).
+// Round 99 (lane 8): identity declared and zeroed once before the loop 83 (280 bytes, still folded), with the XUID
+// type 83 (280); the source declared before the identity 67; the XUID identity per iteration 67; the identity zeroed
+// after the entry pointer 67. No existing type has an identity followed by the 0x90-byte record.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -949,6 +963,11 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // Round 106: round 149's plain entry rebuilt 71 (aligned 39); it without the flag initialization (each arm sets
 // the direction) 390; time stored through the dword member 66; time read through a zeroed FILETIME 66; the NONE
 // link stores as `(short)NONE` 66; g_4cf97c named once for the next_other store 66.
+// Round 6 (lane 17): round 149's plain-entry form rebuilt 71 (upper coalesced with the count in EAX);
+// on it the `<` arm first with `>` as its else-if 336, bounds initialized to position 71; the hour
+// stamp through an inline helper 66 (71 on the plain-entry form); the shift block as a forceinline
+// helper taking (lower, upper, downward) 66 (71); flags cleared before the link stores 157 (1167
+// bytes); the zeroed time local declared before the entry pointer 70 (75). Original body restored.
 // Round 111: the four head repairs on the globals directly (no named copies) 49 kept: the link stores, the
 // g_4cf988 load and the time and identity-copy registers then match. On it: round 149's plain entry with
 // `removed > position` bounds, an explicit `>` arm and the count path upper first clearing the flag 54 (only
@@ -963,6 +982,11 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // `lower < upper` 54, with the count path's flag store first 54. Harness, all with upper in EAX: four copy-loop index
 // spellings, a function-scope copy index, the eight declaration orders above the removal block (373), the count path
 // first, an unconditional count path (1155 bytes), short bounds, bounds without initializers, removed set in an else.
+// Round 99 (lane 8): the tail (head repairs, links, time, fill) already matches; on round 111's plain-entry form
+// (rebuilt 54): bounds zeroed in a final else 54, `g_4cf978 > position` 56, upper before lower in the removal arm 58,
+// the count path's flag store first 54; harness: count path lower first 55, the mixed `function_7fd10(g_4cf980)` read
+// 52, lower and upper initialized to position 369 (1162 bytes); the existing 0x7f8b0 call for the fill 100 (1174 bytes:
+// the head repairs reorder and carry g_4cf97c in EAX, field56 through AL).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

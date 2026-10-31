@@ -420,6 +420,22 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Round 320: advancing link-output receiver with long/short/word link counts 368/368/368;
 // long previous-index combinations 366/382/365; long path count with long/short link count 316/316.
 // First forms recover frame 0xe4 but regress; complete original body and memcpy restored.
+// Round 134 (m3 lane 4): both builds now return with ret 0x24 and take the state in EBX. Retail keeps one
+// memory bool at [esp+0xf] for the edge flag-seven bit (movsx/shr 7/and al,1, stored, then je) and for the
+// special test (stored false at the else arm's start, `mov al, 1; je` / `mov al, [esp+0xf]`), and its
+// type-2 arm stores the type from cx, not the constant 2. Short link count 368 (1368 bytes, frame 0xe4);
+// with one node variable set at entry and in the loop 368 (copy-propagated, the entry depth read still
+// folds; retail does `lea` then `movsx [eax+0x3e]`); an inline node getter (diagnostic) 368; one flag for
+// the link test (assigned in the condition) and the special test, false then true, 363 (retail's special
+// sequence and complete/flag slots); with count zeroed after the init loop 371; the shared flag on the
+// long link count 315 (1391 bytes). All restored.
+// Round 37 (lane 10, fast): the convention already agrees (state in EBX, ret 0x24, caller 0x270930 MATCH).
+// Retail keeps `previous` in EDI inside the loop (reloaded from its home on both loop entries), keeps
+// a default-false `special` byte at [esp+0xf] that also receives the edge flag bit of the link test,
+// and computes the start node with `lea` before reading its depth. Short link count 368 (1368 bytes,
+// frame 0xe4); with the node pointer declared at the top and reused in the loop 368 (same code, the
+// address still folds); with `special` false then set by an if 368; on the long count: link count
+// incremented after the copy 359; count defined after the initialization loop 354.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

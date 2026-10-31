@@ -237,6 +237,16 @@ struct s_block_candidate
 // maximum 367 at retail length (three-point lead rejected). Original body restored.
 // Round 237: Computed page-size long/dword, each with named-mask expression, original/entry constant result lifetime: 370/370/370/370/413/413/413/413.
 // Original executable body restored.
+// Round 27 (lane 14), aligned counts in brackets (control 370 [355]): busy handled at the end of the block arm
+// (`if (busy) { head = tail; continue; }`, scan unconditional) 377 [252] at retail length 1213, retail's
+// none/block/gap arm order; with busy = proc && proc(current) 377 [239]; that with the policy cases in
+// default/1/0 source order 377 [239] (same code); with offset = 0 declared at entry 380 [257] (EBX pushed
+// first as retail); with the allocation success returning directly 381 [244]. On the 239 form, retail still
+// lays out the no-candidate limit update + return right after the loop guard and keeps the case 0/1 bodies in
+// the loop (ours puts both at the end), and uses its zero EBX as offset (frame 0x1050 versus 0x1054).
+// Round 242: Actual queued-candidate count long/dword/short/word, capacity-bound and
+// not-full admission 407/407/406/418/407/407/406/418. All recover frame 0x1054 but
+// grow code; original ring state and body restored, page-offset/tail homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

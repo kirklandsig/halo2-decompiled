@@ -132,6 +132,23 @@ bool g_47f05b;
 // fixed class flattened onto the abstract one 31 (0x146b80 3); `::new` 34; the refcount header as a member
 // in place of a base 34; the abstract constructor storing NONE before its zero loop 31 (0x146b80 4); the
 // masked size in a named local 34. The store is dropped in all (141 bytes).
+// Round 7 (m3 lane 18, fast with 0x146b80/0x22c3e0 matched): the pool address read from g_479888
+// before the fixed construction 43 (140 bytes); the block typed as one layout struct (fixed
+// allocator, buffer, pool) read from g_479888 at each placement 38 (144 bytes); the fixed placement
+// from g_479888 with the buffer from `block` 36 (146 bytes: reload on the constructed arm, but the 1s
+// become immediates, no base store); the layout struct through `block` with the pool through
+// g_479888 34 (same code). Diagnostic only (header): a global read in the fixed base constructor,
+// between the two vtable stores, still drops the base store.
+// Round 113 (lane 6, fast with 0x146b80/0x22c3e0 matched): a typed fixed pointer from g_479888 with the
+// buffer at `fixed + 1` 34 (same code), read after the three global stores 34; the first placement through
+// g_479888 with the buffer through `block` 36 (146 bytes by chance: block copied to EDX, the 1s immediates,
+// no vtable store); neither local (diagnostic, listed) 38 (reload on the constructed arm as retail, 1s
+// immediates); a buffer local read from g_479888 before the global stores 38.
+// Round 100 (lane 8, one-file harness exact with unknown_22c0a0.cpp): diagnostic only, a compiler barrier at the end of
+// the abstract constructor keeps the base vtable store (12 at 147 bytes; 0x146b80/0x22c3e0 lose), and with the size-only
+// constructor it is an exact 0, so the kept store is the last difference. Forms: the size-only buffer as
+// `(byte *)this + sizeof(*this)` 35; the size-only constructor setting the buffer in its body after a NULL base argument
+// 35; an explicit upcast at the publish 35; `byte *block` 34 (same code); the fixed allocator in a typed local first 38.
 // @retail 0x146a20
 void function_146a20(void)
 {

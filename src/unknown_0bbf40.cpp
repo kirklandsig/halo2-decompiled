@@ -340,6 +340,12 @@ s_object_gc_entry_ab g_440570[6] =
 // test peeled at the constant first entry, and the NONE exit falls through where retail branches to it); the same
 // with the exit test inside for (;;) 119 (same code); NONE as an enclosing if with one final clear and the query
 // returning 153 (361); the query in the while condition 176 (333).
+// Round 56 (lane 12, fast): the level from an inline pressure-level helper with early returns 270
+// (251 bytes); level first, `if (level != NONE)` around `while (entry->action)` with a break on the
+// query and one final clear 181 (328 bytes: retail's frame 0x2a04, level in EBP, globals in ESI, but
+// VC inverts the loop, testing the first entry's action at its constant address); that with an
+// `advance = !again` flag 181, with the query in the while condition 181; the index walk with
+// `advance = !again` on this body 131 (400 bytes).
 // @retail 0xbf380
 void function_bf380()
 {
