@@ -409,6 +409,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // EBP caches the last argument); object read as a raw byte offset from the pool data 77 (folded back
 // into the shared header address); the in/out mask parameter's own address instead of the local copy
 // 87 (152 bytes; the copy is retail's).
+// Round 25 (fast): the field store and attach as a call of the existing 0xbb780 (inlined) 49 (same
+// code); with an early bool result 77, flagged arm first 75; bool result with the clear-in-test and
+// memory retest, 0xbb780 on the stored/local index 67/53. Data and index still shared. Restored.
 // Round 35 (lane 10, fast): early bool result set after the attach 77 (160 bytes, header address shared, EBP
 // caches the last argument), with the flagged arm first 75; on the long result, `result = false` before the
 // index clear 50, the object read through a one-use header pointer 49, the header test indexed by a (word)

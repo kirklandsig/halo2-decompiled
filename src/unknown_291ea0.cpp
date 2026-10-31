@@ -103,6 +103,14 @@ inline void dialogue_name_override(long volatile *name, long value)
 // Round 213: byte result 167; short result 165; long result 167; override sentinel first 18; override
 // invalid return 9; override zero nesting 9; override sentinel return 18; named stack homes 9; original
 // executable source restored.
+// the default-element and object-pool temporaries land in EDX where retail keeps
+// them in EAX, and the scaled object index goes to EAX where retail uses EDX; the loop padding
+// follows (our pool load is a byte longer, so the pad before the variant loop is a byte shorter).
+// Naming the elements, the pool or both does not move the allocation. Round 47: typed default
+// pool-pointer local 9. Round 16: the default name from an inline helper with a result local 9, the
+// helper as a ternary 48; the vocalization's default name read at each use 9; a fresh actor lookup
+// for the unit's index 129; the vocalization default declared ahead of the default name 9; the unit
+// index read from the actor at both tests 9.
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

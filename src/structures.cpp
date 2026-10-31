@@ -273,6 +273,12 @@ static __forceinline bool structure_bsp_collision_available()
 // returning the 0xbf9a0 result with the flag through a pointer 118; the flag cleared, then set from
 // `!= 2` inside the type test 56 (288 bytes, setne and the direct exit stay; a flag set in a test).
 // Compile-only (/O2 without /GL) all of these, plain/force-inline/single-exit helpers, thread the flag.
+// Round 113 (lane 6, fast under the 0x14a8e0 reduced-image caveat): the flag as `type == 6 ? 0x10a0b0(...) != 2 : false` tested as `!excluded &&
+// 0xbf9a0` then `if (excluded) return result;` 56 (288 bytes, setne in the type test, threaded); that with a
+// bool result 59; plus the collision re-read from the source at the join 59; the 0x14af40 shape (`else if
+// (!excluded)` requery with its own lightmap call, `else if (found)` for the no-object case) 86 (296 bytes);
+// a function-scope flag cleared at entry and set in the type test, bool result 65. A scan of every matched
+// retail function finds no other `mov r8, 1; jmp` to a `test r8, r8` past a call: only 0x14af40 shares it.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {

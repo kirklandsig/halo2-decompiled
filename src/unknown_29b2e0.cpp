@@ -162,6 +162,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 442: Five rotation-result scalar declaration orders and three complete role-name/home
 // orders, 389 each in eight compiled forms. All matched controls preserved; original helper,
 // sibling and body restored.
+// Lane 18 round 6: retail's early J load is the else arm's J reload hoisted above the length branch: its then
+// arm scales J in place in XMM1 (`mulss xmm1, xmm0`) and I as a memory operand, while ours forms scale * J
+// from memory, so only one arm loads J. Retail also keeps the degree factor in XMM7 for all three products.
+// Normaliser scaling J first as `j = j * scale` then `i = scale * i` 401 (0x29b990 9); J alone as
+// `j = j * scale` 389 and as `j = scale * j` 389 (same code); k zeroed after the length 393; magnitude
+// initialised at declaration with both angles zeroed only in the else arm 397. Original helper and body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
