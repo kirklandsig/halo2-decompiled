@@ -74,7 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
-// score 330 (was 358): the block order follows retail's apart from a few blocks, but stack offsets
+// score 330 (was 330): the block order follows retail's apart from a few blocks, but stack offsets
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -125,6 +125,15 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // but the three screen lookups merge). Diagnostics: six extra title stores put display_name at
 // -0x8cc and title at -0x6cc as in retail (516); extra display_name stores 694. So retail weighs
 // title above display_name and layout below suffix; ours the other way round.
+// Round 58 (lane 12, fast = plain here; none kept): with frame offsets, branch targets and globals
+// masked the body is 13 aligned lines from retail (the >> 10 arm, the received arm's ebx clear and
+// threading, the !online host, five suffix `lea` re-derivations after 0x230134, one case-label
+// load), so nearly all of the count is frame homes, and those follow the suffix's reference
+// weight: BLOCKED-BY 0x230134 (retail callers re-derive the buffer after it). Tried: `session`
+// renamed to sort after `voice` 330 (the two slots tie at two references each; names do not
+// break the tie); `voice` declared before `session` 330; the invitation tail written out in both
+// friends arms 342 (cross-jumped back to the same layout); the received text as if/else 661
+// (confirms the listed 662); the online block first with the offline text as the final else 708.
 // Round 52 (lane 16, fast = plain): retail sends every text arm straight to one function_253b1a call (the
 // received arm's select and the last title-less arm share `xor ebx, ebx; jmp`), with no NONE test; ours keeps a
 // test that the received select and the last arm share. Received text as if/else 661 (2338 bytes; the test is

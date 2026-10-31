@@ -1166,7 +1166,10 @@ PRIVATE __forceinline bool surface_status_failed(long status)
 // return 2; guarded mask assignment 87. Round 44: in-place clear with `failed = failed(status)
 // || failed` 93; forceinline query wrapper for both calls 2; failure assigned from the
 // predicate then tested 120; sky decision as a per-type bool 62; dword flags parameter in
-// the query and its callers 2.
+// the query and its callers 2. Round 55: the query's point parameter second, third, fourth
+// or fifth in its list (definition, declarations and calls) 2 each, first 2 (0x17b5d0 2); byte
+// flags parameter 2 (0xd2a50 12); its fifth parameter as a direction pointer passed NULL 2; the
+// retry test as a bool conversion 2, as `(flags & 1) == 1` 2.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
