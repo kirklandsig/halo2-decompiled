@@ -714,6 +714,17 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
 // test); the value alone before the loop 137; the variant alone before the member count 52. Named
 // copies inside the loop or a `long const *` to the value are propagated back (session ESI).
+// Round 31 (lane 13, compile-only first-pass harness): 0x6e500 and 0x72700 both match once this function
+// takes the session in EBX (see their notes), so this register is all that blocks them. Diagnostics that
+// give retail's EBX/ESI/EDI: one more in-loop index use (`value49c8 + i`), the variant or summary argument
+// NULL, the 49c8 argument replaced by a player field. The session cannot take EDI (live across `rep stosd`),
+// so whichever of session and loop index ranks first takes ESI; retail's index outranks the session by less
+// than one call-block use. No flip from: typed member-machine field, typed machine-list struct, both (6
+// forms); the preset stored pair with or without the live test, with the summary moved or the variant named
+// (10); 250 random combinations of 12 natural dimensions (opening, buffer/memset order, summary position,
+// count local, index scope, mask/slot spellings, nested tests, `players + i`, nested tail); const parameter,
+// function-scope or shared index, the size macro (5). Frame alignment comes from the players memset (no
+// effect). Flags: only /O1 and /Os give EBX, with different code.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
