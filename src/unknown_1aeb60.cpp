@@ -400,6 +400,10 @@ short *function_e70b0(long unit_index, short *value);
 // further on. The definition moved after 0x1afcf0 in this file 49 (fast and plain; other functions
 // unchanged); the existing typed actor_datum_get for the first lookup 49, for both lookups 49; the
 // delay product written random times ticks 49 (the same code each time).
+// Round 101 (lane 8; exact LTCG harness, 42 = 49): BLOCKED-BY 0xe70b0's inlined shape (its file is
+// another lane's this round). 0xe70b0 bodies tried in the harness only: an actions-pointer local 49, a
+// result-pointer local 105 (436 bytes), a header-pointer local 54; here `if (--state->ticks <= 0)` 49
+// (same code), a named object index for the event call 49.
 // Round 181 (lane 3): the rotation reaches the final call: retail keeps the 0x34 byte in DL and
 // loads ECX (the facing argument) before pushing it, ours keeps it in CL and pushes it first, so the
 // byte's colour and the actor's (ECX in retail) are one decision. The definition moved to the top of
