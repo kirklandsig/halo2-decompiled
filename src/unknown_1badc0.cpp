@@ -12,6 +12,8 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// score 211 (was 211): frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // Round 30 (lane D): the permuter's best variant scores 194 against its own 195 baseline (one point,
 // below the retention margin). What still differs: this body loads the output pointer into EBX before
 // saving EBP, retail saves EBP and keeps the pointer there, so the point copy runs through EBP where
