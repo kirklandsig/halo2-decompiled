@@ -456,6 +456,11 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// Round 30 (lane D): the permuter found no better form (82 tries, best 84, the baseline). On this body
+// the variant byte read before the blend value scores 171 and before the selection seed 190; with
+// retail's found path (the inverse inside the found branch) it is 123, and the plain inverse form 132:
+// retail's not-found exit reloads 1.0 into xmm5 while ours rejoins the block's load, so the tail sits
+// 8 bytes short and every later branch target shifts. Original body kept.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
