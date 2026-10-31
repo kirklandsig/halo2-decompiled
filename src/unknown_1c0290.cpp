@@ -20,6 +20,18 @@ struct s_slot_7c
 	byte unknown20[0x40 - 0x20];
 };
 
+/* the collision result this caller reserves: retail's object is 0x5c bytes with
+   its flag word at +0x24 (the shared declaration is 0x4c bytes, so the shared
+   declaration cannot describe this caller's output) */
+struct s_collision_result_1697c0_caller
+{
+	byte unknown00[8];
+	point3f point;
+	byte unknown14[0x24 - 0x14];
+	short unknown24;
+	byte unknown26[0x5c - 0x26];
+};
+
 /* the prop state's position (unknown_25d690.cpp) */
 struct s_prop_state_position
 {
@@ -192,6 +204,9 @@ short __stdcall function_1c04f0(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
+// matches retail (was 143): the collision output this caller reserves is 0x5c bytes with its
+// flag word at +0x24, the unit index is read into a local for the 0x110ab0 call (the two later
+// calls still read the field), and the collision's NONE store comes before the vector's stores
 // score 143 (was 143): frame 0xa0 versus 0xb0 (the 0x1697c0 collision output is 0x5c bytes; the
 // shared header type is 0x4c), then the scratch registers are rotated by one from the 0x110ab0
 // argument on (eax/ecx/edx), which also moves the request/collision arguments, the target copy and
@@ -274,10 +289,12 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 		{
 			if (!state->unknown18)
 			{
+				s_game_time_globals *game = g_510c54;
 				state->unknown18 = true;
-				state->unknown14 = g_510c54->game_time;
+				state->unknown14 = game->game_time;
 			}
-			if (!function_110ab0(actor->unknown018))
+			long unit_index = actor->unknown018;
+			if (!function_110ab0(unit_index))
 			{
 				s_unit_request action;
 
@@ -291,16 +308,17 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 	if (actor->unknown040)
 	{
 		vector3f vector;
-		s_collision_result_1697c0 collision;
+		s_collision_result_1697c0_caller collision;
 
+		collision.unknown24 = NONE;
 		vector.i = g_4687bc->i * 4.0f;
 		vector.j = g_4687bc->j * 4.0f;
 		vector.k = g_4687bc->k * 4.0f;
 		position.x += g_4687b0->i;
 		position.y += g_4687b0->j;
 		position.z += g_4687b0->k;
-		collision.unknown24 = NONE;
-		if (function_1697c0(0x1808c0d, &position, &vector, node->object_index, actor->unknown018, &collision))
+		if (function_1697c0(0x1808c0d, &position, &vector, node->object_index, actor->unknown018,
+			(s_collision_result_1697c0 *)&collision))
 		{
 			long object_index = function_baf80(node->object_index);
 			s_actor_point_target target;
