@@ -544,6 +544,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // byte) special = true; else { special = false; scan }` 200 (872 bytes, flag memory-only); the vehicle type read
 // into a short local 47 (same code); `& (actor->unknown268 == true)` 47 (same code); `special = false; if (type
 // == 6 && byte) special = true; else { scan }` 202.
+// Round 31 (lane 13, fast): the special path as the else of `if (type != 6 || !byte) { special = false;
+// scan }` 200 (872 bytes); preset true with that `||` test 187; `if (special == false)` 47 (same code); the
+// bitwise operands field first 47 (same code); `special = false; if (type == 6 && byte) special = true;`
+// then `if (!special) { scan }` 202 (872 bytes). A compile-only build of this file alone puts NONE in EDI
+// (not predictive for this function).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
