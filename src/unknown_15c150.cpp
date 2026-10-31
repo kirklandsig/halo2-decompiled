@@ -7,9 +7,20 @@
 
 // @flags /O2 /arch:SSE /Gr
 
+/* a player (0x21c bytes); its flags are a word, whose high byte 0x14d8b0 tests */
+struct s_transition_player
+{
+	short salt;
+	word flags;
+	byte unknown04[0x1ac - 0x4];
+	short unknown1ac;
+	byte unknown1ae[0x21c - 0x1ae];
+};
+typedef char assert_transition_player_size[(sizeof(s_transition_player) == 0x21c) ? 1 : -1];
+
 struct s_transition_player_iterator
 {
-	byte *player;
+	s_transition_player *player;
 	s_record_pool *data;
 	long datum_index;
 	long absolute_index;
@@ -165,10 +176,6 @@ PRIVATE __forceinline s_mp_globals *transition_start_time_set(s_mp_globals *glob
 	return globals;
 }
 
-// score 5 (was 5): the game options pointer is kept in ebp where retail keeps it in ebx.
-// Round 123: const options pointer 5; reset loop in an inline helper taking the globals 150;
-// iterator declared before the options pointer 5; lives narrowed in each ternary arm 5;
-// lives read before the slot index 5.
 // @retail 0x15c550
 void function_15c550()
 {
@@ -206,14 +213,14 @@ void function_15c550()
 				{
 					long index = iterator.datum_index & 0xffff;
 					long lives = options->value1b8;
-					*(short *)(iterator.player + 0x1ac) = (short)(lives ? lives : NONE);
+					iterator.player->unknown1ac = (short)(lives ? lives : NONE);
 					if (g_55e4d0[globals->engine_index])
 					{
 						long entity = globals->slots[(short)index];
 						if (entity != NONE)
 							function_b58c0(entity, 0x20);
 					}
-					iterator.player[2] |= 8;
+					iterator.player->flags |= 8;
 				}
 			}
 			break;
