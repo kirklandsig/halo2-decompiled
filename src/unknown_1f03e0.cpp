@@ -569,8 +569,8 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// MiniMax E run 26: score 182 (was 182): retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // score 182 (was 182): Frame 0x28 and retained EDI/EBX convention agree; initial dot displacement bytes and rotation SIMD scheduling remain.
+// Earlier: retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // frame 0x28 and state/output registers agree; the initial state-dot
 // displacement bytes (retail reads the old up through the ESI address it keeps, ours folds
 // [EDI+0x108]/[EDI+0x104]: the six extra bytes) and the rotation SSE schedule remain.
@@ -688,6 +688,10 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Round 48 (lane 9): contact_cross as a function-like macro 342; the state dot through dot3f, either argument
 // order, 262/262 (ESI loads and up in XMM5/6/7 as retail, but state moves from EDI to EBX and caller 0x1e5af0
 // drops to 20); the state dot accumulated j, k, i 185; as k + (j + i) 184.
+// Round 462: One complete original-up value for all active consumers, native/library copies
+// after/before ground normal, original/removed one-use aliases: 314/314/325/325/314/314/325/325.
+// Frames 0x38 or 0x34 versus 0x28; original observations, aliases, helper graph and full body
+// restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
