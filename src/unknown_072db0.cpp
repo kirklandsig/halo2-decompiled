@@ -1757,6 +1757,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // whole body restored; key forms recover length but enlarge the aligned frame.
 // Round 45: twice-used initial-request comparison as bool/byte/char/long, mutable
 // and immutable, 737 each; frame grows to 0xc8. Original complete body restored.
+// Round 215: identity-change clear cursor 709; invalid-user clear cursor 709; disconnected clear
+// cursor 709; both online clear cursors 709; identity-change/disconnected clear cursors 709;
+// invalid-user/disconnected clear cursors 709; all three clear cursors 709; all three clear
+// cursors with word remaining counts 709.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

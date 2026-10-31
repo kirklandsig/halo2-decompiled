@@ -801,6 +801,11 @@ bool function_2715a0(byte *buffer)
 // Round 320: actual exclusion-search ordinal as result, short/long with joined/separate query guards
 // 599/584/599/584; all live penalty reads 578/567/578/567. All lengthen the body.
 // Complete original search, penalty snapshot, heap operations and result qualifier restored.
+// Round 215: short remaining count and mutable links 503; short remaining count with native masks
+// 515; short remaining count and readonly links 503; short remaining count with readonly
+// links/native masks 515; long remaining count and mutable links 502; long remaining count with
+// native masks 516; long remaining count and readonly links 502; long remaining count with
+// readonly links/native masks 516.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

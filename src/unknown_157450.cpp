@@ -5521,6 +5521,10 @@ void __stdcall function_d6bc0(long object_index);
 // before the reset block but not used there 209 (882 B: frame 0x18 and the timer survives as a
 // variable, but it is formed before the reset block where retail forms it at the zero test);
 // that pointer declared ahead of the index read 209.
+// Round 215: modifier cases (1, 3, 2) 144; modifier cases (2, 1, 3) 144; modifier cases (2, 3, 1)
+// 144; modifier cases (3, 1, 2) 144; modifier cases (1, 3, 2), reversed scheduling cases 144;
+// modifier cases (2, 1, 3), reversed scheduling cases 144; modifier cases (2, 3, 1), reversed
+// scheduling cases 144; modifier cases (3, 1, 2), reversed scheduling cases 144.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
