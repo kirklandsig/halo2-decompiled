@@ -184,6 +184,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // (1.0f / 65535.0f)` 70 (same code as 0x82e52f's), with field_10 after the cache update 147, with field_10
 // first 133. Everything after the compare is a scratch-register rotation that starts at field_10's temp
 // (ECX here once the seed pointer is dead, EDX in retail's order while it is live).
+// Round 30 (lane 13, fast): field_10 copied between the fourth draw and its field_1a store 141 (876
+// bytes); the 0x173ba0 mask as `0xf80f & ~field_44` 70; the child's unknown08 as one ternary store 98;
+// `field_02 += 1` 70; `NONE != child` 70. Compile-only with field_10 first, all split: a label before
+// the compare, a flags read between, the sample through a named local, operands swapped, a cache local.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
