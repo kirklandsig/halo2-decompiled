@@ -718,6 +718,15 @@ struct s_device_machine_view
 // with masks 105 each (pushed ESI); the zero store added 105.
 // Round 456: Success constructed in recognized cases, at tail/entry, crossed with native group reference and explicit velocity zero:
 // 128/124/128/124/184/185/184/185. Original executable body and supporting declarations restored.
+// Round 119 (with the zero store unless noted): word-local masks 122; the group pointer formed after the machine
+// test 123 (the pointer folds into the flags load, the table base takes a pushed ESI); a group-index local 122;
+// nested word tests 122; the 0x1200055f arms as ternaries with a 0.0f false value, no zero store 104.
+// Compile-only screen (non-LTCG, reproduces the listing; jump targets masked, base 3, word masks with the zero
+// store 4): pointer before/after the machine flags or const, word/short/long/word-at-read/direct/nested flag
+// reads, machine flags local or read at each use, with or without a group-index local: all 72 keep the pushed
+// ESI (4). Without the machine test the table base takes ESI instead; ternary or explicit `else 0.0f` arms
+// 8/10. Matched 0x2101d0 shares EAX between a live-in pointer and a 16-bit value only needing a 16-bit
+// register; here `test al` needs a byte register.
 // Round 33 (lane 13; one-file LTCG harness, base 32 = 34): on the masks + zero-store form (106, the
 // pointer in a pushed ESI): type and group-index tests nested 106; a long machine flags local 106; the
 // value declared before the result 108; the machine test as a ternary 106; the group index in a long

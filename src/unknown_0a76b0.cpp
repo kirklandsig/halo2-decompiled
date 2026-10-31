@@ -1215,6 +1215,12 @@ void __stdcall unit_action_throw_grenade_interrupted(long unit_index, long type)
 // again for the store's lookup (pool in EBP). On that form: the weapon through function_cbd50 60;
 // a bool hand 59; the entry unit for the store with the getter on its own lookup 59; an early
 // return for a NONE weapon 60; the 0xee7f0 state from the hand (`hand ? 0x19 : 0x18`) 55.
+// Round 39 (env link of this file and its callees; ~ = differing instructions plus bytes): on the hand-first lead
+// (~62 there) `current` looked up before the getter ~62, the 0xee7f0 state named at the top ~51 (165 bytes), a weapon
+// pointer looked up before the calls ~56, a short slot local through function_cbd50 ~62; the current body with the
+// state named at the top ~53 (body ~52 in the same link). Any second lookup the early
+// optimizer sees (0xee460's definition read, 0xe8980's actions read) gives retail's data reload; here no other unit
+// field is read, and only an unused lookup gives it (locate-only, 0).
 // @retail 0xe8460
 void function_e8460(long unit_index, bool primary)
 {
@@ -1411,24 +1417,12 @@ bool function_100350(long weapon_index);
 
 /* switches the weapon in a hand (types 8 and 18: the first and second
    hand) */
-// score 121 (was 133): frame 8 versus 4, pool/header homes, failure exits
-// and put-away argument residency remain. Signed-word slot 146; Boolean hand
-// ordinal 136; both 131 (kept, 392/402 bytes). Common result 152; with word slot
-// 156; with Boolean hand 166; all three 169; active-bit completion arm first 169.
-// Round 116: retail keeps the false result in AL from before the immediate test, the long hand in
-// the dead unit_index argument slot and unit_index in EBP, and reloads the unit at the join after
-// the admission tests; ours keeps the post-110ab0 flags lookup in EDI across the 0xe6fe0 call as
-// `current`, which leaves unit_index in memory (426/402 bytes). Single exit with a false result,
-// long hand and the admission/weapon tests as two conditions 121 (kept); the slot's weapon through
-// function_cbd50 121 (same code; kept, the existing function in place of its body written out); the
-// weapon read from the entry unit 132; primary/hand declared
-// before the unit 137; the result declared first 129; the active bit through bit_vector_set 121.
 // @retail 0xe8980
 bool __stdcall unit_action_weapon_switch(long unit_index, s_unit_request *request)
 {
 	s_unit_request_weapon_switch *switch_request = (s_unit_request_weapon_switch *)request;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
+	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
 	bool primary = request->type == 8;
 	long hand = !primary;
 	bool result = false;
@@ -1634,6 +1628,10 @@ void __stdcall function_1ca260(long actor_index, long player_index, long weapon_
 // EBX/EBP swap (76), so the swap is not caused by the inlined getter; dead statements or an inline
 // unit getter do not stop the first getter call inlining (72 each). Retail calls the getter twice
 // here and in 0xe7fb0 (964 bytes); 0xccba0 (297) inlines the first, 0xee7f0 (171) both.
+// Round 39 (env link of this file and its callees; ~ = differing instructions plus bytes): a mode local ~143, a
+// weapon_index local ~133, the definition read at the top ~137, the value ternary inverted ~72 (as the body), no weapon
+// local (lookups at each use) ~149; an unused header at the top changes nothing (locate-only). The first
+// unit_get_player_index call still inlines (retail calls 0x14de90 twice) and the request/weapon EBX/EBP homes stay swapped.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2569,12 +2567,6 @@ void function_e5300(long unit_index, long a);
 
 /* entering a vehicle's seat finished: the unit's visibility in the seat,
    and the seat's state */
-// score 77 (was 77): region-output routine inlines; pool/unit/output homes
-// and unsigned state test differ.
-// Round 256: caller-only noinline/direct hidden/entry storage subsets and early
-// zero 73 each in reduced image (unchanged preview 73); defining-TU noinline
-// with original/direct/entry/early-zero forms 40 each, confirmed full 40.
-// Defining noinline restored after it lost an existing match; original body kept.
 // @retail 0xea6b0
 void __stdcall function_ea6b0(long unit_index, long type)
 {
@@ -2589,11 +2581,12 @@ void __stdcall function_ea6b0(long unit_index, long type)
 		{
 			unsigned char *states;
 			long state_count;
+			long choices;
 			bool hidden = false;
 
-			function_ba690(unit->parent_object_index, &state_count, &states, NULL, NULL);
+			function_ba690(unit->parent_object_index, &state_count, &states, NULL, &choices);
 			if (*(long *)(seat + 0xac) < state_count)
-				hidden = states[*(long *)(seat + 0xac) * 8 + 1] < 3;
+				hidden = ((char *)choices)[*(long *)(seat + 0xac) * 8 + 1] < 3;
 			function_b9c60(unit_index, hidden);
 		}
 		function_d1360(unit->parent_object_index, unit->seat_index, 0, 0);
@@ -3393,6 +3386,14 @@ struct s_unit_request_seat_animation
 // does for cases 1 and 2, but case 3's block and the call move to the end and the mode default
 // becomes the dispatch's fallthrough), that with the branches swapped 103 (same code); the request
 // context set after its switch 137.
+// Round 61: a compile-only screen shows the rule: a merged block keeps the copy that falls into the
+// call, else the request switch's copy, so the request-1 block stays in the request branch. On the
+// shared action switch (103): the request default `return false` 124; the query failure and the action
+// default `return false` 82 (473 bytes: retail's layout, the 0xc0006c3 block and the call after the
+// request dispatch and the 0x120001b5/0x110001b4 blocks after the query's, but the false result moves
+// from DL to AL, the unit index from EBX to EBP, and the query failure exits inline), its declarations
+// moved 82/82, the call returned 139; the action default alone `return false` 121, the query failure
+// alone 119.
 // @retail 0xebb40
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 {
@@ -4151,6 +4152,10 @@ extern vector3f *g_4687ac;
 // score 309 (was 327): Frame 0x11c agrees; unit/pool registers, basis/quaternion homes and call/float scheduling remain.
 // Round 236: actual animation result with existing basis cross products, all eight subsets 317/316/317/315/309/307/310/326.
 // Keep actual animation result and shared frame-left cross; other basis helpers restored (extra first cross 307, only two points).
+// Round 39 lead: 0x11d820 takes `a` in ECX and `b` in EAX (its own retail bytes), so the two calls here likely pass the
+// quaternions the other way round, as 0xee090's did (fixed there); the swap alone leaves this listing's count unchanged
+// (positional 286 in a link of this file and its callees), and the offset/frame math through 0xee090's two point helpers
+// is 160 bytes short of retail (1228), so neither is kept yet.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
@@ -4414,6 +4419,11 @@ void *function_1e4f90(long actor_index);
 // at the top 64; the actor index through a fresh unit lookup 89; the countdown on
 // `UNIT_ACTIONS_GET(unit)` without an actions local 75; the result declared first 68. A getter
 // that writes the weapon through a pointer does not give the reload either (compile-only screen).
+// Round 39 (env link of this file and its callees; ~ = differing instructions plus bytes): on the lead (~62 there)
+// the actions through their own lookup (0xe8980's lever) ~62, actions first and the unit after ~62, the actor index
+// read at the top ~86, no unit/actions locals (lookups at each use) ~91; the current body with the actions through their
+// own lookup ~52 (identical code). Only an unused lookup in the countdown block
+// gives the weapon lookup's data reload (locate-only, 0).
 // @retail 0xed910
 bool __stdcall function_ed910(long unit_index, long type)
 {
@@ -4702,18 +4712,59 @@ void __stdcall function_e5690(long unit_index, point3f const *point);
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward,
 	vector3f const *up);
 
+/* a point carried from a matrix's frame into world space, and back into a
+   matrix's frame (0 for a matrix with no scale): the bodies of 0x142570 and
+   0x142700, which retail inlines here (unknown_141590.cpp is /Ob1, which
+   keeps its own out of line) */
+PRIVATE inline point3f *unit_action_transform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
+{
+	real x = point->x;
+	real y = point->y;
+	real z = point->z;
+
+	if (matrix->scale != 1.0f)
+	{
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
+	}
+	out->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
+	out->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+	out->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+	return out;
+}
+
+PRIVATE inline point3f *unit_action_untransform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
+{
+	if (matrix->scale != 0.0f)
+	{
+		real x = point->x - matrix->position.x;
+		real y = point->y - matrix->position.y;
+		real z = point->z - matrix->position.z;
+
+		if (matrix->scale != 1.0f)
+		{
+			real inverse = 1.0f / matrix->scale;
+
+			x = inverse * x;
+			y = inverse * y;
+			z = inverse * z;
+		}
+		out->x = matrix->forward.k * z + matrix->forward.j * y + matrix->forward.i * x;
+		out->y = matrix->left.k * z + matrix->left.j * y + matrix->left.i * x;
+		out->z = matrix->up.k * z + matrix->up.j * y + matrix->up.i * x;
+	}
+	else
+	{
+		out->x = 0.0f;
+		out->y = 0.0f;
+		out->z = 0.0f;
+	}
+	return out;
+}
+
 /* plays a state animation at a point and facing: a biped keeps its seat
    transform relative to the new frame, anything else is moved there */
-// score 130 (was 206): frame 0xac agrees; byte-mask versus extracted flag,
-// offset-copy/SSE homes, quaternion call inputs and final stores differ.
-// Common result exit 193; both/forward shared transforms 614/377 (out of line);
-// complete facing copy 212, Boolean flag 206, common exit plus copy 130 kept.
-// Common exit plus Boolean flag 193, plus copy 130; late offset capture 207,
-// with common exit 193, plus copy 130, plus Boolean flag 130. Native byte-bitfield
-// views 130/130; word views 154/147; existing vector setter 206. Original data
-// declaration, all math groupings and every call argument are retained.
-// Round 29: flags_c0 declared as the word it is (from 0xec0d0) 130; with TEST_FIELD_BIT on
-// its bit 6 154 (982 bytes).
 // @retail 0xee090
 bool __stdcall function_ee090(long unit_index, long state_name, long mode, long action_name, point3f const *point,
 	vector3f const *facing)
@@ -4731,7 +4782,7 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 		function_b9a50(unit_index);
 		if (unit->object_type != 0)
 		{
-			if ((unit->flags_c0 >> 6) & 1)
+			if (TEST_FIELD_BIT((unit->flags_c0 >> 6) & 1))
 			{
 				function_b8840(unit_index);
 				function_b77d0(unit_index, g_4687a4, g_4687a4);
@@ -4743,7 +4794,7 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 			vector3f flat;
 			transform4x3f object_matrix;
 			transform4x3f target;
-			vector3f local;
+			point3f local;
 			quaternionf object_orientation;
 			quaternionf target_orientation;
 			quaternionf orientation;
@@ -4756,53 +4807,17 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 				function_b75a0(unit_index, NULL, &flat, g_4687b0, NULL, false);
 
 			byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
-			vector3f offset = *(vector3f *)(seat_transform + 0x10);
 			point3f world;
 
 			function_1420f0(&target, point, facing, g_4687b0);
-			if (object_matrix.scale != 1.0f)
-			{
-				offset.i = object_matrix.scale * offset.i;
-				offset.j = object_matrix.scale * offset.j;
-				offset.k = object_matrix.scale * offset.k;
-			}
-			world.x = object_matrix.up.i * offset.k + object_matrix.left.i * offset.j + object_matrix.forward.i * offset.i +
-				object_matrix.position.x;
-			world.y = object_matrix.up.j * offset.k + object_matrix.left.j * offset.j + object_matrix.forward.j * offset.i +
-				object_matrix.position.y;
-			world.z = object_matrix.up.k * offset.k + object_matrix.left.k * offset.j + object_matrix.forward.k * offset.i +
-				object_matrix.position.z;
-			if (target.scale != 0.0f)
-			{
-				vector3f delta;
-
-				delta.i = world.x - target.position.x;
-				delta.j = world.y - target.position.y;
-				delta.k = world.z - target.position.z;
-				if (target.scale != 1.0f)
-				{
-					real inverse = 1.0f / target.scale;
-
-					delta.i = inverse * delta.i;
-					delta.j = inverse * delta.j;
-					delta.k = inverse * delta.k;
-				}
-				local.i = target.forward.k * delta.k + target.forward.j * delta.j + target.forward.i * delta.i;
-				local.j = target.left.k * delta.k + target.left.j * delta.j + target.left.i * delta.i;
-				local.k = target.up.k * delta.k + target.up.j * delta.j + target.up.i * delta.i;
-			}
-			else
-			{
-				local.i = 0.0f;
-				local.j = 0.0f;
-				local.k = 0.0f;
-			}
+			unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
+			unit_action_untransform_point(&target, &world, &local);
 			function_141f60(&object_matrix.rotation, &object_orientation);
 			function_141f60(&target.rotation, &target_orientation);
 			target_orientation.w *= -1.0f;
-			function_11d820((quaternionf const *)seat_transform, &object_orientation, &orientation);
-			function_11d820(&orientation, &target_orientation, &orientation);
-			*(vector3f *)(seat_transform + 0x10) = local;
+			function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
+			function_11d820(&target_orientation, &orientation, &orientation);
+			*(point3f *)(seat_transform + 0x10) = local;
 			*(quaternionf *)seat_transform = orientation;
 		}
 		actions->unknown36 = (short)mode;
@@ -4813,27 +4828,11 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 /* puts a unit back on its animation graph's root: placed where its root
    node is, facing the root's horizontal forward, its state animations, and
    the graph's default seat transform */
-// score 107 (was 139): frame 0xa0 agrees; object-pool/input residency,
-// forward preloads and the normalization fallback join differ.
-// Pool root/masked ordinal/both 139; full forward aggregate in all four lookup
-// graphs 152; aggregate with normalization-first fallback 132 (seven-point gain,
-// restored). Normalization-first alone 139; output-matrix scope 139, scope plus
-// aggregate 152, scope plus normalization-first 139, all three 132. Original restored.
-// Round 116: retail keeps the pool in EBP and the index times 12 in EAX and reads the pool data
-// again for the node lookup after the root copies (ours reuses the first lookup's element address
-// and keeps unit_index in EBP; everything after the normalization is retail's code one
-// instruction later), and copies the inverse for the i/j products (ours loads the component).
-// Forward copy with k cleared and normalize3d 113, with normalize_inline 107 (kept: the x87 block
-// is retail's), with function_30bf0 234 (out of line); the node lookup through the header 139,
-// through slot_handler.h's object_get/object_node_matrix 107, from the entry unit 156; the root
-// matrix by memcpy 139; the first lookup through a named header 107; forward declared at the copy
-// or before the matrix 107. Locate-only: an unused header element after the first lookup gives
-// retail's entry and the aligned tail (13).
 // @retail 0xee460
 bool __stdcall function_ee460(long unit_index, long state_name, long action_name)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
+	byte *definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit_index)->definition_index & 0xffff].bytes;
 	byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
 	byte *graph = g_4e3b44[*(long *)(model + 4) & 0xffff].bytes;
 	byte *root = *(byte **)(graph + 0x4c);
@@ -4849,8 +4848,8 @@ bool __stdcall function_ee460(long unit_index, long state_name, long action_name
 	position.z = position.z - root_position.z;
 	function_142a60(nodes, &root_matrix, &matrix);
 	forward = matrix.forward;
-	forward.k = 0.0f;
-	if (normalize_inline(&forward) == 0.0f)
+	forward.n[2] = 0.0f;
+	if (normalize3d(&forward) == 0.0f)
 		forward = *g_4687a8;
 	function_b75a0(unit_index, &position, &forward, g_4687b0, NULL, false);
 	if (state_name != NONE && action_name != NONE)
