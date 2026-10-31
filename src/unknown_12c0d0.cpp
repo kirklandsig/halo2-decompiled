@@ -856,6 +856,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // `inline` 2 or unsigned 2; the reader storing rdtsc's halves into its local 129; the
 // existing header reader function_80e13 2 (kept); the counter declared in the loop block 2;
 // the size and page tests nested as in function_80e14 2.
+// Round 101 (lane 7), `--fast`: `_ReadWriteBarrier();` before the reader, as matched 0x8c790 does, 2 (the stores then
+// follow `push edi` as retail, but `xor esi, esi` sinks below it too); that with result declared before the barrier
+// 111 (306 bytes, four callers lost); start declared first with the zero-initialized locals ahead of the barrier 113;
+// the barrier right after the reader 6; the barrier with the counter declared in the loop's block 2.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {

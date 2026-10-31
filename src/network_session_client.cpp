@@ -714,6 +714,9 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
 // test); the value alone before the loop 137; the variant alone before the member count 52. Named
 // copies inside the loop or a `long const *` to the value are propagated back (session ESI).
+// Round 117 (lane 6, fast with the inlined callees): player loop bounded by `i != 16` 56; player index declared at
+// function scope 55 (same code); the team argument as plain `i` 55 (same code); `dword` player index 56; `short`
+// player index 128 (492 bytes).
 // Round 31 (lane 13, compile-only first-pass harness): 0x6e500 and 0x72700 both match once this function
 // takes the session in EBX (see their notes), so this register is all that blocks them. Diagnostics that
 // give retail's EBX/ESI/EDI: one more in-loop index use (`value49c8 + i`), the variant or summary argument
