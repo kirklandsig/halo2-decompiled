@@ -555,6 +555,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
+// MiniMax E run 26: score 182 (was 182): retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // score 182 (was 182): Frame 0x28 and retained EDI/EBX convention agree; initial dot displacement bytes and rotation SIMD scheduling remain.
 // frame 0x28 and state/output registers agree; the initial state-dot
 // displacement bytes (retail reads the old up through the ESI address it keeps, ours folds
@@ -1257,6 +1258,7 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
+// MiniMax E run 26: score 418 (was 418): retail zeroes xmm6 rather than xmm0 for the speed store and keeps the contact counter at the bottom of the frame while the component pointer takes the dead request argument slot; initialising the counter between the two NONE stores reproduces the store order (417) but the two homes stay swapped, and a non-volatile counter is worse (530). The contact-dot term order and the material-call expansion still differ.
 // score 418 (was 421): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
@@ -1497,6 +1499,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
+// MiniMax E run 26: score 230 (was 230): the movement length as a real makes the x87 prologue byte-identical to retail and moves the first difference from +0x65 to +0x8b, but the body grows ten bytes (233); retail's contact dot is (n.k*v.k + n.j*v.j) + (v.x*n.i) and ours computes a different term and operand order, and MSVC canonicalises the multiply operands either way.
 // score 230 (was 230): Frame 0x28 agrees; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
 // expansion remain. Our build inlines 0x1f1df0 at the second call (after 0x1f2250) where retail
