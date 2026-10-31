@@ -403,6 +403,16 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // Round 452: prior visited word used for admission and final store, dword/signed
 // masks with dword/byte/word flags, then shared global tests, eight forms 226 each.
 // They grow the frame to 0xf4; original field widths, mask, visits and body restored.
+// Round 58 (lane 12, fast = plain here; none kept): retail keeps count + 31 in EBX from the entry and
+// shifts that same register in place for the word count after the clears (`sar ebx, 5`), while the
+// entry's `>> 5` (EDX) feeds the base row and `lea edi, [edx*4]` bytes; so the entry and later word
+// counts are not one shared value there. Tried: a count local with bytes as words * sizeof and the
+// word count recomputed 224 (796 bytes, one shared word value); the same with base first 222; bytes
+// as words * sizeof alone 238; a count local with bytes as words * sizeof and the word count from
+// bytes 237 (retail's entry `lea [words*4]` but bytes kept in EBX); bytes as words * 4 with the word
+// count bytes >> 2 238 (`sar ebx, 2`, not folded back to `>> 5`); sizeof with >> 2 238; words << 2
+// with >> 2 111 (folded, same code); a padded-count local with sizeof bytes 224 (796 bytes); a
+// padded-count local with the masked byte form 208.
 // Round 8 (lane 18, fast, aligned counts in brackets, base 111 [65]): the word count as `(count + 31) >> 5`
 // at the top with bytes as `((count + 31) >> 5) * sizeof(dword)` 224 [73] (796 bytes, frame 0xec: the
 // shifted value is shared and kept, where retail keeps count + 31 in EBX and shifts it again after the

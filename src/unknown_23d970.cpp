@@ -645,6 +645,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // the second product's three `movss x, [forward]; mulss x, right` pairs, where retail copies right's register
 // and multiplies forward from memory (one byte shorter each). A one-file harness with the callee files gives
 // 362 at 1246 bytes here (not exact).
+// Round 137 (lane 4): else branch through a named forward pointer 55 (else branch retail's); the second product as
+// cross3f_staged through a `vector3f const *forward` local 221 (1272 bytes), with the else pointer 221; on the else
+// pointer: a named up pointer for the second product and its normalize 222 (1273), the first product staged 222.
+// Round 59 (lane 12, fast): the first product reading the direction local with the forward copy
+// after it 217 (1261 bytes, every product register moves), with cross3f_staged for the second
+// product 223 (1266); either with a forward pointer in the else branch 217/223; the else branch
+// without the cosine local (cos(pitch) at both uses) 238 (1284 bytes).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

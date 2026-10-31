@@ -258,6 +258,10 @@ short __stdcall function_1c10a0(long actor_index)
 // that with `inline` on 0x1f86a0 28 (and 0x1f86a0 then inlines into all its callers).
 // Retail is 0x1f86a0 inlined at link time (argument in EAX first, its own unfolded
 // loads): BLOCKED-BY 0x1f86a0 (`/Ob1` file, called out of line by 28 other functions).
+// Round 101 (lane 7, no volatile): slot data block first, index read through its address into
+// actor_reset_state 20; reset first, then the slot read through its address 28; that with the
+// block 28; a `__forceinline` declaration of function_1f86a0 and a call 88 (39 bytes, stays a
+// call); a separate `result = true` 20.
 // @retail 0x1c10f0
 bool __stdcall function_1c10f0(long actor_index, s_slot *slot)
 {

@@ -1360,6 +1360,11 @@ PRIVATE inline long score_string_list_1608e0()
 // inlined in it (name[0] cleared twice). Dim as false then set 680; team name through 0x19eae0 874 (kept out
 // of line, 2682 bytes); team activity through 0x15eaf0 681; dim false declared after the place 681; masked
 // player index named for the pointer and the score lookups 717, with the early dim 708.
+// Round 461: complete native viewport copy/const-copy/assignment with long/short
+// screen height 687 each; field aggregate with long height 649 (plain kept), short
+// height 718. Frame improves to 0x794; viewer/clamp/color homes remain, 2906/2879 bytes. Coordinator review: the
+// field aggregate is a copy of the global kept only with a match (the natural copies give 687) and it moves the
+// size off retail's, so the body is back to its earlier form (680).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

@@ -730,6 +730,12 @@ real g_55e618;
 // home); with the velocity read at each use 199. Local names do not move the stack homes (compile-only frame
 // listing unchanged for four renames); ours homes sweep, perpendicular, (cache, collision), tangent, retail
 // tangent, sweep, (cache), perpendicular, (collision).
+// Round 43 (one-file LTCG link of this file with the callee closure and the inlining ballast object, equal to
+// the full listing, 74 there): the collision pointer does reach a non-LTCG body (0x244980 stores it in its
+// ray-cast callback and hands that to the Havok cast at 0x2df720), but retail's Havok is the same, so that
+// does not separate the builds. On the velocity pointer form (harness 183, frame 0x118): keep computed after
+// the tangent 187; tangent declared before perpendicular 183; the impact declared at the block's top 183;
+// perpendicular and tangent interleaved per component 183, with keep late 187 (all at least 185 here).
 // Round 116 (lane 6, fast, LTCG build): four rename sets of perpendicular/tangent/sweep (normal/tangent
 // velocity, bounce/slide, travel, along/motion/rebound) 102 each (homes unmoved, so the same-size name order
 // does not apply here); tangent, tangent and perpendicular, tangent at the top with perpendicular after the

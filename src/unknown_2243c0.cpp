@@ -52,7 +52,7 @@ bool function_23ea80(long tag, transform4x3f const *matrix, long variant, long s
 void __stdcall function_173ba0(dword, void *, void *, void const *, real *);
 void function_175610(s_particle_value_cache *, s_particle_system_datum *, s_particle_location_datum *,
 	particle_callback_175610, void *);
-void __stdcall function_224550(s_draw_sprite_seed const *, s_draw_value_cache *,
+void __stdcall function_224550(s_draw_sprite_seed const *, s_particle_value_cache *,
 	point3f *, point3f *, real, color4f const *, s_draw_sprite_context *);
 
 // @retail 0x2243c0

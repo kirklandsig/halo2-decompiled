@@ -349,6 +349,9 @@ struct s_flag_word_bits
 // 261/298/257/298/278/280/278/280; availability-first with later policy, complementary policy, both
 // and direct bounds: 274/296/297/318. Four-point 257 rejected; original method, class declaration
 // and clamp restored. Frame/status/group homes remain.
+// Round 249: Complementary availability/application/both truths, bool
+// 258/261/292 and byte 258/261/292; both with availability declared first
+// 279/279. Three-point best rejected; original status domains and complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
