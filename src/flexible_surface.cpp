@@ -263,6 +263,12 @@ void function_117510(long index)
 		if (normalize3d(&record->vertices[i].normal) == 0.0f) record->vertices[i].normal = *g_4687a8;
 }
 
+// score 139 (was 139): the 139 differing lines are all real ones (no unmatched callees here):
+// retail loads the tag table into EDX before saving the registers and keeps the tag data
+// base in EBX where ours keeps it in EDI, and with it the record and the iteration count:
+// retail's record is in EDI and its count in EBX, ours the other way round. The endpoint
+// and SSE carriers, the split pinned-word test and the correction staging differ as well;
+// the frame 0x1c and the entry agree.
 // score 139 (was 139): frame 0x1c agrees; link-base/endpoint carriers, pinned-word test and correction staging differ.
 // Round 28: the existing particle_distance_estimate_2b for the root (an LTCG cross-file inline) 139, per-use 154;
 // per-use with the root through a long pointer or a union 154/154 (same code); the existing bit_vector_test for the
