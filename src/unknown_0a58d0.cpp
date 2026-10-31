@@ -334,6 +334,11 @@ bool function_a9820(long *block, long index)
 // (same code); the identifier read before the state test 22; the world local used for both reads 18
 // (the database is then updated in place, but in ECX with the world). A permuter run produced no
 // variant below 11. Still the database pointer in ECX where retail keeps it in EDX.
+// MiniMax G (10-31): the database pointer is still loaded into ECX where retail loads
+// it into EDX, and the active byte is still read through the materialised record address instead
+// of the array; a database local with the byte read from the array, the same with the record
+// address taken inside the test, a world local, the record read without any pointer at all, the
+// modulo and mask index forms and the database read before the state test all score 14 or worse.
 // Earlier: the database pointer takes ECX where retail keeps it in EDX, and ours takes the
 // record address before the active test and reads the byte through it (`lea eax, [eax + ecx + 0x20ac]`,
 // `mov cl, byte ptr [eax + 6]`), while retail reads the byte from the array and takes the address after.

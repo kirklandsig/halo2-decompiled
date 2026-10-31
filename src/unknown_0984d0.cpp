@@ -316,6 +316,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	long local_1 = arg_1[0];
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
+// score 115 (was 115): this round: no new form; the case 1/3 loop still keeps its cursors in
+// registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
 // score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.

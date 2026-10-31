@@ -181,6 +181,10 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// score 14 (was 14): this round: the user flags are still loaded into eax where retail loads them
+// into ecx; a named local for the flags, the record's field read directly, the flags read through
+// an index cast, the two tests in the other order, the two tests split apart and a signed local
+// all leave the code as it was.
 // score 14 (was 14): the user flags are loaded into eax in ours and into ecx in retail.
 // The block layout is the same in both builds (the branch that finds no user jumps to the
 // shared load with ecx zero), so only the register the flags are loaded into differs.
