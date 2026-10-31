@@ -64,6 +64,10 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// Round 30 (lane D): the permuter found no better form, so the body is unchanged. What still differs:
+// retail calls 0x5b080 where this body expands it and expands the elapsed-time helpers 0x75870/0x75890
+// where this body calls them, retail's frame is 0x3e4 against our 0x3e8, and the result byte and the
+// getter/readiness handling are still the ones the rows below describe.
 // score 439 (was 439): retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // Retail stores the tested session state to a dead stack slot before each early exit (the idiom
 // 0x706f0 and 0x5c490 reproduce only with volatile locals), so every later row is shifted in the

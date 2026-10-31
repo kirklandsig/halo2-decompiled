@@ -380,6 +380,10 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // puts the list back in EDX); a bool room test with the caller copying into `entries[count++]` 54 (the
 // bool folds); the count read before the 0x216e50 call (diagnostic, count in ESI) 62; the original append
 // helper returning the copied element 54 (its NULL test threads away, two instructions short).
+// Round 114 (lane 6): the append helper taking the count by value 33; a bool helper handing the entry
+// out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
+// caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
+// copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

@@ -1185,6 +1185,13 @@ void c_game_engine_markers::v21(long object_index)
 // test 40 (same code), with the team at each call 119; one header-array local for the slot and unit fetches
 // 104; the event declared at function scope 40 (same code); the team at each call rebuilt (119, 430 bytes:
 // retail's flag test and player pointer, the options pointer held in EDX from entry).
+// Round 100 (lane 8, one-file harness exact, six re-run as real fast trials): a grid of the team local or the team at
+// each call, the unit fetched before the slot, the absolute index after the player pointer, an object local for the
+// slot, the unit fetched inside the slot test and a separate cause-player local (48 forms): best 40 (same code); unit
+// first 120, object local 119, unit inside the slot test 118, team at each call with unit first 119, with the
+// absolute index after, object local and cause local 130, with unit inside and cause local 129; on the team at each
+// call: arms swapped 119, one options local for both tests 119, mode and type tests joined 119; slot_object_get
+// with the index first, a header-array local or a pointer add 40 each (same code), `(word)` index 109.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
