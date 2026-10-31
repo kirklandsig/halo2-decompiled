@@ -148,6 +148,11 @@ struct s_spawn_scenario_23aea0
 // pointer 121; one loop storing through `(&globals->value0)[type * 3 - 4]` 105. Diagnostic (not kept): /Os,
 // /Ot and /Oy- keep the pointer induction; /Og- drops the loop optimisation altogether.
 // Round 322: Actual two-by-six destination array/per-batch receiver with field/native/library/grouped-input copies 105/145/145/123 each. Integer destination induction and definition EAX remain; all original tables, copies, overrides and body restored.
+// Round 56 (lane 12, fast): the outer loop over the first type of each batch (`first = 2; first < 14;
+// first += 6`, type = first + j) 139 (374 bytes); that through the records 139; the outer counter
+// stepping by six (`i < 12; i += 6`) 105; one type loop through a source record pointer and
+// `types[type - 2]` 123; a walking source pointer with dword copies 255 (278 bytes). One-link
+// screens with the global unresolved (an external symbol) still fold it into a pointer induction.
 // @retail 0x23aea0
 void function_23aea0()
 {

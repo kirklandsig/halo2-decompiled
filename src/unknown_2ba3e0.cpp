@@ -725,6 +725,11 @@ real g_55e618;
 // 0x118 each); the normal as a `vector3f const &` 102 (same code), with no copy 199; the placement's last argument read
 // into a local before the position stores (diagnostic) 137. 0x1697c0's callees that receive the result are all LTCG
 // bodies and none stores the pointer.
+// Round 115: position through the existing vector3f_add_scaled 102 (same code); perpendicular through the
+// existing vector3f_scale 102; both 102; with the velocity pointer 194 (frame 0x118: the perpendicular loses its
+// home); with the velocity read at each use 199. Local names do not move the stack homes (compile-only frame
+// listing unchanged for four renames); ours homes sweep, perpendicular, (cache, collision), tangent, retail
+// tangent, sweep, (cache), perpendicular, (collision).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

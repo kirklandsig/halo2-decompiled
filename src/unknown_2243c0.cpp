@@ -287,6 +287,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 100 (lane 8, fast): the second and third element pointers bound to `void const *const &` locals 127 (the second
 // element is then unfused as retail), the third alone 128, the second alone 128, the second plus the third's field through
 // a `long const &` 127, the third's field through a `long const &` alone 135.
+// Round 115: retail's chain lookup is `lea eax,[eax+edx*2]; movzx eax,word [eax]` and the pass element's
+// address is computed and left unused; the matched 0x17420 gets that load from a packed-range struct pointer
+// read through its inline index()/count(). Chain/entry through that struct's index() 117 (same code); flags
+// read after the search loop 132; the three pointer fields zeroed in one chained assignment 117; the head in
+// 0x16b90's direct-indexing shape 117; search result written straight into the context 136. Reference
+// locals for the lookups compile identically (compile-only, not counted).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
