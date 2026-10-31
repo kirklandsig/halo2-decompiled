@@ -226,6 +226,9 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // pending loop as a `while`, the active counter named j, both counters declared before their loops: 170 each
 // (identical code: type keeps EBX, the pending counter spills). Diagnostic only (harness compile; no pragma in
 // src): favour-size for this body 225/242 instructions, aligned 159 (much further from retail).
+// Round 117 (fast with 0x89d20): the result count renamed `written` 55, the output cursor renamed `slot` 55, the
+// active cursor renamed `a_cursor` 55 (names do not move the slots: same code each); the active cursor declared
+// at the active arm's top 171 (832 bytes); pre-increment in the active loop 55 (same code).
 // @retail 0x98150
 long c_handle_table_450cd0::v1(long a1, long max_count, void *output)
 {
