@@ -211,7 +211,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
-// score 882 (was 899): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// score 882 (was 882): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
 // Frame pointer 1207; size preference 1436; native object fields 866;
@@ -276,6 +276,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // through vector3d_from_points3d/length_sq3f too 899 (3690 bytes). Retail lays the type-0 arm's
 // other-actor branch out before the join (the offset/radius test) and its `else if` branch and types
 // 1/7/11 after it; ours keeps source order.
+// Post-admission restricted/classification/device default subsets 1..7:
+// 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
+// Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
+// all original constant lifetimes, qualifiers, buffers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -918,7 +922,7 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // as retail does: 347 -> 324, 1312 bytes. The frame is still 0x30 against retail's 0x28: ours keeps
 // the normal's x at esp+0x18 and its y at esp+0x34 where retail has the y at 0x2c and the x at
 // 0x34, and ours still spends a slot on the spilled direction.x.
-// score 324 (was 347): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
+// score 324 (was 324): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
 // and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
 // zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still
 // copies it for 0 - radius after the first offset where retail subtracts in place before both
@@ -1028,6 +1032,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // 322 each; a negative_radius local before the first offset 398, before the normal 424 (1281 bytes);
 // the offsets written per coordinate with that local, origin first/product first 360/360 (1268
 // bytes). Compile-only: unary minus in place of `0.0f -` gives identical code.
+// Round 252: Common successful output across all three success paths: long/dword/word/native point at entry
+// and after working-edge declaration 459/459/456/401/459/459/456/401. Original complete executable source
+// restored; Frame 0x30 versus 0x28, zero/radius ownership, history homes and crossing allocation remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

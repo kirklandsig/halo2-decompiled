@@ -40,6 +40,10 @@ PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0);
 // Compile-only screens reproduce ours exactly; declaration/setup orders, nested tests, swapped
 // compare, goto exit, stdcall, a pool local, pool read at each use in the step all keep ESI;
 // only an object index held in EBX from entry (0x1fb760's case) moves the pool to EDI.
+// Round 139: the step through the non-volatile shared iterator 41 (pool to EBX); the loop
+// condition `!result && step` with the result assigned from the test 29; the result set from the
+// flag inside the object test 30; the object index read through its address 12; the iterator
+// aggregate-initialised 13; a 600 s permuter run (61 tries), none below 12.
 // @retail 0x1fb6f0
 bool recorded_animation_playing(long object_index)
 {
@@ -394,6 +398,10 @@ extern "C" void _ReadWriteBarrier(void);
 // missing. All callback values and original body restored.
 // DL209: Absolute-index scan/element API pairs 318/278/318/278/201/167; salted-handle APIs 174/185;
 // single condition-step scan/element pairs 203/180/203/180. All restored.
+// Round 250: Ordinary shared traversal with remaining-tick/control receiver subsets on three/four-
+// field iterators 151/152/151/151/152/151; complete receivers with positive callback completion
+// 166/166. Four-field frame 0x10 still lacks the second pool home. All matched controls survive;
+// original body, include and private helpers restored.
 // score 122 (was 122): this round: the permuter on this function finished with no candidate (10
 // tries in 605.9 s, best 122, the baseline, no confirming build); retail's frame is 0x14 with the
 // pool pointer in two stack homes and the current index in a third, ours is 0xc with the pool

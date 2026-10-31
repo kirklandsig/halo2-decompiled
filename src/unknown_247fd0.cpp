@@ -500,6 +500,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // placement and sample declarations: all eight 416 (frame 0xa0). Original body restored.
 // Round 232: Rate read once, pending mask, both, named age increment, rate+age, mask+age, all, then all with allocation-failure exit
 // 360, 359, 360, 359, 360, 359, 357, 357. Original executable source restored.
+// Round 462: Complete initial scaled-position point-set/vector-scale producers, aggregate/setter
+// publication and original/early age: 393/393/358/363/411/397/376/377. All original geometry,
+// stores, helper graph and includes restored; frame and late EBP save remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

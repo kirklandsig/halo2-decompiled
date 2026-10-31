@@ -260,6 +260,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 242: shared two-source range conditional/nested/result/guard forms with word palette
 // 619/619/675/618, with byte palette 708/708/670/708. Original helpers and body restored;
 // palette/record and zero/SSE accumulator carriers remain.
+// Round 251: Native accumulated-value return in scalar/merge/both/color/scalar-color/merge-color/all helpers
+// 1013/1013/1287/1145/1419/1426/1647; all with byte palette 1625. Original helper contracts, input-weight
+// capture and complete body restored; palette/record and SSE carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
