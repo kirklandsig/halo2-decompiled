@@ -3157,7 +3157,7 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 49 (was 86): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
 // declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
 // compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
 // sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
@@ -3203,6 +3203,13 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // EBP/EBX), `case 1: goto next;` in the do-while 78, case 1 first 78, case 0 ending in continue 78, long mode 89,
 // the switch on the ternary 89, an if/else mode 78, `default: continue;` 49 (dropped); empty case 1 with or
 // without `default: __assume(0)`, case 1 first, cases 1 and 2: 49 (empty cases are dropped).
+// Round 18 (m3 lane 2, one-file LTCG harness, exact 49): on the for loop with `case 1: continue;` (78, retail's
+// `sub eax, 0` with the index in EBP and the pool/voice/range pointers in EBX): range index operands swapped 78;
+// range as pointer arithmetic 78; `NONE == (short)...` 78; mode as if/else 78, inverted ternary 84; `(short)`
+// permutation argument 78; `NONE ==`/`NONE !=` tests 78/78; a do-while whose condition advances (continue goes
+// to the advance) 78, with the pool global 78; pool local in the for init 78; the sibling 0x128020's loop-top pool
+// read 78, its sound pointer at the loop top 167; bool-returning 0x125e60 78. One-target forms (`default:
+// continue;`, `case 0` ending in continue, `case 1: continue; default: continue;`) 49 (`test ax, ax`).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4007,6 +4014,10 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // differ), `= {}` arrays 139, memset results in two named locals 77. Compile-only: statement clears realign
 // with clears of 0x40 bytes too, with `__declspec(align(4))` arrays, long/char element views, a returning clear
 // wrapper (inline/forceinline) or the player loop as a for loop.
+// Round 18 (m3 lane 2, fast): the arrays declared 0x80 first 55; the batch declared before the arrays 55; memset
+// of `&local_3[0]`/`&local_4[0]` 55; the batch declared and its count cleared before the arrays 55, with the long
+// restart cursor 76 (same +0x10a padding shift). The caller chain 0x12b450 <- 0x12b690 <- 0x12190 is matched up to
+// the startup code, so a caller's stack alignment cannot explain the missing realignment.
 // @retail 0x125b40
 void function_125b40(void)
 {
