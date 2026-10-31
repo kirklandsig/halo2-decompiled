@@ -445,7 +445,10 @@ struct s_squad_iterator
 
 s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 
-// score 92 (was 92): no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
+// score 74 (was 92): the scan index, declared with the block's other locals, ends the zero
+// register and gives retail's walk registers and stores, but it is live across the walk and takes
+// a stack slot (push ecx frame, 347 bytes), so the flags go to EBX where retail keeps them in memory.
+// Before: no frame; squad/definition EAX/ECX exchanged in the walk, and a zero kept
 // in EBP (stored as next, scan index, count and palette tests) where retail uses immediates/TEST.
 // Shared lookup 92; parent while 148; read-only squad 92; unused formal addresses removed 92;
 // definition scope 92; cached entries 87 (one-use pointer excluded); direct mode flags 94; early
@@ -478,6 +481,12 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // of the definition block 97, at function scope 74 at 347 bytes (a `push ecx` frame; the walk then gets EAX
 // definition, ECX squad and no zero register); uninitialised index at function/squad/definition scope 92 each;
 // the unused-parameter address statements dropped 92 (identical, removed).
+// Round 32 (one-file LTCG closure harness, exact; [harness positional, base 88]): index declared with
+// squad/definition 74 [56] (kept), first in that list [56], after them [56]; with a found flag [78] (338
+// bytes), long index [76] (342 bytes), count as a value [57], alternate read per use [56], entries declared
+// outside the scan [56]. Without it: found flag [86] (330 bytes), with a selection pointer or a found
+// pointer [86], long index [86] (322 bytes), do-while scan [86], squad index stored before next [85], index
+// declared just after the walk [88], in the definition block [93] (each still with the zero register).
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -485,6 +494,7 @@ void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags,
 	{
 		s_squad_datum *squad;
 		s_squad_definition_entry *definition;
+		short index = 0;
 		for (;;)
 		{
 			squad = squad_get((word)squad_index);
@@ -507,7 +517,6 @@ void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags,
 				if (alternate) count_slot = (long *)(definition->data + 0x5c);
 				else count_slot = (long *)(definition->data + 0x54);
 				long count = *count_slot;
-				short index = 0;
 				for (; index < count; index++)
 				{
 					byte *entries;
@@ -847,6 +856,13 @@ done:
 // re-reads g_4e0350 each pass; ours hoists g_4e0350 into EBX and re-reads the definition.
 // Retail's NONE lives in ECX from entry into the third scan (re-set by `or ecx, -1` on its back
 // edge), with the result always in its stack slot.
+// Round 32 (one-file LTCG closure harness, exact): first scan with a named `next` (read once, stored
+// back plus one) 176; `++iterator->next >=` 176; the palette/entry pair through a short pointer 196
+// (617 bytes); next tested again in the count guard 176; flag comparison operands swapped 176, entry
+// bit as bool (harness, 617 bytes, no gain); squad declared at the function top 176, the first scan's
+// pair at the scan top and the palette index at the definition block's top (harness, identical).
+// Ours carries next in CX from the entry test into the first pass; retail folds both tests into
+// `cmp word [edx+4]` and reloads at the loop top.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -1621,6 +1637,10 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // retail reloads it before, so the jump lands on the shared reload.
 // Pool read before the active test 2; record address size * index + data 2; not-found
 // stores swapped 2; datum index written index | salt 2; early return when inactive 20.
+// Round 32: the file's data-iterator step (0x200db0's helper) 110 (368 bytes); `while (step(&iterator))` with
+// the squad read from the iterator 2, the index read first 2; squad declared in the while
+// condition 2; squad index read before the NULL test 2; next index read before the pool in the
+// shared step 2.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -2358,6 +2378,13 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // gives the area iterator its own slot (0x40) and shares the squad walk with the raised point;
 // ours shares the area iterator with the point; scope changes don't move it. The walk renamed to
 // sort before the area iterator (same-size slots by name): original body 275, walk form 333.
+// Round 32 (one-file LTCG closure harness, exact; [aligned]): retail passes the masked walk index
+// to the long-parameter callees with no word casts: walk form 335 [139] (1087 bytes), without the
+// casts 333 [133] (1088 bytes); record step without them 307 [144] (1108 bytes), long index without
+// them 275 [155]; walk with the word wake read [133], plus the else-if tail 309 [124] (1108 bytes);
+// overlap written straight into wake 318 [156] (1103 bytes), with the else-if tail [202]; words and
+// overlap declared at the loop body's top 275. The pool stays in EBX across the walk (so the pushes
+// come first) even with the area block, the definition block, the tail or the actor phase cut out.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
