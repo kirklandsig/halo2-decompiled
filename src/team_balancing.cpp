@@ -571,6 +571,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // inlined under /Ob1), as a free inline operator 185 (422 bytes); the equality named first as a bool 67; the candidate
 // through a `s_balance_solution const *trial = &candidate;` pointer 67; the test as a forceinline optimizer member taking
 // the candidate (reference selected inside) 67. The candidate's count_spread still runs last.
+// Round 32 (m3 lane 14, fast): not purity: count_spread made to look writing (a store through a copy
+// of `this`, diagnostic, 0x91860 then 38) still queries the reference first, 97 (it takes EDX then);
+// that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
+// helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
+// pointer to the candidate for all six queries 67.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -838,6 +843,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // retail); adding the clamp written as `(imbalance - open_slots < 0 ? 0 : imbalance - open_slots)` gives 5
 // (left: `lea ebx, [eax + edx]` against `[edx + eax]`, the movsx and its byte). So the roles follow whether
 // the rep stosd value is the maximum variable itself (ours) or a separate value loaded at the fill (retail).
+// Round 32 (m3 lane 14, fast): the clamp as `if (excess < 0) excess = 0;` 46; `0 > excess ? 0 : excess` 34;
+// the next party value named in the copy loop 34; the party value named, stored first, then the maximum
+// 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
+// pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
+// into EBX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

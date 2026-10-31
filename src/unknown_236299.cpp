@@ -653,6 +653,13 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // Tried: both extents first, then the corners in order 86 (retail's instructions,
 // registers rotated: the bottom sum copies y0 instead of adding into height);
 // chained corner stores 86; the bottom as `height += bounds->y0` 23; corners as a
+// real[4][2] array 8; const extents 8. Lane 10 round 42 (a compile-only harness of the corner
+// block reproduces 8 and 86; all 24 orders of the first corner's two stores and the two extents,
+// each with both sum operand orders, all 8 x/y orders of the other corners, and 180 orders with named
+// right and bottom sums stay at 8 or above; the extents-first form has retail's instructions with
+// the three xmm registers rotated and the bottom added into a copy of y0): right and bottom named
+// sums 85; height, y store, width, x store 19; an aggregate initialiser after both extents 85;
+// a size point local 19; the other corners stored last to first 21.
 // real[4][2] array 8; const extents 8.
 // KIMI1 r94: width/height output helper 86; height-first output helper 85;
 // ordinary inline extents helper 86; returned point extents 118; bounds corner

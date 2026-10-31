@@ -903,6 +903,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // pair in one aggregate. Real trials (fast): the looping test named and used twice 210 (830 bytes); the
 // definition read before the looping block 201; a function-scope looping pointer 58; one if/else choosing
 // state and alternate 67.
+// Round 60 (fast baseline 58, plain 30): a two-member dword/bool union for loop_alternate 40 fast,
+// 12 plain (not kept: a single-local wrapper without a match); union and repeat_state reversed 40;
+// definition declared before the snapshot 40; tag_index at function scope 40; direct repeat state 145;
+// direct loop flag 191; both fields direct 199 (0x15c frame); signed-short repeat_state 189.
+// Original executable body restored.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

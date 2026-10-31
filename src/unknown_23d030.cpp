@@ -208,6 +208,12 @@ struct s_free_state_23d260
 // by one instruction; zero still XMM3 and the divide after the lahf) the up stores written k, i, j 274; j, k, i 257;
 // i, k, j 286; j, i, k 283; i, j, k 285; side.j assigned before side.i 257 (the copy stays early and side.i is then
 // squared first), with side.k last as well 257; side.j before side.i on the original body 102 (same code).
+// Round 120 (m3 lane 5): `side` declared with `side.k = 0.f` at the function's top 102; the movement's
+// yaw cosine/sine as named locals on this graph 291 (movement x87 then retail's apart from the k load,
+// but the side/up block recolours and ours runs four instructions short ahead of it); the roll
+// rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
+// 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
+// Original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

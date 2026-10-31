@@ -71,6 +71,15 @@ static inline void *function_xc5914d(long thread_index, short size)
 // and assigned after the allocation 95; the slot address passed straight to the call 21;
 // the result cleared before the call 31. Retail stores the pointer to its slot and copies
 // the live register, as for an address-taken local.
+// Round 11 (lane 18), all plain checks: the result taken from the allocation and the volatile pointer
+// copied from it 71 (277 bytes; the pointer is computed straight into EAX, retail computes it in EBX
+// and copies it); no volatile with the result cleared first in the success block 83 (277 bytes: no
+// spill and the expression pool is no longer held in EBX); no volatile with the allocation helper
+// reading the frame size without its size pointer 95 (266 bytes); no volatile, the result copied after
+// all three allocations and cleared before the call 83; no volatile and no frame-reference local 78
+// (278 bytes: the spill goes to the index pointer instead); no volatile with the argument index read
+// into a local for the test and the element 95 (266 bytes); no volatile with the result kept as void *
+// 95 (266 bytes).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

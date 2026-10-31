@@ -306,6 +306,8 @@ struct s_session_summary
 	long player_values248[16];
 	long player_values288[16];
 	long player_machines[16];
+
+	bool remove_machine(s_session_id *id);
 };
 
 // @retail 0x63190
@@ -454,35 +456,35 @@ void network_session_enter_state_9(c_class_58d20 *session)
 }
 
 // @retail 0x633c0
-bool session_summary_remove_machine(s_session_summary *summary, s_session_id *id)
+bool s_session_summary::remove_machine(s_session_id *id)
 {
-	long machine_index = function_0632e0(summary, id);
+	long machine_index = function_0632e0(this, id);
 	if (machine_index != NONE)
 	{
-	s_session_summary old = *summary;
-	memset(summary, 0, sizeof(s_session_summary));
-	summary->machine_count = 0;
+	s_session_summary old = *this;
+	memset(this, 0, sizeof(s_session_summary));
+	machine_count = 0;
 	for (long i = 0; i < old.machine_count; i++)
 	{
 		if (i != machine_index)
 		{
-			summary->machine_ids[summary->machine_count] = old.machine_ids[i];
-			summary->machine_times[summary->machine_count] = old.machine_times[i];
-			summary->machine_count++;
+			machine_ids[machine_count] = old.machine_ids[i];
+			machine_times[machine_count] = old.machine_times[i];
+			machine_count++;
 		}
 	}
-	summary->player_count = 0;
+	player_count = 0;
 	for (long j = 0; j < old.player_count; j++)
 	{
 		long machine = old.player_machines[j];
 		if (machine != machine_index)
 		{
 			long new_machine = machine > machine_index ? machine - 1 : machine;
-			summary->player_users[summary->player_count] = old.player_users[j];
-			summary->player_values248[summary->player_count] = old.player_values248[j];
-			summary->player_values288[summary->player_count] = old.player_values288[j];
-			summary->player_machines[summary->player_count] = new_machine;
-			summary->player_count++;
+			player_users[player_count] = old.player_users[j];
+			player_values248[player_count] = old.player_values248[j];
+			player_values288[player_count] = old.player_values288[j];
+			player_machines[player_count] = new_machine;
+			player_count++;
 		}
 	}
 	return true;
