@@ -203,6 +203,9 @@ void function_44720(void)
 // Round 453: Ordinary inline query/submission/both contracts 107/107/107;
 // with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
 // Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
+// Round 467: Accepted entry level named at its original read in long/short/word/byte,
+// used by admission and cached submission predicate 155/151/151/152; predicate at its
+// submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -358,6 +361,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 453: Library entry/query/both center copies 190/202/202; bound position alone,
 // with entry/query/both 190/190/202/202; complete point-producer memmove 246 (caller 37).
 // All original native and component copies restored; entry/index and point homes remain.
+// Round 467: Displacement/combined-radius declaration orders ZYXR/ZYRX/ZRYX/RZYX,
+// YZXR/YZRX/YRZX/RYZX, all 190 at 874 bytes. All expression trees, original declaration
+// order, query/position storage and the complete body restored; entry spill remains.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
