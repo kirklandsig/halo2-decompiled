@@ -424,6 +424,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // caches the last argument), with the flagged arm first 75; on the long result, `result = false` before the
 // index clear 50, the object read through a one-use header pointer 49, the header test indexed by a (word)
 // cast 54 (182 bytes).
+// Round 58 (lane 12, fast; none kept): early bool with `__assume(object_index != NONE)` at the top of
+// the unflagged arm 77; the header test indexed through an unsigned `(dword)` index 77 (same code); f or
+// e read once through its own address in the second virtual call 77/77 (propagated, EBP still caches f);
+// diagnostic, not keepable: a repeated `entity->object_index = object_index;` before the object read,
+// also with the object read through the entity's index, 42/42 (g stays in EDX and the data reloads as
+// retail, but idx*12 is still shared by `shl ecx, 2`; retail shares neither, so a store kill alone is
+// not retail's cause). Repeats confirming listed scores: flagged-arm clear then field retest 55,
+// clear-in-test then memory retest 53.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
