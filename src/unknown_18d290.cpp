@@ -132,6 +132,32 @@ bool function_bafb0(long object_index, long ancestor_index);
 
 bool function_14ddc0(long local_player_index);
 
+// score 44 (was 44): this round: the listings were re-read only; no new shape of the existence
+// flag was found. Retail keeps the existence byte in BL across the 0x155760 call and re-tests it
+// after the split mask, our compiler folds the re-test away and keeps the flag in AL; the loop
+// index is in EBX where retail uses EDI and the unit in EDI where retail uses ESI.
+// score 44 (was 44): this round: the existence test nested around the split test with the mask
+// kept as a number gives 52 (188 bytes, retail's length, and the split test becomes retail's
+// `test dl, 3`), the same with the existence tested on its own 52 (the compiler still folds the
+// re-test away and keeps the flag in AL), and the mask kept as a number without the nesting 72
+// (192 bytes). Still the existence byte in AL where retail keeps it in BL and re-tests it after
+// the split mask, the loop index in EBX where retail uses EDI and the unit in EDI where retail
+// uses ESI.
+// score 44 (was 44): this round's further trials on the split mask and the existence flag: the
+// mask kept in a long local 92 (204 bytes) and the same with the mask test as its own statement
+// 95 (206); the mask test written into the condition 52 (188 bytes, retail's length, but the
+// existence re-test is folded away); the existence test as a second call to 0x14ddc0 89 (203
+// bytes), the same with the player index in a local 80 (204) and with the mask in a local 80;
+// the second call nested inside the mask branch 89 (203), the same with the mask in a local 89
+// and with the object parameter in a local 89 (203). None of them lowers the score.
+// score 44 (was 44): the existence test written as a second helper call, so that the flag is
+// kept across the 0x155760 call and tested again after the split mask, reproduces retail's
+// `setne bl` and its second `test bl, bl`, but the loop index then takes EBP, the table
+// pointer is spilled and the body grows to 203 bytes (89 against 44 at 191); the nested, the
+// single-condition and the unit-ternary forms of the same idea give the same 89 at 203 bytes,
+// and reading the unit through 0x14de70 changes nothing. Still the existence byte in AL where
+// retail keeps it in BL, the loop index in EBX where retail uses EDI and the unit in EDI where
+// retail uses ESI.
 // score 44 (was 44): this round: the split mask as a long value with the existence test kept
 // separate gave 92 (the flat shape loses retail's nested branches); the mask test written into the
 // condition 52 (188 bytes, retail's length) and the same with the existence re-tested after the
