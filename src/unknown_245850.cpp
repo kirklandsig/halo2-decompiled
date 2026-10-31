@@ -15,7 +15,7 @@ void function_245270(real thickness, short count, point3f const *points, plane3f
 void function_245400(s_source_245400 const *source, long index,
 	transform4x3f const *matrix, real height, real radius, long field_00,
 	long field_04, s_line_list *list);
-void function_245540(long arg_0, s_source_245400 const *arg_1,
+void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
 	long arg_5, long arg_6, s_collection_245270 *arg_7);
 
@@ -93,11 +93,6 @@ struct s_245aa0
 	long field_80c[256];
 };
 
-// score 3 (was 3): the source argument of the function_245540 call is loaded into EDX here and
-// into ECX in retail; the register comes from the callee's argument assignment (BLOCKED-BY 0x245540).
-// Round 13, in the callee: second code and plane table ahead of the first code 3; plane table
-// first 3; early return on equal materials 3; point transform before the vector transform 3;
-// edge vector after the side flags 3 (callee 202).
 // @retail 0x245aa0
 void function_245aa0(s_245aa0 const *arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -106,7 +101,7 @@ void function_245aa0(s_245aa0 const *arg_0, s_source_245400 const *arg_1,
 	for (long local_0 = 0; local_0 < arg_0->field_808; ++local_0)
 		function_245400(arg_1, arg_0->field_80c[local_0], arg_2, arg_3, arg_4, arg_5, arg_6, (s_line_list *)arg_7);
 	for (long local_1 = 0; local_1 < arg_0->field_404; ++local_1)
-		function_245540(arg_0->field_408[local_1], arg_1, arg_2, arg_3, arg_4, arg_5, arg_6, arg_7);
+		function_245540(arg_1, arg_0->field_408[local_1], arg_2, arg_3, arg_4, arg_5, arg_6, arg_7);
 	for (long local_2 = 0; local_2 < arg_0->field_00; ++local_2)
 		function_245850(arg_0->field_04[local_2], arg_1, arg_2, arg_3, arg_4, arg_5, arg_6, arg_7);
 }

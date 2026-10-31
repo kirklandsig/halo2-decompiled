@@ -556,6 +556,11 @@ bool sound_driver_voice_create_buffer(
 // count stored before the clear 72 (71 with the voice reference first); 3D flag declared before play 180 (599).
 // On 71: the 3D flag spelled `(flags & 1) != 0` 71 (same code); the decrement through the `globals` local
 // 146 (619). Play keeps BL in every placement of either definition.
+// Round 41: `byte flags` 70 (the caller 0x191420 then differs, 1); `word flags` 162; const bools 71; a copy of
+// play for the 3D buffer 71 (propagated away); the 3D buffer as a force-inline helper taking play 125
+// (diagnostic: play still BL, frame grows); three_d defined first 180 (retail's `mov al, cl; shr ecx, 1;
+// and cl, 1` shape, but voice_index takes EBP, the zero EBX and both bools spill); three_d first ahead of
+// the voice reference 181. Retail computes play destructively in ECX, so flags' last use is play.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
