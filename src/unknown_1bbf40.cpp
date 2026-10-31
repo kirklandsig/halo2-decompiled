@@ -540,6 +540,10 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // false;` with the scan's false 126 (862 bytes). Harness (this file plus its callees' files; same layouts as the
 // build): `&&`, if/else arms, the inverted if/else with `else special = true`, a single-exit inline flag getter
 // all lay the tail's first block after the special path; only a preset-true flag keeps the scan between.
+// Round 135 (lane 4, fast): the type test named (`bool turret = ... == 6;`) 47 (same code); `if (type == 6 &&
+// byte) special = true; else { special = false; scan }` 200 (872 bytes, flag memory-only); the vehicle type read
+// into a short local 47 (same code); `& (actor->unknown268 == true)` 47 (same code); `special = false; if (type
+// == 6 && byte) special = true; else { scan }` 202.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

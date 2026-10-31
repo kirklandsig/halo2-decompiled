@@ -8,6 +8,10 @@ long __stdcall function_b7b40(void *arg_1);
 void __stdcall function_b8ee0(long arg_1, long arg_2, long arg_3, long arg_4);
 void function_b7680(long arg_1, real arg_2, real arg_3);
 long function_cbe60(long arg_1);
+long function_cbd50(long unit_index, short weapon_index);
+long players_first_active_local_player(void);
+bool function_14ddc0(long local_player_index);
+long function_14de70(long local_player_index);
 
 struct s_13c250
 {
@@ -29,45 +33,6 @@ struct s_13c251
 __forceinline byte *function_13c251(s_record_pool *arg_1, long arg_2)
 {
     return ((s_13c250 *)arg_1->data)[arg_2 & 0xffff].field_8;
-}
-
-static inline long local_player_first_index(void)
-{
-    long result = NONE;
-
-    for (long i = 0; i < 4; i++)
-    {
-        if (g_4e8c20->entries[i] != NONE)
-        {
-            result = i;
-            break;
-        }
-    }
-    return result;
-}
-
-static inline long local_player_next(long index)
-{
-    long result = NONE;
-    long start = index == NONE ? 0 : index + 1;
-
-    for (long i = start; i < 4; i++)
-    {
-        if (g_4e8c20->entries[i] != NONE)
-        {
-            result = i;
-            break;
-        }
-    }
-    return result;
-}
-
-static inline bool local_player_valid(long local_player_index)
-{
-    bool result = false;
-    if (local_player_index != NONE)
-        result = g_4e8c20->entries[local_player_index] != NONE;
-    return result;
 }
 
 struct s_player_13c250
@@ -153,6 +118,13 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // Round 231: complete priority-zero result, long / unsigned / short / enum
 // 176/176/181/176; each with ordinary cardinality 280/280/276/280. Original
 // ranking, inherited count and body restored; receiver reloads and ranking handoff remain.
+// Round 56 (lane 12): the local player walk through the existing first/next/valid/player-index
+// functions (0x14dde0, local_player_next_inline, 0x14ddc0, 0x14de70) in place of this file's
+// copies 144 (identical code, kept), with the player index still read directly 144; both weapon
+// slots through the existing 0xcbd50 144 (identical code, kept); the lookup helper `inline`
+// instead of `__forceinline` 144; one unit pointer for the flag test and both slot reads 292
+// (886 bytes). A local weapons array between the lookups is scalarized (merge stays); 0x82d20's
+// reload comes from its address-taken weapons array, which this function lacks.
 // Round 241: three-handle table with separate/gathered slots, word/byte selectors and
 // qualified/plain counts 238/238/238/238/265/265/268/268. Grouped diagnostics restored;
 // original collection, pointer ranking and frame 0xd8 retained.
@@ -165,24 +137,18 @@ void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
     if (arg_1 != NONE)
     {
         local_2 = 0;
-        long local_6 = local_player_first_index();
-        for (; local_6 != NONE; local_6 = local_player_next(local_6))
+        long local_6 = players_first_active_local_player();
+        for (; local_6 != NONE; local_6 = local_player_next_inline(local_6))
         {
-            if (local_player_valid(local_6))
+            if (function_14ddc0(local_6))
             {
-                long local_8 = ((s_player_13c250 *)g_4e8c24->data)[g_4e8c20->entries[local_6] & 0xffff].unit_index;
+                long local_8 = ((s_player_13c250 *)g_4e8c24->data)[function_14de70(local_6) & 0xffff].unit_index;
                 if (local_8 != NONE && !function_13c253((s_13c251 *)function_13c251(g_4e0300, local_8)))
                 {
                     byte *local_9 = function_13c251(g_4e0300, local_8);
-                    short local_10 = (signed char)local_9[0x212];
-                    long local_11 = NONE;
-                    if (local_10 != NONE)
-                        local_11 = *(long *)(local_9 + local_10 * 4 + 0x218);
+                    long local_11 = function_cbd50(local_8, (signed char)local_9[0x212]);
                     local_9 = function_13c251(g_4e0300, local_8);
-                    short local_12 = (signed char)local_9[0x213];
-                    long local_13 = NONE;
-                    if (local_12 != NONE)
-                        local_13 = *(long *)(local_9 + local_12 * 4 + 0x218);
+                    long local_13 = function_cbd50(local_8, (signed char)local_9[0x213]);
                     long local_14 = function_cbe60(local_8);
                     if (local_11 != NONE)
                     {
