@@ -300,6 +300,12 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // reloads every parameter per case here, so it shows nothing about the flip.
 // Round 99 (lane 8): the buffer read once inside each case 62; format 1 through a vertex pointer 62; a const buffer
 // pointer 62; format 3's position copied member by member 102; the default case's node test on its own line 62.
+// Round 20, all with formats 3 and 4 indexed through `vertices` locals (175, flipped: node EBX,
+// switch temp and bases EDI, source on the stack, `ret 8`): both array locals declared at the
+// function top 175; formats 1, 2 and default zeroing the node once after the switch with 3/4
+// returning 175; an unsigned index (definition and declaration) 175; format 4's node byte read into a
+// local before the decode (stored after) 174 (0x14a8e0 283); formats 3/4 returning after their node
+// stores 175. Only the node store's position (before the decode, 73) keeps the convention.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

@@ -1288,6 +1288,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // locals' positions and copy/assign forms (24) 6 each, written/resized/bytes/header declared
 // earlier 6 each, the header initializer on typed fields 6, a named flags local first 120;
 // permuter on the 6 form: 65 tries, none below 6.
+// Round 20 (fast): the 7 and 6 forms reproduce. The six left look like VC's EAX/ECX/EDX scratch
+// rotation: consistent with the resize handle local being a register variable (EAX) where retail's
+// resize uses a rotating temp (ECX), shifting the header address and the close copy by one. On the 6 form the resize or
+// the write local read through `g_557c90[index]` 6/6; on the 7 form bytes declared first with
+// `sizeof(empty_header)` 7; the file pointer declared after the open wait 258 (7 form) / 245 (6 form).
 // @retail 0x213970
 void function_213970(void)
 {

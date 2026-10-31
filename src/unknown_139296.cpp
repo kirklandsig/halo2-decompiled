@@ -1214,6 +1214,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // 116/118/118/125/118; draw result as a ternary 158 or stored as the failed result 118 (also alone);
 // one shared offset, with or without a shared count 127/127; offset declared before the mask
 // zeros, before the setup call or first, with the sibling first loop 1/1/1.
+// Round 20: an indexed first loop (`for (long i = 0; i < count; i++)`, element field_24 + i * 0x50) is
+// exact once at most one later loop has a `> 0` guard: with the later loops in the current for form 6
+// (both zero EBX before their guards); later sibling loops guarded `>= 1` 12 (`cmp eax, 1; jl`, the rest
+// of both loops exact); all three indexed 118; chained mask zeroing with the indexed first loop 122;
+// indexed first, sibling second, for-form third 3 (only the third xor-before-guard); indexed first and
+// third with the sibling second 118. Two later zero guards (or indexed zero starts) keep the zero live.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
