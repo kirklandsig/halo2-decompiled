@@ -61,9 +61,10 @@ bool object_dispatch_query_function_value(long object_index, long name, real *va
 bool function_10aac0(long object_index, long name, real *value, long *index);
 bool function_ba8c0(s_object_function_ab const *function, long object_index, real *out);
 
-// score 28 (was 28): retail gives the 1.0 case its own epilogue (`mov al, 1`, no store of the
-// enabled byte); ours stores the byte and shares the final return. Then the recursive call's parent
-// index and name sit in ECX/EAX where retail has EAX/ECX. Tried: `enabled = true; return enabled;`
+// score 23 (was 28): retail gives the 1.0 case its own epilogue (`mov al, 1`, no store of the
+// enabled byte); ours stores the byte and shares the final return (the three jumps to that return
+// differ with it). Before round 55 the recursive call's parent
+// index and name sat in ECX/EAX where retail has EAX/ECX. Tried: `enabled = true; return enabled;`
 // 117 (358 bytes: forwarded to `mov al, 1` and cross-jumped with the 0x10aac0 return); the result set
 // before the value store 117; the 1.0 case as the chain's final else 28; a second `return enabled`
 // in the dispatch branch 28; a separate register result for the 1.0 case and the final return 117.
@@ -71,6 +72,11 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // 0x10aac0 result as `enabled = true` at the head of the chain 124; a switch on the name 104;
 // the early result as a named bool returned when set 28, with the 1.0 `return true` 117. The
 // recursive call's EAX/ECX swap is absent from a compile-only build (an LTCG effect).
+// Round 55: the recursive result through `enabled = function_bab40(...); return enabled;` 23 (kept: the
+// call's EAX/ECX as retail; a parent index local or the parent test nested: no gain in a one-file
+// screen); with that kept, the 1.0 case's `return true` 117, `return true` with the early result in a
+// `found` local 117, through a `real one` local 117, `enabled = true; return enabled;` 117, the name
+// tests chained as an else of the early test 117 (each 1.0 return cross-jumps into the early return).
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {
@@ -110,7 +116,10 @@ bool __stdcall function_bab40(long object_index, long name, real *value)
             if (!found)
             {
                 if (TEST_FIELD_BIT(object->flag26) && object->parent_index != NONE)
-                    return function_bab40(object->parent_index, name, value);
+                {
+                    enabled = function_bab40(object->parent_index, name, value);
+                    return enabled;
+                }
                 *value = 0.0f;
                 return false;
             }
