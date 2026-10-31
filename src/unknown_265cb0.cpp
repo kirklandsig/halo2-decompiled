@@ -506,6 +506,11 @@ real function_30bf0(vector3f *vector);
 // Round 240: reusable mode test/all-axis origin scalars/all-axis point scalars and their pairs/all
 // 323/346/319/364/342/380/395; all with ordinary result 395. Original input observations and
 // complete body restored; mode caching grows the frame to 0x354.
+// Round 38 (m3 lane 11, fast): seat element pointer per iteration of an indexed loop 190 (1310 B);
+// clip as `delta.i += motion.i * amount` 232 (1296 B); not-facing secondary from primary 152;
+// occupant forward cast at each of its three uses (no pointer local) 195 (1315 B); one out-of-range
+// store after both range tests behind an in-range flag 196 (result slot then at retail's +0, first
+// difference +0x27). Original body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1168,6 +1173,11 @@ struct s_equipped_object_view
 // 27; the object pointer for the held slot with the slot read through a second
 // lookup 4 (retail's reload; only the entry's data register and the slot's sign
 // extension differ). Two held lookups reload it data-first (15, 142 bytes).
+// Round 38, no volatile: the 0x267370 form (held index through function_cbd50, the
+// definition read inside the compare) 31; a pool pointer local for both lookups 27; the
+// threshold entries selected (NULL when empty) before the held lookup 30 (142 bytes); the
+// entry object through object_header_get's header 28; an unused header lookup in the entry
+// block (diagnostic) gives retail's entry block but a data-first held reload 15 (142 bytes).
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1701,7 +1711,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// score 262 (was 502): frame 0x80 and the forward/relative blocks now agree; the established and
+// visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
+// where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
+// Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
 // Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
 // the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
@@ -1815,11 +1828,23 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 455: Late retention constant 558; with early scoring zeros 573; with late visibility constant 565;
 // both 569; complete predicate role names on each graph 558/573/565/569. Late visibility recovers
 // frame 0x80, but all regress. Original observations, calls, defaults and body restored.
+// Round 38 (m3 lane 11, plain): forward copied or transformed straight from the unit 745 (2807 B);
+// long second search counter 565; facing/score zeros at the unit block top 575; existing
+// object_get_forward 713 (frame 0x74, forward block exact); with score zeroed at the iteration top and
+// approach/facing at the unit block top 436 (frame 0x80); then strongest_node assigned before strongest
+// 278; strongest_node declared before best_node 434, both 276; score before the threshold 270 (kept);
+// with the long second counter 271, and player NULL before the first search 396; relative velocity
+// through vector3d_from_points3d 262 (kept, relative block exact); visible or retain set first
+// 500/497; C-style flag declarations in either order 262/262; NONE reset first in the positive branch 262.
+// On the 262 body: best_level (and strongest) declared before the memset 259/259 (retail's immediate
+// zero store and loop entry; a 3-point gain, not kept); with a shared iterator-start helper for the
+// file's three prop walks 259 (the walks still match); with the long second counter 260; visibility
+// as one expression or an if/else 450/450 (2841 B).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
 	s_actor_view *actor = actor_get(actor_index);
-	long best_node = NONE, strongest_node = NONE;
+	long strongest_node = NONE, best_node = NONE;
 	byte *data = (byte *)actor;
 	memset(data + 0x324, 0, 0x10);
 	short best_level = 0;
@@ -1877,8 +1902,8 @@ void function_266640(long actor_index)
 		}
 		if (view && *(real *)((byte *)view + 0x3c) > strongest)
 		{
-			strongest = *(real *)((byte *)view + 0x3c);
 			strongest_node = index;
+			strongest = *(real *)((byte *)view + 0x3c);
 		}
 	}
 	*(short *)(data + 0x328) = best_level;
@@ -1944,6 +1969,7 @@ void function_266640(long actor_index)
 		short player_slot = NONE;
 		for (short i = 0; i < 2; i++)
 			if (g_4f55cc[i].player_index == players.datum_index) { player_slot = (short)i; break; }
+		real score = 0.0f;
 		long threshold = round_tick_count((real)g_510c54->field_2_3 * 2.0f);
 		if (player && *(long *)(players.datum + 0x2c) != NONE)
 		{
@@ -1952,17 +1978,9 @@ void function_266640(long actor_index)
 			s_slot_object_view *unit = object_get(unit_index);
 			if (*(short *)((byte *)unit + 0x1fc) == NONE)
 			{
-				vector3f forward = *(vector3f *)((byte *)unit + 0x70);
-				if (unit->parent_index != NONE)
-				{
-					byte *parent = (byte *)object_get(unit->parent_index);
-					real *matrix = (real *)(parent + *(short *)(parent + 0x116) + *(char *)((byte *)unit + 0x18) * 0x34);
-					vector3f transformed;
-					transformed.i = matrix[7] * forward.k + matrix[4] * forward.j + matrix[1] * forward.i;
-					transformed.j = matrix[8] * forward.k + matrix[5] * forward.j + matrix[2] * forward.i;
-					transformed.k = matrix[9] * forward.k + matrix[6] * forward.j + matrix[3] * forward.i;
-					forward = transformed;
-				}
+				real approach = 0.0f, facing = 0.0f;
+				vector3f forward;
+				object_get_forward(unit_index, &forward);
 				point3f point;
 				function_b9dd0(unit_index, &point);
 				vector3f direction;
@@ -1977,10 +1995,7 @@ void function_266640(long actor_index)
 				long reference = function_25d810(unit_index, actor_index, false);
 				vector3f velocity = unit->velocity;
 				vector3f relative;
-				relative.i = unit->velocity.i - vehicle->velocity.i;
-				relative.j = unit->velocity.j - vehicle->velocity.j;
-				relative.k = unit->velocity.k - vehicle->velocity.k;
-				real approach = 0.0f;
+				vector3d_from_points3d((point3f const *)&vehicle->velocity, (point3f const *)&unit->velocity, &relative);
 				if (function_30bf0(&velocity) > 0.0f)
 					approach = velocity.k * direction.k + velocity.j * direction.j + velocity.i * direction.i;
 				if (function_30bf0(&relative) > 0.0f)
@@ -1990,7 +2005,6 @@ void function_266640(long actor_index)
 				}
 				if (reference != NONE && prop_ref_get(reference)->unknown27 < 1)
 					visible = false;
-				real facing = 0.0f, score = 0.0f;
 				bool positive = false;
 				if (distance < 15.0f)
 				{
