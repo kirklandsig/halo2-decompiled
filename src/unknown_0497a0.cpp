@@ -163,6 +163,9 @@
 // Round 40: `if (shape0) inv = ... else inv = ...` in the first mode switch 707 (2663 bytes); input copies d then c
 // 580 (one point); the maxima as one expression 760; camera shifts read before the old20/old30 copies 581 (same
 // code); md before mc 666.
+// Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
+// 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
+// shape/basis homes and thirteen excess bytes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

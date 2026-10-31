@@ -179,6 +179,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // kept); with the dot through the existing dot3f either argument order 215/215; with the zero local dropped
 // 215 (aligned 230). Kept: dot3f for the hand-accumulated dot and 0.f in place of the zero-only local 221
 // (aligned 238 -> 232).
+// Round 460: Complete mutable/immutable view-depth carriers with original/branch/conditional/
+// immutable-conditional weight producers, 221/221/249/249/221/221/249/249. Original helper and body restored;
+// extra frame word and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
