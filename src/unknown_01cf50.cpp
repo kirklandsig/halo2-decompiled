@@ -3294,6 +3294,9 @@ bool function_14600()
     return result;
 }
 
+// score 40 (was 73): retail loads the width pair first and only then the
+// height pair, ours loads the height pair first; the conversions of the two
+// differences into EDX and EAX now agree
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -3304,14 +3307,14 @@ void function_1eb00()
     function_0222d0(D3DRS_ZBIAS, 0);
     function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x6c), 0);
     function_1c710(g_51f0f0);
-    real x = 1.0f / (short)(g_48564e - g_48564a);
     real constants[20];
+    real y = 1.0f / (short)(g_48564c - g_485648);
+    real x = 1.0f / (short)(g_48564e - g_48564a);
     constants[0] = x * 2.0f;
     constants[1] = 0.0f;
     constants[2] = 0.0f;
     constants[3] = -1.0f - x;
     constants[4] = 0.0f;
-    real y = 1.0f / (short)(g_48564c - g_485648);
     constants[5] = y * -2.0f;
     constants[6] = 0.0f;
     constants[7] = y + 1.0f;

@@ -3207,6 +3207,13 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // EBP/EBX), `case 1: goto next;` in the do-while 78, case 1 first 78, case 0 ending in continue 78, long mode 89,
 // the switch on the ternary 89, an if/else mode 78, `default: continue;` 49 (dropped); empty case 1 with or
 // without `default: __assume(0)`, case 1 first, cases 1 and 2: 49 (empty cases are dropped).
+// Round 18 (m3 lane 2, one-file LTCG harness, exact 49): on the for loop with `case 1: continue;` (78, retail's
+// `sub eax, 0` with the index in EBP and the pool/voice/range pointers in EBX): range index operands swapped 78;
+// range as pointer arithmetic 78; `NONE == (short)...` 78; mode as if/else 78, inverted ternary 84; `(short)`
+// permutation argument 78; `NONE ==`/`NONE !=` tests 78/78; a do-while whose condition advances (continue goes
+// to the advance) 78, with the pool global 78; pool local in the for init 78; the sibling 0x128020's loop-top pool
+// read 78, its sound pointer at the loop top 167; bool-returning 0x125e60 78. One-target forms (`default:
+// continue;`, `case 0` ending in continue, `case 1: continue; default: continue;`) 49 (`test ax, ax`).
 // Round 40 (one-file LTCG harness, exact: 49; the for/continue and two-label forms confirmed with --fast): a for
 // loop with `case 1: continue;` 78 (retail's `sub eax, 0` and pool reload after the next-index ternary; only the
 // sound index and the pool/voice/range pointers swap EBX/EBP); on it, the range pointer written at both calls 31
@@ -4030,6 +4037,10 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 // differ), `= {}` arrays 139, memset results in two named locals 77. Compile-only: statement clears realign
 // with clears of 0x40 bytes too, with `__declspec(align(4))` arrays, long/char element views, a returning clear
 // wrapper (inline/forceinline) or the player loop as a for loop.
+// Round 18 (m3 lane 2, fast): the arrays declared 0x80 first 55; the batch declared before the arrays 55; memset
+// of `&local_3[0]`/`&local_4[0]` 55; the batch declared and its count cleared before the arrays 55, with the long
+// restart cursor 76 (same +0x10a padding shift). The caller chain 0x12b450 <- 0x12b690 <- 0x12190 is matched up to
+// the startup code, so a caller's stack alignment cannot explain the missing realignment.
 // Round 40: long restart cursor 76; the restart call without its `(short)` 55 (same code); the 0x40 clear as a
 // statement with the 0x80 clear's result as the argument 123, with the long cursor 158; the 0x40 array `= {0}`
 // with the 0x80 clear's result 147. Probes: a returning clear wrapper inlined across files by LTCG still realigns
