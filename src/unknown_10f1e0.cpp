@@ -458,6 +458,9 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // Round 235: complete/conditional native pair-admission bool/byte, shift/shared mask
 // tests 37/42/37/42/37/42/37/42. The mask still splits the update; original admission
 // and complete executable body restored.
+// Round 115 (all with the mask test, 545 bytes; the set after 0x1d90e0 then computes the mask before the word
+// address and splits into load/OR/store): signed visited words 42; target declared before marker 42; model
+// as a `long const *` read as model[1] 42; hand mask test with the mask on the left 42, on the right 42.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
