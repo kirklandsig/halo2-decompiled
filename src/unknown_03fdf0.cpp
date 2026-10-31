@@ -307,6 +307,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
 // from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
 // copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
+// Round 40 (reduced-relink screen, base 49 on its scale): 36 combinations of the block pointer or indexed
+// blocks, the count as the field, a long at the top of the `if` or a short before the clears, the entries
+// cursor before the copy or after the advance, a separate index or `first + n`, and the block pointer before
+// or after the clears: nothing below the current body; indexed with a short count before the clears and the
+// cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
+// `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
