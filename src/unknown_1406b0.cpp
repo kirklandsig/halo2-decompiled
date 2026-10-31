@@ -801,6 +801,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // drops to 18). Round 41: only the character as a plain long 86 (0x13eeb0 18); only the font
 // as a plain long 88 (0x13eeb0 22); iterator and prediction at function scope 14; header
 // result in a pointer local 14; break out of the search and allocate only when not found 14.
+// Round 41 (lane 10): match test with the parameters on the left 16 (the font compare then
+// reads the field as its memory operand); iterator index set before its data 14; explicit
+// `(long)` conversions at the uses 14; prediction declared before the iterator 14; return
+// early when the allocation fails 14.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
