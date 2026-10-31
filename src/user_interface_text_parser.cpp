@@ -505,6 +505,13 @@ done:
 // test for its two uses; on it the tag read before the variant call 57, the selector straight from
 // the getter with the tag first 57, `if (!globals) goto done;` 54, the tag read at the translator call
 // 45 (171 bytes; the selector then in EAX as retail, still the EBX buffer).
+// Round 24 (lane 14, fast), all on the natural one-copy form (54: buffer address hoisted into EBX at the
+// globals test, selector in ECX, tag loaded after the range compare): the buffer address read once into a
+// named `wchar_t *` local used by the translator and the copy 54 (same code); numeric case order 49; an
+// early `if (!globals) goto done;` with function-scope locals 54; `name_id` preset NONE with `default:
+// break` and the translator under `if (name_id != NONE)` 54; the four parse buffers as one two-dimensional
+// array (sym+offset constants) 54. Retail's translator takes the name in EDI (its matched body), so EDI's
+// late push is the call's argument register; the EBX hoist is the only thing the natural form lacks.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

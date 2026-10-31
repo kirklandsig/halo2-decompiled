@@ -288,6 +288,15 @@
 // bytes); the 9, 10, 12, 11, 13 order on this body 59. Harness on the 2 form: 196 quadratic-block orders and
 // spellings (sqrt5 with its value, band2/result[6]/xz operand orders, zz staged) and 77 first-block orders keep
 // the sqrt15 load after `fmul z`; without the cubic block the swap stays, so it is not a cubic-block effect.
+// Round 33 (m3 lane 11): lane 14 r19's 6-point form rebuilt (fast 6, 0x146020 matched). A compile-only
+// /FAs build of this file reproduces both residual differences. Screened there: band3_21 or zz5
+// renamed (8 names) and band3_21 declared at five earlier places: no change; 80 single statement
+// moves and 150 random order/operand mixes in the quadratic block, 120 in the first block, and the
+// xz/x/difference stagings undone: the sqrt15 load never moves ahead of the x87 z*z. zz5 takes zz's
+// home (as retail) only when it is defined after the sqrt(21) product: with a named
+// `real band3_21 = (real)(sqrt21 * sqrt(2.0));` after sqrt105 and zz5 after it, fast 12 (band3_21's
+// home then lands below xx, yy and xy where retail has it above them, and the result[13] store slips
+// one place); 360 orders of the later statements keep that store slip.
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

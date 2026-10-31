@@ -520,6 +520,13 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // setcc def against retail's branchy `mov cl, 1; jmp`, and the tail flag in AL, not CL), operands
 // swapped 193 (same); `&&` def 200 (flag memory-only, tail after the special path); the F11 def 97
 // (memory-only). Every all-constant (branchy) def keeps the flag in memory.
+// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure; positional/aligned, base 42/41 = full
+// 47): `&&` flag 180/43 (special path stores 1 and the tail is laid out after it); `&& != 0` 180/43; `&&` with
+// a return at the proximity exit 210/57; `type == 6 ? byte != 0 : false` 154/20 (876 bytes: NONE in EBX and
+// the body retail's, but the def is `setne al` stored to the argument slot and the tail reads memory);
+// `type != 6 ? false : byte != 0` 148/19 (862 bytes, same two spots); raw-bool conditional 154/20; false
+// initializer with `if (cond) special = true; else { scan }` 184/45; declared bare with `special = false`
+// at the scan start 180/43.
 // Round 131 (lane 4, aligned counts against 39): seat_object = NONE declared at the outer block's
 // top 47 (aligned 40); allow_exit declared after the actor lookup 52 (44); `!!actor->unknown268`
 // in the bitwise def 47 (same code); the iterator declared at the outer block's top 47 (same code);

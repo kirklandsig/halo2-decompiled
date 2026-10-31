@@ -209,6 +209,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // LTCG passes start in EDX. With it, the length loop as `while (length < 0x1ff && *string++)` 28, a
 // walk local in the length helper 28, the source named before the clamp 32 (0xb5f10 6 each); the
 // while-loop helper alone 40 (same code).
+// Round 54 (lane 12, fast with 0xb5f10/0xb61d0; env link = the build's listing): `if (++count > 0x200)` 40
+// (same code); `string + start` named after the clamp with the length test nested 28 (0xb5f10 6); a walk
+// local in the shared length helper 40 (0xb61d0 2); the length named inside the sign test with an early
+// `return result` 40 (103 bytes); `long end = start + count` tested against the length 43 (101 bytes).
+// Env grid (start += string / string + start / named source x count++ or ++count x one or nested
+// tests, 12 forms): start in ECX for its whole life (40) or in EDX (28, 0xb5f10 6) only; retail
+// colours start after the scan's counter and walk (EDI) and still receives it in ECX.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -505,6 +512,12 @@ bool function_7af40(s_type_99af70 const *address);
 // through the open call 94; the open test inverted with the close and return first 101; the counter
 // after the copy 37; the counter, state and copy in an inline member with the flag alone re-read 30
 // (env); the terminator through `connection` with a destination local 17 (as the written-out copy).
+// Round 54 (lane 12, fast with 0xb40b0/0xb5f10; env link = the build's listing): the copy, then the
+// counter and the state 36 (248 bytes); counter, copy, state 36; the copy first with retail's endpoint
+// reads 35 (252); `flags = flag ? 0x40 : 0` 28 (244; neg/sbb select, not retail's or-byte); a
+// pre-increment 32 (same code). Env only: the three stores through a struct-initialized endpoint copied
+// to `*connection->endpoint` 92 instructions (a stack temporary); the copy's terminator through its
+// returned destination 89.
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {

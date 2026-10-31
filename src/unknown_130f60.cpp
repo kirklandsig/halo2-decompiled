@@ -175,7 +175,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 355 (was 355): Entry ESI save, direction/opposite homes and x87 normalization storage still differ.
+// score 324 (was 355): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
 // clamp, and clamp combinations 410/414/420/402/410/414/420; all with disjoint clears before common
 // remaining initialization 454 (fast control 402; full 444).
@@ -207,6 +207,18 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Round 240: inner descriptor cursor/two-axis dispatch/byte ordinal and their pairs/all
 // 369/417/448/443/452/416/468; direct table-end cursor 512 (fast control 374).
 // With full-context control recovered at 355, the descriptor cursor scores 419; original body restored.
+// Round 49 (lane 16): the opposite vector's magnitude from float squares (no double casts) gives
+// retail's x87 block and vector homes exactly (fast 372, plain 409 at 1879 bytes alone); with each
+// switch case selecting its own sample set 324 plain at 1893 bytes (kept); the angle call as
+// (axis, view_direction), retail's EDX/ECX setup, 324 (kept, same count); float squares and the
+// call order without the per-case sets 409; the existing vector3f_scale for the reciprocal scale
+// 344 fast (1895 bytes, same multiplies). Screened compile-only (same code as kept): the scale rows
+// in any operand or row order or through vector3f_assign (retail loads j and multiplies by the
+// reciprocal, ours copies the reciprocal; the 3-byte difference drops retail's loop-head padding and
+// shifts the rest); the remaining stores after all three memsets (1.0 stays in XMM5). Without the
+// angles copy the frame drops to 0x28 (retail 0x30). On the kept form (fast 336): the weight
+// clamped in its own statement 406 (1845 bytes); `remaining = remaining * (1 - weight)` 337; the
+// reciprocal written inline in each row 336 (same code).
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
@@ -239,7 +251,7 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt((double)opposite.j * opposite.j + (double)opposite.i * opposite.i);
+			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
 			if (!(0.0001f > fabs(magnitude)))
 			{
 				real reciprocal = 1.0f / magnitude;
@@ -252,15 +264,22 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 		{
 			for (long j = 0; j < 2; j++)
 			{
-				s_fog_direction_sample *sample = source->samples[j].count > 0 ? source->samples[j].entries : NULL;
+				s_fog_direction_sample *sample;
 				vector3f const *axis;
 				switch (j)
 				{
-				case 0: axis = &direction; break;
-				case 1: axis = &opposite; break;
-				default: continue;
+				case 0:
+					sample = source->samples[0].count > 0 ? source->samples[0].entries : NULL;
+					axis = &direction;
+					break;
+				case 1:
+					sample = source->samples[1].count > 0 ? source->samples[1].entries : NULL;
+					axis = &opposite;
+					break;
+				default:
+					continue;
 				}
-				real angle = function_11ce20(view_direction, axis);
+				real angle = function_11ce20(axis, view_direction);
 				if (sample && sample->angle_end > sample->angle_start)
 				{
 					real weight = PIN((angle - sample->angle_end) / (sample->angle_start - sample->angle_end), 0.0f, 1.0f);

@@ -299,6 +299,18 @@ short function_239e50(short count, point2f const *points, short *indices);
 // reciprocal written at both scales 42; a single result set in the scale arm 42. Matched 0xde080's
 // normalizer keeps `movss xmm4,[v->i]; mulss xmm4,xmm0` (no commute), while ours commutes `v->j * inv`
 // into the reciprocal's register here: retail's reciprocal looks live past both scales.
+// Round 54 (lane 12, fast; compile-only reproduces both the SSE block and the integer allocation):
+// operand order follows which normal component is written by name first. line.n.i written by name with
+// line.n.j and the case-0 dot through a `vector2f *normal = &line.n` gives retail's whole SSE block (1.0 in
+// xmm5, 0 in xmm4, j loaded fresh into xmm2, `mulss xmm1, [p.x]`) 23 (first difference +0xe; not kept: a
+// by-name/pointer mix kept only with a match), also with case 1's dot through `normal` 23; the same with
+// the dot through the helper 44 (304 bytes); every normal access in case 0 through the pointer 39 (301),
+// with case 1 too 66; with a y-first field copy of the first point 44 (310). Left after the SSE block:
+// state/index/point colouring (ours EDX/ESI/ECX, retail ECX/EDX/ESI), which compile-only diagnostics tie to
+// case 1 and to the case-0 point pointer living across `lahf` (without either, retail's ECX/EDX and y-first
+// copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
+// first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
+// case 1's dot by name or through the pointer in either term order.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

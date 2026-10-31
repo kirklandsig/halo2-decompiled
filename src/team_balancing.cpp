@@ -535,6 +535,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // candidate) or (candidate, reference) still query the candidate last (its address is propagated first). Real
 // builds: the reference pointer non-const 67; that with `candidate.cost() < reference->cost()` 67; with both
 // spread tests reference-left 65; count_spread non-const 67; the selection as a reference variable 67.
+// Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
+// (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
+// written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
+// the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

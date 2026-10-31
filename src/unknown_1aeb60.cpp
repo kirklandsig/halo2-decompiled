@@ -387,6 +387,11 @@ short *function_e70b0(long unit_index, short *value);
 // the returned pointer 49; `7 != ...` 49; `0 < state->timer` 49 (the same code each time). Diagnostic, not
 // kept: the actor address written offset first (`(index & 0xffff) * size + data`) 49, so the operand order
 // of the address expression does not decide the ECX/EDX tie either.
+// Round 24 (lane 14): every differing row is ours with the scratch registers rotated (ECX/EDX at the
+// entry, EAX/EDX and ECX/EAX in the later blocks), as if retail's allocation started one register
+// further on. The definition moved after 0x1afcf0 in this file 49 (fast and plain; other functions
+// unchanged); the existing typed actor_datum_get for the first lookup 49, for both lookups 49; the
+// delay product written random times ticks 49 (the same code each time).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

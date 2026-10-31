@@ -2994,6 +2994,9 @@ struct s_2a2f0_record
 // Round 234: Every count use reads its field, with current-group observation, nested lookup and complete
 // dimension-selection subsets 0..7: 262/262/262/262/262/262/262/262. Every trial removes pooled-memory
 // qualifier and parameter-slot aliases; original body restored; count-copy boundary remains.
+// Round 451: Current metadata/time/both/fallback-tag/metadata+fallback/time+fallback/all outside the
+// five-draw loop, then all with readonly strip: 325/280/369/268/390/338/333/333. Independent
+// dimensions and ordinary counts in every trial; original body restored.
 // @retail 0x2a2f0
 void __stdcall function_2a2f0(long tag, real alpha)
 {
@@ -3268,6 +3271,8 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // with ordinary/scoped normalization reciprocal: 1197/1197/1127/1127; each
 // with exponent computed before setup 1121/1121/1151/1151. Original scalar
 // lifetimes restored; mode-bound register and state expansion remain.
+// Round 451: Byte/signed-byte success crossed with bool/byte/signed-byte/word/long rescale storage:
+// 1194/1194/1194/1194/1202/1202/1187/1187. Original status carriers restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

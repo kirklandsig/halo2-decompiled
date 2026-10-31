@@ -133,6 +133,9 @@ bool function_25d9b0(long prop_index);
 // lookups assigned to it) 110 (retail's head, actor EBX/node EBP, but that pointer spilled, frame 0x10),
 // declared first 110. Any extra value live from entry, or a split node, gives retail's actor/node registers;
 // retail gets them without a stack slot.
+// Round 451: Native iterator aggregate/entry scope/entry-result role-name subsets
+// 1/2/1+2/4/1+4/2+4/all, then late entry aggregate: 88/86/155/86/88/86/155/151, with faithful
+// callback/callee controls. Original descriptor and body restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

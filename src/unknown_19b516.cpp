@@ -214,6 +214,9 @@ void c_widget::v16()
 // do-while, 60 forms): only helper/helper gives 2; the walk written with its own local in the step, an
 // inner do-while in the step, and the search in the loop condition do not keep the entry scratch; a 600 s
 // permuter run (55 tries) found none below 2.
+// Round 213: native wrapped cursor 2; focus then break 2; focus common exit 2; for with focus/break 2;
+// native focus/break 2; widget selected result 16; native selected result 16; focus terminates cursor 2;
+// original executable source restored.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

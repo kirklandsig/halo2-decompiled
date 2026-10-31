@@ -1636,6 +1636,11 @@ extern s_object_list *g_4de2f4;
 // (harness, where the unchanged source gives 50). Diagnostics on the
 // callee (harness): 0xbab40 returning true straight from its 1.0 case or without its recursive call
 // leaves this at 50; only a body small enough to inline moves it (393).
+// Round 111 (lane 6, fast): the fraction pointer from a second view of the light record (re-indexed from the pool)
+// 310 (1607 B; the light index moves to the stack and the later read is still folded to [ebp + 0xd0]); the first
+// blend's fraction read through that view 283; the colours declared before the tint 49; colours declared first,
+// second, pair_first, pair_second 49; pair_second, pair_first, second, first 49. 0xbab40 saves EBX/ESI/EDI/EBP as
+// retail does, so its body is not what keeps EBX from the pointer.
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
 {

@@ -20,6 +20,7 @@ helpers only they call. */
 #include "object_markers.h"
 #include "object_iterator.h"
 #include "unknown_1eb550.h"
+#include "vehicle_ray.h"
 #include <math.h>
 #include <string.h>
 
@@ -2252,13 +2253,14 @@ int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, t
 
 /* a wheel's spin advanced by its angular velocity, wrapped into the
    definition's period */
-PRIVATE inline void vehicle_wheel_spin_wrap(real *spin, real period)
+PRIVATE inline real vehicle_wheel_spin_wrap(real spin, real period)
 {
-	*spin = period > 0.001f ? (real)fmod(*spin, period) : 0.0f;
-	if (0.0f > *spin)
+	spin = period > 0.001f ? (real)fmod(spin, period) : 0.0f;
+	if (0.0f > spin)
 	{
-		*spin += period;
+		spin += period;
 	}
+	return spin;
 }
 
 /* the contact turned about its up axis by half the steering angle, in the
@@ -2281,6 +2283,12 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
+// score 71 (was 189): the contact definition as an element pointer, both steering
+// bits read early into named locals, and the spin wrap helper changed to take the
+// spin value and return the wrapped one; the contact loop now matches retail
+// instruction for instruction. Left: frame 0x34 versus 0x30 (one never-referenced
+// dword at the frame top) with the torque and loop-offset slots swapped, and the
+// spin tail spilling the period instead of re-reading it from the definition.
 // score 189 (was 189): frame 0x34 versus 0x30; native gear and incoming roles agree;
 // torque/contact homes, flag extraction and spin allocation remain. Shared workspace/in-place spin
 // and original bits 304/257/201/272/216; native short gear on the two legal graphs 187/202.
@@ -2360,20 +2368,22 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	}
 	for (i = 0; i < state->definition->contact_count; i++)
 	{
-		dword flags = state->definition->contacts[i].flags;
+		s_vehicle_contact_definition *contact_definition = &state->definition->contacts[i];
 		s_vehicle_contact *contact = &state->contacts[i];
 		quaternionf rotation;
+		bool turn_left = TEST_FIELD_BIT((contact_definition->flags >> 2) & 1);
+		bool turn_right = TEST_FIELD_BIT((contact_definition->flags >> 3) & 1);
 
 		contact->torque = torque;
 		if (braking)
 		{
 			contact->unknown83 = true;
 		}
-		if (TEST_FIELD_BIT((flags >> 2) & 1))
+		if (turn_left)
 		{
 			vehicle_contact_steer(state, contact, sine, cosine, &rotation);
 		}
-		else if (TEST_FIELD_BIT((flags >> 3) & 1))
+		else if (turn_right)
 		{
 			vehicle_contact_steer(state, contact, 0.0f - sine, cosine, &rotation);
 		}
@@ -2389,11 +2399,11 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	real spin = torque * dt;
 
 	vehicle->unknown360 += spin;
-	vehicle_wheel_spin_wrap(&vehicle->unknown360, *(real *)(definition + 0x20c));
+	vehicle->unknown360 = vehicle_wheel_spin_wrap(vehicle->unknown360, *(real *)(definition + 0x20c));
 	if (!(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit5)))
 	{
 		vehicle->unknown364 += spin;
-		vehicle_wheel_spin_wrap(&vehicle->unknown364, *(real *)(definition + 0x20c));
+		vehicle->unknown364 = vehicle_wheel_spin_wrap(vehicle->unknown364, *(real *)(definition + 0x20c));
 	}
 }
 
@@ -3611,16 +3621,6 @@ void __stdcall function_f62f0(long vehicle_index)
 		}
 	}
 }
-
-/* a ray: a point, a vector, the fraction along it something was hit and the
-   normal there */
-struct s_vehicle_ray
-{
-	point3f point;
-	vector3f vector;
-	real t;
-	vector3f normal;
-};
 
 bool function_182800(s_vehicle_ray *ray, long ignore_index, void *world);
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore_object_index, long ignore_unit_index);
