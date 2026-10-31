@@ -220,6 +220,13 @@ void __stdcall swarm_delete(long arg_0);
 // a zero initial result, the result declared after the tag pointer, the field test ahead of the flag
 // call, no use of the result at all, and the argument as the initial value (then held in EBX) all
 // still give the tag ESI.
+// Round 119 (fast; the 0x28dbd0 callee carries a reduced-image caveat): s2 (retail's store order, if-form limit)
+// 92 again; on s2 the tag lookup after the flag call 103 (the lookup sinks below the call). Record pointer
+// first, then the definition index, with the if-form limit after the stores: retail's store order 81 (tag EDI
+// and the result in ESI as retail, but the NONE constant splits off into a pushed EBX, `mov esi, ebx`, and
+// feeds the compares and record stores); the definition index after the stores, before/after the limit 96/96;
+// with the original store order 93, the index after the stores 90. A compile-only screen does not reproduce
+// the record-first head (tag/NONE swap in all 64 placements: head window 6-10).
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

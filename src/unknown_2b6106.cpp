@@ -658,7 +658,7 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 512 (was 530): Frame 0x864 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain.
+// score 512 (was 512): Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain.
 // Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
 // ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
 // small locals differently.
@@ -762,6 +762,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // original/branch-owned maximum with direct/cached candidates: 528/520/528/520/520/512/520/512.
 // Keep short selection and both admitted score observations, plain 512 at 2010/2041 bytes;
 // original maximum initialization retained. Frame 0x864 and EBP/flag/clock homes remain.
+// Round 464: activity/team conditional label results, original/branch-complete/default-first
+// non-original pairs 512/578/512/512/578/520/520/584. Original conditional arguments
+// and score-pointer graph restored; unbiased EBP and early flag/clock homes remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

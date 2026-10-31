@@ -27,7 +27,9 @@ struct s_event
 /* the players (0x21c bytes each), as the events see them */
 struct s_event_player
 {
-	byte unknown00[0x28];
+	short unknown00;
+	word flags;             /* 0x14d8b0 tests its high byte */
+	byte unknown04[0x28 - 0x4];
 	short local_index;
 	byte unknown2a[0x44 - 0x2a];
 	word name[0x10];

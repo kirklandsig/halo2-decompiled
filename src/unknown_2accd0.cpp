@@ -693,6 +693,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // order, bytes before/after total/total_size, both position sums' written operand order, the signature
 // buffers at function scope or swapped; worse: the body pointer local 25, buffer initialised from the body
 // 28, the total converted in place 60, the shared MIN with the total in place or the view dropped 53+.
+// Round 34 (lane 13, LTCG harness, base 22 = 34): locals renamed (size as count/read_size, position
+// as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
+// before its buffer 34 (all identical code: names do not break these register ties); the body case as
+// an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
