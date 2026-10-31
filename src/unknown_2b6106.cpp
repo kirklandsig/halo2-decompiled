@@ -988,12 +988,12 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                         {
                             long team = *(short *)(details + 0xf84 + i * 2);
                             long const *team_scores = (long const *)(details + 0x10a8);
-                            for (long const *team_score = team_scores; team_score < team_scores + 8; ++team_score)
+                            for (long const *team_cursor = team_scores; team_cursor < team_scores + 8; ++team_cursor)
                             {
-                                long team_index = team_score - team_scores;
+                                long team_index = team_cursor - team_scores;
                                 if ((*(long *)(details + 0x10a4) & (1 << team_index)) && team_index != team &&
-                                    *team_score > best)
-                                    best = *team_score;
+                                    *team_cursor > best)
+                                    best = *team_cursor;
                             }
                             ((c_widget *)this)->function_230134(0xa00027b, format);
                             score = *(long *)(details + 0x10a8 + team * 4);
