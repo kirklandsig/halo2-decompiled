@@ -28,6 +28,10 @@ helpers only they call. */
 #define MIN(a,b) ((a)>(b)?(b):(a))
 #endif
 
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
+
 #ifndef PIN
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 #endif
@@ -556,6 +560,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Lane 13 round 28: blend.x first with `velocity * inverse` and the fallback x first 128; the magnitude after the
 // velocity copy with k's x term first and blend.x first 128; the normalizer as `*=` 126; the velocity and fallback
 // copied x first 132 (300 compile-only statement-order combinations screened; their best three 128/128/130).
+// Round 182 (the 1.0 constant still lands in xmm2 after the input magnitude's z term, retail's xmm3 before it):
+// the normalizer returning the old length with each caller copying its fallback on 0 126 (identical); the
+// normalizer forced inline 126 (identical); the input magnitude after the speed root 278; left/blend/blend_left
+// declared at the top 126 (identical); one controls-vector pointer for both magnitudes 243.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1450,7 +1458,18 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 409 (was 409): frame 0x88 versus 0x9c, returned-id temporaries and channel/count homes differ.
+// score 371 (was 409): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
+// retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
+// channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
+// (ours: EAX), which moves the iterator/channel init, the kind-loop value/counter homes and the cross block; and VC
+// folds `x * 0.5f + 0.5f` to `(x + 1) * 0.5` where retail multiplies first.
+// Round 182: the forwarding wrapper replaced by the direct call 383 (kept); the ternary spin fractions 371 (kept);
+// overlay fields typed as animation ids 383 (identical); up/forward pointer locals for the cross 370 (one-use);
+// `(real)(x * 0.5f) + 0.5f` 393; each overlay read into a local first 476; the function channel declared before the
+// iterator 371; the kind value at loop-body scope 371. Diagnostic: the channel-play routine called at each set and
+// forced inline in its header 327 (first block then exact), but 0x1101e0/0x16760c lose their out-of-line calls; this
+// file is /Ob1, so a plain call stays out of line (flags lead).
+// Earlier at 409: frame 0x88 versus 0x9c, returned-id temporaries and channel/count homes differ.
 // Existing speed helper forced inline 468; with cross helper 470; channel role names 468/470;
 // single final speed clamp 472, with cross 450, role names 472/450. Both directional limits
 // retained at entry: original/clamp 446/424; with cross 409 (kept)/412.
@@ -1474,12 +1493,12 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		if (state->graph_tag_index != vehicle->unknown400 && state->unknown74 != NONE && state->unknown78 != NONE)
 		{
 			vehicle->unknown400 = state->graph_tag_index;
-			VEHICLE_OVERLAY(vehicle, 0) = state->overlay_find(0x8000078, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 1) = state->overlay_find(0x4000079, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 2) = state->overlay_find(0x800007a, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 3) = state->overlay_find(0x800007b, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 4) = state->overlay_find(0xc00007d, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 5) = state->overlay_find(0x110005c9, 0x7000101, 0x7000101);
+			VEHICLE_OVERLAY(vehicle, 0) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x8000078);
+			VEHICLE_OVERLAY(vehicle, 1) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x4000079);
+			VEHICLE_OVERLAY(vehicle, 2) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x800007a);
+			VEHICLE_OVERLAY(vehicle, 3) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x800007b);
+			VEHICLE_OVERLAY(vehicle, 4) = state->overlay_find_for_class(0x7000101, 0x7000101, 0xc00007d);
+			VEHICLE_OVERLAY(vehicle, 5) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x110005c9);
 			for (i = 0; i < 3; i++)
 			{
 				VEHICLE_OVERLAY41C(vehicle, i) = state->overlay_kind_get(i);
@@ -1518,23 +1537,13 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		if (VEHICLE_OVERLAY(vehicle, 4).index != NONE && state->graph_tag_index != NONE &&
 			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 4), NONE, NONE, NONE, NONE))
 		{
-			real value = 0.0f;
-
-			if (*(real *)(definition + 0x20c) > 0.0f)
-			{
-				value = vehicle->unknown360 / *(real *)(definition + 0x20c);
-			}
+			real value = *(real *)(definition + 0x20c) > 0.0f ? vehicle->unknown360 / *(real *)(definition + 0x20c) : 0.0f;
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
 		if (VEHICLE_OVERLAY(vehicle, 5).index != NONE && state->graph_tag_index != NONE &&
 			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 5), NONE, NONE, NONE, NONE))
 		{
-			real value = 0.0f;
-
-			if (*(real *)(definition + 0x20c) > 0.0f)
-			{
-				value = vehicle->unknown364 / *(real *)(definition + 0x20c);
-			}
+			real value = *(real *)(definition + 0x20c) > 0.0f ? vehicle->unknown364 / *(real *)(definition + 0x20c) : 0.0f;
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
 
@@ -2267,14 +2276,14 @@ int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, t
 
 /* a wheel's spin advanced by its angular velocity, wrapped into the
    definition's period */
-PRIVATE inline real vehicle_wheel_spin_wrap(real spin, real period)
+PRIVATE inline void vehicle_wheel_spin_wrap(real *spin, real delta, real const *period)
 {
-	spin = period > 0.001f ? (real)fmod(spin, period) : 0.0f;
-	if (0.0f > spin)
+	*spin += delta;
+	*spin = *period > 0.001f ? (real)fmod(*spin, *period) : 0.0f;
+	if (0.0f > *spin)
 	{
-		spin += period;
+		*spin += *period;
 	}
-	return spin;
 }
 
 /* the contact turned about its up axis by half the steering angle, in the
@@ -2297,13 +2306,26 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
-// score 71 (was 189): the contact definition as an element pointer, both steering
+// score 29 (was 71): the spin wrap helper now takes the field's address and the advance (it adds,
+// wraps and re-reads the period through its pointer), which gives retail's spin tail. Left: frame
+// 0x34 versus 0x30 (one never-referenced dword at the frame top) with the torque and loop-offset
+// slots swapped; every other differing line is that 4-byte offset. Round 182: the helper in place
+// through pointers without the advance 89 (976 bytes, the fmod argument re-reads the field); the
+// advance inside the helper 29 (kept); braking through the existing 0xf5d70 call 321 (out of line
+// under /Ob1; forced inline 29, identical to the written-out test, but 0xf1950/0xf5ee0/0xf6d10 then
+// lose their out-of-line calls); torque renamed for slot order 29 (identical). Diagnostics: the extra
+// dword stays without the throttle/0xf1740 call, the spin tail, the steering calls or the gear
+// call, and with a constant braking argument; it goes (frame 0x30) only without the 0x2056e0 call.
+// It is not 0xefde0's aligned frame passed down (with 0xefde0 not calling it, still 0x34). Also 29
+// each (identical): the rotation at function scope, torque/i/braking declared first, braking as one
+// boolean expression.
+// Earlier at 71 (was 189): the contact definition as an element pointer, both steering
 // bits read early into named locals, and the spin wrap helper changed to take the
 // spin value and return the wrapped one; the contact loop now matches retail
 // instruction for instruction. Left: frame 0x34 versus 0x30 (one never-referenced
 // dword at the frame top) with the torque and loop-offset slots swapped, and the
 // spin tail spilling the period instead of re-reading it from the definition.
-// score 189 (was 189): frame 0x34 versus 0x30; native gear and incoming roles agree;
+// Earlier at 189: frame 0x34 versus 0x30; native gear and incoming roles agree;
 // torque/contact homes, flag extraction and spin allocation remain. Shared workspace/in-place spin
 // and original bits 304/257/201/272/216; native short gear on the two legal graphs 187/202.
 // Early one-use bit forms 334/92/121 and their short-gear/return-value forms
@@ -2412,12 +2434,10 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 
 	real spin = torque * dt;
 
-	vehicle->unknown360 += spin;
-	vehicle->unknown360 = vehicle_wheel_spin_wrap(vehicle->unknown360, *(real *)(definition + 0x20c));
+	vehicle_wheel_spin_wrap(&vehicle->unknown360, spin, (real const *)(definition + 0x20c));
 	if (!(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit5)))
 	{
-		vehicle->unknown364 += spin;
-		vehicle->unknown364 = vehicle_wheel_spin_wrap(vehicle->unknown364, *(real *)(definition + 0x20c));
+		vehicle_wheel_spin_wrap(&vehicle->unknown364, spin, (real const *)(definition + 0x20c));
 	}
 }
 
@@ -3203,6 +3223,12 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // assignment 154; in the cases 1/2 path cos, sin then the cross 154, the cross first 154; dot3f passed straight to
 // vector3f_scale (no dot local) with the pointer declared after it 154 (kept). Left: the dot's i term
 // and two left-cross products load forward where retail loads up.
+// Round 182: dot3f(&facing->forward, &facing->up) 154 (identical); the left cross through facing->up 151 (833
+// bytes; its first product then retail's, three others flip); that with the dot's arguments swapped 151; the
+// projection removed in place through a `dot` local 174 (compile-only it gives the dot's i term); the up pointer
+// declared first with the dot through it 164. A compile-only harness (reproduces our products exactly) screened 144
+// dot/projection/cross/normalize/fallback spellings and 30 by-name copy orders: none gives retail's cross operand
+// orders (it needs the j components ranked before i and i before k for both vectors); best 3 of 9 products off.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3678,6 +3704,11 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // permutations and changed 286; `if (!marker.node_index) {...} else value = 0` 286 (zero block out of line as
 // retail); havok_component_get at each use (no NULL test) 284; both 285; `sounded` declared first 284; the init
 // first too 284; the NULL found pointer 276 (a flag set in the loop).
+// Round 182 (retail packs sounded/changed as bytes +0xe/+0xf of one dword, ours puts them in two dwords at
+// +0xf/+0x17, which moves largest_change, current and the state/permutations slots): changed declared at
+// function scope beside sounded 289 (still two dwords); changed renamed (slot order by name) 286 (same slots);
+// the update bit through word_flags_set bit 8 296 (1383 bytes); the permutation count inside the pointer
+// expression 286 (identical); the ray declared at the top of the block 286 (identical).
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -3851,76 +3882,47 @@ PRIVATE __forceinline real vehicle_larger(real a, real b)
 /* one of the vehicle definition's limits: its forward and reverse speeds
    (0, 1, the larger 2), its left and right turn speeds (3, 4, 5) and its
    steering angles in degrees (6, 7, 8) */
-// score 109 (was 109): retail returns in xmm0 (`fstp [esp + 8]; movss xmm0, [esp + 8]` in each case),
-// which only one `return result;` gives; it then cross-jumps case 6 into case 7's `fmul` and
-// keeps cases 2 and 5 as their own `jbe` diamonds. Tried: single exit 123 (xmm0 as retail, but
-// cases 2 and 5 jump into case 8 and 6/7 stay apart); returns in cases 6/7 161 (x87 again);
-// the larger as if/else 119; a radians inline for 6/7 123; case 2 with block locals 123;
-// double fabs in 6/7 123; cases 6/7 sharing one body 138; a shared angle local for 6/7 123.
-// Round 401: single-result case orders 012345867 143; 031425867 157; 013425867 156; 012345768 123;
-// 013482567 157; 013467825 129; 876543210 134; 258013467 162. All restored; lookup scheduling and
-// late tail merges remain.
-// Round 420: complete magnitude outcomes with entry result 117; complete magnitude outcomes with
-// lookup-time result 117; second magnitude default with entry result 117; second magnitude default with
-// lookup-time result 117; first magnitude default with entry result 119; first magnitude default with
-// lookup-time result 119; native double magnitudes and outcomes with entry result (wider frame/qword
-// spills; rejected) 101; native double magnitudes and outcomes with lookup-time result (wider
-// frame/qword spills; rejected) 101. Original body restored.
-// Round 431: parameter-owned magnitudes, conditional result with original/entry/lookup return 109/123/123;
-// conditional second output 205/117/117; unused self-address removed on complete results 123/117;
-// zero-initialized target result at entry/lookup 123/123. Original helper and returns restored.
-// Round 43: common final magnitude with real lookup/entry result 106/106 (404 bytes);
-// with double lookup/entry result 105/105 (368 bytes); double result without deferred
-// magnitude 109/109. Every definition field resolved at use with real/double result
-// 445/475. Gains of three/four fail the thresholds; original body restored. Lookup
-// scheduling, return carrier and native case-tail sharing remain.
-// Round 50: single `return result;` 123 (cases 2 and 5 jump into case 8's tail); with the
-// larger as if/else 117, keep-first-unless-not-larger 122, two returns 119; with only case 8
-// spelled as `result = |a|; if (!(result > |b|)) result = |b|;` 93 at retail's 384 bytes (case 2
-// then jumps into case 5, 6/7 still apart; not kept: the helper written out by hand). Retail's
-// case 8 differs from cases 2 and 5 (it alone loads xmm0 before the compare), so its source
-// likely differs from theirs too. Original body restored.
-// Lane 13 round 25 (single `real result` exit unless stated; the `&limit` line changes nothing in any of them): all
-// cases breaking 123; case 8 as `result = |a|; if (!(result > |b|)) result = |b|;` 83 at 384 bytes (2 then jumps
-// into 5; not kept: the helper written out); that with cases 6/7 as one `limit == 6 ?` body 80 (6/7 then select at
-// run time); all breaking with 6/7 as one body 83; cases 2/5 returning directly 95 (case 8 then retail's, 2
-// into 5); only case 2 returning directly 98 (5 and 8 retail's but for a store back to the limit slot); cases 0-5
-// returning 87; 2/5/6/7 returning 87; 6/7 returning 161; every case `result = ...; return result;` 184; the helper
-// as if/else returns or an if/else result with the hand case 8 83/88.
-// Lane 13 round 28 (single exit): the larger as a ternary 123, as `result = a; if (!(a > b)) result = b;` 119, as
-// an if/else result 117, as two returns 119 (each time cases 2, 5 and 8 all pre-load xmm0 before the compare and
-// 2/5 cross-jump into 8; retail branches first in 2 and 5); per-case returns with those helpers 197/184/184.
 // @retail 0xf78e0
 real __stdcall function_f78e0(long vehicle_index, long limit)
 {
-	/* retail keeps limit on the stack */
-	long const *reference = &limit;
-	byte *definition = VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index));
+	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
+	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
+	real result;
 
 	switch (limit)
 	{
 	case 0:
-		return (real)fabs(*(real *)(definition + 0x1f4));
+		result = (real)fabs(*(real *)(definition + 0x1f4));
+		break;
 	case 1:
-		return (real)fabs(*(real *)(definition + 0x1f8));
+		result = (real)fabs(*(real *)(definition + 0x1f8));
+		break;
 	case 2:
-		return vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8));
+		result = MAX((real)fabs(*(real *)(definition + 0x1f4)), (real)fabs(*(real *)(definition + 0x1f8)));
+		break;
 	case 3:
-		return (real)fabs(*(real *)(definition + 0x22c));
+		result = (real)fabs(*(real *)(definition + 0x22c));
+		break;
 	case 4:
-		return (real)fabs(*(real *)(definition + 0x230));
+		result = (real)fabs(*(real *)(definition + 0x230));
+		break;
 	case 5:
-		return vehicle_larger(*(real *)(definition + 0x22c), *(real *)(definition + 0x230));
+		result = MAX((real)fabs(*(real *)(definition + 0x22c)), (real)fabs(*(real *)(definition + 0x230)));
+		break;
 	case 6:
-		return (real)fabs(*(real *)(definition + 0x204) * 0.017453292f);
+		result = (real)fabs(*(real *)(definition + 0x204) * 0.017453292f);
+		break;
 	case 7:
-		return (real)fabs(*(real *)(definition + 0x208) * 0.017453292f);
+		result = (real)fabs(*(real *)(definition + 0x208) * 0.017453292f);
+		break;
 	case 8:
-		return vehicle_larger(*(real *)(definition + 0x204) * 0.017453292f,
-			*(real *)(definition + 0x208) * 0.017453292f);
+		result = MAX((real)fabs(*(real *)(definition + 0x204) * 0.017453292f),
+			(real)fabs(*(real *)(definition + 0x208) * 0.017453292f));
+		break;
 	default:
 		__assume(0);
 	}
+	return result;
 }
 
 bool __stdcall function_f8070(long bit, word const *flags);
@@ -3928,12 +3930,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
-// score 864 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
+// score 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // Complete definition snapshot, result-first, direct active predicate in seven nonempty
 // combinations 1006/864/1006/869/1002/869/1002; snapshot with numeric movement-case
 // source order 1006. Original observations, switch and body restored.
 // Round 304: entry-owned kind/angular-ceiling/engine subsets 1010/1010/1010/1010/1010/1010/1010;
 // complete families with staged cross 1010. Original body restored; definition and float-return boundaries remain.
+// Round 182: 0xf78e0 now matches (its limits return in xmm0), 864 -> 817; the inline larger-of sites as
+// `MAX((real)fabs(a), (real)fabs(b))` as 0xf78e0 now spells them 830 (fast).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
