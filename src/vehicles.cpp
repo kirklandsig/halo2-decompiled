@@ -564,6 +564,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // the normalizer returning the old length with each caller copying its fallback on 0 126 (identical); the
 // normalizer forced inline 126 (identical); the input magnitude after the speed root 278; left/blend/blend_left
 // declared at the top 126 (identical); one controls-vector pointer for both magnitudes 243.
+// Round 103 (first difference: the velocity copy loads x into ECX, retail EAX; then the 1.0 constant): the
+// velocity as an aggregate initializer `{ i, j }` 130; the short-speed fallback as `direction = velocity` 275
+// (1159 bytes); forward, heading or the input vector as aggregate initializers 126 each (identical).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1445,29 +1448,31 @@ bool function_1dceb0(s_graph_iterator3c *iterator, s_graph_tag *graph);
    speed, 0.5 at rest */
 PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *definition)
 {
-	real forward_limit = *(real *)(definition + 0x1f4);
 	real reverse_limit = *(real *)(definition + 0x1f8);
+	real forward_limit = *(real *)(definition + 0x1f4);
 	real result = 0.5f;
 
 	if (speed > 0.0f)
 	{
 		if (forward_limit > 0.0f)
 		{
-			result = PIN(speed / forward_limit * 0.5f + 0.5f, 0.0f, 1.0f);
+			result = speed / forward_limit * 0.5f;
+			result += 0.5f;
 		}
 	}
 	else if (reverse_limit > 0.0f)
 	{
-		result = PIN(speed / reverse_limit * 0.5f + 0.5f, 0.0f, 1.0f);
+		result = speed / reverse_limit * 0.5f;
+		result += 0.5f;
 	}
-	return result;
+	return PIN(result, 0.0f, 1.0f);
 }
 
 /* hands each of the vehicle's value-driven animations (its steering,
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 371 (was 409): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
+// score 44 (was 371): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
 // retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
 // channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
 // (ours: EAX), which moves the iterator/channel init, the kind-loop value/counter homes and the cross block; and VC
@@ -1483,6 +1488,24 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // single final speed clamp 472, with cross 450, role names 472/450. Both directional limits
 // retained at entry: original/clamp 446/424; with cross 409 (kept)/412.
 // Round 426: separate returned-id values for each of the six overlays 408 each; all six 408; all with the loop id 434. Original body restored; frame remains 0x88.
+// Round 103 (kept, 371 -> 40 at retail's 2027 bytes): each set through the existing channel_play, with
+// channel_play and channel_start marked `inline` at their definitions (this /Ob1 file can then expand them as
+// retail does; their other callers, 0x1101e0 and 0x16760c included, keep their out-of-line calls) 313 alone;
+// the speed fraction's half product named (VC turns `x * 0.5f + 0.5f` into `(x + 1) * 0.5f`) 393 alone, with
+// its clamp once at the return, the reverse limit read first and the kind loop clamping its named value in
+// place 414 alone (2011 bytes) and 364 with channel_play; the function channel declared after the iterator
+// setup 365; the steering dot as `left.k * v.k + v.j * left.j + left.i * v.i` 40 (written i, j, k with the
+// velocity first 365; through dot3f either way 372). Left: the two VEHICLE_GET lookups' SIB order, the reloads
+// after the overlay lookup (retail state, graph, vehicle index; ours vehicle index first), two of the cross
+// product's six terms load the other operand first, and the iterator/channel setup before the function loop
+// (retail stores the graph index early and the iterator's NONE fields before the channel's). Tried at 40: the
+// forward-speed i term's operands swapped 40 (identical); dot3f for the forward speed 42; cross3f_staged on
+// the earlier 42 form 42 (identical); the iterator's 0x28 word before next_index 40 (its two stores then in
+// retail's order); the function channel declared before the iterator 44, right after it (before the setup)
+// 44; the iterator's NONE fields before its floats 40.
+// Coordinator review (lane 8 r103): the lane's 40 named each half product in a one-use local (`real half`),
+// kept only with a match; without them 356. Writing the half product into the result (and the loop's value)
+// first and adding 0.5f in a second statement keeps VC from refolding it, 44 with no new local (kept).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -1513,51 +1536,44 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 				VEHICLE_OVERLAY41C(vehicle, i) = state->overlay_kind_get(i);
 			}
 		}
-		if (VEHICLE_OVERLAY(vehicle, 0).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 0), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 0).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 0), 0))
 		{
 			callback(vehicle_index, graph, &channel, vehicle->steering_angle, 0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 1).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 1), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 1).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 1), 0))
 		{
 			vector3f left;
 
 			cross3f(&vehicle->up, &vehicle->forward, &left);
 			callback(vehicle_index, graph, &channel,
-				((linear_velocity.i * left.i + left.j * linear_velocity.j + linear_velocity.k * left.k) /
+				((left.k * linear_velocity.k + linear_velocity.j * left.j + left.i * linear_velocity.i) /
 					*(real *)(definition + 0x1f4) + 1.0f) * 0.5f,
 				0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 2).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 2), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 2).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 2), 0))
 		{
 			callback(vehicle_index, graph, &channel, vehicle_speed_fraction(vehicle->speed, definition), 0.0f, 1.0f,
 				user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 3).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 3), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 3).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 3), 0))
 		{
 			real speed = vehicle->forward.k * linear_velocity.k + vehicle->forward.j * linear_velocity.j +
 				linear_velocity.i * vehicle->forward.i;
 
 			callback(vehicle_index, graph, &channel, vehicle_speed_fraction(speed, definition), 0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 4).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 4), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 4).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 4), 0))
 		{
 			real value = *(real *)(definition + 0x20c) > 0.0f ? vehicle->unknown360 / *(real *)(definition + 0x20c) : 0.0f;
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 5).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 5), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 5).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 5), 0))
 		{
 			real value = *(real *)(definition + 0x20c) > 0.0f ? vehicle->unknown364 / *(real *)(definition + 0x20c) : 0.0f;
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
 
 		s_graph_iterator3c iterator;
-		c_animation_channel function_channel;
 
 		iterator.unknown00 = NONE;
 		*(real *)&iterator.unknown08 = 0.0f;
@@ -1566,10 +1582,12 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		iterator.index = NONE;
 		iterator.next_index = NONE;
 		*(short *)iterator.unknown28 = NONE;
+
+		c_animation_channel function_channel;
+
 		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
-			if (state->graph_tag_index != NONE &&
-				function_channel.set(state->graph_tag_index, 0, iterator.animation_id, NONE, NONE, NONE, NONE))
+			if (state->channel_play(&function_channel, iterator.animation_id, 0))
 			{
 				byte value = ((byte *)vehicle->unknown398)[iterator.index];
 
@@ -1581,10 +1599,12 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		{
 			if (VEHICLE_OVERLAY41C(vehicle, i).index != NONE)
 			{
-				real value = PIN(vehicle->unknown288[i] * 0.5f + 0.5f, 0.0f, 1.0f);
+				real value = vehicle->unknown288[i] * 0.5f;
 
-				if (state->graph_tag_index != NONE &&
-					channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY41C(vehicle, i), NONE, NONE, NONE, NONE))
+				value += 0.5f;
+				value = PIN(value, 0.0f, 1.0f);
+
+				if (state->channel_play(&channel, VEHICLE_OVERLAY41C(vehicle, i), 0))
 				{
 					callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 				}
@@ -2329,7 +2349,7 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
-// score 29 (was 71): the spin wrap helper now takes the field's address and the advance (it adds,
+// score 10 (was 29): the spin wrap helper now takes the field's address and the advance (it adds,
 // wraps and re-reads the period through its pointer), which gives retail's spin tail. Left: frame
 // 0x34 versus 0x30 (one never-referenced dword at the frame top) with the torque and loop-offset
 // slots swapped; every other differing line is that 4-byte offset. Round 182: the helper in place
@@ -2400,6 +2420,15 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // loop, throttle and torque as one variable (10), and removing any single call never move torque
 // above the offset. Source permuter on the 8 form: 6 tries in 616 s, nothing lower. Original body
 // restored.
+// Round 103 (the frame is now 0x30; left: torque at 0x14 and the loop offset at 0x18 sharing the throttle's
+// slot, retail the other way round (8), and after the first fmod the period zero `xorps xmm2` comes before
+// the advance reload, retail after (2)): the gear arm as one ternary 10 (identical); the second steering
+// bit read from the element expression 242 (frame 0x34); torque assigned once,
+// `braking || vehicle->gear == NONE ? 0 : ...` 192 and with the short gear read first 193 (both give
+// torque retail's slot, shared with the throttle, but merge the two zero paths and put the computed path
+// first); a nested ternary with the gear assigned inside it 10 (identical). Diagnostics: without the
+// in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
+// weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {

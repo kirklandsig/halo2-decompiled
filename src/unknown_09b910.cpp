@@ -986,6 +986,10 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // (0xfd740 then extends it for 0x1883e0, whose matching parameter retail also passes unextended):
 // BLOCKED-BY 0xfd740, 0x1883e0. Earlier: 0xfcbc0 with its normal and definition parameters swapped
 // (since kept, 22 -> 20); position and direction pointer locals for the three calls 50
+// Round 103: the payload's word field declared short 20 (`movsx` for `movzx`); 0xfcea0's index as short
+// (definition, declarations and both calls) matches this function, but 0xfcea0 goes 4 -> 133 (579 bytes: its
+// `movsx` for 0xfd740's long index pads its loop head) and 0xfc330 527 -> 533; the same with word 133; with
+// the payload field short too 133; with 0xfcea0 widening the index into a long local at entry 133.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

@@ -305,6 +305,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // two sums named where computed 117 (same code); the stage offset folded into the first ordinal 117, and the
 // pass offset into the second as well 117. Retail loads arg_3/arg_4 into ESI/EBP before the chain and
 // leaves a dead `lea eax, [eax + edx*2]` after the pass element read; ours loads them late into EBP/EDX.
+// Round 61 (fast): the three blocks read through the existing s_tag_data (size, address) view 117 (same
+// code); the stage/pass parameters as named const copies at the top 117; the first ordinal as `word`
+// 117; the pass element's field as `[1]` of a long pointer 117; the group test through
+// `g_4e3b44[(short)local_tag]` with no instance local 165.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
