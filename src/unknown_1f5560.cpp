@@ -303,6 +303,12 @@ real function_30bf0(vector3f *v);
 bool function_10f630(long object_index, long *first, long *second);
 point3f *function_210850(s_type_c3b527 const *point, point3f *out);
 
+/* the animation state of a unit, kept at its own width */
+struct s_unit_animation_state
+{
+	short state;
+};
+
 static inline short heading_unit_get_state(s_heading_unit *unit)
 {
 	return *(short *)((byte *)unit + unit->state_offset + 0x36);
@@ -310,6 +316,9 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// score 0 (was 11): the animation state keeps its own width in a one-word record,
+// so the state is loaded into cx and spilled as a word, as retail does; the plain
+// full-program check matches.
 // score 11 (was 11): the state is loaded with movsx and spilled as a dword;
 // retail loads it into cx and keeps it in a word on the stack. Tried: the
 // state through function_e70b0's out parameter 124; this helper with an out
@@ -330,9 +339,10 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 
 	if (unit->type == 0)
 	{
-		long state = heading_unit_get_state(unit);
+		s_unit_animation_state animation_state;
+		animation_state.state = heading_unit_get_state(unit);
 
-		if ((short)state == 6 || (short)state == 7)
+		if ((short)animation_state.state == 6 || (short)animation_state.state == 7)
 		{
 			if (unit->movement_type == 4)
 			{
@@ -351,7 +361,7 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 			long second;
 
 			function_10f630(actor->unit_index, &first, &second);
-			if (unit->movement_type == 5 || (short)state == 5 || first == 0x50000cb)
+			if (unit->movement_type == 5 || (short)animation_state.state == 5 || first == 0x50000cb)
 			{
 				direction->i = unit->forward.i * -1.0f;
 				direction->j = unit->forward.j * -1.0f;
