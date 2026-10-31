@@ -204,6 +204,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // condition (`bool result = start >= 0 && ...; if (result)`) 44 (0xb5f10 41); a non-volatile local
 // copy of the string for the scan and the add 60 (83 bytes, 0xb5f10 80); a `byte` result 41
 // (0xb5f10 41); `result = true` before the copy 40 (same code).
+// Round 26 (lane 15, fast): the string as the text struct of 0xb61d0 (`s_text512_ab const *volatile`, scanning and
+// adding its bytes; callers cast as they do for find) 40 (same code), without the volatile 41 (104 bytes, 0xb5f10
+// 35); a named end offset (`long end = start + count;`) before the test 43 (101 bytes); `start = (long)string +
+// start` 40 (same code); the string added before the count increment 36 (0xb5f10 6, as listed above).
 // Round 132 (an LTCG env link of this file reproduces it and 0xb5f10 exactly): `string + start` gives
 // retail's body except that start lives in EDX and the walk in EDI (retail: walk EDX, start EDI), so
 // LTCG passes start in EDX. With it, the length loop as `while (length < 0x1ff && *string++)` 28, a
@@ -216,6 +220,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Env grid (start += string / string + start / named source x count++ or ++count x one or nested
 // tests, 12 forms): start in ECX for its whole life (40) or in EDX (28, 0xb5f10 6) only; retail
 // colours start after the scan's counter and walk (EDI) and still receives it in ECX.
+// Round 42 (lane 1, fast with 0xb5f10/0xb61d0): LTCG passes a parameter in a callee-saved register only
+// when the body leaves it unmodified (0xb61d0 gets `this` in ESI, its modified start in EAX), so retail's
+// ECX -> EDI start is a modified start coloured EDI. A modified local copy of the start (tests, sum and
+// `+= (long)string`) 28 with 0xb5f10 6 (scan counter ECX as retail, but the walk takes EDI and the copy
+// EDX, so the start arrives in EDX); the copy declared before `result` 28 (0xb5f10 6); the copy with a
+// plain string parameter 41 (104 bytes, 0xb5f10 35); the copy taken inside the sign tests 28 (0xb5f10 6);
+// copies of both start and count 51 (92 bytes, 0xb5f10 104).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -528,6 +539,13 @@ bool function_7af40(s_type_99af70 const *address);
 // state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
 // the return); the destination named before the counter 111; the path read into a named source between
 // the counter and the state store 111. VC splits the counter whenever any store precedes the call.
+// Round 42 (lane 1, fast with 0xb40b0/0xb5f10): on retail's endpoint reads the two pre-call stores sink
+// together in source order: state, counter, copy 111 (state stored before the counter at the call); the
+// path read once through its own address into a named source between the counter and the state store
+// 111 (taking the parameter's address does not pin the counter store). Without the reads: the flag folded
+// into the clearing store (`flags = flag ? 0x40 : 0`) with counter, copy, state 32 (243 bytes; the counter
+// still splits, into ECX); that with the open call re-reading `connection->endpoint` 40 (239 bytes), and
+// with counter, state, copy 104 (258 bytes, 0xb40b0 61).
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {

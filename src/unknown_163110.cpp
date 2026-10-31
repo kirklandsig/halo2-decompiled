@@ -379,7 +379,7 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 39 (was 96): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
+// score 39 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
 // the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
 // d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
@@ -552,6 +552,11 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // zero back 636 (aligned 83, 2807 bytes: retail's float loads and pointer stores for the normals),
 // plus planes 4/5 through it 615 (2837 bytes, aligned 100), plus a cleared error first 692, error
 // cleared first alone on the aligned-83 form 677, all with the camera-plane branch too 697.
+// Round 53: x0 as `depth * rect->x0` 83; x0 through the pointer declared after x1/y0/y1 659;
+// products in x0, y0, x1, y1 order through the pointer 87; the copy through a non-const rectangle
+// pointer with x0 through it 83, with x0 through the result 39 (same code). Compile-only: the x term
+// written `n.i * position.x` still loads position.x first in every plane; one plane pointer reused
+// for planes 0-3 49 (harness, forwards the zero distance).
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
@@ -824,6 +829,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 243: Existing normal-copy setters and overlap-safe bounds transfer,
 // subsets 1..7 460/502/526/495/508/565/569; all with native negated input 569.
 // Original transfers and complete body restored; coefficient preload and projection homes remain.
+// Round 100 (lane 8, fast): plane 0's d in every term order with camera-first or normal-first products: operand order
+// never changes the code; i/j/k 146, i/k/j normal-first 115 (same code), j/i/k 149, j/k/i 133, k/i/j 144, k/j/i 133.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

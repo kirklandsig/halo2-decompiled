@@ -1078,6 +1078,12 @@ bool function_68670(byte *source, long size, void *block);
 // DL209: Case/function-scope sequence copies by memcpy/memmove 137/137/153/153; complete
 // native/memcpy/memmove/field header copies 147/147/155/142. Separate-copy home returns but reload
 // knowledge is lost; all copies restored.
+// Round 114 (lane 6, fast): case 0 sending a block-local copy of the value 137 (561 bytes; the header
+// then sits at retail's esp+0xc, but the start stays in ESI across the read and `used` is updated
+// through a register); the copy declared at function scope 137; header and payload read by an inline
+// helper taking the header by pointer (header->size read inside it) 72 (identical code: VC resolves
+// the pointer), with the case 0 copy 137; the copy with `used` updated before `start` 137. Retail's
+// 0x1a19a0 copies with inline rep movs, so it is no more opaque to LTCG there than here.
 // Round 23 (72): case 1's offset and size each cleared by its own memset 97; case 0 sending a
 // `long message` copy (header then at esp+0xc as retail, but the start stays in ESI across the
 // first read and the used count is not updated in memory) 137; payload declared before the header

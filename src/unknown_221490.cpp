@@ -556,6 +556,11 @@ bool sound_driver_voice_create_buffer(
 // count stored before the clear 72 (71 with the voice reference first); 3D flag declared before play 180 (599).
 // On 71: the 3D flag spelled `(flags & 1) != 0` 71 (same code); the decrement through the `globals` local
 // 146 (619). Play keeps BL in every placement of either definition.
+// Round 41: `byte flags` 70 (the caller 0x191420 then differs, 1); `word flags` 162; const bools 71; a copy of
+// play for the 3D buffer 71 (propagated away); the 3D buffer as a force-inline helper taking play 125
+// (diagnostic: play still BL, frame grows); three_d defined first 180 (retail's `mov al, cl; shr ecx, 1;
+// and cl, 1` shape, but voice_index takes EBP, the zero EBX and both bools spill); three_d first ahead of
+// the voice reference 181. Retail computes play destructively in ECX, so flags' last use is play.
 // Round 37 (lane 10): retail computes the 3D flag first (byte copy `mov bl, cl`, play in place in ECX),
 // so the 3D flag is defined first in the source; then the voice index (with the result coalesced into
 // it) outranks it for the last callee-saved register. 3D flag defined first 180 (599 bytes: the voice
@@ -567,6 +572,11 @@ bool sound_driver_voice_create_buffer(
 // globals local dropped, voice pointer, natural stack locals, bool/flags spellings and widths, a second
 // test of the 3D flag: the voice index or input mixbin always outranks the 3D flag unless the result is
 // a separate long. Play first keeps BL whatever else changes.
+// Round 101 (lane 8; exact LTCG harness with 0x191420's object, harness scale 65 = 71): retail reloads
+// play into BL right after the 3D test (play's range split once the 3D bool dies). play built by
+// `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
+// both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
+// code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

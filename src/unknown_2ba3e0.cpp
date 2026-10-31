@@ -720,11 +720,23 @@ real g_55e618;
 // as placement_set's position argument 185/188/245 (code identical to the separate statement).
 // Retail loads the collision fields (and the call's last argument) above the particle stores; ours
 // cannot, so the collision local may escape through 0x1697c0 in our build.
+// Round 100 (lane 8, fast): dot3f(&velocity, normal) 102 and dot3f(normal, &velocity) 102 (same code); no velocity copy
+// with dot3f on the particle velocity 200, with the dot in i/k/j text order 199, velocity operand first 199 (frame
+// 0x118 each); the normal as a `vector3f const &` 102 (same code), with no copy 199; the placement's last argument read
+// into a local before the position stores (diagnostic) 137. 0x1697c0's callees that receive the result are all LTCG
+// bodies and none stores the pointer.
 // Round 115: position through the existing vector3f_add_scaled 102 (same code); perpendicular through the
 // existing vector3f_scale 102; both 102; with the velocity pointer 194 (frame 0x118: the perpendicular loses its
 // home); with the velocity read at each use 199. Local names do not move the stack homes (compile-only frame
 // listing unchanged for four renames); ours homes sweep, perpendicular, (cache, collision), tangent, retail
 // tangent, sweep, (cache), perpendicular, (collision).
+// Round 116 (lane 6, fast, LTCG build): four rename sets of perpendicular/tangent/sweep (normal/tangent
+// velocity, bounce/slide, travel, along/motion/rebound) 102 each (homes unmoved, so the same-size name order
+// does not apply here); tangent, tangent and perpendicular, tangent at the top with perpendicular after the
+// cache 102 each; velocity read at each use with the perpendicular/tangent rows interleaved i, i, j, k, j, k
+// 200 (frame changes, +0x2); the copy form with that interleave 211. Retail keeps perp.i/j, tangent.k and
+// keep in xmm5/6/7/3 across the placement call (its LTCG callee leaves them) and spills only tangent.i/j and
+// perp.k.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

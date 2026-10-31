@@ -284,12 +284,20 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // accessor retained; fallback EDX masking and stage/pass/unfused-load homes remain.
 // Round 321: Actual search ordinal as found/exhausted result with twice-used stage/pass values and entry/producer declaration subsets: all eight 141 at 544/544 bytes.
 // Round 321: Original separate candidate result, parameter uses, lookup and mask lifetimes, helpers and body restored; fallback/register homes remain. Stacked notes merged.
+// Round 100 (lane 8, fast): the second and third element pointers bound to `void const *const &` locals 127 (the second
+// element is then unfused as retail), the third alone 128, the second alone 128, the second plus the third's field through
+// a `long const &` 127, the third's field through a `long const &` alone 135.
 // Round 115: retail's chain lookup is `lea eax,[eax+edx*2]; movzx eax,word [eax]` and the pass element's
 // address is computed and left unused; the matched 0x17420 gets that load from a packed-range struct pointer
 // read through its inline index()/count(). Chain/entry through that struct's index() 117 (same code); flags
 // read after the search loop 132; the three pointer fields zeroed in one chained assignment 117; the head in
 // 0x16b90's direct-indexing shape 117; search result written straight into the context 136. Reference
 // locals for the lookups compile identically (compile-only, not counted).
+// Round 116 (lane 6, fast): the 0x1c620 call's argument setup agrees with retail. Stage/pass sums written
+// `arg_3 + local_7` / `arg_4 + local_8` 117 (same code); that with the first cache zero moved down 120; the
+// two sums named where computed 117 (same code); the stage offset folded into the first ordinal 117, and the
+// pass offset into the second as well 117. Retail loads arg_3/arg_4 into ESI/EBP before the chain and
+// leaves a dead `lea eax, [eax + edx*2]` after the pass element read; ours loads them late into EBP/EDX.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

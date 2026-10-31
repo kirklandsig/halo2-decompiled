@@ -1189,6 +1189,13 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 // recipe (fast): helper session const 86; channel helper bound and flag tests as early returns 86; loop
 // condition `session->member_count > i` 86; all three helpers __forceinline 86; the channel helper alone
 // __forceinline 86.
+// Round 26 (lane 15, fast; on the recipe, which in this tree passes latency in EBX and session on the stack, 86 with
+// 0x658c0 140 and 0x65770 19): a pointer local to the member mask 86; `host != i` 86; times declared first 86; the
+// counters declared before the observer 86 (callers 140/19 each). Lead: the member bit set first in the loop body
+// gives retail's frame 0x78, session in EBX, latency on the stack, the member_count re-read in the check and both
+// callers' match (78, 319 bytes, aligned 24), but it sets the bit for members whose QoS lookup fails, which retail
+// skips (its failure exits jump past the mask store): not keepable. Retail's re-read needs a store or call between
+// the latch's member_count load and the check that keeps the bit on the success and host paths only.
 // Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
 // session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
 // function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the

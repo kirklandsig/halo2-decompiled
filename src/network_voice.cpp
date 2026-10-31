@@ -1343,6 +1343,16 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // (383 bytes); shared inline flag helper for 0x56220/0x56380 94 (same code); per-channel `result = 0; if (...)`
 // helper 193 (411 bytes); values as dword 94 (same code). Screened, same code or worse: 27 order/traversal/helper
 // forms, 30 product spellings (count/size locals, two adds), mixed direct/pointer reads 368-372 bytes.
+// Round 8 (lane 17): BLOCKED-BY 0x56160 and 0x56380, whose matches pin the shared bool helper (retail materialises
+// the per-channel test in CL after the shift, ours in AL). The helper returning byte/char/a bool through a byte
+// return 94 each with 0x56160 68; returning long 123 (0x56160 103, 0x56380 123, 0x54990 5); `(!is_unknown00 ? 11 :
+// 13)` 94 (same code); a per-channel multiplier set by an if 110 (0x54990 13); `player == voice_get_unknown00()` 94.
+// Round 27 (lane 14, fast; harness positional/aligned 90/105 on the control): has-player as an early
+// continue with the cursor step in the for header 94; identity compare written player == getter 94;
+// multiplier before the count in the product 94; `total += 2` 94 (all four the same code); cursor, flag,
+// total order 99 (350 bytes; channels moves to EDI, flag still BL); cursor declared at entry (harness) 113
+// with 0x54990 off by 11. Retail's colours all follow from the flag taking EAX before the loop temps
+// (mask then lands in EBX, has-player in CL); every form here lets the mask take EAX first.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {

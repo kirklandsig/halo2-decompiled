@@ -634,13 +634,22 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
-// score 34 (was 34): the group-flag load is the only content difference left in the block: ours is a
+// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
+// retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
+// retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
+// Lane S (34, was 42): masking the group flags into a dword local gives retail's `test al, 1` and
+// `test al, 2` with the group pointer in EAX, but the flags are loaded as a byte and masked instead of
+// retail's word load (the extra bytes shift every later block), and case 0x1200055f still lacks
+// retail's zero store.
+// Group-flag load width and velocity zero-store schedule remain.
+// Earlier: the group-flag load is the only content difference left in the block: ours is a
 // byte load with a mask (`movzx eax, byte ptr [eax+2]; and eax,3`), retail's is a word load
 // (`mov ax, word ptr [eax+2]`), and the three extra bytes shift every later block.
-// score 34 (was 42): masking the group flags into a dword local gives retail's `test al, 1` and
+// Earlier: masking the group flags into a dword local gives retail's `test al, 1` and
 // `test al, 2` with the group pointer in EAX, but the flags are loaded as a byte and masked
 // instead of retail's word load, and case 0x1200055f still lacks retail's zero store.
-// score 42 (was 42): the group-flag test is two bytes longer than retail's: ours shifts the flags byte
+// Earlier: the group-flag test is two bytes longer than retail's: ours shifts the flags byte
 // down by one before the second test (`shr al, 1; test al, 1`), retail tests bit 2 directly; retail
 // also clears the result in case 0x1200055f where ours does not (`function_value = 0.0f;` first in
 // the velocity block is retail's store, but alone it shifts every later instruction: 656 bytes, 114,
@@ -698,6 +707,17 @@ struct s_device_machine_view
 // on the bool form 42; a const group pointer with the bool form 42; `second` declared beside the
 // flags and assigned later 42. In the mask forms the pointer is dead after the flags load (esi is
 // popped after the first test), so it is a coalescing choice, not a longer live range.
+// Round 101 (lane 8; exact LTCG harness through a function-pointer caller, harness 32 = 34): plain
+// masks on the word local plus `function_value = 0.0f;` first in the 0x1200055f velocity block leave
+// only the group pointer's register (`push esi; lea esi` / `mov ax, [esi+2]` / `pop esi` against
+// retail's `lea eax` and `mov ax, [eax+2]`), 656 bytes, 106 positional: the 16-bit flags value never
+// shares EAX with the dying pointer. On that base: no pointer local 113, direct field reads 106, the
+// word local declared at its read 106, the flags read before the machine test 114, the machine flags
+// read at each use 106, nested tests 106, the power test's operands swapped 106 (the pushed ESI in
+// each). On the lane S form: a byte/word bits local 32/32 (harness); dword/long/int/short flags locals
+// with masks 105 each (pushed ESI); the zero store added 105.
+// Round 456: Success constructed in recognized cases, at tail/entry, crossed with native group reference and explicit velocity zero:
+// 128/124/128/124/184/185/184/185. Original executable body and supporting declarations restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -917,10 +937,11 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 121 (was 121): retail keeps the initial velocity in xmm6 for the whole function and leaves
+// score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
+// Earlier: retail keeps the initial velocity in xmm6 for the whole function and leaves
 // the ramp-down time in its stack slot; ours keeps the ramp-down time in xmm1 through the clamps
 // and loads the initial velocity late, so the argument list and the register use still differ.
-// score 121 (was 121): retail passes the initial velocity in xmm6 (one register for its whole
+// Earlier: retail passes the initial velocity in xmm6 (one register for its whole
 // life, so ret 0x14) and keeps the ramp-down time in its stack slot throughout; ours keeps the
 // ramp-down time in xmm1 through the clamps and loads the initial velocity late (ret 0x18).
 // The cruise velocity stored into the motion in each branch (no velocity local) gives retail's
@@ -937,7 +958,7 @@ bool function_108530(long device_index, long name)
 // 121/121/121; file-local plain/inline/noinline 121/121/121; shared signed phase acceleration 121;
 // shared acceleration with file-local inline/noinline 121. Original routine and both calls restored.
 // initial velocity remains on the stack while ramp-down time occupies a register.
-// score 121 (was 121): retail passes the initial velocity in xmm6 with five stack floats and
+// Earlier: retail passes the initial velocity in xmm6 with five stack floats and
 // returns 0x14; ours passes it on the stack (ret 0x18), and the clamped times land in other xmm
 // registers.
 // Isolated ramp-down zero/min/both if-clamps 121/121/121; const initial velocity 121;
@@ -970,6 +991,8 @@ bool function_108530(long device_index, long name)
 // xmm6) the initial-velocity store first in the branch 134; the delta and distance locals after the
 // reset stores 121; the target pinned before the position 141 (507 bytes, target then passed in a
 // register; 0x108670 13 -> 28).
+// Round 456: Parallel half-ramp distance contributions, phase velocity changes and squared-speed differences named at their producers, seven subsets and all with field-owned cruise velocity:
+// 121/121/121/121/121/121/121/134. Original executable body and supporting declarations restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

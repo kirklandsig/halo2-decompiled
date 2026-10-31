@@ -474,9 +474,20 @@ bool function_22acb4(long player_index);
 // second-fourth/all result families 304/287/281/285/303/285/304/347. Original setter restored.
 // Round 237: Complemented word result families first/second/third/fourth/first-second/second-third/second-fourth/all: On recovered complemented-second frame, first enum/independent second/third 123 subsets 1-7 and all with signed second: 178/244/252/250/242/274/245/289/230/234/271/247/228/230/267/262.
 // Original executable body restored.
+// Round 27 (lane 14): long flags 165 (same code). Retail CSEs the constant 1 into EDI (three cmp ax, di,
+// and ebx, edi, cmp type, edi) so (char)flags & 1 stays movsx ebx, al / and ebx, edi; ours narrows it to
+// and cl, 1 and CSEs 2 (EBX) and 0xffef (EDI) instead. On the retail block order (232, aligned 37): long
+// flags 232, (word)((long)(char)flags & 1) 232, byte flags 233, long second 287 (aligned 19: 1 in EDI as
+// retail, second still in ECX with its own slot, 0xfffd CSEd into EBX for the third/fourth clears).
 // Round 242: Existing shared word-bit setter in first/second/first-second/third/first-third/
 // second-third/all-three/all-four result families 165/299/299/165/165/299/299/299. Original macro,
 // result domains, enum producers, query and aliased stores restored; second-mask spill remains.
+// Round 8 (lane 17), on the retail-order body with a short second (283, aligned 19: VC narrows `(char)flags & 1`
+// to `mov cl, al; and cl, 1` while EBX still holds the first mask, so the second takes ECX and a slot and 0xfffd
+// is hoisted into EBX; retail spills the first, then `movsx ebx, al; and ebx, edi`): the second declared at entry,
+// before/after the first, with the third 283 each; `(char)flags` then `&= 1`, `(word)(char)`, `(short)(char)` 283
+// each; word `(word)(char)` 232; long `(short)(char)` 287; long second 287 (aligned 18, `and ecx, edi` but
+// zero-extended into CL); `*first_out` stored right after the first mask 263 (878 bytes, status in EDI).
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)

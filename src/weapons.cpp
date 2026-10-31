@@ -2884,6 +2884,11 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // XMM2 is re-zeroed); that with the fallthrough switch 405. Retail recomputes the definition only on the
 // 0x1d0007ba path. A 27-value LTCG test switch keeps the `jg` root with loop, fallthrough, goto and return
 // cases.
+// Round 53: retail's left subtrees all use the `jg` form; only the spine to 0x1d0007ba falls through. One
+// switch with the activity cases first or last and `default: return false;` 430/430; the if before the
+// switch with `default: return false;` 425; the activity cases before 0x0b0005a9 409; the activity-first
+// switch on `(dword)name` 409 (`ja` root). Compile-only: activity cases first/last, with a returning
+// default, separate activity cases and the default first all keep the `jg` root.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3324,7 +3329,8 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
-// score 604 (was 604): round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
+// score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
 // 0x1c60; weapon/barrel and scalar homes remain.
 // frame 0x1c64 versus 0x1c60; weapon/barrel and scalar homes remain.
@@ -3388,6 +3394,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Round 239: complementary shot/failure/both results 570/570/571 fast; ordinary
 // holder counterparts 660 each; both byte results 571, ordinary holder 660. Fast
 // control 640; four promising forms all 604 plain. Original body restored.
+// Round 246: live magazine/metadata/both/both with ordinal 653/602/581/634;
+// ordinary-holder counterparts 641/666/659/672 (fast control 640). Ordinary
+// metadata/both 643/649 versus full 604. Original receiver graph and body restored.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

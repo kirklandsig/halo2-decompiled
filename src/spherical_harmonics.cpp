@@ -304,6 +304,19 @@
 // sqrt105 73. Harness, on the sqrt3/band3_35 form: `sqrt2 * sqrt(35.0)` / `sqrt2 * sqrt(21.0)` operand orders
 // (same code), sqrt105 defined right after sqrt2 (much worse), result[15] at each earlier position (worse), and
 // every single-statement move of the nine cubic statements (none better).
+// Round 9 (m3 lane 18; fast, 0x146020 matched in each): lane 4's 2-point form rebuilt 2; on it band2 staged
+// (`band2 = sqrt15; band2 *= inverse_sqrt_pi;`) 2, band2 declared at the top but assigned after zz 92 (663 bytes),
+// zz staged (`zz = z; zz *= z;`) 2, a double sqrt5 3, result[7] as one product (no quadratic_xz) 133 (669 bytes).
+// Compile-only screens on the 2-point form (the harness reproduces the swap): 450 random quadratic-block and
+// first-block orders with operand/staging spellings, zz written at each use, double sqrt15/sqrt5 (with and
+// without casts), zz through a double product, sqrt5 written inline or first, zz first, the zz read from
+// direction->k, `zz + zz + zz`, band2 as a double product, and /G7: the sqrt15 load never moves ahead of
+// `fmul z` (result[8] through band2 moves it, but then band2 goes to x87 and sqrt15 disappears).
+// Round 18 (m3 lane 2, fast; 0x146020 matched in every trial): the named sqrt3 root with band3_35 right after sqrt2
+// rebuilt 55 (retail keeps sqrt(2) dead on the x87 stack to the end and computes result[15] first, between
+// fsqrt(105) and band3_21); on it: sqrt2/band3_35/sqrt105 as `real const` 55; result[13] before result[11] 55;
+// constant-first `3.0f * xx`/`3.0f * yy` 55; result[15] right before band3_21 146 (647 bytes); xx_3yy defined just
+// before result[15] 55. Original body restored.
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

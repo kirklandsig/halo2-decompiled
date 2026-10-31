@@ -539,12 +539,25 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
 // written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
 // the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
+// Round 38 (m3 lane 10): compile-only micro tests: VC calls a method on a stack local after the same
+// call through a register pointer, a member, a global or a pointer parameter, whatever the operand
+// order; between two stack locals the right operand runs first; named one-use results keep their
+// statement order only while the callee's body is unseen (an extern declaration), not with it
+// defined in the file, and not at LTCG with it defined anywhere. Real builds (fast): the three
+// spread definitions moved below this function 67 (same code), with both spreads named 67;
+// `continue` on `candidate > reference` and on equal spreads with `candidate cost >= reference
+// cost` 100 (512 bytes; first difference +0x7), the same with the reference on the left 100; the
+// candidate spread named and used in both tests (three queries) 80 (512 bytes).
 // Round 55 (lane 12; a one-file LTCG harness of this file reproduces the build exactly): the test in a
 // forceinline (candidate, reference) helper written `b > a || (b == a && cost)` 65, `a < b || (b == a && cost)`
 // 66; the qualified call `candidate.s_balance_solution::count_spread()` 67; `a - b < 0 || (a - b == 0 &&
 // cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
 // last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
 // first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
+// Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
+// 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
+// condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
+// clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -786,6 +799,13 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // to NONE before the call 34; declared there with its NONE initializer 65 (190 bytes); open slots
 // computed just before the call 87 (170 bytes), with imbalance at the top too 87; next_party declared
 // after the array and index 34.
+// Round 38 (m3 lane 10, fast): the player count arrives in EDX in every form, whatever its parameter
+// position; an all-stack compile-only build loads extra count into EAX and player count into EBX.
+// Trials: parameters (extra, parties, player) with the caller updated 35 (player count still EDX); the
+// fill continuing the copy loop's index 70 (now: player count in ECX, party indices on the stack,
+// 0x7e210 781), with that parameter order 70; `result = false;` with the call as the test 82 (204
+// bytes); `player_count > i` 34; open slots computed after next_party 34; pre-increment in both
+// loops 34.
 // Round 55 (lane 12; the one-file LTCG harness of this file reproduces the build exactly): total and open slots
 // computed after the copy loop 96 (162 bytes), with the sum written extra first 96; total after the copy loop and
 // open slots just before the call 87 (172 bytes); open slots after the fill 87 (170 bytes); `open_slots =

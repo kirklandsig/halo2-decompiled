@@ -581,6 +581,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
  return inverse;
 }
 
+// score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
+// (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
+// y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
+// 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
+// aligned 110, closest), its products added straight into the velocity 239.
 // Round 16 (later): the jitter block's shape, the constant's XMM ownership and the limit spills
 // are the whole difference; the plain score is 132 and the reduced image scores 310 because the
 // reduced build does not inline the magnitude helper retail inlines.
@@ -589,11 +594,6 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // the on/off factor 131, the scale factor on the left of the jitter value 130, both 131, and the scaled
 // products added straight into the velocity 163 (1051 bytes against retail's 1077); the jitter block's
 // own body restored.
-// score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
-// (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
-// y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
-// 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
-// aligned 110, closest), its products added straight into the velocity 239.
 // Round 36: single-workspace jitter 163; shared jitter add 157; shared movement add 156; all shared updates 156;
 // jitter rename 156; shared offset scale 139; scale with direct updates 155; scale with shared jitter add 149.
 // Native word/short/dword bit samples 168/168/170; on/off-first samples 231/231/233;
@@ -617,6 +617,17 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // add 174 (1064 bytes, 251 instructions as retail, structural 28, aligned 96 against 105: closest
 // shape; limits.j/k then share one register where retail keeps two copies, and on_z/y spill
 // differently); plus a chained limits.j/k 258, both 208.
+// Round 116 (lane 6, fast, 0x24590 listed): projection through the existing vector3f_add_scaled 181 (1119
+// bytes); that with the jitter add 176; movement and jitter adds 182; the jitter add alone 130 again (1077
+// bytes, gain 2, not kept); on it, named on/off factors first with the volatile bits 201 (1054 bytes), with
+// plain bits 231 (1021 bytes: the jitter block takes retail's shape, bits in EAX, tests 1, 2, 4 first, but the
+// movement block above shifts). Retail reuses the limits.j/k spill slots for y and the z on/off factor.
+// Round 53 (lane 9, fast): jitter as on/off factors first with a plain long 233 (1020 bytes: limits.j/k
+// then share one register, so on_z and y are not spilled); `limits.k = limits.j` 221 (1045 bytes); the
+// projection dot with direction first in each product 132 (same code); the movement scaled by the field
+// at each use 172; length_squared summed k, j, i 144. Compile-only screens (magnitude3d inline, 512
+// spellings: scale local, length/projection/offset/control/limit/acceleration operand orders, volatile,
+// jitter factor and offset forms) never give retail's 1.0 in XMM3 or its k, j, i projection order.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -827,6 +838,15 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // Round 207: completed sample copied to velocity then scaled in place, original/rate-angle/
 // per-use scale/both 208/265/211/262; the same four through the shared float scale
 // 220/207/220/207. Original sample, field stores, angle storage and includes restored.
+// Round 53 (lane 9, fast; the score is a lockstep count, so a one-instruction shift in a region costs
+// the rest of it): `!(fabs(angle) < 0.0001f)` 173 (retail's exact `fld; fcompi; ja` test at 1382 bytes;
+// the rotation is then one instruction short and the turn block two short of retail); with moved_away
+// preset false and set in the test 176 (retail's `xor dl, dl` ... `mov dl, 1`; flag form, needs a match);
+// with the rotation done in place on the forward copy 178; with sin/cos of `angle * rate` and no rotation
+// local 156, the same on the original body 169. A /FAs frame probe (compile only) groups movement with
+// new_cross at -12 and original/rotated at -24 (retail: movement with original/rotated, new_cross alone);
+// declaration order and names never move it, one extra early read of original swaps movement and original.
+// Extra arithmetic tuples anywhere rotate the turn-block dot sums toward retail's j,k,i / j,i,k orders.
 // Round 26 (lane 14, fast): the sampled vector's slot follows reference counts: two extra reads of it
 // (diagnostic only) put it at retail's [esp+0xc], sharing the forward copy's slot, 236 at 1415 B. Side
 // cross names cross_a/cross_b and z_ names, and the two crosses declared apart, 155 each (slot unchanged);

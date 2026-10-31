@@ -12,6 +12,8 @@
 #include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+
 /* a camera pan's velocity profile: it accelerates from the start rate to
    the peak, holds it, then moves toward the end rate (0x18 bytes) */
 struct s_camera_velocity_profile
@@ -206,90 +208,7 @@ bool camera_velocity_profile_new(s_camera_velocity_profile *profile, real total_
 	return result;
 }
 
-// score 49 (was 49): retail keeps only start and deceleration in xmm registers and reads the
-// peak (twice) and acceleration from their array homes (frame 0x1c); ours keeps all four in
-// registers (frame 0x10). Three-arm first clamp 96; two separate result clamps 49 (same);
-// last term as a separate += 55 (retail's add order and single-exit clamp tail appear);
-// one 2x3 coefficient array 54 (retail's 0x1c frame and tail, but the reads stay in
-// registers); reordered coefficient fills 55; start/deceleration as named locals 59;
-// endpoint field reads in the sum 114 (the homes collapse); pointer-taking fill helper 63;
-// coefficient fill after the clamps 120.
-// retail keeps both arrays in its frame (sub esp, 0x1c)
-// and reads rates[1], rates[2] and accelerations[0] back from it; ours keeps
-// only rates[2] there, so the sum takes other registers, the b * b term
-// moves up (the compiler reorders the sum: the source order of the terms
-// does not matter) and the two clamp exits are not merged. Retail also
-// tests ticks against the acceleration ticks before choosing ticks (an
-// if/else-if/else gives that, 96). Tried: other term orders 49, squares in
-// locals 49, b * (b * accelerations[1]) 99, a loop over the three segments
-// 59-65 (unrolled, factored), aggregate initializers 49, accelerations
-// zero-initialized 101, the arrays filled or declared in another order 49-50.
-// Round 16 (lane 10): retail's three tick clamps are PIN(x, 0, bound) with the value and bound
-// re-evaluated (the macro this file already defines further down); that form gives retail's integer
-// code exactly, but the float preloads stay 2 bytes shorter and shift the listing: 96 (aligned
-// 45 -> 37); with one 2x3 coefficient array 95 (0x1c frame); with the last term as a separate +=
-// 90 (retail's add order and single-exit tail); with both 88 (aligned 33: only the coefficients'
-// registers differ, retail spills both peak copies and the acceleration and keeps start and
-// deceleration in xmm6/xmm7, ours spills one); the fills in retail's load order 88 (spills start
-// instead); a, b, c declared first 88; aggregate initializers 90.
-// Round 181: all coefficient field reads at uses 117; complete native profile snapshot 107; snapshot
-// plus field reads 105; profile reference 49, plus field reads 117; reordered profile/ticks 49, plus
-// field reads 117, plus native snapshot 107. Coefficient homes and 0x1c frame remain unresolved;
-// original arrays and input binding restored.
-// Round 93 (PIN clamps make the integer part exact; the coefficient spill choice is what is left):
-// PIN + 2x3 array + last term as a separate += 88 (aligned 23); on it the second peak copied from the
-// first element 114 (259 bytes); PIN + two arrays + separate += 90 (frame 0x10, only rates[2] homed);
-// on it renamed arrays 90 (names do not move the spill), aggregate initializers 90, segment times in a
-// float array summed in a loop 106 (unrolled and factored). On the 2x3 form, sum texts: per-segment
-// terms 95, coefficient-first products 88, rates then accelerations 95, one statement per segment
-// 105, one six-term sum 95, squares grouped t * (t * k) 86; the arrays in one local struct 88;
-// peaks filled by a chained assignment 114 (both peaks one register, no frame). The preloads keep
-// four coefficients in xmm4-7 in every form; retail spills the peaks and the acceleration.
-// Round 85 (compile-only screens reproduce this function's float code; the written-order `+=` chain
-// gives retail's add order and shared clamp tail, but all 720 `+=` orders, all 720 fill orders and the
-// 2x3/3x2 arrays keep one coefficient spilled, retail three; fills after the clamps spill none):
-// `+=` chain cc2, c2, aa0, a0, bb1, b1 50; written-order `+=` chain 55, with the 2x3 array 54, with
-// PIN clamps 90, with both 88.
-// Round 98 (retail's memory operands for rates[1], rates[2] and accelerations[0] look like array homes
-// that were never scalar-replaced): PIN clamps into a long segment-ticks array summed in a three-pass
-// loop 88 (aligned 82); the same with the casts at each use 88 (287 bytes); the two peak rates filled
-// by a loop 100 (aligned 31; 271 bytes), the loop after the other fills 100; the three segment
-// products summed in a loop over the arrays 106; PIN + two arrays + separate += 90 again. A
-// compile-only screen of 34 array/fill/sum forms never kept those three in memory.
-// Round 98, on the PIN form: tick counts in an integer array 95 (292 bytes); a three-segment loop
-// (four product spellings) 88 each, VC unrolls it and factors (a * t + r) * t; const 2x3 aggregate 88;
-// const two-array aggregates 90; segment times in a float array with the written-out sum 88.
-// Round 80 (plain clamps): the zero acceleration assigned just before the sum 49; the fills in
-// retail's load order (peaks, start, deceleration, acceleration, zero) 53, with the late zero 53;
-// the sum as six += statements in retail's add order 55; the last two terms as separate += 53
-// (272 bytes).
-// Round 22 (lane 10): ours homes only rates[2] and keeps the accelerations out of the frame. Both
-// arrays at function scope 49; the two peak elements swapped in the sum 52; the tick conversions as
-// locals declared at the sum 83 (289 bytes); the peaks filled by a loop over segments 1..2 56; a named
-// peak rate for both peak elements 112 (263 bytes).
-// Round 42: arrays and tick locals at function scope 49 (identical); short tick locals 119; the
-// conversions written in the sum 83; PIN + 2x3 with the segment times in a float array 88, with
-// per-segment {rate, acceleration} pairs 88; compile-only, all 720 orders of the six 2x3 fills, a
-// time array, a time loop and factored per-segment terms keep the same single spilled peak.
-// Round 3 (lane 17): the final clamp as one nested ternary 49 (same code); an early return when not
-// valid 100; a, b, c declared at their conversions 49; the sum in a named value, clamped, then
-// assigned 49; a named hold offset and hold length 117 (254 bytes); a named deceleration start 106
-// (262 bytes).
-// DL201: native contiguous start/peak pair copied by memcpy/memmove, second peak from
-// its original field/copied home 96/110/97/103; with complete conditional first count
-// 95/105/50/100. Original arrays, observations and six-term expression
-// restored; extra coefficient promotion and frame 0x10/0x1c remain.
-// Round 11 (lane 2), on PIN clamps with the last term as a separate += (one-file LTCG harness: retail's
-// integer code and single-exit tail, 92/92 instructions; only the coefficient homes differ, ours
-// spilling rates[2] alone): a, b, c declared at their conversions, all six += statements, the
-// result clamp as PIN: the same code; real: fills after the hold clamp 104 (268 bytes); fills after
-// the first conversion 99 (271 bytes); the sum in three statements 101 (270 bytes); all three
-// conversions after the clamps 87 (285 bytes); fills just before the sum 121 (253 bytes).
-// Round 36 (lane 10, fast): the sum as three calls of a forceinline per-segment helper (ticks * rate + ticks *
-// ticks * acceleration) taking the rate and acceleration by value 49, taking the arrays and a segment index
-// 49; the helper factored `(acceleration * ticks + rate) * ticks` 72 (261 bytes); the three calls as one
-// statement and two += 62 (268 bytes); the by-value helper with PIN tick clamps 96. Compile-only, every one
-// of these (and both call orders) still spills one coefficient where retail spills three.
+/* the profile's value at a tick: per segment ticks * rate + ticks^2 * acceleration, summed, clamped to [0, 1] */
 // @retail 0x16be50
 real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, long ticks)
 {
@@ -297,63 +216,32 @@ real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, 
 
 	if (profile->valid)
 	{
-		real rates[3];
-		real accelerations[3];
+		vector3f rates;
+		vector3f accelerations;
 		long acceleration_ticks;
 		long hold_ticks;
 		long deceleration_ticks;
 		real a, b, c;
 
-		rates[0] = profile->start_rate;
-		rates[1] = profile->peak_rate;
-		rates[2] = profile->peak_rate;
-		accelerations[0] = profile->acceleration;
-		accelerations[1] = 0.0f;
-		accelerations[2] = profile->deceleration;
+		rates.i = profile->start_rate;
+		rates.j = profile->peak_rate;
+		rates.k = profile->peak_rate;
+		accelerations.i = profile->acceleration;
+		accelerations.j = 0.0f;
+		accelerations.k = profile->deceleration;
 
-		acceleration_ticks = ticks;
-		if (acceleration_ticks < 0)
-		{
-			acceleration_ticks = 0;
-		}
-		else if (acceleration_ticks > profile->acceleration_ticks)
-		{
-			acceleration_ticks = profile->acceleration_ticks;
-		}
-
+		acceleration_ticks = PIN(ticks, 0, profile->acceleration_ticks);
 		a = (real)acceleration_ticks;
-		if (ticks - profile->acceleration_ticks < 0)
-		{
-			hold_ticks = 0;
-		}
-		else if (ticks - profile->acceleration_ticks >
-			profile->total_ticks - profile->deceleration_ticks - profile->acceleration_ticks)
-		{
-			hold_ticks = profile->total_ticks - profile->deceleration_ticks - profile->acceleration_ticks;
-		}
-		else
-		{
-			hold_ticks = ticks - profile->acceleration_ticks;
-		}
-
+		hold_ticks = PIN(ticks - profile->acceleration_ticks, 0,
+			profile->total_ticks - profile->deceleration_ticks - profile->acceleration_ticks);
 		b = (real)hold_ticks;
-		if (ticks - (profile->total_ticks - profile->deceleration_ticks) < 0)
-		{
-			deceleration_ticks = 0;
-		}
-		else if (ticks - (profile->total_ticks - profile->deceleration_ticks) > profile->deceleration_ticks)
-		{
-			deceleration_ticks = profile->deceleration_ticks;
-		}
-		else
-		{
-			deceleration_ticks = ticks - (profile->total_ticks - profile->deceleration_ticks);
-		}
-
+		deceleration_ticks = PIN(ticks - (profile->total_ticks - profile->deceleration_ticks), 0,
+			profile->deceleration_ticks);
 		c = (real)deceleration_ticks;
 		{
-			result = c * c * accelerations[2] + a * a * accelerations[0] + c * rates[2] + b * rates[1] + a * rates[0] +
-				b * b * accelerations[1];
+			vector3f times = { a, b, c };
+			vector3f squares = { a * a, b * b, c * c };
+			result = dot3f(&squares, &accelerations) + dot3f(&times, &rates);
 		}
 		if (0.0f > result)
 		{
@@ -835,8 +723,6 @@ void function_11da10(quaternionf const *a, quaternionf const *b, quaternionf *ou
 matrix3x3 *function_141e10(matrix3x3 *out, quaternionf const *q);
 void function_23c0e0(long object_index, s_observer_command *command);
 void function_172520(s_observer_command *command);
-
-#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
 PRIVATE inline real game_ticks_to_seconds(long ticks)
 {
