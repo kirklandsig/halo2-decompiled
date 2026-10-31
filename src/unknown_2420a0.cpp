@@ -1578,6 +1578,9 @@ void function_2422d0(long slot)
 // const object pointer/table-entry address 7; slot-field address 60; the object getter at each
 // use 86 (reloads after the call); index or object local renamed to sort first or last 7 each;
 // the reject arm first 7; the rejected count advanced in its own statement 7.
+// Round 53: function-scope object index reused for the second loop's element 7; permuter (58
+// variants) 7; lookup written without the inline getter 7 (diagnostic); a `long i` per loop 7;
+// `dword` object index 7; the eligibility result in a named bool 79.
 // @retail 0x2423f0
 bool function_2423f0()
 {

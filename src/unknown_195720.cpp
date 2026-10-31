@@ -34,6 +34,8 @@ bool function_1946f0(s_bitstream *stream)
 // plain masked assignment 2; size-first bound comparison 4.
 // `saved / 8` at the two address uses or at every use 2/2; a `byte *const &` reference to the data
 // field before/after the index 2/2; the masked byte as an explicit read-modify-write 2.
+// Round 37: the byte index declared at the function's top, after `saved`, at the discard block's top, at the
+// mode block's top with the count 2/2/2/2; an int index 2; the index computed before the counter store 17.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

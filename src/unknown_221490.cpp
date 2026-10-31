@@ -572,6 +572,11 @@ bool sound_driver_voice_create_buffer(
 // globals local dropped, voice pointer, natural stack locals, bool/flags spellings and widths, a second
 // test of the 3D flag: the voice index or input mixbin always outranks the 3D flag unless the result is
 // a separate long. Play first keeps BL whatever else changes.
+// Round 101 (lane 8; exact LTCG harness with 0x191420's object, harness scale 65 = 71): retail reloads
+// play into BL right after the 3D test (play's range split once the 3D bool dies). play built by
+// `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
+// both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
+// code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
