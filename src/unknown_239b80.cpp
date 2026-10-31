@@ -321,6 +321,12 @@ short function_239e50(short count, point2f const *points, short *indices);
 // is body-internal. A case-0 `vector2f *normal = &line.n` for the normalize and the dot 42 (same code),
 // for the dot only 42 (same code), with j's store too 44 (304 bytes), with i's store instead 69 (305);
 // case 1's distance as `line.d - dot` 43.
+// Round 7 (lane 17, fast): the normal built from the existing vector2d_from_points2d (first minus point,
+// i = delta.y, j = -delta.x) 86 (316 bytes: the negation is an SSE subtract from zero); the loop on
+// `i < count` with `if (state >= 2) break;` after the switch 101 (311); case 0 in matched 0x23a2b0's own
+// inline form (named length, `*=` scales, `else length = 0.f`, the dot by name) 56 (j still scaled in the
+// reciprocal's register); normalize2d spelled as matched 0xde080's (scale inside `!(fabs(m) < eps)`,
+// `v->i * inv`) 42 (same code); the normalizer's result tested implicitly 42 (same code).
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

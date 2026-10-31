@@ -892,6 +892,10 @@ void __stdcall function_43720(s_43740_input *input)
 // local x fill order 68-70; early-return guard 68; recomputed count argument 68; tag local used
 // everywhere 63, masked in place 62. The normal read through the stored shader (member, local,
 // accessor inline) still folds to +0x68 under LTCG (compile-only harness gives [ecx+0x2c]) 67/70.
+// Round 18 (m3 lane 2, fast; 0x42b20 and 0x43720 matched in each): the position through the sibling's
+// `&((s_ribbon_point *)...)->position` 62; the bitmap address written `bitmap * 0x74 + base` 62; `long const tag`
+// 62; the group lookup before the index call 62 (LTCG still loads it after the call); the record filled in retail's
+// store order (shader, slot, normal, tag, source, definition, count, bitmap) 62.
 // Round 40: record filled slot, shader, normal, count, tag, bitmap, then source and definition 64; with the normal
 // read through the stored shader 67 (213 bytes, 0x42b20 62); filled count, shader, normal, slot, tag, source,
 // definition, bitmap 63; arrays indexed through the stored slot 62 (same code); texture test as an early return 62.

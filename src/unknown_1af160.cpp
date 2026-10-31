@@ -19,13 +19,13 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 
 // score 9 (was 9): the three dword homes still rotate against retail's (ours: flag,
 // temp, actor, result; retail: actor, temp, result, flag); this round's source
-// permuter (19 tries, 670 s) found no lower form of that order
-// score 9 (was 9): the frame homes for the actor, the result and the completion flag
+// permuter (19 tries, 670 s) found no lower form of that order.
+// Earlier: the frame homes for the actor, the result and the completion flag
 // still rotate against retail's (ours: flag, temp, actor, result; retail: actor,
 // temp, result, flag) although each of the four locals is read the same number of
 // times; this round's trials in this file and the source permuter found no lower
-// form of that order
-// score 9 (was 9): actor/source/completion homes rotate +0x2c/+0x30/+0x24 versus
+// form of that order.
+// Earlier: actor/source/completion homes rotate +0x2c/+0x30/+0x24 versus
 // +0x24/+0x2c/+0x30. The frame and native conversion agree.
 // Earlier layout/conversion observations and trials: the locals sat eight bytes lower, so the
 // retail rounds the delay with its own fld/fistp straight into the long that
@@ -89,6 +89,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // Boolean output array 9; count/Boolean declarations swapped 9; derived record declared before
 // the node 9; search result declared before the outputs 9; node and derived declarations before
 // the actor 9; const actor pointer 9. Every form has identical differences; original restored.
+// Round 114 (lane 6): the 0x260670 stub writing its flag output first, as the disabled body does,
+// 9 (plain; its callers unchanged), so a written output alone does not move the homes; 0x1f4a20's
+// bool output declared at function scope 209 (975 bytes); the actor local for the equal-arm
+// unknown040 store 256 (955 bytes); a fresh actor lookup for the unknown4ae store 176 (985 bytes);
+// the prop position pointer named once for 0x1ac610 and 0x210ac0 227. Original body restored.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

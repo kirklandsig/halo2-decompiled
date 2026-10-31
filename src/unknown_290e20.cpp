@@ -401,7 +401,7 @@ struct s_ai_scene_assignment
 	short variant_indices[10];
 };
 
-// score 12 (was 56): the maximum count lives in esi through the loop as
+// score 12 (was 12): the maximum count lives in esi through the loop as
 // retail has it, the role index is reloaded from its argument slot at each use
 // as retail does, the assignment copy reads the previous assignment by index
 // and keeps retail's temporary register, and the recursion's arguments are
@@ -442,6 +442,14 @@ struct s_ai_scene_assignment
 // pointer recomputed once after the score test 123 (or with the copy through it 120); return for
 // the inner break 56; `if (local_7 <= 0.0f) continue;` 59, `if (!(local_7 > 0.0f)) continue;` 56;
 // `0.0f < local_7` 56.
+// Round 38 (m3 lane 10, fast): the movsx is the int copy's; every form without it leaves the maximum a
+// parameter and the role index then takes ESI (59 at 350 bytes): a short copy 59 (propagated), a 32-bit
+// parameter with a short copy 59, a long role copy for the four stores 59 (12 on the int form, same code),
+// that copy also passed to the scorer 100, a next-role local declared at the recursion 59, `if
+// (++*assignment_count >= maximum_count) break;` 59, `return` for the leaf break 59, the count test in the
+// while condition 59 (12 on the int form). The long next-role local from the entry (the 61 form, now 59 at
+// 347 bytes) is the only one that gives the maximum ESI and retail's dword load; the recursion then adds 1 to
+// the sign-extended store index.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
