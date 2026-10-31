@@ -756,6 +756,11 @@ bool c_projectile_type::v8(long a, long b)
 // (word)index breaks. Also tried with the mask: bit tests as (flags >> 10) & 1
 // (12), result declared first (12), the compares' operands swapped (17), a
 // group_index local (12); the base class v27 call without the copy (52).
+// Round 34 (LTCG harness, base 1 = 5): with the mask, the volatile copy, object and flags in the five
+// other declaration orders 12/51/12/51/51; a plain long or dword index 12/12; the index field read at
+// each use 12 (also with b direct 12); the group value through an inline value getter, read twice,
+// 14 (b direct 14); a `real const &` for the two power reads 12 (b direct 12); permuter (600 s, 53
+// tries) none better.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

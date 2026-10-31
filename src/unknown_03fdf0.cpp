@@ -319,6 +319,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // or after the clears: nothing below the current body; indexed with a short count before the clears and the
 // cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
 // `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
+// Round 34 (lane 13, LTCG harness through 0x404b0, harness positional; base 49 = 54, indexed form 125 at
+// 492 bytes, aligned 30): on the indexed form geometry declared at the loop-body top 125, `geometry !=
+// NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
+// material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
+// declared first 49 (identical, 54).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
