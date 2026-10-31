@@ -95,13 +95,22 @@ inline void dialogue_name_override(long volatile *name, long value)
 /* plays the actor's variant of a vocalization; returns whether it found one */
 // score 9 (was 9): the elements pointer and the object pool still land in EDX where retail
 // keeps them in EAX, and the scaled object index goes to EAX where retail uses EDX; naming the
-// elements, the pool or both does not move the allocation.
-// score 9 (was 9): the default-element and object-pool temporaries use EDX where retail uses EAX,
-// and the scaled object index uses EAX where retail uses EDX; the loop padding byte differs too.
-// and the scaled object index uses EAX where retail uses EDX; padding follows. Round 47: typed default
+// elements, the pool or both does not move the allocation; the loop padding byte differs too.
+// Round 47: typed default
 // element 9; header pointer arithmetic 9; default if/else 48; cached unit index 129; direct globals
 // access 9; existing object getter 9; first-element syntax 9; scaled header local 9; header-base local 9;
 // pool-pointer local 9.
+// Round 213: byte result 167; short result 165; long result 167; override sentinel first 18; override
+// invalid return 9; override zero nesting 9; override sentinel return 18; named stack homes 9; original
+// executable source restored.
+// the default-element and object-pool temporaries land in EDX where retail keeps
+// them in EAX, and the scaled object index goes to EAX where retail uses EDX; the loop padding
+// follows (our pool load is a byte longer, so the pad before the variant loop is a byte shorter).
+// Naming the elements, the pool or both does not move the allocation. Round 47: typed default
+// pool-pointer local 9. Round 16: the default name from an inline helper with a result local 9, the
+// helper as a ternary 48; the vocalization's default name read at each use 9; a fresh actor lookup
+// for the unit's index 129; the vocalization default declared ahead of the default name 9; the unit
+// index read from the actor at both tests 9.
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

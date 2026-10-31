@@ -1384,6 +1384,17 @@ struct s_1ba091
 // the element 242, an assigned-if `same` 245, the negative decline test 230; element or iterator
 // declared earlier 240/240; the original loop with the new tail 244. The al-56 form (all of the
 // above but the byte local) leaves the loop's entry in memory and the prologue order.
+// Round 37 (lane 1, fast; "al" = difflib-aligned count, 121 for the original on this metric): the
+// selection grown to 0x14 with the radii at +0xc/+0x10, plain iterator and entry locals and the 0x20
+// test at both uses 237 (861 bytes, al 109); plus positive admission 241 (al 95); plus 0x1bead0's
+// fallback local assigned after its test 238 (al 80, retail's double NONE test); plus the default arm's
+// stores in retail's order (radius, seat, radius, flags) 239 (al 74); plus the default object index
+// stored through the slot state 237 (al 68); plus one 0x1fb7e0 call per seat type 240 (865 bytes, al
+// 61); plus a byte mask local 230 (frame 0x10, mask in BL, al 85), with a named element index 230; the
+// sibling's `for` loop 240 (al 61); the 0x40 test as `(flags >> 6) & 1` 240. Open: retail keeps the
+// loop entry in EBX (home F+4) and re-reads the flags for the 0x40 test; ours keeps the flags (or the
+// byte mask) in BL and the entry in memory, entering the loop by a jump past a reload, which shifts
+// every later instruction by two.
 // Round 109 (lane 6, fast): the matched 0x1bead0's loop (a plain slot-entry iterator and a for loop over
 // the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
 // the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus

@@ -250,6 +250,9 @@ short __stdcall function_1c04f0(long actor_index, s_slot *slot, bool active)
 // moves the flag store after the time load; a one-use field copy, not kept); with the full 0x5c
 // output 132; action declared before the unit test 143; time local after the flag store 143; named
 // unit-test result 143; position declared first 143; state declared after the lookups 143.
+// Round 53 (plain): `distance2d(...) < 2.0f` on the original body 143; height declared at function scope
+// 143; the request type stored after its fields 146; the stamp time stored before its flag 146;
+// `height < entry->unknown0c` 143. `--fast` warns that 0x110ab0 builds differently in its reduced image.
 // @retail 0x1c0670
 bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 {

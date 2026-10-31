@@ -308,6 +308,9 @@ void function_117510(long index)
 // code), with per-use fields 154, with dot3f for the square 164/178; root through a bits local, a union,
 // a long pointer or in place 154/154/154/158; constant-first clamp 139 (same code), per-use 154;
 // `!(length >= c)` 155; rest square from link->length at its use 175.
+// Round 35 (lane 10, fast): per-use link fields again 154 (742; first difference +0x8a: link materialized after one
+// folded read, link->a kept in EBX across the root's stack stores, a/link in EAX/EDX); with the rest length read
+// first 154, link as `definition->links + i` 154, vertex-record endpoints 154, a separate correction local 161.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -479,6 +482,18 @@ static inline dword surface_random()
 // Original body restored.
 // DL210: native tail producer/clamp result/component output, masks 1-7, then all with existing vector setter; component-output frame with staged cross/projection-first/both/both and readonly inputs;
 // scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
+// Round 96 (one-link harness of this file with 0x30bf0's, exact at 139; the full build already passes wind in
+// EBX with a plain ret as retail): cross3f(&axis, &old, &cross) with `+ cross*sine` rows 166, with the
+// projection first 167 (864 bytes); rows as sine*cross / projection*axis / cosine*old 139 each (same code);
+// cross3f on the global with the projection first and rows in place 181 (852 bytes). Diagnostics (scalar
+// cross terms, kept only with a match): 0x177d10's in-place order on the global 181 (850 bytes; retail loads
+// the global's j/k before the axis draw), the same on an `old` copy 163.
+// Round 35 (lane 10, fast): matched 0x177d10's rotation (projection, cross j, k, i) as a shared forceinline helper
+// (direction pointer, axis by value; 0x177d10 stays matched with it, with an axis pointer it scores 17): on the
+// global 189 (845 bytes, frame 0x18: the global's fields are re-read at each use, as retail 0x177d10 does through
+// its pointer but retail 0x117dd0 does not), with random_index 193, with a split float tail 177; on a local copy
+// written back 174 (895), with the tail 191. Retail 0x117dd0 holds the old vector in registers, so it is not the
+// same inline sequence as 0x177d10. Helper removed.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -566,6 +581,15 @@ void function_117dd0(long index, vector3f *wind)
 // all with history-branch cursor 112. Seven-point gains rejected; original body restored.
 // DL210: native point setters for weighted/accelerated/final point phases, masks 1-7, then all with CRT history copy on the shared dot/projection graph;
 // scores 80/80/80/79/79/79/79/114. Original source forms restored.
+// Round 35 (lane 10, fast): slot/store order of the preheader spills follows where the previous weight is defined
+// relative to the k update (names change nothing: history_weight/position_weight 80, also with weights first 80):
+// weights before the acceleration 80 (retail's store order, slots swapped), previous weight first 84 (slots right),
+// current weight first and previous after the k update 78 (slots right, k stored between: 2 points, not kept),
+// seven other orders 80 each; history copy before the force subtraction 80, before the drag scale 125 (734);
+// final add through vector3f_add(&force, position, position) 81, with weights first 80; dot grouped
+// n.j*f.j + (n.i*f.i + n.k*f.k) 112 (gives retail's dot loads k, i, j and force registers, rest shifts), with
+// acceleration-first Verlet 106 (736), with the 78 order 112; dot k, i, j 105 (736); Verlet through
+// vector3d_from_points3d + vector3f_add 170 (776); else-loop vertex pointer with the 78 order 113.
 // @retail 0x118140
 void function_118140(long index)
 {

@@ -1278,6 +1278,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // gives 839/839 and loses twelve checked matches. Two-point reductions rejected. Inline trials
 // recover all controls. Return/candidate/output homes and late zero carrier remain; original body
 // and declaration restored.
+// T47: Full native iterator memset before key publication, with requested-key ownership
+// subsets 0..7: 996/999/1021/1042/999/999/1023/1042. Native clear reaches retail
+// length in some forms but does not recover the homes; original complete body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

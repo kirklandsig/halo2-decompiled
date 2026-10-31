@@ -1362,7 +1362,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
-// score 116 (was 116): extra frame dword, count homes and counted tail stores remain;
+// score 83 (was 116): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
+// index_count/item_count slots are swapped; branch two gives EDI to the 0x199ef8 result and keeps
+// index_count in memory (`inc dword ptr`), where retail keeps index_count in EDI through both scans and
+// reloads player_count from its slot; that asymmetry is the lead for the slot swap and the fills.
+// Earlier first line: extra frame dword, count homes and counted tail stores remain;
 // common guarded fill 172; common fill/shared query 166; definite comparator 124;
 // byte selected count 145; signed-char predicates 116.
 // frame 0x58 versus 0x54; query/count homes, scalar tail stores and final row registers differ.
@@ -1416,6 +1420,19 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Round 447: Native query output-pointer contracts, seven parameter subsets; all with shared mode-one output storage
 // 116/116/116/116/116/116/116/123. Extra query frame dword, count homes and scalar tail fills remain.
 // Original executable source and all trial helper/interface changes restored.
+// Round 32 (lane 11): the tail rows through a pool array pointer read once per datum, indexed in each arm
+// (retail's three word stores, hoisted 0xffff, `or word, -1`) with `indices[i]` and no cursor 88; plus the
+// query result in its own local and an if/else maximum (retail stores count first) in branch one 86, in
+// both branches through item_count (frame 0x54) 83 (kept). On the earlier forms: index for-loop fills,
+// mode-one query through item_count, indices[i] tail 171 (index_count EBX all through, mode on the stack);
+// that with the fill index scoped/per-loop i/mode first/i first 171 each, `else if (i < player_count)` 173;
+// scan+fill as a force-inline helper taking the count by address 171 (inline: out of line, 243); rows
+// written in full in each arm on the cursor/indexed/t1 forms 144/145/172 (172 with five declaration
+// orders). On the kept form: index for-loop fills 172; the three qsort calls written out (retail's
+// tail-merged pushes) 119 (one extra reload shifts the rest); both 174; index_count/item_count renamed
+// (aaa/zzz) 83/83/83 (slots do not move). Compile-only, the index fill always gives index_count a
+// whole-body register and homes mode (216 combinations of fill/qsort/scan/maximum/loop-index/qsort
+// placement/declaration order); only a pointer `<` fill keeps retail's homes, but as a pointer rep stosd.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -1431,10 +1448,18 @@ void c_matchmaking_list::v3()
 	if (mode != 3 && (mode < 1 || teams))
 	{
 		long count = function_199ebc();
+		long maximum;
 
 		item_count = 0;
-		item_count = function_199dc9((long)&player_count, (long)&item_count, 0) ? item_count : 0;
-		item_count = count > item_count ? count : item_count;
+		maximum = function_199dc9((long)&player_count, (long)&item_count, 0) ? item_count : 0;
+		if (count > maximum)
+		{
+			item_count = count;
+		}
+		else
+		{
+			item_count = maximum;
+		}
 		for (i = 0; i < 16; i++)
 		{
 			if (function_19a951(i))
@@ -1459,10 +1484,18 @@ void c_matchmaking_list::v3()
 			*empty = NONE;
 		if (mode == 1)
 		{
-			long count = 0;
+			long maximum;
 
-			count = function_199dc9(0, (long)&count, 0) ? count : 0;
-			item_count = player_count > count ? player_count : count;
+			item_count = 0;
+			maximum = function_199dc9(0, (long)&item_count, 0) ? item_count : 0;
+			if (player_count > maximum)
+			{
+				item_count = player_count;
+			}
+			else
+			{
+				item_count = maximum;
+			}
 		}
 		else
 		{
@@ -1480,30 +1513,27 @@ void c_matchmaking_list::v3()
 			qsort(indices, index_count, sizeof(long), compare);
 	}
 	record_pool_release_all(data);
-	long *selected = indices;
 	for (i = 0; i < item_count; i++)
 	{
 		long datum_index = record_pool_allocate(data);
 
 		if (datum_index != NONE)
 		{
-			s_matchmaking_datum *datum = &((s_matchmaking_datum *)data->data)[datum_index & 0xffff];
+			s_matchmaking_datum *datums = (s_matchmaking_datum *)data->data;
 
 			if (i < index_count)
 			{
-				datum->player = (short)*selected;
+				datums[datum_index & 0xffff].player = (short)indices[i];
 			}
 			else if (i >= player_count)
 			{
-				datum->player = NONE;
+				datums[datum_index & 0xffff].player = NONE;
 			}
 			else
 			{
-				datum->player = 16;
+				datums[datum_index & 0xffff].player = 16;
 			}
 		}
-		if (i < index_count)
-			++selected;
 	}
 	function_24c0c4((c_widget *)this);
 	((c_widget *)this)->c_widget::v11();
@@ -1976,6 +2006,13 @@ extern dword g_54d5b8;
 // here case 4's call pushes a constant: 81 with `dialog` or 0xad. Also: the switch only picks
 // the dialog and `state != 4 || !g_51ec99` guards the call 55; a forced-inline dialog helper
 // returning NONE 85; case 4 `if (!g_51ec99) break;` then store and return 48.
+// Round 24 (lane 15): cases 0/2/3 `goto done` to a single exit 36; the outer test inverted (the timer
+// arm first) 58; the dialog declared at function scope 36; case 4 `if (!g_51ec99) break; goto shown;`
+// 36; the call written in every case with the dialog local (case 4 under `if (!g_51ec99)`) 117 (the
+// constants propagate into each call; also costs caller 0x24fd74). A compile-only model reproduces our
+// layout for all of these and for an if/else-if chain (VC builds no compare tree from it): retail's
+// layout looks like case 4 hosting the whole call/store/return with the other cases as stubs that
+// jump back into it.
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2128,47 +2165,6 @@ long function_199fd6(void);
 long function_19a279(void);
 void function_1905bf(long controller, bool flag);
 
-// score 11 (was 93): every instruction is retail's apart from the prologue: ours pushes EDI after the
-// two early tests (shrink-wrapped, the early exits enter the epilogue past `pop edi`), retail pushes it
-// at entry. Earlier note (at 93): the shared return follows the cold cases rather than the base call;
-// the inherited handler result is widened into EBX rather than assigned into BL.
-// with a bool result every instruction is retail's; retail's one exit
-// follows the base call and the not-signed-in block comes last, ours puts the exit last.
-// Base call after the if/else with the else returning 137; the base call in every
-// path that reaches it 107; not-signed-in early return 106; bool result first and
-// returned by the early test 111; constant returns with a direct base return 137.
-// Success from inherited failure test at long/bool/signed-char/short width 153/142/143/154; direct
-// event index reads with those widths 153/142/143/154. Original result producer retained.
-// Negative outcome bool/long/signed-byte/unsigned-byte 146/138/146/146; with shared team-direction case
-// 126/147/126/126. Restored.
-// Parameter-2 early valid-team exit long/bool 93/106, with directional guards 99/107;
-// availability-owned callback long/bool 93/106, with directional guards 99/107. Original result
-// and callback joins restored.
-// Conditional outer/inner dispatch 133/119, both 121; their unsigned-first
-// combinations 163/126/144; complete Boolean-result graph 122, entry result 127.
-// Original dispatcher and result restored.
-// Round 78: signed-scope done label 151; signed-scope label with separate unsigned return 137;
-// unsigned constant return 137; unsigned-to-signed done jump 106; tested base result 109;
-// unsigned own return 138; final done label 151; constant handled returns 106. Original body restored.
-// Round 128 (exact one-link harness on the generated TU + callee files): the bool result alone 106
-// (all instructions retail's; the exit sits last); `goto done` in the handled cases 146 (gives retail's
-// two tail-merge hosts, change_team in case 4 and the false call in param case 2, but the result moves
-// to a stack byte); with the early test returning directly 151; the outer tests nested around the body
-// 111; the not-signed-in arm ending in its own return with the goto cases 137. Harness only: the
-// not-signed-in block first (with return or goto) 133/128; the signed path returning the base call
-// directly 125 (result folded away); `else if` without the online local 125.
-// Round 21 (lane 14): the matched siblings' handled-result form (0x2c9501, 0x237f2a: `result = true` in
-// the handled paths, `if (!result) result = base(event);`) puts the exit after the base call and both
-// tail merges in retail's direction: with the early `return true` 77, with the early test inside it
-// 51, with param case 2 setting the result before its false call and after its true call 11 (kept).
-// On it: the cases in reverse source order (identical code before it: VC sorts them); param case 2's
-// result after the if/else 136, first in an `else if` chain 51, last 137, after each call 136, inner
-// `return result` / `return true` 94 / 139; sequential `if (!result)` after the early test 11 (same
-// code); the early test as the result's initial value 11 (same code); body-first early test 11 (same
-// code); early `return true` 59 (merges flip); any inner `return` (not-signed-in, param 1/d, type 2,
-// the 0x19a7e9 path, param 0/c, both blocks of a merged pair) stops the shrink-wrap but flips both
-// merges 48 (with arm or result-order changes 48-139); result initialised true with a separate
-// handled flag 142.
 // @retail 0x250b1e
 bool c_session_lobby_screen::v10(s_widget_event *event)
 {
@@ -2177,6 +2173,7 @@ bool c_session_lobby_screen::v10(s_widget_event *event)
 	if (!network_session_manager_session_unready() || window_manager_channel_in_use(1))
 	{
 		result = true;
+		goto done;
 	}
 	else
 	{
@@ -2282,6 +2279,7 @@ bool c_session_lobby_screen::v10(s_widget_event *event)
 	{
 		result = c_class_1473c9::v10(event);
 	}
+done:
 	return result;
 }
 /* ---- screen 0x24fd74's texts and bitmaps (0x250332..0x2508a8) ---- */
@@ -2528,6 +2526,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // -0x14 player/no_team, +0xc text_a, +0x1c bitmap_b); no_team from the char team 97. The 8 extra
 // bytes are the last loop: ours keeps the screen in EBX for all five calls, retail gives EBX to
 // bitmap_a and loads the screen into ECX, then EDI after text_b's call.
+// Round 24 (lane 15): shown_count renamed to sort first / last 95 / 95 (same code: names don't order
+// these spill slots); the third loop with its own counter 95; the third loop's indices declared
+// bitmaps first 95; the search index declared once at function scope 95; a separate counter for the
+// first loop only 93. Lead for the reload: 0x53b40 reaches 0x53c30 through 0x53de0 with an
+// out-parameter, so retail's view of its side effects may differ from ours (src/network_voice.cpp).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -2875,9 +2878,9 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
-// score 100 (was 100): frame 0x754 agrees; the item-loop receiver reload (retail: once after the loop),
+// score 61 (was 100): frame 0x754 agrees; the item-loop receiver reload (retail: once after the loop),
 // row-loop text lookup (retail inlines it; widget/counter registers swapped), animation byte
-// (retail movsx) and the final receiver reloads differ; retail lays out the category switch first.
+// (retail movsx) and the final receiver reloads differ.
 // Tried: category descending 237; title default first 244; bitmap index long 237; title widget scopes
 // 237; separate player row counters 237; existing widget lookups 175; native animation bit 233; widget
 // lookups animation bit 179; map text lookup 237; text lookup helpers 156; bitmap lookup helpers 164;
@@ -2933,6 +2936,12 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // category switch where retail hosts them in the valuea8 switch); diagnostic without the find_text(3)
 // lookup 327 (the row call stays out of line, so it isn't the inline budget); the row text through
 // find_child directly 240; with row-scoped text/bitmap locals 235; row-scoped locals with find_text 100.
+// Round 24 (lane 15): the setter call written at the end of each bitmap-index branch (category switch
+// first, then the valuea8 switch, and the no-squad arm) 70 (VC hosts the shared index blocks in the
+// first-created switch); with valuea8's case 3 before case 2 (the `pop edx` tail goes to the last-created
+// push block) 61, kept. On it: the row text through find_child 161 (`this` leaves ESI); the animation
+// bit as a plain signed shift 78 (folds to `test byte`); the row bitmap through find_bitmap 74; the row
+// text index uncast 77; the searching flag stored directly 78.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {
@@ -3023,25 +3032,7 @@ void c_network_squad_browser_screen::v3()
 
 		if (squad)
 		{
-			if (!has_game)
-			{
-				switch (squad->valuea8)
-				{
-				case 0:
-					index = 0;
-					break;
-				case 1:
-					index = 1;
-					break;
-				case 2:
-					index = 2;
-					break;
-				case 3:
-					index = 3;
-					break;
-				}
-			}
-			else
+			if (has_game)
 			{
 				switch (squad->category)
 				{
@@ -3067,9 +3058,32 @@ void c_network_squad_browser_screen::v3()
 					index = 7;
 					break;
 				}
+				function_2b0a14((s_widget_view_2b0a *)bitmap, index);
+			}
+			else
+			{
+				switch (squad->valuea8)
+				{
+				case 0:
+					index = 0;
+					break;
+				case 1:
+					index = 1;
+					break;
+				case 3:
+					index = 3;
+					break;
+				case 2:
+					index = 2;
+					break;
+				}
+				function_2b0a14((s_widget_view_2b0a *)bitmap, index);
 			}
 		}
-		function_2b0a14((s_widget_view_2b0a *)bitmap, index);
+		else
+		{
+			function_2b0a14((s_widget_view_2b0a *)bitmap, index);
+		}
 	}
 
 	text = find_text(3);

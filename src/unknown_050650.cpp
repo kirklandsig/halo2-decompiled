@@ -247,6 +247,8 @@ static inline real actor_looking_normalize2d(point2f *vector)
 // needs reference x then aim y first, which one dot cannot spell. Both through normalize2d 122 (inline declaration
 // 122; kept out of line even from a non-/Ob1 file 122); single tree with aim member copies y,x 10 / x,y 12; helper
 // defined after the caller single/named 6/2; single tree with the dot's y term first 6, reference-first 4.
+// Round 91: native fast normalization with horizontal term/operand orders 12/12/12/6/4/6/6;
+// the existing magnitude helper in the private normalizer 6; all restored.
 // @retail 0x296d60
 PRIVATE bool function_296d60(real cosine, vector3f const *reference, vector3f const *aim, bool three_dimensional)
 {

@@ -219,6 +219,13 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// score 220 (was 220): our frame is 0x78 and retail's 0x6c, and retail's first 11d180 call writes
+// the cross product into the stack slot its later two calls write the rotated forward into. This
+// round: the position in a nested block (242), that first call's fourth argument (260), both (258).
+// score 220 (was 220): our frame is 0x78 and retail's 0x6c, and the basis and position stack homes
+// still differ; the eight vector locals keep the homes they have here.
+// score 220 (was 220): our frame is 0x78 and retail's 0x6c, and the basis and position stack homes
+// still differ; the eight vector locals keep the homes they have here.
 // score 220 (was 220): Frame 0x78/0x6c, early ESI save and basis/position homes remain.
 // Earlier baseline: Frame 0x78 versus 0x6c, early ESI save and basis/position homes remain.
 // Earlier: Frame 0x78 versus 0x6c; early ESI save and basis/position homes remain.
@@ -663,6 +670,12 @@ bool function_119380(long arg_0, s_119380 *arg_1)
 void function_1e54d0(void *arg_0, long arg_1);
 bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 
+// score 83 (was 83): retail puts the word at +0xb4 in CX and the word at +0xb6 in AX, so the size
+// reaches 0xbc380 as a 16-bit argument; our shared declaration takes a long, and the table base
+// and the looked-up object stay in other registers.
+// score 83 (was 83): retail puts the word at +0xb4 in CX and the word at +0xb6 in AX, so the size
+// reaches 0xbc380 as a 16-bit argument; our shared declaration takes a long, and the table base
+// and the looked-up object stay in other registers.
 // score 83 (was 83): the object table base and the looked-up object are kept in different
 // registers, one word field is loaded zero-extended here and as a plain word in retail, and the
 // value stored at the 0x134 slot is sign-extended differently. Retail passes the size to 0xbc380
@@ -906,6 +919,12 @@ void __stdcall function_d6bc0(long arg_0);
 void function_b75a0(long arg_0, point3f const *arg_1, vector3f const *arg_2, vector3f const *arg_3,
     s_location const *arg_4, bool arg_5);
 void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
+// score 156 (was 156): retail keeps the quotient in a register and computes the scaled direction
+// before the sweep query; ours spills the quotient, computes it after the query, and the sweep and
+// point homes are swapped.
+// score 156 (was 156): retail keeps the quotient in a register and computes the scaled direction
+// before the sweep query; ours spills the quotient, computes it after the query, and the sweep
+// and point homes are swapped. Computing the scaled direction before the query gives 292.
 // score 156 (was 156): Frame 0x124 agrees; quotient/query, sweep/impact/location homes and word loads remain.
 // Round 67: query count declared after saved outputs 156; existing assignment helper after the
 // query 156 and before it 292; pre-query helper with later best fraction 283; explicit pre-query
@@ -1174,6 +1193,11 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// score 94 (was 94): retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
+// order at the first 0x1e5af0 call; both callees live in files this lane may not edit.
+// score 94 (was 94): retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
+// order at the first 0x1e5af0 call; both callees live in files this lane may not edit
+// (BLOCKED-BY 0x1c4b00 and 0x1e5af0).
 // score 94 (was 94): frame 0x1f0 agrees; call setup, movement loads and force-call publication still differ.
 // Retail spills the found flag to a stack byte and pushes the whole dword to 0x1c4b00 (no zero-extension), so
 // 0x1c4b00 takes a bool; ours declares a long and zero-extends, and every later instruction is one line off.

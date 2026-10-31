@@ -204,6 +204,18 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // condition (`bool result = start >= 0 && ...; if (result)`) 44 (0xb5f10 41); a non-volatile local
 // copy of the string for the scan and the add 60 (83 bytes, 0xb5f10 80); a `byte` result 41
 // (0xb5f10 41); `result = true` before the copy 40 (same code).
+// Round 132 (an LTCG env link of this file reproduces it and 0xb5f10 exactly): `string + start` gives
+// retail's body except that start lives in EDX and the walk in EDI (retail: walk EDX, start EDI), so
+// LTCG passes start in EDX. With it, the length loop as `while (length < 0x1ff && *string++)` 28, a
+// walk local in the length helper 28, the source named before the clamp 32 (0xb5f10 6 each); the
+// while-loop helper alone 40 (same code).
+// Round 54 (lane 12, fast with 0xb5f10/0xb61d0; env link = the build's listing): `if (++count > 0x200)` 40
+// (same code); `string + start` named after the clamp with the length test nested 28 (0xb5f10 6); a walk
+// local in the shared length helper 40 (0xb61d0 2); the length named inside the sign test with an early
+// `return result` 40 (103 bytes); `long end = start + count` tested against the length 43 (101 bytes).
+// Env grid (start += string / string + start / named source x count++ or ++count x one or nested
+// tests, 12 forms): start in ECX for its whole life (40) or in EDX (28, 0xb5f10 6) only; retail
+// colours start after the scan's counter and walk (EDI) and still receives it in ECX.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -489,6 +501,28 @@ bool function_7af40(s_type_99af70 const *address);
 // 0xb40b0 61): with the reads, state stored first 111; the increment through a pointer to the
 // field 111; plain member accesses without the `connection` alias 111; the copy's source as a
 // volatile read of the own path parameter 111. Without the reads, counter/copy/state order 36.
+// Round 132 (an LTCG env link with 0x7af40's object reproduces the full listing): with retail's
+// endpoint reads, the in-place `inc` survives when `connection` is used after the copy call (a
+// diagnostic store there gives retail's code plus that store); a destination pointer kept across the
+// call with no later use of `connection` splits it into EBX and moves the address to EAX. On the
+// reads: the copy helper with a dword or unsigned size, plain inline, returning void, keeping
+// strncpy's result, writing the terminator through `destination + size - 1` or a pointer computed
+// first, a destination local, or that local declared before the endpoint stores 111 each; a template
+// overload on the array 31 (kept out of line: in-place `inc`, destination ESI); one result carried
+// through the open call 94; the open test inverted with the close and return first 101; the counter
+// after the copy 37; the counter, state and copy in an inline member with the flag alone re-read 30
+// (env); the terminator through `connection` with a destination local 17 (as the written-out copy).
+// Round 54 (lane 12, fast with 0xb40b0/0xb5f10; env link = the build's listing): the copy, then the
+// counter and the state 36 (248 bytes); counter, copy, state 36; the copy first with retail's endpoint
+// reads 35 (252); `flags = flag ? 0x40 : 0` 28 (244; neg/sbb select, not retail's or-byte); a
+// pre-increment 32 (same code). Env only: the three stores through a struct-initialized endpoint copied
+// to `*connection->endpoint` 92 instructions (a stack temporary); the copy's terminator through its
+// returned destination 89.
+// Round 36 (lane 10, fast with 0xb40b0), on retail's endpoint reads: the copy's source read once through
+// the own parameter's address 111 (the path load still comes before both sunk stores); counter, copy,
+// state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
+// the return); the destination named before the counter 111; the path read into a named source between
+// the counter and the state store 111. VC splits the counter whenever any store precedes the call.
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {

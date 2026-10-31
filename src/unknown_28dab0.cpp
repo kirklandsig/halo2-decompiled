@@ -187,6 +187,11 @@ void __stdcall swarm_delete(long arg_0);
 // `do { ... break; ... } while (false)` chain 149 (328 bytes), on s2 132; the tag pointer `const` 44 (same
 // code); the tag field read at the loop call instead of a local 106 (the tag then takes EBX and the NONE
 // value stays in EDI, copied to ESI for the result: NONE prefers EDI even with ESI free).
+// Round 24 (lane 14, fast; the 0x28dbd0 call setup is already retail's, EAX definition and ECX
+// placement): on the s2 shape (92), the definition index read before the allocation 98; the origin
+// point read once into a named pointer for both copies 92 (same code); the record fields stored in
+// declaration order 92. On this body, the delete path as an else arm without the goto, count test
+// `> 0` first, 56; the same with the `<= 0` delete arm first 44 (identical code, kept: no goto or label).
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {
@@ -215,11 +220,12 @@ long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 			{
 				swarm_delete(local_0);
 				local_0 = NONE;
-				goto local_6;
 			}
-			local_3->initial_creature_count = local_3->creature_count;
+			else
+			{
+				local_3->initial_creature_count = local_3->creature_count;
+			}
 		}
 	}
-local_6:
 	return local_0;
 }

@@ -52,16 +52,6 @@ struct s_unit_object_view
 	long field2ac;
 };
 
-/* the real a quantized value stands for */
-static inline real event_dequantize_real(long value, long maximum, real minimum_value, real maximum_value)
-{
-	if (value == 0)
-		return minimum_value;
-	if (value >= maximum)
-		return maximum_value;
-	return (minimum_value * (maximum - value) + maximum_value * value) / maximum;
-}
-
 /* the identifier in one of the eight slot table slots, or NONE outside them */
 static long slot_table_identifier(long slot)
 {
@@ -2205,6 +2195,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 448: Decoded two-bit child request in dword/long/word/byte, masked and
 // unmasked shift domains 284/284/284/284/287/287/287/287.
 // Original body and helpers restored; Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership remain.
+// Round 454: Single low/high and paired mask recurrences on the retained post-store child
+// results 229/237/250; with both native request intersections 261/253/276; single low/high
+// recurrence with Boolean intersections 246/273. Two forms reach 1081 bytes but regress;
+// original ordinal, child stores, masks and whole body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
