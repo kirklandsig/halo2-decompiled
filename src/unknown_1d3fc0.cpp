@@ -99,6 +99,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // every form preloads k; retail loads only j and i, scales k as `mulss xmm6, [k]` into the reciprocal's
 // register and reloads k on the short-vector path. Division, a temporary vector, the existing scale helper,
 // `>=`/`>` tests, a magnitude return and an else all keep the k preload. Forward's shape is the gate.
+// Round 120 (m3 lane 5): forward's block is one instruction short (k preloaded, no skip-path reload),
+// which shifts every later line. The helper's k product reciprocal-first 119 (same code); its test as
+// `0.0001f > fabs(m)` 119 (same code); `left` declared after forward and up 119 (same code); forward
+// alone through the existing normalize_inline 121 (sums i, k, j, still preloads k); the loop's world
+// matrix as its own block-scoped transform 174 (frame 0x170). The preload order (k, j, i into
+// xmm4-6) follows the dot's term order, not the sum. Original body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

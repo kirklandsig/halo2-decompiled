@@ -52,7 +52,7 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 95 (was 102): the prologue, the position copy and the whole viewer loop agree since the
+// score 95 (was 95): the prologue, the position copy and the whole viewer loop agree since the
 // distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
 // after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
 // the reverse), tests the allocation twice, builds the handle from the element's own salt and the
@@ -254,6 +254,16 @@ public:
 // after the allocation (init unconditional) 95 and before the init's own test 95 (the test still
 // threads); the init stores through DATUM at each use 136 (749 bytes, location in a register).
 // Round 455: On the recovered head/count/frame graph, separate allocation result 124; shared initialization/link receiver 171; plain remaining count 118; both 157; readonly metadata counterparts 124/171/118/157. Original body restored.
+// Round 119 (fast, with caller 0x175270): retail's child link is 0x2483f0's body inlined with the loop's pool local
+// (salt from the element, ordinal from the pointer difference), and its allocation test and break test stay two
+// tests (ours threads them). The link written that way in place 267 (location becomes an EBX register argument,
+// the flag goes to the stack; 0x175270 100); with the allocation in its own local assigned to the head after the
+// initialization 248 (retail's unthreaded `cmp eax, edi; mov esi, eax; je` and link shape, same convention
+// change); the separate allocation local alone 118 (frame 0x10); the link through the parameter itself instead of
+// the cast copy 248/118 (identical: the copy is propagated); the location read once through its address with the
+// in-place link, with/without the separate allocation 220/254 (the location still lives in EBX; 0x175270 21).
+// Round 465: native pool/allocation/link pointer role-name subsets 1..7, then all four child
+// pointer roles, 95 each; original identities and full body restored. Child pool/NONE ranks still exchange.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

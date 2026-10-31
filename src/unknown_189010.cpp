@@ -651,6 +651,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Success result/pop order remains. Request/forward/distance/combined scope endings 2 each plain;
 // projection component loop 2 plain; difference/paired component loops fast 4/4;
 // projection library clear fast 161. Reduced exact results need plain confirmation.
+// Round 11 (lane 17, plain): without the inline_depth pragmas 269 (callees inlined, 733 bytes); the
+// success result set before the final call 181; length_squared reused for the second length 160;
+// dot3f for the projection length 166, for the perpendicular distance 158. The sources that bring the
+// swap (0xfc330, 0x10c880, 0x17a8a0, 0x184440) are all callers of 0x1895f0 that ignore its result.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

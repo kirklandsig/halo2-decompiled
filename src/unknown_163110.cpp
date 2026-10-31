@@ -575,6 +575,11 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // pointer with x0 through it 83, with x0 through the result 39 (same code). Compile-only: the x term
 // written `n.i * position.x` still loads position.x first in every plane; one plane pointer reused
 // for planes 0-3 49 (harness, forwards the zero distance).
+// Round 139: the identifier stored before the rectangle copy 135 (2831 bytes); depth read before the
+// copy 51; x0 read from the input rectangle 679; on the pointer-copy form (83: the identifier store,
+// depth and rectangle loads are retail's, only x0's product folds the load depth-first and is one
+// byte short) x0 written depth-first 83 (same code) and x0 computed last 659; the in-place plane
+// transform of 0x184440's file (one-expression z, y, scale * d, x distance) for planes 2 and 3 730.
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
