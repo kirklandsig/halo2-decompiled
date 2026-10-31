@@ -703,6 +703,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // bytes: retail's copy prologue, but the mask read folds into the test), with that the bit-first mask test,
 // a distinct copy index name or a mask local in the loop 108 each. Diagnostic on the 46 form: the 0x49c8
 // argument as a constant gives EBX/ESI/EDI with only the copy prologue (count spill before the leas) left, 25.
+// Round 19 (lane 2, fast with the inlined callees): the summary read directly under its flag (no
+// getter) 55; the summary as 0x72330's live-and-flag ternary 131; the opening test in conjunctive form
+// 55; the player index declared at the function top 55; an explicit `continue` arm 55. Diagnostics: the
+// summary as a constant NULL gives the session EBX (129 overall); the summary's address
+// taken keeps ESI (55, same code), so the two summary field reads, not its stack home, tip the session.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
