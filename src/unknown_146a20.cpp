@@ -139,6 +139,11 @@ bool g_47f05b;
 // become immediates, no base store); the layout struct through `block` with the pool through
 // g_479888 34 (same code). Diagnostic only (header): a global read in the fixed base constructor,
 // between the two vtable stores, still drops the base store.
+// Round 113 (lane 6, fast with 0x146b80/0x22c3e0 matched): a typed fixed pointer from g_479888 with the
+// buffer at `fixed + 1` 34 (same code), read after the three global stores 34; the first placement through
+// g_479888 with the buffer through `block` 36 (146 bytes by chance: block copied to EDX, the 1s immediates,
+// no vtable store); neither local (diagnostic, listed) 38 (reload on the constructed arm as retail, 1s
+// immediates); a buffer local read from g_479888 before the global stores 38.
 // @retail 0x146a20
 void function_146a20(void)
 {

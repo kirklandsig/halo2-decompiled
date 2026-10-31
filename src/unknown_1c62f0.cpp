@@ -177,6 +177,13 @@ void c_animation_channel::clear()
 // 0x1086e0/0x1087c0 2, 0x10fa80 1, 0x10ec00 53, 0x1cb410 14); that with unknown0e stored after the
 // id 42; the current order with the id through its address 36 (same code); retail's order with the two
 // validity tests as nested ifs 42; that with the byte pair cleared by one chained assignment 51 (126 bytes).
+// Round 113 (lane 6, fast with the ten callers): retail's order with graph read once through its own
+// address at the late store 39 (graph becomes a stack argument, flags ECX, ret 0x18); flags declared before
+// graph with retail's order (diagnostic) 51 (graph still ESI); graph stored first, the rest in retail's order
+// 43 (callers lose); retail's order with `if (flags & 0x8000) unknown10 = 2;` 49 (128 bytes: keeps the clear
+// but also the branch, graph ESI); the current form with `(flags & 0x8000) ? 2 : 0` 36 (same code). The /Gd
+// compile-only first pass loads graph into ESI for retail's order whether `this` is a thiscall ECX or a
+// stack argument, and with an external call after the guard puts `this` in ESI and graph in EDI.
 // @retail 0x1c6470
 bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e)

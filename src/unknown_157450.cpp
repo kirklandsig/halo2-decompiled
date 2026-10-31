@@ -1,6 +1,8 @@
 // @flags /O2 /arch:SSE /Gr
 #include "projection_storage.h"
 #include "view_context_storage.h"
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 /* UNKNOWN_157450.CPP: the game engine globals: the lifecycle callbacks of
    entry 22 and the team bookkeeping */
 
@@ -4871,8 +4873,6 @@ void function_13ec70(color4f const *color);
 class c_1fa50
 {
 public:
-    void function_1fa50(short_rectangle2d const *bounds, void const *clip, void const *position,
-        long line_gap, real scale, long color, void const *shadow) const;
 };
 PRIVATE color3f const score_text_color = { 0.4588235318660736f, 0.729411780834198f, 1.0f };
 PRIVATE color3f const alternate_score_text_color = { 0.8078431487083435f, 0.5607843399047852f, 0.8705882430076599f };
@@ -4912,7 +4912,7 @@ void __stdcall function_15e530(c_1fa50 const *text, real alpha, point2f const *p
     bounds.bottom = (short)y;
     function_13edb0(font_index, NONE, 2, 0, &color, &shadow);
     function_13ec70(&color);
-    text->function_1fa50(&bounds, 0, 0, 0, 1.0f, 0, 0);
+    function_1fa50(&bounds, (word const *)text, 0, 0, 0, 1.0f, 0, 0);
     text_style_clear();
 }
 

@@ -1181,6 +1181,10 @@ void c_game_engine_markers::v21(long object_index)
 // test and used for both slot lookups 40 (entry still index EAX, header ECX); the type test's result in
 // a short local 40; the absolute index written at each call on the kept form 93; one options local for
 // the mode test, the engine-type compare and the event type 46; an early return on the mode only 40.
+// Round 113 (lane 6, fast with v24/v30): the object index read once through its own address for the type
+// test 40 (same code), with the team at each call 119; one header-array local for the slot and unit fetches
+// 104; the event declared at function scope 40 (same code); the team at each call rebuilt (119, 430 bytes:
+// retail's flag test and player pointer, the options pointer held in EDX from entry).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

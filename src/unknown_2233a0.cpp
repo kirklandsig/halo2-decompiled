@@ -3,6 +3,8 @@
 #include "unknown_0259d0.h"
 #include "globals.h"
 #include <wchar.h>
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 
 struct short_rect
 {
@@ -28,8 +30,6 @@ extern s_unknown_485a88 g_unknown_485a88;
 class c_1fa50
 {
 public:
-	void function_1fa50(short_rectangle2d const *, void const *, void const *,
-		long, real, long, void const *) const;
 	void function_1fb10(short_rectangle2d const *, real) const;
 };
 
@@ -63,6 +63,6 @@ void __stdcall function_2233a0(real const *arg_0)
 	ustrnzcatf((wchar_t *)local_6, L" %d%%", local_4);
 	local_3 = g_485a8a.b;
 	local_3.v0 += 200;
-	local_6->function_1fa50(
-		(short_rectangle2d const *)&local_3, 0, 0, 0, 1.0f, 0, 0);
+	function_1fa50(
+		(short_rectangle2d const *)&local_3, (word const *)local_6, 0, 0, 0, 1.0f, 0, 0);
 }
