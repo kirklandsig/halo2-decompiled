@@ -1353,6 +1353,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // total order 99 (350 bytes; channels moves to EDI, flag still BL); cursor declared at entry (harness) 113
 // with 0x54990 off by 11. Retail's colours all follow from the flag taking EAX before the loop temps
 // (mask then lands in EBX, has-player in CL); every form here lets the mask take EAX first.
+// Round 10 (lane 17): flag, total, cursor 111 (0x54990 1; channels moves to EBP but the flag still takes BL, so
+// channels being live at the flag's definition is not what keeps retail's flag in AL); the flag declared at
+// function entry and assigned in place 94; the getter result named before the compare 94; total, flag, cursor 108
+// (0x54990 1); cursor, flag, total 99 (350 bytes); the cursor `s_voice_channel const *` 94 (same code).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {

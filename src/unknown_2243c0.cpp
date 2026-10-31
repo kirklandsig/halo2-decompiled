@@ -293,6 +293,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // read after the search loop 132; the three pointer fields zeroed in one chained assignment 117; the head in
 // 0x16b90's direct-indexing shape 117; search result written straight into the context 136. Reference
 // locals for the lookups compile identically (compile-only, not counted).
+// Round 10 (lane 17): an unused read of the pass element's first dword (diagnostic for the dead `lea`) 117 (the
+// read is dropped before allocation, no `lea`); the four zero stores grouped with the fallback masked `& 0xffff`
+// 149; the group test through the existing TAG_GROUP macro and the fallback through TAG_GET 135 (retail's in-place
+// `and edx, 0xffff` and EDI table, but the group read folds into `[eax+edi]` where retail adds then loads), the
+// TAG_GROUP test with the original word fallback 165; the index sums written parameter first 117 (same code);
+// the source-table pointer chosen by one ternary 117 (same code); the first cache zero store before the pass
+// element read 139.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
