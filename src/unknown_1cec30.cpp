@@ -2821,6 +2821,15 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // `angular, linear` declared in that order 7; the entry tests as one early return 7; the velocities through
 // the existing out-of-line linear/angular getters 274 (551 bytes, calls kept; the head read then turns to
 // [data + offset]).
+// Round 15 (m3 lane 2): 0x1d1010 declared (component, index, change), as every retail call sets the
+// component register last, 7 -> 5, but 0x1d24a0 920 -> 966 (and 0x1d1010 then needs 0x1d09d0's array-pointer
+// getter form): not kept (coordinator). On 5: kind tests through an inline rigid-body method wrapping the
+// virtual call 13; direct data[i] reads at all five sites 8; separate linear/angular inline getters 139;
+// named cap results 5; index declared before the change vector 5; one body pointer for the head test
+// and the velocity read 152. Compile-only: the order turns to
+// retail's only without the head kind test or without the capped velocity block (or with only one capped
+// velocity), so it follows the loop's size, not a spelling; 256 combinations of declaration, index,
+// increment, direct-read and initializer forms and unused locals never flip it.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {

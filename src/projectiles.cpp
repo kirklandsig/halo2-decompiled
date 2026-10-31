@@ -384,6 +384,16 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// score 3 (was 3): this round: retail keeps the rotating-flag OR and store ahead of the
+// angle duplicate and the first axis load; ours still hoists that load above the flag
+// store and sinks the store below the duplicate. The axis copy-in and the normalizer
+// re-read as an array (the helper's v->n[] terms, and a local real *axis_values) leave
+// the load hoisted (3, 3, 3; component stores through that pointer 68); the helper
+// without the inline keyword leaves real calls (168, and 0xfa580 stops matching);
+// __forceinline and a const pointer parameter change nothing (3, 3); a reference to the
+// axis (all, copy only, normalize only) and a helper taking a reference parameter give
+// 14/3/14/14; the flag through a dword pointer is 3 and through a pointer local does
+// not compile.
 // score 3 (was 3): the flag OR/store crosses the angle duplicate and first
 // axis load differently. Forced inline, speed/axis/angle declarations, the
 // first-product order and *= no change; shared normalize 14; j+(k+i) 14;
@@ -1246,6 +1256,14 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// score 4 (was 4): this round: retail's 0xfd740 takes its six selector outputs
+// in the order (effect index 0, sound 2, effect index 1, effect index 2,
+// sound 0, sound 1), the first two on the stack and the last four in ecx, edx,
+// esi and edi; our callee takes them in the order (effect index 0, sound 0,
+// effect index 1, sound 1, effect index 2, sound 2) and reads the last four
+// from esi, edi, ebx and edx. The four addresses are the same set, so only
+// the registers and their order differ; matching them needs the callee's
+// parameter order changed, which is not ours to change. BLOCKED-BY 0xfd740.
 // score 4 (was 4): only the register arguments of the 0xfd740 call differ (retail
 // passes the first sound in esi, the second effect in ecx, the second sound in edi
 // and the third effect in edx; ours ebx/edi/esi/edx), set by that callee's own body.

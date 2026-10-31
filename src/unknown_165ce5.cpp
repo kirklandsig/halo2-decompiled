@@ -1550,6 +1550,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Review of round 30 (m3): not kept: the 48/122 set needs `else if (zoomed)` after `if (scoped)`, a test
 // that is always true inside `if ((zoomed || scoped) && ...)`; with a plain `else` it is 306 (fast). Code
 // back to the original; the movzx, active-preset and callback findings above still stand alone.
+// Round 24 (lane 14, fast; aligned counts by sequence alignment, base 116): the movzx flag test (a named
+// `long` copy of the channel byte, two bit tests), the active preset and the `== 0 ? right : left` callback
+// together 358 (2199 bytes, aligned 109); with the overlay set read once (negative flags) 372; those three
+// with positive zoomed/scoped bools in retail's order, the clear test without the extra `zoomed &&` and a
+// plain `else` for the play arms 328 (aligned 70); that with the play and save in each arm and the set read
+// once 306 (2190 bytes, aligned 53: two instructions short, retail's `cmp zoomed; je` in the else arm); the
+// positive bools alone on the original body 401. Unit/mode slots (ours -0x18/-0x1c), the look homes and
+// shared reciprocal and the ESI/EDI save region are unchanged by all of them.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

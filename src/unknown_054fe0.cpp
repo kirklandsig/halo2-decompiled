@@ -1176,6 +1176,19 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 // function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
 // guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
 // (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
+// Round 54 (lane 12, fast with 0x658c0/0x65770): an `include` flag set from the QoS query in place of
+// `continue` 126 (351 bytes); the channel lookup and the observer QoS test as two statements 67 (same code);
+// both on the (session, latency) order with the host read after the observer 108/86 (callers 140/19);
+// `s_qos_result qos = { 0 };` 67. Compile-only (keeps the CSE): the loop as a while with the increment at
+// the end, qos at the loop top, the lookup as a member function of the session class or the whole function
+// as one, a memset of qos; clearing qos inside the QoS helper re-reads but puts the helper out of line;
+// the lookup in another object is a call under LTCG (/Ob1).
+// Round 23 (lane 15): the recipe without the re-read is 86 and in the current tree also costs 0x658c0
+// (430 bytes, 140) and 0x65770 (19), plain; LTCG then passes latency in EBX and session on the stack.
+// No out-of-line member-channel, channel-QoS or observer getter exists in retail to call instead. On the
+// recipe (fast): helper session const 86; channel helper bound and flag tests as early returns 86; loop
+// condition `session->member_count > i` 86; all three helpers __forceinline 86; the channel helper alone
+// __forceinline 86.
 // @retail 0x64480
 void network_session_get_member_latency(s_session_member_latency *latency, c_class_58d20 *session)
 {

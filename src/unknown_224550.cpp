@@ -124,6 +124,10 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 }
 
 
+// score 391 (was 391): the frame is 0x50 against retail's 0x60 — the angle is stored in a dead
+// argument slot instead of a frame slot and the second UV set has no frame home of its own — and
+// the cache is kept in EBP where retail reloads it into EBX. Inlining the tint into the body or
+// passing it out by pointer gives retail's 0x60 frame but scores 520, so the helper stays.
 // score 391 (was 391): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
 // slot), cache EBP/EBX and scalar homes remain.
 // Frame pointer 597; size optimization 990; tint input-array parameter 435;

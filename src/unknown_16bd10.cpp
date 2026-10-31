@@ -844,6 +844,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// score 236 (was 236): this round found the first difference at the switch's dispatch —
+// the default jump target (the code after the switch) is not where retail puts it, so the
+// four case bodies are laid out differently and the whole switch region differs with it.
 // score 236 (was 236): frame 72 agrees; the camera mode and the object index are read into
 // named locals before the switch and the test; direction preload, length/zero XMM roles and
 // flag stores still differ.

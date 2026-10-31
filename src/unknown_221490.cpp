@@ -486,6 +486,7 @@ bool sound_driver_voice_create_buffer(
 }
 
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
+// Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
 // voice offset, the descriptor zero and the input mixbin are swapped (the failure exit now agrees).
@@ -538,6 +539,11 @@ bool sound_driver_voice_create_buffer(
 // creation 127. LTCG harness screens: result on both success arms / `return voice_index` / long result move
 // flags to EAX (100/156/154); the 3D test on `flags & 1` 166 (EAX); bools at function scope 162/163;
 // the 3D test negated 127; bool spellings, byte types, names and count-store position no change.
+// Round 96 (one-link harness of this file with 0x191420's, 88 there for 79): `play` copied into a block-local
+// for the 3D buffer 79 (propagated away); play declared after the descriptor clear and three_d just before
+// the first creation 78; both after the voice reference 78; three_d declared first at either position
+// 181-182 (both bools in stack bytes, frame 0x7c); play declared just before the 3D test 173-174 (605 bytes);
+// the count stored before the clear no change. No form gives three_d BL (retail's `mov bl, cl`).
 // Round 52: on the 3D failure `result = NONE;` before the count decrement 72 (retail's exit: globals in
 // ECX after the pops; a gain of 7, not kept), with the count stored before the descriptor clear 72, with
 // a voice pointer 72; three_d defined just before the first creation 73; play defined after the first

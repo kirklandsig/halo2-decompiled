@@ -467,6 +467,14 @@ void function_245400(s_source_245400 const *source, long index,
 // Actual marked point transform, return/native output 405/405; scaled-vector/both calls 386/582;
 // each with a force-inline declaration 405/405/386/582. Original body and declarations restored.
 // Round 441: Native point ownership, complete result with copy/setter after rejection 209/219, beside edge 206/216; transform-only in-place point after direction 220/205, before direction 211/208. All exact-only forms restored; original frame/source/side homes remain.
+// Round 97 (lane 7): retail's (index, matrix, source, ...) parameter order at the definition,
+// declaration and the 0x245aa0 call 203 (source still EDX, matrix still EBP from entry). The source
+// arrives in ECX whenever its last use comes before the facing block (the plane table read at the top
+// 209; at the top of the material-test block 209), in EDX whenever the plane table is read after the
+// edge vector. Plane table at the block top with the right-surface index and code read first 208;
+// the matrix read through its address at its test 208 (still EBP from entry); right-surface index and
+// code read first alone 206. Retail's borrowed-EBP region and plane table in EBX appear only when the
+// matrix is read from its stack home at the test.
 // @retail 0x245540
 void function_245540(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
