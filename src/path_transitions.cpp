@@ -98,7 +98,7 @@ real function_26f290(short type)
 }
 
 // @retail 0x26f2d0
-bool function_26f2d0(s_path_settings const *settings, point3f const *start, point3f const *end)
+bool function_26f2d0(point3f const *start, point3f const *end, s_path_settings const *settings)
 {
     bool result = false;
     long flags = ((dword)settings->unknown04 >> 10) & 6;
@@ -117,7 +117,7 @@ bool function_26f2d0(s_path_settings const *settings, point3f const *start, poin
 }
 
 // @retail 0x26f360
-bool function_26f360(s_path_settings const *settings, point3f const *start, point3f const *end)
+bool function_26f360(point3f const *start, point3f const *end, s_path_settings const *settings)
 {
     bool result = false;
     long flags = settings->unknown04 & 3;
