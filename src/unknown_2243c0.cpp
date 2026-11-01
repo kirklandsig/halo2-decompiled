@@ -320,6 +320,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
+// Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
+// the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
+// element's field through a named `long const *` 117 (same code); the pass block's address named right
+// before its read (`local_passes`, retail reads it after the second ordinal) 117 (same code), with the grouped
+// zeros 120, with the masked fallback 152.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

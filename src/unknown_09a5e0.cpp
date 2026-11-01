@@ -2206,6 +2206,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
 // tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
 // Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
+// loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
+// no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
+// read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
+// flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

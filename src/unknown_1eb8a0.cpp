@@ -185,6 +185,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 
 // Earlier convention form: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
 // score 642 (was 642): frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// The stack layout agrees with the matched caller 0x1eb6f0 (out, dt, d, q, pos; state ESI, update AL, a ECX,
+// b EDX); retail loads q into EBX at entry (and again after the first normalize), ours d.
+// Earlier (merged stacked note, was 642 -> 642), MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
 // Earlier: Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
 // Frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // Frame 0x24 and clock EDI agree; direction/sample homes and scalar schedules remain.
@@ -279,6 +282,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 326: complete sampled input at its projection producer, working/separate values and
 // branch/conditional zero fallback 685/706/689/689; those graphs with early second/third factors
 // 651/663/678/678. Original observations, expression trees and body restored; direction/sample homes remain.
+// Round 66 (lane 9, fast, caller 0x1eb6f0 matched in each): d read through `vector3f *const *` at every use 673
+// (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
+// output position copied through `out->position` before the position pointer 642; the w dot before the counter
+// read 642; the counter conversion without `volatile` 671 (2860 bytes).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

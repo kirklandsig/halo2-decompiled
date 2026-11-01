@@ -212,6 +212,11 @@ void function_44720(void)
 // transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
 // re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
 // the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
+// Round 47 (lane 10, fast with 0x45560 listed): on the level-at-call form (135, 487 bytes) the structure global
+// read in each lookup branch 135 (0x45560 190 -> 246); the transform index written at the 0x45ce0 call 163; the
+// material as a ternary 140; the selected material written at the 0x41040 call 135. On the current form: the
+// structure global in each branch 107 (same code; 0x45560 246); the material as a ternary 127. Retail's 0x45560
+// reads the structure global and the flags above the instance test, its 0x44c90 inside each branch.
 // Round 32: 0x458d0's matched lookup loads the structure global once above its branch, so the per-branch
 // reloads are this function's own; retail's loop callees reach none of the global's writers. Level test at
 // the call 135 (frame, slots and EDI/EBP/EBX roles retail's); with the lookup given `&g_4ba138[(short)index]`
@@ -224,6 +229,22 @@ void function_44720(void)
 // Round 326: material selector at each table use, cached/live level and pointer/indexed geometry
 // inputs 107/135/140/136; the same four with conditional material production 127/140/150/119.
 // Original selector, predicate and complete body restored; frame and geometry reloads remain.
+// Round 52 (lane 1, fast with 0x44720): on the level-at-call form (re-measured 135, 487 bytes) the material
+// index as a long 132; that with the lookup given `&g_4ba138[(short)index]` 130 (510 bytes); with the weight
+// also a long 145; the entry as `g_4ba138 + (short)index` 135. On the current form the material index as a
+// long 126. Retail's material index takes EAX after the in-place `and eax, 0xf` (the lookup re-reads the
+// flags); ours loads it into ECX and keeps the flags in EAX through the lookup.
+// Round 113 (lane 8, fast with 0x44720/0x45560): retail's helper flags reads do not share the level
+// test's read (diagnostic only, a volatile flags read in the helper with the level at the call: 121, 494
+// bytes, with retail's in-place `and eax, 0xf`, per-path flags reloads and per-arm g_4e0348 loads), while
+// its first-word read does (the non-tag path tests the top's EDX). Forms: the helper reading g_4e0348 in
+// each arm 107 (still loaded once above the branch; 0x45560 246); level at the call with the first word read
+// as `g_4ba138[(short)index].unknown00` in both tests and the helper given `&g_4ba138[(short)index]` 136
+// (retail's entry formation and transform, but g_4e0348 hoisted out of the loop into EBX), with the helper's
+// per-arm global reads 136 (still hoisted; 0x45560 246), with the first test ahead of the entry pointer
+// 136; the flags read through `g_4ba138[(short)index]` at the top 140 (506 bytes, entry folded away).
+// BLOCKED-BY 0x45ce0 / 0x41040: both loop callees are unmatched in other owners' files, and our LTCG
+// hoists g_4e0348 across them where retail reloads it per arm.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -389,6 +410,14 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 326: whole-traversal tag snapshot before/after geometry or at the small branch 218/218/218;
 // the same inputs with separate center/query 219/219/219; branch count output on the first/third
 // snapshot 218/218. Entry/index spill and point/query homes remain; complete original body restored.
+// Round 113 (lane 8, fast with 0x44720/0x44c90): retail's frame is query +0x20 (shared with the loop's bound
+// position), a function-scope center copy +0x30 that the node transform writes and the distances read, then
+// the bit/visible/entry/word spills +0x3c..+0x48 and the transform +0x4c. That shape (`point3f point = *center`
+// in place of `query.center = *center`, the transform into `&point`, the bound position copied into
+// `query.center`, distances `point - query.center`) 198 (frame 0x10a4: our spills go ahead of the aligned
+// query); with a long index local 199; `point` declared ahead of the query 198; the copy as the first
+// statement 202 (875 bytes); the query without `__declspec(align(16))` 191 (frame 0x1094 again, but query
+// +0x2c and point +0x3c).
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
