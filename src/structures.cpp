@@ -312,6 +312,14 @@ static __forceinline bool structure_bsp_collision_available()
 // (245 bytes, out of line). Compile-only: /O1, /Os, /G7, /Ob1, /Ob0, /Op and /Ox all thread the flag too, and so
 // do helpers returning the exclusion (early returns, single-exit result, &&), `found = excluded ? ...`,
 // `found = !excluded && requery` and an `__assume` at the join.
+// Round 32 (m3 lane 2, fast): the && flag with the collision re-read from the source at the join 62 (the copy goes
+// first; threaded); with a pointer to the query buffer named at the join 62; g_4687bc read into a local at
+// the join 95 (296 bytes: the flag survives, `mov cl, 1; jmp` and the flag cleared just before 0xbf9a0 as in retail,
+// but it is spilled, NONE takes EBX and the object index EDI); the source re-read through its address at the join
+// 62 (folded); the join load with `if (!excluded) requery; else found = false;` 79 (286 bytes, same spill). A
+// compile-only screen of 13 more flag forms (if-set, set after the probe, long, `== false`, struct-held, ternary
+// requery, address-taken pointer parameter reassigned, parameter re-read at the join) threads every one; only a
+// real load at the join keeps the flag, and it stays ahead of the test. The permuter's baseline link stalled.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -907,6 +915,12 @@ done:
 // clearing `found` 159 (453 bytes, 0xd2a50 72); the flag declared at function scope and cleared before the loop
 // 125 (same code); the object part as an if/else-if chain with an empty excluded arm 125 (same code);
 // `excluded = false; if (scenery) excluded = policy != 2;` 133 (470 bytes, setne, threaded).
+// Round 32 (m3 lane 2, fast; 0xd2a50 in brackets): the surface parameter read once through its address in place
+// of the pointer to the triangle local 125 (identical code [kept]); result as a local with the unread parameter
+// read into it (a dead read) 126, or dead-written, 126 (LTCG drops the parameter either way, ret 0xc [56]); the
+// result reset moved to just before the loop 136; the probe copy before the flags computation 128. Retail never
+// reads that stack parameter (orig+0xc, the caller pushes 1) and spills the result into the surface pointer's
+// dead slot; only 0xd2a50 calls it.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

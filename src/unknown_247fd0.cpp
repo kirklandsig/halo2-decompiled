@@ -230,6 +230,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
 // with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
 // `changed` bool, dword-cast pointers, the cache stores swapped.
+// Round 32 (m3 lane 2, fast): field_10's value read into a dword local between the fourth and fifth draws and
+// stored after the fifth 144 (876 bytes: the scheduler lifts the integer store above the fstp, so the compare
+// still follows the fstp and splits); the child's flag0 set before the link call 81; the field_08 clear moved
+// to just before the fifth draw 153; the record-list link stores after the flag-bit setup 109; the child
+// reciprocal computed between the parent and owner stores 80. Retail 0x247950 also loads arg_2 twice for the two
+// list addresses at its link call, so that reload is systematic (allocation), not this body's source.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -527,6 +533,12 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 462: Complete initial scaled-position point-set/vector-scale producers, aggregate/setter
 // publication and original/early age: 393/393/358/363/411/397/376/377. All original geometry,
 // stores, helper graph and includes restored; frame and late EBP save remain.
+// Round 32 (m3 lane 2, fast): the early exit folded into one condition around the allocation (no return before the
+// body) 356 (identical code, EBP still saved late); an inline effect-record getter at both effect sites 356 (folded
+// back into one tree: retail's split `add eax, edx` at both sites stays absent); the motion branch as a switch on the
+// definition short (case 0 / default) 370 (still `cmp word ptr [reg + 0xc], 0`); the final NONE test as an early
+// return inside the body 356 (identical); the definition's bit-4 test as a shifted byte local 359 (still `test byte
+// ptr [reg + 0x16], 0x10`). Retail 0x247fd0 saves EBP late after its one early exit; this one saves it at entry.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
