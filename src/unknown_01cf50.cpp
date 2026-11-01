@@ -279,22 +279,34 @@ void __stdcall function_15ec0(long index)
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
 
+// MiniMax E (11-01): the copy count read at the copy site instead of before the allocation
+// scores 76 (was 62); no lower score.
+// MiniMax E (11-01): the copy count read before the allocation reaches retail's 178 bytes;
+// the earlier round dropped this form on the difference count alone (62 against 58).
+// score 62 (was 77): the allocation callee takes its out pointer in ESI here and in EBX in
+// retail, so the frame is one push deeper and the copy count rides in EDI.
 // @retail 0x1d3f0
 bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 {
 	D3DPalette *palette = NULL;
+	long copy_count = g_43e8e8[index];
 	bool result = function_015b10(index, &palette);
 	if (result && colors)
 	{
 		D3DCOLOR *destination = D3DPalette_Lock2(palette, 0);
 		if (destination)
-			memcpy(destination, colors, g_43e8e8[index] * sizeof(D3DCOLOR));
+			memcpy(destination, colors, copy_count * sizeof(D3DCOLOR));
 		D3DPalette_Unlock(palette);
 	}
 	*out = palette;
 	return result;
 }
 
+// MiniMax E (11-01): no new form, no lower score; retail's body keeps a per-stage cache and a
+// dirty mask that this project does not have.
+// score 152 (was 152): retail writes a per-stage cache at 0x404dd0 + stage * 0x80 and a dirty
+// mask at 0x407490 and dispatches through a jump table at 0x158c8; none of those globals or that
+// table exist in this project, so the body cannot be rebuilt from this file.
 // @retail 0x15780
 void function_15780(long stage, long mode)
 {
@@ -3227,6 +3239,12 @@ void __stdcall function_1e930(long opaque)
 
 bool g_55e6bc;
 
+// MiniMax E (11-01): index-based output stores score 143 and a separate near factor ties 87;
+// no new form, no lower score.
+// score 87 (was 87): retail keeps the projection base in ECX and the row counter in EDI and splits
+// the output into a row base (ESI) and an advancing cursor (EDX); ours uses one cursor in ECX, the
+// counter in EDX, and multiplies the near plane in a register where retail folds the global into
+// the multiply.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -3384,6 +3402,8 @@ void function_1eb00()
     g_4b6294 = true;
 }
 
+// MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
+// tables and caches that this project does not have.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
 // ours divides into xmm3 and multiplies xmm4, retail divides into xmm2 and multiplies xmm0.
 // @retail 0x36580
@@ -6486,6 +6506,10 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
 
+// MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
+// score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
+// frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
+// frame pointer in the prologue, so every stack slot sits four bytes off.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
