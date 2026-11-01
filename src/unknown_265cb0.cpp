@@ -515,6 +515,9 @@ real function_30bf0(vector3f *vector);
 // Round 246: native actor basis fields in all seven nonempty subsets, then all
 // with the native occupant basis, 152 each. Original padding, receiver expressions
 // and complete body restored; result/range/projection homes remain.
+// Round 263: Library projection/paired-maxima/plane-copy masks 1/2/4/3/5/6/7 score
+// 307/203/152/316/307/203/316; complete graph with ordinary result 316. Original selectors, plane copy and
+// inherited result restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1236,13 +1239,21 @@ long function_146650(void);
 // score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
 // movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
 // direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
-// score 14 (was 14): the direction and ahead homes are swapped: retail stacks movement, offset,
+// The direction and ahead homes are swapped: retail stacks movement, offset,
 // ahead, target_direction and direction, ours movement, offset, direction, ahead and
 // target_direction. Declaration order, scope, type, initialiser and extra source references all
 // leave the homes as they are.
-// score 14 (was 14): only three vector homes differ: retail stacks movement, offset, ahead,
+// Only three vector homes differ: retail stacks movement, offset, ahead,
 // target_direction, direction upward from esp+0x34; ours movement, offset, direction, ahead,
 // target_direction (12-byte slots; names and declaration places do not move them).
+// Round 108 (a compile-only /FAs screen of this file gives exactly our homes): renaming direction
+// five ways and moving the ahead, target_direction, direction, movement and offset declarations
+// (seven places) leave the homes as they are, so local names do not order these slots here. A new
+// one-use vector lands between offset and direction wherever its use is, and last when declared
+// innermost; one more `&target_direction` anywhere puts it lowest. Real (fast): the 0x267840 result
+// in a named bool 14; the target query nested under `if (check_target)` 14; the larger query result
+// clamped by an if 314 (1934 bytes); the position through a named point pointer for ahead 14; the
+// first query's arguments on one line 14; direction declared with target_direction 14.
 // Tried, round 22 (fast, plain 14): `long ticks` with the decay after the if 99, with `real
 // ticks` 384 (SSE conversion), `double ticks` 394 (qword constant); the volatile decay dropped
 // 415; the shared real_to_long 170; the decay computed in each arm (kept: 26, the rounding is
@@ -1862,6 +1873,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Left: retail keeps direction i/j/k in xmm3/xmm2/xmm1 from the relative dot to the facing dot (ours folds
 // each read; dot3f spellings and reordered terms compile the same), established/visible slot order (follows
 // retail's extra established re-test on the hidden path) and the players loop's alignment jump.
+// Round 33 (lane 14, plain; --fast builds this function differently, 2880 B and 199, with a callee caveat):
+// the second player search with a long counter (retail's `cmp eax, 2` pointer loop) 263 (2848 B, aligned
+// 116 -> 114); that plus the player pointer set to NULL before the first search 403; plus best_level and
+// strongest declared before the memset 260 (aligned 112); plus the direction through vector3d_from_points3d
+// 266; plus established/visible renamed 260 (same code: spill slots). The length gap is the scoring block:
+// retail loads direction j/k before the relative test and i in both arms, keeps them for the facing dot,
+// stores visible = false straight to its byte and threads the established test into the not-visible path.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

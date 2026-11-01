@@ -1617,6 +1617,7 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Original cap, accepted word counts, prism view and complete geometry restored.
 // Ray-result-owned positive/negative endpoints and shared ray, seven subsets, then original endpoints with one
 // query result: 613/600/638/571/634/619/661/581. Original complete executable source restored.
+// J218: Native point setters for paired sum initialization/averages/accumulations, seven subsets, then result before query storage: 646/552/646/553/646/553/646/646. Original complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -225,6 +225,10 @@ void function_1ea880(long first_player, long player_index, s_object_values *tabl
 // With all of it 353 (cursor biased +4, killer/victim_team/damage_code in rotated slots, killer kept in
 // EBP, the assist player index in EBX), but only with a file-local __forceinline redeclaration of the
 // header's plain-inline real_to_long (483 without it): an inline twin, kept only with a match; body restored.
+// Round 142 (lane 4, fast): other_assists sized 5 (retail's frame ends with two five-entry arrays) 421
+// (same frame); short selected/reported_slot 453 (1556 bytes), with the [5] array 456; the victim through
+// unit_get_player_index 459; friendly through function_x340af0()/function_15eaf0() 438/438; the game time
+// through function_146650 441.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

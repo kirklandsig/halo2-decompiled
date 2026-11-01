@@ -748,6 +748,11 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // a pointer to the +0xe0 field for the tests, `NULL`/`true` spellings of the arguments, a local for
 // the second tag read after the call. Retail never takes g_4858c4's address, so its reload means
 // retail's 0x1bd50 counts as writing it (the same symbol as a global 0x1bd50 stores, a structure?).
+// Round 186: a store to g_4858c4 added to 0x1bd50 as a diagnostic gives retail's reload exactly, so the
+// cause is outside this body: g_4858c4 and g_485a58 (which 0x1bd50 writes) look like members of one
+// retail storage struct, BLOCKED-BY g_4858c4's definition (src/unknown_030290.cpp). Tried (all 26 unless
+// noted): `_ReadWriteBarrier()` after the call; the signature test nested in its own `if`; the fields
+// read by index (`((long *)g_4858c4)[0x38]`); `&& tag` for `!= 0`; the flag stored after the call 31.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1340,18 +1345,14 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
 }
 
 #include <math.h>
+#include "vector_angles.h"
+#include "vector_products.h"
 
 extern transform4x3f *g_4687d0;
 void function_146de0(void);
 void function_146b80(void);
 int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, transform4x3f *result);
 
-// score 96 (was 116): what still differs is the x87 start (retail loads the heading once and
-// keeps it on the stack; here the reference is re-read) and the loop base register (retail
-// ebp = out + 0x30, here + 0x2c). The three axis vectors are one matrix3x3, as retail copies
-// them with one rep movsd. Indexed loop keeps the stack convention (pointer loop: 145, register
-// convention). Tried: heading as double (148, pushes esi/edi/ebp at entry), as real (147),
-// pitch as a double local (161), the old volatile copy loop (116).
 // @retail 0x3ebd0
 bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matrices, transform4x3f *out, long count)
 {
@@ -1368,11 +1369,8 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         byte *definition = NULL;
         if (index != NONE)
             definition = g_4e3b44[index & 0xffff].bytes;
-        real const &heading = *(real *)(definition + 0x80);
         vector3f forward;
-        forward.i = (real)(cos(heading) * cos(0.0));
-        forward.j = (real)(sin(heading) * cos(0.0));
-        forward.k = (real)sin(0.0);
+        direction_from_angles(&forward, *(real *)(definition + 0x80), 0.0f);
         matrix3x3 axes;
         axes.forward = forward;
         axes.left.i = forward.k * g_4687b0->j - forward.j * g_4687b0->k;
@@ -1387,12 +1385,9 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         transform.position.z = *(real *)(definition + 0x18) * g_4b9da0.z;
         for (long i = 0; i < count; ++i)
         {
-            transform4x3f *destination = &out[i];
-            *destination = matrices[i];
-            destination->position.x += offset->i;
-            destination->position.y += offset->j;
-            destination->position.z += offset->k;
-            function_142a60(&transform, destination, destination);
+            memcpy(&out[i], &matrices[i], sizeof(transform4x3f));
+            vector3f_add((vector3f const *)&out[i].position, offset, (vector3f *)&out[i].position);
+            function_142a60(&transform, &out[i], &out[i]);
         }
         result = true;
     }
@@ -1429,18 +1424,9 @@ struct s_320b0_box
     vector3f radius;
 };
 
-// score 98 (was 103): the 1.0 held across the loop sits in xmm4 here, in xmm3 in
-// retail, and the scale temporary the other way round; ours also folds the
-// last term's matrix element as a memory operand (`movaps; mulss [mem]`) where
-// retail loads it first. The compiler orders each sum by the order the three
-// coordinates are declared in, not by the source order of the terms; declaring
-// z, y, x gave 99 (x, y, z 103, y, z, x 104, z, x, y 105, y, x, z 106), and
-// writing the scale test as `1.0f != scale` took one more. Copying the point
-// through a point3f local spilled it to the stack (much worse).
 // @retail 0x320b0
 bool function_320b0(s_320b0_box const *box)
 {
-    real const volatile *box_scale = &box->matrix.scale;
     byte *context = (byte *)g_547f88.context;
     box3f bounds;
     bounds.x0 = 0.0f - box->radius.i;
@@ -1456,45 +1442,41 @@ bool function_320b0(s_320b0_box const *box)
     {
         {
             long i = edge * 2;
-            real z = ((point3f *)edges)[i].z;
-            real y = ((point3f *)edges)[i].y;
             real x = ((point3f *)edges)[i].x;
-            real scale = *box_scale;
-            if (1.0f != scale)
+            real y = ((point3f *)edges)[i].y;
+            real z = ((point3f *)edges)[i].z;
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
         {
             long i = edge * 2 + 1;
-            real z = ((point3f *)edges)[i].z;
-            real y = ((point3f *)edges)[i].y;
             real x = ((point3f *)edges)[i].x;
-            real scale = *box_scale;
-            if (1.0f != scale)
+            real y = ((point3f *)edges)[i].y;
+            real z = ((point3f *)edges)[i].z;
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
     }
     s_bounds3d projected;
     bool visible = function_1652e0((s_view *)(context + 4), *(real *)(context + 0x74), transformed,
         24, NULL, NULL, &projected, true, false);
-    bool overlaps = projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
+    visible &= projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
         projected.y1 >= *(real *)(context + 0xac) && *(real *)(context + 0xb0) >= projected.y0;
-    return visible & overlaps;
+    return visible;
 }
 
 PRIVATE __forceinline real random_signed_value(s_random_globals *random)
@@ -1634,7 +1616,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
-// score 193: the statements match retail (cross products, dot-product operand order, atan2 tail).
+// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
 // tail, one shared `movss xmm0, [result]` at the end, frame 0x18); ours keeps the zero in xmm0,
 // returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
@@ -1644,6 +1626,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the angle through a `real *`, `real *angle = &result`, a dead `&result` pointer, the atan2 in a double
 // local, `return` inside the `if` (275); `volatile real result` gives retail's frame and entry store (187) but
 // zeroes xmm6 instead of xmm0 and so is not kept.
+// Shared first cross ordinary/staged, ordinary first with ordinary/staged second, staged first with
+// ordinary/staged second, and both staged-second graphs with shared point differences:
+// 193/193/193/193/193/193/193/193. Result stack home and SSE producer allocation remain; original arithmetic
+// restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2277,10 +2263,18 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 139 (r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// score 132 (was 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
+// Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
+// (loaded once, re-read at the loop top) with i in esi, the index in ebx, the object in edi and the
+// cursor in ebp; ours gives `list` ebp. `g_547f98` read at each use instead of the `list` local 113 | 77
+// (frame 0x9c, retail 0xa0, so not kept), with `!(depth >= 0.0f)` 111 | 75, with the camera fields 110
+// | 75, with `g >= 0 ? (g <= 3 ? g : 3) : 0` 113 | 83; `!(depth >= 0.0f)` alone 132 | 69 (retail's
+// `comiss depth, 0; jae`); the depth as `g_4b9e14.right.k * x + up.k * y + forward.k * z + position.z`
+// 133 | 68. The view/count slots are swapped against retail as in 0x33400 (view is register-assigned
+// at the clamp's join, then spilled: `xor eax, eax` for the zero arm and a dead reload).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2940,6 +2934,18 @@ s_cached_input_list g_5246f8[4];
 // `if (count > 0)` guard, `view` as if/else or the alpha/special locals hoisted; the list arrays
 // hoisted 149, a pointer-compare limit 145; `view` computed after the loop 124 but the list
 // pointer then moves to ebp.
+// Round 186 (a --fast image with 0x3e9c0's other callers' files reproduces the full build): without
+// the volatiles the body is retail's nearly everywhere (aligned 45 against 76) but esi/edi are pushed
+// in the prologue, the clamp's zero comes from eax with a dead reload and selected/view swap slots:
+// 130. On that base: clamp re-assigned 134, `g >= 0 ? (g <= 3 ? g : 3) : 0` 129, if/ternary clamp 130,
+// if/else-if clamp 134, clamp at the tail 114 (list back on the stack), `if (count > 0)` 130,
+// `!(depth >= 0.0f)` 130 (retail's comiss order), camera-field depth 129, selected renamed 130,
+// declaration orders 132-137. On this form: `!(depth >= 0.0f)` 98, camera fields 100, both 100,
+// `&g_5246f8[view]` at both calls 99. Cause of the entry pushes: LTCG keeps the stack 8-byte aligned
+// down to 0x3d7f0 (object_view_distance's `double` locals; see 0x335e0's note). With those as real
+// (diagnostic only, 0x3d7f0 gets worse) the volatile-free body pushes esi/edi after the count test as
+// retail does (aligned 25); then only the clamp's zero arm, its dead reload and the selected/view
+// slots remain (130 positional from the two-instruction shift).
 // @retail 0x33400
 long function_33400(byte const *list, s_cached_input *output, long mode)
 {
@@ -3425,6 +3431,13 @@ byte g_509413;
 // EBX (both still unmatched), where ours uses EAX plus a stack word and EDX; retail also
 // zeroes the flags from the loop's zero register. Reading the two gates as `if (!a || !b)`
 // and storing literal true saves 4 bytes (143 to 139) but leaves the score at 42.
+// Round 186: ours pushes at entry because LTCG keeps an 8-byte aligned stack down to function_3d7f0
+// (via function_33400): object_view_distance's `double` locals. With them as real (diagnostic) or the
+// distance through the existing distance3d (0x3ea30), the gates come before the pushes as in retail
+// (40), but 0x3d7f0 gets worse (177, 189), so neither is kept. With 0x33400 volatile-free (list in EBX)
+// this body is retail's except the frame (0x284: the alignment), the entry pushes and 0x1ddd0's ESI/EDI
+// arguments. Also tried: `if (a && b) { ... }` 42, the records declared before it 42, two separate
+// early returns 42.
 // @retail 0x335e0
 void __stdcall function_335e0(long mode)
 {
@@ -3524,6 +3537,12 @@ extern s_record_pool *g_509434;
 extern long g_4ba050;
 long __stdcall function_3ddd0(long object_index);
 
+// score 1 (was 1): indexed byte-load encoding remains.
+// Native previous-level short/long, four-byte byte/signed-char table pointers, selected byte/signed-char element
+// pointers, read-only table with char/short previous; pointer advance mutable/const, exhaustive null branches,
+// late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
+// base/index order; original loads and arithmetic restored.
+// A 480-second annealed search: 45 attempts, none below 1.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -3829,7 +3848,7 @@ void function_133720(s_bit_vector_pool *visibility, bool enabled);
 void function_44720();
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool special, real weight);
 
-// score 186 in the full build (180 in a fast check; was 195): retail keeps `parent` in ebx and the walk's `root` in
+// score 186 (was 186): retail keeps `parent` in ebx and the walk's `root` in
 // edx through the loop, reads `definition` as a dword (`mov ecx,[ebp]; test cl,0x20`) and spills the light index to a
 // local at [esp+0x34] (a ninth frame slot: ours is 4 bytes smaller, 0x1504 against 0x1508, and the record cursor takes
 // ebx while `parent` is spilled; retail keeps the cursor and the counter in memory). Tried: `light_index` as a plain
@@ -3839,6 +3858,9 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
 // the walk (182), a second flags read after the parent block for the special/bsp/mask tests (190-208), the light
 // index declared after the parent block (182), root assigned in the walk instead of after it (202), parent/root
 // declared in the other order (189), an explicit record pointer with an up- or down-counting loop (180).
+// Index snapshot, shared vector sum, dword field observations, pairs/all, then direct root:
+// 179/180/184/179/184/184/184/200 fast; coherent weight snapshot, with index/sum/dword forms 199/201/201/186
+// fast. Reduced baseline 180; full frame already 0x1508. Cursor/parent/definition allocation remains.
 // @retail 0x31c80
 void function_31c80()
 {
@@ -4049,6 +4071,15 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // keeps the raw g_4ba022 byte in the slot (removes the extra `mov [esp+0x1c],1` stores and matches
 // pass 8, 6 differing spots left, but 26 bytes short so the score is 193), the volatile spelling
 // from 0x423c0 (209), `enabled = enabled && extra` (213).
+// Round 186: LCS-aligned this body is only 12 instructions off (the positional count is the shifts):
+// the early `enabled = 1` stores, pass 3's late stores, pass 8's raw gate byte, the dead g_485898 loads
+// of the three no-cull passes and function_14b60's eax argument. A gate pointer (`byte const *gate`,
+// NULL for the ungated passes, `if (enabled && gate) enabled = *gate;`) leaves 6 (193 positional,
+// 958 bytes): the dead loads only appear when 0x44370 itself is inlined at link time (a file-local
+// copy folds them away), and 0x14b60's register argument needs its body (disabled in its owner's
+// file because it moves matched 0x14ac0's frame). Also tried: `enabled &= extra_enabled` 191,
+// `!(g_485898 >= 4 && g_485898 <= 7) && normal_cull` 138, 0x44370's `>= 4 && <= 7 ? 0 : cull`
+// 138 (cull arms reversed), `if (enabled && extra_enabled != 1)` 167.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

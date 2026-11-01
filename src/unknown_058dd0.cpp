@@ -139,6 +139,9 @@ bool c_session_state_none::update()
 // the member index read before the 0x58d70 call 5 (the load is sunk, same code); the
 // kind declared at function scope 5; the switch on a named type local 5; the
 // `default: __assume(0)` label first 65 (the case blocks follow source order).
+// Round 65: named 0x58d50, 0x58d70 and 0x58d20 results 5 each and combined 5;
+// a case-1 session pointer 5; the type-0 arm with an early break 5; case-1 results
+// from short-circuit tests 83, from conditional expressions 76.
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {

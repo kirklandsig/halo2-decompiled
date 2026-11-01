@@ -124,17 +124,41 @@ void function_213970(void);
 // 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
 // definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
 // src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
+// Round 33 (lane 14, fast; still BLOCKED-BY the separate global definitions): progress record / file handle
+// reset by value-initialized assignment 171/165; constant-first version test 131 (same code); every scalar
+// reset before the five clears 131 (aligned 44 against 35); progress record and handle both by memset 145.
+// Diagnostic, size pragma removed 158: the preference tail is then retail's (version loaded to EAX, NONE
+// stores after the clears), but the language load is hoisted into ESI above the clears and ESI/EDI are
+// pushed at entry, where retail pushes EDI around its two block clears only and ESI after the language join.
 // Round 40 (lane 11, fast): without the size pragma (diagnostic) 158: the shape after the clears is retail's
 // (`or eax, -1`, the NONE stores among the language test, inlined getter calls) but the language read is
 // hoisted above the clears into ESI, where retail reads it into EAX after them and copies it to ESI only
 // after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
 // getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
 // clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
+// Round 64 (lane 12; one-link LTCG env with the build's stand-in caller, equal to the full listing at 229
+// bytes): with the two blocks as struct globals (diagnostic only), no size pragma, a language getter that
+// returns the global re-read after its fill (`if (g == NONE) g = ...; return g;`) and the two preference
+// updates as inline compare-and-set helpers taking the new value, the env listing equals retail byte for
+// byte (155 bytes, retail's late ESI push and early EDI pop included); so does one compare-and-set helper
+// taking the field's address and the value, called for both fields. On the blocks: no pragma alone 156
+// bytes (language load hoisted into ESI above the clears); the existing wrapper 0x11cae0, the comparison
+// reversed, the local declared first: the same; NONE stores after the query worse; the helpers with the
+// current getter: hoisted; the getter used at each use: load after the clears but the getter reruns after
+// the call; the re-read getter alone: load after the clears in EAX, copied to ESI before the compare. On the
+// separate globals (--fast): no pragma + re-read getter 153; with the helpers 153; helpers under the size
+// pragma stay out of line. Still BLOCKED-BY the block definitions above.
 // Round 36 (lane 13, fast): the language query and both preference updates in their own block 131 (same
 // code), without the size pragma 158; one dirty store after both tests behind a changed flag 173 (259 bytes);
 // block B's scalar zero stores ahead of its header clear 131; the version compared as a dword 131; the
 // existing wrapper 0x11cae0 called in both the language test and the store 129 (232 bytes, two points). Still
 // BLOCKED-BY the separate global definitions (block A in src/unknown_213760.cpp and src/unknown_213d20.cpp).
+// Round 60 (lane 16, fast): without the size pragma (diagnostic base 158): the language local declared at the top
+// and assigned after the NONE stores 158; block B's clears before block A's 158; block A's NONE store right after
+// block A's clears 161; the handle record value-initialised (`= s_file_handle()`) 158; with the pragma 165.
+// With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
+// the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
+// Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

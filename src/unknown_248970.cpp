@@ -52,7 +52,7 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 95 (was 95): the prologue, the position copy and the whole viewer loop agree since the
+// score 54 (was 95): the prologue, the position copy and the whole viewer loop agree since the
 // distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
 // after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
 // the reverse), tests the allocation twice, builds the handle from the element's own salt and the
@@ -264,6 +264,17 @@ public:
 // in-place link, with/without the separate allocation 220/254 (the location still lives in EBX; 0x175270 21).
 // Round 465: native pool/allocation/link pointer role-name subsets 1..7, then all four child
 // pointer roles, 95 each; original identities and full body restored. Child pool/NONE ranks still exchange.
+// Round 13 (lane 17): the allocation in its own `child_index` local, tested for the initialization and for the
+// break, then made the head 54 (kept; 0x175270 still matches, location stacked and flag in AL): the allocation and
+// its initialization now agree with retail. Left: the zero-trip test before the head/offset set-up (retail loads
+// the count into ECX and sets head and offset after the test), the pool/NONE register exchange (retail pool EBX,
+// NONE EDI then EBP), retail's unthreaded second test (`cmp eax, edi; mov esi, eax; je`), and the handle built from
+// the element's salt and the pointer difference (0x2483f0 inlined) where data_datum_index reads the pool's size.
+// Before it: 0x2483f0 called with `inline` on its definition 300 (its inner forceinline link stays a call under
+// that file's inline_depth(1), and &field_4 is hoisted; 0x248cc0/0x2483f0 still match); the child offset declared
+// with the entry locals 115; the pool local declared, then assigned 95; `return` for the break 95. On 54: the inline
+// 0x2483f0 call 298; head and offset in the for-init 53; `head = child_index;` before the break test, testing head
+// 118 or child_index 118 (both make the location an EBX register argument); the link element from `child_index` 54.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
@@ -311,17 +322,18 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 		s_record_pool *local_15 = g_51ec88;
 		if (head == NONE)
 		{
-			head = record_pool_allocate(local_15);
-			if (head != NONE)
+			long child_index = record_pool_allocate(local_15);
+			if (child_index != NONE)
 			{
-				c_247470 *local_16 = DATUM(local_15, c_247470, head);
+				c_247470 *local_16 = DATUM(local_15, c_247470, child_index);
 				local_16->field_8 = NONE;
 				local_16->field_2 = 0;
 				local_16->field_4 = NONE;
 				local_16->field_c = 0.f;
 			}
-			if (head == NONE)
+			if (child_index == NONE)
 				break;
+			head = child_index;
 			c_247470 *local_17 = DATUM(local_15, c_247470, head);
 			long local_18 = data_datum_index(local_15, local_17 - (c_247470 *)local_15->data);
 			local_17->field_8 = NONE;
