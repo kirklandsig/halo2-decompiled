@@ -320,6 +320,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
+// Round 48 (m3 lane 11, fast; control 117): the fallback through the existing TAG_GET with the original group test
+// 152 (the same code as `local_tag & 0xffff`: in-place mask as retail, but the tag table moves into ECX ahead of the
+// frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
+// 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
+// the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

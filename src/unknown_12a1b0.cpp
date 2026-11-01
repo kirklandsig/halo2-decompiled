@@ -1302,6 +1302,10 @@ struct s_looping_detail_request
 // a call (124 with the extra compare), so the cause is still the call site's static frequency.
 // Round 254: Reduced common finalization with unavailable-player/completed-request exit and
 // bool/byte/char/long result carriers 139/168/168/185/139/168/168/185. All restored.
+// Round 48 (m3 lane 11, plain): the file is already /Ob1 and 0x11b350 (an /Ob1 file) inlines the query in retail,
+// so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
+// site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
+// bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1582,6 +1586,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 254: Reduced shared full request type with no/first/second/both long range counts,
 // first/second/both short counts and both byte counts 479/491/497/363/465/451/469/508. All restored.
 // Ordinary full-request/two-long-count form 370 at 1923 bytes; rejected against full 307.
+// Round 48 (m3 lane 11, plain): NONE held in EBP across the whole update block is what pushes the playback
+// pointer out of EDI. Both pitch-range loops declaring `count = playback->pitch_range_count` in the for init
+// 365 (frame 0x128 and retail's EDX/EAX array-initialisation registers, but 20 scalar slots plus the 0x90
+// request where retail has 16 plus 0xa0, first difference +0x39); that with the 0xa0 request 368 (frame
+// differs again); that with the pitch through a bounds pointer and a named lower bound as in 0x21b940 460
+// (1939 bytes); the count in the first loop's init only 427 (1907 bytes); both counts with the gains array
+// declared before the sounds 366.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
