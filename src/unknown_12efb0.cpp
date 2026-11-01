@@ -266,6 +266,16 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 264: Library contribution clamp, paired radius caps and paired fallback bounds,
 // subsets 1/2/4/3/5/6/7 and full upper-first clamp 2071/836/848/2166/2161/942/2251/2228.
 // All enlarge code; original selections, input captures and complete body restored.
+// Round 111 (lane 7; an LTCG env link of this file, the caller's file and its callee closure reproduces the full
+// listing, checked against a plain build at 683): retail keeps the record base in ESI through the arm and
+// re-reads the slot byte at the source_index store (`movsx edx, byte [esi+0x6f]`), compares the slot as a byte
+// (`cmp cl, al`, NONE in EAX, the 0x130f60 result moved to EDX), and keeps the palette record in EBX. The slot byte
+// read from the record at every use 683 (3832 bytes, plain); a char slot with the store re-reading the byte 683;
+// a named cluster-index local 616 (same code), with the byte reads 683; accumulator statement orders in the
+// three-scalar helper: m,w,colours,i,d,h 616; colours,w,m,i,d,h 616; colours,i,d,h,m,w 703; colours,i,d,h,w,m
+// 691; w,colours,i,d,h,m 691; w,m,i,d,h,colours 687; i,d,h,colours,w,m 691; reversed 691; colours,w,i,d,h,m 691;
+// the weight parameter bound first or second (diagnostic) 616 (same code); the clamped weight in a new local
+// 617; weight-first products 616; the three scalars named in locals first 617.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

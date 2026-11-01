@@ -1846,15 +1846,15 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
-// Round 31 (lane D): score 339 (was 339): unchanged this round; the permuter run was stopped by
+// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// Round 31 (lane D): unchanged this round; the permuter run was stopped by
 // the background time limit before it produced a result. Still differs in retail's conditional move
 // (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
 // the type, membership and member-index homes and the saved registers.
-// score 339 (was 339): unchanged. Retail writes output->state with a conditional move (cmovne at
+// Earlier: unchanged. Retail writes output->state with a conditional move (cmovne at
 // +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
 // lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
 // member-index homes and the saved registers differ.
-// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
 // 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
 // current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
@@ -1885,6 +1885,10 @@ struct s_summary_player_sort_entry
 // inline/forceinline declaration here 353/353 (still called); `inline` on 0x5a680's definition 353 (still
 // called here; 0x83220 and the 0x199ebc family lose); member index and the +0x4c pointer written as
 // 0x66050 does 353 (frame 0xaa0: the pointer folds into the session register). All restored.
+// Round 111 (lane 7, fast): map_variant declared before map 339 (same code); the maximum, the option and the
+// mode each as one ternary 375/375/375; the state as `short state = 0; if (initialized) state = ...;` 375 (all
+// at 1307 bytes). Still BLOCKED by the cmovne (/arch:SSE) and by retail's inlined 0x5a680 (membership at +0x4c
+// and member index kept in the frame; name, identity and counts read through the membership).
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

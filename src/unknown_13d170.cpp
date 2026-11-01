@@ -253,6 +253,13 @@ struct s_block_candidate
 // Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
 // bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
 // restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
+// Round 111 (lane 7, fast; the one-file harness does not reproduce this function: 1162 bytes): round 27's
+// busy-continue form 377 (1213 bytes); with the none/gap arms storing the zero time first 377; with the
+// success path returning directly (no goto) 381; with the outer test as an early `return result` 391 (1228).
+// On the original: zero time first 370 (same code); success returning directly 376; early return 398 (1232).
+// Retail lays the no-candidate tail (limit update, result reload, `pop edi`) and the shared epilogue right
+// after the loop guard (`jg loop`, falling into the tail); allocation failure and the post-loop !have_best
+// test jump back to it. Ours places the tail last and enters the loop through `jle tail; jmp body`.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

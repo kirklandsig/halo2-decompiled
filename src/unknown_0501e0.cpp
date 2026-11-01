@@ -196,6 +196,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 471: Uniform weighted-point second/first product and sum producers, seven
 // nonempty combinations 222/222/224/221/222/222/224; complete producers with earlier
 // blend-scale storage 224. Original expression producers, helper and full body restored.
+// Round 111 (lane 7, fast; a one-file LTCG harness with src/unknown_01cf50.cpp and src/unknown_030290.cpp
+// reproduces the build, 221 at 1145 bytes): retail scales with the scale as destination (`movaps xmm0,xmm6;
+// mulss xmm0,xmm1`, the unscaled copies made before the test) where ours scales in place. A camera-pointer
+// helper with `i *= camera->scale` and the component loop 224 (1148 bytes), with an explicit three-row body 306;
+// the scaled locals set in an if/else 305 (1078); a caller `real scale = g_4b9e14.scale;` declared first 253
+// (1136 bytes), declared at the calls 252; a scaled vector copy through vector3f_scale in place 283 (1160), from
+// the input 309; explicit rows with (real) product casts 306 (1081), grouped 301; locals declared k-first
+// 258, scaled k-first 245; the per-component ternary scale 256 (1136, three tests).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
