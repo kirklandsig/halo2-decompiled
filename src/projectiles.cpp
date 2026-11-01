@@ -991,6 +991,9 @@ real function_30bf0(vector3f *v);
 // Round 495: Whole fallback/default/publication CRT-copy subsets on the shared-scale/path
 // graph 232 each (seven forms); complete copies with entry result 245. Original body
 // restored; frame, rounded-root scheduling and separate divisions remain.
+// Round 497: Entry chosen-speed/time/inverse-time storage, seven nonempty subsets, 232 each; all
+// with path-distance storage 232. Every producer stays at its original use; original body restored.
+// Frame 0x28/0x30, rounded horizontal root and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1851,6 +1854,9 @@ real function_17c900(short function_type, real input);
 // variants 464 (eight forms); forced original graphs 410/348, forced shared-reciprocal
 // single-exit graphs 398/344 (344 raises other users 0 to 8 and 3 to 10). All helper
 // changes restored; stacked-index/output transport and component homes remain.
+// Round 497: Uniform parallel/cosine-axis/sine-cross term subsets 366/348/348/348/366/348/348; all
+// with per-use lead field 369. Original body restored; stacked-index/output-EBX transport and
+// normalized component homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

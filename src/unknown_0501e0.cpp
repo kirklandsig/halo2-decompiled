@@ -206,6 +206,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 483: coherent radius from output/producer, branch/common publication
 // and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
 // All regress; initial stores, alias-sensitive reads, original helper/body restored.
+// Round 497: Real coefficient-array termination !=/< with forward/up/right owners
+// 379/379/379/379/378/378; all three streams without an ordinal 375/375. Original helper and body
+// restored; frame and coefficient/input/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

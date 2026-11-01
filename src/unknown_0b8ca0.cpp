@@ -1721,14 +1721,14 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // pointer; that file is /Ob1, so LTCG keeps our call and it cannot be changed here. This round:
 // the shared exit together with the byte activity bit is 308, and marking the declaration of
 // function_b8bd0 in this file __forceinline changes nothing (the call stays).
-// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// Earlier: retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. This round: a `goto done` shared exit (both early exits) keeps the frame at
 // 0x64 and does give retail's single epilogue, but the score stays 285 - retail re-derives
 // pool->data over the pool pointer in ebx and reads the header byte through that copy, ours keeps
 // the first copy in edi and re-derives a second one into edx; folding the loop's early exit into the
 // allowed flag instead gives 340. The permuter found nothing below 285.
-// score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Earlier: frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
 // Round 189 (m3 lane 3): retail has no call to 0xb8bd0 here: it reads the parent's node-matrix base before the
 // link stores (`movsx eax, word [edi + 0x116]` precedes the parent-index store) and indexes it by the node at the
 // 0x141590 call, and takes the header and the re-fetched object from a fresh `g_4e0300->data` plus the entry offset
@@ -1839,6 +1839,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
 // Four-point lead is below the gate; original header type, byte stores, activity
 // observation, root fields, node query, shared transforms and full body restored.
+// Round 497: Native root-cluster reads at every use, crossed with native saved activity/common
+// exit/closed spatial scope, 284/282/284/282/307/310/307/310. Three-point best is below the keep
+// gate; complete original body restored. Accepted table reload, node-query expansion and SIMD homes
+// remain.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

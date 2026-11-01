@@ -414,6 +414,9 @@ static inline bool teams_enabled_19e1c0()
 // each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
 // token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
 // failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
+// Round 497: Complete 512-byte text initialization, entry aggregate/CRT and branch CRT/aggregate:
+// inherited result 526/526/452/549; ordinary result 614/619/529/471. All regress; original buffer,
+// result and body restored. Frame and copy tails remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
