@@ -331,6 +331,9 @@ void function_117510(long index)
 // 85), delta as j, k, i statements 151 (87). Diagnostics only: a compiler barrier after the fast root 138 (aligned 74),
 // after the clamp 134 (aligned 72: retail's link setup and pin-test re-read appear). Retail has something VC treats as a
 // memory write between the top link->a read and the first pin test; no source construct found yet.
+// Round 41 (lane 13, --fast): per-use link fields 154 (742 bytes; ours colours delta j/k/i xmm5/xmm6/xmm4 and length
+// xmm2, retail xmm6/xmm4/xmm3 and xmm5); on it `real length`, `real squared, length`, `vector3f delta` or the link
+// pointer declared at function scope 154 each (scope reaches neither the re-read nor the colouring). All restored.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -528,6 +531,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // late). Rotation on the global with cross3f(&g_55ecd4, ..) 152 (854), projection first 148 (852), dot3f(&axis,
 // &g_55ecd4) 153 (856); diagnostics (scalar cross, kept only with a match): 0x177d10's own form with its axis_k local on
 // the global 135 (862, aligned 101), on an `old` copy 148.
+// Round 41 (lane 13, --fast): `old` copied field by field 159 (the global's j/k then load straight into xmm registers as in
+// retail, but the frame grows to 0x34), declared before the axis 163, as `{ g.i, g.j, g.k }` 159; field-wise `old` with the
+// projection before cross3f 148 (frame 0x28; retail's store/reload of the first cross product appears, but cross3f gives
+// i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
+// 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
+// cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -562,7 +571,7 @@ void function_117dd0(long index, vector3f *wind)
 	double strength = (fabs(g_55ecd0) + 0.0075f) * definition->wind_scale * 0.08000000566244125f;
 	wind->i = (real)(g_55ecd4.i * strength); wind->j = (real)(g_55ecd4.j * strength); wind->k = (real)(g_55ecd4.k * strength);
 }
-// score 63 (was 72): frame 0x48, normal.k cursor and the history (else) loop agree; weight publication, the Verlet x
+// score 63 (was 63): frame 0x48, normal.k cursor and the history (else) loop agree; weight publication, the Verlet x
 // register (retail keeps it in xmm6 to the final add, ours stores it) and vector scheduling remain.
 // Earlier: frame 0x48 and normal.k cursor agree; weight publication, the Verlet x register (retail keeps it
 // in xmm6 to the final add, ours stores it), vector scheduling and the history-loop base remain.
@@ -577,7 +586,7 @@ void function_117dd0(long index, vector3f *wind)
 // vertex pointer 108; the Verlet difference and the acceleration split into separate statements 172 (776
 // bytes); the position scale written z, x, y 72; the difference written x, z, y 71 (the same code); the dot
 // written (i + k) + j 103; the permuter run killed with no output. All restored.
-// score 80 (was 80): frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
+// Earlier (80): frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
 // Earlier: 744 bytes and the normal.k cursor agree; retail adds the acceleration as the first operand and
 // keeps position.x in a register through the force step, evaluates the dot as (i + k) + j (ours i, j, k), and its
 // else loop runs through a vertex pointer. Round 28: the projection through the existing vector3f_scale 103, with
@@ -662,6 +671,11 @@ void function_117dd0(long index, vector3f *wind)
 // `(i + k) + j` / `j + (i + k)` 105/105 (aligned 45, 744 bytes), acceleration-first Verlet 114, weights first 61, written
 // dots i,k,j / k,i,j / i,j,k 81/81/80 (736 bytes); weights first with `(i + k) + j` 104, acceleration first with it 80,
 // both 82; weight names in the other sort order with either preheader order 59/61 (names move no home).
+// Round 41 (lane 13, --fast): retail loads the acceleration component and adds the difference (x then stays in xmm6 and
+// its early store goes); Verlet rows written `acceleration.i + (position.x - previous.x)` 116 (VC still folds the
+// acceleration as a memory operand); a velocity local then `velocity + acceleration` rows 172 (776 bytes),
+// vector3f_add(&acceleration, &velocity, ..) 174 (776), vector3f_add(&velocity, &acceleration, ..) 174 (776); the
+// acceleration filled field by field, k summed in its own statement / in the same one, 183/187. All restored.
 // @retail 0x118140
 void function_118140(long index)
 {
@@ -814,6 +828,13 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // vertex 324 (1464), both 326 (1481), short strip index 324 (same code); rest pointer first 324 (aligned 215, --fast
 // 422), with per-scan types 322 (aligned 182, 1467), with lighting NULL-first 320 (--fast 418), all three 318 (--fast
 // 429). All restored; BLOCKED-BY 0x1ccb0 remains.
+// Round 41 (lane 13, --fast): also BLOCKED-BY 0x4b2d0: retail passes variant/group/tag in EAX/ECX/EDX with two stack
+// arguments, ours three on the stack (0x4b2d0 sits in the same contributor file). Retail's 0..1 side loop (`side == 0 ?
+// D3DCULL_CCW : D3DCULL_CW`, sign `(real)(side == 0 ? 1 : -1)`), sign before or after the cull call 441/441 (1465 bytes);
+// lighting pointer NULL before the lookup and set under `lighting_index != NONE` 415 (retail's `xor edi, edi` before the
+// call; a gain of 7, under the keep bar), with the side loop 434, with the types read per scan 432 (1470), with the rest
+// pointer first 415, all three 435; each scan's NONE default declared just before it 424, with NULL-first lighting 480,
+// plus per-scan types 496. All restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
