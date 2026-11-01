@@ -1447,6 +1447,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // three qsort calls written out 169 (420). Diagnostic: the else path re-querying instead of reading
 // player_count (no forwarding) 116: the result then goes straight to its home as retail, but index_count
 // stays in memory in both scans, so the forwarding is not the only cause.
+// Round 18 (lane 17, fast): a counter of its own for each scan and for the rows loop 83 (same code); one
+// shared pointer fill after the two branches 176; index-loop fills on the per-loop counters 172 (420 bytes).
+// Diagnostics (reverted): player_count's address stored to a scratch global 158, 0x19a9b4 given a store to
+// another global 83 (same code), both together 158: ours still keeps player_count in EDI across the 0x19a9b4
+// scan in all three, so the escape/side-effect view alone does not explain retail's reload; retail gives EDI
+// to index_count in that scan, which may be the allocation priority itself.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2525,12 +2531,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // out-parameters force them into memory. A separate counter for the second loop moves the
 // first loop's player-slot pointer to retail's slot (-8) and scores 93, but the gain is under
 // eight, so the body stays as it is.
-// score 95 (was 95): this round: the four widget indices' declaration order (both loops),
+// Earlier (95): this round: the four widget indices' declaration order (both loops),
 // the two function-scope locals the other way round, the widget indices after the team
 // locals, the player slot kept in a local, the loop counter as an int and the voice query's
 // player index in a local all compile to the same code (95). Retail still reloads players[i]
 // after the voice-state query and keeps bitmap_a in ebx in the last loop.
-// score 95 (was 95): the locals live in the other stack slots (shown count, the first
+// Earlier (95): the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
 // ours keeps the screen in ebx and false in edi.
@@ -2573,6 +2579,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // in EBX for all five calls and puts the `false` argument in EDI once text_b is pushed; retail pushes 0
 // and moves the screen into EDI. 0x2514fd shows the same reload symptom after 0x19a9b4, whose chain ends in
 // the same out-parameter session getter (0x596a0) as 0x53b40's.
+// Round 18 (lane 17, fast): the helper's default arm as two chained assignments (`*text_a = *text_b = NONE;
+// *bitmap_b = *bitmap_a = NONE;`, retail's `or edi/ebx, -1` with register copies) 92; with a separate counter
+// for the second loop 90 (the -5 is under the keep threshold); plus a counter of its own for the last loop 90;
+// plus bitmap_b assigned before bitmap_a in the helper's arms 89 (the second loop then computes them in the
+// wrong order; retail's last-loop order is allocation). Left: the slot permutation, the players[i] reload after
+// 0x53b40, and the last loop keeping the screen in EBX where retail gives EBX to bitmap_a.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

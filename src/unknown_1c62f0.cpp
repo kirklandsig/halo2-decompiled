@@ -705,6 +705,14 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // count); plain callback at the second dispatch 93 (same code); user read through its address without
 // volatile 133; flags through a plain word cast 97 (same code). Left: the second-dispatch callback reload
 // (volatile), after which the third dispatch's scratch registers are rotated one step (EAX/ECX/EDX).
+// Round 18 (lane 17, fast; diagnostics with the `standard` marker, retail's callers push all five arguments and
+// nothing holds the address): the marker with plain `callback` reads and no pointer 124 (the second dispatch now
+// reuses EBX as retail, but the third keeps it too where retail reloads, so `animation` spills: frame 0x10,
+// callers 0x1c68c0/0x1c6920/0x1cb710 still match); with the variant stored to the channel before the rate and
+// to the identity after it 125; with one read through `&callback` at the third dispatch 124 (CSE'd);
+// uninitialised locals declared first 124; the marker on this body 93 (same code). Marker not kept (unmatched).
+// Without the marker: the `&callback` pointer declared just before the first dispatch with plain reads 136, with
+// the volatile first read 93 (same code).
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

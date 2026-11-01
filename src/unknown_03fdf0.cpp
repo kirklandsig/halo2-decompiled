@@ -337,6 +337,12 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
 // material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
 // declared first 49 (identical, 54).
+// Round 18 (lane 17, fast): on the indexed form with a long count local (140; its loop body is retail's byte
+// for byte, only the head differs: cache_index arrives in ECX with the zero in EDX where retail has EDX/ECX,
+// so the entries pointer is formed before the copy and first is not spilled): first declared before the
+// count 166 (index arrives in ECX and is copied to ESI); one index variable for first and the loop 163
+// (index arrives in EAX, then EBX); `0 < count` guard 140 (same code); the parameters as (mode,
+// cache_index) 140 (same code, diagnostic); count and first declared at the function top 140 (same code).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
