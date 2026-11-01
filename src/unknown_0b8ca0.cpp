@@ -1795,6 +1795,11 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
 // Four-point lead is below the gate; original header type, byte stores, activity
 // observation, root fields, node query, shared transforms and full body restored.
+// Round 54 (m3 lane 1, fast): a caller-side `__forceinline` declaration of 0xb8bd0 with the node matrix taken
+// before the link stores 285 (1240 bytes: still called; retail computes the parent's node-table base before the
+// parent link store, so its source took the matrix there); `node` not volatile 285; the 0xc0 bit 6 test through
+// s_object_view::physics_active 285 (folds to the same byte test); flag bits 7/8 through s_object_view's
+// flag7/flag8 303 (1222 bytes); index and node both not volatile 323 (1202 bytes).
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

@@ -410,6 +410,12 @@ static inline bool teams_enabled_19e1c0()
 // `result <= remaining ? result : remaining` 661.
 // Diagnostic (a volatile token read at every compare, reverted): 468, with retail's token_length EDI and per-test
 // token reloads, but a hoisted zero then takes EBX (event to EBP) and `remaining` still stays on the stack.
+// Round 54 (m3 lane 1, fast): a named length with retail's clamp shape `result = remaining <= length ? remaining :
+// length` (cmp remaining, length; cmovle) in the four name/team cases: plain result 692, volatile result 412 (1444
+// bytes); with the fallback clamp in the same shape, plain 694; every format failure as `return remaining;`
+// (as the switch-side-time case): plain 696 (1167 bytes), volatile 439 (1416 bytes). With the plain result our
+// allocator gives `token` EDI and leaves `remaining` on the stack (retail: remaining EBP, token reloaded per
+// compare), so the name/team tails merge whatever the clamp's form.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
