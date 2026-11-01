@@ -714,6 +714,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 232: isolated unit-test blocked/ready result at its short-circuit boundary,
+// bool/byte/short/long storage, 89/89/89/89 and 89/89/89/89. No native result
+// width recovers the initial unit-argument register or later scalar/query homes; restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

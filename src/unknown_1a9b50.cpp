@@ -812,6 +812,9 @@ static __forceinline long real_to_long(real value);
 // Round 262: Returned admission predicate with entry declarations of query speed/time/direction,
 // their three pairs/all, and all plus actual request: 517 each (1926/1904, frame 0x54).
 // Original result, scopes, input/output query aliases, arithmetic and complete body restored.
+// Round 232: Complete branch-owned direction distance 382; query scope/names/
+// declaration order 382/382/382; target-velocity receiver and scope/names/both 381/381/381/381.
+// Three-count best rejected; all executable code, query aliases and observations restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -711,6 +711,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // after/before ground normal, original/removed one-use aliases: 314/314/325/325/314/314/325/325.
 // Frames 0x38 or 0x34 versus 0x28; original observations, aliases, helper graph and full body
 // restored.
+// Round 232: Angle initialized before limited copy, declared before up/beside axis/
+// at entry 190/182/182/182; those four with named cosine complement 188/180/180/180.
+// Two-count best rejected; original angle lifetime, expressions and complete body restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -917,6 +920,9 @@ struct s_flags_1f0870
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
+// Round 232: Branch-owned initial gravity/general-only damping/general-only flying
+// scope subsets and complete graph with early bounded-step declaration 610/629/638/626/628/634/637/637.
+// All restored; original frame, flag observations and shared normalization retained.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
