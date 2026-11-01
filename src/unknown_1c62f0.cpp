@@ -722,6 +722,20 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // admission/after-publication 166/142/142/142; those four graphs with a const callback slot
 // 166/142/142/142. Extra identity storage grows the frame; complete original identities, callback contract
 // and body restored.
+// Round 47 (lane 11, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 match unless given): retail treats the
+// callback (and the graph) as memory variables whose register copy is reused: loaded into EBX at the first
+// dispatch, kept for the second, reloaded after the variant join for the third. A plain callback with the
+// pointer and volatile dropped and the parameter renamed to sort after `graph` 128 (callback in EAX, kept
+// in EBX from entry; callers 16/8/19, same as without the rename); the volatile read taken once into a
+// named local for the first two dispatches 141 (frame 0x10, EBX becomes the zero); the callback pointer
+// declared `const *const` 93, declared just before the first dispatch 93, declared after the position
+// read 93 (same code each). Lead not tried: callback and user passed as one by-value pair would keep both
+// in memory as retail, but every caller up the chain would change with it.
+// Round 70 (lane 12, fast with callers and callees): the callback parameter read plainly at the first
+// dispatch (pointer at the others) 136 (537 bytes); the frame clamp as `0.0f > frame ? 0.0f : frame` 107; the
+// last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93
+// (same code); the non-looping end frame as `next_frame = last_frame` 91 (531 bytes only because that arm loses
+// retail's recomputed frame count; every later line still differs).
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

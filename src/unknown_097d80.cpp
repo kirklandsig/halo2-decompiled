@@ -194,6 +194,15 @@ struct c_aggregate : c_child
 // 31 (same code); produced declared and zeroed at the loop-body top 125 (389 bytes); the boundary stored
 // before the child read 31; the cleanup through blocks[k] directly 31; both loops calling the concrete
 // child class (children[i] without the cast) 31. Still BLOCKED by the build flag.
+// Round 42 (m3 lane 13, fast): the cleanup indexing blocks[k] directly 31; one function-scope index for the
+// collection and dispatch loops 31; one `c_child **` children list local for both loops 126; the starts store
+// before the child read 31 (all same code but the list). Diagnostics, reverted: one output local for both
+// calls 31 (frame 0x8020, but the children base/inner count/block slot still sits at 0x10 below the dispatch
+// cursor/cleanup count slot, the reverse of retail); the cleanup loop disabled 268.
+// Round 38 (m3 lane 14, fast): the dispatch and cleanup loops each in a block of their own 31; produced
+// declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
+// the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
+// 0x8024 in all).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

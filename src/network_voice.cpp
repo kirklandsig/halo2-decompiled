@@ -3142,6 +3142,9 @@ struct s_voice_route_choice
 // Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
 // masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
 // original observations, bitwise radio and full body restored; entry/cursor allocation remains.
+// Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
+// radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
+// three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

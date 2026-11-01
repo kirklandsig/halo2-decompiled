@@ -138,6 +138,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 49 (lane 10, fast, 0x136140 kept unless noted): the outputs as a two-entry bits array 82 (same
 // code); a named `common_bits * 2` shift local 100; one inline spread helper for both coordinates 313
 // (kept out of line, 0x136140 1); `mask & x_value` lookups 82; `common_bits << 1` 82.
+// Round 40 (lane 13, fast): retail's 0x136140 call sets ECX, then EDX, then EAX (the declared order). x and y
+// used directly with log2_floor 119 (y colours to EBP and becomes a stack argument; 0x136140 28); that with
+// `common_bits = width_bits; if (height_bits < width_bits) common_bits = height_bits;` 119 (still cmov); that
+// with y looked up before x in both arms 125 (302 bytes, 0x136140 kept); `long const` copies 82 (same
+// code); y_bits declared before x_bits 82 (same code).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
