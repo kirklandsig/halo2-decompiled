@@ -1480,6 +1480,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // recipient-bit consumers and original/native recipient accumulation: dword 138/158/174/181,
 // word 179/158/183/182. Original mask expressions, field accumulation and body restored;
 // zero reuse, pre-loop scheduling and the separate capacity epilogue remain.
+// Round 485: Serialized recipient-result word/dword, branch/conditional, original/per-mode
+// first-byte publication 132/166/132/166/132/166/132/166. Two-point gains rejected;
+// original serializer and capacity/result graph restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3368,6 +3371,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // shared kind test before the relay branch 180 (467 bytes).
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
+// Round 485: Native wire header/relay/direct records, seven subsets 139 each;
+// all records with independent cursor 164. Actual record types and full body restored;
+// channel/cursor/member ownership and route homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

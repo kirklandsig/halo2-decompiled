@@ -135,6 +135,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 483: six complete width/height/shared count naming orders 82 each;
 // first two naming orders with the existing shared logarithm 87/87. Native
 // count-home allocation does not change; original names and body restored.
+// Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
+// private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
+// 84/90. All three controls matched; original mask, helpers and tails restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
