@@ -278,6 +278,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 459: Uniform caller unit-field observations, bool/byte/short/long return carriers, inherited/plain
 // player pointer 760/683/659/661/786/865/650/669. Original unit snapshot, cases and qualifiers restored.
 // All executable trial forms restored.
+// Round 262: Entry declaration scopes for status/child iterator/metadata result, all
+// seven nonempty subsets 620 each; complete workspaces with ordinary player pointer 786 (2124/2308).
+// Original scopes, cases, helper contracts and inherited local qualifications restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

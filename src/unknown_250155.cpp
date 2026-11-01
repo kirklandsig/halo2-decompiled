@@ -1456,6 +1456,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // at the call (no else) with branch two's index fill 172 (417 bytes); without it 148 (as round 56).
 // Every function under 0x19a9b4 and 0x199dc9 is matched and their pointer writers' callers all pass
 // locals, so the reload is how link-time code generation summarises those chains, not this body.
+// Round 124 (lane 5, fast): index_count assigned 0 in each branch before its scan, not at its declaration
+// 141 (438 bytes; frame 0x58, mode spilled, zero in EBX); that with index_count declared after item_count
+// 141; item_count initialised at its declaration 121 (432); player_count assigned 0 in branch one instead of
+// at its declaration 126; the three queries (mode, teams, values) declared before the count locals 94;
+// `(void)&index_count` 83 (same code: the slots are not set by an address taken this way). An LTCG env link
+// with the direct callees' objects does not reproduce this function (callee clobber sets reach further).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2045,6 +2051,15 @@ extern dword g_54d5b8;
 // `show` flag cleared by case 4 guarding the call 64 (171); the call under a label in the default with
 // every case jumping to it 37 (the 0xae block still falls into the call); `dialog = 0xab` as the
 // local's initial value without a default 56 (160). Every layout keeps the 0xae block before the call.
+// Round 24 (m3 lane 2): case 4's own call under `if (!g_51ec99)`, then the store and return 81 again (176;
+// `this` moves to ESI). A compile-only build of that form gives retail's layout exactly (the two calls
+// merge whole: there the dialog is a register argument), but under LTCG case 4's copy pushes 0xad and
+// the state register: LTCG folds the case value at IR level (`dialog = state + 0xa9` in case 4 also
+// pushes 0xad, 81), so only one call site with the dialog live in a register can give it. Also: the
+// guard `!g_51ec99 || state != 4` 55 (169) and `!(state == 4 && g_51ec99)` 55; case 4 inside the
+// default as `if (state == 4) { dialog = 0xad; ... }` 59 (158).
+// The NONE dialog for states 0, 2 and 3 and the flag test on the dialog value (not the state) give
+// retail's layout (case 4's block hosting the call and the store); kept only with this byte match.
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2060,7 +2075,11 @@ void c_session_lobby_screen::show_session_state()
 		case 0:
 		case 2:
 		case 3:
-			return;
+			dialog = NONE;
+			break;
+		case 4:
+			dialog = 0xad;
+			break;
 		case 5:
 			dialog = 0xac;
 			break;
@@ -2072,17 +2091,15 @@ void c_session_lobby_screen::show_session_state()
 		default:
 			dialog = 0xab;
 			break;
-		case 4:
-			dialog = 0xad;
-			if (g_51ec99)
-			{
-				goto shown;
-			}
-			break;
 		}
-		dialog_ok_show(3, dialog, 4, user_flags, 0, 0);
-	shown:
-		state_shown_time = g_54d5b8;
+		if (dialog != NONE)
+		{
+			if (dialog != 0xad || !g_51ec99)
+			{
+				dialog_ok_show(3, dialog, 4, user_flags, 0, 0);
+			}
+			state_shown_time = g_54d5b8;
+		}
 	}
 	else if (function_592f0() && state && g_54d5b8 - shown_time >= 3000)
 	{
@@ -2526,7 +2543,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
-// score 95 (was 95): this round: the widget indices as longs (with (short) casts at the
+// score 95 (was 95): the locals live in the other stack slots (shown count, the first
+// loop's player, the second loop's four widget indices), retail reloads players[i] after the
+// voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
+// ours keeps the screen in ebx and false in edi.
+// Earlier round: the widget indices as longs (with (short) casts at the
 // find_text/find_bitmap calls) 198/227, the helper taking them by reference 95/198/227, the
 // helper's assignment order 96/98/99 and a mode local in the last loop 95 all compile to the
 // same or worse code. Retail's last loop keeps the four indices in registers (eax, edi, ebx
@@ -2591,6 +2612,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // 0x19a9b4's) is matched, including the out-pointer writers 0x596a0/0x59670 and 0x596d0's callers, so the
 // players[i] reload comes from how link-time code generation summarises that chain (a call cycle through
 // code not written yet would give it), not from this body.
+// Round 124 (lane 5, fast; the three stacked notes merged into this one): shown_count assigned in each
+// branch instead of at its declaration 203; in_matchmaking queried before shown_count is declared 100;
+// shown_count declared after the loop counter 100; one function-scope `local` for the first two loops 95
+// (same code); `shown_count = 0` before the empty-list call 166 (918 bytes only because the two list-fill
+// calls then tail-merge; the last loop keeps its 8 extra bytes). An LTCG env link with the direct callees'
+// objects does not reproduce this function (the players[i] reload depends on callees further down).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -2938,7 +2965,7 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
-// score 48 (was 61): frame 0x754 agrees; with the row text through find_child and the searching flag
+// score 48 (was 48): frame 0x754 agrees; with the row text through find_child and the searching flag
 // computed as one expression, the item loop, sections 1-2 and the animation byte are retail's; left: the
 // row loop's counter/text registers (ours ESI/EDI, retail EDI/ESI), EDI saved at entry (retail after the
 // game test), and the flag materialised at the end in AL (retail sets BL to 1 before the tests, keeps it
@@ -3017,10 +3044,25 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // clear 177, the flag declared at function scope 161 (variable form) / 46 (expression); on 46: each
 // section's text/bitmap in its own block 171, row-scoped text/bitmap 48, `has_game` as a ternary 173 /
 // as an if 288, i declared first 46.
+// Round 24 (m3 lane 2): `bool searching = true; if (flag || unready || joining) searching = false;`
+// stored after the row loop 161 (EDI's push sinks past the has_game diamond and the tail keeps BL
+// across the two calls with `test bl, al`, both as retail, but section 1's bitmap takes ESI from
+// `this`, and the tail reloads `this` into ESI); on it: row-scoped row text/bitmap locals 171, the
+// flag declared with the other locals 317 (886), i declared first 161; the flag written
+// `!a && !b && !c` 48 (same code as the expression).
 // Round 466: Independent bounded row ordinals long/short/word/char/byte/unsigned long,
 // then short/word with row-scoped text and bitmap receivers: 48/96/116/81/109/50/96/110.
 // Original shared ordinal, direct row queries and direct searching expression restored;
 // EDI save staging, row/text registers and the final result carrier remain.
+// Round 107 (lane 8, fast; aligned = difflib count, baseline 30): `bool searching = true; if (A || B || C)
+// searching = false;` then stored 161 (aligned 21: retail's late `push edi`, BL flag and row-loop EDI/ESI,
+// but section 1's bitmap takes ESI and `this` is reloaded through sections 1-2); declared first or after
+// has_game 161/161; the test as `if (A) searching = false; else if (B || C) searching = false;` 13 at 877
+// bytes (only the row loop's i/text ESI/EDI swap left; not kept: identical branches); on that 13 form a
+// separate row counter 13, row-scoped text and bitmap 15, row-scoped text 13; the store in an if/else
+// 67; `searching = !A; if (searching && (B || C))` 163; false default with `!A` then `!B && !C` 53; A
+// false else `!(B || C)` (uninitialised / true default) 46/46; false/true if/else on `A || B || C` 46;
+// row-scoped text/bitmap on the 161 form 171; the expression as `!A && !B && !C` 48 (same code).
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

@@ -1994,12 +1994,34 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // Round 251: Remaining-expression / counter-first / both / compound reserve store / remaining-compound /
 // counter-compound / all / all with magazine roots 180/130/180/124/180/130/180/180. Original restored;
 // magazine/transfer and pooled receiver homes remain.
+// Round 123 (lane 6; one-link LTCG harness of this file with globals, 0x157450, juggernaut and 0x0b58c0, which gives
+// the full image's listing): the retail-shaped body (no definition-index local, taken in the success block) has every
+// block and exit as retail; left are the unit kept in EBP (retail spills it, pool in EBP) and the magazine index /
+// taken in EDI/ESI (retail ESI/EDI). Retail's pool-in-EBP and frame eight appear here only when the 0x1008f0 or
+// 0x106030 call may write the pool global (an impossible-path store of it in either, or a juggernaut test left
+// unresolved or built without /GL); a store in 0xb7360 or of another global does not. Retail's 0x1008f0 holds the
+// pool global in EBP across its own 0x106030 call and 0xb9b90/0x100130/0x1058b0 hold it across 0xb7360, so retail
+// did not see those calls as writing it: the cause is still unknown. Even with that store the ESI/EDI swap and the
+// count held in EDX remain (harness 159 positional). Plain: long first-magazine rounds 123 (586 bytes, as before);
+// slot take tested `>= 1` 139; reserve count added before the store 130; definition compare operands swapped 170;
+// slot tests weapon-first 176. Harness only, on the retail shape: other-weapon pointer, unit-index local, slot-array
+// pointer, pool local, unit/taken declared first, int/dword slot index, unloaded-first take, compound store, `count >
+// taken`, `count <= available`: same code; if-form slot/magazine take, named needed, long unloaded, early false
+// return, the other eleven orders of weapon/definition/available/result and 1-8 unused locals at the top or before the
+// unit: none closer.
 // Round 35 (fast): a pool local declared in the holder block for the slot lookups, the unit through the
 // macro 170 (586 bytes; 0x102b90 then differs), the unit through the local too 124 (same code: the local
 // is folded back into per-slot global reloads); the slot lookups through the existing weapon_get_102e10
 // 124, every weapon lookup through it 124, a two-use other-weapon local from it with `continue` 124.
 // Ours keeps the count in EDX through the slots (its stack home reused for the unit) where retail rereads
 // it from the stack and keeps the pool in EBP.
+// Round 62: nested other-weapon pointer as in 0x1008f0 with the slot test on weapon->definition_index
+// (no definition-index local) 198 (571 bytes; fast 175 at 585); magazine-offset local 177 (fast);
+// definition read in the range test 198 (fast, 568 bytes); available before weapon/definition 182 (fast);
+// unit-index local 124; first-block take without the short local 124. One-link diagnostic: with the
+// entry weapon read not touching the pool global, the slots take retail's pool-in-EBP/unit-spilled
+// shape (aligned 83), so the entry read joins the loop's pool range; no source form found that splits it.
+// Round 62, later: `taken` as a short 209 (fast, 611 bytes).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

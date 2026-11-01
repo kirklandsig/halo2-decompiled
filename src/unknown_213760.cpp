@@ -1302,12 +1302,28 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
 // the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
 // write handle 120.
+// Round 123 (lane 6, fast): the 7 and 6 forms reproduce. On the 7 form a write handle local alone 114 is one
+// instruction from retail (917 bytes: only the close call's `mov ecx, eax` struct copy is missing, the rest is
+// loop padding); with a `s_file_write_flags flags(0)` local as 0x2151f0 writes it 114; the write handle built by
+// member assignment as 0x213760 builds its handle 114, with the resize/size-query/close handle built that way
+// 6/6/114; the 6 form with the flags local 6. On the write-local form: `written = bytes_written == 0x800;` 107
+// (930 bytes, sete join, still no copy); the close argument through `g_557c90[index]` 114; the close test
+// through the s_file_handle view 114; bytes_written declared before the header 114; nested close tests 114;
+// `written` initialised by assignment 114; a HANDLE local for the close test with a member-built close handle
+// 168, a member-built close handle tested in place 168 (both 946 bytes, frame slots shift). A handle local
+// before the resize moves its handle to EAX; one only at the write lets VC drop the close's copy.
 // Round 35 (fast), on round 56's 6 form (rebuilt from its saved file: 6, the other seven functions of the
 // file match): the size query and write handles as locals with the resize handle passed directly 6 (the
 // same six: the resize handle still takes EAX); the resize handle local declared before the remove-later
 // test 15; declared right after `bool resized;` 6; the write handle local at the top of the resized block
 // 6; declared before `written` 121 (917 bytes). Left: the resize handle EAX for ECX, the header address
 // ECX for EDX and the close copy EDX for ECX.
+// Round 13 (lane 17), round 53's 7 form rebuilt (7, fast: the write's handle loaded after the flags zero, and the
+// checksum compare in EDX); on it, a file-scope inline getter returning the element's handle as an s_file_handle in
+// place of the casts: at all four calls 118 (917 bytes, the close copy dropped as with locals), at resize and write
+// 6, at query and write 6 (the listed 6: resize handle EAX, header address ECX, close copy EDX, each one register
+// before retail's), at resize, write and close 118; the getter at resize and write with the plain
+// `written = bytes == 0x800` 110. All restored: no match, and a getter with one caller is not kept.
 // @retail 0x213970
 void function_213970(void)
 {
