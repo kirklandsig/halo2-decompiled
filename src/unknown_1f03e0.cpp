@@ -1546,6 +1546,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
 // accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
 // second call).
+// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
+// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
+// executable source restored; zero width, reset/selection homes and material-call expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
