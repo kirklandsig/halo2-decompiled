@@ -215,6 +215,8 @@ short __stdcall function_2551c0(long actor_index)
 // Round 329: Complete first/second/both cross-product parts named across all rows
 // 68/68/67; with cosine complement, first/second/both 118/118/67; both with
 // named dot, without/with complement 67/67. Original helper and callback restored.
+// Round 446: native projection/cross/angular scalar precision, seven subsets 392/392/392/72/392/392/392;
+// all with complete score storage precision 414. Exact-only forms restored with original helper and body.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

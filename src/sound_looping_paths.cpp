@@ -241,6 +241,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // outside; the chained assignment stores them reversed) 886, with the long counts 927. Array names (two full
 // prefix orders) and declaration order leave the four query-array homes unchanged (retail: gains +0xec, indices
 // +0x1f0, portals +0x2f0, clusters +0x3f0; ours portals, indices, clusters, gains).
+// Round 446: native persistent/query/search scalar lexical homes, seven subsets
+// and all with Boolean local roles 886 each. Original scalar names, body and helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

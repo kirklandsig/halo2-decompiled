@@ -179,6 +179,9 @@
 // Original producers, shape/basis homes and sixth-product conversion restored.
 // Round 259: Entry uninitialized scaled-product/maxima/wave-scalar storage, seven subsets, then all plus the existing truncation carrier
 // 581/581/581/581/581/581/581/581. Original body and producer sites restored.
+// Round 444: Double inverse/paired camera shifts/complete projection factors, subsets
+// 1/2/4/3/5/6/7 then all with both wave factors: 774/665/716/815/820/750/877/878. Original precision, helper graph
+// and sixth-component integer conversion restored; frame and shape/basis homes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

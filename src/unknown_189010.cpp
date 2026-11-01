@@ -159,12 +159,14 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // priority from the request's audible field 147 (485). Retail's full header order
 // (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
 // score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
+// frame 0xa8 and request EAX agree; first query expansion, header/result homes and playback convention differ.
+// Earlier 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
 // and our link inlines, in src/unknown_221490.cpp.
-// score 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
+// Earlier 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
 // retail homes the request in EBX and reloads the state flags after the first 0x221810 call,
 // ours forwards them across it and builds the flag word in EDX where retail builds it in EAX.
-// score 110 (was 110): Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
+// Earlier 110 (was 110): Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
 // Frame 0xa8 and request EAX agree; first class-query expansion and header homes differ.
 // BLOCKED-BY 0x21d110 and 0x221810 (their tag/state registers): retail homes the request in EBX and
 // reloads the state flags after the first 0x221810 call, ours forwards them in a callee-saved
@@ -231,7 +233,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // declaration 110; state/tag declarations swapped 110; tag pointer renamed 110; immutable tag
 // pointer 110; early uninitialized flags 110; split tag declaration/assignment 110. All restored;
 // first query expansion, initial tag spill and playback convention remain.
-// score 110 (was 110): this round: no new form. The first class lookup is still expanded here and
+// Earlier 110 (was 110): this round: no new form. The first class lookup is still expanded here and
 // called in retail: our link inlines 0x221810 (src/unknown_221490.cpp, matched) into it, so our
 // compiler forwards the state flags across that call, while retail treats the call as opaque and
 // reloads them. Suppressing the inline (inline depth zero) costs six matched callers of this
@@ -245,6 +247,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // retail's shape (140-149 against 110, 485-499 bytes against retail's 470): our link then inlines the first
 // 0x221810 call, so the body grows past retail's, and the flags still land in EDX where retail builds them in
 // EAX. The original order stays.
+// Round 446: native 64-bit result/optional-flags/end-tick transport, seven subsets
+// 157/137/166/207/248/234/256; all with unsigned result 256. Original domains, helpers and body restored.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

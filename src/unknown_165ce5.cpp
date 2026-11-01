@@ -1615,6 +1615,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // increment/both 220 each; complete two-weapon active mask alone/with decrement/
 // with increment/with both 223 each; both plus final resource guard 223. Original
 // complete body restored; frame, unit/mode and independent look homes remain.
+// Round 445: Native double raw-input/interval domains, with late-magnitude combinations and
+// independent quotient intervals: 510/547/532/518/536/540/550/505.
+// Original complete executable body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

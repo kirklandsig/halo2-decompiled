@@ -1660,6 +1660,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 441: shared two-use initial sum pointer/radius-result/edge-first accumulation subsets
 // 553/552/553/552/553/552/553; complete graph with native long accepted counts 572.
 // Original complete body restored; sum homes and query zero ownership remain.
+// Round 445: Native double radius-minimum/nearest-separation/normalization result domains,
+// seven subsets and full-width-count graph: 651/641/678/621/643/681/697/763.
+// Original complete executable body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
