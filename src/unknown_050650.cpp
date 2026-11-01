@@ -542,7 +542,17 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 	actor_looking_rotate_in_place(vector, axis, sine, cosine);
 }
 
-// score 333 (was 333): the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
+/* function_1697c0 fills 0x5c bytes; the shared result type covers the first
+   0x4c (as unknown_1c20f0.cpp's collision buffer) */
+struct s_collision_result_buffer_1697c0
+{
+	s_collision_result_1697c0 result;
+	byte unknown4c[0x5c - 0x4c];
+};
+// score 322 (was 333): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
+// (shared with the random and sine temps) at the frame bottom, so every lower slot is 4 off; the trig and rotation
+// schedules differ.
+// Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
 // random/trig and vector schedules still differ.
 // Tried: direct collision Boolean 355; initial best vector before normalization 356; result declared first 354;
@@ -635,6 +645,13 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // offset shifted); on it a long attempt counter 326 at 1423 B (retail compares `cmp dx, 0xa`: a short counter), the
 // candidate copy before the draws 334, the single-exit normalize 346 (1449 B), `clear` left uninitialised 327 (same
 // code). In this body the rotations are about retail's length (fsin/fcos/branch at the same listing lines).
+// Lane 13 r48 (fast, then plain): on r44's structure (368) the rotation helper as dot3f(v, a) / dot3f(a, v) 344/344
+// (0x297d30 23 -> 144), (1 - cosine) first 368, cosine-first rows 368, axis x vector added 357 (0x297d30 48), a named
+// dot 349 (158), the projection after the crosses 349 (158), sine-scaled crosses 340 (153), copied-in components 360
+// (243). Kept: the collision local as the 0x5c buffer function_1697c0 fills plus `clear = true` first in each pass
+// 322 plain (1424 B, retail's frame and prologue; the initialiser then dead and dropped, same code). On 322: the
+// single-exit normalize 341 (1449 B), the header normalize3d 340 (1447 B; both put the length temp at the frame
+// bottom as retail), bool clear 344 (1435 B), single-exit with bool clear 368, normalize3d with bool clear 367.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -642,24 +659,24 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	vector3f best_direction = *g_4687a8;
 	bool result = false;
 	real best_fraction = 0.f;
-	long clear = true;
+	long clear;
 	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
 	for (short attempt = 0; attempt < 10; ++attempt)
 	{
+		clear = true;
 		real yaw = function_259d0(&g_4e7408->unknown0, NULL, 0, yaw_lower, yaw_upper);
 		real pitch = function_259d0(&g_4e7408->unknown0, NULL, 0, pitch_lower, pitch_upper);
 		vector3f candidate = *forward;
 		actor_looking_rotate(&candidate, &pitch_axis, pitch);
 		actor_looking_rotate(&candidate, g_4687b0, yaw);
-		clear = true;
 		if (test_collision)
 		{
 			vector3f ray = { candidate.i * 3.f, candidate.j * 3.f, candidate.k * 3.f };
-			s_collision_result_1697c0 collision;
-			collision.unknown24 = NONE;
-			clear = !function_1697c0(0x10800001, origin, &ray, NONE, NONE, &collision);
+			s_collision_result_buffer_1697c0 collision;
+			collision.result.unknown24 = NONE;
+			clear = !function_1697c0(0x10800001, origin, &ray, NONE, NONE, &collision.result);
 			if (clear)
 			{
 				actor_looking_normalize3d(&candidate);
@@ -667,7 +684,7 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 				result = true;
 				break;
 			}
-			real fraction = *(real *)((byte *)&collision + 4);
+			real fraction = *(real *)((byte *)&collision.result + 4);
 			if (fraction > best_fraction)
 			{
 				best_fraction = fraction;
@@ -845,6 +862,12 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // result last, result first and point_valid last 322 each (homes unchanged); `point_valid = result = false` with
 // point_valid declared first 324 (only the entry store order flips); point_valid set once at a new label before the
 // aim test 351, that with the reversed chain 349.
+// Lane 13 r48 (fast; callers 0x297a50/0x297660/0x2980d0 stay matched): retail routes case 1/2's remembered NONE tests
+// and case 1's `state < 1` to the exit that stores `result = 0` (ours: only the two normalize failures); `result =
+// false;` before case 1's, case 2's or both trailing `goto done` 342 each (1404 B: the copies tail-merge, the
+// 0x1ffe00 call loses its pushes); the remembered branch first (`if (state < 1 || state > 2) { if (unknown00 == NONE)
+// goto done; ... }`) in case 2 341 (1404 B), in case 1 (`state < 1` to done first) 305 (1440 B), both 305; the
+// object index read before 0x210850 in both remembered branches 309 (1444 B).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1485,6 +1508,13 @@ struct s_actor_looking_turn_request
 // our build inlines it (27 calls against retail's 28). Fast (control 548): forced defined inside the 0x2973f0
 // block 544; animation state long 550; forced with the top bools 548; the target-point pair declared after
 // 0x297600 543; forced inside with valid before the direction 544.
+// Lane 13 r48 (plain; --fast reads 548 for the unchanged body, with a CAVEAT): the entry copies chained
+// (`field_x6f2625 = field_xe66477 = forward`) 548 fast (same as the fast control); the looking output published on
+// each path (direction on success, forward on failure, field_xe66477 for case 6, retail's per-path copies) 637
+// (2132 B); the output flags through `actor` with no re-get 590 (1956 B: the actor table is then no longer held in
+// EBX); that with bool valid 585 (1960 B, frame 0xc4, valid in BL as retail); the re-get before the three output
+// copies 461. The EBX hold comes from three users of the table (entry, the inlined 0x1fdd90, the re-get); retail
+// has only the two, so BLOCKED-BY 0x1fdd90 stands.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

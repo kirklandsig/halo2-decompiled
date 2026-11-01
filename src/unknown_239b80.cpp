@@ -666,6 +666,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // entry (retail scan). On the if/else fraction (249, 880 B): if/else-if clamp 249; clamp inside the nonzero
 // arm 249; `short last = count - 1` 273; previous side declared before the previous point 249; loop test
 // `i != count` 249; `points + count - 1` 249. Zero-denominator arm first (`== 0.f`) 198 (887 B).
+// Round 294: uninitialized current-point/distance/both declarations before the loop
+// or at entry, 129 each; both with the current-side declaration at those scopes
+// 129/129. Original declaration scopes and body restored; count ECX/prior-side byte remain.
 // Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
 // 278/278/278/278 and conditional collection 302/278/278/278. All restored;
 // native count ECX, prior-side byte and SIMD homes remain.

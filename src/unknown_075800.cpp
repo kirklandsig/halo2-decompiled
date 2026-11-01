@@ -965,7 +965,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.
-// score 193 (was 193): retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
+// Earlier at 193 (was 193): retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // the address on the stack (loaded into EDI, which 0x94220 takes it in); ours the type in ECX, the
 // address in EAX and the message on the stack, in every declared order. Retail lays the case bodies out
 // in one switch's order 0,2,3,4,8,9,10,12,13,14,22,23,24,18,11,5,6,7; with the unified switch and the
@@ -1177,6 +1177,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // late case returns in both orders 196/196; default/terminal conditional chains
 // 196/196; singleton-first switch/conditional chain 201/202 (fast control 196).
 // Full baseline 153; original native-role graph and matched caller preserved.
+// Round 445: Accepted first classifier with connection orders 5,7,6 / 6,5,7 / 6,7,5 / 7,5,6 /
+// 7,6,5 and direct priorities 2,4,0,3 / 4,2,0,3 / 0,3,4,2: 195/196/196/195/196/196/194/195.
+// Original complete executable body restored.
 // Round 494: late case-18/case-11 inline boundaries on the native-input graph
 // inline/ordinary, ordinary/inline, inline/inline, noinline/ordinary, ordinary/noinline,
 // noinline/noinline, inline/noinline, noinline/inline: 196/196/196/211/196/211/196/211 fast.

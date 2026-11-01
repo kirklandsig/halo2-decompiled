@@ -461,6 +461,13 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // (same code: the call still follows the first two pushes).
 // Round 291: result identity before readiness/availability, all readiness/availability/
 // selection identity subsets, 113/113/113/113/113/113/113/113. Original body restored.
+// Round 133 (m3 lane 6, fast with the file and its callees listed): the node state read into a block local before the
+// marker call together with the movement limit read at each use 97 (aligned 116 -> 102; the 0x25d690 call, the marker
+// block and the select become retail's, the frame stays 0x1634 with the result byte in its own dword; one-use call
+// result, not kept); the sibling single exit with both 156 (aligned 86: frame 0x162c and retail's result byte, but the
+// actor offset in EAX and `slot` held in ESI), with the result declared before the actor 170 (aligned 89), the sibling
+// exit with the node state alone 161 (aligned 91); `result` renamed `has_prop` (sorts beside has_markers) 113 and with
+// both pieces 97 (identical code: names don't move the byte slots).
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

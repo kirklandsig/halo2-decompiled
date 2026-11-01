@@ -1445,6 +1445,11 @@ void __stdcall function_205320(long group_index)
 // Round 54 (lane 9): `(salt << 16) | (squad_index & 0xffff)` (0x1e0160's spelling) 37 (the index moves to EBP);
 // the existing object_get for both object lookups 18; that with squad_get 18; the reload through
 // object_header_get(...)->object 18; the insertion written in both arms of the high-word test 40 (143 bytes).
+// Round 36: the same register pattern (pool in EAX, index product in EDX, lea) is matched 0x204950's, where
+// the product is computed before the pool load, and unmatched 0x20d570's; compile-only, 1-8 unused locals at
+// three places and a pool/data local change nothing. Real (fast): one store of a full-index local 57 (129
+// bytes, callers inline it), the same assigned in both arms 43; the absolute index named at the top 41; the
+// scaled offset named at the top 40; squad_get again for the salt read 46.
 // @retail 0x201ad0
 void function_201ad0(long squad_index, long object_index)
 {

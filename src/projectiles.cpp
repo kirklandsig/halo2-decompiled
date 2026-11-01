@@ -1567,6 +1567,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // Speed update is still called instead of expanded; 1239/1261 bytes.
 // HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
 // HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// first +0 is entry scheduling; frame 0xc versus retail 4.
 // #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
 // retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
 // without the inline is 380. On that 304 form: retail keeps the pool pointer in EDX from the entry to the

@@ -244,6 +244,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // outside; the chained assignment stores them reversed) 886, with the long counts 927. Array names (two full
 // prefix orders) and declaration order leave the four query-array homes unchanged (retail: gains +0xec, indices
 // +0x1f0, portals +0x2f0, clusters +0x3f0; ours portals, indices, clusters, gains).
+// Round 446: native persistent/query/search scalar lexical homes, seven subsets
+// and all with Boolean local roles 886 each. Original scalar names, body and helpers restored.
+// Round 494: short persistent target count with native long query/choice and
+// bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
+// recover 3327 bytes but regress; all original counter domains, helpers and body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -625,6 +630,8 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // g_4e0348 there while tag and radius use the local), the 0x18ab70 argument setup and the BSP/count homes. On
 // 153: the transition through g_4e0348 279 (1037 bytes, a zero kept in ESI), position copied before the cluster
 // 210, bsp declared before the tags 153, the angles declared at the request-loop top 153.
+// Round 263: Native query-tail sentinel chains in six array orders 161/162/162/161/161/159; original-order chain with short/word
+// bounded fill induction 256/256. Original fill producer, count, helpers and complete body restored.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
