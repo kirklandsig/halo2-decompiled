@@ -525,6 +525,12 @@ extern point2f *g_468778;
 // constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
 // settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
 // first facing dot read off the prop view 408 (1556).
+// Round 55 (lane 10, fast): on the actor-first form with constant returns (393 re-measured): the slot pointer
+// declared first 393; the settings rejection as its own early return 410; the prop pointer declared with the
+// lookups at function scope 395; the prop pointer cleared in the prop-less else arm in place of its NULL
+// initializer 385 (the settings pointer then lives only at [esp+0xc] as retail's [esp+0x10], but arg_0 stays in
+// EBX and the prop goes to ESI; retail's `xor ebx, ebx` before the NONE test shows the NULL initializer is
+// retail's); the prop index in a named local 393.
 // Round 289: Complete facing value with actor-first/target position/target velocity values, masks
 // 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
 // observations, lookup order, early distance and complete body retained.
@@ -817,6 +823,9 @@ static __forceinline long real_to_long(real value);
 // Original result, scopes, input/output query aliases, arithmetic and complete body restored.
 // Round 288: Prop handle before/after metadata, then before with actor/target/both position receivers and after with actor/target/both receivers,
 // 458/473/500/494/477/457/494/483 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 232: Complete branch-owned direction distance 382; query scope/names/
+// declaration order 382/382/382; target-velocity receiver and scope/names/both 381/381/381/381.
+// Three-count best rejected; all executable code, query aliases and observations restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

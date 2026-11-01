@@ -186,6 +186,14 @@ struct c_aggregate : c_child
 // Retail's slot 0x10 holds produced, the dispatch child cursor and the cleanup countdown, slot 0x14 the
 // children base, the inner count and the block pointer; ours groups the temporaries the same way but keeps
 // produced apart. Still BLOCKED by the build flag.
+// Round 49 (lane 11, fast): the get_info output declared first at function scope 31; the final boundary
+// stored inside the dispatch gate (its only reader) 34; the dispatch child read at each call 121 (357 bytes);
+// the get_info fallback as a ternary assignment 31; error and total declared in one statement 31 (the last
+// three the same code). The frame stays 0x8024 in each.
+// Round 38 (m3 lane 14, fast): the dispatch and cleanup loops each in a block of their own 31; produced
+// declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
+// the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
+// 0x8024 in all).
 // Round 285: Shared callback output with fixed short/unsigned-short collection and dispatch ordinals,
 // scratch after counters/before arrays: eight at 161 (406 bytes). Frame and callback/loop temporary homes
 // remain; complete body and original signed ordinals restored.
@@ -200,6 +208,9 @@ struct c_aggregate : c_child
 // 31 (same code); produced declared and zeroed at the loop-body top 125 (389 bytes); the boundary stored
 // before the child read 31; the cleanup through blocks[k] directly 31; both loops calling the concrete
 // child class (children[i] without the cast) 31. Still BLOCKED by the build flag.
+// Round 490: error-bounded collection 37; immediate failed-producer exit 83; bounded unsigned
+// ordinal 38; bounded shared query output 38 (frame 0x8020), iteration output 48, cleanup count
+// snapshot 80, real boundary dispatch 108; immediate exit with shared output 77. Original graph restored.
 // Round 42 (m3 lane 13, fast): the cleanup indexing blocks[k] directly 31; one function-scope index for the
 // collection and dispatch loops 31; one `c_child **` children list local for both loops 126; the starts store
 // before the child read 31 (all same code but the list). Diagnostics, reverted: one output local for both
@@ -212,6 +223,16 @@ struct c_aggregate : c_child
 // Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
 // then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
 // restored.
+// J228: one object pointer across collection/dispatch or all three phases, crossed with a shared
+// query output and a common fixed-child ordinal: eight at 31/373. Shared output recovers 0x8020
+// but exchanges the loop homes; separate outputs retain 0x8024. Original body restored.
+// Round 328: Shared collection/information output with an actual cleanup-item pointer;
+// collection-child, dispatch-boundary and cleanup-block cursor subsets 0-7:
+// 81/83/145/146/121/123/167/168. Original outputs and signed traversals restored; frame and lowest
+// two loop/output homes remain.
+// Round 282: Native collection array-end traversals (child end with indexed/advancing boundaries,
+// boundary end with indexed/advancing child), independent outputs 169/149/148/145;
+// shared query output 168/149/147/130. Original frame and body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

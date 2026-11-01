@@ -178,6 +178,13 @@ bool function_a7670(long object_index);
 // Round 267: reached-end comparisons for fixed selector, first/second membership, first processing,
 // cleanup, both searches, both processing loops and all five together each score 181.
 // Original loop tests restored; scratch EDX/EAX, list/index/count homes and cleanup induction remain.
+// Round 191 (lane 3, fast): retail's outer loop is the selector counter (selector at esp+0x28 after the
+// four pushes, body at +0x24, list +0x20). The outer locals renamed to sort in retail's slot order 181
+// (same code); the first scan ending on its found flag in the loop condition 260; the admission flag
+// preset true and cleared in a test 179 (a flag set in a test: only with a match), that with the plain
+// indexed cleanup 194 (957 bytes, plain check); the admission as if/else arms 255; the record type read
+// into a byte before the admission 181 (same code); the index decrement after the pending-flag clear
+// 181, the body count read before that clear 181 (same code each).
 // Round 148 (lane 4, fast): retail keeps the island index in ECX and the list in EDX on the unflagged path
 // (no store at the index's zeroing or increment; spilled after `dec` and reloaded where the flagged path
 // ends), so the field byte lands in BL; ours keeps both on the stack. The flagged path as a nested block
@@ -187,6 +194,13 @@ bool function_a7670(long object_index);
 // Round 298: Complementary deferred result bool/byte/short/long on shared membership/live body
 // bound/indexed cleanup: signed count 233/233/266/267; unsigned count 233/233/266/267. Exact-only
 // shared result restored with original body; selector/list/count homes and BL admission remain.
+// Round 217: native immediate/deferred/both append-end extents, then indexed cleanup,
+// standard deferred search and shared membership result: 312/321/382/319/324/385/360/382. Original counts and body restored.
+// Round 259: Deferred-before-immediate membership, ordinary/first-standard/second-standard/both-standard searches, cursor/indexed cleanup
+// 275/270/263/256/266/262/265/270. Original body and producer sites restored.
+// Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
+// all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
+// selector/list/count homes, BL admission and indexed cleanup remain.
 // @retail 0x278f00
 void function_278f00()
 {

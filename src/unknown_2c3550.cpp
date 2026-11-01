@@ -234,6 +234,13 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // function and assigned after the normalize 92 (same code); the cross factors named 92 (same code); direction
 // from vector2d_from_points2d with the locals x first 92. Compile-only (reproduces ours): no direction locals,
 // locals declared at the block top, dot operands swapped, a named dot: none preloads y.
+// Round 150 (compile-only screen is exact for this block): the y preload needs every reference to direction.y
+// to go through a pointer (a pointer local to the whole direction for the subtraction, the normalizer and the
+// direction locals gives it; not allowed); x is never preloaded either way. Real: vector2d_from_points2d +
+// dot_product2d/cross_product2d + single-exit normalizer 106 (634 bytes; y in XMM1, inverse in XMM0, the second
+// cross not in place), with the two-return normalizer 144; single-exit normalizer alone 92;
+// vector2d_from_points2d + single exit 91 (622); that with the dot through dot_product2d 146 (630 bytes, loop
+// entry layout as retail, no preload). Any direct read of direction.y (the cross written on the fields) drops it.
 // Round 129 (m3 lane 6, fast): the normalizer's body written in place (no helper), tiny case first 156 (634
 // bytes), the long case first 156, without the direction locals 156; scalar direction locals stored into
 // the point afterwards 165; on round 122's helper form (106, re-measured: the preload is there, but y and
@@ -251,6 +258,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 291: normalizer common component stores, working/distinct output scalars,
 // large/tiny first and x/y or y/x publication, 142/142/142/142/160/160/160/160.
 // These promote the original subtraction to SSE and grow to 635/634 bytes; restored.
+// Round 261: complete source/goal/both point snapshots before normalization 178/177/205;
+// with existing subtraction 197/177/219; full snapshots with shared dot/cross and tiny-case-first
+// normalizer 215/215. All restored; added native input storage grows frame 0xc to 0x10-0x18.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -754,6 +764,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // long/Boolean success, 727/760/727/760/729/750/729/750. Original complete body restored.
 // Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
 // subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
+// Round 261: all six relative lexical schedules of direction/previous-direction/world-start
+// 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
+// 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

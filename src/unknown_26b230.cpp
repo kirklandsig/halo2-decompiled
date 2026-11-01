@@ -1944,6 +1944,16 @@ void function_269250(long clump_index, long actor_index);
 // the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
 // into a register and leave the selection in memory as retail: the selection wins the callee-saved register
 // only through the call in the walk plus its post-loop uses.
+// Round 116 (lane 8, fast with 0x269580/0x269040; the unchanged body gives 89 there): in-arm x87 compare with the
+// selection stored first 126; with the selection from `groups.iterator.datum_index` 128 (pool promoted to EDI and the
+// selection memory-only as retail, but the walk's join loses the clump-index copy, so the not-found path threads to
+// the exit and the homes rotate); the walk struct declared once outside the actor loop 126 / 128; selection and best
+// declared before the walk 129.
+// Round 51 (lane 10, fast): one `clump_index` local for both the selected and the created clump 89 (482 bytes), with
+// the in-arm compare 126 (480); that with the selection stored before the best score 89, in-arm 126; the in-arm
+// compare with the score declared at the top of the walk body 126; the group declared in the while condition 89.
+// Retail never gives the selection a register (stored from ESI in the walk, reloaded after the post-loop calls,
+// unlike the created index in EDI), so the walk's pool field is scalarised into EBX; ours gives EDI to the selection.
 // Round 34 (plain checks): in-arm compare with the selection stored first 126; on it `actor->unknown07c != selected`
 // 126, best declared and stored first 126 (both same code), the team read once into a `short` before the scan 168
 // (497 bytes), creation arm first 130.
@@ -2187,6 +2197,12 @@ void function_269250(long clump_index, long actor_index)
 // Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
 // order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
 // deletion/pool scheduling remain; all matched controls survive.
+// Round 116 (lane 8, fast): the 3 form (cleared prop) re-checked 3: the hoisted loads are in place and only which
+// pool gets EDI/EBP differs (ours node EDI / prop EBP). Separate pool globals with the 3 form: this function matches,
+// 0x25d770 2 and 0x25d810 91, unchanged by the definition order in globals.cpp or the extern order in globals.h. Under
+// separate globals the first-referenced pool takes the first register (the node pool in 0x25d770/0x25d810); under the
+// struct the other one; retail gives the prop pool the first register in all three. The node walk through the out-of-
+// line 0x26be30 4 (wrong link field, +0x2c for +0x34; not a valid form).
 // Round 482: Independent category false-initializer lifetimes at entry/object/type
 // boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
 // declarations restored; category-byte homes and deletion/pool completion remain.
@@ -2418,6 +2434,11 @@ void *actor_get_character_situation_entry(long actor_index);
 // Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
 // with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
 // allocation remain; all matched controls survive.
+// Round 116 (lane 8, plain): first loop re-deriving `&candidates[cursor]` 301 (re-check); that plus a short local
+// of g_4686c4 before the distance store (diagnostic, one-use local of a global) 275: the cluster loop is then retail's
+// except `mov esi, dword ptr` for retail's `mov si, word ptr`, and the marking loop swaps EBX/EDI; cursor declared
+// first 301; both selection loops indexing `candidates[cursor]` with no pointer 233 (1365 bytes); the second loop as
+// `for (; cursor < count; ++cursor)` over the array 293.
 // Round 482: Stable selection-count snapshots short/long after sort 197/313, before sort
 // 203/315; with first-loop indexed candidate advancement 314/171/313/184.
 // Caller-inclusive fast control 71; every snapshot regresses. Original escaped count restored.

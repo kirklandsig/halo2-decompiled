@@ -144,6 +144,18 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 260: Native i/k/j norm with real-absolute/shared-scale/single-result combinations
 // 792/786/792/786/791/785/791/785 on direct input. Original promoted products, input access, helpers and
 // entire body restored.
+// Round 47 (m3 lane 13, fast, input reference kept; without it the input moves to EAX, frame 0x8c): the shared
+// normalize3d() from include/normalize3d.h gives retail's normalizer instruction for instruction (memory squares,
+// fst/fabs, dword epsilon, in-place mulss, zero store; homes 4 off) 771 (aligned 421 -> 413); the planar input and
+// heading copies as `*(vector2f const *)` struct copies (retail's dword moves) 750 at 3499 bytes; both 797; both
+// plus magnitude2d() for the radial distance (retail's float squares) 833 at frame 0x8c; that plus the radial test
+// evaluated once through a conditional expression (retail's single fcompi branch) 850. Swapping the names of two
+// vector locals moves no home. Retail keeps the object index in EDI and pushes EBX late for the heading pointer;
+// ours holds the input pointer in EBX from the prologue.
+// Y492: direct-input native planar input/heading/both copies 813/813/821;
+// with normalized-input setter 758/758/766; both planar copies with initial-heading
+// setter, without/with normalized-input setter 820/823. All restored; early
+// input/heading and normalizer memory-product homes remain.
 // Round 288: On native normalized-input setter/direct input: mode default/history coefficient/both/correction root/mode+root/history+root/all/all with shared addition; shared addition alone and with mode/history/root/mode+history/mode+root/history+root,
 // 822/807/822/750/822/807/822/813/749/822/755/749/813/822/755 (fast). Original complete body, observations, helpers and call roles restored.
 // Round 298: Uniform existing bound macro/direct input with normalized-input setter, staged cross

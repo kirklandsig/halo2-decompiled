@@ -475,14 +475,25 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);
 // `found` declared before the default body 119. The dot written k/j/i up-first, forward-first, all up-first or as
 // i, j, k terms: same code (env). A /Gd compile loads the object index into EAX and the entry index into EBP.
+// Round 150 (0xb7060 checked): center through carrier_vector_from_havok 149 (0xb7060 11; entry pointer EBP,
+// component EBX); with a statement-sum dot k, j, i 151; the failure stores as one chained assignment 112 (same
+// code), with the center change 149; the center change with the search's body pointer declared before the outer
+// loop 149. Compile-only: 1-32 unused-local probes before the axis pointers or after the inverse never change
+// the dot's k, i, j term order (only its registers).
 // Round 128 (m3 lane 5, fast with 0xb7060): retail's roles (object EAX, entry ECX) are the declared-order rule
 // (first EAX, last ECX); with the center through carrier_vector_from_havok (149, 0xb7060 11) the body is retail's
 // but for the entry/component EBX/EBP swap and the entry index on the stack, whose home slot then holds `found`
 // (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
 // declared before the default body 154; the entry before the object 151; the object through a `headers` local
 // (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
+// Round 70 (m3 lane 9, fast with 0xb7060): our head coalesces the object index with the object pointer (ECX), so the
+// entry index takes EAX. A named masked object index 132, a header element pointer 132 (head unchanged both times),
+// the entry by byte offset 112; 0xb7060 stays 2 in each.
 // Round 291: uninitialized entry/component/physics pointer declarations at entry, all
 // subsets then existing center conversion, 112/112/112/112/112/112/112/149. Original body restored.
+// Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
+// 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
+// body and call inputs restored; input register pair and early physics-pointer spill remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

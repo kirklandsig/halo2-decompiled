@@ -292,6 +292,9 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 // (its file built without /Ob1, a diagnostic only) 26, as is its body as a forceinline copy, so the
 // reset's form is not the cause. The reset's five zero stores decide it: with one zero store (or only
 // the NONE stores) the entry takes retail's EAX index / ECX slot.
+// Round 109: two-use actor index local 26; scoped slot 26; masked reset index 26; reset-only formal
+// read 26; reset in the return expression 26; reset before actor 36, after flags 41, before prop 33;
+// permuter initial build timed out at 2400 s.
 // @retail 0x1c0430
 bool __stdcall function_1c0430(long actor_index, s_slot *slot)
 {

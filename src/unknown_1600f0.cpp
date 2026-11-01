@@ -1370,6 +1370,12 @@ PRIVATE inline long score_string_list_1608e0()
 // Round 265: library scroll/header-alpha/body-row-alpha bounds and their pairs/all
 // 697/727/719/729/725/743/817; all with upper-first nesting 789. Body-row bounds
 // recover frame 0x79c but regress to 719 at 2922 bytes; original full body restored.
+// Round 38 (lane 15, fast; aligned = LCS-aligned differing instructions, baseline 628): fade count declared
+// (uninitialized) at the top 680 (identical code); screen height computed before x 693 (aligned 588: the
+// clamp limit is then read and converted once as retail, but the panel moves to EBX and left stays in BP);
+// screen height first of all 693; the player lookup written at each of its four uses (no pointer local) 725;
+// x/y into a two-short origin with row_position copied from it by memcpy and the title bounds from the
+// origin, on the height-first order, 721 (2906 bytes). Original body restored.
 // Round 41 (lane 14, fast): retail's dim predicate is the existing 0x15db30 inlined (its fresh player lookup and
 // +0x2c/+0x1ac tests byte for byte) with `team == NONE` last; dim is cleared before the team search and set
 // later; the row's raw and masked player indices are loaded once. Bool show_icon 695; with early dim 703; with a

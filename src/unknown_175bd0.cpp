@@ -1864,6 +1864,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // 101, one `markers` local for both arms 102 (0x178360 1); the parameters as (source, out, marker_index) or
 // (source, marker_index, out), the order retail's esi-before-eax setup suggests, 9/9 (callee unchanged, 0x178360
 // 2 each; with node-first 101/101), so the current order is retail's.
+// Round 260: null-arm point/vector setters, singly/both and node-first/reversed publication,
+// 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
+// Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
+// Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2052,6 +2056,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 450: live cluster field alone/zone/entry/both 128/165/379/379; with
 // live base 128/165/379/379. Entry-field forms outline the existing zone producer;
 // its forced expansion on live cluster/entry gives 186. Original producer and body restored.
+// Round 440: shared plane producer 128; complete plane/point/both/zone/zone-point/zone-producer inputs and
+// assigned plane result 379 each (producer outlined). Forced existing expansion on
+// plane/point/both/zone/zone-point/assigned graphs 281/240/358/340/400/405. All input objects, original
+// arithmetic, helper and body restored.
+// Round 493: complete point/plane/both values, mutable then const, 379/379/379/379/379/379;
+// complete point and plane with named distance, mutable/const 379/379. Original zone producer
+// restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
+// Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3096,6 +3108,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // bytes, 0x176f60 25), with spawn at function scope 109 (0x176f60 25). With the mode per call the effect
 // index is computed in EAX and moved to EBP (retail computes it in EBP from the stack slot), so LTCG passes
 // it in a register, and the definition takes EBX where retail spills it. 0x175a80 gets retail's registers.
+// Round 130 (lane 6, fast with 0x176f60): retail's 0x54 frame reads as the spilled definition at [esp+0x10],
+// two unused dwords and the particle-location cursor (a 12-byte record like the spawn record of 0x178c80)
+// ahead of the 0x34-byte matrix; that layout needs the per-call mode (convention change above). On this
+// cached-mode body: the type-query block's braces removed 93; the particle-location cursor declared at function
+// scope 93; the matrix declared outside the loop 93; the particle-location pointer declared before its test 93
+// (all four the same code); `tinted()` called in the colour call's argument list 120 (325 bytes, 0x176f60 25).
 // Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
 // mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
 // early `return next_index;` on the definition test 94; the mode per call with that early return 111
@@ -3112,6 +3130,17 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // mode read before the colours 88; particle system looked up before the effect 113 (345 bytes); next index
 // declared before the lookups and assigned after 88; effect looked up after the definition 119 (346 bytes);
 // early return on the definition test 95 (334 bytes).
+// Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
+// mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
+// early `return next_index;` on the definition test 94; the mode per call with that early return 111
+// (0x176f60 25), with the spawn cursor too 112 (0x176f60 25); spawn with the particle system looked up
+// before the effect 113; spawn with both colours declared inside the type-query block and the next index
+// read after the definition call 95.
+// Round 493: native unsigned system/effect/successor handle subsets 93/93/93/93/93/93/93;
+// native-int system on the unsigned effect/successor graph 93. Original input and result
+// domains restored; frame 0x4c/0x54 and system/successor/color homes remain.
+// Round 260: coherent separate inline color/location/matrix declarations, seven subsets 93;
+// all three with per-call mode 108, losing the matched caller. Original declarations/body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3404,6 +3433,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // bytes). Compile-only: a 179880-only point helper with a scale local, `*=`, `x * scale`, deferred
 // declarations, `!(scale == 1.0f)` or a vector local all give our y-in-place code; naming position.z
 // alone (or with y) moves z instead, naming x changes nothing: retail names position.y and not z.
+// Round 493: native indexed point input/output/both and complete direction access 74/74/74/74;
+// each with default-before-color scale 270/270/270/270. Original helpers and body restored;
+// scale prefix and point Y-copy remain.
+// Round 260: complete native location matrix with original/house scale, original/shared normal
+// kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

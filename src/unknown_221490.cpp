@@ -621,12 +621,24 @@ bool sound_driver_voice_create_buffer(
 // Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
 // with per-phase mixbin values 74. Spatial-first counterparts for the three array families
 // 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
+// Round 53 (lane 10, fast with 0x191420): the voice reference indexed by `globals->voice_count` 107 (608
+// bytes); the voice index starting at NONE and taking the count inside the range test 107 (608); both
+// descriptors zeroed by `= { 0 }` in place of memset 161 (606); the 3D flag first with direct returns (NONE
+// on both failures, the voice index on success) 146 (619, 0x191420 1); the count stored by
+// `globals->voice_count++` 71 (same code). Compile-only: both buffers in a force-inline helper taking both
+// flags (count and result outside) 150 (frame 0x98); the voice index starting at NONE with the 3D flag first 228.
 // Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
 // result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
 // spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not
 // the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
 // `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
 // one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
+// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
+// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
+// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
+// Round 226: actual result acquired before capacity admission, short/word/long/dword with
+// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
+// caller; original result lifetime, modes, storage and complete body restored at 71.
 // Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
 // first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D
@@ -637,6 +649,14 @@ bool sound_driver_voice_create_buffer(
 // with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
 // code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
 // (anneal, 600 s, 67 tries): best 71.
+// Round 216: Selected count owns returned result, short/long domain with play/spatial producer order and receiver before/after predicates:
+// 160/167/180/182/160/167/180/182. Original executable source restored.
+// Round 331: Complete final-value descriptor initializers first/spatial/both 176/157/211;
+// spatial-first counterparts 200/197/211; both with count before construction 211, also spatial-first
+// 211. Original memset boundaries and executable body restored; Boolean and zero/input homes remain.
+// Round 285: bounded short/word/byte/signed-byte first-pair loops, then both
+// pair arrays with the real spatial-bin table 234/234/234/234/234/234/234/234. Original
+// complete body restored; spatial/play split and zero/input scheduling remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
