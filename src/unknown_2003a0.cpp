@@ -3370,6 +3370,9 @@ void function_2011f0(long arg_0);
 // second-request and construction-record declarations, 318 in all eight forms.
 // Original request representation, declaration phases and header restored; frame 0x134 agrees,
 // placement/definition and final-chain homes remain.
+// Round 327: Count parameter as the sole remaining-attempt carrier in do/for loops 386/318;
+// last-producer short/long/word/unsigned-long countdowns 364/357/378/357; last-producer
+// short/long for loops 357/375. All restored; frame and placement/chain carriers remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

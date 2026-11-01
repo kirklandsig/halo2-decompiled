@@ -1709,6 +1709,9 @@ void function_b7360(long object_index);
 // as retail, arg_0 ESI); `if (local_4) return 0; return 2;` 527 (1800); `if (!local_4) return 2; return 0;`
 // 527; both 541 (1796); the wait block as a forceinline helper called from the 1/19 and 15/16 paths in
 // place of the goto 513 (1872: the call is repeated as retail, but each copy keeps its own tail).
+// Round 327: Shared movement-query tail after dispatch, success-first bool/byte/short/long
+// 470/470/493/492; failure-first 473/473/490/494. Original case flow and body restored; entry
+// carriers and length gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2104,7 +2107,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 478 (was 478): the frame agrees at 0x1c; retail computes the actor base in EBX
+// score 469 (was 478): the frame agrees at 0x1c; retail computes the actor base in EBX
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
 // before its use and reuses EBX for the state pointer. The body is 2400 bytes against
 // retail's 2396.
@@ -2182,6 +2185,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // aggregate: 591/506/506/612/600/514/512/513. Turning construction restores actor/state ownership and point +0x10
 // but regresses; constant-first distance/common result exit on turning/all graphs: 591/629/620/616.
 // Original complete body restored; actor/state ownership and first-point home remain.
+// Round 327: Complete pending-request arm orders 6/18/14/21, 6/21/18/14, 6/14/18/21, 18/6/21/14,
+// 18/21/6/14, 21/6/18/14, 14/6/18/21, 14/21/18/6 give 471/474/469/480/476/480/472/480. Order
+// 6/14/18/21 retained at 469 by ordinary full validation; all arm bodies remain unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2324,6 +2330,14 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			local_3 = false;
 		}
 		break;
+	case 14:
+		if (!(local_2->field_3 & 0x20))
+		{
+			local_2->field_3 |= 0x20;
+			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
+			local_3 = false;
+		}
+		break;
 	case 18:
 		if (!(local_2->field_3 & 0x20) && function_25ab50(local_1->unknown28) && function_25ab50(local_1->unknown2c))
 		{
@@ -2344,14 +2358,6 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			function_1c1080((s_slot_82 *)g_5023fc, local_1->unknown28);
 			local_2->field_3 |= 0x20;
 			*(short *)g_502400 = 0x82;
-			local_3 = false;
-		}
-		break;
-	case 14:
-		if (!(local_2->field_3 & 0x20))
-		{
-			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
 			local_3 = false;
 		}
 		break;
