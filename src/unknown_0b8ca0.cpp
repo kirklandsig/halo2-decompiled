@@ -10,6 +10,7 @@
 #include "object_markers.h"
 #include "unknown_16d180.h"
 #include "matrix_transform.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <xmmintrin.h>
 #include <string.h>
@@ -639,7 +640,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 230 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // Earlier round: the root-walk loop and the table read are the only places
 // left that could give retail's frame shape, so each was tried alone and together: the table
@@ -732,6 +733,15 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // distance_squared` 227. Retail's latch NONE re-test and abs-index spill follow from its frame
 // pointer (the handle lives in memory); the zoom argument's 32-bit widening needs 0xc8880's
 // parameter (contributor, left alone).
+// Round 38 (m3 lane 14): both callers now match and the old BLOCKED-BY 0x268c90 no longer explains the frame:
+// with either caller alone in the image (0x268c90, or the table-called 0xbf2c0) ours never self-aligns, though
+// both call sites sit 4 bytes off an 8-byte boundary (0xbf2c0 after four pushes, 0x268c90 after a 0x50 frame and
+// four pushes) in retail and ours alike; 0xbf380's frame (0x2a04 against our 0x2a08) and
+// the table entry make no difference (diagnostics). Our LTCG self-aligns this body only with no caller in the
+// image, so the frame is BLOCKED by the toolchain's alignment rule, not by any caller's source. Fast, caller
+// included: the cluster test through the existing bit_vector_test 230 (same code, kept: it replaces that
+// helper's body written out); the distance through length_sq3f 230; the range test as an else-if 230; the
+// model index read at each use 227 (below the bar); a named radius for the square 230.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -753,7 +763,7 @@ bool function_bba80(long object_index)
         short cluster = function_b8a80(root, &links);
         while (cluster != NONE)
         {
-            if (((dword *)((byte *)g_4e6948 + 0x1138))[cluster >> 5] & (1 << (cluster & 31)))
+            if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
                 break;
             cluster = function_b8b20(&links);
         }
@@ -1702,7 +1712,23 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
-// score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
+// jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
+// (307; 308 with retail's shift-form flag tests), a flag with one `if` gives 323, and the byte
+// activity bit `(header->flags & 4) != 0` gives retail's `shr al, 2; and al, 1` at 281 (a
+// four-point gain, under the gate, so not kept). Retail also inlines function_b8bd0's marker
+// pointer; that file is /Ob1, so LTCG keeps our call and it cannot be changed here. This round:
+// the shared exit together with the byte activity bit is 308, and marking the declaration of
+// function_b8bd0 in this file __forceinline changes nothing (the call stays).
+// Another round (at 285, was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
+// jump target at +0x76. This round: a `goto done` shared exit (both early exits) keeps the frame at
+// 0x64 and does give retail's single epilogue, but the score stays 285 - retail re-derives
+// pool->data over the pool pointer in ebx and reads the header byte through that copy, ours keeps
+// the first copy in edi and re-derives a second one into edx; folding the loop's early exit into the
+// allowed flag instead gives 340. The permuter found nothing below 285.
+// Another round (at 285, was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
 // Round 189 (m3 lane 3): retail has no call to 0xb8bd0 here: it reads the parent's node-matrix base before the
 // link stores (`movsx eax, word [edi + 0x116]` precedes the parent-index store) and indexes it by the node at the
 // 0x141590 call, and takes the header and the re-fetched object from a fresh `g_4e0300->data` plus the entry offset
@@ -1813,6 +1839,24 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
 // Four-point lead is below the gate; original header type, byte stores, activity
 // observation, root fields, node query, shared transforms and full body restored.
+// Round 54 (m3 lane 1, fast): a caller-side `__forceinline` declaration of 0xb8bd0 with the node matrix taken
+// before the link stores 285 (1240 bytes: still called; retail computes the parent's node-table base before the
+// parent link store, so its source took the matrix there); `node` not volatile 285; the 0xc0 bit 6 test through
+// s_object_view::physics_active 285 (folds to the same byte test); flag bits 7/8 through s_object_view's
+// flag7/flag8 303 (1222 bytes); index and node both not volatile 323 (1202 bytes).
+// Round 46 (lane 14, fast): retail inlines 0xb8bd0 here and also 0x142570 (this file's attachment-point helper
+// writes that body); both callees' files are /Ob1. Round 189's form with the node matrix taken through 0xb8bd0
+// defined `inline`, before the link stores, 300. A data local at entry for the object and
+// the ancestry walk, the parent and header from `pool->data` after it 302, header first 302, the walk alone 292;
+// the object through the header view, header at entry 285.
+// Round 231: complete point-result/rotation staging 284/284; per-row/all partial pairs
+// 293/293; all row products 283; conditional scaling alone 285, with complete
+// point-result/rotation staging 284/284. Every row-staging form loses the matched
+// sibling; original two-caller helper and complete body restored.
+// Round 118: 0xb8bd0 declared inline in its own file (diagnostic; retail inlines it here and reads the parent's
+// node-matrix offset before the link stores) 342, and matched 0xbcc20/0x11b710 stop matching: BLOCKED-BY 0xb8bd0
+// (its file is /Ob1); `allowed` as one && expression 317; the ancestry walk as a while loop 285; the two link tests
+// in one || 293; the rest of the body nested under `if (allowed)` 307 (1213 bytes).
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

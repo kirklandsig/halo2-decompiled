@@ -518,6 +518,8 @@ real function_30bf0(vector3f *vector);
 // Round 263: Library projection/paired-maxima/plane-copy masks 1/2/4/3/5/6/7 score
 // 307/203/152/316/307/203/316; complete graph with ordinary result 316. Original selectors, plane copy and
 // inherited result restored; result/range/amount homes and inverse SIMD groups remain.
+// Round 74 (m3 lane 12, fast): the posture switch as if/else-if 188; distance squared through the existing
+// length_sq3f 152, the motion test through it 152, both 152 (same code); `use_facing && !actor->unknown007` 154.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1185,6 +1187,12 @@ struct s_equipped_object_view
 // threshold entries selected (NULL when empty) before the held lookup 30 (142 bytes); the
 // entry object through object_header_get's header 28; an unused header lookup in the entry
 // block (diagnostic) gives retail's entry block but a data-first held reload 15 (142 bytes).
+// Round 67: two used entry lookups with the object pointer kept for the held slot 4 (tag chain exact;
+// entry data/index registers differ); a widened selected index or an object-array pointer 4 each; signed-byte
+// selected 11; entry object_get 27, second object_get 4; held index before object 4; result first 36;
+// conditional held index 38 (144 bytes). Selected declared before held index makes the entry exact but gives
+// a data-first held reload 15 (142 bytes), unchanged by threshold/held order or held object_get; result first
+// 36, result between selected and held index 33. Reversed fresh lookup for the held slot 27.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1730,7 +1738,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 262 (was 502): frame 0x80 and the forward/relative blocks now agree; the established and
+// score 194 (was 262): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
 // Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
@@ -1859,6 +1867,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // zero store and loop entry; a 3-point gain, not kept); with a shared iterator-start helper for the
 // file's three prop walks 259 (the walks still match); with the long second counter 260; visibility
 // as one expression or an if/else 450/450 (2841 B).
+// Round 45 (lane 11; fast image 199 at 2880 bytes for this body, 0x25d810 builds differently there): the
+// established/visible flags renamed so their names sort the other way 199/199/199 (identical code: the
+// byte slots do not follow names here); the slot search with a long counter (retail's pointer-walking
+// loop, as the first search) 199 fast, 263 plain (2848 bytes); the player cleared before the first search
+// with it 375, alone 384 (the not-found exit then threads past the index test, which retail keeps). The
+// existing ai_player_get/ai_player_index_get calls: ai_player_get stays out of line (its file is /Ob1;
+// retail inlines it here) 867, with a forceinline declaration 877; ai_player_index_get for both searches
+// (the second search is then CSE'd away) 822/797/818 for a long index with the player cleared first, a
+// short index, and a short index with the player cleared first.
 // Round 36 (lane 13; plain checks, and a one-file LTCG link of this file with its callee closure and the
 // ballast, equal to the full build; --fast is wrong here, its reduced image builds 0x25d810 differently):
 // the view through the existing 0x25d740 262 (same code); the walk through the existing 0x26be00/0x26be30
@@ -1890,6 +1907,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // iterator declared at the function's top 405. The same three iterator statements give retail's EAX form in
 // the matched 0x138fa0 and 0x192b20, so the ECX choice comes from this loop's register colouring (ours uses
 // ECX/EDX where retail uses EAX/ECX through the whole players loop).
+// Round 74 (m3 lane 12; --fast listed with 0x25d810 equals plain): `score > 0` first in the positive expression 260;
+// `if (established || ...) positive = score > 0.0f;` 258; `far_and_slow` named 251 (2880 bytes); positive
+// assigned at the end of the established block with the rest as its else 194 (kept, plain; the difflib-aligned
+// count rises 112 -> 142, the gain is positional); on that: the else as `else if (...) positive = ...` 257, with
+// `far_and_slow` named 249, `else if (visible)` 194, score tested before the distance pair 195, the pair negated
+// into `<=`/`>=` 257, best_level/strongest before the memset 191, a long second search counter 194, both 191.
+// Compile-only (no LTCG) keeps direction i/j/k in xmm3/xmm2/xmm1 across the relative and facing dots as retail
+// (visible in BL there); our LTCG build keeps visible in AL and folds every direction read. Calling 0x30bf0
+// through a function pointer for the relative vector (diagnostic) did not change that (487).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
@@ -2074,8 +2100,9 @@ void function_266640(long actor_index)
 							score += 1.0f - decrease;
 						}
 						if (approach > 0.5f) score += 1.0f;
+						positive = score > 0.0f;
 					}
-					positive = (established || visible && !(distance > 3.5f && approach < 0.5f)) && score > 0.0f;
+					else positive = visible && !(distance > 3.5f && approach < 0.5f) && score > 0.0f;
 				}
 				if (positive)
 				{

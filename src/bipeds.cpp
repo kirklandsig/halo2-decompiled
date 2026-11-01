@@ -501,6 +501,9 @@ void function_e5930(long unit_index);
 // Also: the six NONE stores through `biped` instead of the fresh lookup 110 (396 bytes; retail does re-look the
 // biped up after 0xb9dd0 at 0xde56e, so not kept); the flag set/clear through `current` 120; the definition looked
 // up just before its test 147.
+// Round 192: the set/clear as word_flags_set with TEST_FIELD_BIT/field_bit_test 113/113 (415 bytes, all before the
+// 0xe5930 call retail's); field_bit_test with the byte-cast stores 121, with plain word `|= 8`/`&= ~8` 113; the plain
+// word stores alone 114, with TEST_FIELD_BIT 113. Best gain 5 (under the bar), restored; still BLOCKED-BY 0xe5930.
 // Round 65 (lane 9): why 0xe5930 is inlined here: our LTCG inlines it at straight-line call sites and keeps it a
 // call where the call sits under a condition (0xe2d80, 0xe24f0's switch, 0xec0d0), as it does with 0xe0dc0 (0xde9d0
 // matched once that call moved into a switch default); retail never inlines it. Diagnostic `if (arg_159e6d != NONE)`
@@ -645,7 +648,7 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
-// score 241 (was 280): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
+// score 224 (was 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
 // `shr al, 2; and al, 1`).
@@ -670,6 +673,15 @@ struct s_biped_flags_10a_view
 // retail: `xor al, al` before the test and the early exit shares the epilogue, but 29 bytes short), with the state at
 // the top 303 (state takes EBX again), with `changed` declared first 321. Compile-only: all 120 orders of the five top
 // declarations leave the state in a register and `changed` in memory.
+// Round 192, kept (241 -> 224): the final +0x10a bit-2 test through the bit view (retail's `shr cl, 2; test cl, 1` at
+// 0xdd725; 235 alone) and the case-1 `else if` bit-1 test through TEST_FIELD_BIT (retail's `shr al, 1; test al, 1` at
+// 0xdd704; 231 alone). Tried: that bit-1 test through TEST_FIELD_BIT or field_bit_test at the first site 270, at both sites 266,
+// both sites with the view 259; the type-0 names test through the view 288, through TEST_FIELD_BIT 235/224; the
+// guarded body with one exit 312 again (with the view 306, aligned 68 of 306: the head is then retail's but for the
+// state's three instructions), with the state local after the parent lookup/after `changed`/after `names`/after the
+// biped 306/311/311/310 (state in EBX, `changed` in [esp+0x13]), that with `changed` declared first 337. Remaining:
+// the first two flags_348 tests share a cached word in CX and stores of DL = 0 (retail tests memory, stores
+// immediates), the early exit's own epilogue, the state spill and the 0x111650 call (BLOCKED-BY 0x111650).
 // Round 65 (lane 9): one `return changed` with the body inside the Havok test and `changed |= 0x111650(...) | action`
 // 312 (1092 bytes); that with the state at the top 303 (1126 bytes; aligned 75 against 91 for this form, but the
 // state takes EBX at entry and `changed` a stack byte: the earlier-defined value gets the register); with
@@ -793,7 +805,7 @@ bool __stdcall function_dd360(long arg_159e6d)
 			{
 				function_e4450(arg_159e6d, names);
 			}
-			else if ((biped->flags_348 >> 1) & 1)
+			else if (TEST_FIELD_BIT((biped->flags_348 >> 1) & 1))
 			{
 				function_e45e0(arg_159e6d);
 			}
@@ -807,7 +819,7 @@ bool __stdcall function_dd360(long arg_159e6d)
 		function_e4c50(arg_159e6d);
 	}
 	function_de190(arg_159e6d);
-	if (((biped->flags_10a >> 2) & 1) && (*((byte *)biped + 0xc1) & 1))
+	if (TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2) && (*((byte *)biped + 0xc1) & 1))
 	{
 		if (function_113e40(arg_159e6d))
 		{
@@ -887,7 +899,7 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
-// score 42 (was 310): walked against retail block by block (calls, argument order, offsets, constants, conditions,
+// score 42 (was 42): walked against retail block by block (calls, argument order, offsets, constants, conditions,
 // case bodies): the only behaviour difference was the final flags bit-7 clear, which retail also runs when the
 // biped has no havok component (0xddf46 is the NONE branch's target, 0xdd9bf); it is now outside the if.
 // What still differs: crouch sum loads the biped's crouch first (retail 0xddb25 loads crouch_change first; swapping
@@ -900,6 +912,17 @@ extern long *g_51e9cc;
 // unsigned key (47 -> 46), `PIN(contact...) == contact` (46 -> 45), i, k, j square sum (45 -> 42), word flag masks.
 // Earlier rounds (350 and up): word flags, shared velocity norm, unsigned key, full-width physics result, case
 // order (the compiler lays the cases out itself: 1/5/4 and 5/4/1 give the same bytes), clamp admission, owned crouch.
+// Round 46 (lane 14, fast): retail inlines 0xb77d0 here (the velocity block). That block as a call to function_b77d0 498
+// (stays a call; the crouch sum then loads crouch_change first as retail); with a __forceinline declaration 498
+// (not honoured; 0xb77d0's file is /Ob1); 0xb77d0 defined `inline` 44 (inlined, the square sum back to i/j/k and the
+// crouch order back; 0x2056e0 stops matching). crouch_change named crouch_delta 42, change 42,
+// z_crouch_change 42; the sum named `crouch` before the PIN 42.
+// Round 118: the crouch sum in a named local under PIN 42 and with an if/else clamp 42 (both identical code);
+// case 5 `found = true` first 42; case 4's surface pointer passed straight to the flag test 42; the lookup declared
+// with the contact block's locals 42. Diagnostic (not keepable, a pointer to a whole local): an `s_lookup *` local
+// used for both the initialize call and 0x1efd80 gives retail's esi reuse (`mov edx, esi`) and length, 42 -> 17
+// (1481 bytes; left: the crouch sum/store order, case 5's 0x35c store, case 4's store order, the 0x10 or); 0x14a8e0
+// shows the same reuse, so the lead is a source form in which both calls take one pointer value.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1480,7 +1503,7 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 /* a biped's response to a damage impulse: it starts flinching or falling,
    a hard one knocks it over (and a ragdoll gets a random spin), and on
    the ground it turns to face away from the hit */
-// score 77 (was 122): Frame 0x28 and entry saves agree; the x87 squares (k, j, i; retail j, k, i), spin.i
+// score 77 (was 77): Frame 0x28 and entry saves agree; the x87 squares (k, j, i; retail j, k, i), spin.i
 // (axis.i loaded first; retail copies the angle and multiplies by axis.i) and the mode-3 test (retail keeps the byte
 // in cl: mov cl; movzx eax, cl ... cmp cl, 3) still differ.
 // Earlier (score 122 (was 223)): tag/flag carriers, strong-result home, spin scaling and late call/output scheduling.
@@ -1528,6 +1551,32 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 // cross re-coloured; also with `strong ||` first in linear or away declared up front); spin_fraction folded into
 // the angle 131 (the two constants fold). Compile-only screens: spin via vector3f_scale, angle initialised at its
 // declaration, declaration and statement orders, `spin = axis; spin.X *= angle` never give retail's spin.i.
+// Round 39 (fast; a compile-only screen of this file reproduces all three spots and the colour flip): the x87
+// square order follows the creation order of velocity's fields (newest first), set by their first direct mention:
+// the scale through the existing vector3f_scale 77 (same code), with the magnitude written i, k, j 73 (x87 squares
+// as retail; every other term order screened: ijk/jik/jki/kij/kji give kji/kij/ikj/jik/ijk). spin.i follows a
+// direct mention of axis.i before the angle (diagnostic `(void)axis.i;` 60, aligned 9: only the mode block left);
+// natural forms: vector3f_scale(&axis, angle, &spin) 73, the angle passed as an expression to vector3f_scale 71
+// (spin.i and spin.j angle-first), angle/magnitude/fraction declared or initialised in place, spin rows reordered,
+// cross3f_staged (screens) keep spin.i. Mode block: retail's `mov cl; movzx eax, cl ... cmp cl, 3` comes only from
+// the long local for 4/5 plus the field read for 3 (174; with the probe 178; with the spin expression 179), and on
+// cross3f that always re-colours the velocity scale and the cross (xmm2/1/0 -> 0/2/1); the hand-written cross
+// keeps the colours (screen) but turns spin to angle-first in all rows and the squares to i, j, k. A byte mode local
+// with the field read for 3 90 (narrow compares); byte/char/word/short/dword locals (screens) narrow or keep eax.
+// Round 118: the long mode local plus the field read for 3 with the 0.5 scale rows in each other order 168-173;
+// the mode local declared at the block or function top 77 (with the field read for 3 174); the velocity scale
+// through vector3f_scale with the magnitude i, k, j plus the spin through vector3f_scale(&axis, angle, &spin) 73,
+// with the angle expression passed instead 71 (x87 squares and spin.i as retail; left: spin.j, the mode block);
+// that plus the field read for 3 179, plus `(byte)mode != 3` 72, plus a byte local with the long mode copied from
+// it and 3 tested on the byte 16 (mode block and colours as retail; only spin.j left, angle-first where retail
+// loads axis.j; the long copy of the byte local only widens it to split the compares, a cast that only steers
+// the compiler, so not kept without a match). On that 16 form: angle local with vector3f_scale 20, spin = axis
+// then scaled 165, cross3f_staged 16, hand-written cross 128, magnitude/spin_fraction declared in place or swapped
+// 16/16/16, spin rows k, j, i 23. Compile-only screens of it (they reproduce the re-colouring and spin): 28 orders of
+// the top declarations, 6 of the block's, three product orders of the angle, spin_fraction folded in, an in-place
+// axis scale then copy, position/linear/away declared elsewhere: spin.j stays angle-first. Mode spellings screened
+// (no local; unsigned long/int/short/word/dword/char/unsigned short locals, each with the local or the field for 3;
+// nested; const): narrow compares or the re-coloured velocity scale; only the byte+long pair gives both.
 // @retail 0xde620
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
@@ -2163,6 +2212,11 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // the stack, ret 4); that with a long getter result 99; the count read into a local just before the call 89; one
 // condition with the getter at each use and a shared final clear 135; a long count local just inside the first test
 // 78. The hypothesis above does not hold: retail leaves EBP unused, so it had a spare register and still re-read.
+// Round 192: retail's call setup (`push &settled`, then the count into EAX, then the rate push) is right to left over
+// 0x1d5120 declared (..., rate, count, result). That reorder (definition, declaration and call) alone 63; with the
+// second-lookup re-read 68 (the whole call setup is then retail's; EBP still holds the Havok data, ours folding
+// `[ecx+ebp+0x18]` where retail adds first and reloads EAX, and 0x9fff is hoisted into EDI); with the short getter
+// into a short/long 80/92. Without the reorder: re-read 68, getter into long/short 91/80. All restored.
 // Round 65 (lane 9): byte test, short getter and the count re-read through a second lookup 80 (261 bytes), re-read
 // from the same biped 89; that with the body in a long local 91 (265 bytes; the body select is then retail's:
 // movsx ax / or eax,-1 / movsx edx,ax / cmp edx,-1 without threading); havok_component_get computing the masked
@@ -2270,6 +2324,13 @@ real function_1d1230(long rigid_body_index, s_havok_component *component);
 bool __stdcall function_e1b60(long arg_159e6d, point3f const *point, real value);
 
 /* starts a fallen biped's ragdoll from its main rigid body */
+// score 2 (was 2): the extent call's argument setup is still emitted in the other order (ours
+// mov ecx,esi then mov eax,ebx, retail mov eax,ebx then mov ecx,esi); 0x1d1230 itself matches
+// retail and takes the index in EAX and the component in ECX, so only the caller's spelling is
+// left; retail calls it as a member of s_havok_component, which needs the callee's own file
+// (include/unknown_1cec30.h and src/unknown_1cec30.cpp), outside this lane's files; round 162
+// found that the member form matches both the caller and the callee there, so the fix only
+// waits for that file to be free
 // score 2 (was 2): only argument preparation before the extent call differs: mov ecx,esi precedes mov eax,ebx.
 // Shared main-index helper with short 34, with long 31; long ternary 76; shared point setter 52; long helper/setter 24;
 // typed body getter 61; short helper/setter 27; both typed body helpers/setter 24; typed three-use point source 2, kept; earlier uninitialized index declaration 2.
@@ -2766,8 +2827,8 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 
 struct rigid_transform_scaled;
 struct real_quaternion_transform;
-bool function_1faf80(vector3f *facing, long arg_159e6d, void const *definition_flight, vector3f const *control,
-	real rate, real *turn);
+bool function_1faf80(long arg_159e6d, void const *definition_flight, vector3f const *control, real rate,
+	vector3f *facing, real *turn);
 bool function_bf5d0(long object_index);
 void matrix4x3_rotation_between_vectors(transform4x3f *matrix, vector3f const *arg_5f338b,
 	vector3f const *arg_bc44c6);
@@ -2830,7 +2891,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 			{
 				real rate = (biped->control_flags & 8) ? 0.99f : *(real *)(definition + 0x24c);
 
-				function_1faf80(&biped->facing_goal, arg_159e6d, definition + 0x2cc, &biped->control, rate,
+				function_1faf80(arg_159e6d, definition + 0x2cc, &biped->control, rate, &biped->facing_goal,
 					&biped->unknown3a0);
 			}
 			else
@@ -3062,7 +3123,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// score 494 (was 488, after the logic walk of 2026-10-31; it adds 6 points but fixes behaviour): retail's final
+// score 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
 // placement subtracts the pivot rotated by the turned axes alone (0xe2260-0xe2312: no scale, no position, with the
 // out-alias test `cmp edi,[esp+0x10]` of function_2477b1), so it goes through function_2477b1 instead of a second
 // scaled point transform (505). Which pivot is parent follows retail's registers (0xe1d33-0xe1d6f: esi/edi
@@ -3081,113 +3142,131 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Native origin source view 512, with guarded result 527; named limit result 507;
 // native origin/limit result/differences 527; explicit existing-helper inline 488,
 // with late limit 482; late limit/native origin 496; late limit/native origin/result 512.
+// Round 192, kept together (494 -> 368; frame 0x12c and the entry now retail's, first difference +0x71): the
+// collision's unknown24 = NONE stored at the top of the parent block (retail 0xe1d0b; ours never stored it) 492, the
+// origin through real_point3d_set as sibling 0xe1a80 (retail's load-all movss copy) 479, single exit with `result`
+// false at entry (retail's `xor bl, bl` / `mov al, bl`; the lane wrote it with one goto, the coordinator rewrote it as
+// the plain `if (started || ...)` block, same bytes at the end: 368 both) 405, the limit computed after the distance 396,
+// the rotation built from a copy of delta (`direction`; retail copies delta's home to 0x34 by dwords and normalizes
+// the copy, back takes delta's home) 368. Tried on that: biped_matrix_transform as 0x142570's body (x/y/z locals,
+// `scale * x`, retail's register shape) 421; pivot ternaries 398 (with that body 431); collision declared first
+// 396; world_pivot/child_world swapped 368; `real limit;` at the block top 368; the collision target as written-out
+// if/else arms 433, as two vector3f_add_scaled calls 434, with a named `reached` test 450, `limit > distance ||
+// !hit` 447. Remaining: retail pairs world_pivot's home with delta/back and child_world's with the copy (ours the
+// reverse), property_b's with limit; retail keeps 1.0f in xmm4 across both pivot transforms; retail materializes
+// `limit > distance` in AL before the target copy; the pivot select (`mov ecx, edi; je` to an out-of-line lea).
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
 {
 	s_havok_component *component = havok_component_get(BIPED_GET(arg_159e6d)->havok_component_index);
-	point3f origin = *biped_rigid_body_position(component, rigid_body_index);
+	point3f const *position = biped_rigid_body_position(component, rigid_body_index);
+	point3f origin;
 	transform4x3f matrix;
+	bool result = false;
 
+	real_point3d_set(&origin, position->x, position->y, position->z);
 	havok_component_rigid_body_matrix_get(rigid_body_index, component, &matrix);
-	if (!started && !function_168f40(0x80040d, (s_vehicle_ray const *)&origin, arg_159e6d, NONE))
+	if (started || function_168f40(0x80040d, (s_vehicle_ray const *)&origin, arg_159e6d, NONE))
 	{
-		return false;
-	}
-	if (parent_body_index != NONE)
-	{
-		transform4x3f parent;
-		point3f pivot_a;
-		point3f pivot_b;
-		point3f const *parent_pivot;
-		point3f const *child_pivot;
-		point3f world_pivot;
-		point3f child_world;
-		vector3f offset;
-		point3f target;
-		point3f placed;
-		vector3f delta;
-		long property_a;
-		long property_b;
-		real distance;
-		real limit = value - 0.025f;
-
-		havok_component_rigid_body_matrix_get(parent_body_index, component, &parent);
-		function_1cff80(&component->unknown7c.data[contact_index], &pivot_a, &pivot_b);
-		havok_component_contact_properties_get(component, contact_index, &property_a, &property_b);
-		if (property_a == parent_body_index)
+		if (parent_body_index != NONE)
 		{
-			parent_pivot = &pivot_a;
-			child_pivot = &pivot_b;
+			transform4x3f parent;
+			point3f pivot_a;
+			point3f pivot_b;
+			point3f const *parent_pivot;
+			point3f const *child_pivot;
+			point3f world_pivot;
+			point3f child_world;
+			vector3f offset;
+			point3f target;
+			point3f placed;
+			vector3f delta;
+			long property_a;
+			long property_b;
+			real distance;
+			s_biped_collision collision;
+
+			collision.unknown24 = NONE;
+			havok_component_rigid_body_matrix_get(parent_body_index, component, &parent);
+			function_1cff80(&component->unknown7c.data[contact_index], &pivot_a, &pivot_b);
+			havok_component_contact_properties_get(component, contact_index, &property_a, &property_b);
+			if (property_a == parent_body_index)
+			{
+				parent_pivot = &pivot_a;
+				child_pivot = &pivot_b;
+			}
+			else
+			{
+				parent_pivot = &pivot_b;
+				child_pivot = &pivot_a;
+			}
+			biped_matrix_transform(&parent, parent_pivot, &world_pivot);
+			biped_matrix_transform(&matrix, child_pivot, &child_world);
+			offset.i = world_pivot.x - point->x;
+			offset.j = world_pivot.y - point->y;
+			offset.k = world_pivot.z - point->z;
+			distance = (real)sqrt(offset.k * offset.k + offset.j * offset.j + offset.i * offset.i);
+			real limit = value - 0.025f;
+
+			target = world_pivot;
+			if (!(limit > distance))
+			{
+				if (function_1697c0(0x80040d, point, &offset, arg_159e6d, NONE, (s_collision_result_1697c0 *)&collision))
+				{
+					real t = limit > collision.t * distance ? collision.t : collision.t - 0.025f / distance;
+
+					target.x = offset.i * t + point->x;
+					target.y = offset.j * t + point->y;
+					target.z = offset.k * t + point->z;
+				}
+			}
+			placed.x = target.x - child_world.x + origin.x;
+			placed.y = target.y - child_world.y + origin.y;
+			placed.z = target.z - child_world.z + origin.z;
+			delta.i = placed.x - target.x;
+			delta.j = placed.y - target.y;
+			delta.k = placed.z - target.z;
+			if (delta.k * delta.k + delta.j * delta.j + delta.i * delta.i > 0.001f * 0.001f &&
+				function_168f40(0x80040d, (s_vehicle_ray const *)&placed, arg_159e6d, NONE))
+			{
+				vector3f back;
+				vector3f direction = delta;
+
+				back.i = offset.i * -1.0f;
+				back.j = offset.j * -1.0f;
+				back.k = offset.k * -1.0f;
+				if (function_30bf0(&back) != 0.0f && function_30bf0(&direction) != 0.0f)
+				{
+					transform4x3f rotation;
+
+					matrix4x3_rotation_between_vectors(&rotation, &direction, &back);
+					function_142eb0(&rotation.rotation, &matrix.rotation, &matrix.rotation);
+					function_30bf0(&matrix.forward);
+					function_30bf0(&matrix.left);
+					function_30bf0(&matrix.up);
+				}
+			}
+			vector3f rotated_pivot;
+
+			/* retail 0xe2227-0xe2312: only the turned axes carry the pivot (no scale, no position) */
+			function_2477b1(&matrix.rotation, (vector3f const *)child_pivot, &rotated_pivot);
+			matrix.position.x = target.x - rotated_pivot.i;
+			matrix.position.y = target.y - rotated_pivot.j;
+			matrix.position.z = target.z - rotated_pivot.k;
 		}
 		else
 		{
-			parent_pivot = &pivot_b;
-			child_pivot = &pivot_a;
+			real lowered = value - 0.025f;
+
+			matrix.position.x = point->x - (origin.x - matrix.position.x);
+			matrix.position.y = point->y - (origin.y - matrix.position.y);
+			matrix.position.z = point->z - lowered - (origin.z - matrix.position.z);
 		}
-		biped_matrix_transform(&parent, parent_pivot, &world_pivot);
-		biped_matrix_transform(&matrix, child_pivot, &child_world);
-		offset.i = world_pivot.x - point->x;
-		offset.j = world_pivot.y - point->y;
-		offset.k = world_pivot.z - point->z;
-		distance = (real)sqrt(offset.k * offset.k + offset.j * offset.j + offset.i * offset.i);
-		target = world_pivot;
-		if (!(limit > distance))
-		{
-			s_biped_collision collision;
-
-			if (function_1697c0(0x80040d, point, &offset, arg_159e6d, NONE, (s_collision_result_1697c0 *)&collision))
-			{
-				real t = limit > collision.t * distance ? collision.t : collision.t - 0.025f / distance;
-
-				target.x = offset.i * t + point->x;
-				target.y = offset.j * t + point->y;
-				target.z = offset.k * t + point->z;
-			}
-		}
-		placed.x = target.x - child_world.x + origin.x;
-		placed.y = target.y - child_world.y + origin.y;
-		placed.z = target.z - child_world.z + origin.z;
-		delta.i = placed.x - target.x;
-		delta.j = placed.y - target.y;
-		delta.k = placed.z - target.z;
-		if (delta.k * delta.k + delta.j * delta.j + delta.i * delta.i > 0.001f * 0.001f &&
-			function_168f40(0x80040d, (s_vehicle_ray const *)&placed, arg_159e6d, NONE))
-		{
-			vector3f back;
-
-			back.i = offset.i * -1.0f;
-			back.j = offset.j * -1.0f;
-			back.k = offset.k * -1.0f;
-			if (function_30bf0(&back) != 0.0f && function_30bf0(&delta) != 0.0f)
-			{
-				transform4x3f rotation;
-
-				matrix4x3_rotation_between_vectors(&rotation, &delta, &back);
-				function_142eb0(&rotation.rotation, &matrix.rotation, &matrix.rotation);
-				function_30bf0(&matrix.forward);
-				function_30bf0(&matrix.left);
-				function_30bf0(&matrix.up);
-			}
-		}
-		vector3f rotated_pivot;
-
-		/* retail 0xe2227-0xe2312: only the turned axes carry the pivot (no scale, no position) */
-		function_2477b1(&matrix.rotation, (vector3f const *)child_pivot, &rotated_pivot);
-		matrix.position.x = target.x - rotated_pivot.i;
-		matrix.position.y = target.y - rotated_pivot.j;
-		matrix.position.z = target.z - rotated_pivot.k;
+		havok_component_rigid_body_matrix_set(rigid_body_index, component, &matrix);
+		result = true;
 	}
-	else
-	{
-		real lowered = value - 0.025f;
-
-		matrix.position.x = point->x - (origin.x - matrix.position.x);
-		matrix.position.y = point->y - (origin.y - matrix.position.y);
-		matrix.position.z = point->z - lowered - (origin.z - matrix.position.z);
-	}
-	havok_component_rigid_body_matrix_set(rigid_body_index, component, &matrix);
-	return true;
+	return result;
 }
 
 /* places the ragdoll's bodies joined to one body, then theirs in turn */
@@ -3422,6 +3501,9 @@ void function_e4300(long arg_159e6d)
 // (diagnostic, not kept) 91: 0xe5930 is still inlined, the caller file's inline settings do not reach LTCG.
 // Also: the biped looked up after the two calls 94; the test as `(flags_c0 & 0x40) == 0` 91; the flag read through a
 // fresh lookup at the test 94.
+// Round 192: the biped looked up after the 0xe18d0 call 69 (96 bytes, but only because our inlined 0xe5930 then
+// shares the lookup; retail looks it up first, so not kept); `!(*((byte *)biped + 0xc0) & 0x40)` 91; field_bit_test
+// 98; an early return on the bit 91; TEST_FIELD_BIT through a fresh lookup with no biped local 101. BLOCKED-BY 0xe5930.
 // Round 65 (lane 9): the call is straight-line here, and our LTCG inlines 0xe5930 only at such sites (a call under a
 // condition stays a call, as in 0xe2d80, 0xe24f0 and 0xec0d0); diagnostic `if (arg_159e6d != NONE)` around it (not
 // retail's, reverted) 7 at 62 bytes, the rest then being the TEST_FIELD_BIT flag test (98 alone). A named
@@ -3716,7 +3798,7 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 171 (was 184): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm6/xmm4,
+// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm6/xmm4,
 // retail xmm4/xmm3); the frame is 0x30 (retail 0x24: the rotate helper's cross spills) and the rotation/basis SSE
 // carriers still differ.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
@@ -3747,6 +3829,15 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // and sine initialised at their declarations 171 (same code); in the rotate helper the cross computed before the dot
 // 180 (frame 0x24 as retail, carriers move), scalar cross terms 194, dot written k, j, i or i, j, k 171. Compile-only:
 // all 720 orders of the six locals keep frame 0x30.
+// Round 39 (fast): retail's rotation is v * cos + axis * dot(1 - cos) - (v x axis) * sin with the cross terms as
+// scalars (no cross vector in its 0x24 frame) and keeps the rotated up in registers for the two crosses. In the
+// helper: 0x146320's rotate shape (projection written k, j, i, cross j/k locals, cross i inline) 162 (frame 0x24, the
+// first rotation nearly retail's; aligned 163 -> 157; not kept: cross3f's body as scalars); 0x170d70's shape (cross i
+// local first, projection, cross j/k) 211 (919 bytes), projection first 211; cross3f(v, axis) subtracted 171 (same
+// code), computed before the dot 180 (frame 0x24), dot-first products 171. In the body: up and side declared at the
+// copy 171; up copied before the first rotation 229 (874 bytes). Lead: the rotate helper with scalar cross terms
+// is shared by 0x146320, 0x170d70 and 0x50650's files (each has its own copy, all held this round); one shared
+// header helper would let this body use it.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -3870,7 +3961,7 @@ void __stdcall function_e3380(long arg_159e6d)
 
 /* the dead biped's animation: its getting-up animation once it can stand,
    the ragdoll's pose while it lies, or its landing */
-// score 13 (was 31): Frame 0xc agrees; three object lookups read [data + index] where retail reads [index + data],
+// score 13 (was 13): Frame 0xc agrees; three object lookups read [data + index] where retail reads [index + data],
 // the 0x1e5af0 push temp is ecx (retail edx) and the not-found arm keeps names in edx and copies it to ecx (retail
 // loads it twice, into eax for the store and ecx for the join).
 // Earlier (score 31 (was 158)): retail reloads the result byte at the second block's and the 0x34b block's false
@@ -3901,6 +3992,22 @@ void __stdcall function_e3380(long arg_159e6d)
 // 13; a named absolute-index local at each lookup 213 (argument moves to the stack); the two zero stores swapped
 // 15; `result = true` before the names store 15; the inner if/else inverted 13; result declared first 16; a 600 s
 // permuter run (44 tries), none below 13.
+// Round 39 (fast): only the top lookup decides the order of all three: the index formed before the table pointer
+// there gives retail's [index + data] in all three (13 -> 10): a header pointer local (`header = &headers[i]`,
+// `biped = header->biped`) 10, a named absolute index 10 (both one-use, kept only with a match), the index-first
+// getter on the inner tests or in the flag helper only 13; BIPED_GET file-wide as an index-first inline getter 10
+// (0xdd0d0 and 0xe4450 stop matching). On the header local: the names store in both inner arms 199, `result = true`
+// first in the found arm 12, the output zero store first 12, `state->flags & 1` unwrapped 67, physics as a byte
+// offset 10, output as `((real *)output)[10]` 10, result declared before state 12, inner if/else inverted 10, the
+// blend constant passed directly 13 (10 on the header local; same code). Left
+// (10): the push temp and the names registers, a one-step scratch rotation; 0xdd360's 0x1e5af0 call also takes edx
+// for the push temp in retail where ours takes the first free register (lead: 0x1e5af0's parameter order; its file
+// is held this round).
+// Round 118: chained zero store (output first) 13; top lookup through the existing object_header_get 13; the
+// final names block inverted (else arm first) 13; 0x1e5af0's parameters as (output, physics, up, forward) at the
+// definition, both declarations and all five calls 13 (push temp still ecx; 0xdd360/0x118700 worse); a named
+// real field at output + 0x28 13. Retail's 0x1e5af0 call setups disagree on an order (0xdd360 ecx/eax/edx,
+// 0x118700 eax/ecx/edx), so none is evidence for a reorder.
 // @retail 0xe3c90
 bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
@@ -4517,6 +4624,12 @@ void __stdcall function_b8600(long object_index, long unknown);
 // with /Ob1 (554 with the plain `||` form); case order 6 before 4 same. Earlier rounds: default completion
 // fallthrough 776; direct still-result ownership 773; common final result with fallthrough 789; coherent workspace
 // names 800; declared flag stores 781; entry still Boolean 800; definition at every use 864.
+// Round 192 (fast control 655): retail stores `still` as a stack byte, 0 before the 0xddfb0 call and 1 inside its
+// branch ([esp+0x13], later shared with `grabbing`, filled as 0xe0dc0's false-then-true body), places the early
+// `return still` after the final return, and keeps +0x3aa in BL across the 0xe0dc0 call. Tried: that `still` form 686;
+// the +0x10a test through the bit view 674; both 694 (the head is then retail's up to the early return); the count read
+// once into a `char` local with `0 >= x`/`x <= 0`/`+=` forms 655 each (identical code: ours re-reads after the call);
+// the early return as one goto to an exit after the final return 655, with the `still` form 686, with both 694.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

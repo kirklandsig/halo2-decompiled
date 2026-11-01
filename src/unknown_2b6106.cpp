@@ -658,7 +658,8 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 512 (was 512): Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain.
+// score 512 (was 512): Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain
+// (round 38 below: the bias, frame and every small slot are reproducible, but only with a clock mix).
 // Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
 // ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
 // small locals differently.
@@ -765,11 +766,46 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // Round 464: activity/team conditional label results, original/branch-complete/default-first
 // non-original pairs 512/578/512/512/578/520/520/584. Original conditional arguments
 // and score-pointer graph restored; unbiased EBP and early flag/clock homes remain.
+// Round 476: Branch-owned score formatting with neither/player/team/both conditional maxima 573/573/573/573; branch-local maximum on those four graphs 559/559/559/559.
+// Retail allocation 0x85c recovers, but EBP remains unbiased; lengths 1962/1976 versus 2041 regress. Original score join, scans, full body and every interface restored.
 // Round 144 (lane 4, fast): retail tests the session flag with `cmp byte, 1; jne`, keeps the campaign result
 // in a byte (the high byte of the session argument's slot) and the friend flags in ESI until bit 7 is taken; a
 // compile-only build gives retail's 0x85c frame and slot layout but no EBP bias either. `in_session == true` 510
 // (two-point gain rejected); bit 7 taken before the clock read 515; bool campaign 540; both first forms 513;
 // a long row 512 (same code).
+// Round 38 (lane 15, fast; aligned = LCS-aligned differing instructions, baseline 271): the four text
+// buffers as the existing s_text_256 (retail's out-of-line constructor is 0x7f8a0) give retail's
+// `lea ebp, [esp-0x70]` bias, 506 (aligned 260); with bool campaign 532 (campaign in retail's byte at +0x7f),
+// short count 523 (frame 0x85c), long flags 524, clock declared early 523, `in_session == true` 521; the
+// session test reading g_54d5b8 while the details keep the clock local 451 (flags in ESI, clock home
+// [ebp+0x68] as retail; a global/local mix, so not kept without a match); row renamed four ways 451; name
+// lookups formatting and showing in each arm with the key read at each use 452; minutes and seconds both
+// from the field before the caption call 466 (timer arms then equal retail); long search index/selected,
+// long final counter and block-scoped maxima 504; clock declared before row 504; bit-7 flag renamed three
+// ways 504; score loops with a score pointer advanced in the body 457 (frame 0x85c and every small slot as
+// retail); bit-7 flag before the clock read 455; state read from its field at each use 454 (aligned 105);
+// one show after the 2/3 arm's inner if/else 608; campaign test inverted 446 (aligned 128). Without the mix
+// the same body scores 526, with the clock global at every use 599, with bit 7 taken at the flags call 603.
+// On the 454 body: a show helper taking the widget array and `unsigned &row` (row incremented before the
+// calls as retail) 454 (aligned 95); the teams label as an if/else 454 (still neg/sbb; retail branches,
+// as it does for the campaign/a60 label). Left on that body: the 7/8 arm keeps its own show with
+// `xor edi, edi; inc edi` in retail where ours keeps the campaign arm's (retail merges campaign with
+// state 5), the two branchy labels, game/teams buffer order (retail clears game first at -0x7ec), the team
+// scan's index/cursor homes, and after each 0x230134 call retail rebuilds the format address with lea
+// where ours reuses ESI. Non-mix subsets: text buffers + name arms + state at each use 506; with short
+// count 512; buffers + short count 511; with the timer form 518; with session/bit-7 order 513; with long
+// loops 592; with the score pointers 577, plus the timer form 530. Original body kept.
+// Round 23 (lane 17, fast) on the four text buffers as `s_text_256` (506, retail's EBP bias): the 7/8
+// arm's caption call before its total 467 (2035 bytes; positional only: that arm stops sharing the arm
+// tail but computes its total after the call where retail computes it first; not kept); the state read
+// inside the guard and into its local only in the details branch 505; the 7/8 arm's widget index and
+// row increment as two statements 506 (same code); `long row` 506; both timer arms passing
+// `seconds / 60, seconds % 60` 506. Retail's shared arm tail stores row = 1 to its home and reloads it
+// into EDI, while its 7/8 arm sets EDI directly: that arm sits in another home region of row.
+// Round 41 (lane 14): one show after the 2/3 arm's campaign/totals if-else 607 (1977 B); `text[row]` then
+// `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
+// (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
+// and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

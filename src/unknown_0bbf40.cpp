@@ -304,77 +304,9 @@ s_object_gc_entry_ab g_440570[6] =
     {0, false, 0, 0}
 };
 
-// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 (ours spills the level)
-// and the prologue pushes EBP where retail pushes EBX.
-// our loop is rotated (the action test copied to the bottom); retail's stays
-// top-tested, re-reads the state at its top and duplicates the loop setup into each level path.
-// Only nested loops (outer per entry, inner `do ... while (again)`) stay top-tested here: 171, with
-// the one exit goto to a shared final clear 192. `again` uninitialised + `if (again) continue` 134
-// (gives retail's +8 entry pointer); `next = !again` flag 122 (393 bytes, retail's sete); single
-// state variable with the exit goto 161.
-// Pressure query inline/noinline/both declarations 110 each; critical output first-written with
-// ordinary/inline/noinline/both declarations 138 each; named collection predicate with inline/noinline
-// query 110.
-// Round 256: Once-observed action/gather/both callbacks 108/110/108; with terminal state at use
-// 134/125/134; both with query-produced critical, original/direct cleanup 132/136. All restored.
-// Round 300: Named native long/dword level mask at use with compound, rejection-guard and
-// nested-positive eligibility 110/110/110/110/110/110; rejection/nested forms with terminal state
-// fields at use 125/125. Original frame, loop, field observations and body restored.
-// Round 105: retail behaves as if the 0xbf1c0 call may change g_4de2f4 (the loop-top load stays
-// in the header and the failure exit reloads); ours keeps it across the call, spilling the level.
-// 0xbf1c0 defined after this function 110 (no change); level test as a scope around a while loop
-// with the final clear through the entry pointer 179 (330 bytes); state declared before the loop,
-// assigned at its top, cleared after it 110; index walk while loop in a level scope 181; that with
-// the in-loop action exit 186.
-// Round 44: index walk (`g_440570[index].`, retail's +8 entry pointer) 177; index walk + `advance = !again` with the
-// in-loop exit through the state local 122 (393 bytes, retail's frame, level register and sete), with an entry pointer
-// 122, gathered declared first 121; while + break + advance + after-loop clear 176 (333 bytes), state re-read at the
-// loop end 176; index + advance with the in-loop exit reading g_4de2f4 at each use 119 (379 bytes, aligned 59: all but
-// the loop rotation). Retail reloads g_4de2f4 after the 0xbf1c0 call on every path (its LTCG treats that call as
-// possibly changing it), which keeps its loop top-tested. Original body kept.
-// Round 315: Early gather commitment with direct terminal state/query-produced critical/reused action
-// ownership masks 0..7: 115/125/138/125/113/134/132/136. Direct-state forms recover the frame but
-// shorten to 374 and regress. Original state, query, callbacks, buffers and loop restored at 110.
-// Round r4 (lane 17): index walk + advance flag with one final clear (break on the query) 176 (333 bytes); with early
-// returns for NONE and the query, global at each use 119 (379, aligned 35: our while is inverted and its first action
-// test peeled at the constant first entry, and the NONE exit falls through where retail branches to it); the same
-// with the exit test inside for (;;) 119 (same code); NONE as an enclosing if with one final clear and the query
-// returning 153 (361); the query in the while condition 176 (333).
-// Round 56 (lane 12, fast): the level from an inline pressure-level helper with early returns 270
-// (251 bytes); level first, `if (level != NONE)` around `while (entry->action)` with a break on the
-// query and one final clear 181 (328 bytes: retail's frame 0x2a04, level in EBP, globals in ESI, but
-// VC inverts the loop, testing the first entry's action at its constant address); that with an
-// `advance = !again` flag 181, with the query in the while condition 181; the index walk with
-// `advance = !again` on this body 131 (400 bytes).
-// Round 186 (fast): `if (level != NONE)` around `while (entry->action && function_bf1c0(...))` with
-// an `advance = !again` flag and one final clear 176 (333 bytes; the frame 0x2a04, prologue, level in
-// EBP, state in ESI and the whole loop body are retail's, but the loop is inverted with its first
-// action test peeled and the three exits share one clear); the query as a break inside 176; both
-// tests in one break 176; this body's loop with the advance flag and an early NONE return 122 (393
-// bytes, the gathered flag spills); the state re-read at the loop end with the clear after the loop
-// through it and the query exit breaking 156 (361 bytes).
-// Round 61: no retail code or data takes the address of g_4de2f4 or g_4de2ec, so the failure exit's
-// reload is the allocator's: the loop-top state lives in ESI, which the 0xbf1c0 call takes for its
-// output argument, and the level keeps EBP; ours keeps the state value in EBP and spills the level
-// (the frame's extra dword). The action-null exit as a break to the final clear 179 (330 bytes); the
-// level computed through g_4de2f4 at each use 110; the query failure clearing and returning in place
-// 110; the level declared before the buffers 110; the action-null exit clearing through g_4de2f4 125.
-// Round 108 (lane 8; a one-file LTCG harness with the build's ballast object gives 110 exactly): with no state
-// local in the loop (the action-null exit clearing through g_4de2f4, or a state local inside that exit block)
-// the prologue is retail's through +0x19 (frame 0x2a04, EBX/EBP/ESI pushes, g_4de2f4 in ESI, the level in EBP,
-// EDI pushed late), but the loop is rotated and the NONE exit sits inline: 125, 374 bytes (real); with `again`
-// uninitialised 124 (real). The level as a short 117 at 393 bytes (real), with `bool next = !again` 117 (real).
-// Harness: no globals local 110; state declared before the loop with the action-null exit breaking to a clear
-// through it 110; a diagnostic passing a global pointer as the query's output (the call may then write anything)
-// still keeps the state in EBP and spills the level (146), so the query's side effects are not the cause.
-// Round 59 (fast): round 44's index walk + `advance = !again` rebuilt 122 (393 bytes: frame 0x2a04, level in EBP,
-// +8 entry pointer and sete as retail; the state stays in EBX across the 0xbf1c0 call, so gathered spills, and the
-// loop is rotated). On it: the query failure clearing and returning in place 122 (same code); `while (action)`
-// with the query in the condition 176 (333 bytes); the loop inside `if (level != NONE)` with the NONE path and the
-// query failure sharing the final clear 149 (371 bytes; the shared clear still uses the EBX state); `again`
-// declared at the action 122; a named eligibility bool 122. Diagnostics: 0xbf1c0 also storing an unrelated global
-// (its convention then changes) still keeps g_4de2f4 across the call; `critical` in one array with `again` (escaping to
-// the action) changes nothing (114). 0xbf1c0 has this single retail caller.
+/* runs the table's gather and action callbacks that apply to the current memory pressure
+   level (from the stored request, or from the loop allocator's and the object pool's free
+   space), while 0xbf1c0 says more room is still needed, then clears the request */
 // @retail 0xbf380
 void function_bf380()
 {
@@ -386,53 +318,58 @@ void function_bf380()
         level = !globals[2];
     else
     {
-        s_loop_allocator *loop = (s_loop_allocator *)g_4de2ec;
-        long used = loop->last ? (byte *)loop->last + loop->last->size - loop->base : 0;
-        if (loop->size - used <= 0xcccc || 0x800 - g_4e0300->actual_count <= 0x66)
+        long used;
+        if (!((s_loop_allocator *)g_4de2ec)->last)
+            used = 0;
+        else
+            used = (byte *)((s_loop_allocator *)g_4de2ec)->last + ((s_loop_allocator *)g_4de2ec)->last->size - ((s_loop_allocator *)g_4de2ec)->base;
+        if (((s_loop_allocator *)g_4de2ec)->size - used <= 0xcccc || 0x800 - g_4e0300->actual_count <= 0x66)
             level = 3;
         else if (((s_object_gc_globals_ab *)g_4de2f4)->count >= 0x32)
             level = 2;
     }
-    if (level == NONE)
+    if (level != NONE)
     {
-        ((byte *)g_4de2f4)[1] = 0;
-        ((byte *)g_4de2f4)[2] = 0;
-        return;
-    }
-    bool critical = false;
-    bool again = false;
-    bool gathered = false;
-    s_object_gc_entry_ab *entry = g_440570;
-    for (;;)
-    {
-        byte *state = (byte *)g_4de2f4;
-        if (!entry->action)
+        bool critical = false;
+        bool again;
+        bool gathered = false;
+        s_object_gc_entry_ab *entry = g_440570;
+        for (;;)
         {
-            state[1] = 0;
-            state[2] = 0;
-            return;
-        }
-        if (!function_bf1c0(level, &critical))
-            break;
-        if ((entry->levels & (1 << level)) && (!entry->critical_only || critical))
-        {
-            if (!gathered)
+            bool valid = false;
+            if (entry->action)
+                valid = true;
+            if (!valid)
             {
-                if (entry->gather)
-                    entry->gather(level, scratch, sizeof(scratch));
-                gathered = true;
+                ((byte *)g_4de2f4)[1] = 0;
+                ((byte *)g_4de2f4)[2] = 0;
+                return;
             }
-            again = false;
-            entry->action(level, scratch, sizeof(scratch), &again, unused, sizeof(unused));
-            if (!again)
+            if (!function_bf1c0(level, &critical))
+            {
+                ((byte *)g_4de2f4)[1] = 0;
+                ((byte *)g_4de2f4)[2] = 0;
+                return;
+            }
+            bool advance = true;
+            if ((entry->levels & (1 << level)) && (!entry->critical_only || critical))
+            {
+                if (!gathered)
+                {
+                    if (entry->gather)
+                        entry->gather(level, scratch, sizeof(scratch));
+                    gathered = true;
+                }
+                again = false;
+                entry->action(level, scratch, sizeof(scratch), &again, unused, sizeof(unused));
+                advance = !again;
+            }
+            if (advance)
             {
                 entry++;
                 gathered = false;
             }
-            continue;
         }
-        entry++;
-        gathered = false;
     }
     ((byte *)g_4de2f4)[1] = 0;
     ((byte *)g_4de2f4)[2] = 0;
@@ -795,11 +732,14 @@ void __stdcall function_bc300(long object_index)
 	record_pool_release(g_4e0300, object_index);
 }
 
+// score 5 (was 5): with a `long` parameter MSVC widens every 16-bit read of it, so
+// MiniMax lane E (11-01): no new form, no lower score; the short size parameter still needs the
+// four other declarations changed and 0x118510 kept at its own score.
 // score 5 (was 5): this round: with a `long` parameter MSVC widens every 16-bit read of it, so
 // the narrow load needs the parameter type changed, which changes the mangled name and breaks the
 // four other declarations (src/unknown_0b7b40.cpp, src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp,
 // src/unit_object_type.cpp) and still raises 0x118510: BLOCKED-BY 0x118510.
-// score 5 (was 5): the only difference left is the size parameter's load: retail reads it with a
+// Earlier (score 5): the only difference left is the size parameter's load: retail reads it with a
 // 16-bit load (a short parameter), ours with a 32-bit one, which shifts every later byte by one.
 // With `short size` in the definition and in every declaration (src/unknown_0b7b40.cpp,
 // src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp, src/unit_object_type.cpp) the function matches
@@ -829,6 +769,14 @@ void __stdcall function_bc300(long object_index)
 // Round 202: entry normalization of size/offset/both/alignment/size-alignment/offset-alignment/
 // all domains 89/57/79/5/89/57/79; size normalization with the zero-size result producer 90.
 // Original parameters, body and result restored; formal narrowing still needs protected declarations.
+// Round 52 (lane 10, fast): the allocation arm first under `(short)size != 0` with the zero arm in the
+// else, single exit 62 (233 bytes); the zero arm's block from `header->object` 42; the new size written
+// into the reallocation call 7; the alignment shift without the byte cast 6; `return true` / `return
+// false` in place of the result 90 (214 bytes, the result byte leaves the frame).
+// Round 106: pointer-initialized short/word snapshots used at every size read 5/5;
+// a two-byte memcpy snapshot 5; signed/unsigned reference views 5/5; memmove 117;
+// memcpy only for the zero test 5; a pointer-initialized short with nonzero arm first 70.
+// Original parameter, case order and body restored; the initial size load remains dword versus word.
 // @retail 0xbc380
 bool function_bc380(long object_index, long block_offset, long size, long alignment_bits)
 {

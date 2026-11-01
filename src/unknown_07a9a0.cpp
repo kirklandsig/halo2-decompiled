@@ -212,6 +212,9 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
+// MiniMax E (11-01): no new form, no lower score; retail's second pool register needs the LTCG inline
+// of 0x16bb70/0x16bc00 from src/unknown_16b570.cpp (/Ob1 there), so the 11-point two-pool-local form
+// stays recorded as not kept.
 // score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
 // which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
 // layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
@@ -332,6 +335,11 @@ void function_07b3e0(void)
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
 // left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 18 (lane 17, fast): the iterator aggregate-initialised `= { g_4cf8d8, NONE, NONE }` 58 (same code as
+// the iterator form); the two-local form with the scan copy taken from the pool local 60, the pool from the
+// scan local 60 (both coalesce: only two separate reads of the global keep EBX/EBP apart, 11); on that
+// two-read form the scan as data_next_absolute_index_inlined 65, the index assigned after the release 55.
+// Retail's dead `add ecx, esi` needs the datum pointer materialised, as only the iterator step does.
 // Round 107 (lane 8, fast with 0x7b650): `if (!g_4cf8d4) return;` guard 39 (same code); the datum index named
 // before the call 39 (same code); the iterator form re-measured 58 (120 bytes); the existing out-of-line
 // record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
@@ -352,11 +360,27 @@ void function_07b3e0(void)
 // non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
 // retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
 // file's /Ob1 keeps them out of line here: a flags decision).
+// Round 18 (m3 lane 18, fast with 0x7b650): both helpers on the global, no pool local, 45 (126 bytes: the global is
+// read inside the loop); data_find_index (data_array.h) returning from inside its loop 60 at 118 bytes: the not-found
+// path then threads straight to the exit, the found block follows the `ret`, and the final stores take immediate
+// zeros, all as retail; only the second pool register (EBX scan, EBP datum), the loop pad and the step's dead datum
+// `add` are missing. With it, MiniMax H's two pool locals 10 at 131 bytes (only the found block's data/size registers
+// and the dead `add`; one-use duplicate local, not kept). The iterator form over a file-local scan that returns from
+// its loop 58 (120 bytes: retail's found block with the dead `add` and data in ESI, one pool register); the datum
+// iterator (bool step) 58; the step reading the iterator's pool again after the scan 58; scan on the iterator field
+// with the datum on the step's copy 58; the iterator set up by an inline (iterator, pool) helper 58.
+// Round 149 (lane 4, fast): the scan and the datum index both on the global (no pool local) 45 (126 bytes);
+// the datum-iterator form with the final valid store through the iterator's pool 64 (114 bytes), the
+// record-pool iterator form likewise 64 (114); the absolute-index scan on the pool local with the datum
+// index on the global 65 (142); `++index` as the scan's start 39 (same code). qos_release (0x7b650) takes
+// the datum index only, so retail's `add ecx, esi` is the inlined step's datum pointer, not an argument.
 // Round 129 (m3 lane 6, fast): the scan and the datum index both reading the global at each use (no pool
 // local) 45 (126 bytes: LTCG hoists the two reads into one EBP and drops the final reload); with
 // index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);
 // diagnostic file-local step copies passing `iterator->data` to the scan and using a `data` copy for the
 // datum, and the reverse, 58/58 (the copies coalesce into one pool register, as the iterator form).
+// Round 333: Separate next-start cursor long/dword before release 61/61, after release 65/65;
+// existing dynamic scanner counterparts 61/61/65/65. Pool residency remains unresolved.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1105,6 +1129,7 @@ bool function_1934f0(s_surface_description *variant);
 long function_1931a0(long count, s_surface_description *variant);
 long function_193250(s_surface_description *variant);
 long function_1932c0(s_surface_description *variant);
+long network_session_get_maximum_players(c_class_58d20 *session);
 bool balance_teams_by_count(long player_count, const long *parties, long team_count, long maximum_team_size,
 	bool flag_parties, long minimum, long maximum, bool use_parties, long *imbalance);
 bool balance_teams_can_add(long player_count, const long *parties, long extra_count, long team_count,
@@ -1193,7 +1218,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
-// score 766 (was 766): Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
+// Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
 // Earlier: retail's frame is 0xb4 and it takes the session in EAX and the output pointer
 // on the stack, while ours has a 0xd4 frame and takes both on the stack; retail also calls the matched
 // 0x192e60 out of line, ours inlines it.
@@ -1277,18 +1302,24 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // T47: Uniform session-state observations / membership maximum selection / flattened
 // complete type dispatch subsets 766/766/766/888/888/888/888; all with dword histogram
 // 931. Original body, selectors and all protected declarations restored.
+// Round 40 (lane 13, fast): the opening through the matched accessors (get_value_49c8, get_data_4a00,
+// network_session_get_maximum_players) 766 (same code, kept: their bodies were written out here). Ours
+// calls the capacity switch (this file's helper, or 0x193300) out of line where retail inlines it (jump
+// table), and inlines whichever 0x192e60 call comes first: the getter called in the player loop 857
+// (top inlined, loop called); the capacity helper `__forceinline` 906 (2872 bytes); both 859 at 2828 bytes
+// with retail's seven out-of-line calls but top/loop reversed; that with a long histogram 869 (frame 0xb4,
+// 2792 bytes); the matched accessors 0x193440/0x1933d0/0x1933a0/0x193400/0x1934d0/0x1934b0/0x193470 for
+// this file's helpers 904 (0x193300 too) / 840 with the capacity helper forceinline (2828 bytes, aligned
+// 447 against 515) / 869 with the loop getter; every helper `__forceinline` 906, with the loop getter 859.
+// Round 333: Uniform identity memcpy/memmove with word cells 766/855, dword cells 844/876; scoped
+// ID counterparts 766/855/844/875. Frame/session/lookup remain; original transfers restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
-	long variant_index = NONE;
-	long local_0 = session->state;
-	if (local_0 > 2 && local_0 <= 8) variant_index = session->value49c8;
+	long variant_index = session->get_value_49c8();
 	s_surface_description *variant = function_192e60(variant_index);
-	const s_ratings_summary *summary = NULL;
-	if (local_0 > 2 && local_0 <= 8 && session->flag49fd)
-		summary = (const s_ratings_summary *)session->data4a00;
-	long capacity = 16;
-	if (local_0 > 2 && local_0 <= 8) capacity = session->value4994;
+	const s_ratings_summary *summary = (const s_ratings_summary *)session->get_data_4a00();
+	long capacity = network_session_get_maximum_players(session);
 	bool result = true;
 	memset(out, 0, sizeof(*out));
 	if (!summary || summary->player_count > capacity || !variant ||

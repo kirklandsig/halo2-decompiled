@@ -9,8 +9,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 96 (was 104): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
-// the tail's load/store schedule remain.
+// score 85 (was 85): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
 // Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
 // and the x87/SSE projection scheduling are unchanged, and that round's trials in
@@ -77,6 +77,15 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // the final test in each grouped/ungrouped term order 78-79; short counter 205; the component loop written out
 // 184. Env, without it: the component loop written out 185; the normalization's three stores in the five other
 // orders 97/103/98/169/171; a rotated-vector local copied back 179 (1015 bytes), stored per component 167.
+// Round 67 (lane 12; env positional in brackets): retail keeps the tail in source order because unknown290 is read
+// and unknown458 written through pointers; `facing` (unknown290, declared with local_2/local_3, before the
+// half-step loop) and `scaled_direction` (unknown458) give retail's tail order: 96 -> 85 (kept; env 78 -> 66). `facing`
+// declared just before the test or after the loop folds unknown290.i into the product (988 bytes, 112 [91]);
+// `facing` alone 102; `scaled_direction` alone 96. On the kept form: the dot's six term orders grouped or not [66-70] (the
+// k term stays first, retail j); normalization stores in the five other orders [78-87]; local_5 assigned
+// directly, local_8 declared first, `0.5f * v`, `local_8 * k` [66 each]. Left: the 0.5/reciprocal/negation
+// chain in XMM1 with local_3.i in XMM4 and the normalized i in XMM3 (retail XMM3/XMM1/XMM4), and the dot's
+// k-before-j product.
 // Round 36 (lane 13; compile-only screens of the block up to the first 0x30bf0 call reproduce ours, then fast):
 // the side dot's terms come out in descending first-mention order of the direction's fields (the length's text
 // order moves the j/k-term pair), but the term with the fresh `0 - j` always comes first where retail has it
@@ -91,6 +100,37 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // swapped); that with the negated j named first 176 (989 bytes, aligned 80), plus the side projection
 // accumulated z, y, x 176 (aligned 93); the k, j, i projection with the j, k, i final test 98. Retail does not
 // hoist the -1.0 load (else branch and memory operand), so it copies the projection into xmm6.
+// Round 69 (lane 12; env positional, 66 for this body): the else arm's constant first, local_6's negation as an
+// assignment or constant first, the sign test's operands swapped, the else arm as copies then `*=` [66 each, same
+// code]; the arms swapped (`if (!(local_5 > 0.0f))`) [66]. Diagnostic: without local_6's negation the -1.0 is loaded
+// in the else arm as retail [59], so the hoist pairs those two uses. local_6 as the dot of a named offset vector
+// (position - unknown370, any component order, declared at the top or in the block) gives retail's shape there (all
+// three differences before the products, -1.0 loaded in the else arm, memory-operand negation) but copies local_3.i/j
+// to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
+// [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
+// alone [66].
+// Round 117 (m3 lane 8, fast): `local_6 *= -1.0` (a double) 75 at 996 bytes, but the negation becomes x87
+// `fmul qword` where retail multiplies by -1.0f in SSE, so it cannot match; it shows the else arm then loads -1.0
+// itself as retail does. `local_6 = 0.0f - local_6` 171; `local_6 = -local_6` 171; `*= -1` 85 (same code); the sign
+// test as `local_5 * local_6 < 0.0f` 85 (same code); /Op around the function (diagnostic) 241 (1024 bytes).
+// Round 71 (lane 12; env positional in brackets, 66 for this body): the perpendicular's j and k stores ahead of
+// local_5's copy gives retail's copy of the projection (`movaps`) but stores j, k, i [173, 995 bytes, aligned 57];
+// the local_6 sign test as `local_5 * local_6`, `local_5 = local_3.i = ...` chained, the unknown456 store first
+// [66 each]; the projection with the negated term first, grouped or not [66/66/74]. A separate `perpendicular`
+// vector (0 - j, i, k) for the projection, the else arm and local_6 shares local_3's slot and gives retail's
+// projection (0 - j first, i product in place) but no copy of local_5 and the -1.0 still hoisted: [165], --fast
+// 169 at 996 bytes; with local_5 declared first [165]; perpendicular filled j, k, i [166, 996 bytes]; the
+// projection i, j, k [166]; local_6 through a named offset vector, grouped or i, j, k [164/164], with the i, j, k
+// projection [171]. Diagnostic (not kept): normalize3d/dot3f/vector3d_from_points3d expanded under a scoped inline
+// window 211 (1015 bytes).
+// Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
+// component if/conditional selections 204/220; reused side predicate 204; existing negative
+// scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
+// Round 444: Double magnitude/inverse/both signed-projection domains, subsets 1/2/4/3/5/6/7,
+// then all with untruncated sqrt: 194/196/228/199/237/241/243/243. Original scalar precision, complete body and inline boundary restored.
+// Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
+// original/earlier magnitude 233/237/239/245/85/183/199/210
+// Original executable body and helpers restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
@@ -103,6 +143,7 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     }
     vector3f local_2 = local_0->unknown37c;
     vector3f local_3;
+    vector3f const *facing = &local_0->unknown290;
     local_0->unknown456 = true;
     for (long component = 0; component < 3; ++component)
         local_3.n[component] = (local_0->position.n[component] + local_0->unknown258.n[component] * 0.5f) - local_0->unknown370.n[component];
@@ -160,14 +201,15 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
         if (function_30bf0(&local_2) == 0.0f)
             local_2 = *g_4687a8;
     }
-    local_0->unknown458.i = local_2.i * 10.0f;
-    local_0->unknown458.j = local_2.j * 10.0f;
-    local_0->unknown458.k = local_2.k * 10.0f;
+    vector3f *scaled_direction = &local_0->unknown458;
+    scaled_direction->i = local_2.i * 10.0f;
+    scaled_direction->j = local_2.j * 10.0f;
+    scaled_direction->k = local_2.k * 10.0f;
     local_0->unknown41c = 4;
     local_0->unknown420 = 4;
     local_0->unknown424.vector = local_2;
-    if ((local_0->unknown290.j * local_2.j + local_0->unknown290.k * local_2.k) +
-        local_0->unknown290.i * local_2.i > 0.8f)
+    if ((facing->j * local_2.j + facing->k * local_2.k) +
+        facing->i * local_2.i > 0.8f)
         function_1e4290(arg_0, true);
 }
 #pragma inline_depth(255)

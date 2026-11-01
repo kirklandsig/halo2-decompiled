@@ -484,12 +484,42 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
 // stays shared and EBP caches the last argument); the second virtual call on the local index 81;
 // `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
+// Round 51 (lane 10, fast): the entity index stored inside the NONE test (NONE in its else) on the long result 93
+// (194 bytes), on the early bool 68 (179 bytes); the field cleared to NONE before the creation call and the index
+// stored only in a `index != NONE && !flagged` success arm, long result 79 (191 bytes), early bool 72 (176 bytes:
+// the arm store between the test and the object read reloads the table data with the global kept in EDX as
+// retail, but the index arithmetic stays shared as `shl ecx, 2` and EBP caches the last argument); that with the
+// object and attach through the stored field 71 (176 bytes; the field is forwarded for the object read and
+// reloaded for the attach).
+// Round 47 (lane 11, fast): the entity's index stored only in the success arm, NONE in the else of one
+// `index != NONE && !flagged` test, early bool 66 (the store after the test reloads the table data with
+// the global kept in EDX as retail, but the index arithmetic stays shared and EBP caches the last
+// argument); that with the long result 75 (186 bytes); with the store and attach as the existing 0xbb780
+// 66; nested NONE/flag tests with a NONE store in each else 78 (188 bytes); the inverted
+// `index == NONE || flagged` test 66. Retail's recomputed index needs a CSE boundary, not only a store.
 // Round 127 (lane 6, fast), all with a bool result declared first and set after the attach (retail's BL: false
 // before the first call, the attach argument in EBX, true after it): flagged arm first 75 (160 bytes: f cached in
 // EBP, header address shared, the flagged store laid out inline), unflagged arm first 77, the value copy declared
 // before the result 75, `result = true` between the field store and the attach 72 (176 bytes, result spilled);
 // the clear under `index != NONE && flagged` then `else if (index != NONE)` 75 (the repeated test is threaded
 // before CSE, as round 65 found for the predicate form).
+// Round 24 (lane 17, fast): the object read through a NONE-checked ternary (`index != NONE ? object : NULL`)
+// on the early bool 77 (folded before CSE, address shared), on the long result 64 (185 bytes: the NONE test
+// stays); a separate `deleted` bool set under `index != NONE`, then `if (deleted)` clear `else if (index !=
+// NONE)` the attach block, with the early bool 72, with `return !deleted && index != NONE` 67; the same with
+// `deleted` as one short-circuit expression 75 (160 bytes).
+// Round 47 (lane 11, fast): the entity's index stored only in the success arm, NONE in the else of one
+// `index != NONE && !flagged` test, early bool 66 (the store after the test reloads the table data with
+// the global kept in EDX as retail, but the index arithmetic stays shared and EBP caches the last
+// argument); that with the long result 75 (186 bytes); with the store and attach as the existing 0xbb780
+// 66; nested NONE/flag tests with a NONE store in each else 78 (188 bytes); the inverted
+// `index == NONE || flagged` test 66. Retail's recomputed index needs a CSE boundary, not only a store.
+// Round 70 (lane 12, fast), early bool result set after the attach (77, 160 bytes): with a header pointer named
+// in the arm for the object 77; the flag test as `== 0` 77; the NONE test, the flag test and the attach as one
+// if/else-if/else chain with an empty NONE arm 75; the value call after the block under `result && value` 77;
+// a bool result from the NONE test cleared in the flagged arm 69 (178 bytes). In retail EBP is pushed only around
+// the test because seven values are live there (this, entity, index, result, table, scaled index, data), as in
+// matched 0x656e0/0x17bf80/0x273480; ours shares the header address, so one register less is needed.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

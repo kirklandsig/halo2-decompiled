@@ -130,6 +130,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // extents 12; corner stores in a block scope 12; named advance 53; final/both steps as `x = product + x`
 // 12/12; final/both products with swapped operands 12/12. Without the final x step (diagnostic only) the
 // draw block takes retail's XMM3/XMM4, so the advance product's spill across the calls sets the colouring.
+// Round 52: both passes' sequence lookup as one force-inline helper (first bitmap and first sprite's
+// bounds) 244 (868 bytes); that helper in the draw pass only 14 (same code); both advance products as
+// pulse * half width 14; width/height conversions first in the half extents 14; the default bounds
+// set field by field 14. Retail keeps the advance in XMM3 and the half height in XMM4 (ours the reverse)
+// after the 0.5 constant in XMM3 and the converted height in XMM4 both die.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

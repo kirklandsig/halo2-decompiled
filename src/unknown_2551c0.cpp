@@ -170,6 +170,11 @@ short __stdcall function_2551c0(long actor_index)
 // and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
 // five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
 // statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
+// Round 45 (lane 11, fast), the rotation helper in other files' forms: 0x26db50's (dot3f(axis, vector)
+// projection, the components in locals, crosses written in the outputs) 117 (817 bytes); 0x1f6090's
+// (mixed operand orders, outputs into a local vector copied back) 197 (848 bytes); the components read
+// into locals in the copy's store order i, k, j 116; the three outputs into locals stored after 181
+// (837 bytes); the crosses written in the outputs with the named projection 151 (799 bytes).
 // Round 122 (lane 5, fast; the current tail and frame are already retail's): the existing 0xe70b0
 // call for the state test re-measured 70 (820 bytes); the rotation into a local vector with inline
 // cross terms, then `*vector = rotated` 200 (851 bytes); `cross3f_staged(vector, axis, &cross)` 159
@@ -197,6 +202,24 @@ short __stdcall function_2551c0(long actor_index)
 // Round 48 (lane 10, fast): all three vector components named in the rotation helper (read at each of
 // their uses), declared k/j/i, k/i/j, j/k/i or i/k/j: 116/116/115/116 (816 bytes; the frame grows to 0x64);
 // the score's `dot + 1` named as an alignment local 56 (815 bytes).
+// Round 51 (lane 10, fast): the score's `dot + 1` named (`alignment`) 56 (815 bytes); `1.f - cosine` named in the
+// rotation helper 56 (815); the helper's dot named before the projection 56 (815: these three flip the projection
+// dot to i first and swap v.i/v.k between XMM4/XMM5, cross_j's early product becomes retail's); vector_k plus the
+// named `1.f - cosine` 36 (815, same as vector_k alone); outputs as `v * cos - cross * sin + projection * axis`
+// 133 (814). Compile-only screen (SSE block only, about 300 forms): the cross statement order, the direction copy
+// (initialised, assigned, before or after the trace, declared outside the loop), forward/best declaration order,
+// the score dot's argument order and 1-6 unused locals never move the score dot from k, i, j (j as d * f); only a
+// written-out dot in i, k, j order with direction first gives retail's j, k, i (not keepable: dot3f by hand, and the
+// rotation then reschedules); no form on the vector_k base gives retail's cross_k product (v.j copied, axis folded).
+// The state read through a typed `slot->unknownc` data struct (offsets 0xc lower) 89 (820 bytes).
+// Round 329: Complete first/second/both cross-product parts named across all rows
+// 68/68/67; with cosine complement, first/second/both 118/118/67; both with
+// named dot, without/with complement 67/67. Original helper and callback restored.
+// Round 446: native projection/cross/angular scalar precision, seven subsets 392/392/392/72/392/392/392;
+// all with complete score storage precision 414. Exact-only forms restored with original helper and body.
+// Round 494: native slot data block with complete vector/axis/output component arrays 89;
+// vector/axis/both/output/vector-output/axis-output/all component-array roles
+// 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -709,6 +732,17 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 327: Complete entry readiness in bool/byte/short/long storage, positive and
+// complementary graphs, 87 each at 963 bytes. Unit argument and scalar homes remain; two-point
+// gains rejected.
+// Round 232: isolated unit-test blocked/ready result at its short-circuit boundary,
+// bool/byte/short/long storage, 89/89/89/89 and 89/89/89/89. No native result
+// width recovers the initial unit-argument register or later scalar/query homes; restored.
+// Round 235: native signed/unsigned word/long exit-result producers at final observation
+// and entry-declared with original-site assignment: 89 each. Original final global
+// observation and complete body restored; initial unit-call scratch rotation remains.
+// Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
+// pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

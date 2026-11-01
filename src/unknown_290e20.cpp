@@ -450,6 +450,12 @@ struct s_ai_scene_assignment
 // while condition 59 (12 on the int form). The long next-role local from the entry (the 61 form, now 59 at
 // 347 bytes) is the only one that gives the maximum ESI and retail's dword load; the recursion then adds 1 to
 // the sign-extended store index.
+// Round 47 (m3 lane 13, fast): maximum as an unsigned word parameter with a short copy 59 (copy propagated,
+// compares read the slot as a 16-bit operand); the role index read once through its address (recursion
+// `*role_reference + 1`) on the direct form 59 (the read folds, same code); the actor index in a local used by
+// the scorer and the first store 12 (same code); the int copy declared at the top 25; the recursion passing the
+// parameter while the compares use the int copy 76. Ours reloads the role index before the actor index in the
+// store block (a spilled candidate's reload at the block head); retail loads it after, in expression order.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
