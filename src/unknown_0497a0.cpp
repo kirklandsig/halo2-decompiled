@@ -638,6 +638,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
 // native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
 // only forms all restored; frame and geometry/color homes remain.
+// Round 280: complete per-channel interpolation results in initial/next/transition
+// loops, all seven subsets, then all with the complete width interpolation result,
+// 276 each. Original entire body and helpers restored; frame 0xa0, native homes
+// and first-edge Y spill remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

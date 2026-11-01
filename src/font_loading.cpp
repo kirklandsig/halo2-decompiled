@@ -570,6 +570,10 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 277: Complete alpha-only pixel helper with word/long result and byte/numeric parity, OR
 // color 110/204/105/212; disjoint-add color 113/206/108/214. Original helper and decoder restored;
 // alpha extension, literal fusion and run-two reuse remain.
+// Round 280: native pixel split color/parity/alpha fields, word/dword and both
+// production orders 201/201/195/195; complete opacity field with byte/numeric
+// parity, word/dword 211/201/239/195. Exact-only records, helper and full decoder
+// restored; alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
