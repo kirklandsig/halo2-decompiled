@@ -991,6 +991,10 @@ real function_30bf0(vector3f *v);
 // Round 495: Whole fallback/default/publication CRT-copy subsets on the shared-scale/path
 // graph 232 each (seven forms); complete copies with entry result 245. Original body
 // restored; frame, rounded-root scheduling and separate divisions remain.
+// M287: Native double a/b/discriminant-base storage subsets and the complete
+// solved-coefficient storage:
+// 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
+// frame, rounded-root scheduling and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1871,6 +1875,10 @@ real function_17c900(short function_type, real input);
 // variants 464 (eight forms); forced original graphs 410/348, forced shared-reciprocal
 // single-exit graphs 398/344 (344 raises other users 0 to 8 and 3 to 10). All helper
 // changes restored; stacked-index/output transport and component homes remain.
+// M287: Complete multi-use normalized-component storage in six producer
+// orders, then mutable/immutable turn-scope ownership:
+// 348/348/348/348/348/348/348/348. Original vector reads restored;
+// stacked-index/output transport and normalization homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

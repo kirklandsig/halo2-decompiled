@@ -384,6 +384,10 @@ void function_07b3e0(void)
 // 53/57 (125/121 bytes). Original cursor and body restored.
 // Round 333: Separate next-start cursor long/dword before release 61/61, after release 65/65;
 // existing dynamic scanner counterparts 61/61/65/65. Pool residency remains unresolved.
+// M287: Signed nonnegative/greater-than-NONE scan admission, cached/dynamic
+// existing scanner and immutable receiver combinations:
+// 53/39/53/39/53/39/53/39. Original sentinel loop restored;
+// split scan/datum pool residency and found-arm layout remain.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1318,6 +1322,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // orders 766 each; original pointer names, workspaces and body restored.
 // Round 333: Uniform identity memcpy/memmove with word cells 766/855, dword cells 844/876; scoped
 // ID counterparts 766/855/844/875. Frame/session/lookup remain; original transfers restored.
+// M287: Existing matched minimum/maximum/team selectors in seven subsets,
+// all with the existing limited selector:
+// 808/814/906/816/921/899/910/910. Original private selectors and body restored;
+// frame/session/initial lookup expansion remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
