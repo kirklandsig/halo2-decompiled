@@ -366,6 +366,9 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
 
+// score 72 (was 68): the texture pointer is taken from a local again and the flags are read
+// in the test itself: the four points the bitmap's own address won are under the keep bar,
+// so the body of the earlier round is restored.
 // Tried (MiniMax S run 10): the mipmap limit at bitmap + 0x14 read into a local before the
 // texture pointer is cleared scores 70 against 72; under the keep bar.
 // @retail 0x1d000
@@ -5665,6 +5668,10 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// Tried (MiniMax C run): the defaults stored only when the current depth is not zero, then
+// the override carried in two locals and the pair stored again at the end: 182 against 202,
+// but the first stores are always overwritten (a no-op form), so not kept without a match.
+// The locals alone score 218 (fast). Retail does compare the current depth with zero here.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -8035,6 +8042,10 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// Tried (MiniMax C run): the two offsets passed in the other order (0x20/0x18 and 0x30/0x24
+// as the second and third arguments), the device result tested directly with the failure
+// path writing the flag, and the palette result in a local of its own: 167 against 171;
+// under the keep bar, body restored.
 // @retail 0x12560
 void function_12560()
 {
