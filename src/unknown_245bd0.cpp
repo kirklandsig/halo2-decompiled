@@ -353,6 +353,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // radius test and scaled in place there 397 (456); the difference through the existing
 // scaled_difference3f with scale one 57 (same code), with the flat i,k,j sum 61. No existing helper
 // reads only the i and k squares through a pointer (the pointer form's shape).
+// Round 58 (lane 16, fast): the best-* updates stored plane, depth, type, index 63; the root kept as a double
+// with the reciprocal `(real)(1.0 / root)` 397 (456 bytes, sphere helper outlined); the normal copied from the
+// difference and scaled in place on the plane 397 (456); the radius test as `!(distance_squared >= r * r)` 58;
+// the squared distance as a double 397 (456). Repeats: unit-z default before the epsilon test 174 (689 bytes),
+// a radius local after the normal 62 (672 bytes).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

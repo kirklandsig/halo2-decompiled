@@ -598,6 +598,13 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Diagnostic (listed form): false at the scan's start makes the flag memory-only and lays the tail after
 // the special path (872 bytes), while the bitwise base already splits the flag (BL, the actor slot
 // across the scan, BL again) as retail does with CL.
+// Round 58 (lane 16, fast): the if/else flag with `special = false` at the end of the scan arm 190 again
+// (861 bytes; frame 0x30, the seat object in the dead actor slot); that with a second `special = false` at
+// the scan's start (diagnostic) 190 (the start def is dropped as dead); the if/else flag as a byte (1, and
+// 0 at the scan's start) 200 (872 bytes); the false def after the 0x1b8d40 exit test 200 (872), after the
+// seat call before `allow_exit = true` 200 (872). Any false def live across a call copies the tail's first
+// block onto the special path; only the def at the scan's end keeps retail's `mov cl, 1; jmp`. On that
+// end-def form: `long seat_object = NONE` at the outer block's top 192, the iterator there 190 (same code).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

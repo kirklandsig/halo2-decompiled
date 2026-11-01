@@ -168,6 +168,10 @@ bool function_25d9b0(long prop_index);
 // argument slot and the state kept in ESI); the loop's object compare written node-field first 87; the node's
 // near distance read once into a local for both range tests 90 (541). The recorded goto form with an initialised
 // priority and with a long priority re-measured 91 each.
+// Round 57 (lane 16, fast with the file's loop functions): the fallback as an if/else choosing the priority (a
+// `>= 2 ? 3 : 0` select) 110 (552 bytes); the iterator entry declared in the `while` condition with `return 0`
+// after the loop 119 (551 bytes, actor/node still EBP/EBX); velocity declared before the state and view lookups
+// 86, the decline test through a NONE-preset `new_prop` 86, a short participant-index local 86 (same code each).
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

@@ -2307,6 +2307,14 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // Round 464: success-boundary velocity/speed/other-contact default subsets
 // 339/192/305/284/412/337/411; velocity and speed at material admission with
 // late other-contact zero 411. Original default lifetimes and helpers restored.
+// Round 60 (lane 16): a compile-only screen reproduces our velocity block exactly; over ~60 forms (four
+// loop-sum forms, normalize3d / own length + vector3f_scale / an inverse shared with the normal block,
+// three product orders, three else arms, three length expressions, declaration order, scaled set) only
+// the shared inverse hoists the velocity loads, and then all three (retail: j and k only). LTCG: the
+// setter building its word first 155 (aligned 25 -> 22: only the velocity block and loop padding
+// remain); the shared inverse with an own velocity length 199 (the normal block changes from +0x53),
+// with the word-first setter 192; vector3f_add velocity sums + shared inverse + word-first setter 404,
+// with the length as sqrt(dot3f) 404.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

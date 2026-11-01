@@ -118,6 +118,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // parameters swapped (retail's ebx/eax/ecx setup) 126. Diagnostic only (reverted at once): the three read
 // outputs volatile 102, size then takes retail's lowest home and three-read clamp, so the clamp and the size
 // home need a volatile size, a form the rules forbid; EBP's late save is independent of it.
+// Round 60 (lane 16, fast): retail treats the read size as an unpromoted memory variable (read, select
+// `mov eax, 0x7ff; ja`, reload in the else arm, store, reload for the index); ours promotes it after the
+// wait (the compile-only build does too, so it is not a callee summary). `if (!success) goto` the block end
+// 128; the size as `long` passed as `(dword *)&size` 128; the read and wait in an inline blocking-read
+// wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
+// initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
+// 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

@@ -681,6 +681,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // pointer passed straight to the normalize 57 (same code); the first product as a cross returning the
 // vector by value 303 (1332 bytes); the second product staged in place on right, then copied to the
 // output 260 (1296 bytes); the distance stored through a pointer to its field 57 (same code).
+// Round 58 (lane 16, fast): both products cross3f_staged through command->up (first into up, second
+// in place) 243 (1289 bytes: up stored and reloaded); `cross3f(&forward, &previous_up, &right)` then
+// `cross3f(&right, &forward, &up)` (the same up) 57: previous_up's loads become retail's (j xmm3, i
+// xmm4, k xmm0 after the distance store), but the first product's subtractions are then negated;
+// that with cross3f_staged for the second product 59 (1262 bytes); the cross3f body behind a (b, a)
+// parameter order (diagnostic) 57 (identical: only the formula's load order moves previous_up.k);
+// right negated after the forward-first product (diagnostic) 256 (the negation is not folded); on the
+// forward-first form: the first product as cross3f_staged 57, previous_up copied after the direction
+// difference 249 (1272 bytes).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -466,6 +466,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // 0xbb780 77; a `word` absolute index named once for the test and the object read 84 (155 bytes); the
 // header data pointer named once for both lookups 78; the test through the existing object_header_get
 // (slot_handler.h) with the store and attach through 0xbb780 77.
+// Round 58 (lane 16, fast): early bool with the flag test through an if/return-true inline helper (a join at
+// its exit) 75 (160 bytes, threaded early, header shared); the object read's table data loaded through a
+// dword view (diagnostic) 75 (still shared: not a load-type split); early bool, unflagged arm first, the
+// update call through the existing v23 (qualified, inlined) 70 (176 bytes, retail's layout, but v23's NONE
+// test stays and EBP caches the last argument); `result = true` after the update call 79 (158 bytes); the
+// NONE test read from the stored field 77 (160 bytes); early bool, unflagged arm first, the field store and
+// attach through the existing 0xbb780 (inlined) 77 (160 bytes).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

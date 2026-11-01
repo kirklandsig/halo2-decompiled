@@ -971,6 +971,9 @@ bool __stdcall function_2399da(long controller_index)
 // EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
 // (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
 // 90. Plain: own rank read from the membership field at each use 90.
+// Round 57 (lane 16, fast with 0xac050/0xac360): the identity test inverted (0x5c denial in the if arm) 90; as an
+// early exit 90; `if (rank != 3) { store; set } else { dialog; return; }` 92; `if (task_index == NONE) return;`
+// before the 0x1487c3 call 90; the identity initialised to NULL where declared 90 (same code where 90).
 // Round 43 (lane 10): one result path (task index preset to NONE, the deny and rank-3 dialogs fall
 // through to the task test) 90; the progress call written in both the remove and set arms 90; dispatch
 // remove / over-rank deny / `rank != 3` set / rank-3 dialog 90; task index declared before the slot

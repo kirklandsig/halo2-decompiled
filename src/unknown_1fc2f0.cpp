@@ -386,6 +386,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // bytes); a vector3f predicted 30; the tick count passed without the (real) cast 30. The squared length sums
 // (c + b) + a for deltas assigned a, b, c, so retail's (k + j) + i needs i, j, k, which moves the rate chains
 // off retail's j, i, k.
+// Round 59 (lane 16, fast): deltas assigned k, i, j 34; the delta as an aggregate initialiser 79; point
+// pointer locals for the two state points 35; `real tick_scale = g_510c54->field_2_3;` 32 (identical); a
+// predicted point (copied first, `*= rate`, `+= p38`) then the existing scaled_difference3f(p2c, predicted,
+// ticks, velocity) 57 (369 bytes: the tick conversion then takes XMM3 and the j/i tick products scale in
+// place as retail, first difference +0x65, but the i/j stores, the k product and the correction differ);
+// that with the delta through scaled_difference3f(state velocity, velocity, 1.0f, delta) 59 (366 bytes; the
+// correction then forms all three products before the load-first adds as retail), with `(real)ticks` 56.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -342,6 +342,10 @@
 // 2. Diagnostics (not kept): result[6] shortened to `sqrt5 * zz` keeps `fld z; fmul z` together (so the zz
 // chain's length is not what orders them); matched 0xfbd40 shows the compiler does split such a pair for an
 // independent SSE load.
+// Round 59 (lane 16, fast; 0x146020 matched in each): lane 4's 2-point form still 2. On lane 12's named-sqrt3
+// / band3_35-first form (55 again): result[11] staged 72 (662 bytes); result[13] before result[11] 55
+// (identical); result[13] staged 64 (662 bytes); both staged 70 (662 bytes); result[15] first, right after
+// xx_3yy 147 (647 bytes).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

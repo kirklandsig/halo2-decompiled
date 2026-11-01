@@ -603,6 +603,10 @@ bool sound_driver_voice_create_buffer(
 // (the voice index then takes EBP); with the short result: `voice_count++` for the count 182 (599
 // bytes), the result declared after the voice index 182, play as `(flags >> 1) & 1` 182, both flags
 // defined before the voice reference 183 (599): the voice index takes EBP and both flags spill.
+// Round 58 (lane 16, fast): three_d declared first with the result declared after the voice index 182 (599
+// bytes: the voice index takes EBP, both bools spill); the voice index as a long 161; the globals local
+// dropped (the global at each use) with three_d first 182 (599), with play first 71 (same code); three_d
+// first with the 3D test negated (NULL arm first) 182 (599).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
