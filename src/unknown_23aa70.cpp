@@ -323,6 +323,10 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // offset kept, but format 4 re-associates to `offset + index*8` plus data and forms a pointer again, and the EBP
 // push sinks into format 2), with `offset + data` 89. Diagnostic: format 2's node store before its decode with 3/4
 // indexed 194 (still flipped): only format 4 keeping base and index live across its decode flips the node to EBX.
+// Round 43 (lane 10), format 4 indexed through `vertices` (175, flipped): case 4 written before case 3
+// 170 (620 bytes, still flipped: node EBX, switch temp/bases EDI, source on the stack); with format 3
+// indexed too 170; with format 2 indexed too 170; case 4 written first of all 175; the index parameter
+// renamed (vertex_index) 175. Format 3 indexed alone 60 again (gain under 3, not kept).
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

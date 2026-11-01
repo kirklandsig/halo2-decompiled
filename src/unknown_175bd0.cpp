@@ -2766,6 +2766,14 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // graph with the sound workspace renamed 30. Original executable source restored.
 // Round 170: detached sound velocity before location/before the compression 47/49; compression before
 // the point copy 35; attached light matrix pointer before the node index 30; attached sound scale local 30.
+// Round 140 (lane 4): lead: 0xc0350 declared (tag, object, node, position, forward, up, scale), definition,
+// declaration and both calls, keeps 0xc0350 matched and gives the attached light call exactly (23: the
+// stack up pointer in EDX before the pushes, the EDI/EBX register arguments last); not kept because
+// src/unknown_0bffa0.cpp was another lane's file that round. 0x189060's scale push (EDI, retail EAX) looks
+// like the same cause (forward declared before scale), its definition sits in src/unknown_189010.cpp.
+// Tried: detached sound point copied member-wise 60; location field by field 73; detached arm first with
+// the test inverted 30 (same code); tag index local before the fill 35; the record as one aggregate
+// initializer 47 (as struct-order statements, re-measured 47; 40 on top of the 0xc0350 order).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
