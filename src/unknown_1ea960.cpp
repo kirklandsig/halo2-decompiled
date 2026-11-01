@@ -5,27 +5,142 @@
 
 // @flags /O2 /Gr
 
-#if 0 // Disabled: the nine shape families lack the complete retail virtual interfaces.
-// Constructor declarations here describe the retail field setup; activating them
-// requires the common C/J/AA shape interfaces, including array child_count (+0x28).
+#if 0 // Disabled: activating it may cost neighbouring matches (not checked with the original compiler).
+#include <new>
+// The shapes are constructed in place, in the tag's own data. Each class is named by its
+// retail virtual table. Every one starts with the same header: the table, the word 0x80 at +6
+// (0x455ef0's restored shapes take 1) and a dword at +8. A restored tag (restore true) gets
+// only the header, with 0 at +8: retail leaves every other field as it is. A tag that has
+// just loaded gets the pointers too.
 struct s_shape_block_table;
 void *function_1eaf30(short type, s_shape_block_table *table, short index);
-struct c_part_a { c_part_a(void *definition); };
-struct c_part_b { c_part_b(void *owner); };
-struct c_part_c { c_part_c(void *definition); };
-struct c_shape_456088 { c_shape_456088(void *definition); };
-struct c_shape_455ef0 { c_shape_455ef0(void *definition, word flags); };
-struct c_shape_456048 { c_shape_456048(void *definition); };
-struct c_shape_456008 { c_shape_456008(void *definition, void *first, void *second); };
-struct c_shape_455fc0 {
-	c_shape_455fc0(void *children);
-	long child_count();
-};
-struct c_shape_455f58 { c_shape_455f58(void *child, void *data); };
-struct c_shape_455f30 { c_shape_455f30(void *child, void *linked); };
-struct c_shape_455f8c { c_shape_455f8c(long saved_value); };
 
-// @retail 0x1ea9c0 disabled
+class c_shape_header
+{
+public:
+	virtual ~c_shape_header() {}
+	c_shape_header() : value08(0) { value06 = 0x80; }
+	c_shape_header(void *value) : value08(value) { value06 = 0x80; }
+	byte unknown04[2];
+	word value06;
+	void *value08;
+};
+
+/* the first shape of a pair (physics_part_tables.cpp's c_part_a) */
+class c_shape_4554c0 : public c_shape_header
+{
+public:
+	virtual ~c_shape_4554c0();
+	c_shape_4554c0() {}
+	c_shape_4554c0(void *definition) : c_shape_header(definition) {}
+};
+
+/* the second shape of a pair, pointing at the first (c_part_b) */
+class c_shape_455498 : public c_shape_header
+{
+public:
+	virtual ~c_shape_455498();
+	c_shape_455498() {}
+	c_shape_455498(void *owner) : owner(owner) {}
+	void *owner;
+};
+
+/* a single shape (c_part_c) */
+class c_shape_455500 : public c_shape_header
+{
+public:
+	virtual ~c_shape_455500();
+	c_shape_455500() {}
+	c_shape_455500(void *definition) : c_shape_header(definition) {}
+};
+
+class c_shape_456088 : public c_shape_header
+{
+public:
+	virtual ~c_shape_456088();
+	c_shape_456088() {}
+	c_shape_456088(void *definition) : c_shape_header(definition) {}
+};
+
+/* the shape of the fourth block: restored ones get 1 at +6 */
+class c_shape_455ef0 : public c_shape_header
+{
+public:
+	virtual ~c_shape_455ef0();
+	c_shape_455ef0() { value06 = 1; }
+	c_shape_455ef0(void *definition) : c_shape_header(definition) {}
+};
+
+class c_shape_456048 : public c_shape_header
+{
+public:
+	virtual ~c_shape_456048();
+	c_shape_456048() {}
+	c_shape_456048(void *definition) : c_shape_header(definition) {}
+};
+
+class c_shape_456008 : public c_shape_header
+{
+public:
+	virtual ~c_shape_456008();
+	c_shape_456008() {}
+	c_shape_456008(void *definition, void *first, void *second) : c_shape_header(definition)
+	{
+		*(void **)(unknown0c + 0x24) = first;
+		*(void **)(unknown0c + 0xc8) = second;
+	}
+	byte unknown0c[0xd8 - 0xc];
+};
+
+/* a shape with child shapes: its eleventh virtual function (+0x28) is the child count */
+class c_shape_455fc0 : public c_shape_header
+{
+public:
+	virtual ~c_shape_455fc0();
+	virtual void v1();
+	virtual void v2();
+	virtual void v3();
+	virtual void v4();
+	virtual void v5();
+	virtual void v6();
+	virtual void v7();
+	virtual void v8();
+	virtual void v9();
+	virtual long child_count();
+	c_shape_455fc0() {}
+	c_shape_455fc0(void *children) : children(children) {}
+	void *children;
+};
+
+class c_shape_455f58 : public c_shape_header
+{
+public:
+	virtual ~c_shape_455f58();
+	c_shape_455f58() {}
+	c_shape_455f58(void *child, void *data) : child(child), data(data) {}
+	void *child;
+	void *data;
+};
+
+class c_shape_455f30 : public c_shape_header
+{
+public:
+	virtual ~c_shape_455f30();
+	c_shape_455f30() {}
+	c_shape_455f30(void *child, void *linked) : child(child), linked(linked) {}
+	void *child;
+	void *linked;
+};
+
+class c_shape_455f8c : public c_shape_header
+{
+public:
+	virtual ~c_shape_455f8c();
+	c_shape_455f8c() {}
+	c_shape_455f8c(long saved_value) : c_shape_header((void *)saved_value) {}
+};
+
+// @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, long restore)
 {
 	byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
@@ -40,36 +155,55 @@ void function_1ea9c0(long tag_index, long restore)
 	for (long i = 0; i < *(long *)(definition + 0x48); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x4c) + i * 0x80;
-		new (entry + 0x20) c_part_a((byte)restore ? NULL : entry);
-		new (entry + 0x30) c_part_b((byte)restore ? NULL : entry + 0x20);
+		if ((byte)restore)
+		{
+			new (entry + 0x20) c_shape_4554c0;
+			new (entry + 0x30) c_shape_455498;
+		}
+		else
+		{
+			new (entry + 0x20) c_shape_4554c0(entry);
+			new (entry + 0x30) c_shape_455498(entry + 0x20);
+		}
 	}
 	for (long i = 0; i < *(long *)(definition + 0x50); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x54) + i * 0xb0;
-		new (entry + 0x20) c_shape_456088((byte)restore ? NULL : entry);
+		if ((byte)restore) new (entry + 0x20) c_shape_456088;
+		else new (entry + 0x20) c_shape_456088(entry);
 	}
 	for (long i = 0; i < *(long *)(definition + 0x58); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x5c) + i * 0x50;
-		new (entry + 0x20) c_part_c((byte)restore ? NULL : entry);
+		if ((byte)restore) new (entry + 0x20) c_shape_455500;
+		else new (entry + 0x20) c_shape_455500(entry);
 	}
 	for (long i = 0; i < *(long *)(definition + 0x60); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x64) + i * 0x90;
-		new (entry + 0x20) c_shape_455ef0((byte)restore ? NULL : entry, (byte)restore ? 1 : 0x80);
-		new (entry + 0x40) c_part_b((byte)restore ? NULL : entry + 0x20);
+		if ((byte)restore)
+		{
+			new (entry + 0x20) c_shape_455ef0;
+			new (entry + 0x40) c_shape_455498;
+		}
+		else
+		{
+			new (entry + 0x20) c_shape_455ef0(entry);
+			new (entry + 0x40) c_shape_455498(entry + 0x20);
+		}
 	}
 	for (long i = 0; i < *(long *)(definition + 0x68); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x6c) + i * 0x60;
-		new (entry + 0x20) c_shape_456048((byte)restore ? NULL : entry);
+		if ((byte)restore) new (entry + 0x20) c_shape_456048;
+		else new (entry + 0x20) c_shape_456048(entry);
 	}
 	long first_count = 0, second_count = 0;
 	for (long i = 0; i < *(long *)(definition + 0x70); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x74) + i * 0x100;
 		byte *shape = entry + 0x20;
-		if ((byte)restore) new (shape) c_shape_456008(NULL, NULL, NULL);
+		if ((byte)restore) new (shape) c_shape_456008;
 		else
 		{
 			bool inline_first = (*(dword *)(shape + 0x38) & 0x7fffffff) <= 3;
@@ -84,7 +218,7 @@ void function_1ea9c0(long tag_index, long restore)
 	for (long i = 0; i < *(long *)(definition + 0x90); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0x94) + i * 0x38;
-		if ((byte)restore) new (entry) c_shape_455fc0(NULL);
+		if ((byte)restore) new (entry) c_shape_455fc0;
 		else
 		{
 			bool inline_children = (*(dword *)(entry + 0x14) & 0x7fffffff) <= 4;
@@ -103,7 +237,7 @@ void function_1ea9c0(long tag_index, long restore)
 	for (long i = 0; i < *(long *)(definition + 0xa0); ++i)
 	{
 		byte *entry = *(byte **)(definition + 0xa4) + i * 0x14;
-		if ((byte)restore) new (entry) c_shape_455f58(NULL, NULL);
+		if ((byte)restore) new (entry) c_shape_455f58;
 		else
 		{
 			long key = *(long *)(entry + 0xc);
@@ -118,8 +252,8 @@ void function_1ea9c0(long tag_index, long restore)
 		byte *entry = *(byte **)(definition + 0x10c) + i * 0x20;
 		if ((byte)restore)
 		{
-			new (entry) c_shape_455f30(NULL, NULL);
-			new (entry + 0x14) c_shape_455f8c(0);
+			new (entry) c_shape_455f30;
+			new (entry + 0x14) c_shape_455f8c;
 		}
 		else
 		{
