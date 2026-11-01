@@ -1222,6 +1222,28 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
    the game has teams */
 // score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
+// this round: retail's record defaults differ from ours in three places - it
+// zeroes the team and the three bytes after it as one dword at 0x7c, it zeroes only two of the three
+// longs at 0x70, and it sets the two bytes at 0x82 to 0xff (our source leaves them at the memset's
+// zero, so our record differs from retail's in the last two bytes). Dropping the third zero long at
+// 0x70 or the zero byte at 0x7d does move the allocation into retail's shape (the parameters test
+// becomes `test edi,edi` and the owner moves to EDX), but the score then rises to 206 and 208, and
+// the parameters pointer moves to ESI where retail keeps it in EDI, so all of them were reverted.
+// Reading the parameters at the call site (the decayed member) and testing them together with the
+// live state gives 186, and passing the current record's name to 0x7f660 instead of the requested
+// one gives 238; retail's `push ebx` shows the requested name is the right one, so that change was
+// reverted as well. The permuter on this function was stopped by its time limit without printing
+// anything. Still differs in the owner, the name count and the zero's allocation and the requested
+// cursor.
+// score 184 (was 184): this round: reading the parameters at the call site instead of through the
+// shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
+// compiles to the very same bytes, so the parameters null test still compares with the zero in
+// EDX (`xor edx,edx`, `cmp edi,edx`) where retail uses `test edi,edi`, and the owner, the name
+// count and the requested cursor keep their places; the original body was restored. Swapping the
+// two wcslen tests in the name test gives 209, and naming the current record's address in the
+// test instead of the `current` pointer gives 184 again, both reverted. Still differs in the
+// owner, the name count and the zero's allocation and the requested cursor.
+// Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
 // differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
 // measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
 // in the requested cursor.
