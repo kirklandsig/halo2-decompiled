@@ -8,6 +8,9 @@ char g_415448[64];
 // @retail 0x31c540
 unsigned long __cdecl function_31c540(char const *text)
 {
+	// Capture the input before initializing the local weights.
+	char const *const volatile &input_argument = text;
+	char const *source = input_argument;
 	unsigned long weights[64] = {
 		2,3,1,2,3,1,4,3,2,1,3,1,2,2,3,3,
 		2,3,1,2,3,1,4,3,2,1,3,1,2,2,3,3,
@@ -20,7 +23,7 @@ unsigned long __cdecl function_31c540(char const *text)
 		input[i] = 0;
 		salt[i] = 0;
 	}
-	for (long i = 0; i < 64 && text[i]; ++i) input[i] = text[i];
+	for (long i = 0; i < 64 && source[i]; ++i) input[i] = source[i];
 	for (long i = 0; i < 64 && g_415448[i]; ++i) salt[i] = g_415448[i];
 	unsigned long hash = 0;
 	unsigned long state = 0xc18f77a2;
@@ -32,7 +35,11 @@ unsigned long __cdecl function_31c540(char const *text)
 		multiply = 1 - multiply;
 		for (long j = 0; j < i; ++j)
 		{
-			state = (state * 2) ^ ((salt[j] + input[j]) * 0x1010101UL);
+			// Keep the signed salt read ahead of the input read.
+			char const volatile &salt_value = salt[j];
+			long salted = salt_value;
+			long supplied = input[j];
+			state = (state * 2) ^ ((salted + supplied) * 0x1010101UL);
 			// Retail keeps the running sum in memory during this mixing loop.
 			*(volatile unsigned long *)&hash += state;
 		}

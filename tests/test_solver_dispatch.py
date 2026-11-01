@@ -154,7 +154,10 @@ def solver_case(kind, seed):
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_dispatch_operation_paths(solver_images, kind, precision):
     for seed in range(48):
-        compare_case(solver_images, solver_case(kind, seed), precision, (kind, seed))
+        snapshots = compare_case(solver_images, solver_case(kind, seed), precision, (kind, seed))
+        # These finite geometry scenes agree bit for bit across all three x87
+        # precision modes, including impulse and residual accumulation.
+        assert snapshots[0] == snapshots[1], (kind, precision, seed)
 
 
 def float_outputs(data):
@@ -347,6 +350,46 @@ def test_spin_impulse_rounds_after_scale(solver_images, precision):
                         assert actual == 0.0, (context, precision, actual)
 
 
+@pytest.mark.parametrize('kind', [7, 8])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_friction_scalar_rounding_boundaries(solver_images, kind, precision):
+    # Zero axes isolate the scalar limiting calculation from the SIMD body
+    # updates. Retail rounds the circular limit squared and the initial spin
+    # impulse to float, but keeps the limited impulses extended until use.
+    # Compare the entire heap exactly: a one-bit change in an impulse, adjusted
+    # target, or exported residual must not hide behind the general tolerance.
+    for seed in range(96):
+        rng = random.Random(seed)
+        data = solver_case(kind, 2)
+        put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
+        size, row_kind = OP_LAYOUT[kind]
+        put(data, OPS + 24, 'IIffI', kind | size << 8 | row_kind << 16,
+            FRICTION_RESULTS, 0, 0.7, 12)
+        if kind == 8:
+            put(data, OPS + 44, 'f', 0.7)
+        put(data, OPS + 24 + size, 'I', 0x400)
+        for body in (HEAP, HEAP + 0x80):
+            for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                put(data, body + offset, '4f', 0, 0, 0, 0)
+        put(data, TERMS, '32f', *([0] * 32))
+        put(data, IMPULSES, '3f', 0, 0, 0)
+        for row, target in enumerate((0.9, 0.5)):
+            put(data, TERMS + row * 48 + 12, 'f', target)
+            put(data, TERMS + row * 48 + 44, 'f', 1)
+        if kind == 7:
+            put(data, OPS + 36, 'f', rng.uniform(0.1, 1))
+            put(data, TERMS + 12, 'f', rng.uniform(0.6, 2))
+            put(data, TERMS + 60, 'f', rng.uniform(0.6, 2))
+        else:
+            put(data, TERMS + 0x6c, 'f', rng.uniform(0.1, 2))
+            put(data, TERMS + 0x7c, 'f', rng.uniform(0.1, 2))
+        if seed % 4 == 0:
+            put(data, OPS + 36, 'f', 4)
+        context = ('friction scalar rounding', kind, seed)
+        snapshots = compare_case(solver_images, data, precision, context)
+        assert snapshots[0] == snapshots[1], (context, precision)
+
+
 def mixed_case(seed):
     data = solver_case(12, seed)
     for start, end in ((0x1000, 0x3000), (0x4000, 0x7000)):
@@ -452,6 +495,30 @@ def test_bounded_linear_clamp_keeps_divide_then_multiply(solver_images, precisio
     for heap, _ in snapshots:
         assert struct.unpack_from('<I', heap, 0x10)[0] == expected
         assert struct.unpack_from('<I', heap, IMPULSES - HEAP)[0] == expected
+
+
+@pytest.mark.parametrize('kind', [4, 5])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_bounded_impulse_multiplies_mass_before_step_scale(solver_images, kind, precision):
+    # Zero directions isolate the scalar impulse. Non-unit scales distinguish
+    # (target * mass) * scale from the compiler's reordered multiplication,
+    # even though both satisfy the broader solver tolerance.
+    for seed in range(96):
+        rng = random.Random(seed)
+        data = solver_case(kind, 2)
+        put(data, STEP, '7fi', 0, rng.uniform(0.1, 1.7), 1, 1, 60, 0, 0, 1)
+        size, row_kind = OP_LAYOUT[kind]
+        put(data, OPS + 24, 'I3fI', kind | size << 8 | row_kind << 16,
+            100, -100, 0, 0x400)
+        for body in (HEAP, HEAP + 0x80):
+            for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                put(data, body + offset, '4f', 0, 0, 0, 0)
+        put(data, TERMS, '12f', *([0] * 12))
+        put(data, IMPULSES, 'f', 0)
+        put(data, TERMS + (12 if kind == 4 else 28), 'f', rng.uniform(0.1, 1.7))
+        put(data, TERMS + (28 if kind == 4 else 12), 'f', rng.uniform(-2, 2))
+        snapshots = compare_case(solver_images, data, precision, ('bounded multiplication', kind, seed))
+        assert snapshots[0] == snapshots[1], (kind, precision, seed)
 
 
 @pytest.mark.parametrize('kind', [2, 5, 6, 13])

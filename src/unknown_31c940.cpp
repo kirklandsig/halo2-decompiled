@@ -99,15 +99,16 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
 	solver_velocity_31c940 *const volatile &b, float *result)
 {
+	float target_a = row[0].linear.m128_f32[3];
 	// Complete both SIMD projections before the coupled x87 errors.
 	solver_scalar_31c940 projected_a = linear_velocity(row, a, b);
 	solver_scalar_31c940 projected_b = linear_velocity(row + 1, a, b);
-	// Retail spills the first error and second impulse to 32-bit storage.
-	volatile float error_a = row[0].linear.m128_f32[3] * load_error_scale(step)
+	// Retail spills the first error and both coupled impulses to 32-bit storage.
+	volatile float error_a = target_a * load_error_scale(step)
 		- projected_a.value * load_velocity_scale(step);
 	float error_b = row[1].linear.m128_f32[3] * load_error_scale(step)
 		- projected_b.value * load_velocity_scale(step);
-	float impulse_a = row[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 4);
+	volatile float impulse_a = row[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 4);
 	volatile float impulse_b = row[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 4);
 	if (impulse_a > 0.0f)
 	{
@@ -240,27 +241,32 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(row + 2);
+				float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
 				solver_scalar_31c940 projected_a = linear_velocity(row, a, b);
 				solver_scalar_31c940 projected_b = linear_velocity(row + 1, a, b);
+				// Round the initial spin before the coupled tangential calculation.
+				volatile float initial_spin = (spin_target * load_friction_scale(step) - angular_velocity(spin, a, b) * load_velocity_scale(step)) * spin_mass;
 				float error_a = row[0].linear.m128_f32[3] * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
 				float error_b = row[1].linear.m128_f32[3] * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
 				float impulse_a = row[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
 				float impulse_b = row[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
-				float impulse_spin = (spin->b.m128_f32[3] * load_friction_scale(step) - angular_velocity(spin, a, b) * load_velocity_scale(step)) * spin->a.m128_f32[3];
+				// Reload after the tangential impulses to retain spin-squared first
+				// in the x87 norm accumulation.
+				float impulse_spin = initial_spin;
 				float norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
 				float maximum = operation_float(op, 12);
 				if (norm > maximum * maximum)
 				{
 					float factor = maximum / sqrtf(norm);
-					impulse_a *= factor; impulse_b *= factor;
+					impulse_a *= factor; impulse_b *= factor; impulse_spin *= factor;
 					row[0].linear.m128_f32[3] *= factor;
 					row[1].linear.m128_f32[3] *= factor;
-					impulse_spin *= factor; spin->b.m128_f32[3] *= factor;
+					spin->b.m128_f32[3] *= factor;
 				}
+				// Scale and round spin before either linear update can change row storage.
+				volatile float rounded_spin = impulse_spin * operation_float(op, 20);
 				apply_linear(impulse_a, row, a, b, result);
 				apply_linear(impulse_b, row + 1, a, b, result + 1);
-				// This path rounds the scaled spin impulse before both consumers.
-				volatile float rounded_spin = impulse_spin * operation_float(op, 20);
 				apply_angular((float)rounded_spin, spin, a, b, result + 2);
 				terms += 8; result += 3; op += 24;
 				break;
@@ -273,13 +279,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_scalar_31c940 projected_b = linear_velocity(row + 1, a, b);
 				float error_a = row[0].linear.m128_f32[3] * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
 				float error_b = row[1].linear.m128_f32[3] * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
+				float maximum = operation_float(op, 12);
+				// The circular limit is rounded before comparison and division.
+				volatile float maximum_squared = maximum * maximum;
 				float impulse_a = row[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
 				float impulse_b = row[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
 				float norm = impulse_a * impulse_a + impulse_b * impulse_b;
-				float maximum = operation_float(op, 12);
-				if (norm > maximum * maximum)
+				if (norm > maximum_squared)
 				{
-					float factor = sqrtf((maximum * maximum) / norm);
+					float factor = sqrtf(maximum_squared / norm);
 					impulse_a *= factor; impulse_b *= factor;
 					row[0].linear.m128_f32[3] *= factor;
 					row[1].linear.m128_f32[3] *= factor;
@@ -338,7 +346,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
 				do
 				{
-					float impulse = (row->b.m128_f32[3] - angular_velocity(row, a, b)) * row->a.m128_f32[3] * load_error_scale(step);
+					float mass = row->a.m128_f32[3];
+					float target = row->b.m128_f32[3];
+					// The wider intermediate prevents reassociation of mass and step scale
+					// while retaining the extended x87 value across both multiplications.
+					double mass_error = (target - angular_velocity(row, a, b)) * mass;
+					float impulse = mass_error * load_error_scale(step);
 					if (impulse > operation_float(op, 4)) impulse *= operation_float(op, 4) / impulse;
 					else if (impulse < operation_float(op, 8)) impulse *= operation_float(op, 8) / impulse;
 					apply_angular(impulse, row, a, b, result);
@@ -410,7 +423,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				do
 				{
-					float impulse = (row->linear.m128_f32[3] - linear_velocity(row, a, b).value) * row->a.m128_f32[3] * load_error_scale(step);
+					float mass = row->a.m128_f32[3];
+					float target = row->linear.m128_f32[3];
+					// Match the same mass-before-step-scale order as the angular path.
+					double mass_error = (target - linear_velocity(row, a, b).value) * mass;
+					float impulse = mass_error * load_error_scale(step);
 					// Keep the divide followed by multiply on both clamp paths;
 					// reassociating them changes rounding at 24-bit x87 precision.
 					if (impulse > operation_float(op, 4))

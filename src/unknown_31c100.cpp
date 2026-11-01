@@ -44,10 +44,10 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	{
 		char *term_limit;
 		char *overflow;
-		char *base;
+		char *volatile base;
 		solver_output_31e7b0 output;
 		char *allocated;
-		char *results;
+		char *volatile results;
 	} workspace;
 
 	workspace_sizes_31c100 *sizes = (workspace_sizes_31c100 *)simulation;
