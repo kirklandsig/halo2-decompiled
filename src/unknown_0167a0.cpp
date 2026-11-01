@@ -1505,6 +1505,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
 // sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
 // writers and entire body restored.
+// Round 230: parallel named rescale additions, plain native channel clamps and complete color
+// initializers, seven subsets; all with short outer ordinals, scores [130, 350, 350, 131, 131, 350,
+// 350, 351].
+// Original executable source restored. The mapped post-sampler word-load form remains.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
