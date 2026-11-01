@@ -1715,6 +1715,9 @@ void function_b7360(long object_index);
 // Round 329: Independent movement/direct/point conversion workspaces declared at callback
 // scope, subsets 1-7 and all with coherent product/tick names, 471 each. Original
 // declaration scopes, conversion operations and complete executable body restored.
+// Round 331: Common case-thirteen notification with branch/conditional flag values and
+// orientation/point result stores: 471/483/512/521/471/493/519/528. Original terminal cases, output
+// producers and complete body restored; actor/pool/output allocation and length gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2110,7 +2113,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 469 (was 478): the frame agrees at 0x1c; retail computes the actor base in EBX
+// score 469 (was 469): the frame agrees at 0x1c; retail computes the actor base in EBX
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
 // before its use and reuses EBX for the state pointer. The body is 2400 bytes against
 // retail's 2396.
@@ -2191,6 +2194,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 327: Complete pending-request arm orders 6/18/14/21, 6/21/18/14, 6/14/18/21, 18/6/21/14,
 // 18/21/6/14, 21/6/18/14, 14/6/18/21, 14/21/18/6 give 471/474/469/480/476/480/472/480. Order
 // 6/14/18/21 retained at 469 by ordinary full validation; all arm bodies remain unchanged.
+// Round 331: Separate scalar initialization of turning/animation/motion planar copies, subsets 1-7:
+// 591/502/612/490/600/510/620; all with Boolean completion 620 (fast control 485; full 469). Original
+// copies and complete body restored; turning forms recover the entry but regress overall.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

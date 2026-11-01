@@ -628,6 +628,9 @@ bool sound_driver_voice_create_buffer(
 // with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
 // code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
 // (anneal, 600 s, 67 tries): best 71.
+// Round 331: Complete final-value descriptor initializers first/spatial/both 176/157/211;
+// spatial-first counterparts 200/197/211; both with count before construction 211, also spatial-first
+// 211. Original memset boundaries and executable body restored; Boolean and zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

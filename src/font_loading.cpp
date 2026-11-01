@@ -565,6 +565,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 324: persistent color as word/short, each with original/full parity and
 // long/word fill pixels, 94/107/201/208/94/107/201/201. Original helper and body
 // restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 331: Count accumulation before two-pixel/single-and-literal/ordinary-run production, subsets
+// 1-7: 133/172/209/176/170/178/213; all with full-width pixel helper 204. Original count lifetimes,
+// helper and decoder restored; alpha extension, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
