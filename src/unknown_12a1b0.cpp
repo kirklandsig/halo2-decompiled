@@ -1482,6 +1482,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // 13's forms, confirmed); the twice-indexed take alone 146 (confirmed). Diagnostic: 0x2194c0's parameters swapped
 // everywhere 49 (0x21cb90 matches); the 0x2194c0 arm's argument schedule here mirrors the 0x219370 site's, not that
 // cause.
+// Round 442: native byte selected range/full count/full voice-result domains, seven subsets
+// 92/110/125/61/101/109/126; complete graph with result initialized before pitch selection 125.
+// Original scalar domains, shared helpers and body restored; early index/flag scheduling remains.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1609,6 +1612,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // differs again); that with the pitch through a bounds pointer and a named lower bound as in 0x21b940 460
 // (1939 bytes); the count in the first loop's init only 427 (1907 bytes); both counts with the gains array
 // declared before the sounds 366.
+// Round 442: exclusive activity arms, inactive/active order and active-only gain tail
+// 489/489/489 reduced; with independent per-pass counts 492/493/394; active-only tail with
+// complete request storage and both/no count snapshots 394/488. Reduced control 479;
+// active-only tail/counts plain 379 at 1924 bytes (baseline 305/1923), restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2140,7 +2147,7 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
-// score 597 (was 615): retail length recovered; saved-register order, record homes, energy-loop
+// score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
 // initial result 694 reduced, 597 plain (kept); independent request state 811 reduced;
@@ -2197,6 +2204,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (retail swaps their dead-parameter homes 0x54/0x60); impulse states from `(byte)flags & 1` 699; memset on
 // &listener_gains 615; the seed as a ternary 653 (aligned 221 against 249, NONE moves to ESI as retail);
 // next_definition/local_2e47c8 at the loop top 698.
+// Round 442: alternate inside definition guard, combination result set by its test, creation truth
+// from the lookup result, seven subsets 716/739/725/752/743/758/749 reduced; complete truth graph
+// with alternate inside availability 791 (loses a caller). Reduced control 694, full 597.
+// Original truth producers and body restored; entry flags occupy BL instead of retail's true EBX.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
