@@ -10,7 +10,7 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// score 406 (was 421): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
+// score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
 // Storage headers are at 0xb0/0x10bc/0x20c8/0x40d4 versus retail 0xb0/0x10c0/0x20d0/0x40e0.
@@ -119,6 +119,9 @@ struct s_visibility_bound_record
 // construction/direct shared scale 417/417/450/424; per-part containment output on those
 // graphs 406/406/449/421. Native point form kept at 406 after full validation; all call values
 // and float grouping retained. Storage has its own type identity.
+// Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
+// view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
+// 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

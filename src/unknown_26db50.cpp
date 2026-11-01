@@ -602,6 +602,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
 // helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
 // below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
+// Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
+// unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
+// ring, word spoke, helper and complete body restored; ring conversion/spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

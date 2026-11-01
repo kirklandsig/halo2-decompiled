@@ -210,6 +210,9 @@ struct s_24e9c7_bounds
 // scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
 // side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
 // up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
