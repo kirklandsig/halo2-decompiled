@@ -253,6 +253,8 @@ struct s_block_candidate
 // Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
 // bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
 // restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
+// Round 275: Reused candidate pages/time/both/best fields/pages-best/time-best/all 369/367/367/370/367/367/367; all with immutable successor 367. One/three-point leads rejected.
+// Original executable source restored; frame 0x1050 versus 0x1054, page/ring homes and policy blocks remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
