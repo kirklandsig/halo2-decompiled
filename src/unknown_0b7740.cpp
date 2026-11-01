@@ -1180,6 +1180,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // stored flag initialised beside the orientation test 398. Diagnostics: 0xbfed0's definition moved after
 // this function in this file 234 (still no ESI reload: definition order is not why retail distrusts ESI);
 // the no-model data field read as a dword 234 (still reuses EDI: the reload is not a type difference).
+// Round 121 (m3 lane 5, fast): retail rematerialises 0x55eeb4 at every use (memcpy destination, both
+// mask-call arguments, the sample mask); the stored/empty test as nested ifs 234; the amount by if/else
+// 234; orientations defaulted at the declaration with `else stored = false` 402 (1367 bytes); `stored`
+// declared first 236; the no-model parent matrix by array indexing 234.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

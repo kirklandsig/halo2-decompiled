@@ -516,6 +516,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
 // in locals (28), team/player/object order swapped (5), unknown7c before definition_index (7), chained 1.0f
 // stores (5). A one-function check scores this differently (5); judge it on the 515-source set.
+// Also tried: +0x1c typed as s_location (3), the owner copied from the const NONE owner (42), unknown18 before
+// the location (7), `player_index = object_index = NONE` (3), `unknown1c = unknown14 = NONE` (3). The alias status
+// of both globals is retail's (g_47d8e0 address-taken there too, g_4686c4 not), so only the scheduler is left.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -628,6 +631,9 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 // object; ours sets the flag first and stores unknownf4 after the last push. Tried: flag before unknownf4 (6),
 // early return instead of the nested if (6). Setting the flag after function_ba7f0 scores 4 but moves the
 // flag store past the call (retail sets it before), so it is a false improvement and was dropped.
+// Also tried: the d5b60 result typed as s_damage_info with a named +0xb0 effect (6), the flag set through a fresh
+// DAMAGE_OBJECT lookup (62, reloads the pool), the two stores as side effects of ba7f0's first argument (6, the
+// same bytes: the order is the scheduler's), `maximum > 0 && info` (14), a nested `if (info)` (6).
 // @retail 0xd6a70
 void function_d6a70(long object_index)
 {
@@ -813,6 +819,10 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // owner in ecx and the index in edx (retail's only caller, 0xd74e0 at 0xd7603, does `mov ecx, edi`; that caller
 // is still unmatched). Tried: count in a local (8), pointer-stepping loop (11), while loop (8), index declared
 // first (8), entry pointer local (8), early `return true` (26, owner moves to eax), typed struct view (8).
+// Also tried: the parameter named `component` (8), `break` + `return i < count` with no flag (27), a walking
+// pointer declared before the index with `i++, rigid_body += 0x60` (11), that with the count read first (12),
+// named count and element-array locals (12). The parameter takes ECX whenever its last use comes before the
+// loop guard (27, 12, 12), but retail also reads the element array after the guard.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
@@ -1612,6 +1622,9 @@ long function_1e4a10(long index);
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last), and ours pushes the
 // shield-damaged effect before `lea ebx, [edi + 8]` for function_176780 (retail: after). Tried: owner pointer in
 // a local for the function_176780 call (no change), the tail's unknownd4 handle in a long local (12).
+// Also tried: `multiplier = 1.0f` declared at the function top (228) or first in the else-if block (206, both
+// give it a stack home), declared after the in-radius subtraction (38), `multiplier = cond ? d5bc0(...) : 1.0f`
+// (156), the inverse maximum as an if/else statement (10, the same code).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2496,6 +2509,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // puts the no-team return before the not-enemy one, ours the reverse). Tried: three early returns
 // (16), a goto to one shared return (24), a flat team/state test (5, same order), separate team and
 // state tests (28)
+// Also tried: a single-exit `result` for the team part (44, frame 0xc), `else { return damage; }` on the team
+// test (5), the team test as an early return before the enemy block (5), the enemy branch scaling `damage` in
+// place with one final return (32), `enemy = team < 0 || team >= 16 || !bfe60(...)` (73). Every `return damage`
+// becomes one block whose damage location (xmm1 or the stack home) the allocator picks; its order follows that.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4217,6 +4234,9 @@ dword function_db810(long object_index, long node_index)
 // 4, an up-counting loop over an indexed rigid body 4. Before the guard: the row and index base pointers as
 // locals before the inner loop (87, 116 with both), a component local dropped (84), `long j = 0` before the
 // `if` (111), the inner `for` under the `if` (69).
+// Also tried: `model_index` renamed (4) and every head local renamed (4: names do not steer it), no `object`
+// local with DAMAGE_OBJECT(object_index) at each use (17), `result = lowest_rank = 0x7fffffff` (7), `lowest_rank`
+// declared first (7); the permuter (51 tries) found nothing under 4.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {

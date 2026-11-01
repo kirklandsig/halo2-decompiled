@@ -453,6 +453,14 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // products up-first as retail); dot3f in either order, the first two terms parenthesised, the terms i, j, k
 // 101 each; cross3f_staged(up, forward, left) 101, cross3f 113; with the `+=` dot: the scaled terms as one
 // vector3f 124 (918 bytes), updated in place 122, `up->i = up->i - scaled_i` 99.
+// Round 121 (m3 lane 5, fast): the three axis pointers declared before the normalize calls, orders
+// left/forward/up, left/up/forward, up/left/forward 131/131/132 (all three lea hoisted above the
+// first call; retail interleaves); one exit with body_index declared NONE beside the component index
+// and the update under `if (body_index != NONE)` 112 (same code), that with the center through
+// carrier_vector_from_havok 149. Compile-only (no LTCG, same axis block as ours): every one-expression
+// dot spelling gives the same code; no by-name or pointer access per axis or per written component
+// moved the dot's k,i,j order or the swapped products. A 600 s permuter run was cut off by its time
+// cap while confirming a candidate.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

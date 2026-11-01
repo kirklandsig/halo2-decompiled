@@ -160,6 +160,12 @@ bool g_47f05b;
 // Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
 // buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
 // named const 34 (same code); the pool address named after the first construction 34 (same code).
+// Round 122 (lane 5, fast with 0x146b80/0x22c3e0 matched): the size-only constructor re-measured 35
+// (140 bytes, only the abstract vtable store missing); on it, the fixed base's buffer/size stores under
+// a constant-folded `if (size > 0)` 35 (a folded branch does not keep the store); the buffer as `block +
+// sizeof(c_havok_fixed_memory)` 34 (same code); the buffer named after the three global stores 36 (146
+// bytes, the 1s become immediates); `g_479894 = NULL; if (block) g_479894 = new (block) ...` 32 (139
+// bytes, the NULL store moves above the test, the vtable store still dropped).
 // @retail 0x146a20
 void function_146a20(void)
 {
