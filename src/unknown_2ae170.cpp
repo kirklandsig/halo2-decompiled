@@ -1168,6 +1168,8 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 // retail's order, the front endpoints are full-width longs kept in ebp/ebx, and the run-time -6.0206
 // attenuation sits in a bits/value union reached through a reference to its float member, so the
 // compiler reloads it from the stack slot before each send as retail does.
+// The zero passed as *(real *)&attenuation, the bits/value union and the store in case 0 (remaining
+// is not read after the switch) are retail's code shape and are kept only with this byte match.
 // score 117 (was 137): speaker-mode switch with explicit pair calls, a statement in the mode-0 case for
 // retail's four-entry jump table, the zero gain passed as *(real *)&attenuation and the run-time
 // -6.0206 attenuation through a local bits/value union; the length now matches retail's 396 bytes.
