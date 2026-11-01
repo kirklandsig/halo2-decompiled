@@ -2175,6 +2175,9 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // Round 32: the definition index as its own local (priority then a register argument, frame
 // 0x38) 46; entry_index reassigned in place of the index local 16; request priority as long 16;
 // request priority declared before the index 16; NONE-first comparisons 16.
+// Round 15: `priority = NONE;` before the fallback test 23; entry_index reassigned with the request
+// priority declared first 16; the index from a ternary with one NONE test 16; the request record
+// declared at function scope 16; the fallback test un-nested (a second plain NONE test) 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
