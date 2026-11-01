@@ -330,6 +330,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
 // 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
 // the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
+// Round 40 (lane 13, fast): dword tag with a `& 0xffff` fallback 152; the `& 0xffff` fallback with the four
+// cache zeros grouped 149 (head and stage in ESI as retail, but the tag table goes to ECX above the frame
+// where retail keeps it in EDI); the grouped zeros with the second ordinal read through a named element
+// pointer 120 (still fused); on the 149 form the sums written parameter first 149, the root handle named 149.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

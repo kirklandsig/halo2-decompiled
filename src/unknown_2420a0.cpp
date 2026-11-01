@@ -1136,6 +1136,7 @@ void c_game_engine_markers::v21(long object_index)
 // returns for the mode, type and slot tests 40; the object fetched before the type test as in the
 // matched v24 119 (the object is then kept, where retail reloads it).
 // Earlier note (40): the entry swaps EAX/ECX for the object index and the header; retail computes the
+// Earlier summary: the entry swaps EAX/ECX for the object index and the header; retail computes the
 // player pointer before the flag test with the players' data load unfolded and reloads the options
 // pointer at the engine-type compare.
 // Round 77: the team at each call again 119 (the options pointer then stays in EDX from entry and the
@@ -1249,6 +1250,12 @@ void c_game_engine_markers::v21(long object_index)
 // object-index CSE) 117 still loads the index into EAX. A compile-only build with 0x101280's body pasted in
 // as an inline reproduces the entry swap and keeps it with the header in a local, the index masked into a
 // local, or without the mode test.
+// Round 43 (fast): the team at each call with the player pointer before the absolute index 119 (430
+// bytes; options pointer in EDX from entry again); that with the options in a local for the mode test
+// only 119; that with the player as typed pointer arithmetic on the absolute index 120; the team read
+// before the flag test 89 (aligned 24 against 30: the player pointer and team now precede the test, but
+// the team load stays folded into the player arithmetic where retail materializes the pointer and
+// loads the team after the engine-type compare), with the player before the absolute index 89.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

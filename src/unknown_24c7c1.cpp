@@ -645,6 +645,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // with the bool timer and the struct declared first 109, the tutorial choice inverted 109, renamed to sort first
 // 109. The lead: retail's `left` lives in a 4-byte aggregate whose other half this function never touches.
 // Screen only: left/top as x/y of one two-short point struct stores top into it too (retail never writes beside left).
+// Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
+// (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
+// count` 197 (1883 bytes).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

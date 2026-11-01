@@ -1637,7 +1637,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
-// score 251 (was 263): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
+// score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
 // rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
 // retail's code; the actor index stays in EDI instead of EBX and the object pool is reloaded instead
@@ -1722,6 +1722,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // callees in that span are leaves, so it is not a callee summary). `inline` on 0x1e53e0 265 (0x2758b0
 // 21 -> 113); the pool read into a local before 0x1e5240's test 263 (same code); NONE-first weapon query
 // results 275; the lookups through a plain static getter taking the pool 263 (same code).
+// Round 42 (m3 lane 13, fast): retail loads the pool global between the inlined 0x1e5240's NONE compare and its
+// branch and holds it in EDI to the end (actor ESI, options EBP, the random state EBX from its first draw); ours
+// never carries the global across 0x1e5280 (it reloads it at each lookup, so the actor takes EDI, the options ESI
+// and the random state EBP). Diagnostics with the lookups indexed by hand through a pool local (not keepable):
+// the local at the top 283 (1237 bytes; pool held in ESI but spilled, options EBP as retail), after the actor 283,
+// after the 0x1e5240 call 278 (loaded after 0x1e5280, spilled). A pool local before the NONE test inside 0x1e5240
+// (0x1e5240 still MATCH) 251 (same code here: the caller's lookups stay separate loads). The unit-index test split
+// from the actor state tests 251 (same code).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

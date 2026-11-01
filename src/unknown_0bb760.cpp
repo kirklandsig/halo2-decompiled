@@ -583,6 +583,12 @@ void function_3dd10(long object_index, bool force);
 // the top of the selection loop body 84 (hoisted back); on the found-block form the target before the running
 // sum 136 and the eligibility test as nested ifs 132. Diagnostic (reverted): size preference around the
 // function 443 (879 bytes).
+// Round 42 (m3 lane 13, fast): the inverse at the top of the found block 132 (again: retail's not-found exit
+// reloads 1.0 into xmm5 before reloading the count into EAX, so it does not cross-jump into the mask path's
+// `movss xmm5`; ours reloads the count first and merges, 8 bytes short); on it blend/variant declared first and
+// assigned after 132 (same code), the variant byte read before the blend value 123 (held in BL across fmod); the
+// found choice kept in a pointer with the inverse between the loop and an `if (selected)` blend 196 (frame 0x58);
+// the inverse computed right after the blend seed 198 (frame 0x58).
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -716,6 +722,12 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
 // at the end of this note.
 // Round 31 (lane D): unchanged; retail keeps the destination pointer in EBX and
+// a plain for over i with the destination `base + count` named in each pass and the source
+// stepped at the end of the body (round 42; the comma countdown loop is gone): the false result in CL, both
+// false exits and the epilogue are retail's. Left: the destination takes EDI (the 0x131c20 result register)
+// where retail gives it EBX, so the source walk sits in EBX at the loop top (retail: stack slot only) and the
+// blend/scale cursors take EBX (retail EDI); the source and entry-offset slots are swapped.
+// Round 31 (lane D), earlier 91: unchanged; retail keeps the destination pointer in EBX and
 // the source pointer in its stack slot, while ours keeps the source in EBX and the destination in
 // EDI (which also feeds the 0x131c20 result register), and retail counts the colours with a signed
 // 32-bit division by 24 (magic 0xAAAAAAAB) where our (long) cast gives the cheaper 16-bit-range
@@ -726,11 +738,13 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
 // destination 148 and a constant source 91; every one restored.
 // Earlier (91, was 91): Retail keeps the destination pointer in EBX and the source pointer
+// Earlier (91): unchanged. Retail keeps the destination pointer in EBX and the source pointer
 // only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
 // retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
 // (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
 // instruction sequence does not.
 // Earlier (91, was 91): retail tests the count against zero before it computes
+// Earlier (91): retail tests the count against zero before it computes
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the
 // loop's bookkeeping differ.
@@ -804,6 +818,15 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // lookup 141, the source step right after the copy 180, `result = true` before the copy 89 (same), count
 // declared before base 178, the blend call through a forceinline wrapper (diagnostic) 89 (same); an indexed
 // source with a walking destination 161 (575 bytes).
+// Round 42 (m3 lane 13, fast; on the comma loop): destination formed after the count test 100. Plain for with
+// `&base[count + i]`/`base[i]` and the result set in the body 149 (563 bytes: the loop end, slots and scale
+// multiplies are retail's, but the false result takes BL, the source is computed into ECX and the destination
+// into EDI); the same in a count guard with the result set first 107; result at the end of the body 149; an
+// early `return false` for the flag test 178; count declared before base 133; result declared first 149; result
+// scoped to the flag block 157; the blend loop through `entry->functions[j]` 185; the destination stepped and the
+// source indexed 161. On the kept form (89): base renamed source/values/original 89 each; `red *= value` 89;
+// `*current = *base++` 180 (frame 0x28); `base++` right after the copy 180; result set after the copy 89; the
+// copy before the entry lookup 141; the blend result passed as `&current->red` 89.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
@@ -814,37 +837,35 @@ bool __stdcall function_be8e0(long object_index)
     {
         color3f *base = (color3f *)(object + *(short *)(object + 0x126));
         long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
-        color3f *current = base + count;
-        if (count > 0)
+        for (long i = 0; i < count; i++)
         {
-            result = true;
-            for (long remaining = count, i = 0; remaining > 0; --remaining, ++i, ++current, ++base)
+            s_colour_choices_ab *entry = &(*(s_colour_choices_ab **)(definition + 0xb0))[i];
+            color3f *current = base + count;
+            *current = *base;
+            for (long j = 0; j < entry->function_count; ++j)
             {
-                s_colour_choices_ab *entry = &(*(s_colour_choices_ab **)(definition + 0xb0))[i];
-                *current = *base;
-                for (long j = 0; j < entry->function_count; ++j)
+                s_colour_function_ab *function = &entry->functions[j];
+                if (function->blend_name)
                 {
-                    s_colour_function_ab *function = &entry->functions[j];
-                    if (function->blend_name)
-                    {
-                        function_131c20(&function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name), &*current);
-                    }
+                    function_131c20(&function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name), current);
                 }
-                for (long j = 0; j < entry->function_count; ++j)
-                {
-                    s_colour_function_ab *function = &entry->functions[j];
-                    if (function->scale_name)
-                    {
-                        real value = function_be8b0(object_index, function->scale_name);
-                        current->red = value * current->red;
-                        current->green *= value;
-                        current->blue *= value;
-                    }
-                }
-                current->red = current->red < 0.0f ? 0.0f : current->red > 1.0f ? 1.0f : current->red;
-                current->green = current->green < 0.0f ? 0.0f : current->green > 1.0f ? 1.0f : current->green;
-                current->blue = current->blue < 0.0f ? 0.0f : current->blue > 1.0f ? 1.0f : current->blue;
             }
+            for (long j = 0; j < entry->function_count; ++j)
+            {
+                s_colour_function_ab *function = &entry->functions[j];
+                if (function->scale_name)
+                {
+                    real value = function_be8b0(object_index, function->scale_name);
+                    current->red = value * current->red;
+                    current->green *= value;
+                    current->blue *= value;
+                }
+            }
+            current->red = current->red < 0.0f ? 0.0f : current->red > 1.0f ? 1.0f : current->red;
+            current->green = current->green < 0.0f ? 0.0f : current->green > 1.0f ? 1.0f : current->green;
+            current->blue = current->blue < 0.0f ? 0.0f : current->blue > 1.0f ? 1.0f : current->blue;
+            result = true;
+            base++;
         }
     }
     return result;

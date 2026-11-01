@@ -768,11 +768,22 @@ void __stdcall function_d6bc0(long object_index)
 }
 
 /* whether a damage event can affect an object */
-// score 26 (was 77): `result` must be a variable that is set true in one branch, or it is folded away and the
-// parameters move to registers (data on the stack, in ebp, is retail's). What still differs is layout: retail
+// score 15 (was 26): `result` must be a variable that is set true in one branch, or it is folded away and the
+// parameters move to registers (data on the stack, in ebp, is retail's). With the flag-8 test swapped (team call in
+// the then arm, `result = true` in the else) the layout is retail's except one `mov bl, 1` block before the false
+// epilogue: retail sends that path to the shared `mov al, 1` epilogue too (219 against 217 bytes).
+// Earlier: what still differs is layout: retail
 // shares one `mov al, 1` epilogue between the type test, the flags & 8 test and the team test, we emit one inline
 // before the team call and reach the other through `mov bl, 1`. Tried: all `return true` (convention reverts, 85),
 // `result = true` at every site (35, `mov bl, 1` tail), `return player_index != NONE` without the bool local (50).
+// Round 39 (lane 13, --fast): `if (!(flags & 8) || team) result = true` 33, with `return true` 88 (folds), `result =
+// !(flags & 8) || team` 63; nested flag-8 test with `result = true` / else `return true` 29 (217 bytes); unit branch
+// assigning result without returning, with the original / `||` return / nested return / nested result team 51/62/62/53;
+// unit `result = ...; return result;` 26, with `||` or nested return 88/88; type test `result = true` in an else-if chain
+// with `||` / nested result 35/35, two-arm else-if 33, `result = team` 74/74; type test inverted with `||` result /
+// nested result 35/35, with `||` return 15, `result = true` first with `||` return 38, one combined condition 35. On 15
+// (kept): `result = true; return result;` 88, type-test else `return true` with the team result forms 28/29/29,
+// result declared first / second 83/83.
 // Round 473: success paths type/flags/team as set/return/return 51, return/set/return 51, set/set/return
 // 36, set/return/set 26, return/set/set 33; first result on set/return/return 72; dword on
 // return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
@@ -808,9 +819,12 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 				return true;
 			if (!((flags & 0x8000) && g_4e6948->state == 1 && object->player_index != NONE))
 			{
-				if (!(flags & 8))
-					return true;
-				if (function_1df560(object->team, data->owner.team))
+				if (flags & 8)
+				{
+					if (function_1df560(object->team, data->owner.team))
+						return true;
+				}
+				else
 					result = true;
 			}
 		}
@@ -1391,6 +1405,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // which then goes through ecx instead of eax). Everything else, including the usercall registers, matches.
 // Tried: memcpy of the owner (10), the owner copied through a local (10), flags updated with ?: chains (10),
 // the flags read and written through data.flags instead of the byte-array alias (10).
+// Round 39 (lane 13, --fast): definition index through a named globals pointer 10, data declared first 10, object
+// pointer local 10, single exit 10, `flags = data; flags |= 4;` 10, with blank-line splits 10, data.flags
+// read-modify-writes 10; permuter 16 tries, best 10. 0xd6660 (score 3) uses retail's registers, so its summary is not
+// the cause.
 // Round 473: required bit at final publication 32; flag declaration before event 10; event name 10;
 // damage_flags name 10; owner before scale 17; owner/late bit 35; both names/late bit 32; flags before
 // disjoint publications 17. Original body restored; aggregate-copy registers and final flag-store schedule
