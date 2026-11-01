@@ -349,6 +349,9 @@ void __stdcall function_1160c0(real dt)
 // before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
 // difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
+// Round 298: Normalized axis store orders ikj/jik/jki/kij/kji 179/179/179/178/178; complete scalar
+// axis producers with jki/kij/kji normalization 192/190/192. One-point gains rejected; original
+// axis producers and body restored. Segment/previous/axis homes and rotation schedule remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

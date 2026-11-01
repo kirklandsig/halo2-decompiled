@@ -146,6 +146,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // entire body restored.
 // Round 288: On native normalized-input setter/direct input: mode default/history coefficient/both/correction root/mode+root/history+root/all/all with shared addition; shared addition alone and with mode/history/root/mode+history/mode+root/history+root,
 // 822/807/822/750/822/807/822/813/749/822/755/749/813/822/755 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 298: Uniform existing bound macro/direct input with normalized-input setter, staged cross
+// and real absolute API in all eight combinations 804/750/750/809/807/750/748/816. Two-point gain
+// rejected; original input, helpers and body restored. Frame/input/heading and norm homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

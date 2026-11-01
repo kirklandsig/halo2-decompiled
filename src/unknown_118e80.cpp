@@ -1087,6 +1087,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs
 // and all 156 each; all with selected point/normal/location library copies 156. Original
 // expressions and body restored; quotient/query, selected homes and word loads remain.
+// Round 298: Location/point/normal and point/location/normal selected geometry; identifiers
+// before/after geometry and handle first/last, eight combinations 167/164/169/169/170/168/169/169.
+// Original captures and complete body restored; quotient/query and selected homes remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
