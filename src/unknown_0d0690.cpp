@@ -1328,6 +1328,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
+// and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // Round 36 (lane 1, fast, with matched 0x3db00; aligned/shape = difflib counts over the listing, base 527/271):
 // `record` stays a stack argument only while our allocator gives it EBP; when it gets ESI this function

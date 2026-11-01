@@ -2257,6 +2257,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 	return comparison > 0;
 }
 
+// MiniMax D (11-01): no new form, no lower score.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
@@ -2298,6 +2299,8 @@ void function_1e370(void)
 	}
 }
 
+// MiniMax D (11-01): the allocator's statement order, an early count store and a records local in
+// the allocator all tie or regress at 8 differences; no lower score.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
 // copy of the payload saves and restores the register that choice leaves free.
 // @retail 0x1e4e0
@@ -2595,6 +2598,8 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
+// MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
+// seventh parameter to give its count retail's register home.
 // score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
 // in ecx.
 // @retail 0x35b00
@@ -3104,6 +3109,7 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax D (11-01): no new form, no lower score.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
@@ -4728,6 +4734,8 @@ void __stdcall function_352e0(long target, bool multiple);
 long function_35510(long format);
 void function_1bd50(void *state);
 
+// MiniMax D (11-01): the fallback as a word cast, as a ternary and as a word local all score 15
+// or worse; our load stays a movzx where retail widens the word with an xor.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
@@ -5010,6 +5018,7 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
+// MiniMax D (11-01): no new form, no lower score.
 // score 544 (was 544): our body is 90 bytes shorter than retail's (2316 against 2406) and the
 // setup of the draw calls still differs in the order of the operands and the stores.
 // @retail 0x4e260
@@ -5755,6 +5764,7 @@ PRIVATE __forceinline void draw_filter_quad(real left, real right, real top, rea
     D3DDevice_SetVertexData4f(0, left, bottom, 16777215.0f, 16777215.0f);
 }
 
+// MiniMax D (11-01): no new form, no lower score.
 // score 694 (was 694): our body is 121 bytes longer than retail's (2628 against 2507); the
 // triangle-fan primitive constants are retail's, but the instruction sequence still differs.
 // @retail 0x46ea0
@@ -6036,6 +6046,8 @@ void function_46ea0(long tag, point3f const *position);
 
 // Tried (MiniMax S run 10): writing the g_4b8438 store through an unsigned int lvalue
 // (*(unsigned int *)&g_4b8438 = 0) scores 73 against 76; not kept (a cast of the global's address).
+// MiniMax D (11-01): no new form, no lower score; the store before the inlined call is only
+// reachable through a cast of the global's own address.
 // score 3 (was 22): the g_4b8438 store is emitted after the range comparison of the inlined call,
 // where retail emits it before.
 // @retail 0x2df00
