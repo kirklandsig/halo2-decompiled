@@ -1303,6 +1303,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // getter functions 198; header->unit at every use 218; a data-pointer local for the slot lookup 198/188.
 // Retail's `mov ecx, edx` copy of the data register before the second unit load is in no other retail
 // function (byte search).
+// Round 324: lexical receiver/hand/paired-weapon home subsets 1-7, then all with
+// the companion-weapon test named by its role, 148/148/148/148/148/148/148/148. Original body
+// restored; early pool load, second unit lookup and hand lifetime remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1535,6 +1538,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // Round 187: a pool local for the hand getter's lookup (function top, after the hand, after the slot
 // read) 167 each (517 bytes: ours then shares one lookup and keeps the request in EBP); for the slot
 // read's lookup instead 167.
+// Round 324: lexical weapon/mode/slot home subsets 1-7, then all with the Boolean
+// flag named by its animation role, 138 each. Complete original body restored;
+// same-block pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {

@@ -258,7 +258,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
         }
     }
 }
-// score 190 (was 190): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
+// score 182 (was 190): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
 // retail also keeps a separate center point (+0x30) beside the sphere query (+0x20).
 // Round 81 (fast): a `visible_word` pointer for the test and both marks 190 (same code); one marking
 // site after the bound branch with `if (!(r * r >= d)) continue;` 210 (the marks become retail's single
@@ -379,6 +379,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 467: Displacement/combined-radius declaration orders ZYXR/ZYRX/ZRYX/RZYX,
 // YZXR/YZRX/YRZX/RYZX, all 190 at 874 bytes. All expression trees, original declaration
 // order, query/position storage and the complete body restored; entry spill remains.
+// Round 324: positive node-count admission with byte-sentinel removal,
+// provider-filled count and read-only node-array subsets 0-7,
+// 190/182/191/192/190/182/191/192. Positive count and removal of the
+// impossible byte sentinel retained; entry/index spill and point/query homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
@@ -431,11 +435,11 @@ void function_45560(short entry_index, point3f const *center, real radius)
                             if (object_index != NONE)
                             {
                                 long node = bound[0x10];
-                                if (node != NONE && node != cached_node)
+                                if (node != cached_node)
                                 {
                                     long count = 0;
                                     transform4x3f *nodes = function_b8c00(object_index, &count);
-                                    if (count)
+                                    if (count > 0)
                                     {
                                         byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                                         function_142a60(&nodes[node], (transform4x3f *)(*(byte **)(tag + 0x4c) + node * 0x60 + 0x28), &transform);
