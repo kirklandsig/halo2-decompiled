@@ -125,6 +125,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (identical code, same slots); the projection as a loop over `n[axis]` 110; through a named scaled
 // vector 110; pointer locals dropped with the projection on the matrix fields 181 (953 bytes: forward
 // then folds all three products), the same on six transforms 181.
+// Round 435: up-first split receiver declarations on the returned-receiver/direct-left graph,
+// crossed with early uninitialized projection/reciprocal and loop-entry receiver lifetimes,
+// eight contexts 110 each. Actual input reads and assignments stay in place; all forms restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

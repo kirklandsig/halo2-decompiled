@@ -1922,7 +1922,8 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
     return result;
 }
 
-// score 204 (was 220, 298 originally): the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
+// score 188 (was 188; earlier 204, 220, 298): frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
 // with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
 // frame 0x7c against retail's 0xc0 and 846 against 857 bytes, and the register roles (retail keeps the loop count in ebx, the entry
@@ -1934,6 +1935,9 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
 // Tried: sin/cos without the (real) casts (223), out-pointer helper for both (284/260), for `local` only (256/228), by-value basis helper with `left` as a vector (261, 357 when
 // passed whole) or as three reals (253), `left` from a returning cross helper (235), `local` written inline from the entry fields
 // (269/247), a by-value world_direction(local, forward, up) helper (203 but 846 bytes of different temps), basis declared before position (no change).
+// Round 435: shared/staged left cross 182/182; native matrix plus shared rotation 181/181,
+// in-place 189/189; original cross rows with shared rotation 191, in-place 189. All restored;
+// six/seven-point leads are below the keep gate. Current frame 0x80 vs 0xc0; loop/vector homes differ.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2174,7 +2178,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 182 (was 193, 324): PIN reevaluates the clamped expression as retail does (the target's
+// score 147 (was 182; earlier 193, 324): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2187,6 +2191,9 @@ real magnitude3d(vector3f const *v);
 // cross terms (the 0x11d3b0 shape, 194), vector3f_scale for both normalizations (199), the six normalized components
 // interleaved first.i, second.i, first.j, first.k, second.j, second.k (188; per component 190), a named length local
 // before the PIN with magnitude3d (282); the two dot products through the existing dot3f (182, same code, kept).
+// Round 435: shared axis cross 147 (kept), staged axis cross 147; shared/staged rotation tangent 196;
+// both cross boundaries in all four pairings 154. Raw current length reused by clamp/guard with
+// axis-only/both boundaries 255/276; both raw lengths reused 330/342. Frame remains 0x34 vs 0x38.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2206,9 +2213,7 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
     {
         real angle = (real)(acos(dot) * step);
         vector3f axis;
-        axis.i = second.k * first.j - second.j * first.k;
-        axis.j = first.k * second.i - second.k * first.i;
-        axis.k = second.j * first.i - first.j * second.i;
+        cross3f(&first, &second, &axis);
         function_30bf0(&axis);
         real sine = (real)sin(angle), cosine = (real)cos(angle);
         real projection = dot3f(&axis, &first) * (1.0f - cosine);
@@ -3306,7 +3311,8 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// score 272 (was 257 with a volatile counter): no volatile any more. The portal loop is now `while (remaining-- > 0)` with
+// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
+// Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
 // `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
 // to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
 // is unrolled four times by the compiler (1535 bytes, 956); retail keeps the count in memory ([esp+0x10], dec; jne) and does not
@@ -3320,6 +3326,9 @@ bool __stdcall function_391f0(void *state);
 // Tried: the 2-iteration for loop with the volatile counter (299), with a plain counter (273); a plain counter with the
 // unrolled tests (956, the loop is unrolled and grows to 1535 bytes); `for (k < count) portals[k]` (972, unrolled);
 // a while loop with a side index (295); camera_z read before camera_y (no change).
+// Round 435: native camera 321, signed long count 268, cluster/camera 324, cluster/count 294,
+// camera/count 325, all three 343; all plus shared plane helper 343. Early uninitialized step
+// and step/distance declarations with the long count 268/268. All restored; four-point lead rejected.
 // @retail 0x36b50
 void function_36b50()
 {

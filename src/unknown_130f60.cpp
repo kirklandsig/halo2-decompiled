@@ -254,6 +254,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Round 269: Default-relocated case orders 0d1/1d0/d01/d10 fast 336 each; reversed cases with
 // axis-first declarations 336, with assignments/both 361/361; default-first reversed with both 361
 // (fast control 336, full 324). Original switch, assignments and body restored; ESI/XMM/scale schedules remain.
+// Round 435: whole source/sample/tag values 535/475/564; source+sample/source+tag/sample+tag
+// 526/587/504; all three 559, complete CRT transfers 559 (fast control 336, full 324).
+// All restored; entry ESI save, unit-constant ownership and accumulation scheduling remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
