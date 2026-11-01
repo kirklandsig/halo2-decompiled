@@ -477,6 +477,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
 // stays shared and EBP caches the last argument); the second virtual call on the local index 81;
 // `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
+// Round 47 (lane 11, fast): the entity's index stored only in the success arm, NONE in the else of one
+// `index != NONE && !flagged` test, early bool 66 (the store after the test reloads the table data with
+// the global kept in EDX as retail, but the index arithmetic stays shared and EBP caches the last
+// argument); that with the long result 75 (186 bytes); with the store and attach as the existing 0xbb780
+// 66; nested NONE/flag tests with a NONE store in each else 78 (188 bytes); the inverted
+// `index == NONE || flagged` test 66. Retail's recomputed index needs a CSE boundary, not only a store.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

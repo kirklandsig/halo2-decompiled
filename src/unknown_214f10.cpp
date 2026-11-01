@@ -233,6 +233,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
 // 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
 // opened test on the array element 42.
+// Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
+// result and the call on the array element with no file copy, branching on success 55 (351 bytes);
+// `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
+// handle and constant 42 (same code); success set true inside the open branch over a false
+// initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
