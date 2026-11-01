@@ -266,6 +266,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the
 // source declared before the length 37 (0xb5f10 84); 0x11c9a0 with `string + start` after the clamp 28 (0xb5f10
 // 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
+// Round 22 (lane 18): the length helper `static inline` 40 and the copy helper `static inline` 40 (same
+// code); the scan as `string[length]` 60 (83 bytes, 0xb61d0 46); constants on the left of the sign tests 40;
+// the clamp as `count >= 0x201` 40. Retail's matched 0xb61d0 shows the same pattern: the inlined scan takes
+// the start's incoming register (EAX there) and the start moves to EDI.
 // Round 127 (lane 5, fast with 0xb5f10/0xb61d0): the count clamp as a ternary 40; `length >= start +
 // count` 40; the copy helper written out (diagnostic) 40; the scan given a cast of the string 40 (these
 // four same code); start added before the count increment 36 (0xb5f10 6).

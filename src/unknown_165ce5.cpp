@@ -1601,6 +1601,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // dead slots (-0xc/-0x8) where retail gives them -0x2c/-0x28, and retail reloads [0x510c54] after the yaw store (two
 // divisions). Look values renamed, two name pairs, 220/220, spring_a/b renamed 220 (same code); pitch as
 // `-(y / rate)` 459 (2196 bytes, reciprocal still shared); pitch clamped before yaw 221.
+// Round 23 (lane 18, fast control 220): the d03b0 overrides as one chained assignment 220 (same code);
+// the zoom flags preset true and cleared under `if (zoom > 0.1f)` 224; the look history read through a
+// point view 220; the zoom flag as `zoom <= 0.1f` 417 (2190 bytes); the four spring overrides as
+// conditional expressions 220 (same code). Diagnostic: both look locals' addresses taken as a no-op 220
+// (no effect: retail's separate look homes and reloaded rate are not an address-taken local).
+// Slot map (ours/retail): unit+flags -0x18/-0x1c, mode -0x1c/-0x18, zoom shares spring d (-0x14) in ours
+// and unit's home in retail, the active byte shares unit's home in ours and spring d's in retail.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

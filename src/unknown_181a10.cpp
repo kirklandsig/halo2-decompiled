@@ -603,6 +603,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // of that helper shape 335 (1258 bytes, retail's setne/test), plus the key test through its pin 335; clamp
 // `1 > v ? 1 : (16 < v ? 16 : v)` 321 (same code); MIN(16, MAX(1, v)) written out 341; result-register if form 329
 // (both comparison spellings); two-step clamp 347.
+// Round 23 (lane 18, fast control 321): in the 1..16 classifier, MIN(16, MAX(1, v)) as two named steps
+// 321 (same code); max then an if for the upper bound 321; `limited = 1; if (v >= 1) limited = v > 16 ?
+// 16 : v;` 332 (retail's `mov ecx, 1` preload); the nested preset (`limited = 1; if (v >= 1) { limited = 16;
+// if (v <= 16) limited = v; } `) 329 and with constant-first tests 329 (both bounds preloaded as retail, but
+// `cmp value, const` and the data copied to EAX; retail reads the data field three times, ours once);
+// origin through a point pointer local read x, y, z / z, y, x 323/322. Diagnostics: the byte test in a bool
+// helper 321 (folds); data test, classifier and byte test in a multi-return bool helper 331 (gives retail's
+// `setne al; test al, al`); the data field as a dword/pointer union read as a pointer for the byte 321.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -296,6 +296,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // it in the settings-test block) 918; unit/definition no-obstacle bits as `(bool)((*(word *)p >> n) & 1)` 917 (retail's
 // byte shift form; aligned 710 -> 699); that with the inverted test 938. Retail also stores straight = 1 again on the
 // actor == NONE path.
+// Round 23 (lane 18, plain; fast misleads here, 931 fast against 882 plain): aligned before straight 882;
+// the 0x26c flag before the dot 883; self unit chosen right after its fetch 881; the range pair before
+// the ignore/block priorities 881; range maximum read before the minimum 882 (one-point moves, not kept).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

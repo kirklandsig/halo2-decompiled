@@ -3702,6 +3702,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // block but the timed-out call setup (retail's owner spill and split member-state lea, 3 instructions more)
 // and the announcement's member offset (retail scales it before the memset) is then retail's, but the 3-line
 // shift there keeps the positional count up. Keep that form for when the timed-out call is solved.
+// Round 22 (lane 18), fast (aligned difflib counts in brackets, start 101 [38]): an early `return false`
+// with the guarded leave and the reply pointer first 123 [31]; `result = false` ... `result = true` with both
+// 119 [19]; `if (is_peer) { ...; return true; } return false;` with both 121 [17] (exits, leave and reply
+// blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
+// address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
+// only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {

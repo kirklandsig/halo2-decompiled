@@ -182,6 +182,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Candidate input retained on normalizer/dot, all-part and named-sum graphs
 // 405/405/405; named-sum graph with signed-word counters 444. Original input
 // observations, helpers, counters and complete body restored.
+// Lane 18 round 24 (fast): the two-angle loop as a plain index loop instead of the hand-written cursor and count-down
+// 408 (identical code; kept: retail's cursor and count-down are MSVC's strength reduction of this loop); with retail's
+// 16-bit counters (`inc bp`, `cmp bx, 2`): both short 471 (0x29a190 445 -> 699), endpoint index only 417 (1720 bytes),
+// candidate count only 458 (0x29a190 699); named dx/dy for the loop's point distance 411 (1738 bytes).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -256,11 +260,9 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 			if (local_19[0] > 6.2831854820251465f)
 				local_19[0] -= 6.2831854820251465f;
 			local_19[1] = local_18 - local_14;
-			real const *angle_cursor = local_19;
-			long angles_remaining = 2;
-			do
+			for (byte local_20 = 0; local_20 < 2; local_20++)
 			{
-				real local_21 = *angle_cursor;
+				real local_21 = local_19[local_20];
 				real local_22 = local_21 < 0.0f ? local_21 + 6.2831854820251465f : local_21 - 6.2831854820251465f;
 				real local_23 = (real)sin(local_7 == 0 ? -local_22 : local_22);
 				real local_24 = (real)cos(local_22);
@@ -270,8 +272,7 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 				local_6++;
 				function_2992ba(local_6, local_10, local_22, &local_15, &local_2, arg_1, arg_2, local_13, local_5, arg_5, &local_27);
 				local_6++;
-				angle_cursor++;
-			} while (--angles_remaining);
+			}
 		}
 	}
 	g_504938 = local_6;
@@ -467,6 +468,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // rotation operands swapped 826 [218] (same code). Next: retail shares slots between sweep and obstacle
 // locals (+0x14 angle/best index, +0x28 sine/best ratio, +0x44 reverse offset/rotation, +0x18 direction/
 // obstacle difference), so its sweep locals end before the obstacle block.
+// Lane 18 round 24 (fast; brackets: mnemonic-aligned differences, base [452]): the sweep phase in its own block 719
+// [452] (identical code: homes are packed by live range, not scope); single exit `if (sector != NONE) { ...; return
+// result; } return true;` 778 [445] (retail's end-placed `mov al, 1` epilogue); result-first pathfinding getter 775
+// [443]; both 782 [436]; the trace results declared first 719 (identical). Retail reloads arg_6 after 0x2108a0 and
+// 0x210770 where ours keeps it in XMM5, and stores/reloads the result byte at each exit where ours folds it.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -296,6 +296,10 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 269: Fraction numerator/reciprocal/both/reversed producer order, mutable and const,
 // 192 each in eight forms. Frame 0x84 and retained-origin/edge-I homes remain. Original
 // fraction expression, all geometry helpers and complete body restored.
+// Round 23 (lane 18, fast; re-measured on the 192 base, earlier numbers were on 247): found declared
+// first 192 (same code); plane d cleared before normalizing 200; fraction as one conditional 259; the
+// clamp as an if/else-if on a copy 256; the hit block's fraction stored after the normal and d 192
+// (same code: retail's fraction-first store order is scheduling).
 // Round 68 (lane 12): start copy first with the direction from the copy 230 (retail's single start loads,
 // exact LCS 132 against 133, but origin is still re-read from the shape, so no edge spills); copy first
 // with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
