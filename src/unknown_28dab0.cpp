@@ -19,7 +19,7 @@ long function_1e4990(long arg_0);
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4);
 void __stdcall swarm_delete(long arg_0);
 
-// score 33 (was 44): the head now matches (tag pointer EDI, NONE result ESI, a fresh `or ecx, -1` for the
+// score 33 (was 33): the head now matches (tag pointer EDI, NONE result ESI, a fresh `or ecx, -1` for the
 // NONE stores); retail still spills the creature definition index and keeps the loop limit in EBX with a
 // cmovg, where ours keeps the index in EBX and puts the limit in a stack slot with a branch, and retail's
 // record stores run in its own order (below). Before round 108 (44): the tag pointer was in ESI where retail
@@ -246,6 +246,14 @@ void __stdcall swarm_delete(long arg_0);
 // moved alone 47 in the harness); any order with the position first and the gather point last gives 38-39 in the
 // harness (36 pair swaps of a searched order). On the kept form: the if-form limit 90 (289 bytes), with the NONE
 // pair after the zero pair 89; the index read after the stores with the if-form limit 44 (harness).
+// Round 110 (lane 8; plain): retail's store order with the index read after the swarm pointer and the
+// if-form limit 81 (289 bytes: tag EDI and result ESI as retail, but a separate NONE register EBX feeds
+// the head compares and the NONE stores; the harness shows the if-form always makes that NONE register
+// when the index is spilled); the allocation in its own local with the result set on success 56 (296
+// bytes); the delete path returning NONE 83; the limit as `if (field > 0) limit = field; else limit = 10;`
+// 33 (same code as the ternary); the index read before the swarm pointer 53. Harness only: unsigned
+// NONE stores, nested head tests, the tag field compared against the result, the counter or limit
+// declared at the block or function top and the tag field read at the call change nothing or score worse.
 // Round 14 (lane 17, fast; all on s2, 92, identical code each): a const tag pointer with `NONE != field`;
 // the allocation folded into the head condition; the allocation pool read once into a local for the
 // allocation and the record address; the result declared uninitialised and set NONE after the tag

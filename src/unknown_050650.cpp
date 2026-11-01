@@ -602,6 +602,12 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // retail's prologue and `sbb al, al`, but the rotated candidate is spilled between the two rotations, 1435 B). The
 // frame needs the shared collision-result type at its real 0x5c size, which also changes users in other lanes'
 // files this round (unknown_247fd0.cpp, unknown_2ba3e0.cpp, path_transitions.cpp).
+// Round 109 (lane 8, fast; aligned = difflib count 234): the pitch axis set field by field 333; the collision
+// result declared at function scope 333, the ray at function scope (assigned in the loop) 333, both 333 (all
+// same code: VC packs the frame the same whatever the scopes); `clear = true` first in each pass with the
+// function-scope collision result 327 (the listed long-clear-first form; 1424 bytes). Retail keeps a zero in
+// ECX for the result byte and the attempt counter, and pushes EBX only at the loop (ours at entry, for the
+// default best vector's k).
 // Round 26 (m3 lane 2, fast): bool clear set at the top of each pass with `return true` after the best tail
 // 327 (0x297660 4: the collision flag then passes in BL); that with one `return result` 349 at 1435 B (retail's
 // late EBX push, EBX scratch, EBP/EDI best i/j, AL clear and DL result, the tail is retail's code, but the loop

@@ -499,6 +499,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // set 42 (round 32's form again); visited declared before the markers with bit_vector_test 42; the target
 // marker declared first 37 (same code); `if (found) { one combined test } else break;` 37 (same code);
 // the iterator's weapon class stored before its mode in both arms 44.
+// Round 109 (lane 8, fast; aligned = difflib count): bit_vector_test re-measured 42 (aligned 17 against the shift
+// test's 21: the test is retail's; left are the second lookup's argument loads (ours loads the target index into
+// ECX ahead of the pushes, retail reuses EAX after them), the 0x1d90e0 setup (ours loads the model value before
+// the last push, retail after it) and the set's load/OR/store). `byte const *model` read as `long const` 37, with
+// bit_vector_test 42; the two markers in one declaration 37, with bit_vector_test 42; with bit_vector_test, the
+// clear's byte count written `sizeof(dword) * (...)` 42 (all same code as their bases).
 // Lane 18 round 15 (fast with the matched callees and 0x113ba0/0x113c60): the visited words as a 256-bit
 // record cleared by its own member (memset inside), with the mask test 42, with the shift test 37; the set
 // through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,

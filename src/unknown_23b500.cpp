@@ -188,6 +188,12 @@ struct s_spawn_scenario_23aea0
 // 227 (312 bytes), both batch counters `dword` 162 (374 bytes); the weights as records indexed by the
 // definition's entry index from `g_502258 - 4` 157 (378 bytes); one `dword` type loop 256 (278 bytes, not
 // unrolled, pointer induction).
+// Round 111 (lane 8, fast; one-file LTCG harness exact at 105): a zero-based `dword` loop over the twelve
+// records 141 (375 bytes; in the LTCG harness it counts down with a pointer, not the integer offset); one
+// `dword` type loop from 2 141; an `unsigned short` type loop 256 (278 bytes, not unrolled); a zero-based
+// `long` loop over the records 105 (same code); the outer batch counter `dword` 141. Harness diagnostics
+// (not kept): /G5, /G6, /G7 and /Ox the same 105; the weights reached through an extern `dword *const`
+// global pointer 105 (folded at link), through a non-const one 156.
 // @retail 0x23aea0
 void function_23aea0()
 {

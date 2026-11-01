@@ -1314,6 +1314,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // inline getter returning it by value, at the write / write+close / all four / write+resize: 7 each (the
 // getter is transparent). Diagnostics: the file pointer from a byte offset 104, from a displacement local
 // 101 (the displacement then takes EAX, retail ECX).
+// Round 110 (lane 8, fast): round 53's 7 form and round 56's 6 form reproduce (7/6). Upstream of the
+// resize block, on the 7 / 6 forms: `remove_later = false;` before the delete call 9/8; the size test
+// written `expected_size != size` 8/7; `dword size` declared at the loop top 7/6; `long expected_size`
+// 7/6. On the 7 form the resize and close match retail; only the write call (the flags zero takes EAX, so
+// the handle load cannot move ahead of it as retail's does) and the checksum register differ.
 // Round 123 (lane 6, fast): the 7 and 6 forms reproduce. On the 7 form a write handle local alone 114 is one
 // instruction from retail (917 bytes: only the close call's `mov ecx, eax` struct copy is missing, the rest is
 // loop padding); with a `s_file_write_flags flags(0)` local as 0x2151f0 writes it 114; the write handle built by
