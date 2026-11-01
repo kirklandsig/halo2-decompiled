@@ -1886,6 +1886,16 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 266; plus established/visible renamed 260 (same code: spill slots). The length gap is the scoring block:
 // retail loads direction j/k before the relative test and i in both arms, keeps them for the facing dot,
 // stores visible = false straight to its byte and threads the established test into the not-visible path.
+// Round 30 (lane 2, plain): sequence-aligned counts (the check scores positionally) are 116 for this body.
+// The search in ai_player_get's shape (player NULL first, long copy of the short index for its NONE test, long
+// second counter) 408 (aligned 112); with best_level/strongest declared before the memset 405 (aligned 110:
+// everything up to the players loop then equals retail; the only shift is the iterator's table pointer, loaded
+// into ECX (6-byte load) where retail uses EAX (5 bytes) and reuses it for NONE, so our loop-top pad becomes
+// jmp + lea ecx,[ecx] for retail's single lea ebx,[ebx] and every later instruction is one off). On that form
+// the iterator's NONE fields chained 405, assigned before the table pointer 407 (the load stays in ECX), the
+// iterator declared at the function's top 405. The same three iterator statements give retail's EAX form in
+// the matched 0x138fa0 and 0x192b20, so the ECX choice comes from this loop's register colouring (ours uses
+// ECX/EDX where retail uses EAX/ECX through the whole players loop).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

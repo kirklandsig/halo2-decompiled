@@ -57,10 +57,10 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 	return result;
 }
 
-__declspec(noinline) color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t, color3f *result, color3f const *tint);
+__declspec(noinline) color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result, color3f const *tint, real t);
 
 // @retail 0x131d60
-color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t, color3f *result, color3f const *tint)
+color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result, color3f const *tint, real t)
 {
 	function_131c20((color3f const *)&a->red, (color3f const *)&b->red, flags, t, result);
 	if (tint)
