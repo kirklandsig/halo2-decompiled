@@ -1747,6 +1747,13 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // weapon through the local 118 (318); the local declared in the block or the player index read at the top 85 each;
 // every lookup through the local with the nested exit 123 (314). A throwaway inline helper with its own pool copy
 // (diagnostic) 122: its copy is propagated and all lookups merge.
+// Round 114 (m3 lane 7, fast): a single-exit `result = false` at the top with `given` declared in the weapon block
+// and `result = given;` at its end 121 (314 bytes: frame 0x20, retail's hoisted `xor al, al` and given in BL with
+// `mov al, bl` exits, but the unit stays in ESI and the second lookup reuses it, so unit_index never gets EBP); on
+// it the unit through a header pointer local 121, `return given;` inside the block 107 (328, loses the hoist), the
+// weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
+// data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
+// player unit 96, inside the weapon block 121, with the player index read in place 87.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

@@ -649,6 +649,12 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
 // volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
 // memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
+// Round 112 (m3 lane 7, fast, 0x24590 listed): the reciprocal square root through intrinsics instead of
+// the asm block (`_mm_store_ss(&inverse, _mm_rsqrt_ss(_mm_load_ss(&squared)))`, the same with _mm_set_ss, and
+// with a named __m128 estimate) 286/274/286 (1102/1094 bytes: the __m128 temporaries change the frame from
+// +0x0); limits.j/k as one chained assignment with retail's plain-long jitter order (j = k = and k = j)
+// 259/259 (1009 bytes), with the volatile jitter 221 (1045 bytes). Retail keeps two copies of the j/k limit
+// (XMM6/XMM7, two spill slots) only where ours has more pressure; the plain jitter merges them.
 // Round 126 (lane 5, fast, 0x24590 listed): written operand and sum orders do not reach the code: the
 // direction scaled as `inverse * i`, `j * inverse`, `k * inverse` (retail's register pattern) 132, the
 // projection summed i, j, k 132, `0.0f <` on the definition and blend tests 132, `1.0f == blend` 132,

@@ -287,6 +287,11 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
 // 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
 // in the sampled block 189. Original body restored.
+// Round 111 (lane 7, fast): one function-scope animation pointer for the weighted and countdown getters 207;
+// the frame field read at both tests (no frame local) 260 (955 bytes); the base id read from the field (no id
+// local) 256 (940 bytes, getter still inlined); the weighted play as a nested test returning on failure 207;
+// the weight test as `fabs(weight) >= 0.0001f` 257. Retail calls 0x1c6440 out of line in both arms yet inlines
+// the data getter after the weighted loop, so its refusal is not a plain size budget taken in source order.
 // Round 275: Real two-identifier touch loop with four native channel initializations 268 each; all with long sample frame 202 each (five-point lead rejected); pointer traversal with bool/long flag/long count/short count 224/231/223/222.
 // Original executable source restored; frame 0x30 versus 0x2c, getter expansion and ordinal homes remain.
 // Round 277: Twice-used real/double sample frame, direct/named weight product 273/273/289/289; each

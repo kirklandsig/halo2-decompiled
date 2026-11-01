@@ -206,6 +206,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // both offsets through it with the depth limits written in the condition 233 (1153 bytes); the first offset alone
 // through it 222 (1146 bytes). Retail computes each depth limit lazily after the two `k < 0` tests (`mulss` by the
 // 4.0 in memory); ours hoists both limits and the 4.0 into registers ahead of the tests.
+// Round 111 (lane 7, fast; a one-file LTCG harness with src/unknown_01cf50.cpp and src/unknown_030290.cpp
+// reproduces the build, 221 at 1145 bytes): retail scales with the scale as destination (`movaps xmm0,xmm6;
+// mulss xmm0,xmm1`, the unscaled copies made before the test) where ours scales in place. A camera-pointer
+// helper with `i *= camera->scale` and the component loop 224 (1148 bytes), with an explicit three-row body 306;
+// the scaled locals set in an if/else 305 (1078); a caller `real scale = g_4b9e14.scale;` declared first 253
+// (1136 bytes), declared at the calls 252; a scaled vector copy through vector3f_scale in place 283 (1160), from
+// the input 309; explicit rows with (real) product casts 306 (1081), grouped 301; locals declared k-first
+// 258, scaled k-first 245; the per-component ternary scale 256 (1136, three tests).
 // Round 477: Native input-vector scale induction long/dword/short/word with cursor 312/312/355/355; indexed rows 309/309/358/358.
 // Original scalar snapshots, scale producers, separate offset loops, output cursor and entire body restored; frame and coefficient/input/result homes remain.
 // Round 483: coherent radius from output/producer, branch/common publication

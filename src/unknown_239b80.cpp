@@ -139,10 +139,6 @@ short function_23a430(short count, point2f const *points, plane2f const *plane,
 	return (short)result;
 }
 
-static inline real dot_product2d(vector2f const *a, point2f const *b)
-{
-	return a->i * b->x + a->j * b->y;
-}
 
 static inline real normalize2d(vector2f *v)
 {
@@ -167,227 +163,12 @@ long function_239d50(long count, point2f const *points, point2f *hull);
 short function_239e50(short count, point2f const *points, short *indices);
 
 /* 0 when every point is the same, 1 when they are on one line, 2 otherwise */
-// score 42 (was 42): state/index/point registers (retail ECX/EDX/ESI, ours EDX/ESI/ECX) and the
-// XMM homes differ at frame 0x18. Retail loads the unscaled normal j into a fresh XMM2 before the
-// reciprocal (`movss xmm2,[j]` ... `mulss xmm2,xmm0`) where ours scales it in the reciprocal's
-// register, as matched 0x23a2b0's inline normalize does, so retail's constants sit one XMM register
-// higher; retail's dot then scales i in place (`mulss xmm1,[p.x]`), and it stores the first point's
-// y before its x.
-// Tried: local/formal point cursor with short ordinal 94/93; short remaining count 94/93; long
-// ordinal 97/97; long remaining count 94/93; byte state 91; unsigned word ordinal 85; state
-// increments 76; terminal equality 43; first point before scan 85; normalizer reference 42;
-// point-first dot 42; success normalizer 102; normalizer input vector 126; compound scales 42;
-// factor-first scales 42; positive normalizer scope 42; long point index 101; count-first guard 99;
-// long state 86; plane/point names 42; forced normalizer, forced dot, both forced 42; single-result
-// normalizer 42; squared-length expression 42; staged scales 42; reverse scale publication 42;
-// length workspace 56; signed-distance expression 42; native first-point components 63; accumulated
-// dot result 46; repeated j/i input 42/42; both scalar inputs 126; state renamed to sort before the
-// index 42; zero-length arm first 44; `>= epsilon` far test 68; named normalizer length 56; line
-// declared before the first point 42; shared normalizer/magnitude 42/42; tested initial/distance
-// states 81/76; both tested states 79; early distance default 65; shared normalizer with tested
-// states/default 79/65; bounded geometric enum with original/count-first/terminal/zero-first graph,
-// independent-point word/enum/count-first/terminal graph, first-point memcpy/memmove
-// 86/94/86/86/54/58/99/58/42/99; indexed point receiver across dispatch with short/long/signed-byte/
-// enum state 89/104/109/104, the same receiver at function scope 89/104/109/104. Round 43: the
-// normalizer's scale statements as `*=`, j first, both vector-first or both reciprocal-first 42 each
-// (the compiler commutes them to the same code); the dot product's terms j first 42.
-// factor-first scales 42; positive normalizer scope 42; long point index 101; count-first guard
-// 99; long state 86; plane/point names 42; forced normalizer 42; forced dot 42; both forced 42;
-// single-result normalizer 42; squared-length expression 42; staged scales 42; reverse scale
-// publication 42; length workspace 56; signed-distance expression 42; native first-point
-// components 63; accumulated dot result 46; repeated j input 42; repeated i input 42; both scalar
-// inputs 126; state renamed to sort before the index 42; zero-length arm first 44; `>= epsilon`
-// far test 68; named normalizer length 56; line declared before the first point 42; shared
-// normalizer/magnitude 42/42; tested initial/distance states 81/76; both tested states 79; early
-// distance default 65; shared normalizer with tested states/default 79/65; bounded geometric enum
-// with original/count-first/terminal/zero-first graph, independent-point word/enum/count-first/
-// terminal graph, first-point memcpy/memmove 86/94/86/86/54/58/99/58/42/99; indexed point receiver
-// across dispatch with short/long/signed-byte/enum state 89/104/109/104, the same at function
-// scope 89/104/109/104; the index declared at function scope 42 (same code); a case-0 element
-// pointer 42 (same code); line.d cleared before the normalize test 65; line.n.j computed before
-// line.n.i 49; the loop as a while 42 (same code); state declared first, scale and dot term
-// orders (screened) the same code.
-// differ; retail keeps the line normal's j in XMM2 through the scaling, so its constants
-// sit one XMM register higher. Local/formal point cursor with short ordinal 94/93; short
-// remaining count 94/93; long ordinal 97/97; long remaining count 94/93; byte state 91;
-// unsigned word ordinal 85; state increments 76; terminal equality 43; first point before
-// scan 85; normalizer reference 42; point-first dot 42; success normalizer 102; normalizer
-// input vector 126; compound scales 42; factor-first scales 42; positive normalizer scope
-// 42; long point index 101; count-first guard 99; long state 86; plane/point names 42;
-// forced normalizer 42; forced dot 42; both forced 42; single-result normalizer 42;
-// squared-length expression 42; staged scales 42; reverse scale publication 42; length
-// workspace 56; signed-distance expression 42; native first-point components 63;
-// accumulated dot result 46; repeated j input 42; repeated i input 42; both scalar inputs
-// 126; state renamed to sort before the index 42; zero-length arm first 44; `>= epsilon`
-// far test 68; named normalizer length 56; line declared before the first point 42.
-// state/index/point and normalization SSE homes still differ at frame 0x18.
-// Earlier: coupled state/index/XMM homes and normalized Y load remain;
-// local/formal point cursor with short ordinal 94/93; short remaining count
-// 94/93; long ordinal 97/97; long remaining count 94/93. Opening body restored.
-// zero/one SSE homes, state/index/point registers and normalized Y load remain;
-// byte state 91; unsigned word ordinal 85; state increments 76; terminal equality 43;
-// first point before scan 85; normalizer reference 42; point-first dot 42; success normalizer 102.
-// Frame 0x18 agrees; state/index, point pointer and SSE constant registers differ.
-// normalizer input vector 126; compound scales 42; factor-first scales 42; positive normalizer scope 42; long point index 101; count-first guard 99; long state 86; plane/point names 42; forced normalizer 42; forced dot 42; both forced 42.
-// Earlier: state/index/point and normalization XMM homes remain.
-// Single-result normalizer 42; squared-length expression 42; staged scales 42;
-// reverse scale publication 42; length workspace 56; signed-distance expression 42;
-// native first-point components 63; accumulated dot result 46.
-// Repeated j input 42; repeated i input 42; both scalar inputs 126.
-// Shared normalizer/magnitude 42/42; tested initial/distance states 81/76; both tested states 79;
-// early distance default 65; shared normalizer with tested states/default 79/65.
-// Bounded geometric enum with original/count-first/terminal/zero-first graph; independent-point
-// word/enum/count-first/terminal graph; first-point memcpy/memmove 86/94/86/86/54/58/99/58/42/99.
-// Original executable source restored.
-// Round 96 (one-file LTCG harness, reproduces the build; aligned 35, positional 42): 89 combinations of five
-// scale spellings in normalize2d, three dot_product2d operand orders, three declaration orders of first/line/
-// state and both loop-condition orders: 35/42 or worse (the swapped condition adds three instructions);
-// normalize2d with j read into a scalar first 42, both scalars 42, the reciprocal written at each scale 42,
-// j scaled first 42, an else arm setting the result to zero 42.
-// Indexed point receiver across dispatch with short/long/signed-byte/enum state 89/104/109/104;
-// the same receiver at function scope 89/104/109/104. Original indexed expressions and state
-// restored.
-// components 63; accumulated dot result 46; repeated j input 42; repeated i input 42; both
-// scalar inputs 126; state renamed to sort before the index 42; zero-length arm first 44;
-// `>= epsilon` far test 68; named normalizer length 56; line declared before the first point
-// 42; shared normalizer/magnitude 42/42; tested initial/distance states 81/76; both tested
-// states 79; early distance default 65; shared normalizer with tested states/default 79/65;
-// bounded geometric enum with original/count-first/terminal/zero-first graph, independent-point
-// word/enum/count-first/terminal graph, first-point memcpy/memmove 86/94/86/86/54/58/99/58/42/99;
-// indexed point receiver across dispatch with short/long/signed-byte/enum state 89/104/109/104,
-// the same receiver at function scope 89/104/109/104.
-// Round 18 (lane 11): state declared first 42; loop index declared at the top or first 42/42;
-// while loop with the increment at the end 42; count test first 99. Compile-only (reproduces
-// our SSE block exactly): 0x2b400's normalizer form, compound, operand-order and j-first
-// scales, single-result normalizer, early inv/m defaults, j read into a local, named square,
-// each with four dot operand orders: all give our block (j-first one worse); field-wise or
-// memcpy first-point copies keep the x-first stores.
-// state/index/point registers (retail ECX/EDX/ESI) and the XMM homes differ;
-// retail loads the line normal's j into XMM2 before the division and scales it there, so its
-// constants sit one XMM register higher (frame 0x18 agrees). Tried: local/formal point cursor with
-// short ordinal 94/93; short remaining count 94/93; long ordinal 97/97; long remaining count 94/93;
-// byte state 91; unsigned word ordinal 85; state increments 76; terminal equality 43; first point
-// before scan 85; normalizer reference 42; point-first dot 42; success normalizer 102; normalizer
-// input vector 126; compound scales 42; factor-first scales 42; positive normalizer scope 42; long
-// point index 101; count-first guard 99; long state 86; plane/point names 42; forced normalizer,
-// forced dot, both forced 42; single-result normalizer 42; squared-length expression 42; staged
-// scales 42; reverse scale publication 42; length workspace 56; signed-distance expression 42;
-// native first-point components 63; accumulated dot result 46; repeated j input 42; repeated i
-// input 42; both scalar inputs 126; state renamed to sort before the index 42; zero-length arm
-// first 44; `>= epsilon` far test 68; named normalizer length 56; line declared before the first
-// point 42; shared normalizer/magnitude 42/42; tested initial/distance states 81/76; both tested
-// states 79; early distance default 65; shared normalizer with tested states/default 79/65; bounded
-// geometric enum with original/count-first/terminal/zero-first graph and independent-point
-// Round 12 (lane 15): if/else chain for the switch 90; the normal's j component computed first 49;
-// while loop 42; normalizer reading j before the division 42; j read once for the length and the
-// scale 42; every scale and length operand order in the normalizer the same code.
-// Round 171: parameters as (points, count) 42; the shared 2-D header's union vector2f and
-// normalize2d_fast 42; every switch case order 42; state set before the first-point copy 42;
-// field-wise first-point copy, either order, 63 (310 bytes); normalizer dividing by the length 42;
-// dot helper by reference or forceinline 42, by value 118/124/162 (harness); the dot written out in
-// place of the helper, or the length named in a braced case 0, 56 each (retail's dot shape, `mulss
-// xmm1,[p.x]`, but j still scaled in the reciprocal's register, one instruction short).
-// Round 34 (fast): separate normal/distance locals in place of the plane2f 52; case 0 setting the
-// state before the distance 42; the normalizer reading j into a scalar before the length and
-// scaling that scalar 42 (j still folded as `mulss xmm0,[j]`); an explicit `default: break;` 42;
-// the shared header's union vector2f with that j-scalar normalizer 42.
-// Round 132 (an LTCG env link reproduces it): every order of the first/line/state declarations with
-// the scales as written or `*=` j first and the dot taking (normal, point) or (point, normal): 42 each
-// (24 forms); the normalizer scaling through a 2-D scale helper (normalize3d's shape) 42; dividing by
-// the length 42; the length's sum j first 42; the normal built in a local vector and assigned 71.
-// Round 110: a block-local point pointer in case 0 (fast) 42. One-file LTCG harness (aligned 35, positional
-// 42 as the build): normalize2d with the zero length set in an if arm and the scale in its else 42; j read
-// into a scalar after the reciprocal 42; the vector copied into a local first 72 (positional); the
-// reciprocal written at both scales 42; a single result set in the scale arm 42. Matched 0xde080's
-// normalizer keeps `movss xmm4,[v->i]; mulss xmm4,xmm0` (no commute), while ours commutes `v->j * inv`
-// into the reciprocal's register here: retail's reciprocal looks live past both scales.
-// Round 25 (fast): a `vector2f *` local to line.n in case 0, with only the i store through it 69 (305
-// bytes), the same with j scaled first 73 (308); i store, normalize and dot through it 73; only the j
-// store through it 44 (304 bytes: retail's exact normalize block, constants XMM5/XMM4; the dot's
-// `mulss xmm1, [p.x]` fold and the state/index/point registers remain); both stores 53; normalize/dot
-// argument alone 42 (same code). Compile-only diagnostic: the reciprocal kept live past both scales
-// gives retail's XMM numbering. Opening body restored.
-// Round 54 (lane 12, fast; compile-only reproduces both the SSE block and the integer allocation):
-// operand order follows which normal component is written by name first. line.n.i written by name with
-// line.n.j and the case-0 dot through a `vector2f *normal = &line.n` gives retail's whole SSE block (1.0 in
-// xmm5, 0 in xmm4, j loaded fresh into xmm2, `mulss xmm1, [p.x]`) 23 (first difference +0xe; not kept: a
-// by-name/pointer mix kept only with a match), also with case 1's dot through `normal` 23; the same with
-// the dot through the helper 44 (304 bytes); every normal access in case 0 through the pointer 39 (301),
-// with case 1 too 66; with a y-first field copy of the first point 44 (310). Left after the SSE block:
-// state/index/point colouring (ours EDX/ESI/ECX, retail ECX/EDX/ESI), which compile-only diagnostics tie to
-// case 1 and to the case-0 point pointer living across `lahf` (without either, retail's ECX/EDX and y-first
-// copy appear); unchanged by a loop-top or block-local point pointer, the index declared first, state
-// first, NONE case last, a while loop, `default: break`, `line.d = 0` before the test, the test inverted,
-// case 1's dot by name or through the pointer in either term order.
-// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
-// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
-// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
-// case 1's difference as `line.d - dot` 43.
-// Round 29 (lane 14): count EBX and points EDI agree with retail (ECX is only written), so the rotation
-// is body-internal. A case-0 `vector2f *normal = &line.n` for the normalize and the dot 42 (same code),
-// for the dot only 42 (same code), with j's store too 44 (304 bytes), with i's store instead 69 (305);
-// case 1's distance as `line.d - dot` 43.
-// Round 7 (lane 17, fast): the normal built from the existing vector2d_from_points2d (first minus point,
-// i = delta.y, j = -delta.x) 86 (316 bytes: the negation is an SSE subtract from zero); the loop on
-// `i < count` with `if (state >= 2) break;` after the switch 101 (311); case 0 in matched 0x23a2b0's own
-// inline form (named length, `*=` scales, `else length = 0.f`, the dot by name) 56 (j still scaled in the
-// reciprocal's register); normalize2d spelled as matched 0xde080's (scale inside `!(fabs(m) < eps)`,
-// `v->i * inv`) 42 (same code); the normalizer's result tested implicitly 42 (same code).
-// Round 54 (lane 16, fast): `points + i` for every `&points[i]` 42; case 0 setting the state before the
-// distance store 42; the normalizer's zero test as `fabs((double)m)` 43; case 1 as `if (fabs(...) <
-// epsilon) break; state = 2;` 42; the loop condition `state <= 1` 43.
-// Round 56 (lane 16, fast): case 0's `vector2f *normal = &line.n` for j's store, the normalize and the dot 44
-// (304 bytes); permuter 600 s (71 variants), nothing below 42. Retail pushes ESI only after zeroing state and
-// index, so its ESI holds just case 0's point pointer. The NONE case as `default:` 98 (285 bytes); the loop on
-// `i < count` with `if (state >= 2) break;` before the switch 99 (312); `state != 2` in the loop test 43; a long
-// count parameter (diagnostic, callers not changed) 83.
-// Round 115 (lane 6, fast; the one-file LTCG harness is exact for this function and its five matched
-// neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
-// zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
-// case 1's difference as `line.d - dot` 43.
-// Round 188 (fast; a compile-only screen reproduces the integer roles): dot_product2d taking (point,
-// normal) at its definition and both calls 42; case 1 through fabsf 42; the index declared beside the
-// state 42; both of the first two 42; case 1 returning 2 directly 70 (the index takes EDX as in retail,
-// but the extra exit path moves the layout). Compile-only: all 24 declaration orders of first, line,
-// state and the index, each with both dot parameter orders, keep EDX/ESI for state/index.
-// Round 46 (lane 1, fast): a braced case 0 with `vector2f *normal = &line.n` for the dot only, and for the
-// normalize too, 42/42 (same code); j stored through it, with the normalize by name or through it, 44/44 (304
-// bytes); the loop test `state != 2` 43; the loop on `i < count` alone with case 1 returning 2 88 (301 bytes).
-// Round 63 (lane 12, fast; an LTCG env link reproduces the build): the normal's j as `-(first.x - p.x)` 63 (302
-// bytes), i as `-(p.y - first.y)` 65, both 74 (304), j as `0.f - (first.x - p.x)` 63, j stored as `first.x - p.x`
-// then negated in place 63. On the round-54 23 form (env, 108 combinations): every case order, the first-point copy
-// as a struct or field-wise in either order, case 1's dot through the helper, the pointer or by name, and a case-0
-// point pointer: 23 or worse (field-wise copies 28 at 310 bytes). Diagnostic: case 1 without its `state = 2` gives
-// retail's index EDX (state then ESI), so the state/index/point colouring turns on case 1's state store.
-// Round 31 (lane 15, fast): case 1's distance named in a braced case 42; case 0's dot result named 42; state,
-// line, first declared in reverse 42. Diagnostics (not kept): 1-8 unused locals at the function's top 42 except
-// 5 (56: retail's `mulss xmm1, [p.x]` dot fold appears, 4 bytes shorter); at case 0 or the loop top 42. The
-// state/index/pointer rotation follows no symbol count.
-// Round 124 (fast; the one-file LTCG harness agreed each time): case 1's distance in a named real
-// 42; case 1 through a block-local point pointer 42; `points + i` in case 1 42; case 1's dot written
-// by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
-// (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
-// state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
-// Round 64 (lane 9, fast; a compile-only build reproduces the integer colouring exactly): case 0's j store
-// and dot helper through `vector2f *normal = &line.n` 44 (304 bytes), with the normalize through it too 44;
-// case 1's `state = 2` or case 0's `state = 1` as `state++` 50 each (index EDX as retail, state ESI); round
-// 54's 23 form plus case 1's `state++` 31. Compile-only, no colouring change (state EDX, index ESI, point
-// ECX): the index declared at the top or first, state first, a case-0 point pointer, the NONE case last,
-// `state <= 1`, a while loop, a loop-top point pointer, case 1 as `state = ... < eps ? 1 : 2`, as `if (<
-// eps) break; state = 2;`, with `line.d - dot`; the dot helper through `normal` in either term order keeps
-// `mulss xmm1, [p.x]` unfused (92 instructions); stores of the index, the state or the point pointer to a
-// global (diagnostic) at the loop top or in any case leave the index in ESI. In case NONE ours uses three
-// temporaries (scaled index, x, y) beside the live index; retail's y reuses the scaled index's register.
-// Round 36 (lane 15, fast): case 0 braced with `vector2f *normal = &line.n` for the dot only, both
-// components by name 42 (same code); the round-54 form rebuilt as i by name, j and the dot through
-// `normal` 44 (304 bytes; the 23 needs the dot written out by component, a helper body by hand); the
-// normalize through `normal`, the dot by name 42 (same code); j stored before i 49 (as listed).
-// The dot helper returning `a->i * b->x + b->y * a->j` 42 (same code), on the pointer form 44.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
 	point2f first;
 	plane2f line;
+	vector2f *normal = &line.n;
 	short state = NONE;
 
 	for (short i = 0; state < 2 && i < count; i++)
@@ -399,20 +180,25 @@ short function_239b80(short count, point2f const *points)
 			state = 0;
 			break;
 		case 0:
-			line.n.i = first.y - points[i].y;
-			line.n.j = points[i].x - first.x;
-			if (normalize2d(&line.n) != 0.f)
 			{
-				line.d = dot_product2d(&line.n, &points[i]);
-				state = 1;
-			}
-			else
-			{
-				line.d = 0.f;
+				bool valid = false;
+				line.n.i = first.y - points[i].y;
+				normal->j = points[i].x - first.x;
+				if (normalize2d(normal) != 0.f)
+				{
+					line.d = normal->i * points[i].x + normal->j * points[i].y;
+					valid = true;
+				}
+				else
+				{
+					line.d = 0.f;
+				}
+				if (valid)
+					state = 1;
 			}
 			break;
 		case 1:
-			if (!(fabs(dot_product2d(&line.n, &points[i]) - line.d) < k_real_epsilon))
+			if (!(fabs(normal->i * points[i].x + normal->j * points[i].y - line.d) < k_real_epsilon))
 				state = 2;
 			break;
 		}

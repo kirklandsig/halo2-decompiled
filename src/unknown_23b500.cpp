@@ -201,6 +201,10 @@ struct s_spawn_scenario_23aea0
 // 141 (375 bytes, a pointer countdown). Diagnostic, reverted at once: a volatile destination 242
 // (294 bytes, not unrolled, still a pointer). 0x502248..0x502257 hold other globals (a `long *` and
 // the game type), so retail's displacement is only g_502258 - 16, not a wider table.
+// Round 112 (m3 lane 7, fast): the table pointer stored before the tag read 105 (same code); the two scalar
+// defaults through g_502258[0]/[1] as dwords 142 (374 bytes); value0 by the dword array and value4/value8
+// through globals->types[type - 2] 105; `type = 2 + i * 6 + j` 105; the six records of a batch written out
+// (diagnostic) 105 (same code: VC's own unroll). Every form keeps the pointer induction.
 // Round 148 (fast): retail's IV reads as 12 * (first type of the batch) from 0x18 with the exit `cmp eax, 0xa8`
 // (first < 14), so the batch loop `for (first = 2; first < 14; first += 6)` with `type = first + j` 139
 // (374 bytes, again a pointer induction; the same as re-measure), the inner loop over `k = first .. first + 6`

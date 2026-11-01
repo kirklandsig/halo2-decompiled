@@ -1475,11 +1475,23 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // memory); on that, `item_count = player_count;` before the mode-one test with no else 112 (432). Every
 // difference traces back to branch two holding the 0x199ef8 result in EDI where retail reloads it after the
 // 0x19a9b4 calls (all of whose callees match): the same reload 0x25042d shows after 0x53b40.
+// Round 112 (m3 lane 7, fast): a per-branch `found` counter copied to index_count after the fills, both
+// branches with index fills 161 (frame 0x58, zero in EDI, mode spilled), with the pointer fills 167; branch two
+// only, pointer/index fill 145/159; a forceinline scan+fill helper returning the count (predicate passed as a
+// function pointer) 161, with the fill left in the caller 159 (both make 0x19a951/0x19a9b4 address-taken: CAVEAT).
+// Compile-only (calls opaque) gives the per-branch counter forms retail's mode in EBX, but i/count swapped.
+// BLOCKED-BY 0x596a0 (contributor code): retail reloads every escaped count after 0x19a9b4 as if that chain
+// wrote memory, ours keeps player_count in EDI in branch two, so index_count moves to memory and the
+// slot weights swap index_count/item_count (lane 4 round 91 found the same for 0x56c60).
 // Round 129 (m3 lane 6, fast): both fills as `for (long j = index_count; j < 16; j++)` 172 (420 bytes); with
 // for-scoped scan counters 172; and the allocation loop's counter for-scoped too 172; item_count declared
 // first with both index fills 172; branch two's index fill with mode queried first 110 (437). The reload of
 // player_count after 0x19a9b4 follows the escape of &player_count into contributor 0x594a0 (0x199dc9's
 // callee), as 0x25042d's players[i] reload follows contributor 0x596a0: neither is this body's.
+// Round 114 (m3 lane 7, fast): the comparator chosen by nested if/else assignments 83, the scan counters declared
+// in their fors 83, both maxima through the CRT's __max 83, every loop counter for-scoped 83, the branches swapped
+// (`mode == 3 || (mode >= 1 && !teams)` first) 83 (all the same code). Retail's homes follow the names
+// (index_count -8, item_count -0xc, player_count -0x10, this -0x14); ours put item_count at -8 whatever the names.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2644,6 +2656,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (same code); `shown_count = 0` before the empty-list call 166 (918 bytes only because the two list-fill
 // calls then tail-merge; the last loop keeps its 8 extra bytes). An LTCG env link with the direct callees'
 // objects does not reproduce this function (the players[i] reload depends on callees further down).
+// Round 112 (m3 lane 7, fast): the voice state defaulted to 2 before the test 119 (932 bytes); the default
+// case's indices chained (`*text_a = *text_b = NONE; *bitmap_a = *bitmap_b = NONE;`) 92 (the last loop keeps
+// the screen in EBX), reversed chains 93; the state as nested if/else 0/1/2 95; the second loop's team test
+// nested (`!in_matchmaking && session`, then the flag bit) 95 (same code); no_team stored before team_index
+// 199. Compile-only (no LTCG) gives retail's whole last loop (indices in EAX/EDI/EBX, screen reloaded into
+// EDI, immediate 0 pushes) and retail's players[i] reload, so both come from link-time summaries of the
+// callees (BLOCKED-BY 0x53b40's chain, 0x53de0 -> 0x596a0: another lane's and a contributor's code).
 // Round 18 (m3 lane 18, fast): with the four widget indices at function scope (92) and separate counters for the
 // first loop and the other two (93), the spilled values sit one step round a cycle from retail's (ours text_a -0x14,
 // bitmap_b +0xc, bitmap_a +0x1c, text_b -8, shown count -0x10, player/no_team -0xc; retail takes the next slot of
@@ -2662,6 +2681,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // pointer) 250 (930 bytes); the first loop's search counter declared in its for 95 (same code); player
 // looked up before the item pointer is formed 95 (same code); that with a separate second-loop counter
 // 93; separate text and bitmap locals for the second loop's lookups 95 (same code).
+// Round 114 (m3 lane 7, fast): the widget helper as plain `static inline` 242 (862 bytes, not inlined); its default
+// as one chain `*text_a = *text_b = *bitmap_a = *bitmap_b = NONE;` 93 (925); the last loop's indices declared at
+// function scope 95 (same code); the `case 0: case 2:` arm first 95 (same code); bitmap_b stored before bitmap_a in
+// the arms 96.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -3009,6 +3032,8 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
+/* fills the squad browser: the focused squad's players, its game type title and
+   bitmap, its map name and bitmap, the player rows, and whether the list searches */
 // score 48 (was 48): frame 0x754 agrees; with the row text through find_child and the searching flag
 // computed as one expression, the item loop, sections 1-2 and the animation byte are retail's; left: the
 // row loop's counter/text registers (ours ESI/EDI, retail EDI/ESI), EDI saved at entry (retail after the
@@ -3349,10 +3374,17 @@ void c_network_squad_browser_screen::v3()
 		bitmap = find_child(8, (short)(i + 5), false);
 		if (text)
 		{
-			if (squad && i < squad->player_count)
+			if (squad)
 			{
-				text->value6e = true;
-				text->function_22f52e()->set_text(squad->player_names[i]);
+				if (i < squad->player_count)
+				{
+					text->value6e = true;
+					text->function_22f52e()->set_text(squad->player_names[i]);
+				}
+				else
+				{
+					text->value6e = false;
+				}
 			}
 			else
 			{
@@ -3371,7 +3403,13 @@ void c_network_squad_browser_screen::v3()
 			}
 		}
 	}
-	list.searching = !(ANIMATION_FLAG(animation, 1) || network_session_manager_session_unready() || network_session_manager_is_joining());
+	bool searching = true;
+
+	if (ANIMATION_FLAG(animation, 1) || network_session_manager_session_unready() || network_session_manager_is_joining())
+	{
+		searching = false;
+	}
+	list.searching = searching;
 	c_class_1a2c81::v3();
 }
 

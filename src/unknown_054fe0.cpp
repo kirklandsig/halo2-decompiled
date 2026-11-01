@@ -1904,6 +1904,14 @@ struct s_summary_player_sort_entry
 // Earlier (339, was 339): unchanged. Retail writes output->state with a conditional move (cmovne at +0x23c), which needs
 // /arch:SSE; this file has no such flag and the build flags are out of this lane's reach. The frame is
 // 0xa9c against retail's 0xaa8 and the type, membership and member-index homes and the saved registers differ.
+// Round 31 (lane D): unchanged this round; the permuter run was stopped by
+// the background time limit before it produced a result. Still differs in retail's conditional move
+// (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
+// the type, membership and member-index homes and the saved registers.
+// Earlier: unchanged. Retail writes output->state with a conditional move (cmovne at
+// +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
+// lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
+// member-index homes and the saved registers differ.
 // Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
 // 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
 // current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
@@ -1946,6 +1954,10 @@ struct s_summary_player_sort_entry
 // at retail's +0x2c) with the key getter 396 (frame 0xaa0), with that diagnostic too 384 (1339 bytes, frame
 // 0xaa0). Retail keeps &session->value18 in its own slot across the get_values call (the outputs go to other
 // slots) and the membership pointer (+0x4c) in another; ours folds both into the session register.
+// Round 111 (lane 7, fast): map_variant declared before map 339 (same code); the maximum, the option and the
+// mode each as one ternary 375/375/375; the state as `short state = 0; if (initialized) state = ...;` 375 (all
+// at 1307 bytes). Still BLOCKED by the cmovne (/arch:SSE) and by retail's inlined 0x5a680 (membership at +0x4c
+// and member index kept in the frame; name, identity and counts read through the membership).
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

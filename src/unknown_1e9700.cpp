@@ -183,7 +183,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 421): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
+// score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
@@ -270,6 +270,12 @@ struct s_object_damage_view
 // 454 (1583 bytes); the player index read at each use in the selection loop 376; a `&history[selected]` record
 // pointer in the killer block 454 (1583); victim_team/killer/damage_code declared in the other five orders
 // 353-360 (the three slots never move).
+// Round 114 (m3 lane 7, fast): a `&object->history[selected]` record pointer in the killer block 454 (1583 bytes:
+// retail's `lea [sel+0x2f]; shl 4; add` record and victim_team/damage_code slots, but selected loses EDI to a
+// parameter home and the frame grows to 0x54), with a record pointer in the selection loop too 454 (same code),
+// with the record's player index named 491 (1617); the selection amount read once before the time test 454 (the
+// loop base stays +0x2f4); a `history` array pointer local for every lookup 353 (same code: retail saves
+// object+0x2f0 at [esp+0x34] for both loops, ours object+0x2f4).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -301,6 +301,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
 // writes with `found = true` last 239 (1045 bytes); a short count local for the call 297. Unused-local
 // probes +1/+2/+3/+4/+8/+12 all 192 (diagnostic: no symbol-numbering effect here).
+// Round 114 (m3 lane 7, fast): `point3f ray_start = ray->start; point3f ray_end = ray->end;` aggregate copies with
+// the direction from them 286 (1023 bytes), with the copies ahead of origin 286; origin as an aggregate copy of the
+// first vertex 282 (frame 0x94); producer orders ODSAB 193 and OABDS 193.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
