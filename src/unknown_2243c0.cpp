@@ -325,6 +325,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // `lea` and its zero grouping all appear, but arg_3 stays in EBP (retail ESI, arg_4 EBP), block 2's address is
 // loaded early and the material index is not copied through ESI; with the flags read just before 0x173ba0 the check
 // hung in Wine (unmeasured).
+// Round 48 (m3 lane 11, fast; control 117): the fallback through the existing TAG_GET with the original group test
+// 152 (the same code as `local_tag & 0xffff`: in-place mask as retail, but the tag table moves into ECX ahead of the
+// frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
+// 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
+// the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
 // Lane 18 round 16 (fast): the fallback through the existing TAG_GET 152 (table leaves EDI); the four zero stores
 // grouped after the third lookup 120; that with the TAG_GET fallback 149; the group test as a two-case switch on the
 // instance's group with the fallback as default 165; the fallback read through the same instance pointer 168.

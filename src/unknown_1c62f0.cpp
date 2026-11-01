@@ -743,6 +743,12 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // declared `const *const` 93, declared just before the first dispatch 93, declared after the position
 // read 93 (same code each). Lead not tried: callback and user passed as one by-value pair would keep both
 // in memory as retail, but every caller up the chain would change with it.
+// Round 126 (m3 lane 5, fast; retail's callback acts as a memory value: loaded at the first dispatch, reused
+// at the second, reloaded after the join at the third): a local taken from the volatile read before the
+// first dispatch, used at the first two 141 (frame 0x10, the zero in EBX), at all three 135; a local from a
+// plain pointer read used at the first two 136; `(void)&callback` with the parameter read at each dispatch
+// 128 (LTCG passes the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); a const reference
+// to the callback read at each dispatch 136.
 // Round 70 (lane 12, fast with callers and callees): the callback parameter read plainly at the first
 // dispatch (pointer at the others) 136 (537 bytes); the frame clamp as `0.0f > frame ? 0.0f : frame` 107; the
 // last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93

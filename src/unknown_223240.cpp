@@ -75,10 +75,10 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
-// score 109 (was 109): this round: the tail call still needs 0x2b5d0's own body (it takes the mode
+// score 109 (was 109): the tail call still needs 0x2b5d0's own body (it takes the mode
 // in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
 // a file this lane may not edit: BLOCKED-BY 0x2b5d0.
-// score 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
+// Earlier at 109: one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
 // it anywhere later every count-one path threads straight to the layout stores); the slot scan uses
@@ -208,6 +208,14 @@ void function_2232a0(void)
 // Round 81: combined entry/found source clears in do/for traversal 124/120; entry clear with
 // original arms 109/138; entry clear without the empty-arm store 122/158; entry clear without
 // the final null-arm store 123/160. Original source assignments and traversal restored.
+// Round 50 (m3 lane 11, fast; 0x2b5d0 now ours, activated in src/unknown_023540.cpp with the stub removed, all
+// reverted): the disabled body as it is 106 (0x2b5d0 takes mode in EAX, the rest on the stack); without its
+// parameter-address reads 106; its loop as a plain for loop over the views (count not modified) 109, two register
+// parameters but swapped (mode EAX, count ECX); with its parameters ordered (mode, count, players, layout,
+// source) as retail's call setup implies 109, 0x2b5d0 then takes count EAX and mode ECX as retail; on that, a
+// named view count (count + 1) for the initializer and the call 94, with a while/for loop 167/170. Every
+// activation loses 0x13b90 (33), 0x1dc40 (55, its EBX register parameter) and 0x223240 (19) in the plain check,
+// also without 0x2b5d0's calls to 0x13b90 or 0x12a50: BLOCKED-BY those side effects of activating 0x2b5d0.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

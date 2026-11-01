@@ -245,6 +245,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // address 83 (351 bytes, frame 0x100, the parameter's copy still forwarded); done without `volatile` (the waits
 // read it through their volatile pointer) 42 (same code); `if (!opened) continue;` 42; success set only inside
 // the open branch 58 (348 bytes).
+// Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
+// result and the call on the array element with no file copy, branching on success 55 (351 bytes);
+// `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
+// handle and constant 42 (same code); success set true inside the open branch over a false
+// initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
 // Round 48 (lane 10, fast): no file copy, the long tested from the array element and the element passed to
 // 0x1a1310 directly 44 (the element's handle is then copied to EAX for the push, as retail, but held in ESI,
 // not ECX); `if (!opened) continue;` 42; on the no-copy form `success = (long)(element handle test); if

@@ -1307,6 +1307,10 @@ struct s_looping_detail_request
 // at each use 141 fast; the draw through _random with file and line 139 fast (same code); `player_count != 0` 139 fast;
 // `while (skip != 0)` 139 fast. The query stays inlined in all five. Diagnostic: an extra inlined vector add in the
 // audible arm leaves it inlined too (607 bytes), so it is the call site's static frequency, not an inline budget.
+// Round 48 (m3 lane 11, plain): the file is already /Ob1 and 0x11b350 (an /Ob1 file) inlines the query in retail,
+// so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
+// site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
+// bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
 // Lane 18 round 17 (an LTCG link of this file's generated unit, 85 objects, equal to the full listing): the skip
 // loop as `while (skip-- != 0)` 127; the count test `!= 0` 127; `player` declared before the draw 127 (all three
 // identical, the query stays inlined); the skip as the for's own counter harness 121 against the control's 110
@@ -1611,6 +1615,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 0x11c; the second loop keeps index and track index in EBX/EBP and &sounds[i] in EDI where retail keeps
 // the track definition in EBP and NONE in EBX, and `active` spills); with that and the 0xa0 request 374
 // (frame 0x12c: the `active` spill is the one extra slot). The pitch sum still adds the lower bound first.
+// Round 48 (m3 lane 11, plain): NONE held in EBP across the whole update block is what pushes the playback
+// pointer out of EDI. Both pitch-range loops declaring `count = playback->pitch_range_count` in the for init
+// 365 (frame 0x128 and retail's EDX/EAX array-initialisation registers, but 20 scalar slots plus the 0x90
+// request where retail has 16 plus 0xa0, first difference +0x39); that with the 0xa0 request 368 (frame
+// differs again); that with the pitch through a bounds pointer and a named lower bound as in 0x21b940 460
+// (1939 bytes); the count in the first loop's init only 427 (1907 bytes); both counts with the gains array
+// declared before the sounds 366.
 // Lane 18 round 17 (plain where marked, else an LTCG link of this file's generated unit with 133 objects that
 // reproduces the full listing, 304 there for 305): what retail shows is (a) a count local per pitch-range loop
 // (`for (long i = 0, count = ...; i < count;` 363; read once and reassigned 364/429), (b) the sounds cleared with

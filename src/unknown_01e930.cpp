@@ -453,6 +453,14 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 49 (lane 11, fast): the first loading query in a `bool loading` local 239 (its test becomes retail's
+// `cmp al, bl`); the same local also holding the second query 238 (both tests retail's; 6 points, under the keep
+// bar); skippable as `!query` 273; on the 238 form: size and movie flags tested on `flags & 0x100` directly 267
+// (retail's and/or/shl size, but the mask lands in EDI where retail spills it to the 0x40 frame's extra dword);
+// `dword large = flags & 0x100` 271 (1102 bytes); the retry counter at function scope 260; the format-field size
+// query 245 (1100 bytes); the allocation result declared after the start time 256 (the last two are the listed
+// scores of those forms alone, so the loading local's gain cancels in them). Lead: the loading local is retail's
+// for both queries, so it may count once the frame's mask slot is found.
 // Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
 // neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
 // allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start

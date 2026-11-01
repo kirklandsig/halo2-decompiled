@@ -2776,6 +2776,12 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // (same code); the busy tests as `a && b` expressions 117; loop 1's unit test as a nested block instead of
 // `continue` 103; single exit (countdown and status tests enclosing, `if (!failed)` store) 103. Diagnostic:
 // 0x6b380 built without link-time code generation 146, ten matched callers lost (it is LTCG in retail).
+// Round 48 (m3 lane 11, plain; --fast gives 193 here): the root walk as a do-while 103 (same code); the
+// final store through `globals` under `if (!failed)` 176 (618 bytes). The hoisted g_4e8c20 load passes
+// only the out-of-line 0x6b380 call: loop 2 stepping through the inline copy (0x16bc00 called directly)
+// gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
+// 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
+// loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
 // Round 50 (lane 1, plain checks): with the final store aimed at another global (diagnostic) 88: the
 // prologue then matches; left are loop 1's datum/unit in ESI/EDI swapped and NONE not kept in EDX after
 // the 0x16bc00 call (retail `or edx,-1; cmp eax,edx`, reused for the NONE store, the last-unit test and

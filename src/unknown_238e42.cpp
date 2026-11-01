@@ -1012,6 +1012,10 @@ bool __stdcall function_2399da(long controller_index)
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
 // identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
 // rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 52 (fast): the rank read once through its address into a local used at every rank use 90;
+// `NONE == rank` 90; `!= NULL`/`!= 0` identity test with a `(DWORD)` rank store 90; the store and set-rank
+// call through a member pointer 90 (lane 7's form again); the permission test read from the membership
+// field with the own-rank local kept for the dispatch 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -400,6 +400,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // per iteration 46-52, the selection at function top/if top/after the copy/before the loop/in the loop body/
 // inline in the test 45-77; local names (first/start/base_index, entries/source/records) never move a
 // register. The current indexed form re-measured 144 (real), with a long count named in the block 140 (real).
+// Round 47 (lane 11, fast): the block pointer renamed to sort after or before the other locals 54/54
+// (same code: its slot stays between n and the weight, where retail has the weight and the scaled
+// index is a temporary after geometry); the count read at each use through the caller's metadata
+// view (`g_4c6b00[cache_index].count`) with the entries from the record view 144 (492 bytes: the
+// indexed form's index EDX, count CX, zero EAX, first EAX, entries ESI spilled at once, where retail
+// has count AX/EAX, zero ECX, first EDI and entries EDX); that with a short count local at the `if`
+// or before the clears 177/177 (480 bytes).
 // Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
 // the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
 // current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),

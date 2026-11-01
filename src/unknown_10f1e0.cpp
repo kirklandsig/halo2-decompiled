@@ -531,6 +531,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the clear through the existing bit_vector_fill re-measured with the shift/mask test 216/213 (still out of
 // line). With the mask test the set loads the word through the folded address and stores through a
 // separate `lea`, so the load is not fused with the store.
+// Round 52: retail's inline clear is exactly the body of the existing bit_vector_fill (0x12afc0, out of line
+// in retail too), so retail likely called it here and LTCG inlined it, which also escapes the visited words
+// (lane 1's cause for retail's fused set). Our LTCG keeps it out of line: with bit_vector_test 213 (fast and
+// plain), with an `inline` declaration and the shift test 216, `#pragma inline_depth(255)` diagnostic 213.
+// Lead: BLOCKED-BY 0x12afc0 (its file was held this round; try `inline` on its definition, checking 0x1253d0).
+// Also `while (true)` 37, explicit `!= 0` pair tests 37, weight against the zero global g_45dbd8 37.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

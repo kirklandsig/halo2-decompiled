@@ -77,6 +77,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
@@ -181,6 +182,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 112 (lane 8, fast): group-table pointer declared first and assigned at its test 398; scenario
 // pointer declared first 398; no structure-BSP local (global read at both uses) 398; the three defaults
 // declared in reverse order 398; the group-table pointer as one ternary initialiser 398 (all same code).
+// Round 51 (lane 11, fast): round 86's t19 form rebuilt on this body 437 with the byte selected point,
+// 188 (aligned 46) with it short again; on that graph the existing distance3d (0x3ea30, inlined) for the
+// three point distances with b - a operands 185 (aligned 57), with a - b 216; the distance helper through
+// a vector local with j,k,i / i,j,k / k,j,i sums 188 each (same code). Left on 188: per-call x87 square
+// orders, arg_3 not kept in ESI across the distances to the 0x29de20 call, the found flag stored from AL,
+// the record-index add, the output loop's entry jump. distance3d on the original 418/418.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

@@ -264,6 +264,10 @@ void player_action_initialize(s_player_action *arg_0);
 // only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
 // below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
 // found: the inlined order needs a cause outside this body.
+// Round 50 (m3 lane 11, fast, all on round 27's score-1 form, reproduced at 1): 1-8 unused locals at the top 1
+// each; permuter 600 s, 21 tries, nothing (its reduced image scores the form 289); one unit-index local for the
+// whole selection block 366; the first unit lookup through a header pointer 1; the cycle result through a named
+// local 1; the cycle call's unit index masked at the call 1; the NONE test ahead of the request bit 348.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

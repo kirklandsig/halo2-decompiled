@@ -258,6 +258,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
 // the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
 // the plane distance as dot3f(position, normal) 144.
+// Round 52 (fast): the side flag as `> 0.0f ? true : false` 142, as an if/else of true/false stores 167;
+// the table row indexed directly (`g_440b94[axis * 2 + positive][0]`/`[1]`) after the point, no row pointer,
+// 158 (962 bytes); the determinant in natural cross order 138 (same code); the edges read through
+// quad->corners instead of the corner pointer 179 (953 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
