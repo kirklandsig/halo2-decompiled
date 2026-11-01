@@ -963,6 +963,10 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
     D3DDevice_SetTextureStageState(stage, component, *(dword *)&value);
 }
 
+// score 84 (was 213): off-diagonal products are shared (xy/xz/zy) and the statement order is xx,yy,zz,ys,zs,xs,inverse. Still differs:
+// scheduling and register choice only (retail loads the axis as j,i,k,j,k, takes 1.0f after fcos, and keeps ys/zs on one xmm copy of
+// sine; ours computes ys through x87). Tried: sine/cosine as plain locals instead of the struct (115-130), ys/zs before the squares
+// (116-189), inverse first (117), ys,zs computed right after sin and before cos (195), xs as (double) cast / plain / swapped operands (all 84).
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -975,19 +979,22 @@ void function_3c650(byte const *state)
     real xx = axis->i * axis->i;
     real yy = axis->j * axis->j;
     real zz = axis->k * axis->k;
-    real xs = (real)((double)trig.sine * axis->i);
     real ys = axis->j * trig.sine;
     real zs = axis->k * trig.sine;
+    real xs = trig.sine * axis->i;
     real inverse = 1.0f - trig.cosine;
     g_4c1b9c.scale = 1.0f;
     g_4c1b9c.forward.i = (1.0f - xx) * trig.cosine + xx;
-    g_4c1b9c.forward.j = inverse * axis->i * axis->j + zs;
-    g_4c1b9c.forward.k = inverse * axis->i * axis->k - ys;
-    g_4c1b9c.left.i = inverse * axis->i * axis->j - zs;
+    real xy = inverse * axis->i * axis->j;
+    g_4c1b9c.forward.j = xy + zs;
+    g_4c1b9c.left.i = xy - zs;
     g_4c1b9c.left.j = (1.0f - yy) * trig.cosine + yy;
-    g_4c1b9c.left.k = inverse * axis->k * axis->j + xs;
-    g_4c1b9c.up.i = inverse * axis->i * axis->k + ys;
-    g_4c1b9c.up.j = inverse * axis->k * axis->j - xs;
+    real xz = inverse * axis->i * axis->k;
+    g_4c1b9c.forward.k = xz - ys;
+    g_4c1b9c.up.i = xz + ys;
+    real zy = inverse * axis->k * axis->j;
+    g_4c1b9c.left.k = zy + xs;
+    g_4c1b9c.up.j = zy - xs;
     g_4c1b9c.up.k = (1.0f - zz) * trig.cosine + zz;
     g_4c1b9c.position.x = g_4c1b9c.position.y = g_4c1b9c.position.z = 0.0f;
     set_bump_component(1, D3DTSS_BUMPENVMAT00, *(real const *)(state + 0x68) * g_4c1b9c.forward.i);
@@ -1101,11 +1108,19 @@ struct s_render_part_context
 extern real g_4670e4;
 long function_40de0(long index, bool first, bool second);
 
+// score 300 (was 296): logic matches retail block by block. The two parameter volatiles stay: without them 0x44ac0 (a caller)
+// stops matching because index/part_index leave edx/ecx. Retail takes index raw from edx (`or ebp, edx` at 0x410ed), ours
+// zero-extends it ((word)index); the signature is short in every declaring file, so not changed here. Still differs: register
+// allocation (retail keeps g_4e3b44 in ebx and spills entry/part to [esp+0x1c]/[esp+0x10]), retail re-reads *part for kind
+// and orders the 40de0 call after the 40e30 pushes. Tried: no volatiles (291, breaks 0x44ac0), second via if-flag (296),
+// ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
     dword and_mask, dword or_mask)
 {
+    // Keeps index/part_index in edx/ecx and every other parameter on the stack, as retail's callers
+    // pass them (0x44ac0 stops matching without this).
     part_index = *(long volatile *)&part_index;
     index = *(short volatile *)&index;
     (void)&group; (void)&weight; (void)&context; (void)&material_override;
@@ -1136,7 +1151,8 @@ void function_41040(short index, long part_index, long group, byte weight,
     real priority = weight * context->priority * g_4670e4 * 4.0f;
     word kind = *(word const *)part;
     if (kind == 0 || kind == 5 || context->material == NONE) return;
-    long material = material_override != NONE ? material_override : context->material;
+    long material = material_override;
+    if (material == NONE) material = context->material;
     byte const *definition = g_4e3b44[material & 0xffff].bytes;
     long pass;
     function_1bf50(*(word const *)(definition + 0x3c), material, priority, &pass);
@@ -1153,8 +1169,7 @@ void function_41040(short index, long part_index, long group, byte weight,
     if ((flags & 0xffff7fff) || force)
     {
         bool first = (entry->unknown00 & 2) != 0;
-        bool second = false;
-        if (entry->unknown00 & 4) second = group != 3;
+        bool second = (entry->unknown00 & 4) && group != 3;
         if (first && second && group != 0)
             function_40e30(2, material, priority, *(word const *)(definition + 0x3c), kind,
                 and_mask, or_mask, (t_record_fill)function_4cbf0, (dword)function_4d0b0, (void *)handle);
