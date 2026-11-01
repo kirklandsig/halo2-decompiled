@@ -578,6 +578,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
 // first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
 // before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 128 (m3 lane 5, fast): retail passes the actor index in EAX to 0x270400 in case 5 straight from the
+// entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
+// `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
+// `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

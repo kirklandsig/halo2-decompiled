@@ -993,6 +993,10 @@ bool __stdcall function_2399da(long controller_index)
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
 // for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 128 (m3 lane 5, fast): the identity local renamed to sort before `rank` 90 (same code: no name
+// tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
+// (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
+// reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

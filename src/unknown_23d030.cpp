@@ -247,6 +247,16 @@ struct s_free_state_23d260
 // sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
 // k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
 // 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
+// Round 128 (m3 lane 5; aligned counts in brackets, base 102 [89]): the forward vector written through
+// `vector3f *forward = &command->forward` (reads left on `command->forward`) 94 [78] (1328 bytes: the side.i
+// copy then follows the forward.k store as in retail; zero still XMM3, side.i squared first), not kept: a pointer
+// that only renames the field, with mixed access. Also: movement.j terms swapped 121 (1328 bytes, the
+// product order does not move); the roll rows as `v->i = v->i * cosine + projection * axis->i - cross_i * sine`
+// 288; on the pointer form: normalize3d 259 [77] (x87 length and 1326 bytes as retail, side.k then stays in the
+// inverse's XMM0); that with yaw cosine/sine locals 274 [82]; cross3f_staged(&side, forward, &command->up) 282
+// [51] (1335 bytes; first difference +0xae: zero XMM1 as retail, forward.k kept in a stack copy); that with
+// normalize3d 267 [57]; up written k, i, j 272 [71]; cross3f 273; the up reads through `forward` 275, the side
+// reads 254, both 284; yaw cosine/sine locals alone 100; side assigned k, j, i or i, j, k 94 (same code).
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

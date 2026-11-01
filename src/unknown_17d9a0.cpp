@@ -241,6 +241,13 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
 // locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
 // retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
+// Round 128 (m3 lane 5, plain; 0x120810 is left out of the fast image): retail's out-of-line 0x120810 has the
+// same y-in-XMM0 / x-in-EAX copy, so it is the inlined callee. Corner helper on 0x120810 with the axis and side
+// read into locals before the point 189 (966 bytes, same code as without them: propagated); with the point
+// written through a pointer 189 (same code); the point built in the call's first argument by a pointer-returning
+// inline (diagnostic, x and y by value) 188 (986 bytes: the axis and side loads move ahead of the products as in
+// retail, but the side load stays one folded `movzx edx, byte`); on the 0x120810 form a `plane3f *plane` for
+// the normal copy, dot and d store 198 (965 bytes), on the current body 166 (984 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

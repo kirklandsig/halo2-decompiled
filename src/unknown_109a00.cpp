@@ -475,6 +475,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);
 // `found` declared before the default body 119. The dot written k/j/i up-first, forward-first, all up-first or as
 // i, j, k terms: same code (env). A /Gd compile loads the object index into EAX and the entry index into EBP.
+// Round 128 (m3 lane 5, fast with 0xb7060): retail's roles (object EAX, entry ECX) are the declared-order rule
+// (first EAX, last ECX); with the center through carrier_vector_from_havok (149, 0xb7060 11) the body is retail's
+// but for the entry/component EBX/EBP swap and the entry index on the stack, whose home slot then holds `found`
+// (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
+// declared before the default body 154; the entry before the object 151; the object through a `headers` local
+// (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
