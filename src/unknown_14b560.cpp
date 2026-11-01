@@ -2699,7 +2699,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
 // retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
 // has ESI, so the two roles are swapped.
-// score 103 (was 103): the store through the named `globals` local was tried again and scored
+// Earlier: the store through the named `globals` local was tried again and scored
 // 180 in the full build against the 103 baseline, so it was reverted; the globals pointer stays
 // live in EDI through both iterator loops and retail keeps it in ESI, reloading it only at the
 // two stores; target/point homes still differ.
@@ -2750,6 +2750,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // carriers 193/193/193/193/193/193/198/190 (fast control 193, 592 bytes);
 // paired long saves only three and is dropped. Existing-sibling control remains
 // 193; full baseline 103. Original predicate domains and body restored.
+// Lane 9 round 67 (plain; fast controls 193 here): loop 1 through the real 0x6b380 180 (562 bytes: LTCG keeps
+// it out of line there too, so the inline copy stays); loop 2 reading iterator.datum_index at each call 103
+// (same code); the busy tests as `a && b` expressions 117; loop 1's unit test as a nested block instead of
+// `continue` 103; single exit (countdown and status tests enclosing, `if (!failed)` store) 103. Diagnostic:
+// 0x6b380 built without link-time code generation 146, ten matched callers lost (it is LTCG in retail).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

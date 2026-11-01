@@ -320,6 +320,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
+// Lane 9 round 67 (fast, which reproduces 117): the stage and pass elements bound to `void const *const &` locals
+// with all four cache zero stores after the material lookup 118: retail's unfused ordinal load, its dead pass-element
+// `lea` and its zero grouping all appear, but arg_3 stays in EBP (retail ESI, arg_4 EBP), block 2's address is
+// loaded early and the material index is not copied through ESI; with the flags read just before 0x173ba0 the check
+// hung in Wine (unmeasured).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

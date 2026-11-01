@@ -1302,6 +1302,11 @@ struct s_looping_detail_request
 // a call (124 with the extra compare), so the cause is still the call site's static frequency.
 // Round 254: Reduced common finalization with unavailable-player/completed-request exit and
 // bool/byte/char/long result carriers 139/168/168/185/139/168/168/185. All restored.
+// Lane 9 round 67 (from 127; fast alone with 0x21cc60 controls 139 at 543 bytes, the reduced image differs from the
+// one built with 0x21b0e0): the existing 0x20b100 for the draw 127 plain (inlined to the same code); the count read
+// at each use 141 fast; the draw through _random with file and line 139 fast (same code); `player_count != 0` 139 fast;
+// `while (skip != 0)` 139 fast. The query stays inlined in all five. Diagnostic: an extra inlined vector add in the
+// audible arm leaves it inlined too (607 bytes), so it is the call site's static frequency, not an inline budget.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1532,7 +1537,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 305 (was 307): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
@@ -1582,6 +1587,15 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 254: Reduced shared full request type with no/first/second/both long range counts,
 // first/second/both short counts and both byte counts 479/491/497/363/465/451/469/508. All restored.
 // Ordinary full-request/two-long-count form 370 at 1923 bytes; rejected against full 307.
+// Lane 9 round 67 (plain, from 305): the getter at each use for the range gain store 410 (the pool data
+// is reloaded between the stores; retail forms two entry addresses from one data load); a count local
+// before each pitch-range loop 365 (frame 0x128, first difference +0x39; the update branch through the
+// 0x218f50 call is retail's: track EBX, playback EDI, previous BP); with 0x21b940's bounds-pointer pitch
+// 460 (1939 bytes: the gain step's inlined add flips); with the sounds filled by memset(0xff) instead 374
+// (the 0x2000 block's stores, pool EDX, iterator count ESI and immediate NONE tests are retail's; frame
+// 0x11c; the second loop keeps index and track index in EBX/EBP and &sounds[i] in EDI where retail keeps
+// the track definition in EBP and NONE in EBX, and `active` spills); with that and the 0xa0 request 374
+// (frame 0x12c: the `active` spill is the one extra slot). The pitch sum still adds the lower bound first.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
