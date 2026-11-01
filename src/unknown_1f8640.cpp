@@ -476,6 +476,8 @@ struct s_1f8a70_actor
 // test alone 404; the first exit through a shared final `return result;` (if/else tail, one goto) 367
 // (1652 B), with the initializer 371. Retail tests route_mode as a word (`movsx ecx, word`), materialises
 // `node != NONE` with setne before its test, and keeps the first exit's false in BL.
+// Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
+// Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
 // Round 19 (lane 18): retail's result byte shares unit_mode's slot (+0x12), so it has no definition
 // before the unit-mode test; `failed:` stores false and the success test jumps past that store.
 // Compile-only screen: `result = false;` inside the first arm with the rest of the body in an `else`

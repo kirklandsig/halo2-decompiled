@@ -424,6 +424,11 @@ short *function_e70b0(long unit_index, short *value);
 // Round 287: Parameter-index/slot/both, inline-output/index-output/slot-output/all lexical
 // identities 49/49/49/49/49/49/49; all three alternate identities 49. Original names and body
 // restored; actor/index ECX/EDX and final setup remain.
+// Round 334: four-byte frame and 443-byte extent agree; first +2 exchanges
+// actor/index ECX and EDX and changes final setup. One complete clock receiver,
+// original/native slot data block, entry/timed-block declaration and mutable/const
+// view combinations, all eight 124 at 443 bytes. The shared receiver makes the EBP
+// save unconditional. Original data view, global observations and full body restored.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

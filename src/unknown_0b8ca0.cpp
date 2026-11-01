@@ -1721,14 +1721,14 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // pointer; that file is /Ob1, so LTCG keeps our call and it cannot be changed here. This round:
 // the shared exit together with the byte activity bit is 308, and marking the declaration of
 // function_b8bd0 in this file __forceinline changes nothing (the call stays).
-// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// Another round (at 285, was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. This round: a `goto done` shared exit (both early exits) keeps the frame at
 // 0x64 and does give retail's single epilogue, but the score stays 285 - retail re-derives
 // pool->data over the pool pointer in ebx and reads the header byte through that copy, ours keeps
 // the first copy in edi and re-derives a second one into edx; folding the loop's early exit into the
 // allowed flag instead gives 340. The permuter found nothing below 285.
-// score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Another round (at 285, was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
 // Round 189 (m3 lane 3): retail has no call to 0xb8bd0 here: it reads the parent's node-matrix base before the
 // link stores (`movsx eax, word [edi + 0x116]` precedes the parent-index store) and indexes it by the node at the
 // 0x141590 call, and takes the header and the re-fetched object from a fresh `g_4e0300->data` plus the entry offset
@@ -1853,6 +1853,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // 293/293; all row products 283; conditional scaling alone 285, with complete
 // point-result/rotation staging 284/284. Every row-staging form loses the matched
 // sibling; original two-caller helper and complete body restored.
+// Round 118: 0xb8bd0 declared inline in its own file (diagnostic; retail inlines it here and reads the parent's
+// node-matrix offset before the link stores) 342, and matched 0xbcc20/0x11b710 stop matching: BLOCKED-BY 0xb8bd0
+// (its file is /Ob1); `allowed` as one && expression 317; the ancestry walk as a while loop 285; the two link tests
+// in one || 293; the rest of the body nested under `if (allowed)` 307 (1213 bytes).
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

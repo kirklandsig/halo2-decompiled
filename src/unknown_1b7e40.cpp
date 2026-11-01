@@ -76,6 +76,7 @@ bool function_25d9b0(long prop_index);
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
 // score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // the `priority > 0` gate after both branches gives retail's block order (no-invitation
+// the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
 // retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.

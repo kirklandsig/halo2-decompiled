@@ -1479,6 +1479,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 171/159/180/140/140/141/141; all with entry contact point 141. Paired point setters with
 // direct filled-buffer inputs 158; with entry event record 158. Minimal paired setters
 // retained, plain 140 at 892/892 bytes; other graphs and original impulse helper restored.
+// Round 297: Merged spin-success arm, bool/byte/short/long accumulator, completion 190/185/202/203 and entry 190/185/202/203. Bool recovers return-byte +0xf but shrinks to 874/892 bytes. Original two-use spin result, paired point setters and full body restored; release RMW/tail and event/location homes remain.
 // Round 288: Native Boolean flag allocation units, with branch-spin/release-setter/damping-setter
 // masks 0..7, 242/233/242/233/242/234/242/234. Native Boolean units move the frame to 0xa8 and disrupt
 // entry allocation; original word units, shared release helper, paired point setters and full body

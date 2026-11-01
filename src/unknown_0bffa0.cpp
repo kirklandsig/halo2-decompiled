@@ -850,6 +850,12 @@ byte g_55e708;
 // forward pointer; a one-use call result, not kept); a do-while under `count > 0` 128; the flags tested as the
 // word field 128; the definition looked up inside the outer test 150; the clamp before the flag test 139 (592
 // bytes); the first-person test as a named bool 128.
+// Round 133 (lane 6, fast with 0x2dba0/0x31520/0x3e9c0/0xb8c40/0xb8d30/0x1662a1/0x42850 listed, which agrees with
+// the full build; the file alone does not): the direction read into a pointer local before the call, indexed loop
+// 128, pointer loop 128 (copy-propagated: identical code); a transform4x3f pointer local per pass in the real build
+// 128 (identical); a pointer loop to `markers + count` with `marker - markers` as the index 161 (642 bytes); a
+// guarded do-while 116 (607 bytes only by padding: the count clamp stores immediates and EBX is reloaded after
+// 0xb8d30 as retail, but the forward anchor stays; a hand-inverted loop, not kept).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1073,6 +1079,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // normalize_inline 541; depth from the radius local 556; reference selected before the negate 498;
 // unused-local probes +1/+2/+3/+4/+8/+12 483/480/480/480/483/467 (diagnostic). Before the named values:
 // bounds in corner order alone 482.
+// Round 133 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; aligned counts from a difflib
+// alignment, control 279): retail's left normalization loads k, j, i (normalize3d's loads) but sums i*i + k*k then
+// j*j (normalize_inline's sum). normalize_inline 567 (2806 bytes, aligned 450: sum right, loads k, i, j); the
+// existing 0x30bf0 called 695 (2734 bytes: stays a call); a one-caller normalize with the sum spelled
+// i*i + k*k + j*j 315 (identical to normalize3d: the unparenthesised sum is re-sorted), i*i + (j*j + k*k) 568
+// (aligned 448), (i*i + k*k) + j*j 567 (aligned 450).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

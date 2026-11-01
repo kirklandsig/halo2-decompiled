@@ -279,6 +279,11 @@ static inline void quaternion_transform_vector(
 // Round 289: existing complete vector assignment output with staged-cross/shared-dot/independent-half
 // masks 0..7 gives 333/346/340/351/344/360/333/368. Paired halves recover frame 0x24 but grow code;
 // independent halves give 0x20. Original helper/body restored; quaternion/cross spill sharing remains.
+// Round 118: transform helper taking the quaternion by value 436 (1429 bytes); rotation declared after the
+// halves/dot/cosine 200; half-angle struct members sine-first 200; the dot clamped in place (no cosine local)
+// 241 (1318 bytes); the axis crossed into its own vector then scaled into the quaternion with cross3f /
+// cross3f_staged 241/240 (1317 bytes, frame still 0x1c). Retail never reads the quaternion's slot after loading
+// it (0x1418d5-0x1418f8) yet gives the transform spills five slots of their own; ours overlay two on it.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -927,6 +932,9 @@ void function_143250(
 // 1881/1796/1903/1766/1867/1796/1905; complete graph with matrix receiver renamed 1905.
 // Product elision leaves 943 scalars and recovers rotation in EAX, but frame 0x314 remains;
 // all nine initial loads and explicit precision conversions were retained. Entire body restored.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
 // 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
 // frame 0x314. On that product graph, native row subsets and late matrix declaration:

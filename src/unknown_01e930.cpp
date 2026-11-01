@@ -490,6 +490,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 290: existing retry producer on the entry-result/Boolean graph, direct-mode/format-field/movie
 // observation masks 0..7, 291/291/279/279/313/313/285/285; all frames 0x3c. Exact-only elapsed
 // precision, include, clocks, calls and original body restored; frame 0x40 and instruction-policy gaps remain.
+// Round 444: Shared terminal cleanup for allocation/movie/texture/protected-texture failures,
+// subsets 1/2/4/8/3/12/7/15: 244/244/244/244/244/244/241/239. Original early cleanup returns, complete body and file policy restored.
+// Round 446: complete native 64-bit size/retry/mode storage, seven subsets
+// 280/298/314/288/317/339/363; all with native skip storage 363. Original domains and complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

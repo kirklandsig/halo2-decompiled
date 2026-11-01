@@ -497,6 +497,15 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 290: actual default-body field captured once, char/long value with short/long result,
 // original/converted center, 115/149/267/257/265/257/272/257. Converted centers keep frame 0x44
 // and caller 11 versus 2; original helper, search and body restored. Entry roles and early physics spill remain.
+// Round 219: canonical search latch as byte/char/short/long, each with original/native center
+// transfer: 112/149/112/149/131/236/238/160. Original Boolean latch, center transfer, helpers and
+// body restored; object/entry convention, physics spill and projection schedule remain.
+// Round 334: frame 0x48 agrees; first +0 reverses object/entry registers,
+// then the physics spill and center/projection schedule differ. Actual body-array
+// byte displacement stepped in the original loop, signed/unsigned and bool/byte
+// found combinations, 140/140/140/140; with existing complete center conversion
+// 130/130/130/130 at 928 bytes, frame 0x44, caller 2 -> 11. Original search,
+// center transfer, helpers, arithmetic and complete body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

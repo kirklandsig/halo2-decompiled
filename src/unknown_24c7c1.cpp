@@ -448,6 +448,10 @@ void __fastcall function_24cdaf(void)
 // the tick locals declared at the function top 6. Diagnostics: one pointer variable for both
 // counters 18 (the pointer takes ECX in both); without the message loop the tick block keeps
 // ECX/EAX; the value variable shared with the countdown 40 (split again, tick block unchanged).
+// Round 57 (m3 lane 1): player from g_5023f4 directly 6; player declared before hud 6; countdown
+// read once into a long 43; saturation on the old value + 1 27; `value += 1` with an if clamp 6;
+// `hud->players + player_index` 6; `!= NULL` / `-= 1` countdown 6. Diagnostics: 1-8 unused locals
+// before the tick block 6 each; no countdown block 84 (tick roles unchanged); no saturation 54.
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {
