@@ -293,7 +293,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
 				do
 				{
-					float impulse = (row->b.m128_f32[3] * load_friction_scale(step) - angular_velocity(row, a, b) * load_velocity_scale(step)) * row->a.m128_f32[3];
+					// Keep the friction projection in a scalar object until the x87 expression.
+					// The update below still reloads the axes after limiting the target.
+					__m128 axis_a = row->a, axis_b = row->b;
+					solver_scalar_31c940 projected = sum_three_31c940(_mm_add_ps(
+						_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(b->angular, axis_b)));
+					float impulse = (row->b.m128_f32[3] * load_friction_scale(step) - projected.value * load_velocity_scale(step)) * row->a.m128_f32[3];
 					float magnitude = (float)fabs(impulse);
 					if (magnitude > operation_float(op, 4))
 					{
