@@ -1595,6 +1595,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 443: complete overlay-clear/start/idle decision results, seven bool
 // subsets and the complete long set, 220 each (fast control 220, full 218).
 // Original decision expressions, clock reads and complete body restored.
+// Round 445: Native double raw-input/interval domains, with late-magnitude combinations and
+// independent quotient intervals: 510/547/532/518/536/540/550/505.
+// Original complete executable body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

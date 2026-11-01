@@ -183,7 +183,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 421): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
+// score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
@@ -270,6 +270,9 @@ struct s_object_damage_view
 // 454 (1583 bytes); the player index read at each use in the selection loop 376; a `&history[selected]` record
 // pointer in the killer block 454 (1583); victim_team/killer/damage_code declared in the other five orders
 // 353-360 (the three slots never move).
+// Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
+// then consistent existing inline validation: 375/396/509/494/509/526/557/515.
+// Original complete executable body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

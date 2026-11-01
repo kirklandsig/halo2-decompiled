@@ -176,6 +176,9 @@ real normalize2d(point2f *arg_0);
 // integer copy through its `long *` and the output stays EBX); that with the to-centre vector initialised
 // from the input point and differenced in place 233 (1023), with `2.0f - distance` in the normalize block
 // 274, with the centre/radius call before the input copy 220. Retail's inlined radius is a movss load.
+// Round 445: Native double squared-distance/projection/radius-clearance domains, seven
+// subsets and complete far-mode scalar graph: 279/262/265/293/261/258/274/274.
+// Original complete executable body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
