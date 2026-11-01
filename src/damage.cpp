@@ -1063,13 +1063,13 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		point3f const *origin = &data->origin;
 		vector3f *direction = &data->direction;
 		vector3f *node_direction = &data->node_direction;
-		point3f closest_point;
+		point3f surface_point;
 		vector3f surface_normal;
 		bool outside = false;
 		real scale;
 
-		function_baff0(object_index, origin, &closest_point, &surface_normal);
-		vector3d_from_points3d(origin, &closest_point, direction);
+		function_baff0(object_index, origin, &surface_point, &surface_normal);
+		vector3d_from_points3d(origin, &surface_point, direction);
 		data->distance = function_30bf0(direction);
 
 		if (object->node_index == NONE)
@@ -1089,9 +1089,9 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 			vector3d_from_points3d(origin, &node_center, node_direction);
 			function_30bf0(node_direction);
 
-			real dx = origin->x - closest_point.x;
-			real dy = origin->y - closest_point.y;
-			real dz = origin->z - closest_point.z;
+			real dx = origin->x - surface_point.x;
+			real dy = origin->y - surface_point.y;
+			real dz = origin->z - surface_point.z;
 			if (0.05f * 0.05f > dz * dz + dy * dy + dx * dx)
 			{
 				surface_normal.i = 0.0f - surface_normal.i;
@@ -1177,7 +1177,7 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		data->in_unknown_radius = definition->radius68 > data->distance;
 		if (scale > 0.0f || data->in_unknown_radius || data->unknown58 > 0.0f)
 		{
-			if (!child && function_d6f90(object_index, &closest_point, data))
+			if (!child && function_d6f90(object_index, &surface_point, data))
 				return;
 
 			if (g_4e6948->mode == 4)
