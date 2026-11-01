@@ -157,6 +157,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // written k, j, i 219 (same code); both 354; the rotation's j square moved ahead of ij 360 (1840 bytes);
 // left.j moved ahead of ik 350 (1764 bytes, frame changes). Compile-only (non-LTCG) does not reproduce
 // this function's rotation block (its schedule and loads differ from the real build), so it can't screen it.
+// J221: On native squared/sine vectors: shared complement 451; complete axis input 589; both 589; staged crosses 219; staged with complement/input/both 451/589/589; shared orientation 495. Original helper bodies, observations and complete function restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

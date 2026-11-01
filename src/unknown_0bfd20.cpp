@@ -99,37 +99,37 @@ inline bool function_0bfe60(const dword *flags, long bit)
 	return (flags[bit >> 5] & (1 << (bit & 31))) != 0;
 }
 
-__declspec(noinline) void function_0bfe80(dword *flags);
-
-// @retail 0xbfe80
-inline void function_0bfe80(dword *flags)
-{
-	for (long i = 0; i < 8; i++)
-		flags[i] = ~flags[i];
-	flags[7] &= 0xff;
-}
-
-__declspec(noinline) void function_0bfed0(long count, dword *flags);
-
-// @retail 0xbfed0
-inline void function_0bfed0(long count, dword *flags)
-{
-	long last = ((count + 31) >> 5) - 1;
-	for (long i = last + 1; i < 8; i++)
-		flags[i] = 0;
-	long remainder = count & 31;
-	dword mask = 0xffffffff;
-	if (remainder > 0)
-		mask >>= 32 - remainder;
-	flags[last] &= mask;
-}
-
 struct s_bit_vector
 {
 	dword bits[8];
 
+	__declspec(noinline) void function_0bfe80();
+	__declspec(noinline) void function_0bfed0(long count);
 	bool is_empty() const;
 };
+
+/* inverts the bits, keeping only the first 8 bits of the last word */
+// @retail 0xbfe80
+inline void s_bit_vector::function_0bfe80()
+{
+	for (long i = 0; i < 8; i++)
+		bits[i] = ~bits[i];
+	bits[7] &= 0xff;
+}
+
+/* clears every bit from count on */
+// @retail 0xbfed0
+inline void s_bit_vector::function_0bfed0(long count)
+{
+	long last = ((count + 31) >> 5) - 1;
+	for (long i = last + 1; i < 8; i++)
+		bits[i] = 0;
+	long remainder = count & 31;
+	dword mask = 0xffffffff;
+	if (remainder > 0)
+		mask >>= 32 - remainder;
+	bits[last] &= mask;
+}
 
 // @retail 0xbff10
 bool s_bit_vector::is_empty() const

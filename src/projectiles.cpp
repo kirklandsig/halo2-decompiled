@@ -385,6 +385,21 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// score 3 (was 3): this round: the rate computed after the flag write scores 10, and the axis stored
+// after both trigonometry calls scores 21 with a shorter body (283 bytes); both were reverted.
+// score 3 (was 3): retail completes the rotating-flag OR and store before the angle duplicate and
+// the first axis load; ours hoists that load above the flag store and sinks the store below the
+// duplicate. Everything else agrees; only a normalizer in another unit keeps retail's order.
+// This round: the tail was re-ordered nine ways (the axis first, the axis last, the trigonometry
+// first, the flag first, the flag as a bitfield set, the rate first, the angle written at each use,
+// the axis between the trigonometry calls, the flag last) scoring 32/21/21/10/3/3/34/3/32; a
+// helper taking the axis by reference compiles identically (3), and the permuter's 72 tries in
+// 339 s found nothing below 3.
+// This round: letting the axis local's address escape (a pointer local at the caller, or the
+// helper reading its parameter through its address) puts retail's flag order back but squares the
+// components in i, j, k order instead of retail's k, j, i (14 and 11); the magnitude expression's
+// order does not change that (11 three ways, 12 with named squares), and a helper taking the
+// vector through a pointer to the pointer does not compile against its other two callers.
 // score 3 (was 3): this round: retail keeps the rotating-flag OR and store ahead of the
 // angle duplicate and the first axis load; ours still hoists that load above the flag
 // store and sinks the store below the duplicate. The axis copy-in and the normalizer
@@ -1287,6 +1302,11 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// score 4 (was 4): only the four register arguments of the 0xfd740 call differ: retail passes
+// effect index 1 in ecx, effect index 2 in edx, sound 0 in esi and sound 1 in edi, ours passes
+// the same four addresses in ebx, edi, esi and edx; that choice comes from 0xfd740's own body.
+// This round: nothing in this file changes it; the call site keeps retail's argument order and
+// the callee's own parameter order is not this lane's to change. BLOCKED-BY 0xfd740.
 // score 4 (was 4): this round: retail's 0xfd740 takes its six selector outputs
 // in the order (effect index 0, sound 2, effect index 1, effect index 2,
 // sound 0, sound 1), the first two on the stack and the last four in ecx, edx,
@@ -1525,6 +1545,17 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// score 315 (was 315): HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
+// retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
+// without the inline is 380. On that 304 form: retail keeps the pool pointer in EDX from the entry to the
+// owner loop and re-reads the projectile's tag for the 0xfd8b0 call, where ours keeps the tag in EAX and
+// re-loads the pool global inside the loop (differs from +0x5). A pool local with the root helper taking
+// the pool 302; typed field stores and a byte-cast tag read 304; the permuter's best (294 reduced, 293
+// full) needs a `volatile` cast, which is not allowed.
+// score 315 (was 315): retail expands the speed update inline after the 0xfbd40 call, keeping
+// index * 12 in EBP from entry and the definition in EDI; ours calls it, so the offset is never
+// kept and the entry differs at +0xb. Marking 0xfbfd0 `inline` expands it but scores 369.
 // score 315 (was 315): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
 // Speed update is still called instead of expanded; 1226/1261 bytes.
 // Native flag tests 380; complete water result 375; both 380; plain velocity-component

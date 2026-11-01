@@ -2143,7 +2143,7 @@ void sound_update_locations(void)
    fades it in over its transition time; slots no request takes fade out */
 // score 13 (was 13): retail adds the clamped unknown14 step in place and the fade-in step through a
 // copy register; ours does the opposite, so the two sites trade xmm1 and xmm2.
-// At 14 (was 17): retail adds the clamped unknown18 step through a copy
+// Earlier, at 14 (from 17): retail adds the clamped unknown18 step through a copy
 // register and adds the clamped unknown14 step in place; ours does the
 // opposite, so the two sites trade xmm1 and xmm2.
 // Round 29: target-first helper on the first three/four clamps 33/33; forceinline 33;
@@ -2176,6 +2176,15 @@ void sound_update_locations(void)
 // helper except the second loop's fade 13, unknown10/fade-in/fade-out as `+=` 14; none of the other 60 below 14.
 // J223: one receiver 176; elapsed read once 198; both 198; scalar bitmap 243;
 // bitmap with receiver/elapsed/both 245/228/228 (fast previews).
+// Lane 18 round 16 (one-link LTCG env, exact 13; fast): the existing bit_vector_test/bit_vector_set 13; early
+// `continue` for a NONE request and for no free slot 13; the unknown14 add as `+= PIN_126660` 77 (the fade-in add
+// then copies as retail, unknown14 still copies; the unknown18, unknown14 or fade-in add alone as `+=`, `x = x + PIN`
+// or `x = PIN + x` all give that code); `maximum` computed beside `step` 33; unknown10/fade-in/fade-out as `+=` with
+// the fade-out reading SOUND_SYSTEM and the search index declared in its for 14. Env only: any local renamed (same
+// code); the environment pointer before `step` 103; unknown14 before unknown18 19; a 700-form screen (helper or `+=`
+// per add, maximum local, fade-out locals, inverted fade test, transition-time local, continues, index scope) never
+// below 13: the three step adds come out copy/copy/in-place, in-place/copy/copy or copy/copy/copy, never retail's
+// copy/in-place/copy. Permuter (600 s, 63 tries) none below 13.
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
@@ -3297,6 +3306,11 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // dispatch 78; dispatch with complete role names 78; native fields with range-record reference 49; dispatch
 // with range reference 78; dispatch with shared class index 98; dispatch with range reference and class
 // index 98. Original body restored.
+// Lane 18 round 16 (fast; the one-link env inlines 0x221810, so not used): the next start index named before the
+// loop-end `sounds = g_4e637c;` 49 (same code: the reload still precedes the ternary); the loop end through an
+// inline (pool, index) next-datum helper with data_find_index 49; that helper in the for loop with `case 1:
+// continue;` 78; a helper taking only the index and reading the pool global after the start index, in the for
+// loop with `case 1: continue;` 78 and in the do-while 49.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
