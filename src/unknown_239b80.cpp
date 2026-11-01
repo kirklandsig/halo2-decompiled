@@ -567,6 +567,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 480: Shared native point-difference distance/angle/both producers
 // 203/213/213; with squared-length sum 203/213/213; paired squared terms
 // with/without the named sum 213/213. Original body restored; count/departure homes remain.
+// Round 495: Standard duplicate search with long/short result and short/long outer
+// ordinal 243/243/235/235; overlap CRT forms 261/251/268/268. Original body restored;
+// count/departure homes and persistent bound allocation remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

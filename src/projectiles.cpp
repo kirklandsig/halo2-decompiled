@@ -988,6 +988,9 @@ real function_30bf0(vector3f *v);
 // Y492: native real quotient producers optimal/solved/both 232/232/232;
 // double producers 246/273/264, both with entry result/double flight time 267/302.
 // All restored; frame, rounded-root scheduling and separate divisions remain.
+// Round 495: Whole fallback/default/publication CRT-copy subsets on the shared-scale/path
+// graph 232 each (seven forms); complete copies with entry result 245. Original body
+// restored; frame, rounded-root scheduling and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1844,6 +1847,10 @@ real function_17c900(short function_type, real input);
 // Y492: complete clamped time/lead/turn-amount producers in seven subsets
 // 348/348/348/352/352/352/352; all with clamped drift producer 366.
 // All restored; index/output transport and normalization/rotation homes remain.
+// Round 495: Complete normalizer input vector/scalar snapshots with reciprocal/result
+// variants 464 (eight forms); forced original graphs 410/348, forced shared-reciprocal
+// single-exit graphs 398/344 (344 raises other users 0 to 8 and 3 to 10). All helper
+// changes restored; stacked-index/output transport and component homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
