@@ -900,11 +900,20 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 
 /* adds the senders of the player's messages (at most 20) to the players
    list, except those given and those already on it */
-// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
+// score 81 (was 81): BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
+// that never writes EDX) all reload EDX, as for a callee built without LTCG; ours keeps the exclusion cursor in
+// EDX across it, so the sender takes EDI where retail spills it to [ebp+0x6c]. Round 129 (lane 5, plain,
+// diagnostic only): a copy of xuid_equal in a temporary /GL- file called from this loop: 121 at retail's
+// length (462 B; the call target counts), with the exclusion as `if (equal) is_excluded = true;` 66 (458 B:
+// the exclusion loop is byte-for-byte retail's; left are the volatile message read's store and reload, the
+// second getter's folded null test and one `lea eax`), that without the volatile read 148 (439 B: both
+// getter tests fold), with a message pointer stepped at the body's end 160 (439 B). Lead for the user:
+// 0x63d00 built without LTCG (a flags decision); retail keeps the getter null test on `&messages[i]`.
+// Earlier: the listing was re-read only. Retail keeps the excluded-XUID
 // cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
 // in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
 // Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
-// score 81 (was 81): this round's five declaration-order trials for the swapped count and
+// Earlier: five declaration-order trials for the swapped count and
 // sender homes: the count after the loop index, the sender held at function scope, the
 // exclusion flag declared before the sender, the exclusion flag held at function scope and
 // both of them at function scope; four of them score 81 and the flag-first one 80, too small
@@ -913,7 +922,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // Round 19: unchanged; the added count and the message pointer keep their swapped homes
 // (+0x68/+0x6c) and the sender stays in edi because our LTCG keeps the exclusion cursor in edx
 // across 0x63d00; still BLOCKED-BY 0x63d00.
-// score 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
+// Earlier: frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
 // Earlier: count/sender homes +0x6c/+0x68 remain reversed; nullable getter and exclusion cursor differ.
 // Exclusion pointer at use 82; native exclusion result 132; enumeration-count lifetime 82; format buffers swapped 81; getter force-inline declaration 81.
 // Byte added count 103; signed/unsigned word exclusion result 128/128; cumulative conditional 113; rejection guards 81.
