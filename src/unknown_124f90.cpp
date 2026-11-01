@@ -880,7 +880,7 @@ void sound_playback_acquire_reference(s_sound_playback *sound)
 }
 
 // @retail 0x1286b0
-void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index)
+void sound_playback_set_chunk(long sound_index, long definition_index, short pitch_range_index, short permutation_index, short chunk_index)
 {
 	s_sound_playback *sound = (s_sound_playback *)g_4e637c->data + (sound_index & 0xffff);
 
@@ -1401,6 +1401,11 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // swapped 16. Screened (compile-only), all folding the converted gain: by-value outer sum, the
 // add in place on it, real locals read before or after the class gain call, by-value real or
 // reference helper parameters, and (one diagnostic) `/Op`.
+// Round 121 (plain/fast): the outer sum in an s_decibels_view result 15; the result seeded from the converted
+// gain before the class gain call, then `+=` the inner sum 16; decibels_sum(inner, converted) 15; the converted
+// gain copied into an s_decibels_view and added in place 16; the add in place on the converted gain's long 16.
+// One-file LTCG probe (exact here): a struct-returning converter, by-value struct operands and a float-
+// consistency pragma (diagnostic) all keep the fold or move the conversions below the class gain call.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -2373,6 +2378,11 @@ real g_547f14;
 // combined `||` condition with a loudness local 42. Screened (compile-only, which reproduces our
 // tail exactly): the gain or the base summed in place, decibels_add into the gain, a flags word
 // local.
+// Round 121 (plain): loudness through the existing decibels_sum/decibels_add on the class gain base 63
+// (428 bytes) / decibels_add for both sums 54; the inner sum as a decibels_add long, loudness a real sum 63
+// (428 bytes); a by-value real sum helper 35; a pointer to the class gain base 35. Compile-only: every form
+// that sums before the flag tests folds the base load; only a float-consistency pragma (diagnostic, not kept;
+// it worsens 0x1251e0's x87 interpolation in the LTCG probe) gives retail's unfolded add before the tests.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {
@@ -2428,7 +2438,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
-// score 23 (was 23): the two set-chunk calls narrow their indices to char
+// score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
+// 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
+// delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
 // (byte loads, a sign-extended range index) where retail passes words, and
 // the delayed start sets flag0 before storing the start time. BLOCKED-BY
 // 0x1286b0 (its two index parameters are short in retail: 0x128ca0 widens
@@ -2440,6 +2452,12 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // order, `delay + time`, `+=` all hoist it); the pitch range local short 59; the named short
 // with the flags pointer 17 (left: the byte variant loads and the 0x219070 movsx); one time
 // local for both start-time stores 83 (825 bytes, the tails merge).
+// Round 121: 0x1286b0's two index parameters made short (retail's callers 0x128ca0 and
+// 0x21c400 sign-extend char fields to 16 bits for them), every call updated: 23 -> 17 (kept).
+// Then (plain-equivalent `--fast` with the set-chunk callers): the 0x219070 result in a named
+// short 15 (BLOCKED-BY 0x219070: only its movsx and the flag0 order are left); that with a short
+// range-index local 53; a short range-index local alone 53; the flags pointer (diagnostic) 13;
+// a short chunk index 17; literal zero chunk index and fade times 17, as one chained store 19.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -2503,7 +2521,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 			chunk_index = 0;
 			if (state->flags & 0x400)
 			{
-				sound_playback_set_chunk(result, tag_index, (char)state->variant0, (char)state->variant1, (short)chunk_index);
+				sound_playback_set_chunk(result, tag_index, state->variant0, state->variant1, (short)chunk_index);
 			}
 			else
 			{
@@ -2520,7 +2538,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 
 					arg_58ecd0 = function_218f50((s_looping_playback_definition *)definition, NONE, ((real)pitch_bounds[1] - lower) * state->location.scale + sound->pitch + lower);
 				}
-				sound_playback_set_chunk(result, tag_index, (char)arg_58ecd0, (char)function_219070(arg_58ecd0, definition), (short)chunk_index);
+				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, function_219070(arg_58ecd0, definition), (short)chunk_index);
 			}
 			sound->value_a0 = (char)rate_limit_stage;
 			sound->fade_end_time = chunk_index;
