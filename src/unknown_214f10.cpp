@@ -233,6 +233,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
 // 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
 // opened test on the array element 42.
+// Round 70 (lane 12, fast): the long result from the array element with the copy passed 42 (same code); the
+// long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
+// declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
+// retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

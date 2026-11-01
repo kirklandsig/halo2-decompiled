@@ -369,6 +369,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
 // the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
 // combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
+// Round 70 (lane 12, fast): indexed form 144 (492 bytes; count CX and zero EAX where retail has AX and ECX,
+// first in EAX where retail loads it into EDI); a short count local before or after the clears 177/177 (480
+// bytes: the short stays in BX, is extended into EDX for the copy and tested as `test bx, bx` at the loop
+// guard, where retail extends it once into EAX and tests EAX); on the indexed form the parameters as (mode,
+// cache_index) at the definition and the call 144 (same code), first as `current = first = previous` 144.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -477,6 +477,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
 // stays shared and EBP caches the last argument); the second virtual call on the local index 81;
 // `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
+// Round 70 (lane 12, fast), early bool result set after the attach (77, 160 bytes): with a header pointer named
+// in the arm for the object 77; the flag test as `== 0` 77; the NONE test, the flag test and the attach as one
+// if/else-if/else chain with an empty NONE arm 75; the value call after the block under `result && value` 77;
+// a bool result from the NONE test cleared in the flagged arm 69 (178 bytes). In retail EBP is pushed only around
+// the test because seven values are live there (this, entity, index, result, table, scaled index, data), as in
+// matched 0x656e0/0x17bf80/0x273480; ours shares the header address, so one register less is needed.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

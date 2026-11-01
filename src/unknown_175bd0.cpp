@@ -1774,7 +1774,7 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
-// score 9 (was 77): only the node/matrix entry order remains (round 67). Earlier: node/matrix entry order and
+// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70). Earlier: node/matrix entry order and
 // the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
 // The point computed into position, normalize3d and cross3f give retail's early up.j/up.k loads.
@@ -1859,6 +1859,11 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // [ecx + edx]`), so its arms differ. On node-first: the else arm copying a whole marker local 141 (774
 // bytes, 0x178360 56); the matrix arm reading the marker directly 218 (779 bytes, 0x178360 86); the arms
 // swapped 173; one markers base local for both arms 124; the scale test inverted (zero arm first) 156.
+// Round 70 (lane 12, fast with 0x178360): node-first re-measured 101 (the arms' identical `movsx edx, dx`
+// moves above the test); on it the matrix-arm marker as `source->markers + marker_index` 101, `matrix != NULL`
+// 101, one `markers` local for both arms 102 (0x178360 1); the parameters as (source, out, marker_index) or
+// (source, marker_index, out), the order retail's esi-before-eax setup suggests, 9/9 (callee unchanged, 0x178360
+// 2 each; with node-first 101/101), so the current order is retail's.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -3377,6 +3382,12 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // retail copies dwords); with an aggregate-initialised position 86; with the transform reading the location's
 // position 339. Compile-only screens of the 120 copy orders, real_point3d_set, the matrix at loop or function
 // scope and the normals first never give retail's x and y copies with z scaled in place.
+// Round 70 (lane 12, fast with callers and callees): on the house scale form (270): position/forward/up
+// declared apart from their copies 270, at function scope 270; forward/up through the existing
+// matrix_transform_vector 270 (same code); through the generic effect_matrix_transform_normal 383 (1431
+// bytes). Compile-only: a 179880-only point helper with a scale local, `*=`, `x * scale`, deferred
+// declarations, `!(scale == 1.0f)` or a vector local all give our y-in-place code; naming position.z
+// alone (or with y) moves z instead, naming x changes nothing: retail names position.y and not z.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
