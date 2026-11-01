@@ -404,6 +404,16 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
 // 141; available/success declared at the search block's top, available alone, available at function
 // scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
+// Round 13 (lane 18, fast): retail's frame slots follow reference counts: its result byte (two defs in
+// the sibling `bool result = true; if (... == NONE) result = false; else if (ready) { body } return result;`
+// shape) sits beside has_markers at 0xe/0xf, so the 113 form's single-def result spills to its own dword
+// and the frame grows by 8. The movement limit read at each use gives retail's select block exactly
+// (distance in XMM0) 110 (aligned 113 against 116); on the sibling shape (182, aligned 105) it gives 178
+// (aligned 101: frame and result byte as retail; the actor offset in EAX, not ESI, and the slot
+// parameter enregistered in ESI from the state stores, where retail spills the offset around the view
+// branch and reloads the slot into EBX at the unknown04 test); the state pointer formed at entry from the
+// parameter 113 / sibling 182 (same code); sibling + limit read + result declared before the actor 191.
+// Retail also inlines matched 0x1f86f0 (the 504 test), which sits in an /Ob1 file (a flags lead).
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

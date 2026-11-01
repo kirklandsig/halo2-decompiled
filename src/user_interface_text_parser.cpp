@@ -541,6 +541,13 @@ done:
 // before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
 // the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
 // its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 13 (lane 18, fast; parse_variant stays matched): a compile-only /O1 screen hoists 0x55c6e4 exactly
+// when the translator path uses that address twice (a different buffer at the copy removes it), and the
+// matched siblings here hoist theirs in retail too, so a file-flag change would not fit them (the earlier
+// favour-speed diagnostic stays a flags lead only). Real: numeric-to-retail case order with the tag read in
+// the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
+// with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
+// named once for the translator and the copy 32; the tag read in the translator call alone 45.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
