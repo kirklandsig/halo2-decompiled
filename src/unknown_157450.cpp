@@ -481,10 +481,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
-// score 29 (was 32): the present-team bit is computed into a named local before the mask update;
-// the player loop then updates the present mask in a register, which is retail's load/or/store.
-// Still the old mask is kept as a 32 bit value here and as a 16 bit one in retail, and the
-// post-loop compare and update read it from memory instead of from one reload into ecx.
+// Not kept (MiniMax R, 11-01, repeating C's trial above): the one-use present-team bit local 29
+// (was 32), kept only with a match. Remaining: the old mask is a 32 bit value here and a 16 bit one
+// in retail, and the post-loop compare and update read it from memory instead of one reload into ecx.
 // Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
 // becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
 // both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
@@ -616,9 +615,7 @@ void function_158140(void)
 
 		if (team != NONE)
 		{
-			dword team_bit = 1 << team;
-
-			present_teams |= team_bit;
+			present_teams |= 1 << team;
 			if (!(player->flags & 2))
 			{
 				playing_teams |= 1 << player->team;
@@ -4309,9 +4306,10 @@ struct s_score_zone_view
     short count;
 };
 void function_15fe20(long team_index, color3f *color);
-// score 45 (was 88): the two team-color copies go through named color3f locals (retail loads all
-// three words before it stores any of them), and the zone-presence shift count is masked to a byte
-// (`iterator.index & 0xff`), which gives retail's `mov cl, byte ptr` reload of the spill slot.
+// Not kept (MiniMax R, 11-01): the two team-color copies through one-use named color3f locals plus
+// the zone-presence shift count masked to a byte (`iterator.index & 0xff`, for retail's
+// `mov cl, byte ptr` reload) measured 433 after the merge with main (the lane reported 45); the
+// mask alone is 87 (was 88). One-use locals are kept only with a match.
 // The remaining differences are register homes (the mode global in EDX against retail's EAX, the
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 // score 88 (was 88): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
@@ -4506,8 +4504,7 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                     function_159130(best_score, text);
                     unicode_string_copy(display->rival_text, text, 8);
                     color3f color;
-                    color3f chosen_color = *function_7f720(&color, (short)best);
-                    display->rival_color = chosen_color;
+                    display->rival_color = *function_7f720(&color, (short)best);
                     display->rival_score = best_score;
                     display->leading = score > best_score;
                     display->rival = true;
@@ -4523,8 +4520,7 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                 }
                 display->score = score;
                 color3f color;
-                color3f own_color = *function_7f720(&color, player->team);
-                display->color = own_color;
+                display->color = *function_7f720(&color, player->team);
             }
             else
             {
@@ -4585,7 +4581,7 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                 iterator.data = g_4e8c24;
                 iterator.absolute_index = NONE;
                 iterator.index = NONE;
-                while (player_iterator_next((long *)&iterator)) present |= 1 << (iterator.index & 0xff);
+                while (player_iterator_next((long *)&iterator)) present |= 1 << iterator.index;
                 for (long zone = 0; zone < zones->count; zone++)
                 {
                     if (zones->indices[zone] != NONE)
