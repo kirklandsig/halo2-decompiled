@@ -146,6 +146,13 @@ extern real g_4c9798[36];
 // Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
 // each with coordinated pixel-size/mode names 230; coordinated names alone and
 // diameter lexical rank 230. Original declarations, names and body restored.
+// Round 44 (lane 14): retail rounds the width (size / aspect) first into ESI and the height into EDI
+// and passes them to 0x1ddd0 in ESI/EDI with the index in ECX; ours keeps 0x1ddd0's width on the stack
+// (BLOCKED-BY 0x1ddd0). Width rounded first with the fix-up on the width 238; with long mode and height
+// limit 250; with long mode only 239; border as 0.75 * width / maximum or width / maximum * 0.75 230
+// each (every spelling compiles to the divide first; retail multiplies by 0.75 first). With 0x1ddd0 in
+// retail's convention (not kept: 0x1ddd0 21 -> 24, its caller 0x2d140 637 -> 686): 226; width first
+// 218; width first with long mode 189 (fast); with long mode and height limit 245; long height limit 240.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

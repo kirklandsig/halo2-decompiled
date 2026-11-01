@@ -3898,71 +3898,9 @@ void function_147af1(long first, long second, c_render_window *window);
 struct s_2f800_view;
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 
-// score 8 (was 34): two store orders differ (the tail and 0x13680's call now agree). The counter
-// g_4ba038 is stored after the kind byte, and the g_4ba010 clear sinks past the camera copy; both land where
-// retail puts them once g_4ba038 and g_4ba010 are address-taken (diagnostic only, 26), so
-// retail keeps them in an address-taken struct (0x4ba074 is the only immediate retail takes
-// in 0x4ba000-0x4ba07f) whose members are defined in other lanes' files. The tail pushes the
-// flag as a dword where retail passes it to 0x13680 in bl (BLOCKED-BY 0x13680).
-// Tried: flag clear before the first copy 34; counter increment one statement earlier 34;
-// kind stored after the sky index 37; flag clear as the first store 34; camera default as a
-// named source local 153; mode-word/auxiliary-word/final-byte frame field widths, subsets
-// 1-7 and unsigned mode bits, 34 each (auxiliary-word forms lose the caller 0x2b790);
-// geometry copied into the frame-record block 34; whole camera/projection storage operands
-// 34; counter increment first 153; frame declared at the top 34; one shared final call 34.
-// the stores to g_4ba038 and g_4ba010 land in other places than retail's (the
-// counter before the kind byte, the flag clear between the two block copies). Both stores are placed
-// by the compiler, not by the order of the statements: with the addresses of g_4ba038 and g_4ba010
-// taken anywhere in the program they land exactly where retail puts them (probed by taking them in
-// src/unknown_02c560.cpp, which takes this function to 26), so retail keeps them in an address-taken
-// struct whose definitions are in other lanes' files. The flag is loaded as a dword where retail loads
-// a byte, and the tail calls 0x13680 with the flag pushed where retail passes it in bl; both follow
-// 0x13680's convention, which retail has as one bool in bl and a plain ret (BLOCKED-BY 0x13680).
-// Tried: the flag passed from the frame's copy 34. Round 93: flag clear before the first copy 34;
-// counter increment one statement earlier 34; kind stored after the sky index 37; flag clear as the
-// first store 34; camera default as a named source local 153. Round 187: native mode-word/
-// auxiliary-word/final-byte subsets 1/2/3/4/5/6/7 and all unsigned-mode bits 34 each (auxiliary-word
-// forms lose a caller). Round 83: flag clear as `false` 34; counter as `+= 1` 34; kind stored before
-// the counter 34; flag clear after the view copy 34; `enabled != false` passed to 0x13680 40.
-// the stores to g_4ba038 and g_4ba010 land in other
-// places than retail's. Both stores are placed by the compiler, not by the
-// order of the statements: with the addresses of g_4ba038 and g_4ba010 taken
-// anywhere in the program they land exactly where retail puts them (probed
-// by taking them in src/unknown_02c560.cpp, which takes this function to 26),
-// so retail's program took those addresses somewhere this tree does not.
-// The flag is loaded as a dword where retail loads a byte, and the tail calls
-// 0x13680 with the flag pushed where retail passes it in bl; both follow
-// 0x13680's convention, which retail has as one bool in bl and a plain ret
-// (BLOCKED-BY 0x13680). The flag passed from the frame's copy 34.
-// Round 93: both store orders (the counter before the kind byte, the flag
-// clear between the two block copies) are retail's once g_4ba038 and
-// g_4ba010 are address-taken (diagnostic only, 26): retail keeps them in an
-// address-taken struct, whose definitions are in other lanes' files. Flag
-// clear before the first copy 34; counter increment one statement earlier
-// 34; kind stored after the sky index 37; flag clear as the first store 34;
-// camera default as a named source local 153.
-// Round 187: Native mode-word/auxiliary-word/final-byte subsets 1/2/3/4/5/6/7 and all unsigned-mode bits 34 each; auxiliary-word forms lose caller. Original declarations restored; shared-store alias and protected flag convention remain.
-// Round 18 (lane 11): counter increment first or after the sky index 34/34;
-// flag clear after the second block copy or before the kind store 34/34 (the
-// compiler places both stores the same way); the flag passed from the saved
-// frame record 96.
-// the stores to g_4ba038 (the counter lands after the kind byte) and g_4ba010
-// (the flag clear sinks past the camera copy) land in other places than retail's, and the tail
-// calls 0x13680 with the flag pushed (loaded as a dword) where retail passes it in bl (one bool in
-// bl, plain ret: BLOCKED-BY 0x13680). Both store orders are placed by the compiler, not by the
-// statements: with the addresses of g_4ba038 and g_4ba010 taken anywhere in the program they land
-// exactly where retail puts them (diagnostic only, 26), so retail keeps them in address-taken
-// storage whose definitions are in other files. Tried: flag clear before the first copy 34, as the
-// first store 34, after the camera copy 34; counter increment one statement earlier 34, as the
-// first store 34, after the sky index 34; kind stored after the sky index 37; camera default as a
-// named source local 153; the flag passed from the frame's copy 34; native mode-word/auxiliary-
-// word/final-byte parameter widths 34 (auxiliary-word forms lose caller 0x2b790); the whole camera
-// struct as the copy destination 34; the frame-records field as the first copy's destination 34.
-// Round 26 (lane 14, fast; g_4ba010 sits right after g_view_context_storage and both are defined
-// in src/unknown_02c560.cpp, so the address-taken block can't be declared here: BLOCKED-BY the
-// storage definitions there): the camera default moved down to the frame copy 113 (loses 0x2b790);
-// counter as `g_4ba038 = g_4ba038 + 1` 8; the first copy into frame_records with its sizeof 8; flag
-// clear after the three render calls 23; the view copy before the scalar stores 80 (loses 0x2b790).
+// MATCH (was 8): the frame counter and the flag live in storage whose address retail takes, so
+// their stores keep their place among the other render-global stores and block copies; they are
+// written through their own addresses here for that (the full check loses nothing).
 // @retail 0x2ba10
 void function_2ba10(s_2f970_view const *view, long cluster, long player,
     byte const *camera, bool enabled, long leaf, bool invalid, vector3f const *sky_color,
@@ -3977,11 +3915,11 @@ void function_2ba10(s_2f970_view const *view, long cluster, long player,
     g_4b9ee8 = invalid;
     g_4b9ed8 = object;
     g_4b9edc = object_index;
-    ++g_4ba038;
+    ++*(dword *)&g_4ba038; /* address-taken in retail: see above */
     g_4b9ee9 = kind;
     g_4b9eec = sky_index;
     memcpy(&g_4b9ef0, geometry, 0x120);
-    g_4ba010 = 0;
+    *(byte *)&g_4ba010 = 0; /* address-taken in retail: see above */
     memcpy(&g_4b9da0, view, 0x74);
     function_2fd90((s_2f800_view const *)&g_4b9da0, (box2f const *)sky_color, (byte *)&g_4b9e14);
     function_3d2c0();

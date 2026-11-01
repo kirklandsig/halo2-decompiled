@@ -194,6 +194,10 @@ bool function_01dd60(long index, long *width, long *height)
 // expression with a named select 23; 0x1df20's three-statement packing with the select stored
 // directly and copied to the element 23 (width EDX, height ESI); that with an if/else store 40
 // (91 bytes); packing from the stored width/height fields 25. The shifts fold in every form.
+// Round 44 (lane 14): no width reference, with `value = e->flag94 ? value : 0;` before the width/height
+// stores, gives retail's exact convention (index ECX, width ESI, height EDI, plain ret) 24: only the
+// folded shifts differ. Callers then: 0x48ee0 226 (189 with its width rounded first and a long mode),
+// 0x2d140 637 -> 686 at retail's 2652 bytes (aligned 593 -> 543), 0x335e0 42. Not kept (score rises).
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {
