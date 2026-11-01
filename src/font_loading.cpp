@@ -588,6 +588,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 285: short fill counters switch/ordinary/both 181/172/191; word counterparts
 // 181/172/191; both byte/signed-byte 178/178. Original helper, decoder and counters restored;
 // alpha extension, literal assembly and two-run reuse remain.
+// Round 290: paired word color with byte/signed-byte/short/word alpha and word/long helper result,
+// 201/209/201/205/92/91/92/91; frame 0xc agrees throughout. Original helper and decoder restored;
+// parity extension, literal assembly and two-run residency remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

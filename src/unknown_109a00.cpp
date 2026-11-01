@@ -494,6 +494,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
 // 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
 // body and call inputs restored; input register pair and early physics-pointer spill remain.
+// Round 290: actual default-body field captured once, char/long value with short/long result,
+// original/converted center, 115/149/267/257/265/257/272/257. Converted centers keep frame 0x44
+// and caller 11 versus 2; original helper, search and body restored. Entry roles and early physics spill remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

@@ -298,6 +298,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 286: Existing unit-interval producer lower/upper early returns 661/660;
 // lower/upper separate result 615/621; lower/upper conditional result 661/660;
 // lower/upper default guarded result 646/711. Original helper and body restored.
+// Round 290: actual index-output default owned by its provider, short/char palette with immutable
+// tag-result/readonly-record combinations, 703/703/703/703/699/699/699/699; frame 0x4820 agrees.
+// Original caller default, field observations, helpers and body restored; palette/record and SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

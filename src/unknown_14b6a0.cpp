@@ -353,6 +353,9 @@ void function_14bac0()
 // Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
 // 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
 // pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 290: request-array field indexing, captured/repeated base with native-recipient/bounds-scope
+// combinations 285/285/271/273/281/281/279/279. Frames 0x50/0x44/0x54/0x50 and 0x50/0x44/0x50/0x50;
+// original persistent request pointer, points, selected unit, observations and both traversals restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

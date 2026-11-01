@@ -487,6 +487,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // success 288/288/289/304; result-conditioned finite loop 312/312/311/328. All preserve the thirty-pump
 // sequence but shrink the frame to 0x34 and grow code. Original retry phase, clocks, helpers, file policy
 // and full body restored; frame 0x3c/0x40 and status/allocation/output homes remain.
+// Round 290: existing retry producer on the entry-result/Boolean graph, direct-mode/format-field/movie
+// observation masks 0..7, 291/291/279/279/313/313/285/285; all frames 0x3c. Exact-only elapsed
+// precision, include, clocks, calls and original body restored; frame 0x40 and instruction-policy gaps remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
