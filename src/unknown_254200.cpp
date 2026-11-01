@@ -377,6 +377,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // (diagnostic) 29 (the y fold stays, so it is not the size's symbol or slot); the size computed after
 // 0x1cf50 26 (as before); the last quad's texture calls through D3DDevice:: 18; the size as a
 // `real const &` 18. All restored.
+// Round 54 (lane 10, fast): upper coordinate named at its first use 362 (2276 bytes); the depth constant as
+// `(real)0xffffff` 18 (same code); the size ternary inverted 19; size-first x and y sums in the last two
+// vertices 18; the size computed after the blip quad's Begin 85; the size defaulting to 32 and overridden
+// for one view 90 (2256 bytes); the 3rd/4th y written `y - -size` (diagnostic) 64 (2263 bytes, a negation).
+// 0x254490 shows the same reload swap: after a
+// reservation call retail reloads the live xmm values in the order they were defined, ours in reverse.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -146,6 +146,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // dispatch keeping only `if (text != NONE)`, 548 (2352 bytes); the null-datum guard as a wrapping if 330 (same
 // code); the session-player lookup as if/else 330 (same code). The suffix buffer's home also needs retail's
 // re-derived `lea` after each 0x230134 call (an open callee case: BLOCKED-BY 0x230134).
+// Round 54 (lane 10, fast; control 330): received text as if/else re-checked 661 (2338 bytes: the NONE
+// test threads but the bool homes reorder); the pending bit chosen by a shift count `>> (friends ? 12 :
+// 10)` 368; the identity pointer as a conditional expression 625; the visibility as a plain `!empty &&
+// !self` 442; the text id declared before the message buffer 330 (same code); the empty row's flags
+// cleared in one chained assignment 344. 0x230134 takes its buffer in ESI (and the string id in ECX).
 // Round 279: Existing status producer writes the real final payload directly, before/after
 // the disjoint range helper, crossed with constructor-owned zero and native flag bits:
 // 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.

@@ -467,6 +467,11 @@ extern "C" void _ReadWriteBarrier(void);
 // step reading iterator->data at each use (data_find_index scan) 162 with the barrier (frame 0x10, g_4e0300 no
 // longer hoisted, but the pool forwarded into EDI for the scan and the element), 152 without it; the lookup
 // through the existing function_badc0(object_index, 3) 122 (inlined, the same code).
+// Round 54 (lane 10, fast): the iterator set up through a file-local inline initializer taking the pool 122
+// (same code); the shared step reading the iterator's pool again for the element, or its scan reading it
+// directly, 122/122 (copy propagation merges the reads); the unit getter __forceinline 122 (same code); its
+// result filled in an if/else 158 (460 bytes); the object index read once per pass into a named local used
+// by every call 152 (476 bytes); the barrier moved inside the unit test 148 (476 bytes). All restored.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

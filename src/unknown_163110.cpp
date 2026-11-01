@@ -899,6 +899,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
 // Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
 // operands fixed in the unrolled loop, flipped in the remainder loop).
+// Round 55 (lane 10, fast): retail follows the source's operand order in the remainder classification
+// loop's j term and in the clip denominator/distance products, ours swaps some of them. The plane pointer
+// const 115 (same code); the classification index declared in the for 115 (same code); the two planes as
+// separate locals 242 (1830 bytes); the negated forward vector computed before plane 0's copy 426, right
+// after plane 0's copy 133.
 // Round 37 (lane 15, fast): that pointer used for all three plane-0 negations 251 (1867 bytes); the j/k-only
 // diagnostic re-measured 113 (the e4.i load stays after the copy: its gain is in the later classification
 // operands); plane 0's d negated before its normal 143; plane 1's negated vector computed before plane 0 426;

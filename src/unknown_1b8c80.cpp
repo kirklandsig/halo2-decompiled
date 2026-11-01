@@ -1456,6 +1456,12 @@ void function_1f86a0(long actor_index);
 // the element 240 (862 bytes); `const byte` mask 134; first entry fetched before the loop with the step at its bottom
 // 134; diagnostic `long` mask 248 (873 bytes: the mask leaves BL but the CSE'd flags byte takes it; the entry stays in
 // memory). The entry loses EBX to every byte candidate.
+// Round 51 (lane 10, fast; control 134): the decline decided in an if/else into a named bool 134; the decline
+// test negated with the join attempt first and the decline in the else 134; the decline arm ending in `continue`
+// 134; entry/element/specified renamed (slot_entry, joint, has_object: same-size slots sort by name) 134; the
+// joint index declared first 134 (all the same code). Retail's frame is mask byte F+3, entry home F+4, actor F+8,
+// iterator F+0xc; ours has entry F+0, actor F+4, iterator F+8 (same order) with the mask in BL, so the open
+// difference is the callee-saved choice (retail gives EBX to the entry), not slot order.
 // Round 39 (m3 lane 14, fast): the FORMS-slot-data-block form (the state read through `slot->unknownc` as a data
 // struct with offsets 0xc lower, its bool and the +0x24 short through it) 134 (same code), declared between the
 // actor and the unit 134; the iterator declared at the top 134; joint_index and entry declared at the top 134; the

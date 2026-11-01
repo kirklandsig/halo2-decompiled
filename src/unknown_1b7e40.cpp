@@ -414,6 +414,10 @@ evaluate:
 // view and velocity declared at function scope 73; `if (!view) return result;` after the velocity query 73;
 // the near arm as `result = 0x10;` with the far tests in its else 78. Our build also inlines 0x25d740 in
 // unmatched 0x261510, where retail calls it.
+// Round 55 (lane 10, fast; 0x25d740 listed, call still inlined in every form): velocity declared at the
+// function's top 73; the far result assigned (`result = g_46fbe8;`) and returned at the end 78; view and
+// velocity declared right after the node lookup 73; the near test with the call in its else arm and no early
+// return 78; the prop compare as a guard return (`!=`) 73.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

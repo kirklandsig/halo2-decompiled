@@ -1949,6 +1949,11 @@ void function_269250(long clump_index, long actor_index);
 // selection memory-only as retail, but the walk's join loses the clump-index copy, so the not-found path threads to
 // the exit and the homes rotate); the walk struct declared once outside the actor loop 126 / 128; selection and best
 // declared before the walk 129.
+// Round 51 (lane 10, fast): one `clump_index` local for both the selected and the created clump 89 (482 bytes), with
+// the in-arm compare 126 (480); that with the selection stored before the best score 89, in-arm 126; the in-arm
+// compare with the score declared at the top of the walk body 126; the group declared in the while condition 89.
+// Retail never gives the selection a register (stored from ESI in the walk, reloaded after the post-loop calls,
+// unlike the created index in EDI), so the walk's pool field is scalarised into EBX; ours gives EDI to the selection.
 // Round 34 (plain checks): in-arm compare with the selection stored first 126; on it `actor->unknown07c != selected`
 // 126, best declared and stored first 126 (both same code), the team read once into a `short` before the scan 168
 // (497 bytes), creation arm first 130.

@@ -202,6 +202,16 @@ short __stdcall function_2551c0(long actor_index)
 // Round 48 (lane 10, fast): all three vector components named in the rotation helper (read at each of
 // their uses), declared k/j/i, k/i/j, j/k/i or i/k/j: 116/116/115/116 (816 bytes; the frame grows to 0x64);
 // the score's `dot + 1` named as an alignment local 56 (815 bytes).
+// Round 51 (lane 10, fast): the score's `dot + 1` named (`alignment`) 56 (815 bytes); `1.f - cosine` named in the
+// rotation helper 56 (815); the helper's dot named before the projection 56 (815: these three flip the projection
+// dot to i first and swap v.i/v.k between XMM4/XMM5, cross_j's early product becomes retail's); vector_k plus the
+// named `1.f - cosine` 36 (815, same as vector_k alone); outputs as `v * cos - cross * sin + projection * axis`
+// 133 (814). Compile-only screen (SSE block only, about 300 forms): the cross statement order, the direction copy
+// (initialised, assigned, before or after the trace, declared outside the loop), forward/best declaration order,
+// the score dot's argument order and 1-6 unused locals never move the score dot from k, i, j (j as d * f); only a
+// written-out dot in i, k, j order with direction first gives retail's j, k, i (not keepable: dot3f by hand, and the
+// rotation then reschedules); no form on the vector_k base gives retail's cross_k product (v.j copied, axis folded).
+// The state read through a typed `slot->unknownc` data struct (offsets 0xc lower) 89 (820 bytes).
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

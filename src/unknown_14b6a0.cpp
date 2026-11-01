@@ -296,6 +296,17 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 53 (lane 10, fast): retail adds the offset to its own position local (read back from +0x20, the
+// destination's slot) after 0xb9dd0, reads the target unit from the player at both calls, and steps the second
+// scan through the out-of-line 0x6b380 on a 16-byte iterator at +0x2c. The position local used directly 245
+// (1048 bytes); the second scan through data_datum_iterator_next 229 (1036); both 238 (1052, frame 0x44); both
+// with the unit read from the player at each call 259 (1048, frame 0x48: position shares the destination's
+// +0x20, the second iterator sits at +0x2c, the alternate at +0x3c, both flags in retail's homes; only the centre
+// sits apart, at +0x48 with the first iterator, where retail puts it at +0x2c and the first iterator at +0x3c);
+// that with the flags declared the other way 254; with one point for both markers and the centre (declared
+// after/before/with destination and alternate) 262/262/262 (frame 0x48, homes reshuffled); with the centre,
+// height and radius in their own block 259 (same code). Retail also re-reads the visit counter at each test
+// where ours keeps the incremented value in ESI and reloads it after 0xb75a0.
 // Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
 // points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
 // (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte
