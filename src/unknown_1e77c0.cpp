@@ -481,22 +481,7 @@ struct s_request_profile
 	byte field_148[0x1e0 - 0x148];
 };
 
-// score 108 (was 108): aligned frame 0x1e8 agrees; player/version registers and flag reads differ.
-// Default profile 164; early memset 150; unsigned version 143; aligned byte prefix 180;
-// unsigned local index 143; aligned dword prefix 180; common bits 370; separate tick reset 335.
-// All use ordinary player data and native loops; original profile and body retained.
-// A plain 32-entry loop of `ticks = 0; state = function_1e7a10(local_index, i) ? 5 : 0;` gives retail's
-// per-element flag reloads and bool select but stays rolled (337, 357 bytes): with if/else, a
-// pointer local, a bool local, short/int/unsigned/do/while counters, an inline transition helper,
-// inline/forceinline on 0x1e7a10 alike; noinline 373; the four-way body calling it 154.
-// Native pointer destinations with matched per-element query: index less/not-equal bounds, ticks first
-// 347/347 and state first 349/349; pointer less/not-equal bounds, ticks first 320/320 and state first
-// 334/334. All remove qualified global data reads.
-// DL192: Native transition record publication, Boolean/full query, flat/grouped loops 221/222/196/189;
-// complete array clear before those queries 196/163/196/187. Ordinary global load throughout; all restored.
-// Round 421: matched full-value query in one native 32-entry loop, indexed long/short/word/dword
-// counters 348/321/321/348; advancing destination with those counters 349/321/321/349.
-// All remove the inherited qualified global data read; original body restored at 108/540.
+/* copies each requesting player's profile flags into its local state and resets the 32 transitions */
 // @retail 0x1e73b0
 void function_1e73b0()
 {
@@ -506,13 +491,12 @@ void function_1e73b0()
 		long player_index = local_index == NONE ? NONE : g_4e8c20->entries[local_index];
 		if (player_index != NONE)
 		{
-			s_player_request_view *player = (s_player_request_view *)(*(byte *volatile *)&g_4e8c24->data + (player_index & 0xffff) * 0x21c);
-			long profile_index = *(long *)((byte *)player + 0x24);
-			if (profile_index != NONE)
+			s_player_request_view *player = (s_player_request_view *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c);
+			if (*(long *)((byte *)player + 0x24) != NONE)
 			{
 				s_request_profile profile;
 				long version;
-				s_player_slot *slot = &g_54e8e0[profile_index];
+				s_player_slot *slot = &g_54e8e0[*(long *)((byte *)player + 0x24)];
 				if (slot && (*(byte *)slot & 0x10))
 				{
 					profile = *(s_request_profile *)((byte *)slot + 0x18);
@@ -523,37 +507,30 @@ void function_1e73b0()
 					memset(&profile, 0, sizeof(profile));
 					version = NONE;
 				}
-				s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
-				memcpy(state->request_flags, profile.flags, sizeof(profile.flags));
-				state->version = version;
-				dword flags0 = state->request_flags[0];
-                dword flags1 = state->request_flags[1];
-                for (long i = 2; i - 2 < 32; i += 4)
+				memcpy(((s_local_player_state_view *)g_51e9c0)[local_index].request_flags, profile.flags, sizeof(profile.flags));
+				((s_local_player_state_view *)g_51e9c0)[local_index].version = version;
+				for (long i = 0; i < 32; i += 4)
 				{
-					{
-						s_request_transition *transition = &state->transitions[(i - 2)];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << (i - 2))) ? 2 : 0) + ((flags0 & (1 << (i - 2))) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
-					{
-						s_request_transition *transition = &state->transitions[(i - 1)];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << (i - 1))) ? 2 : 0) + ((flags0 & (1 << (i - 1))) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
-					{
-						s_request_transition *transition = &state->transitions[i];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << i)) ? 2 : 0) + ((flags0 & (1 << i)) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
-					{
-						s_request_transition *transition = &state->transitions[(i + 1)];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << (i + 1))) ? 2 : 0) + ((flags0 & (1 << (i + 1))) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].ticks = 0;
+					if (function_1e7a10(local_index, i))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].ticks = 0;
+					if (function_1e7a10(local_index, i + 1))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].ticks = 0;
+					if (function_1e7a10(local_index, i + 2))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].ticks = 0;
+					if (function_1e7a10(local_index, i + 3))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].state = 0;
 				}
 			}
 		}

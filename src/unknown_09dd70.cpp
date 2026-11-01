@@ -456,81 +456,6 @@ static __forceinline byte *function_9d952(long arg_0)
     return (byte *)((s_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
 }
 
-// score 4 (was 4): only the final field_f4 copy into the object's +0x2b8 differs (in both duplicated
-// tails): retail moves it through EAX, ours through ECX. The field_92 read precedes the +0x2a8 store,
-// as retail has it (a field_92 local read before the object lookup, 12 -> 4).
-// retail reads field_92 before the +0x2a8 store (a field_92 local read before the
-// the final field_f4 copy into the object's +0x2b8 goes through EAX in retail
-// and through ECX in ours; the field_92 read now precedes the +0x2a8 store, as retail has it.
-// object lookup gives 4, kept out: one use) and copies field_f4 at the end through EAX (ours ECX).
-// Lane 10 r15: 0xd0e00 arm first 37; camo arm as a (unit, flag) inline helper 12; final store
-// indexed from the +0x2b0 field 12; field_f4 read through the parameter 12; field_92 local with a
-// dword field_f4 copy 4 (the tail stays ECX).
-// Round 84: 0xd09c0's own body now keeps its unit index in EBX, so it takes it there as retail (with the
-// field_92 local 93 -> 11); a loop-top element pointer for every slot field gives retail's +0xb8 cursor
-// (11 -> 4 with that local, 12 without); a field_c pointer 11, a field_6 pointer 11 (+0xb2). Final
-// copy: store in both arms 31, handle read at each use 4, dword copy 4, camo-arm object lookup at each
-// use 39/55.
-// Round 74: mask local for the shared attachment call (as the matched sibling overrides) 196; word slot
-// counter 196; long flags local 196; slot record pointer 224; signed slot loop test 196.
-// retail keeps the flags in ebx (reloaded from the parameter after calls), the weapon-slot loop
-// counter as a 32-bit value (inc/cmp 4/jb, no separate down counter) and the slot bit as the
-// masked flags value (and/test, not setne).
-// External packet/attachment/both references 196/224/224; shared shift ordinal 238;
-// named parent-kind mask 196; parent-validity predicate 196; packet plus ordinal 238;
-// attachment reference, ordinal and parent predicate 226.
-// entry flags/object/record registers and attachment-call inputs differ.
-// Primary word flags 241; explicit missing-player guard 252; shifted primary bool 227;
-// both bit extractions 252; byte slot 196; direct missing-parent slot 241;
-// primary word plus byte slot 241; word two-byte-copy ordinal 197 (828 bytes).
-// Object receiver at each call-free use: player stores 226; parent stores 230;
-// packed stores 249; marked stores 226; player/parent 238; parent/packed 247;
-// packed/marked 256; all four 239 (869 bytes). Original receivers restored.
-// Round 71: dword or long slot counter 234 (814 bytes; the loop control then matches);
-// masked slot bit 228; masked bit with dword counter 246 (804 bytes); flags parameter
-// used directly instead of the local copy 196 (identical code).
-
-// Fixed bits 10/11/12/13/22/23 shifted separately 196 each; lower four and all 196/196.
-// Round 199: Native packed packet cell 196; with word copy ordinal 197; captured low-word publication
-// 223; both 196; unsigned copied cell and the same three combinations 196/197/223/196 (fast). All
-// restored.
-// Round 207: named initial low mask, packet receiver after initial callback, both, shared object
-// workspace across four phases, shared workspace with either/both, and shared final outer receiver
-// all 196. Original observations and protected interfaces restored.
-// Round 214: array-end attachment cursor with pointer-derived short/word ordinal and Boolean/masked
-// selection 221/223/221/223; native long/dword ordinal pairs 227/237/227/237. All restored.
-// Round 148: native object fields at player, parent, packed identity and final-update receivers
-// 196 each; player+parent, packed+final, first three and all four 196 each.
-// Round 240: complementary attachment selection bool/byte/short/long 229/229/240/233;
-// with a native dword slot ordinal 250/250/254/250. All restored; entry register roles remain.
-// Round 179: library two-byte copy with short/long/dword attachment counters 251/252/252;
-// masked slot value with those counters 253/259/259; direct flag observations 251;
-// direct flags plus masked value/dword counter 259. Original byte loop restored.
-// Round 59: the parent through the existing object getter 196 (same code, kept); signed flags 196;
-// player index as a ternary 199 (object index moves to ebp as in retail, first difference +5, but
-// packet/flags take ebx/edi where retail has edi/ebx); with the packet declared first 199; with a
-// dword slot counter 241.
-// Round 192: initial-update, handle-lookup and child-flag provider inline declarations, singly,
-// all pairs and together 196 each; separate noinline declarations on all three 196. All
-// restored; flags/packet/object registers and protected attachment conventions remain.
-// DL round 156: consistent requested handle 228; unsigned player/parent 196/196;
-// requested with player/parent 228/228; both resolved 196; all with signed/unsigned
-// requested handle 228/228. Original observations, handle types and short loop restored.
-// Round 28 (m3 lane 12): retail loads the object-pool global once ahead of the 0x800 parent test and
-// ahead of the 0x400000 test, reusing it in both arms and the next block (ours reloads it per block), and
-// keeps the flags in esi there. Packet declared before the flags 196; datum result at function scope 227;
-// slot shift named once 238; getter plain inline 196; unit index copied to a local 196.
-// Round 14: raw mask 229; raw mask with long counter 178; Boolean with long counter 206;
-// parent/tail/both pool sharing 207/178/207; outer mask 178; second mask reread 101 kept;
-// original helper 101; early field_92 local 169; value cursor 223.
-// Round 221: Scalar memcpy tail/both publications 12/12; with branch-produced player result 153/153;
-// memmove tail/both 34/89, with branch-produced player result 158/172. All restored.
-// Round 88: +0xd4 field read at each use 4; copied value named first 4; +0xd4 local at block scope 4;
-// flag-arm object pointer at block scope 4; dword +0xd4 local with a braced else arm 4; a 600 s
-// permuter run (11 tries), none below 4.
-// Round 173: native final outer/marked/child object receivers, all seven subsets 4 each;
-// all native receivers with unsigned child handle 4. Original restored; both tail copies
-// still use ECX instead of EAX, with the entry and attachment loop otherwise exact.
 // @retail 0x9d950
 void c_unit_type::v31(long arg_0, long arg_1, long arg_2, long arg_3)
 {
@@ -614,9 +539,9 @@ void c_unit_type::v31(long arg_0, long arg_1, long arg_2, long arg_3)
             byte *local_19 = function_9d952(arg_0);
             *(dword *)(local_19 + 0x134) |= 8;
             *(real *)(local_19 + 0x2b8) = 0.25f;
-            long local_20 = *(long *)(function_9d952(arg_0) + 0xd4);
-            if (local_20 != NONE)
-                function_b58c0(local_20, 0x800000);
+            byte *local_20 = function_9d952(arg_0);
+            if (*(long *)(local_20 + 0xd4) != NONE)
+                function_b58c0(*(long *)(local_20 + 0xd4), 0x800000);
         }
         else
             function_d0e00(arg_0, 1.0f);

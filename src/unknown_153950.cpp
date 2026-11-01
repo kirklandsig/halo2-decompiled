@@ -496,6 +496,14 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // first in the projection 59. Round 45: an inline declaration on the rotation helper 13;
 // scale/rotation/both declared earlier 13/13/13; descriptive scale/rotation names 13/13;
 // rotation declared before scale 13; sine/cosine declared earlier 13.
+// Round 16 (lane 2): the view angles passed to direction_from_angles straight from the entry 264
+// (1084 bytes, plain); with a same-file copy of the rotation helper standing in for the cross-file
+// inline (fast 13, same lines): the update test written inline 57 (1105 bytes); sinf for the
+// rotation's sine 21 and cosf for its cosine 21 (each gives retail's j row, vector.j loaded before
+// the vector.i store, but flips the earlier dot/cross product operands and keeps the k row);
+// cosf/sinf for the forward vector 60 (1105 bytes). A harness grid of 256 such spellings
+// (angles copy, update test, sin/sinf, cos/cosf, acos/acosf, fabs/fabsf) gave no form with retail's
+// product operands and both rows.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -617,7 +625,17 @@ struct s_player_axes_153d10
 };
 
 // score 2 (was 2): one product is built with its operands in the other order: retail multiplies up.k by
-// forward.i, ours multiplies forward.i by up.k. Everything else is identical.
+// forward.i, ours multiplies forward.i by up.k. Everything else is identical. Retail keeps every
+// cross product's text order; ours orders all six by the axis pointers' age. Round 14 (plain):
+// cross3f, cross3f_staged or the cross through forward/up 41; no axis pointers 35 and the axis
+// pointers after the cross 10 (all six up first); only forward or only up declared before the
+// cross 8/6 (three products flip).
+// Round 38 (plain): up pointer declared before forward 6; cross rows in i, k, j order 10; only an up
+// pointer (cross and dots of up through it, forward through axes) 16; up read through its pointer in
+// the j row only, every other read through axes 102; delta declared before the axes 2. A compile-only
+// screen of the whole SSE block (exact here: 2, 6, 10, 16 as the plain checks) over ~1100 spellings of
+// each cross/dot read through forward/up or axes and both pointer orders found none at 0 (best 10);
+// a few spellings fix the cross alone but then reorder the dots.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

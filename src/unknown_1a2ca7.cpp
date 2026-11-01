@@ -900,6 +900,19 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 
 /* adds the senders of the player's messages (at most 20) to the players
    list, except those given and those already on it */
+// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
+// cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
+// in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
+// Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
+// score 81 (was 81): this round's five declaration-order trials for the swapped count and
+// sender homes: the count after the loop index, the sender held at function scope, the
+// exclusion flag declared before the sender, the exclusion flag held at function scope and
+// both of them at function scope; four of them score 81 and the flag-first one 80, too small
+// a gain to keep. Still the count and sender homes reversed, the sender set by a branch and
+// the exclusion cursor kept in EDX across the 0x63d00 call.
+// Round 19: unchanged; the added count and the message pointer keep their swapped homes
+// (+0x68/+0x6c) and the sender stays in edi because our LTCG keeps the exclusion cursor in edx
+// across 0x63d00; still BLOCKED-BY 0x63d00.
 // score 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
 // Earlier: count/sender homes +0x6c/+0x68 remain reversed; nullable getter and exclusion cursor differ.
 // Exclusion pointer at use 82; native exclusion result 132; enumeration-count lifetime 82; format buffers swapped 81; getter force-inline declaration 81.
@@ -922,6 +935,9 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // message pointer 157; getter through the field at +0 145; ternary getter 145 (VC folds
 // `p ? p : NULL` to p, so only the qualified read keeps retail's test); sender reused for
 // the copy 135.
+// Round 50: account-entry, added player and account-id role names 81 each; split message and
+// player declarations 81 each; inline reference allocation 81; account-copy buffer name 81;
+// exclusion declarations swapped 81. Opening body restored.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1426,6 +1442,8 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
+// reloads remain; still BLOCKED-BY 0x63d00.
 // score 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
 // off 1206; bounded friend search 230; bounded member search 219; both 211; indexed merge-record pointer
 // 162.
@@ -1480,6 +1498,15 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // copy 126; friend-first after user copy 126; named member after user 124; named friend after user 118;
 // named both after user 126; named friend-first after user 126. count homes, early count retention and
 // membership flag reloads remain.
+// score 117 (was 117): this round: the two member counts in a local two-member struct (both kept
+// in memory) give 124, the same as exchanging the two declarations; the score stays 117. The
+// member count is still read into ESI and pushed where retail keeps it in EAX, and the count
+// homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
+// 0x63d00 and 0x2b642e, whose files belong to other lanes.
+// score 117 (was 117): this round: the listing was re-read to place the first difference; the
+// member count is still read into ESI and pushed where retail keeps it in EAX, and the count
+// homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
+// 0x63d00 and 0x2b642e, whose files belong to other lanes.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

@@ -34,7 +34,18 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
-// score 95 (was 95): frame 0x3c agrees; pool-data spill and scratch-register ties remain.
+// score 86 (was 86): the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
+// (other files), and MSVC always loads the limit product's cap global before the scale global whatever
+// order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses
+// `not al; and al, 1`, and the team is still copied into edx where retail uses ecx.
+// score 86 (was 95): the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
+// retail reloads it, and the limit product loads its two globals in the opposite order; the
+// completion-bit stores and the team's re-extension now match.
+// score 95 (was 95): the object-pool data pointer is spilled across 0xcbd50/0x101280 where
+// retail reloads it, and the completion bits are set through AL where retail uses DL and CL;
+// the frame 0x3c agrees.
+// Frame 0x3c agrees; pool-data spill and scratch-register ties remain.
+// (Merged from a second score line, 95 (was 95):) frame 0x3c agrees; pool-data spill and scratch-register ties remain.
 // Earlier: frame 0x3c agrees; the object-pool data pointer is cached where retail reloads
 // frame 0x3c agrees; the object-pool data pointer is spilled across 0xcbd50/0x101280
 // frame 0x3c agrees; the object-pool data pointer is cached where retail reloads
@@ -113,6 +124,32 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // Round 79: nested blocked assignment 93; default-true admission 128; peer receiver 95;
 // flag pointer arithmetic 95; clock-first product 95; final-team assignment 121; positive blocked
 // assignment 132; nested blocked with peer 93. Two-point gains and one-use receiver forms restored.
+// Round 42 (lane 16): weapon checks as one positive block setting the slot 95 (identical code: the
+// pool read is shared whatever the control flow; retail's 0x101690 keeps the same pool pointer in ESI
+// across 0xcbd50, so the callee summary is not the cause); permission as `if (!0x15e410(team)) blocked =
+// true; else blocked = !clear;` 93 (blocked materialized in a stack byte; retail materializes `~flags & 1`
+// with `not al; and al, 1` and branches on it); with the predicate spelled `(~flags & 1) != 0` 93; the
+// arms swapped 131; the blocked flag dropped (call and return inside the test) 131.
+// Round 315: Seven joint positive unit/weapon/slot admission graphs 95 each; full graph with
+// independent completion event 116 at 912/912. Original resource, score and event lifetimes restored;
+// pool-data spill and scratch-register ties remain.
+// Round 53 (lane 9, fast): the spilled pool pointer is a callee-summary effect after all: a diagnostic
+// global store inside 0x101280 (reverted) makes this body reload the pool after that call as retail does,
+// 95 -> 53, with 0x101280 itself then 55 bytes. Byte-identical spellings of 0x101280 keep it pure here:
+// `inline` on its definition 95; the object read through an out-parameter helper 95; its file linked after
+// this one 95 (all three callers of 0x101280 still match); one pool-data local for both lookups 95.
+// BLOCKED-BY 0x101280's summary.
+// Round 26 (lane 14, fast with 0x101280 and its other callers): retail reloads the pool data right
+// after the 0x101280 call (its other callers 0xa8040/0x241520 don't use the pool after it); `inline` on
+// 0x101280's definition 95 (callers unchanged); completion bits in reverse order 95; the limit branch
+// falling through to the shared `function_a7810(0x100); return;` tail (no second 0x100 call) 90
+// (lead: the completion-bit block then matches, aligned 47 -> 38; five short of the keep bar); `ticks ==
+// limit` without the short cast 188. On that 90 form: clock-first limit product 90; complement predicate
+// `(bool)(~flags & 1)` 90; the flag test written in the caller 126; a long team 108; unit and weapon
+// through the existing object_get 90. Diagnostic: a store through a pointer added to 0x101280 (so
+// callers see it as writing memory) gives retail's reload here, 53; retail's 0x101280 bytes only read,
+// and retail's 0x241520 keeps g_4e6948 in EBP across the same call, so retail treats it as writing
+// pointed-to memory but no globals (BLOCKED-BY 0x101280's side-effect summary, cause unknown).
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {
@@ -159,8 +196,6 @@ void __stdcall function_2403b0(long player_index)
 				game_engine_event_set_cause_player(player_index, &event);
 				function_19eb90(&event);
 				function_a7810(0x200);
-				function_a7810(0x100);
-				return;
 			}
 		}
 		else
@@ -188,9 +223,9 @@ void __stdcall function_2403b0(long player_index)
 				function_242ba0(marker, weapon_index, player_index);
 			else
 			{
-				short team = (short)slot == 8 ? NONE : (short)slot;
+				long team = (short)slot == 8 ? NONE : (short)slot;
 				function_197210(player_index, 1, slot);
-				function_242e00(player_index, team);
+				function_242e00(player_index, (short)team);
 				function_242660(weapon_index, false);
 			}
 		}

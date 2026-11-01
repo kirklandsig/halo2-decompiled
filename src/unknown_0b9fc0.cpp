@@ -53,8 +53,8 @@ struct s_machine
 	byte unknown0c2[0xd4 - 0xc2];
 	long value_d4;
 	byte unknown0d8[0x10a - 0xd8];
-	byte flags_10a;
-	byte unknown10b[0x12a - 0x10b];
+	word flags_10a;
+	byte unknown10c[0x12a - 0x10c];
 	short animation_state_offset;
 	dword device_flags;
 	long position_group_index;
@@ -371,30 +371,8 @@ void __stdcall function_115220(long machine_index)
 	}
 }
 
-// score 286 (was 286): Frame 0xc8 agrees; early flag carriers, the initial clamp spill and later float/portal/movement scheduling differ.
-// Earlier: its flag tests and the type-mask test read as field bits (TEST_FIELD_BIT) give retail's load-and-shift; the rest still differs.
-// Frame 0xc8 agrees; early flag carriers, the extra clamp spill, floating schedule and portal/movement homes remain.
-// Round 269: motion workspace 368; position snapshot 455; both 455; shared ordinal 368;
-// motion/ordinal 368; position/ordinal 455; all 455; all with the twice-used position predicate 344.
-// Position predicate alone/motion/position/ordinal/motion-position/motion-ordinal/position-ordinal
-// 286/286/344/286/344/286/344. Only the predicate alone retained after ordinary whole-image validation.
-// Round 271: full-width unsigned/signed flag storage composed with bool/byte/short/long
-// position predicates: 465/465/345/465/465/465/345/465, all 1899 bytes.
-// All restored; early flag carriers and the initial clamp spill remain.
-// Round 426: shared completion exit, direct portal result, entry-first result and all
-// seven subsets 305/298/321/286/305/298/321; all with byte portal result 321.
-// Original result graph, initial clamp, two-use predicate and complete body restored.
-// Round 216: conditional mutable clamp 286; separate minimum and final selection 396;
-// lower-bound-first selection, zero-update minimum, both-outcome minimum and both-outcome result 396 each;
-// pure component lookup after selection 297; complete at-use flag observations with selection 396.
-// Actual position mask in word/dword storage 463/453, with separate minimum 462/452.
-// Original predicate, clamp, flag observations, every operand and complete body restored.
-// Round 426: shared completion exit, direct portal result, entry-first result and all
-// seven subsets 305/298/321/286/305/298/321; all with byte portal result 321.
-// Original result graph, initial clamp, two-use predicate and complete body restored.
-// Round 221: native word flags with short/word/long/dword/byte/char position predicates
-// 438/438/334/334/286/286; signed-halfword flags with short/word predicates 438/438.
-// Original predicate and complete body restored; eager flag carrier and initial clamp spill remain.
+/* a machine's per-tick update: gear power, automatic door opening, portal
+   obstruction and rigid-body keyframing; returns whether anything changed */
 // @retail 0x1152e0
 bool __stdcall function_1152e0(long machine_index)
 {
@@ -403,19 +381,18 @@ bool __stdcall function_1152e0(long machine_index)
 	s_animation_state *state = NULL;
 	bool animated = false;
 	bool changed = false;
-	word object_flags = machine->flags_c0;
-	bool full_position = TEST_FIELD_BIT((object_flags >> 10) & 1);
 
-	if ((TEST_FIELD_BIT((object_flags >> 12) & 1)) && (!(0.0001f > (real)fabs(machine->position)) || (full_position)) &&
-		machine->havok_component_index != NONE)
+	if (TEST_FIELD_BIT((machine->flags_c0 >> 12) & 1))
 	{
-		s_havok_component *component = havok_component_get(machine->havok_component_index);
-		real position = (full_position) ? 1.0f : 0.0f;
+		if ((!(0.0001f > (real)fabs(machine->position)) || TEST_FIELD_BIT((machine->flags_c0 >> 10) & 1)) &&
+			machine->havok_component_index != NONE)
+		{
+			s_havok_component *component = havok_component_get(machine->havok_component_index);
+			real minimum = TEST_FIELD_BIT((machine->flags_c0 >> 10) & 1) ? 1.0f : 0.0f;
 
-		if (machine->position > position)
-			position = machine->position;
-		function_1d24a0(component, position);
-		changed = true;
+			function_1d24a0(component, machine->position > minimum ? machine->position : minimum);
+			changed = true;
+		}
 	}
 
 	if (MACHINE_GET(machine_index)->animation_state_offset != NONE && machine->channels[0].graph_tag_index != NONE &&
@@ -431,8 +408,8 @@ bool __stdcall function_1152e0(long machine_index)
 			machine->channels[0].set_frame_ratio(machine->power);
 		machine->power_velocity = 0.0f;
 
-		real velocity = (1.0f - machine->power) * definition->depowered_velocity +
-			definition->powered_velocity * machine->power;
+		real velocity = (1.0f - machine->position) * definition->depowered_velocity +
+			definition->powered_velocity * machine->position;
 
 		if (fabs(velocity) > 0.0001f)
 		{
@@ -480,7 +457,7 @@ bool __stdcall function_1152e0(long machine_index)
 					(s_machine_unit_definition_view *)g_4e3b44[unit->definition_index & 0xffff].bytes;
 				bool can_open = true;
 
-				if (TEST_FIELD_BIT(((1 << header->type) >> 1) & 1) && !(TEST_FIELD_BIT((local_98b918->unit_flags >> 20) & 1)))
+				if (((1 << header->type) & 2) && !(TEST_FIELD_BIT((local_98b918->unit_flags >> 20) & 1)))
 					can_open = false;
 				else if (TEST_FIELD_BIT((unit->flags_10a >> 2) & 1))
 					continue;
@@ -498,11 +475,9 @@ bool __stdcall function_1152e0(long machine_index)
 							marker.matrix.position = machine->center;
 							function_b9fc0(machine_index, &marker.matrix.forward, NULL);
 						}
-						direction.i = unit->center.x - marker.matrix.position.x;
-						direction.j = unit->center.y - marker.matrix.position.y;
-						direction.k = unit->center.z - marker.matrix.position.z;
-						if (marker.matrix.forward.i * direction.i + marker.matrix.forward.k * direction.k +
-							marker.matrix.forward.j * direction.j > 0.0f)
+						vector3d_from_points3d(&marker.matrix.position, &unit->center, &direction);
+						if (direction.j * marker.matrix.forward.j + direction.k * marker.matrix.forward.k +
+							direction.i * marker.matrix.forward.i > 0.0f)
 						{
 							continue;
 						}
@@ -524,18 +499,17 @@ bool __stdcall function_1152e0(long machine_index)
 	{
 		bool closed = false;
 
-		if (machine->power_group_index != NONE &&
-			((machine->device_flags & 0x100) && MACHINE_DEVICE_GROUP_GET(machine->power_group_index)->value != 0.0f ||
-			machine->power != 0.0f))
+		if (machine->power_group_index != NONE)
 		{
-			closed = true;
+			closed = (machine->device_flags & 0x100) && MACHINE_DEVICE_GROUP_GET(machine->power_group_index)->value != 0.0f ||
+				machine->power != 0.0f;
 		}
 
 		for (long i = machine->first_portal_reference; i < machine->first_portal_reference + machine->portal_reference_count; i++)
 		{
-			short portal_index = MACHINE_STRUCTURE_BSP->portal_references->portal_indices[(word)i];
-			real obstruction = (definition->obstruction_upper_bound - definition->obstruction_lower_bound) * machine->power +
-				definition->obstruction_lower_bound;
+			long portal_index = MACHINE_STRUCTURE_BSP->portal_references->portal_indices[(word)i];
+			real lower_bound = definition->obstruction_lower_bound;
+			real obstruction = (definition->obstruction_upper_bound - lower_bound) * machine->power + lower_bound;
 
 			if (closed)
 				MACHINE_PORTAL_BITS[portal_index >> 5] |= 1 << (portal_index & 0x1f);
@@ -567,26 +541,25 @@ bool __stdcall function_1152e0(long machine_index)
 		function_bd020(machine_index);
 		machine->device_flags &= ~4;
 	}
-	if (!moved)
+	for (long parent_index = machine->parent_object_index; !moved && parent_index != NONE; )
 	{
-		for (long parent_index = machine->parent_object_index; parent_index != NONE; )
-		{
-			s_machine_header *header = MACHINE_HEADER_GET(parent_index);
+		s_machine_header *header = MACHINE_HEADER_GET(parent_index);
+		s_machine *parent = header->machine;
 
-			if (header->flags & 4)
-				moved = true;
-			parent_index = header->machine->parent_object_index;
-			if (moved)
-				break;
-		}
+		if (header->flags & 4)
+			moved = true;
+		parent_index = parent->parent_object_index;
 	}
 	if (moved)
 	{
 		machine_keyframe_rigid_bodies(machine_index, false);
+		changed = true;
 		function_bba20(machine_index);
-		return true;
 	}
-	machine_release_rigid_bodies(machine_index);
+	else
+	{
+		machine_release_rigid_bodies(machine_index);
+	}
 	return changed;
 }
 

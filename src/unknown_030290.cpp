@@ -311,6 +311,28 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Long-row frame is retail 0x2c; inverse-order/direct factors/both/y-first/y-first with order/
 // y-first with direct factors/descending rows/descending with direct factors 213/262/261/214/213/254/231/218.
 // All restored; inverse/point homes and scaled-component allocation remain.
+// Round 436: row compound accumulators through translation/at publication/first pair 238/238/262;
+// parallel compound rows through translation/at publication/first pair 238/238/262;
+// output accumulation through translation/final two contributions 238/262. All original helper/body restored.
+// Round 446: Existing vector scale/rotation stage with direct/native point publication 222/295;
+// with translation copy 264/690; aggregate vector input gives the same four scores.
+// Original point helper restored; simplest frame 0x1c, combined value form outlines.
+// Round 451: Signed depth intervals at reversed/origin/displaced test subsets 1/2/1+2/3/1+3/2+3/all,
+// then all upper-first: 227/216/248/250/242/244/245/214. Original absolute tests and helper
+// restored.
+// Round 256: Guarded coordinate acquisition xzy/yxz/yzx/zxy/zyx gives 287/293/293/287/293;
+// coherent scale with xyz/yzx/zyx gives 301/301/301. Original shared guard, alias-safe snapshots
+// and body restored; frame 0x30 remains.
+// Round 468: Displaced reciprocal first, with factor admission/publication/perspective-zero
+// scope subsets 0..7: 239/215/227/197/264/283/267/283. Original inverse evaluation, defaults, factors
+// and complete body restored; frame 0x30 and displaced-transform spill remain.
+// Round 471: Separate raw/scaled coordinate families, default-copy/explicit-branch/conditional/
+// native-point conditional, field/shared scale: 225/199/265/269/316/306/690/230. Original
+// alias-safe helper, frame defaults, inverse graph and complete body restored.
+// Round 475: Component-owned compound scale updates with input snapshot orders
+// xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
+// with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
+// frame 0x30 versus 0x2c and the second transform spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
@@ -508,46 +530,15 @@ void function_30e30(long key, long value, bool add, real x)
 
 real function_30bf0(vector3f *v);
 
-// score 42 (was 42): the first product's x87 operand order and the SSE
-// registers of the normalization and second product differ. Shared cross3f and
-// normalize3d 42; a local copy of axis gives retail's x87 order (35) but is
-// not kept; normalize_inline 53 (harness); result declared first, length kept,
-// direct stores or a struct copy of the result: no gain.
-// Earlier: first input by value 138; second 173; both 240; vector return 209;
-// scalar input groups 112; coordinate pairs 112; scalar first stage 94;
-// scalar second stage 78. Original squared-length result and loop restored.
-// Retail's x87 products follow this source's operand order; ours reverses five
-// of the six whatever the source order (swapped operands 47, n[] indexing 47).
-// Second product written into vector directly 46 (stores interleaved, retail
-// stores all three at the end); second product's components computed k, j, i
-// into locals 74, into the result 74.
-// Round 181: outer input order 35 (230 bytes); output/axis/both reference inputs 42/42/42; reordered
-// references 35/35/35; outer inline 42. Seven-point order gain rejected; original binding and SSE
-// carriers retained. Round 40: staged second product straight into vector 42; struct copy of the
-// result 74; whole axis copied into a local 103; reference locals bound axis-first 43, with the staged
-// second product 41. The reversed parameter order (35) needs the caller in src/unknown_0350e0.cpp.
-// Round 43: retail's second product is cross3f_staged's k, j, i order. Axis pointer local 35 (x87
-// part matches, 230 bytes); the staged product into vector 42, into a local 42 (35 with the axis
-// pointer), copied as a struct 68; axis or vector pointer with the staged product 36/36; both
-// pointer locals with the staged product 36 (224 bytes, retail's product grouping, xmm homes and
-// three x87 operand pairs differ); a 27-form screen of pointer locals x declaration order x second
-// product form no better than 35.
-// carriers retained.
-// Round 295: shared staged cross first/second/both 42/42/42; second product in
-// the normalized workspace with ordinary/staged first 68/68; direct staged output
-// with ordinary/staged first 42/42; native axis value with direct staged output 103.
-// Original distinct workspaces restored; x87 input order and SSE carriers remain.
+/* makes vector perpendicular to axis in the plane of both: axis x (vector x axis), normalized by
+   0x30bf0, whose length result it returns */
 // @retail 0x31b40
-real function_31b40(vector3f *vector, vector3f const *axis)
+real function_31b40(vector3f const *axis, vector3f *vector)
 {
 	vector3f cross;
 	cross3f(vector, axis, &cross);
 	normalize3d(&cross);
-	vector3f result;
-	cross3f(axis, &cross, &result);
-	vector->i = result.i;
-	vector->j = result.j;
-	vector->k = result.k;
+	cross3f_staged(axis, &cross, vector);
 	return function_30bf0(vector);
 }
 
@@ -581,19 +572,36 @@ struct s_index_state_31660
     s_index_flags_31660 *third;
 };
 
-/* sets or clears flags 13 and 12 of every entry of the second list and/or the first and third lists */
-static __forceinline void index_state_flags_update_31660(s_index_state_31660 *state, bool update_second,
-    bool update_first_and_third, bool set13, bool set12)
+#define FLAG(bit) (1 << (bit))
+#define SET_FLAG(flags, bit, value) ((value) ? ((flags) |= FLAG(bit)) : ((flags) &= ~FLAG(bit)))
+
+/* sets or clears flags 13 and 12 of the second list's entries of the first group, then of the second
+   group when it differs (every entry for NONE), and/or of every entry of the first and third lists */
+static __forceinline void index_state_flags_update_31660(s_index_state_31660 *state, long first_group,
+    long second_group, bool update_second, bool update_first_and_third, bool set13, bool set12)
 {
     if (update_second)
     {
         for (long i = 0; i < state->second->count; ++i)
+            if (first_group == NONE || first_group == state->second->groups[(short)i])
+            {
+                word *value = &state->second->values[(short)i];
+                short flags = *value;
+                SET_FLAG(flags, 13, set13);
+                SET_FLAG(flags, 12, set12);
+                *value = flags;
+            }
+        if (first_group != second_group)
         {
-            word *value = &state->second->values[(short)i];
-            long flags = *value;
-            if (set13) flags |= 0x2000; else flags &= ~0x2000;
-            if (set12) flags |= 0x1000; else flags &= ~0x1000;
-            *value = (word)flags;
+            for (long i = 0; i < state->second->count; ++i)
+                if (second_group == NONE || second_group == state->second->groups[(short)i])
+                {
+                    word *value = &state->second->values[(short)i];
+                    short flags = *value;
+                    SET_FLAG(flags, 13, set13);
+                    SET_FLAG(flags, 12, set12);
+                    *value = flags;
+                }
         }
     }
     if (update_first_and_third)
@@ -601,61 +609,22 @@ static __forceinline void index_state_flags_update_31660(s_index_state_31660 *st
         for (long i = 0; i < state->first->count; ++i)
         {
             word *value = &state->first->values[(short)i];
-            long flags = *value;
-            if (set13) flags |= 0x2000; else flags &= ~0x2000;
-            if (set12) flags |= 0x1000; else flags &= ~0x1000;
-            *value = (word)flags;
+            short flags = *value;
+            SET_FLAG(flags, 13, set13);
+            SET_FLAG(flags, 12, set12);
+            *value = flags;
         }
         for (long i = 0; i < state->third->count; ++i)
         {
             word *value = &state->third->values[(short)i];
-            long flags = *value;
-            if (set13) flags |= 0x2000; else flags &= ~0x2000;
-            if (set12) flags |= 0x1000; else flags &= ~0x1000;
-            *value = (word)flags;
+            short flags = *value;
+            SET_FLAG(flags, 13, set13);
+            SET_FLAG(flags, 12, set12);
+            *value = flags;
         }
     }
 }
 
-/* the same flag update on the second list's entries of one group (every entry for NONE) */
-static __forceinline void index_state_group_flags_update_31660(s_index_state_31660 *state, long group,
-    bool set13, bool set12)
-{
-    for (long i = 0; i < state->second->count; ++i)
-        if (group == NONE || group == state->second->groups[(short)i])
-        {
-            word *value = &state->second->values[(short)i];
-            short flags = *value;
-            if (set13) flags |= 0x2000; else flags &= ~0x2000;
-            if (set12) flags |= 0x1000; else flags &= ~0x1000;
-            *value = flags;
-        }
-}
-
-// score 27 (was 27): the code is retail's apart from one alignment pad: retail pads the label after
-// the 0x3800 pass (2 bytes), which also changes the final loop's pad (ours jumps over a longer one).
-// The group helper with a trailing loop removed by a constant false argument matches byte for byte
-// (not kept: that argument and loop exist only for the pad, and the helper would have one call).
-// Round 40: the constant 0x10000/0x20000 passes need the zero-extended long flag word (retail's 0xdfff
-// masks) and the runtime 0x3800 group loops a short one (retail's xor/test/mov ax load and 0xffffdfff
-// masks), so the group pass has its own helper, called once per group: 43 with the TEST_FIELD_BIT
-// test, 27 with the plain `& 4` mask (retail's test byte); the group loops written out in the 0x3800
-// block 27. One shared helper with short or word flags in the second-list loops or in all loops 195
-// each (the definition pointer moves to EDI; short widens the constant masks, word narrows the
-// runtime ones); a per-entry inline update helper 77 (plain mask 98).
-// Earlier, on one shared helper with long flags: plain loops without the helper (133), word flags
-// (162), direct *value updates (213), long set13/set12 (186), set12 before set13 (175), loading the
-// value in each branch (194), while-loop for the 0x20000 pass (134); dword flags, ternary flag
-// updates, byte set13/set12, *value & 0xffff and passing flag13 without != 0 change nothing; short
-// flags in the second-group pass only 62; TEST_FIELD_BIT mask test 77 (it only realigns the listing
-// by one instruction); positive-count guarded do loops 143/182; group while/continue forms, flag
-// word snapshot 133; De Morgan flag bits 136; real two-byte flag fields 77/225.
-// Round 421 (at 77, before the group helper): first/third packed fields 77; filtered packed fields 225; all helper packed fields 225; final packed
-// fields 77; first/third/final fields 77; filtered/final fields 225; all packed fields 225; all fields/ascending
-// runtime publication 225.
-// Round 309: On split constant/runtime helpers, byte/short/word/long runtime controls
-// 27 each; with complete Boolean source-bit producers 213 each. Original controls,
-// producer, helpers and whole executable body restored; final-section pad remains.
 // @retail 0x31660
 void function_31660(long index, long tag, s_index_state_31660 *state,
     long first_group, long second_group, bool skip, bool *output)
@@ -663,9 +632,9 @@ void function_31660(long index, long tag, s_index_state_31660 *state,
     s_render_entry_110 *entry = &((s_render_entry_110 *)g_4e030c->data)[index & 0xffff];
     dword const *definition = (dword const *)g_4e3b44[tag & 0xffff].bytes;
     if (*definition & 0x10000)
-        index_state_flags_update_31660(state, false, true, false, true);
+        index_state_flags_update_31660(state, NONE, NONE, false, true, false, true);
     if (*definition & 0x20000)
-        index_state_flags_update_31660(state, true, false, false, true);
+        index_state_flags_update_31660(state, NONE, NONE, true, false, false, true);
     if (*definition & 0x3800)
     {
         byte flag11 = (byte)~(*definition >> 11);
@@ -673,9 +642,7 @@ void function_31660(long index, long tag, s_index_state_31660 *state,
         byte flag12_source = (byte)~(*definition >> 12);
         byte flag12 = (flag11 | flag13_source) & 1;
         byte flag13 = (flag12_source | flag13_source) & 1;
-        index_state_group_flags_update_31660(state, first_group, flag13 != 0, flag12 != 0);
-        if (first_group != second_group)
-            index_state_group_flags_update_31660(state, second_group, flag13 != 0, flag12 != 0);
+        index_state_flags_update_31660(state, first_group, second_group, true, false, flag13 != 0, flag12 != 0);
     }
     if (state->first->count > 0 && (*definition & 4) && state->first->count > 1)
     {

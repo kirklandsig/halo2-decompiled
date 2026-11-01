@@ -86,17 +86,21 @@ struct s_save_list_2164c0
     s_save_entry_2164c0 entries[4096];
 };
 
-PRIVATE inline bool append_save_entry_2164c0(s_save_list_2164c0 *list, s_save_entry_2164c0 const *entry)
+PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *list)
 {
-    bool result = list->count != 4096;
-    if (result)
+    s_save_entry_2164c0 *result = NULL;
+    if (list->count != 4096)
     {
-        memcpy(&list->entries[list->count++], entry, sizeof(s_save_entry_2164c0));
+        result = &list->entries[list->count++];
     }
     return result;
 }
 
-// score 32 (was 32): frame 0x8ac and extent agree (659 bytes plus 3 of fill); only registers differ:
+// score 20 (was 20): the helper returns the new element (NULL when the list is full) and the caller copies
+// into it: retail's length (662), list in ECX and retail's format-call and enumeration registers; only
+// the append's own instructions differ: retail materializes the room test (`setne al; test al, al`) with
+// the count in ESI copied to EAX, `lea edx, [eax + 1]` and the shift on the copy, and no NULL test.
+// Earlier (32): frame 0x8ac and extent agree (659 bytes plus 3 of fill); only registers differ:
 // the append's list/count/result (ours edx/eax/cl, retail ecx/esi/al, with the count copied to eax
 // and the new count stored before the copy) and the scratch pairs before the format call,
 // XFindNextSaveGame and XFindClose. Deleting the append alone makes those pairs retail's; every form
@@ -344,6 +348,65 @@ PRIVATE inline bool append_save_entry_2164c0(s_save_list_2164c0 *list, s_save_en
 // list->count++;`, `index = list->count; list->count++;` and a count local with `list->count = count
 // + 1` first each give retail's increment/store/shift order but no count copy (count EAX, result CL)
 // 51/51/51; the helper as a plain static function 32 (same code); the copy then `list->count++` 57.
+// DL200: Native byte/signed-byte completion 32/32; short/word completion 46/46; real shared file-
+// reference workspace 32; overlap-safe append copy 52; coordinated matched-name-helper inline
+// contract 32; byte helper return 32. Original append, workspace, copy and all game-call values
+// restored; matching 0x8ac frame and scratch/append register gap remain.
+// Round 109 (lane 5, fast): the append with a named `full` flag, `if (!full)` and `return !full` 32
+// (aligned 26); the test written `4096 != list->count` 32 (same code); the `full` flag with `long
+// index = list->count++` 51 (retail's new-count store before the copy, but `sete`/`jne` and count
+// EAX), with `list->count = index + 1` 51; the `full` flag with a struct assignment 57 (656 bytes).
+// The list is the shared s_saved_game_location_table (include/saved_game_storage.h, same layout).
+// Round 44 (lane 16): retail keeps the count in ESI and copies it to EAX for the index (a temp
+// ours coalesces away); the later scratch pairs are ours rotated by one register in eax, ecx,
+// edx order, as one fewer temp would give. Tried: explicit count and index locals with the new
+// count stored first 51 (copy coalesced); the helper as an ordinary function in
+// unknown_216b60.cpp so LTCG inlines it 32 (plain, same code); a count local post-incremented
+// in the copy and stored back after it 33; `entry.type` passed to 0x216e50 32; `entry.type`
+// set inside the type loop before leaving it 32.
+// Round 37 (lane 1): a nested inline index helper returning `list->count++` 51; an index local with a
+// NONE default 51; the index read through a second table pointer with the new count stored first 51;
+// the copy through an inline two-pointer copy helper 32; the list and entry typed as the shared
+// s_saved_game_location_table / s_saved_game_file_location (callers 0x12b450 and 0x215790 with it) 32
+// (same code); the permuter on the original body, 69 variants, best 32.
+// Round 177 (fast, append helper): the result declared `bool const` 32, as `char` 32, as `!(count ==
+// 4096)` 32 (all same code); the room test `4096 - list->count != 0` 51 (mov/sub before the setne);
+// `if (!result) return result;` before the copy 32 (same code).
+// Round 24 (lane 14): the append helper reshaped to return the new element pointer, the caller copying
+// into it 20 (kept; plain 20); with an early `return NULL` 20 (same code); the copy as `*slot = entry` 20
+// (same code); the helper returning the new index or NONE 47 (one instruction short; retail's `lea edx,
+// [eax + 1]`, store and `lea edi, [eax + ecx + 4]` tail); the index read, `count = index + 1`, then the
+// element 49; a bool result with the index or the element as an out parameter 51/32 (the materialized bool
+// puts the list back in EDX); a bool room test with the caller copying into `entries[count++]` 54 (the
+// bool folds); the count read before the 0x216e50 call (diagnostic, count in ESI) 62; the original append
+// helper returning the copied element 54 (its NULL test threads away, two instructions short).
+// Round 117 (fast): an inline room test plus an inline `count++` index helper, the caller breaking then
+// copying into `entries[index]` 54 (654 bytes, retail's lea/shift/store tail, no setne); a bool append
+// helper `result = count != 4096; if (result) { index = count++; memcpy } return result;` with
+// `if (!append) break;` 51 (662 bytes: setne/test now, but bool CL, count EAX, list EDX against
+// retail's AL/ESI/ECX); the same over a count local stored `count + 1` 51; diagnostics with the room
+// flag tested again after the copy, written out or from an inline room helper, 51/51 (same registers).
+// Round 114 (lane 6): the append helper taking the count by value 33; a bool helper handing the entry
+// out through a pointer parameter 32; the helper returning the next entry (NULL when full) with the
+// caller copying into it 20 (kept), with an early `return NULL` 20, with a struct assignment for the
+// copy 20, with an index local (post-increment, or stored as index + 1 before the address) 49/49.
+// Round 32 (m3 lane 14): retail's registers fit two inlined helpers sharing one count load: a bool room
+// test returned in AL (count then in ESI) and an index helper (`index = list->count; list->count = index
+// + 1; return index;`) returned in EAX (`mov eax, esi`). The room helper (`bool result = count != 4096;
+// return result;`, `return count != 4096;`, preset false/true filled by an if, `count < 4096`, taking the
+// count by value) with the index helper and the caller breaking, as an else arm, or through a named
+// `room` local: 54 each (654 bytes: retail's `lea edx, [eax + 1]; shl eax, 6; mov [ecx], edx; lea edi,
+// [eax + ecx + 4]` tail with the list in ECX, but the bool threads into `cmp; je`, count EAX, no copy);
+// a bool append helper over the room/index helpers 51 (setne/test, bool CL, list EDX, count EAX).
+// Round 138 (lane 4): a bool append helper (`bool result = list->count != 4096;`, then `long index =
+// list->count; list->count = index + 1;` and the memcpy into `entries[index]`) 51 (setne/test as retail, but
+// count EAX, result CL, list EDX); that with `long index = list->count++;` 51; the pointer helper with a named
+// `room` test and the index copy 49; the pointer helper as a list member function (`list->new_entry()`) 20 (same
+// code); the bool helper as a list member function 51.
+// Round 65: a bool reservation with the caller copying at count - 1 53; a named room in the pointer
+// helper 20, before the pointer result 20; caller room with an unchecked pointer 54, with the checked
+// pointer 54; a caller index across a bool reservation 51; a conditional pointer return 20; the slot
+// declared before the name call 20.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
@@ -406,8 +469,10 @@ found:
                 {
                     entry.type = type;
                     function_216e50(data.szSaveGameName, type, &entry.language, entry.name);
-                    if (!append_save_entry_2164c0(list, &entry))
+                    s_save_entry_2164c0 *slot = new_save_entry_2164c0(list);
+                    if (!slot)
                         break;
+                    memcpy(slot, &entry, sizeof(entry));
                 }
 next:;
             } while (XFindNextSaveGame(find, &data));

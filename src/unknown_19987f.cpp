@@ -1903,27 +1903,6 @@ struct s_session_map_view
    5 the members' status, 6 ready, 7 the wrong players, 8 to 10 the host's
    states; the members' progress goes to progress. Retail keeps progress on
    the stack: reading it through its address keeps it there */
-// score 21 (was 21): progress/session/result homes and map limit/iterator registers now agree;
-// the lower setting test (EDI versus immediate one) differs, 576/577; chained zeros recover the data-test schedule.
-// Earlier: ours holds progress in EDI; retail reads it from its stack home at both
-// uses, keeps the limit in EDI, the team mask in EBX and the count in progress's home.
-// Volatile reads of progress at both uses 195 (aligned 40 of 50: progress stays home, but a
-// zero constant takes EDI and the limit spills); at the second use only 112; at the first
-// only 195; both plus the limit at function scope 194; both with the team mask declared
-// first 192; team mask declared first alone 103.
-// Round 284: Native long/dword team bit held for both mask uses 103/103;
-// host readiness accumulated from its test 124/124; unique teams accumulated from
-// their mask tests 124/124; both test counts 140/140. Original counts restored.
-// Round 421: status result 138; map-result limit 88; status/map results 179; readiness result 103;
-// status/readiness results 138; map/readiness results 88; all outcomes 179; all outcomes/selected map limit 185;
-// selected limit alone 29; setting fields each-use 88; unsigned limit 88; outer limit declaration 88; count after
-// map 199; teams after map 29; both after map 197; both after limit 201.
-// Round 423: zeros chained 21 (plain); mask/count/both after output query 29/198/199;
-// zeros chained after query 199; signed-zero/invalid-range bounds 29/29; delayed zeros/zero bound 199;
-// chained zeros with zero bound/nested minimum/default-first/invalid branch 21/79/33/80.
-// Round 307: Positive minimum selection 21; zero-only correction 80; native-byte maximum with
-// positive/zero correction 137/147; uniform setting-field reads give the same four counts.
-// Original minimum and long storage restored; lower-bound sharing and invalid-range join remain.
 // @retail 0x19a2ce
 long function_19a2ce(real *progress)
 {
@@ -2009,7 +1988,7 @@ long function_19a2ce(real *progress)
 
 			if (data && (*(dword *)(data + 0x48) & 1))
 			{
-				long maximum;
+				long maximum = 1;
 				long count;
 				dword teams;
 				count = teams = 0;
@@ -2024,12 +2003,13 @@ long function_19a2ce(real *progress)
 				{
 					long setting = *(long *)(data + 0x44);
 
-					maximum = setting >= 1 && setting <= 9 ? map->maximum_players[setting] : 1;
-					if (maximum <= 1)
-						maximum = 1;
+					if (setting >= 1 && setting <= 9)
+					{
+						maximum = map->maximum_players[setting];
+						if (maximum <= 1)
+							maximum = 1;
+					}
 				}
-				else
-					maximum = 1;
 				for (index = 0; index < 16; index++)
 				{
 					if (function_19a951(index))

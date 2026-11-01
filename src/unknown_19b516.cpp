@@ -125,38 +125,38 @@ void c_widget::v15(c_widget *widget)
 	}
 }
 
-// score 20 (was 20): candidate/current allocation and delayed ESI save differ;
-// shared widget view 20; immutable current 26; initial/later/both reverse for 20/20/20;
-// current initially empty 20; direct existing predicate/focus 20/20.
-// inline/noinline eligibility declarations 44/20; focus declarations 20/20;
-// single search cursor 41; proven initial candidate do-while 37;
-// eligibility in loop admission 47; named eligibility result 20.
-// shared success exit/current for 20/20; selection/reverse role names 20/20;
-// separate entry result and entry-for 42/42; failure continue 20; for plus break 20.
-// candidate uses ESI before the first scan; retail delays ESI and uses EAX.
-// Initial result arms 20; both result arms 21; entry reverse lifetime 20; scoped widget 26;
-// scoped result arms 21; scoped reverse lifetimes 26; selected-widget success tail 47;
-// initial result arms with success tail 47.
-// Copy before the loop and at its tail 20; for-walks to the first sibling 20/20 (one candidate);
-// forceinline next-or-first helper in a for loop 42 (out of line 72); helper with the head copy 42;
-// one cursor stepped at the loop top 64; separate entry/step results 42, with for-walks 42 (the loop
-// body then matches retail; the entry result still joins the widget in ESI and the test is copied).
+// score 2 (was 2): only the loop's shared tail differs: retail copies the next widget to ESI and tests ESI,
+// ours tests EAX before the copy (`test eax, eax; mov esi, eax`).
+// Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
+// and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
+// Forms with the old candidate copied at the loop head (all 20 unless given): shared widget view; immutable
+// current 26; initial/later/both reverse for; current initially empty; direct existing predicate/focus;
+// inline/noinline eligibility declarations 44/20; focus declarations; single search cursor 41; proven
+// initial candidate do-while 37; eligibility in loop admission 47; named eligibility result; shared success
+// exit/current for; role names; separate entry result and entry-for 42/42; failure continue; for plus
+// break; initial/both result arms 20/21; entry reverse lifetime; scoped widget 26; scoped result arms 21;
+// scoped reverse lifetimes 26; selected-widget success tail 47 (with initial result arms 47); copy before
+// the loop and at its tail; for-walks to the first sibling; forceinline next-or-first helper in a for
+// loop 42 (out of line 72); helper with the head copy 42; one cursor stepped at the loop top 64.
+// The ternary step (`widget = next ? next : first sibling`) keeps the body as retail: 12; the same as a for
+// loop, through a next-or-first ternary helper, with an if/do-while entry guard, or `widget = this` first 12;
+// a named entry result 35 (entry as retail, but the inverted loop tests the name, so no shared tail).
+// From another lane (all with the old candidate copy): candidate-tested while with a body widget 26; one
+// stepping loop from this 64; break then focus under if (widget) 47; widget assigned before the loop and at
+// its end 20; first-sibling walk local 20.
+// Round 9: the base class's next_wrapped (a single-exit `result` set in an if/else) at the entry and the
+// step 2 (the result is not merged into ESI at the entry, so the entry joins the shared tail as retail);
+// harness screens on the twin 0x22ec1b: the same helper as a ternary or with an early return 12; a result
+// from a ternary, a reassigned parameter, an out pointer or a NULL-initialised result 2 each; a `break`
+// with the focus after the loop, the search in the loop condition or a do-while under a test 2 to 6.
+// Round 55 (real, v17 unchanged at 2): widget declared, then assigned, tested `!= NULL` 2; ineligible arm
+// stepping with `continue` 2; for loop with the helper at both ends 2; `break` in place of the return
+// 2; the widget held as the base class pointer with casts at the calls 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
-	c_widget *candidate = next;
-	if (!candidate)
-	{
-		c_widget *p = prev;
-		candidate = this;
-		while (p)
-		{
-			candidate = p;
-			p = candidate->prev;
-		}
-	}
-	c_widget *widget;
-	while ((widget = candidate) != 0)
+	c_widget *widget = next_wrapped();
+	while (widget)
 	{
 		if (widget->function_22e37f())
 		{
@@ -164,50 +164,74 @@ void c_widget::v16()
 			widget->function_22ecb4(true);
 			return;
 		}
-		candidate = widget->next;
-		if (!candidate)
-		{
-			c_widget *p = widget->prev;
-			candidate = widget;
-			while (p)
-			{
-				candidate = p;
-				p = candidate->prev;
-			}
-		}
+		widget = widget->next_wrapped();
 	}
 }
 
-// score 20 (was 20): entry candidate still uses ESI before its save; entry/repeat/both link cursors 20/20/20;
-// entry/repeat/both last-widget results 20/20/20; link for scans 20; selected declaration first with link scans 20.
-// entry scan saves ESI early and carries its candidate there; retail uses EAX/EDX before the save.
-// Link for scans 20; transient entry scope 42; eligibility condition 44; rejection arm 20; previous branch 21; one search cursor 21; traversal role names 20; fallback declaration order 20.
-// Entry candidate still occupies ESI before the fallback scan; the existing
-// native object type and direct method boundaries do not recover the delayed save; native
-// traversal 20; native entry scan 42; native repeat scan 20; native next cursors 20; native
-// candidate 20; direct existing methods 20; native selected lifetime 26; native success tail 47.
-// score 20 (was 20): the head copy is propagated into the body, so the candidate takes ESI.
-// Walk from a widget = this cursor with separate entry/step results 42 (90 bytes); prev link per
-// branch 21; NULL-initialized widget 20; own prev local with the scan in the entry variable 21;
-// forceinline previous-or-last helper at entry and step 42 (90 bytes).
-// Eligibility used for admission and focus: bool/byte/short/long at iteration 20/20/42/40;
-// the same carriers at entry 20/20/42/40. Delayed ESI save still differs.
+// score 2 (was 2): only the loop's shared tail differs: retail copies the previous widget to ESI and tests
+// ESI, ours tests EAX before the copy (`test eax, eax; mov esi, eax`).
+// Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
+// only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
+// and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
+// Forms with the old candidate copied at the loop head (all 20 unless given): entry/repeat/both link
+// cursors; entry/repeat/both last-widget results; link for scans; selected declaration first; transient
+// entry scope 42; eligibility condition 44; rejection arm; previous branch 21; one search cursor 21; role
+// names; fallback declaration order; native traversal/entry scan 42/repeat scan/next cursors/candidate;
+// direct existing methods; native selected lifetime 26; native success tail 47; walk from `widget = this`
+// with separate entry/step results 42 (90 bytes); prev link per branch 21; NULL-initialized widget; own
+// prev local 21; forceinline previous-or-last helper at entry and step 42 (90), plain inline 72 (55);
+// eligibility as bool/byte/short/long 20/20/42/40; base-class candidate with a cast copy; prev read
+// before the eligibility call 20; `while (c_widget *widget = candidate)` 20; helper in the loop
+// condition from `widget = this` 64 (63); single-variable do/while walk as 0x2b41ea 69 (58).
+// The ternary step (`widget = prev ? prev : last sibling`) keeps the body as retail: 12; the same as a for
+// loop, through a previous-or-last ternary helper, with an if/do-while entry guard, `widget = this` first
+// or a named previous 12; a named entry result 35 (92: entry as retail, but the inverted loop tests the
+// name, so no shared tail); ternary into the head-copy candidate 39 (92); last-sibling helper with its own
+// next cursor 21; early-return helper 43; eligibility in the loop condition with focus after 44 (92).
+// Round 9: the base class's previous_wrapped (a single-exit `result` set in an if/else) at the entry and
+// the step 2; a result from a ternary 2; the copy before the loop with ternary steps 35 (92 bytes); the
+// helper at the entry and a ternary step 3 (92 bytes, harness); reassigned parameter, out pointer,
+// NULL-initialised result, member function, `break` with the focus after the loop, for loop, do-while
+// under a test, `continue` arm 2 each (harness); the helper's own walk loop 12 (harness).
+// Round 126 (real, 12 unless given): the step as if/else into the widget 12; entry and step both if/else
+// 12; entry as if/else 12; the step through a named previous local 12; if-form entry into a head-copy
+// candidate with a ternary step 39 (92). Screened (one-link LTCG): ternary head copy in while/for 33 (40
+// instructions); head copy as the body's first statement or in an if/do-while: base code; the widget
+// passed to a forceinline search helper: base code; an out-of-file previous-or-last function is not
+// inlined at /O1 (called). Retail's entry result stays a scratch value copied in the shared loop head.
+// Round 51 (LTCG env link of this file, equal to the full listing): the step, the entry or both through
+// the base class's helper directly 2; entry and step through two distinct helpers (separate result
+// symbols) 2; the NULL-first if/else helper 2; ternary helper at both 17; `result = previous; if
+// (!result) result = last_sibling();` at both 20 (90 bytes, entry straight into ESI), written-out walk
+// 20; early-return helper at both 17; the if/else step into the widget gives retail's tail but its
+// entry its own `test eax, eax; push esi; mov esi, eax; je` (92 bytes); that step with an early-return,
+// `if (!result)`, ternary or out-reference entry 17 each (entry computed into ESI and threaded).
+// Round 11 (lane 2): retail's head is the widget phi (copies from EAX on every incoming edge, merged);
+// the step as an if/else into the widget (last_sibling in the else arm) gives exactly that tail, but the
+// entry then either keeps its own rotated test on the scratch value (helper entry) or is computed into
+// ESI and threaded into the body (if/else entry). Real: helper entry + if/else step 35 (92 bytes); if/else
+// entry and step 12; `widget = previous; if (!widget) widget = last` entry with if/else step 41 (86
+// bytes); `break` with the focus after the loop, if/else step 37 (94 bytes); head-copy candidate with an
+// if/else step 2 (same code). Harness grid (entry helper/ternary/if-else/inverted if-else/assigned then
+// fallback/from a `this` widget x step helper/ternary/if-else/inverted/named previous x while/guarded
+// do-while, 60 forms): only helper/helper gives 2; the walk written with its own local in the step, an
+// inner do-while in the step, and the search in the loop condition do not keep the entry scratch; a 600 s
+// permuter run (55 tries) found none below 2.
+// Round 213: native wrapped cursor 2; focus then break 2; focus common exit 2; for with focus/break 2;
+// native focus/break 2; widget selected result 16; native selected result 16; focus terminates cursor 2;
+// original executable source restored.
+// Round 16 (lane 2): `while (widget != NULL)` 2; a free forceinline previous-or-last helper taking the
+// widget 2; the loop variable typed as the base class with its methods 2; the c_widget wrapper plain
+// inline 72 (55 bytes, called); an early return when the entry finds none, then a do-while 2.
+// Round 60: empty-entry guard with a helper-fallback if/else step 35; helper-fallback ternary step 35;
+// helper-fallback ternary entry 42; ternary entry and step 12; helper-fallback if/else step 35;
+// helper-fallback if/else entry 13; if/else entry and step 45; single-exit goto with if/else step 35.
+// Original executable body restored.
 // @retail 0x22ec1b
 void c_widget::v17()
 {
-	c_widget *candidate = prev;
-	if (!candidate)
-	{
-		c_widget *p = next;
-		candidate = this;
-		while (p)
-		{
-			candidate = p;
-			p = candidate->next;
-		}
-	}
-	c_widget *widget;
-	while ((widget = candidate) != 0)
+	c_widget *widget = previous_wrapped();
+	while (widget)
 	{
 		if (widget->function_22e37f())
 		{
@@ -215,17 +239,7 @@ void c_widget::v17()
 			widget->function_22ecb4(true);
 			return;
 		}
-		candidate = widget->prev;
-		if (!candidate)
-		{
-			c_widget *p = widget->next;
-			candidate = widget;
-			while (p)
-			{
-				candidate = p;
-				p = candidate->next;
-			}
-		}
+		widget = widget->previous_wrapped();
 	}
 }
 

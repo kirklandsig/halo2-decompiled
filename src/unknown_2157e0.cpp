@@ -53,48 +53,6 @@ static inline long file_handle_build_2170e0(long generation, short index, bool f
 	return (handle << 8) | (type & 15);
 }
 
-// score 82 (was 91): the table from the existing cache getter with the header's table and location
-// types gives retail's pre-copy clears and table spill; the table still stays in memory through the
-// loop (retail keeps it in eax, reloaded only after strncmp) and the current index is spilled (retail
-// esi, set after the copy). Round 21: the table cast from the files pointer with the header types
-// 106 (also with memcpy, the location in the loop scope, or a typed files local); the getter with the
-// files local tested 82 (that local then used once; testing g_51ea14 directly 82, kept; the getter in
-// the test 82); the header's generation field at its three uses 82 (kept); current after the copy 126
-// (retail's esi, but the entry pointer is strength-reduced), also after the type test 126; current
-// copied first and `next = current + 1` 132; `for` over current 145; one `&&` match test 112; copy
-// from `entries[next++]` with `next - 1` 128.
-// Earlier: adjusted-table spill, removed pre-copy clears and current-index spill remain;
-// MiniMax round: a files local in the last block 90 (one point, under the keep bar, not kept);
-// the 64-byte copy as memcpy(&location, entry, sizeof(location)) gives the same code; current
-// assigned after the copy 132; direct copy with next - 1 128; current after the copy with the
-// entry local kept 126. Every form that moves the progression later also rewrites the prologue.
-// progression after copy 139f; direct copy with late progression 139f; source before index 139f; unsigned
-// current with late progression 139f; role homes 91f; late progression/role homes 139f; library copy/late
-// progression 139f; single real index 122f.
-// adjusted-table spill, retained pre-copy clears and current-index allocation differ;
-// complete cache fields, native location/table types, both together, native value initialization,
-// real table subobject reference, type comparison reversed, readonly native table and
-// native terminator library clears each 91; memcpy for the copy 91; table pointer taken before the
-// drive query 91 (with memcpy 91); copy straight from the table element 106; current declared
-// before the loop 91.
-// native terminator library clears each 91.
-// Cache global at consumers 47 fast / 90 plain (one-point gain rejected); direct copy/global direct copy 106/100;
-// location/zero-index scope 91/123; file-type name 91;
-// global location/global copy index scope 90/124;
-// global direct library copy/address addition 100/100;
-// source-subscript progression/with library copy 109/109;
-// short/word successful index 131/131.
-// Compound match 133; nested match 133; complete match result 116; type match result 133; reversed
-// comparison inputs with those four forms 133/133/116/133.
-// Record constructor/native-field constructor 91/91; per-iteration record/constructor 91/91;
-// overlap-safe library copy/native fields 123/123; unsigned-word/full index helper 94/133.
-// Round 75: location declared before table 91; existing record constructor with aggregate copy 91;
-// native fields with byte-table aggregate copy 91; native fields with byte-table library copy 91;
-// native table/location library copy 91; byte location with native-table library copy 91; force-inline
-// whole scan 150; existing record constructor with library copy 91. Original types and body restored.
-// Round 303: completed-search index before handle encoding, long/short/dword/word
-// carriers 93/94/93/94; each with the complete library copy 93/94/93/94. Original
-// encoding boundary, copy and body restored; adjusted-table and successful-index spills remain.
 // @retail 0x2170e0
 long function_2170e0(long file_index)
 {
@@ -122,16 +80,16 @@ long function_2170e0(long file_index)
 			char drive;
 			if (g_51ea14 && function_1249f0(0, &drive))
 			{
-				s_saved_game_location_table *table = &saved_game_storage_get_cache()->locations;
+				s_saved_game_location_iterator iterator;
+				iterator.table = &saved_game_storage_get_cache()->locations;
+				iterator.index = 0;
 				s_saved_game_file_location location;
 				location.name[0] = 0;
 				location.display_name[0] = 0;
-				long next = 0;
-				while (next < table->count)
+				while (saved_game_location_iterator_get(&iterator, &location))
 				{
-					long current = next++;
+					long current = iterator.index++;
 
-					location = table->entries[current];
 					if (location.type != type)
 						continue;
 					if (strncmp((char const *)cached->unknown04, location.name, 20))

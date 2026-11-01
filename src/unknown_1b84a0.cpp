@@ -96,7 +96,10 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 
 /* slot type 0x23, update: once the actor stands at its prop's position, it
    turns to face it; then it lets the prop go */
-// score 47 (was 47): the actor index, actor, view and state registers differ (retail EBP/EDI/EBX/ESI,
+// score 7 (was 7): only argument temporaries differ: the 0x1f4f40 short argument is converted into DX
+// and pushed after `mov eax, ebp` (retail converts AL in place into AX and pushes it first), and the
+// 0x262800 reference is loaded into EAX (retail ECX).
+// Earlier (47): the actor index, actor, view and state registers differ (retail EBP/EDI/EBX/ESI,
 // ours EDI/EBX/EBP/ESI), and retail saves EBX late, giving the NONE path its own epilogue. The forms
 // with one actor lookup at the top give index EBP and view EBX as retail, but actor ESI and the state
 // EDI, loaded and pushed late. Tried: typed slot data block/current/entry 61/62; on that block actor
@@ -145,42 +148,72 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // Round 429: complete readiness arms/path-owned completion/both/separate release/
 // readiness-release/completion-release/all/all with one actor acquisition
 // 104/104/94/47/104/104/94/101 fast; all restored.
+// Round 106 (plain): top actor with the unknown0c test folded into the view test 52; the current body as
+// single-exit nesting 132 (304 bytes); the top-actor body nested the same way 102 (302 bytes); readiness as
+// `... ? true : false` 66; state declared first with both locals const 52.
+// Round 238: named initial-completion/facing/release decisions, seven subsets 47 each;
+// complete decisions with native slot data block 47. Original callback restored;
+// initial one-use completion snapshot rejected without an exact match.
+// Round 45 (lane 16): the actor looked up once at the top, the state typed as the slot's data block, a
+// guard clause storing the completion for a null view, the completion stored after the final call and
+// again in an else for the NONE prop index: 47 -> 7 (kept; retail's registers, both epilogues and the
+// late EBX push). Steps: top actor with the NONE store in an else 69, plus state declared first/prop-index
+// local/node and view at function scope 69 each; plus the data block 51 (head and NONE epilogue as retail,
+// node EBX and view spilled), view renamed 51, view declared first 51, two actor lookups 92, NONE as an
+// early store and return 79, view through the index getter after/before the node 74/88, one shared store
+// 52; the guard clause 7. On 7: the final call under a positive test 7, `(short)` cast 7, the type byte
+// declared signed char 7, a positive test around the 0x1f4f40 call 7.
+// Round 23 (lane 15, plain): the type byte in a named char local, tested and passed 11; the 0x262800
+// reference read into a local first 7 (its temporary moves EAX -> EDI, retail ECX); the state pointer
+// declared before the actor 9; the readiness in a named bool stored and tested 22 (byte setcc); the
+// completion store shared after an `if (view)` block 51 (276 bytes). At 0x1afb30's call to 0x1f4f40
+// our build converts the byte in place as retail does; here EAX holds the actor index too early.
+// Lane 16 r46 (plain): the 0x262800 reference copied into a named local first 7 (its temp moves to EDI).
+// Round 213: inline facing callee 7; inline release callee 7; inline node test 7; both call contracts
+// inline 7; short facing mode 44; short mode with inline facing callee 44; long facing mode 46; long mode
+// with inline facing callee 46; release result used for completion 7; release result with short mode 44;
+// release result with long mode 46; original executable source restored.
+// Round 59: the facing mode through a field reference/pointer 7 each; the release reference through a field
+// reference/pointer 7 each; one actor-index address read at the facing/release call 7 each; the data block
+// through its array's address 7; one actor-index reference shared by all three calls 7. All neutral.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {
-	long prop_index = actor_get(actor_index)->prop_index;
-	s_slot_23 *state = (s_slot_23 *)slot;
+	s_actor_view *actor = actor_get(actor_index);
+	s_slot_23_data *state = (s_slot_23_data *)slot->unknownc;
 
-	if (prop_index != NONE)
+	if (actor->prop_index != NONE)
 	{
-		s_prop_node_view *node = prop_node_get(prop_index);
+		s_prop_node_view *node = prop_node_get(actor->prop_index);
 		s_prop_view_fields *view = prop_node_view(node);
 
-		if (view)
+		if (!view)
 		{
-			s_actor_view *actor = actor_get(actor_index);
-			if (state->unknown0c)
-				return;
-
-			state->unknown0c = state->unknown0d && function_1f86f0(actor_index);
-			if (state->unknown0c)
-			{
-				if (!state->unknown1b || !state->unknown1d || state->unknown1c)
-					return;
-
-				function_1f4f40(actor_index, &state->facing, state->unknown1d, &state->point, true);
-				state->unknown1c = true;
-				state->unknown0c = false;
-			}
-
-			if (view->unknown70 != 0 || !function_25da00(node))
-				return;
-
-			function_262800(actor_index, actor->unknown418, false);
+			state->unknown00 = true;
+			return;
 		}
-	}
+		if (state->unknown00)
+			return;
 
-	state->unknown0c = true;
+		state->unknown00 = state->unknown01 && function_1f86f0(actor_index);
+		if (state->unknown00)
+		{
+			if (!state->unknown0f || !state->unknown11 || state->unknown10)
+				return;
+
+			function_1f4f40(actor_index, &state->facing, state->unknown11, &state->point, true);
+			state->unknown10 = true;
+			state->unknown00 = false;
+		}
+
+		if (view->unknown70 != 0 || !function_25da00(node))
+			return;
+
+		function_262800(actor_index, actor->unknown418, false);
+		state->unknown00 = true;
+	}
+	else
+		state->unknown00 = true;
 }
 
 // @retail 0x1b8ae0
@@ -262,7 +295,25 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 212 (was 212): aligned frame 0x1634 versus 0x162c and actor/slot/scratch homes remain.
+// score 113 (was 113): the search tail's three exits now fall to one `return result` (retail's
+// reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
+// 0xf beside has_markers/available at 0xe, so later homes sit 8 higher), the result set with setne
+// (retail `mov al, 1` before the branch), 0x25d690 called after the marker call's first pushes, and
+// the tail's actor index/reference/slot in EBX/ESI/EDI (retail ESI/EDI/EBX).
+// Earlier 147 (was 172): frame 0x162c agrees; the actor offset is in ESI as retail. Left: the result
+// is set with setne (retail `mov al, 1` before the branch, `xor al, al` on the missing-prop exit),
+// the view/actor-offset/character/actor spill homes rotate (retail 0x14/0x18/0x1c/0x20, ours
+// 0x1c/0x14/0x20/0x18), 0x25d690 is called after the first pushes, and in the search tail retail
+// keeps the actor index in ESI, the reference in EDI and the slot in EBX with scratch spilled (ours
+// scratch EBX, reference ESI, slot EDI, the index reloaded at each use).
+// Earlier 172 (was 193): frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
+// frame 0x162c agrees since round 91; the actor offset (retail ESI), slot
+// (retail rematerialized into EBX) and scratch (retail in node's slot) homes remain.
+// Earlier: aligned frame 0x1634 versus 0x162c and actor/slot/scratch homes remain.
+// Round 16: retail takes the actor index from its first stack argument into EBX, keeps the
+// scaled actor offset in ESI and the actor pointer in EDI and stores them at [esp+0x18] and
+// [esp+0x20]; ours keeps the slot index in ESI and spills the actor offset.
+// Earlier note (score 212): aligned frame 0x1634 versus 0x162c and actor/slot/scratch homes remain.
 // Earlier: frame 0x1634 versus 0x162c; scaled actor offset and
 // slot/scratch homes remain, with a 14-byte length deficit.
 // Round 198: payload/native input/read-only input/input scope 323 each; clamp 322;
@@ -295,19 +346,104 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 429: ordinary result/location-index value/both/actor-reference value/result-reference/
 // location-reference/all/direct true with both values 289/214/289/258/294/257/294/294.
 // Separate invalid-search graph preserved; every new form restored.
+// Round 91: the search's other_actor/unknown and the code using them in their own block (entry and
+// scratch outside it) 212 -> 193 (kept: retail reuses node/view/actor-offset slots for them, frame
+// 0x162c); the whole search tail in a block 217 (frame 0x15ec); entry declared before scratch 193;
+// has_markers cleared right before its test 284; reference copied before its flag 242 (one load,
+// 1048 bytes); state declared at the top 193; state in the node block and again before its
+// unknown04 test 294; minimum as distance < limit 193.
+// Round 45 (lane 16): retail calls 0x25d690 before pushing the marker call's arguments; the node
+// state read into a block local first gives that block exactly, 173 (one-use call result, not kept);
+// on it: early/late state pointers 294, existing 0x1f86f0 for the moving test 295 (stays a call),
+// named marker-list local 173; `return true` at the not-ready exit 288 (1068 bytes, own `mov al, 1`
+// epilogue; retail stores the result through AL and that exit returns AL unreloaded); non-volatile
+// result 287 (folded); scratch declared in the search block 193; `limit < distance ? limit :
+// distance` 191; limit read from the field at each use 189 (retail's select with distance in XMM0);
+// with that, the reference read once into a local inside the nested moving test 239 (1048 bytes).
+// Retail's `mov al, 1; mov [esp+0xf], al` with the not-ready exit returning AL unreloaded is the shape
+// of a plain bool result kept in memory (matched 0x1bcd00 shows it for a result assigned false on one
+// path); a plain result assigned false for the missing prop (single exit, body nested in the ready
+// test) folds to constants 293; the result's address taken as a no-op 287 (folded too).
+// Round 109 (lane 6): 0x1f4a20's fourth argument is the marker list (0x70-byte records, NULL-tested;
+// retail passes the slot holding `has_markers ? markers : NULL`), not the scratch buffer: a named
+// marker-list local for the request field and that call 225 (1068 bytes = retail's length); kept
+// with the actor's +0x418 reference read once into a local for its compare and its store (retail
+// loads it once) 172. On 172: the movement limit read at each use 169; `limit < distance ? limit :
+// distance` 170; has_markers cleared after the state resets (retail's store order) 273; `return true`
+// at the not-ready exit 282 (1069 bytes); the state as `(s_slot_23 *)slot` 172 (same code). Retail
+// still keeps the scaled actor index in ESI from entry and reloads `slot` into EBX late; ours keeps
+// `slot` in ESI from the 0x1e4be0 call and spills the index.
+// Round 17 (m3 lane 2, fast): retail's tail has ESI = actor_index (reloaded for the search) and
+// EBX = slot (reloaded at the unknown04 test); ours keeps EBX = actor_index and ESI = slot
+// throughout. view renamed fields 172 and node renamed prop_node 172 (same code: the 4-byte spill
+// slots node/view and character/offset stay swapped); the node state read into a block local
+// before the marker call 153 (that block becomes retail's; one-use call result, not kept), with
+// state assigned at the top 153, with the three clears through slot->unknownc and state declared
+// at the movement block 285 (1055 bytes); the prop index tested through a fresh actor_get 272.
+// Round 25 (fast): the state read from `slot` at every use 172 (CSE'd, same code); `view` renamed
+// `fields`, `node` renamed `prop`, `character` renamed `traits` 172 each (same code: names don't move
+// the node/view or index/character slots); prop index tested through actor_get before the actor
+// pointer 272; has_markers cleared before its test re-measured 273 (aligned 130 vs 133). Retail's
+// early state stores go through the `&state->unknown11` temporary ([eax - 2]), so its `slot` is not
+// live across the middle. Opening body restored.
+// Round 8 (lane 18): the result computed as `actor->prop_index != NONE` and tested for the missing-prop
+// exit, in place of the volatile result: 194 (actor offset in ESI, setne), with `if (!result) return
+// result` 194, as a ternary 194, both exits in one test 287 (1050 bytes), preset true then false for
+// the missing prop 278 (folds); with `has_markers = false` right before its test 147 (kept, plain).
+// On 147: three declaration orders of the function-scope locals 147 each; scratch declared in the
+// search block 147; the limit select as `distance < limit ? distance : limit` 147, `limit <= distance ?
+// limit : distance` 146, `distance > limit ? limit : distance` 145.
+// Round 32 (m3 lane 14): matched sibling 0x1b3fd0 gets retail's result byte (`mov al, 1; mov [esp+..], al;
+// jne; xor al, al`, a reload at each final epilogue) from `bool result = true; if (... == NONE) result =
+// false; else if (...) { body } return result;` with every body path reaching that return. Here: the
+// whole body in that shape 182 (result byte, frame 0x162c and the tail's reference in EDI as retail, but
+// the actor offset in EAX and the slot held in ESI); only the search tail single exit 113 (kept). On
+// 113: wrapped openings (sibling/`result && ready`/`if (!result) return result`/`return false` then
+// ready/constant true with `return false`) 182/274/267/267/287; `return result` for the missing prop
+// 113; `return true` when not ready 288 (1076 bytes); result declared then assigned 113; sibling opening
+// with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
+// 141; available/success declared at the search block's top, available alone, available at function
+// scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
+// Round 46 (m3 lane 10, fast): lane 14's sibling single exit rebuilt (`bool result = true; if (prop_index ==
+// NONE) result = false; else if (ready) { body } return result;`) 182: frame 0x162c, the result byte at 0xf
+// beside has_markers and retail's `mov al, 1; mov [esp+0xf], al; jne; xor al, al` opening, but the actor
+// offset in EAX (spilled at 0x20; retail ESI at 0x18) and the view/character homes swapped (ours 0x1c/0x14,
+// retail 0x14/0x1c). On it: result declared before the actor 195; the ready test nested inside a
+// prop-index test with `else result = false` 277; the body's locals declared at function scope 182, with
+// has_markers first 182.
+// Round 14 (lane 17, fast): on this body the node state read into a block local before the marker call 101
+// (that block becomes retail's; one-use call result, not kept); `has_markers` renamed 113 (same code). The
+// whole body in the sibling result shape again 182; on it the node-state local 161 (frame 0x162c, result
+// byte, marker block and the tail's EDI reference as retail; left: the actor offset in EAX and the node
+// table base in ESI where retail has them the other way round, then the view/offset/character/actor spill
+// homes rotate and the slot stays in ESI); on that, the result declared before the actor 175; the tests as
+// nested ifs with the false result in an else 277.
+// Round 13 (lane 18, fast): retail's frame slots follow reference counts: its result byte (two defs in
+// the sibling `bool result = true; if (... == NONE) result = false; else if (ready) { body } return result;`
+// shape) sits beside has_markers at 0xe/0xf, so the 113 form's single-def result spills to its own dword
+// and the frame grows by 8. The movement limit read at each use gives retail's select block exactly
+// (distance in XMM0) 110 (aligned 113 against 116); on the sibling shape (182, aligned 105) it gives 178
+// (aligned 101: frame and result byte as retail; the actor offset in EAX, not ESI, and the slot
+// parameter enregistered in ESI from the state stores, where retail spills the offset around the view
+// branch and reloads the slot into EBX at the unknown04 test); the state pointer formed at entry from the
+// parameter 113 / sibling 182 (same code); sibling + limit read + result declared before the actor 191.
+// Retail also inlines matched 0x1f86f0 (the 504 test), which sits in an /Ob1 file (a flags lead).
+// Round 264: False-first single result, library movement minimum/two-use location index/
+// explicit marker-result masks 0..7 281/274/281/274/271/271/271/271. The first restores frame
+// 0x162c/result +0xf but regresses; original complete body and request producers restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
-    volatile bool result = true;
     s_actor_view *actor = actor_get(actor_index);
-    if (actor->prop_index == NONE)
+    bool result = actor->prop_index != NONE;
+    if (!result)
         return false;
     if (!*((bool *)actor + 0x40))
         return result;
 
     byte *character;
     s_slot_23_data *state;
-    bool has_markers = false;
+    bool has_markers;
     s_object_marker markers[32];
     short marker_indices[32];
     s_2605d0_request request;
@@ -320,6 +456,7 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
         state->unknown0f = false;
         state->unknown10 = false;
         state->unknown11 = 0;
+        has_markers = false;
         if (!*((bool *)actor + 0x3c) && actor->unknown227)
             has_markers = function_1ac610(actor_index, &prop_node_state(node)->position,
                 markers, marker_indices);
@@ -364,58 +501,68 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
     *(real *)((byte *)&request + 0x4c) = (real)minimum;
     *((bool *)&request + 0x50) = true;
     *((bool *)&request + 0x59) = character && (*character & 1);
-    *(s_object_marker **)((byte *)&request + 0x64) = has_markers ? markers : NULL;
+    s_object_marker *request_markers = has_markers ? markers : NULL;
+    *(s_object_marker **)((byte *)&request + 0x64) = request_markers;
     if (state->unknown04 != 0.0f)
         *(real *)((byte *)&request + 0x1c) = state->unknown04;
-    if (actor->unknown50c && actor_get(actor_index)->unknown504 != 2 &&
-        !REFERENCE_EQUAL(actor->unknown418, g_470fa0))
+    if (actor->unknown50c && actor_get(actor_index)->unknown504 != 2)
     {
-        *((bool *)&request + 0x692) = true;
-        *(s_reference *)((byte *)&request + 0x694) = actor->unknown418;
+        s_reference actor_reference = actor->unknown418;
+        if (!REFERENCE_EQUAL(actor_reference, g_470fa0))
+        {
+            *((bool *)&request + 0x692) = true;
+            *(s_reference *)((byte *)&request + 0x694) = actor_reference;
+        }
     }
 
     byte *scratch = ai_scratch_buffer_get();
     s_261d20_entry entry;
-    long other_actor;
-    bool unknown;
-    s_reference reference = function_261280((s_prop_search *)&request, actor_index,
-        &entry, &other_actor, scratch, &unknown);
-    if (REFERENCE_EQUAL(reference, g_470fa0) || *(short *)((byte *)&entry + 8) > 1)
     {
-        state->unknown00 = true;
-        g_46eeb8[0x23]->unknown8 = g_46f348;
-        ai_scratch_buffer_release(scratch);
-        return result;
-    }
-    s_262b40_result *location = function_262b40(reference);
-    bool available = false;
-    bool success = false;
-    if (*(short *)((byte *)&entry + 0x5c) != 0 &&
-        *(long *)((byte *)location + 0x14) != NONE &&
-        *(long *)((byte *)location + 0x14) != 0xffff)
-    {
-        success = function_1f4a20((s_1f4a20_entry const *)&entry, actor_index, reference,
-            (s_1f4a20_source const *)scratch, true, &state->point, &state->facing,
-            (signed char *)&state->unknown11, &available);
-        if (success)
+        long other_actor;
+        bool unknown;
+        s_reference reference = function_261280((s_prop_search *)&request, actor_index,
+            &entry, &other_actor, scratch, &unknown);
+        if (REFERENCE_EQUAL(reference, g_470fa0) || *(short *)((byte *)&entry + 8) > 1)
         {
-            state->unknown0f = true;
-            state->unknown10 = false;
+            state->unknown00 = true;
+            g_46eeb8[0x23]->unknown8 = g_46f348;
+            ai_scratch_buffer_release(scratch);
         }
-        else if (available)
-            reference = g_470fa0;
+        else
+        {
+            s_262b40_result *location = function_262b40(reference);
+            bool available = false;
+            bool success = false;
+            if (*(short *)((byte *)&entry + 0x5c) != 0 &&
+                *(long *)((byte *)location + 0x14) != NONE &&
+                *(long *)((byte *)location + 0x14) != 0xffff)
+            {
+                success = function_1f4a20((s_1f4a20_entry const *)&entry, actor_index, reference,
+                    (s_1f4a20_source const *)request_markers, true, &state->point, &state->facing,
+                    (signed char *)&state->unknown11, &available);
+                if (success)
+                {
+                    state->unknown0f = true;
+                    state->unknown10 = false;
+                }
+                else if (available)
+                    reference = g_470fa0;
+            }
+            if (!available && !success)
+                reference = function_2626b0(actor_index, reference, other_actor, scratch, unknown, true);
+            if (!REFERENCE_EQUAL(reference, g_470fa0))
+            {
+                state->unknown01 = true;
+                actor->unknown4ae = true;
+                ai_scratch_buffer_release(scratch);
+            }
+            else
+            {
+                state->unknown00 = true;
+                g_46eeb8[0x23]->unknown8 = g_46f348;
+                ai_scratch_buffer_release(scratch);
+            }
+        }
     }
-    if (!available && !success)
-        reference = function_2626b0(actor_index, reference, other_actor, scratch, unknown, true);
-    if (!REFERENCE_EQUAL(reference, g_470fa0))
-    {
-        state->unknown01 = true;
-        actor->unknown4ae = true;
-        ai_scratch_buffer_release(scratch);
-        return result;
-    }
-    state->unknown00 = true;
-    g_46eeb8[0x23]->unknown8 = g_46f348;
-    ai_scratch_buffer_release(scratch);
     return result;
 }

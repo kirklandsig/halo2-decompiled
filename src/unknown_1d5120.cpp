@@ -13,7 +13,7 @@ __declspec(noinline) void function_1d4360(s_havok_component *component, transfor
 struct s_havok_transform;
 void function_181f80(s_havok_transform *result, transform4x3f const *matrix);
 bool function_f1320(long object_index);
-bool function_205510(void *buffer, void const *definition_physics, s_havok_component *component);
+bool function_205510(s_havok_component *component, void const *definition_physics, void *buffer);
 
 class c_1d56f0_shape
 {
@@ -74,7 +74,7 @@ void function_1d56f0(s_havok_component *component)
             if (skip || !function_f1320(component->object_index))
             {
                 real bounds[6];
-                if (function_205510(bounds, physics, component))
+                if (function_205510(component, physics, bounds))
                 {
                     c_contact_query_bounds_info info;
                     info.lower.set(bounds[0], bounds[2], bounds[4]);
@@ -170,6 +170,14 @@ void function_1d56f0(s_havok_component *component)
 // sort last 77; the source transform through a const reference 77; the setter call's index replaced by a
 // constant (diagnostic) 87; index copied to a local at entry 77; entry reference through the array's
 // operator[] 77; forceinline getter declaration 77.
+// Round 97 (lane 7): BLOCKED-BY 0x1d0cf0 again (its file is held this round); 19 aligned differences, all in
+// that tail but the lookup's SIB order. A byte offset local added first, the component through a const
+// reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
+// 77 each (still `[eax + edx + 0x40]`).
+// score 77 (was 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
+// cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
+// The body was left as it is.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

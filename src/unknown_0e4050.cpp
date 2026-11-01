@@ -47,34 +47,19 @@ bool function_e4050(long object_index)
    (0x21e230 keeps `this` in esi across the call); noinline keeps the call */
 inline __declspec(noinline) real function_12aff0(real a, real b, real c, bool flag);
 
-// score 8 (was 8): retail compares (a > c) with flag at full width and gives the edge path two
-// separate returns after the clamp's exit; ours compares words and loads 0.0 before the test (select).
-// Tried: (a > c) == flag in a ternary, an if with two returns, a long local, != with swapped
-// constants 10 each; bool local 17; one result for both paths 10; the near-edge test first
-// with a ternary 30, with two returns 27 (retail's exact edge and clamp blocks, laid out in the
-// other order); fabs(a - b) < 0.0001f first 27; the clamp result declared first with the edge
-// returns in the else 10.
-// Retail full-width edge comparison and separate returns remain; native signed/unsigned
-// outcome 10/10, signed word 9; false-first/full-arm outcome 13/10, zero-first real result 10, explicit edge
-// returns 10, real truth return 24. Original word outcome and body restored.
-// Round 202: independent clamp bounds 8; native bound returns 34; upper-first bounds 13;
-// existing shared real clamp with word/full/direct edge outcomes 8/10/10, edge-first 27,
-// one real result 35. All bodies and helper declarations restored.
 // @retail 0x12aff0
 real function_12aff0(real a, real b, real c, bool flag)
 {
+	real t;
 	if (!(0.0001f > fabs(a - b)))
-	{
-		real t = (c - a) / (b - a);
-		if (t < 0.0f)
-			t = 0.0f;
-		else if (t > 1.0f)
-			t = 1.0f;
-		return t;
-	}
-
-	word above = a > c;
-	return above == flag ? 0.0f : 1.0f;
+		t = (c - a) / (b - a);
+	else
+		t = (a > c) == flag ? 0.0f : 1.0f;
+	if (t < 0.0f)
+		t = 0.0f;
+	else if (t > 1.0f)
+		t = 1.0f;
+	return t;
 }
 
 /* the particle system objects at 0x479868 and 0x479874, picked by the group

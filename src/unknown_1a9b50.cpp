@@ -250,28 +250,6 @@ bool __stdcall function_1aa990(long actor_index, s_slot *slot)
 	return result;
 }
 
-// score 11 (was 11): extent now agrees at 352 bytes; the pool pointer still uses ECX
-// instead of EAX, the fraction uses EDX instead of ECX, and the shared range-value
-// load/compare schedule differs. Reading the range field at each use (no local) gives
-// retail's compares (aligned 7 -> 4) but 17 at 353 bytes: the ECX pool load is a byte
-// longer than retail's EAX one.
-// Tried (r35): prop_ref_get and the real record types 17; the state assigned after declaration 17;
-// prop_node_state 17; the reversed probability comparison 35; const entry, state, or actor/unit 17.
-// Guarded state/value/both observations 59/11/57; probability result conditional 105;
-// three-first rejection 42; four-first selection 97; both observations with the
-// conditional/four-first result 91/94. Keep the twice-used range value after the prop guard.
-// Round 268 on the two-use range graph: long result 11; entry range declaration 11;
-// entry prop/state declarations 11; unsigned result 11; long result plus entry range 11;
-// entry range/receivers 11; unsigned result plus entry receivers 11; split entry acquisition
-// with unsigned result 11. Loads and call tuples stayed at their original boundaries.
-// Upper-first range with original/full role names 14/14; complete role names 11;
-// byte selection alone/upper-first/names/both 41/44/41/44; signed-byte selection 41
-// (fast control 11). Pool/fraction carriers and conditional range loads remain; all restored.
-// Round 33: lower-only scalar, split result predicates, range-field pointer and nested upper
-// scalar 17 each; guarded state value 59; noinline state/actor/fraction/admission helpers 11 each;
-// entry prop index with state wrapper/direct range 63; block prop index with them 17.
-// Round 87, on the per-use range field: result declared first 88; the inner tests merged into
-// one if 17; the state through prop_node_state 17; a node pointer for the state 17.
 // @retail 0x1aa9f0
 short __stdcall function_1aa9f0(long actor_index)
 {
@@ -282,21 +260,22 @@ short __stdcall function_1aa9f0(long actor_index)
 
 	if (!(unit->flags19 & 1) && entry && actor->prop_index != NONE &&
 		entry->unknown24 >= g_45dbd8 && !actor->unknown229 &&
-		(actor->times[4] == NONE || (real)(g_510c54->game_time - actor->times[4]) * g_510c54->rate > entry->unknown34) &&
-		!function_110ab0(actor->unknown018))
+		(actor->times[4] == NONE || (real)(g_510c54->game_time - actor->times[4]) * g_510c54->rate > entry->unknown34))
 	{
-		s_prop_datum_view *prop = (s_prop_datum_view *)prop_node_get(actor->prop_index);
-		s_prop_state_64 *state = (s_prop_state_64 *)function_25d690((s_prop_datum *)prop);
-		if (prop->unknown27 >= 1)
+		long unit_index = actor->unknown018;
+		if (!function_110ab0(unit_index))
 		{
-			real prop_value = prop->unknown28;
-
-			if ((state->unknown64 || prop_value > entry->unknown1c) && entry->unknown20 > prop_value)
+			s_prop_datum_view *prop = (s_prop_datum_view *)prop_node_get(actor->prop_index);
+			s_prop_state_64 *state = (s_prop_state_64 *)function_25d690((s_prop_datum *)prop);
+			if (prop->unknown27 >= 1)
 			{
-				if (state->unknown64 && !function_1e2030(actor_index))
-					result = 4;
-				else if (function_1c9ee0(entry->unknown24) > function_259a0(&g_4e7408->unknown0))
-					result = 3;
+				if ((state->unknown64 || prop->unknown28 > entry->unknown1c) && entry->unknown20 > prop->unknown28)
+				{
+					if (state->unknown64 && !function_1e2030(actor_index))
+						result = 4;
+					else if (function_1c9ee0(entry->unknown24) > function_259a0(&g_4e7408->unknown0))
+						result = 3;
+				}
 			}
 		}
 	}
@@ -527,6 +506,25 @@ extern point2f *g_468778;
 // Round 428: native short/word/long/dword completion result 404/404/406/406;
 // those result widths with actor-first acquisition 401/401/403/403. All 1549 bytes;
 // result spill and actor/settings/prop allocation remain; original bool result and lookup order restored.
+// Round 238: complementary rejection result bool/byte/short/long 394/394/403/401;
+// those domains with actor-first acquisition 419/419/406/404. Original positive
+// bool result, lookup order, early distance and complete body restored.
+// Round 37 (lane 1, fast): no facing pointer, the facing read through the prop view 401; the settings
+// threshold field in a named local 406; the actor before the settings call 413; that with
+// `if (!settings || f13 || f14 || f2d) return false;` and a direct final return 393 (1549 bytes, frame
+// 0x40 and all four pushes at entry as retail; ours keeps arg_0/actor/settings/slot in EBX/EDI/ESI/EBP,
+// retail in EDI/EBP/memory/ESI with the prop in EBX); the slot pointer declared first there 393.
+// Round 249: Repeated actor/request truth snapshots, singly/both 400/401/394;
+// actor-first counterparts 402/425/415; both with late false default, original/actor-first
+// acquisition 426/429. All three predicate calls, early distance and complete original body restored.
+// Round 471: Complete persistent actor/settings/slot/prop lexical priorities in eight
+// role-correct identity sets 375 each. Original pointer names, observations and body restored.
+// Round 145: ignoring register names, ours differs from retail in about 100 instructions (entry order,
+// result byte, prop home, facing reads, constant exits). Actor first with `if (...) {...; if (!f14 && !f13
+// && !f2d) return true;} return false;` 413 (1523 bytes); actor first with the result byte 413 (1555);
+// constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
+// settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
+// first facing dot read off the prop view 408 (1556).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -694,7 +692,10 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 384 (was 384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
+// score 384 (was 384): the frame and the length agree, and the early false exit's place, the
+// object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
+// Earlier (384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
+// Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
 // `goto local_7` jump; ours puts it last. `bool local_2 = !f13 && !f14 && !f2d; if (local_2) {...} return
 // local_2;` (and the same with an if/else setting the flag) lands it where retail does, but arg_0 then takes
@@ -773,6 +774,44 @@ static __forceinline long real_to_long(real value);
 // Round 220: Early distance-limit scope/exhaustive/conditional/complementary producers 398/402/402/402;
 // the same four with the actual native slot formal and no cast alias 398/402/402/402. All retain
 // retail length but regress; complete original body, formal, sole declaration and every query restored.
+// Round 42: complete target/object velocity scalar values retained at all uses
+// 513/502; complete prop-facing value 489; target/object, target/facing and
+// object/facing value pairs 555/583/544; all scalar values 603; all native vector
+// values 574. Original pointers, fresh reads, arithmetic, query aliases and body
+// restored; frame 0x58, early rejection and magnitude/query homes remain.
+// Lane 18 round 6: the first 66 instructions agree; retail's false exit after the `goto local_7` jump shifts
+// positions by 3-5 to about index 430. Retail keeps the actor in ESI into the velocity block, forms the facing
+// address late (`add eax, 0x2c`, later `lea esi, [eax+0x2c]`) and spills the AI object pointer (velocity read
+// at +0x88). Then-arm `return local_2;` with a final `return false;` 510; false-initialised result without the
+// else arm 496; object pointer local for the six velocity reads 409 (1918 bytes); facing field read at each use
+// 513 (1941 bytes); both 524; `facing` declared in the else arm only, the then-arm copy read from the field
+// 477 (1906 bytes). Original body restored.
+// Round 37 (lane 1, fast): the existing magnitude3d call for the written-out object-speed root 482
+// (1886 bytes: our LTCG keeps the call, retail inlines it here and calls it in 0x1aa0d0); result
+// preset false without the else 496 (frame 0x54); no facing pointer, the prop view's facing read at
+// each use (retail addresses it off the view) 513 (1941 bytes); that with an object pointer and
+// `object->velocity` reads (retail spills the object pointer, not object + 0x88) 524; the object
+// pointer alone 409.
+// Round 181 (lane 3): aligned through the moved early exit only 170 rows differ: our code is
+// retail's apart from the early false exit's place (retail puts it after the first `goto local_7`
+// jump; ours is last) and the object/facing/query homes. Retail stores the true result once
+// (`mov byte [esp+0x13], 1`) and reloads it at the end, so its result is not folded to a constant
+// even though the false path has its own exit. The result preset true with the false arm first
+// 399 (the true store hoists to the entry, the exit stays last); an early `return false` with the
+// result declared true before it 510 (frame 0x54: the result folds); the facing pointer declared
+// after the flag and vector 384 (identical); the near-facing flag set before its copy 384
+// (identical); that copy read from the view directly 397.
+// Lane 18 round 15 (fast with the callees): VC pulls a block up behind its first predecessor's chain only when jump
+// threading created it, so retail's false exit is a threaded copy of the return; the computed entry flag
+// (`bool local_2 = !f13 && !f14 && !f2d; if (local_2)`, lane 6's form) re-measured 517: it lands the exit where
+// retail does, but arg_0 then keeps EDI (the settings pointer is spilled) and the frame is 0x54. On that form:
+// `!(f13 || f14 || f2d)` 517; the actor taken before the flag 518 (1921 bytes); the settings lookup before the
+// actor 511 (1912 bytes); a redundant `local_2 = true` in the then-arm (diagnostic) 530. On the original form:
+// the last 0x1a9e00 dispatch moved after the if and guarded by `local_2 &&` 406 (the exit stays last); the
+// result declared before the slot view 384 (identical).
+// Round 262: Returned admission predicate with entry declarations of query speed/time/direction,
+// their three pairs/all, and all plus actual request: 517 each (1926/1904, frame 0x54).
+// Original result, scopes, input/output query aliases, arithmetic and complete body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

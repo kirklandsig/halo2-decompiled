@@ -23,10 +23,23 @@ real function_30bf0(vector3f *v);
 real magnitude3d(vector3f const *v);
 extern vector3f *g_4687bc;
 
-__declspec(noinline) short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4,
+__declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4,
  long arg_0, void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
-// score 170 (was 170): Frame 0x8c/0x94, raw secondary-result home and common probe tail remain.
+// MiniMax lane C (run 36, 10-31, later pass): no lower score; the fast check has to name both
+// lane files, otherwise the reduced build holds another object set (362 instead of 5), and the add
+// and multiply operand order, the literal quarter, a value or reference centre, the centre
+// pointer's scope and the mode-1 row order all leave the same five differences.
+// MiniMax lane C (run 36, 10-31): applied the lane-E score-5 body (short category, bool clear
+// state, one bool probe result with `category = 1` on a hit, mode-1 rows reading the centre through
+// a named copy of the cast parameter) to the current parameter order.
+// score 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
+// result with `category = 1` on a hit (function_16a040 returns bool, so category gets the same value) are
+// kept. The run's 5 also read the mode-1 rows through a second pointer to arg_1 (`centre`, the same value
+// as local_3): a duplicate local, not kept without a match. At 5 only the mode-1 positive point's x and z
+// rows differed: retail folds the x centre as a memory operand and loads the z centre into a register,
+// that form loaded the x centre ahead of the first multiply and folded the z centre. Scores are from
+// `check.py --fast 0x1c8df0 0x1e55d0` (0x1c8df0 alone gives 360).
 // Round 75 (all match-only, restored): clear state bool, one bool probe result for the mode-1/mode-2
 // probes with `category = 1` on a hit 28; with short category 26 (frame, slots, cmp ax all retail);
 // centre read through the cast parameter instead of the local copy 20: only the mode-1 x-row fold
@@ -156,11 +169,19 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_3, short arg_2, p
 // Round 302: Late classifier default-four/default-two/terminal-selection/full-selection
 // 176/172/170/170; with Boolean primary state 174/174/175/175. Original category
 // producers and primary state restored; frame 0x8c/0x94 and secondary tail remain.
+// Round 197: Complete immutable positive-quarter/negative-quarter/triple probe points,
+// masks 1..7, and all mutable aggregate points each score 5 on the shared-outcome graph.
+// X/Z load scheduling remains; the added result byte is exact-only and every form is restored.
+// DL204: shared-outcome side/fallback setters and named normalization length, masks 1..7,
+// 5/254/254/26/26/254/254; complete graph with fallback library copy 26. Exact-only forms restored.
+// Round 460: Shared-outcome graph with native normalized direction copies for positive,
+// negative and endpoint consumers, subsets 1-7 and immutable all, 350/337/370/222/364/365/364/364.
+// No exact match; every direction copy and added-result form restored.
 // @retail 0x1c8df0
-short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, long arg_0,
+short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
 {
- long category;
+ short category;
  real local_1;
  long local_2 = NONE;
  point3f const *local_3 = (point3f const *)arg_1;
@@ -180,7 +201,7 @@ short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, 
    local_4 |= 0x8000000;
   if (arg_7)
    local_4 &= ~0x20;
-  long local_7;
+  bool local_7;
   {
    vector3f local_5;
    vector3d_from_points3d(local_3, arg_4, &local_5);
@@ -202,6 +223,7 @@ short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, 
    if (function_30bf0(&local_8) == 0.0f)
     local_8 = *g_4687a8;
    local_4 |= 0x10000000;
+   bool hit;
    if ((short)arg_5 == 1)
    {
     point3f local_9;
@@ -215,10 +237,10 @@ short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, 
     local_10.z = local_3->z - local_8.k * spacing;
     if (local_7)
     {
-     category = function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
-     if (category == 0)
-      category = function_16a040(local_4, &local_10, arg_4, arg_0, NONE, &local_6);
-     if (category != 0)
+     hit = function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
+     if (!hit)
+      hit = function_16a040(local_4, &local_10, arg_4, arg_0, NONE, &local_6);
+     if (hit)
      {
       local_2 = local_6.field_40;
       local_1 = local_6.field_4;
@@ -226,9 +248,9 @@ short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, 
     }
     else
     {
-     category = !function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
-     if (category == 0)
-      category = !function_16a040(local_4, &local_10, arg_4, arg_0, NONE, &local_6);
+     hit = !function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
+     if (!hit)
+      hit = !function_16a040(local_4, &local_10, arg_4, arg_0, NONE, &local_6);
     }
    }
    else if (local_7)
@@ -245,21 +267,22 @@ short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, 
     local_11.x = arg_4->x + g_4687bc->i * 0.1f;
     local_11.y = arg_4->y + g_4687bc->j * 0.1f;
     local_11.z = arg_4->z + g_4687bc->k * 0.1f;
-    category = function_16a040(local_4, &local_9, local_3, arg_0, NONE, &local_6);
-    if (category == 0)
-     category = function_16a040(local_4, &local_10, local_3, arg_0, NONE, &local_6);
-    if (category == 0)
-     category = function_16a040(local_4, &local_11, local_3, arg_0, NONE, &local_6);
-    if (category != 0)
+    hit = function_16a040(local_4, &local_9, local_3, arg_0, NONE, &local_6);
+    if (!hit)
+     hit = function_16a040(local_4, &local_10, local_3, arg_0, NONE, &local_6);
+    if (!hit)
+     hit = function_16a040(local_4, &local_11, local_3, arg_0, NONE, &local_6);
+    if (hit)
     {
      local_2 = local_6.field_40;
      local_1 = local_6.field_4;
     }
    }
    else
-    category = 0;
-   if (category != 0)
+    hit = false;
+   if (hit)
    {
+    category = 1;
     goto local_14;
    }
   }

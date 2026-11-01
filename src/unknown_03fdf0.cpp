@@ -233,6 +233,142 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // in a register where retail loads it into EDI and spills it, and the entries cursor is spilled at
 // once); a long count named at the block top 140 (29 aligned), before the `if` 165, as a short
 // before the `if` 177 (480 bytes), named after first 166.
+// takes cache_index in EDX (its caller 0x404b0 passes it there), multiplies it in place, reads the
+// count once as a short into AX (zero in ECX) and clears the globals before the loop; ours computes
+// the index in EAX and stores the table pointer later. Without the block pointer (count and entries
+// indexed at each use) the head is retail's (scaled index in EDX, spilled) and so is the loop tail,
+// but count lands in CX/EDX (retail AX/EAX, zero in ECX) and first stays in EAX where retail loads
+// it into EDI and spills it across the inline memcpy; the entries cursor is spilled at once.
+// Tried: indexed form 144 (count through the metadata view or the block, 492 bytes; aligned 30
+// against the block form's 55); entries indexed by the counter 164; separate cursor pointer 54;
+// with the current stored first 140; block pointer declared inside the if 151; index head with the
+// block pointer only for the loop 155; count read once into a short local 177 (480 bytes); the
+// block local renamed (records, zone) or taken as a reference 54; on the block form: each entry as
+// `&block->entries[n]` 146 (494 bytes), no first local 162; metadata pointer plus entry-table
+// expression and early index 154; shared-scale entries 159; direct metadata with early index 159;
+// const first 146; direct copy with late entries 163; first address direct/reference 163 each;
+// early selection 169. The two g_4c1a80 statements (the same field as g_4c1a48[2].flags) removed:
+// same code. On the indexed form: the cursor set after the selection with the copy source indexed
+// 164 (retail's loop, saves and reload at the join, but both parameters on the stack); the cursor
+// defined after the copy or set before the loop 164 (the scaled index takes EBP, both parameters on
+// the stack); one variable for first and the loop index 159-163 (retail's head exactly: index in
+// EDX, count in AX/EAX, zero in ECX, entries in EDX; the index then lives in EBP and mode is
+// spilled, where retail spills first and keeps mode in EBP), with entries after the copy 160, with
+// entries before it 163 (cache_index in EAX); `first + n` with `entries[n]` 158; first by a
+// chained assignment 140/158; current set from previous and first read back 140; the copy's
+// destination through the stored current 164; the loop index set before the selection 162 (cache
+// index in ECX); the selection as if/else or as the reversed ternary 164/164; selection, n/index,
+// cursor or first declared early 164 each; the cursor before the copy with one index variable 163;
+// the count in a short local read before the clears 164, for the guard, copy size and advance 177
+// (cache_index in ECX); entries declared before first 145; a for loop over n 144 (141 with the
+// chained first); entries pointer after the copy 164 (cache_index moves to the stack); no first
+// local (previous read for the copy and the loop index) 157 (count AX/EAX, zero ECX and first EDI
+// as retail, but the index arrives in EAX, the frame grows to 0x4c and previous is re-read); a long
+// count named at the block top 140 (aligned 29: count in AX/EAX as retail, index in ECX, zero EDX),
+// before the `if` 165, as a short before the `if` 177 (480 bytes), named after first 166. Round 41
+// (fast, indexed form): the named long count with one first/index variable 163; the short count
+// local with one first/index variable 112 (508 bytes but aligned 68); the field re-read for the
+// copy and advance with one first/index variable 163; with the named long count, entries declared
+// before first or before the count 140/140, the copy source indexed and entries set after the
+// advance 155. The block form stays the closest.
+// Plain group reset loops count/first/flags, count/flags/first, first/count/flags,
+// flags/count/first with block and indexed receivers 54/54/54/54/144/144/144/144. Scaled-index
+// and copy/count homes remain; original body restored.
+// Lane 15 r19: retail's caller 0x404b0 passes the index in EDX and pushes mode; retail spills its
+// scaled-index temporary above the loop locals where ours spills the named block pointer below them
+// (every loop slot 4 bytes off). The per-iteration entry copy removed 54 (identical, kept); block
+// pointer before the clears 148 (492 bytes); early return on `count <= 0` 54 (same code); indexed form
+// without the entry copy 144 (492 bytes); entries before first 54 (same code).
+// Round 6 (lane 17), indexed form (144; loop exactly retail's, head only): the index, count and zero
+// always take EAX/ECX/EDX in a rotation (block EAX/ECX/EDX, indexed EDX/ECX/EAX, long count first
+// ECX/EAX/EDX; retail EDX/EAX/ECX). On it: a short count read before the clears with the loop re-reading
+// the field 177 (480 bytes); the clears in both arms of the guard 145; the guard as a bool computed before
+// the clears 144; a long count before the clears 165; entries declared before the clears 146; `0 < count`
+// 144; `count >= 1` 145; the clears through a group-reset helper 144.
+// Round 107 (fast; the block form's entries cursor is biased +0xc, the second non-base read): indexed form
+// 144 (492 bytes; index in EDX as retail, count CX/EDX and zero EAX where retail has AX/EAX and ECX, first
+// in EAX across the copy where retail loads it into EDI and spills it); on it, current and first both
+// read from previous 140 (495), `&g_4ba138[first]` as the copy destination 144, a for loop over n 144,
+// the selection computed before the copy 170 (490).
+// Round 13 (fast; aligned = difflib count): the indexed form again 144 (492 bytes, aligned 23 against the block
+// form's 39: count CX/zero EAX where retail has AX/ECX, first in EAX where retail loads it into EDI and spills it,
+// no loop-entry jump over the pad); on it an early return on `count <= 0` 144 (aligned 23), the copy size as
+// `sizeof * count` 144 (23), `count >= 1` 145 (26); the block form with the geometry pointer renamed 54 (same code:
+// the slot order does not follow that name); on the indexed form the loop index declared before n 145 (23).
+// Round 112 (fast): the parameters as (mode, cache_index) at the definition and call 54 (same code: the one
+// register argument stays EAX). The arrival register follows the colouring of cache_index, the count and the
+// clears' zero: block form index EAX, count CX, zero EDX; indexed form EDX/CX/EAX 144; a named long count
+// at the block top ECX/AX/EDX 140 (retail EDX/AX/ECX; with retail's zero in ECX the six clears are 6-byte
+// stores, which is most of the indexed forms' 13-16 missing bytes). On that named count: the copy source as
+// the field 140, entries set after the advance 155, entries set before the loop 158, index declared before n
+// 141, the count as a short local 177 (480 bytes). A /Gd compile-only first pass loads cache_index into EBX
+// (block form) or EBP (indexed), so it does not predict the arrival register here.
+// Round 28 (lane 14), `--fast`: the indexed form rebuilt 144 (492 bytes, aligned 30: count CX and zero EAX where
+// retail has AX/ECX, so the six clears take the 5-byte EAX stores; first kept in EAX where retail loads it into
+// EDI and spills it; the cursor stored to mode's home before the copy where retail keeps entries in EDX and
+// stores the cursor at the loop head); the clears as two chained assignments per group or one chain of six 54/54
+// (same code) and on the indexed form 144/144 (same code); on the block form the cursor advanced before the
+// counters 58, a for loop over n 60, `0 < block->count` 54 (same code).
+// Round 99 (lane 8), indexed forms (index in EDX as retail; count CX and zero EAX where retail has AX and ECX):
+// rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
+// from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
+// copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
+// Round 21 (m3 lane 2, fast), indexed form with `long count = field;` for the copy size and advance and the guard and
+// loop still on the field: retail's count handling exactly (short load to AX, `cmp ax, <zero>`, `movsx eax, ax` in
+// place), but the index takes ECX and the zero EDX, so first keeps EDX across the copy and entries is spilled: 140
+// (495); the count declared after `current = first` 166; before the clears 139 (508 bytes, frame 0x4c, zero ESI);
+// entries then count first in the block 140; copy source as the field address, entries after the advance 155; the
+// copy as `sizeof * count` into `&g_4ba138[first]` 140; through the metadata view 140.
+// Round 40 (reduced-relink screen, base 49 on its scale): 36 combinations of the block pointer or indexed
+// blocks, the count as the field, a long at the top of the `if` or a short before the clears, the entries
+// cursor before the copy or after the advance, a separate index or `first + n`, and the block pointer before
+// or after the clears: nothing below the current body; indexed with a short count before the clears and the
+// cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
+// `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
+// Round 120 (lane 6, fast): on the block form, `current` set from `previous` and `first` reading
+// `previous` again 130; the block as `blocks + cache_index + 1` 54 (same code); `current` advanced
+// before the copy 167 (490 bytes); the loop index starting from `previous` read again 162 (493);
+// non-const block and entries pointers 54 (same code). Indexed form rebuilt 144 (count CX, zero EAX,
+// first EAX kept across the copy, entries ESI spilled at once); with a named long count 140 (count
+// AX/EAX as retail, but the index arrives in ECX with the zero in EDX, first in EDX); that with the copy
+// source as the field and entries set after the advance 155 (index arrives in EAX, scaled in EBX).
+// Round 34 (lane 13, LTCG harness through 0x404b0, harness positional; base 49 = 54, indexed form 125 at
+// 492 bytes, aligned 30): on the indexed form geometry declared at the loop-body top 125, `geometry !=
+// NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
+// material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
+// declared first 49 (identical, 54).
+// Round 24 (m3 lane 2), on the indexed form (count read through blocks[cache_index + 1] at each use,
+// re-measured 144 at 492 bytes: the cache index in EDX as retail, but the clears' zero in EAX and the
+// count in CX, so the first index keeps EAX where retail loads it into EDI and spills it): the two
+// clears as a loop over entries 1 and 2 144 (unrolled to the same code); the loop index declared
+// before the counter 145; the selection mask as a long 144; a named long count with one variable
+// for the first and loop index 166 (cache index back in EAX). The caller 0x404b0 reloads the cache
+// index from its stack slot for the call, so the register is this function's choice. On the block
+// form, the clears as that loop 54 (same code).
+// Round 107 (lane 8, fast; aligned = difflib count, block form 46): indexed form re-measured 144 (index EDX,
+// count CX, zero EAX); with a long count named at the `if` top 140 (index ECX, count AX, zero EDX). On the
+// block form: a long count named at the `if` top for the copy and advance 130 (508 bytes, aligned 41), with
+// the loop on it too 181 (479 bytes); the indexed named count with the loop on it 178 (479); a long count
+// named before the guard and used for it, the copy and the advance 161 (495); the guard as `>= 1` 54 (same
+// code). Retail's `first` lives in EDI (the copy's destination register) and is spilled at once; every form
+// here keeps it in a scratch register across the copy.
+// Round 36 (m3 lane 14, fast), on the indexed form with a long count at the block top (rebuilt 140, 495 bytes:
+// retail's count handling, but cache_index ECX and the zero EDX where retail has EDX/ECX, so first is loaded
+// into EDX before the pushes and kept across the copy where retail loads it into EDI and spills it, and the
+// entries pointer goes to mode's home before the copy where retail keeps it in EDX): entries set before first
+// 140 (same code); the copy into `&g_4ba138[first]` with current set to `first + count` after it 164; a
+// separate walking cursor initialised from entries before or after n/index 158/158 (both parameters move to
+// the stack, the scaled index takes EBP, the zero takes ECX as retail); current stored after the copy 164;
+// first read before count 166.
+// Round 124 (lane 5): an LTCG env link of this file plus the callee files' objects, with an entry calling
+// 0x404b0, gives the full build's listing instruction for instruction (2 s a form). On it (positional/aligned):
+// block form with `current` read back for first 125/37 (153 instructions); a short count before the `if` on
+// the block 60/53; indexed forms 125-145 (aligned 29-30 at 148-150 instructions: index ECX and zero EDX where
+// retail has EDX/ECX, first kept in EDX across the copy where retail loads it into EDI and spills it, entries
+// spilled to the cursor home at once where retail builds it in EDX after the copy; the indexed form with a
+// long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
+// the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
+// combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
@@ -255,24 +391,23 @@ void function_402b0(long cache_index, long mode)
         long index = first;
         while (n < block->count)
         {
-            s_44940_entry const *entry = entries;
-            if (entry->unknown00 & selection & 0x1fffff &&
-                entry->unknown00 & 1 && entry->unknown10[0xa] > 0 && (entry->flags & 0x1f0) == 0x1f0)
+            if (entries->unknown00 & selection & 0x1fffff &&
+                entries->unknown00 & 1 && entries->unknown10[0xa] > 0 && (entries->flags & 0x1f0) == 0x1f0)
             {
                 byte weight = g_4c0b78.weights[index];
-                long shape = entry->flags & 0xf;
+                long shape = entries->flags & 0xf;
                 byte material_index = g_4c0b78.material_indices[(short)index];
                 long material = NONE;
                 if (material_index != 0xff)
                     material = g_4c0b78.materials[material_index];
-                byte *geometry = (byte *)function_449e0((short)index, false, (bool)((entry->unknown00 >> 12) & 1));
+                byte *geometry = (byte *)function_449e0((short)index, false, (bool)((entries->unknown00 >> 12) & 1));
                 if (geometry)
                 {
                     for (long part = 0; part < *(long *)geometry; ++part)
                     {
                         s_render_part_context context;
                         if (function_45ce0((short)index, (byte *)&context, (short)part, (short)shape) &&
-                            function_460d0(*(dword const **)(entry->unknown10 + 4), (short)index, part))
+                            function_460d0(*(dword const **)(entries->unknown10 + 4), (short)index, part))
                         {
                             long chosen = context.material;
                             if (material != NONE)

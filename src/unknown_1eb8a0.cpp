@@ -3,6 +3,7 @@
 #include "unknown_123b30.h"
 #include "kill_volumes.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 #include <math.h>
 #include <string.h>
 
@@ -80,30 +81,16 @@ struct s_direction_rotation_input
 
 PRIVATE __forceinline void rotate_direction(vector3f *vector, const vector3f *axis, real sine, real cosine)
 {
-	real projected = dot3f(vector, axis) * (1.0f - cosine);
-	vector3f cross;
-	cross.i = vector->j * axis->k - vector->k * axis->j;
-	cross.j = vector->k * axis->i - vector->i * axis->k;
-	cross.k = vector->i * axis->j - vector->j * axis->i;
-	vector->i = vector->i * cosine + projected * axis->i - cross.i * sine;
-	vector->j = vector->j * cosine + projected * axis->j - cross.j * sine;
-	vector->k = vector->k * cosine + projected * axis->k - cross.k * sine;
+	real dot = dot3f(vector, axis);
+	real projected = dot * (1.0f - cosine);
+	real cross_i = vector->j * axis->k - vector->k * axis->j;
+	real cross_j = vector->k * axis->i - vector->i * axis->k;
+	real cross_k = vector->i * axis->j - vector->j * axis->i;
+	vector->i = vector->i * cosine + projected * axis->i - cross_i * sine;
+	vector->j = vector->j * cosine + projected * axis->j - cross_j * sine;
+	vector->k = vector->k * cosine + projected * axis->k - cross_k * sine;
 }
 
-// score 120 (was 120): Frame 0x18 agrees; rotation axis products and cosine/projection homes still differ.
-// Round 263: aggregate/sequential/setter/partial-sum publication with projection first
-// 209/209/120/149; with cross first 218/218/138/125. All helper and caller source restored.
-// Round 194: complete normalized-axis input/native-library/original-entry storage 184/184/184/184;
-// those four with the shared cross constructor 188/188/188/188. Input copies add 0xc
-// to the frame and do not recover axis loads or cosine reuse; original axis, helper and body restored.
-// Round 256: Staged axis construction original/angle/entry storage with named/direct normalization
-// 141/170/141/170/141/170; native aggregate axis with named/direct normalization 120/160. All
-// restored.
-// Round 35 (0x11d3b0's matched rotate form): k-j-i projection sum plus scalar cross terms 148 (991 bytes,
-// aligned 156 -> 103: the products follow retail, but the frame grows to 0x1c because the cosine gets
-// its own home beside the x87 transfer slot, and the sum still runs i,k,j); scalar cross terms alone
-// 148 (same frame); k-j-i sum alone 149 (1005 bytes); axis by value 177; the rotation written out in
-// the body with named sine/cosine 189; named sine/cosine with the scalar cross terms 189.
 // @retail 0x1ecf50
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input)
 {
@@ -113,15 +100,13 @@ void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input
 		dot = PIN(dot, -1.0f, 1.0f);
 		if (!(fabs(dot - 1.0f) < 0.0001f))
 		{
-			real angle = (real)acos(PIN(dot, -1.0f, 1.0f));
+			real cosine = PIN(dot, -1.0f, 1.0f);
+			real angle = (real)acos(cosine);
 			if (angle != 0.0f)
 			{
 				vector3f axis;
-				axis.i = input->up.j * input->direction.k - input->up.k * input->direction.j;
-				axis.j = input->up.k * input->direction.i - input->up.i * input->direction.k;
-				axis.k = input->up.i * input->direction.j - input->up.j * input->direction.i;
-				real length = function_30bf0(&axis);
-				if (length != 0.0f)
+				cross3f(&input->up, &input->direction, &axis);
+				if (function_30bf0(&axis) != 0.0f)
 				{
 					*up = input->up;
 					*forward = input->forward;
@@ -198,7 +183,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 642 (was 642): Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
+// MiniMax E run 26: score 642 (was 642): retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// score 642 (was 642): frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// Earlier: Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
 // Frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // Frame 0x24 and clock EDI agree; direction/sample homes and scalar schedules remain.
 // Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
@@ -277,6 +264,18 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // predicate/complete step arms/complete count arms masks 0..7: 667/705/671/711/701/722/704/708.
 // Original selection, predicates, count producers, observations and complete body restored;
 // exact caller preserved in all eight trials; direction/sample homes remain.
+// DL202: Shared duration-count producer with joined/terminal/conditional results and remaining-distance
+// initializers 703/708/681/703/681/708; native output arguments 642/708.
+// Complete supplied-direction native/const/setter/CRT observations 731/731/743/731,
+// frame 0x2c and caller loss in each. Original 0x24 frame, inputs, qualifiers and caller restored;
+// direction/sample residence and coefficient schedules remain.
+// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
+// scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
+// all with the activation workspace declared at entry 642. Original initializers and complete body restored.
+// Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
+// then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
+// inherited counter qualification, body and exact caller restored; direction/sample homes remain.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

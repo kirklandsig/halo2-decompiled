@@ -979,7 +979,17 @@ void function_fcdd0(long definition_index, point3f const *point, vector3f const 
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
  s_effect_owner const *owner, long index, vector3f const *normal);
 
-// score 22 (was 22): the effect call passes the definition index in ecx where retail uses edx, and the effect setup sets its arguments up in another order and zero-extends the word field with a 16-bit move where ours uses movzx; both calls follow the conventions of the callees in src/projectiles.cpp (BLOCKED-BY 0xfcbc0: with its normal and definition parameters swapped it matches and this is 20; BLOCKED-BY 0xfcea0: with that and a short index there this matches, but 0xfcea0 then differs more); position and direction pointer locals for the three calls 50
+// score 20 (was 20): only the 0xfcea0 call differs: retail passes the word field as a 16-bit argument
+// (`xor edx, edx; mov dx, [ebp + 0x2c]`, then its own argument order), ours zero-extends it with movzx for
+// 0xfcea0's long index. 0xfcea0's index as short matches this, but 0xfcea0 then passes it on to 0xfd740's
+// long element index (4 -> 133); with 0xfd740's as short too 0xfcea0 stays 4 and 0xfd0e0 goes 115 -> 148
+// (0xfd740 then extends it for 0x1883e0, whose matching parameter retail also passes unextended):
+// BLOCKED-BY 0xfd740, 0x1883e0. Earlier: 0xfcbc0 with its normal and definition parameters swapped
+// (since kept, 22 -> 20); position and direction pointer locals for the three calls 50
+// Round 103: the payload's word field declared short 20 (`movsx` for `movzx`); 0xfcea0's index as short
+// (definition, declarations and both calls) matches this function, but 0xfcea0 goes 4 -> 133 (579 bytes: its
+// `movsx` for 0xfd740's long index pads its loop head) and 0xfc330 527 -> 533; the same with word 133; with
+// the payload field short too 133; with 0xfcea0 widening the index into a long local at entry 133.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {
@@ -1262,89 +1272,6 @@ bool c_weapon_reload_event::v11(long a, long const *entities, long c, void const
     return result;
 }
 
-// score 32 (was 32): the device and unit indices take retail's EDI/EBP roles the other way
-// round, and the unit type test has no saved EBX temporary: retail keeps the pool pointer in EAX
-// until the unit object read, whose re-read data base it then copies from ESI (`mov eax, esi`).
-// Round 37 cause: VC merges a re-read of the table's data base with the headers read when the
-// re-read has one use; with two re-read uses (as in matched 0xa3420) it keeps the pool live and
-// the copy appears. 0xa3420's shape plus a second, unused object fetch of the device MATCHES
-// (--fast), but that fetch is dead code, so it is not kept. Natural forms this round: 0xa3420's
-// shape device-first 33, unit-first 32, object read as a third `&&` term 33; pool local read
-// twice, device first 30 (device EDI / unit EBP as retail; the pool still dies), unit first 35;
-// global re-read with the nested device test 33; pool local plus the dead device fetch 54.
-// Earlier: named device mask 32; named unit mask 32; both masks 32; byte suppression bitfields 35;
-// byte flags view 35; byte bitfields with masks 35; combined header predicates 39; byte flags
-// with masks 35; constant indices 32; unsigned indices 32; index names 32; early unit offset 39;
-// word slots 53; byte mask 35; typed word slots 69; shifted membership masks 38; complete
-// device/unit classification 32/32/32; deferred eligibility 49/51; negative classification exits
-// 32; explicit membership 53; contiguous byte domains 66. Device-first guard with typed table
-// reads and an object local 33; the same with the object read from a re-read table 33, or through
-// the existing object_get 33; device and unit header pointers 52; unit header pointer from a
-// re-read table 54; re-read table for both unit reads 54 (device then sits in EDI as in retail,
-// but the table moves to EDX). Device-first guard alone 33; 0xa3420's form (typed headers, one
-// combined type test, object from a re-read table) with/without result and object locals 33
-// each. A pool pointer local read for the headers and again for the object 30 (also nested, or
-// with an object local). Pool headers with a global object read, or the reverse, 33/33; object
-// through the headers 54; every unit read from the pool 52; pool unit header pointer 52.
-// Complete native unit-header value, late/early ownership with original/device-first guards:
-// current table 62/66/62/66; table re-read 62/66/62/66 (all add a 0xc frame). Native
-// handle-array loop/two original stores 194/32. A header pointer from a re-read table before the
-// unit test 33; plus `bool result = false;` first 33; the object through the file's
-// OBJECT_FROM_INDEX 33, also as a third `&&` term 33; object read from a re-read table 32.
-// round, and the second type mask has no saved EBX temporary; retail keeps the pool pointer in EAX
-// through the unit type test (hence EBX) and copies the data base (`mov eax, esi`) for the unit's
-// object read.
-// Tried: named device/unit/both masks 32; byte suppression bitfields 35; byte flags view 35; byte
-// bitfields with masks 35; combined header predicates 39; constant/unsigned indices and index names
-// 32; early unit offset 39; word slots 53; typed word slots 69; byte mask 35; shifted membership
-// masks 38; complete device/unit classification 32; deferred eligibility 49/51; negative
-// classification exits 32; explicit membership 53; contiguous byte domains 66; earlier guard,
-// declaration/result lifetime, header/table and unsigned-mask forms 32-54.
-// Device-first guard with typed table reads and an object local 33; the same with the object read
-// from a re-read table 33, or through the existing object_get 33; device and unit header pointers
-// 52; unit header pointer from a re-read table 54; re-read table for both unit reads 54 (device then
-// in EDI as in retail, the table in EDX).
-// Round 6: device-first guard alone 33; matched 0xa3420's form (typed headers, one combined type
-// test, object from a re-read table) with/without result and object locals 33 each. A pool pointer
-// local read for the headers and again for the object gives retail's device EDI / unit EBP 30 (also
-// nested, or with an object local); the pool still dies after the first read. Pool headers with a
-// global object read, or the reverse, 33/33; object through the headers 54; every unit read from the
-// pool 52; pool unit header pointer 52. Complete native unit-header value, late/early ownership with
-// original/device-first guards 62/66 (add a 0xc frame). Native handle-array loop/two original stores
-// 194/32.
-// Round 30: object read from a re-read table 32 (same code); with the device-first guard 33;
-// matched 0xa3420's typed form 33; object through the file's object macro 32; unit header pointer
-// from the same table 54.
-// Lane 14 r9: device-first guard with the pool-local form 30; plus the unit header address taken
-// before the unit type test 30 (same code); the table read from the global at every use 54; through
-// a pool local at every use 52; typed pool headers with the object re-read through the pool 30.
-// round, and the second type mask has no saved EBX temporary; retail also copies a second
-// table value into EAX for the unit type test. Retail's EBX temporary and `mov eax, esi` copy
-// say the table's global pointer stays live in EAX through the unit type test and the object
-// read re-reads the data base (later replaced by a copy of ESI); matched 0xa3420 shows that
-// pattern from a re-read of the table, but here our build always merges the re-read.
-// Tried: named device mask 32; named unit mask 32; both masks 32; byte suppression bitfields 35;
-// byte flags view 35; byte bitfields with masks 35; byte flags with masks 35; combined header
-// predicates 39; constant indices 32; unsigned indices 32; index names 32; early unit offset 39;
-// word slots 53; typed word slots 69; byte mask 35; shifted membership masks 38; complete
-// device/unit classification 32; deferred eligibility 49/51; negative classification exits 32;
-// explicit membership 53; contiguous byte domains 66; a device-first guard alone 33; with typed
-// table reads and an object local 33; with the object read from a re-read table 33, or through
-// re-read table 54 (54 from the same table); re-read table for both unit reads 54 (device then in
-// EDI as in retail, the table in EDX); matched 0xa3420's form (typed headers, one combined type
-// test, object from a re-read table) with or without result and object locals 33, plus a header
-// pointer from a re-read table before the unit test 33, plus `bool result = false;` first 33;
-// the object through the file's OBJECT_FROM_INDEX 32/33, also as a third `&&` term 33; object
-// read from a re-read table 32 (unit-first guard); a pool pointer local read for the headers and
-// again for the object 30 (retail's device EDI / unit EBP; also nested, or with an object local;
-// the pool still dies after the first read); pool headers with a global object read, or the
-// reverse, 33/33; object through the headers 54; every unit read from the pool 52; pool unit header
-// pointer 52; complete native unit-header value, late/early ownership with original/device-first
-// guards 62/66 (current or re-read table; all add a 0xc frame); native handle-array loop/two
-// original stores 194/32.
-// Round 84: on the 0xa3420 form, `long unit;` declared first 33; on the pool form, an early
-// `return false` for the NONE guards 30, the pool read before the NONE guard 31, a typed unit
-// object pointer 30, both type tests through `pool->data` (no headers local) 52.
 // @retail 0xa4540
 bool c_device_touch_event::v11(long a, long const *entities, long c, void const *data)
 {
@@ -1355,19 +1282,20 @@ bool c_device_touch_event::v11(long a, long const *entities, long c, void const 
         word suppressed : 1;
         word unknown3 : 13;
     };
-    long unit;
     long device = function_a58d0(entities[0]);
-    unit = function_a58d0(entities[1]);
-    if (unit != NONE && device != NONE)
+    long unit = function_a58d0(entities[1]);
+    if (device != NONE && unit != NONE)
     {
-        byte *headers = g_4e0300->data;
-        long device_offset = (device & 0xffff) * 12;
-        if ((1 << *(byte *)(headers + device_offset + 3)) & 0x380)
+        s_record_pool *pool = g_4e0300;
+        s_z_event_header *headers = (s_z_event_header *)pool->data;
+        if ((1 << headers[device & 0xffff].type) & 0x380)
         {
-            long unit_offset = (unit & 0xffff) * 12;
-            if (((1 << *(byte *)(headers + unit_offset + 3)) & 3) &&
-                !((bool)((s_unit_flags *)*(byte **)(headers + unit_offset + 8))->suppressed))
-                function_107840(device, unit);
+            if ((1 << ((s_z_event_header *)pool->data)[unit & 0xffff].type) & 3)
+            {
+                byte *unit_object = ((s_z_event_header *)g_4e0300->data)[unit & 0xffff].object;
+                if (!((bool)((s_unit_flags *)unit_object)->suppressed))
+                    function_107840(device, unit);
+            }
         }
     }
     return false;

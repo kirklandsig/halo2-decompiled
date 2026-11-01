@@ -148,27 +148,22 @@ PRIVATE __forceinline void camera_unrotate_23bd70(transform4x3f const *matrix, v
 	direction->k = matrix->up.k * z + matrix->up.j * y + matrix->up.i * x;
 }
 
-// score 2 (was 2): retail takes the address of the up vector before the
-// last store of the twelve byte copy, ours takes it after.
+/* the unit's camera command: its eye, facing and up, from its seat's camera
+   marker or turned with the vehicle it rides */
 // @retail 0x23bd70
 void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_23bd70 *command)
 {
-    /* Retail passes the output pointer on the stack. */
-    s_camera_command_23bd70 **command_reference = &command;
-	vector3f &command_forward = command->forward;
-	vector3f &command_up = command->up;
-	point3f &command_position = command->position;
 	command->timer = 0.f;
 	command->flags = 0;
 	command->offset = *g_4687a4;
 	command->distance = 0.f;
-	command_forward = *forward;
+	command->forward = *forward;
 	command->field_of_view = g_54e854;
-	function_11d090(&command_forward, &command_up);
+	function_11d090(&command->forward, &command->up);
 	if (unit_index != NONE)
 	{
 		s_camera_unit_view *unit = ((s_camera_object_header_view *)g_4e0300->data)[unit_index & 0xffff].object;
-		function_cafc0(unit_index, &command_position);
+		function_cafc0(unit_index, &command->position);
 		function_ba1d0(unit_index, &command->velocity, 0);
 		long parent_index = unit->parent_index;
 		if (parent_index != NONE)
@@ -182,9 +177,9 @@ void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_
 					s_object_marker marker;
 					if (function_b8d30(parent_index, 0xf0000db, &marker, 1, false))
 					{
-						command_position = marker.matrix.position;
-						command_forward = marker.matrix.forward;
-						command_up = marker.matrix.up;
+						command->position = marker.matrix.position;
+						command->forward = marker.matrix.forward;
+						command->up = marker.matrix.up;
 					}
 				}
 				else
@@ -193,10 +188,10 @@ void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_
 					transform4x3f matrix;
 					function_b9dd0(parent_index, &position);
 					function_1420f0(&matrix, &position, (vector3f *)((byte *)parent + 0x70), (vector3f *)((byte *)parent + 0x7c));
-					camera_unrotate_23bd70(&matrix, &command_forward);
-					function_11d090(&command_forward, &command_up);
-					camera_rotate_23bd70(&matrix, &command->forward, &command_forward);
-					camera_rotate_23bd70(&matrix, &command->up, &command_up);
+					camera_unrotate_23bd70(&matrix, &command->forward);
+					function_11d090(&command->forward, &command->up);
+					camera_rotate_23bd70(&matrix, &command->forward, &command->forward);
+					camera_rotate_23bd70(&matrix, &command->up, &command->up);
 				}
 			}
 		}

@@ -757,7 +757,15 @@ void __stdcall vector_constructor_iterator(void *arg_0, unsigned arg_1, int arg_
 void *__fastcall function_31bc70(void *arg_0);
 real function_18cac0(long arg_0);
 
+// score 155 (was 155): the frame 0x8ac agrees, but the camera pointer takes ESI where retail keeps it
+// in EBP and the gain table is addressed through a pointer in EBP where retail addresses it from the
+// stack; dropping the memset result frees EBP but makes MSVC align the frame (240) and passing the
+// array instead of the clear result changes the frame again (219), so the clear-result view is kept.
 // score 155 (was 155): frame 0x8ac agrees; camera ESI/EBP and persistent clear-result/side homes differ.
+// Earlier: the camera pointer takes ESI where retail keeps it in EBP, and the
+// clear-result and side locals sit at [esp + 0x14], [esp + 0x18] and [esp + 0x28] where retail
+// has [esp + 0x10], [esp + 0x24] and [esp + 0x2c]; the body is 797 bytes to retail's 812.
+// Earlier: frame 0x8ac agrees; camera ESI/EBP and persistent clear-result/side homes differ.
 // frame 0x8ac agrees; camera/gain-view allocation and maximum-tail registers differ.
 // frame 0x8ac agrees; persistent camera/gain and scalar homes differ.
 // Earlier: Frame 0x8ac agrees; camera ESI/EBP, table-view and side homes remain.
@@ -869,6 +877,13 @@ real function_18cac0(long arg_0);
 // Round 309: Plain two-mask search with long/unsigned-long/short/word scan, absent-side
 // continuation 229/229/230/230; complete admission 233/233/234/234. Both native clears,
 // original side selection and whole executable body restored; camera/gain-view homes remain.
+// Round 441: BSP-before-first-mask query contract with native real table/outer maximum/consistent audibility combinations 156/156/156/156/167/167/167/167. Original query definition, declaration, call and complete body restored; camera/clear-result and side homes remain.
+// Round 245: plain door-cluster/gain/final-entry cursors in seven subsets
+// 236/203/211/154/236/203/211; all with native real table 211. Final-entry cursor
+// saves one point and is rejected. Original indexed body and both library clears restored.
+// Round 470: complete-array clear-return view with real backing, retained
+// audibility and camera-cluster continuation interactions 155/155/167/167/155/155/167/167.
+// Original scalar view and complete body restored; camera/clear-result homes remain.
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {

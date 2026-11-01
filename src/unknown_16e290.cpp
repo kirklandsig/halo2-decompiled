@@ -350,6 +350,10 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // frame 0xf0 agrees; padded-count retention and iterator/portal homes differ.
 // Earlier at 125 (was 142): retail keeps count + 31 in EBX (word count shifted from it after the copies),
 // bytes in EDI and base in ESI; ours keeps bytes in EBX, so the spill homes and memcmp registers differ.
+// frame 0xf0 agrees. Retail keeps count + 31 in EBX across the copies (word count
+// shifted from it afterwards: `sar ebx, 5`), derives bytes from the word count (`lea edi, [edx*4]`, EDI)
+// and base in ESI; ours computes bytes as `sar 3; and ~3` in EBX, so the spill homes (base, word count,
+// iterator, cluster index), the memcmp registers and the convergence branch differ.
 // Bytes as words * sizeof(dword) 237; rounded-count local for all three 209; masked rounded count
 // 252 (822 bytes); bytes >> 2 125; word count declared before the arrays 125; byte-wide or bitfield
 // portal flags 142 each (retail's byte load into BL stays a memory test).
@@ -387,6 +391,68 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // Round 43: base before bytes 136; entry convergence result, count name and split byte calculation
 // 111 each; byte expression at uses 240; iterator/cluster-output/both entry lifetimes 111 each.
 // Original body restored.
+// Round 90 (fast): bytes as ((count + 31) >> 5) << 2 111 (folded back to the same code); as
+// ((count + 31) >> 5) * 4 238 (retail's `lea [words*4]` head, aligned 82 for 86, but later code
+// shifts), with the word count as bytes / 4 238 (821 bytes); every local renamed (three name sets) 111
+// each: identical code, names do not move these slots.
+// Round 210: Complementary convergence bool/byte/short/long 111/111/112/111; with one padded-count
+// capture for both original byte/base observations 111/111/112/111. Frame 0xf0, first +0x10 and
+// 811-byte extent remain. The original unsigned word quotient, signed loops and memory operations
+// were preserved. Original positive Boolean convergence and complete body restored; padded-
+// count/byte-count and scalar homes remain.
+// Round 452: prior visited word used for admission and final store, dword/signed
+// masks with dword/byte/word flags, then shared global tests, eight forms 226 each.
+// They grow the frame to 0xf4; original field widths, mask, visits and body restored.
+// Round 58 (lane 12, fast = plain here; none kept): retail keeps count + 31 in EBX from the entry and
+// shifts that same register in place for the word count after the clears (`sar ebx, 5`), while the
+// entry's `>> 5` (EDX) feeds the base row and `lea edi, [edx*4]` bytes; so the entry and later word
+// counts are not one shared value there. Tried: a count local with bytes as words * sizeof and the
+// word count recomputed 224 (796 bytes, one shared word value); the same with base first 222; bytes
+// as words * sizeof alone 238; a count local with bytes as words * sizeof and the word count from
+// bytes 237 (retail's entry `lea [words*4]` but bytes kept in EBX); bytes as words * 4 with the word
+// count bytes >> 2 238 (`sar ebx, 2`, not folded back to `>> 5`); sizeof with >> 2 238; words << 2
+// with >> 2 111 (folded, same code); a padded-count local with sizeof bytes 224 (796 bytes); a
+// padded-count local with the masked byte form 208.
+// Round 8 (lane 18, fast, aligned counts in brackets, base 111 [65]): the word count as `(count + 31) >> 5`
+// at the top with bytes as `((count + 31) >> 5) * sizeof(dword)` 224 [73] (796 bytes, frame 0xec: the
+// shifted value is shared and kept, where retail keeps count + 31 in EBX and shifts it again after the
+// copies); bytes and base from a word-count local 224 [73]; the word count declared after base 224 [73];
+// base as `&bits[((count + 31) >> 5) * index]` 111 [65] (same code); the round 85 memcmp-break loop
+// re-measured 125 [57] (810 bytes), with the shifted-count head 228 [73].
+// Round 10 (lane 17): every head form tried CSEs retail's late `sar ebx, 5` into the head's shift: a count local
+// with a words local for bytes and base and the word count recomputed after the copies 224 (796 bytes); the count
+// local with bytes `((count + 31) & ~31) >> 3`, base by `((count + 31) & ~31) >> 5` and the late word count
+// `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
+// sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
+// as an aggregate initializer 111 (same code).
+// Round 23 (m3 lane 2, fast): the portal flags as a byte field read into a named byte local before the test 111 (still
+// `test byte ptr [m], 4`, retail loads it into BL); the existing bit_vector_test/bit_vector_set for the visited and
+// global portal bits 111 (same code); bytes as `((count + 31) >> 3) & ~3` 111 (same code); the visited clear as
+// `((portal_count + 31) >> 5) << 2` 232 (795 bytes: VC folds it to `sar 3; and ~3`, so retail's `sar 5; shl 2` there
+// and `lea [words*4]` at the head are multiplies); the flag test named as a bool first 232 (827 bytes).
+// Round 25 (m3 lane 2, fast; a compile-only /O2 screen of this file reproduces the head): both shifts are `sar`, so
+// there is no signedness split. Retail's head comes from `long count = table->count;` read first, bytes and base
+// written on the field (`((table->count + 31) >> 5) * 4`, `index * ((table->count + 31) >> 5)`) and the late word
+// count from the local (`(count + 31) >> 5`): VC then keeps count + 31 in EBX and shifts it again after the clears,
+// and the build matches retail to +0x52 (bytes in memory, `lea [words*4]`, the portal flags loaded into BL), but 207
+// (827 bytes): the word count's slot is [esp+0x28] (retail 0x14) and the loop head reloads it as a word from memory
+// (retail stores BX). With round 85's mid-loop `if (memcmp(...) == 0) break;` loop 200 (822 bytes; retail's
+// `xor ebx, ebx; repe cmpsb; je`, but no EBX reload on the back edge), with the word count declared with the head
+// locals 200, with the iterator declared before the loop 200. A count local used everywhere with the word count
+// written at each use 224 (796 bytes, shift shared). Lead: keep this head and find what puts the word count back in
+// EBX at the loop head (retail reloads it right after the memcmp exit) and moves its slot to 0x14.
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 111 [86]): a `count + 31` local for bytes and
+// base with the word count declared inside the do-loop (hoisted only after CSE), bytes as `* sizeof(dword)`,
+// `* 4` or from a words local 224/224/224 (796 bytes: VC still CSEs both shifts), masked `>> 3` 208 [77]; the
+// three bit loops from a named `last = word_count - 1` 128 [105]; the cluster output declared before the
+// iterator 111, at the arm's scope 111 (same code); `while (true)` with `if (memcmp(...) == 0) return;` and the
+// copy 125 [70] at 810 bytes.
+// Round 37 (m3 lane 14, fast): word count `bytes >> 2` 111 (same code); `bytes / 4` 246 (821 bytes);
+// `((table->count + 31) & ~31) >> 5` late 128 (a separate `sar 5`, but the count is reloaded after the copy
+// into output); `(bytes * 8) >> 5` 183; a count local with that masked word count and masked/sizeof/`* 4`
+// bytes 208/224/224 (796); masked word count with sizeof bytes on table->count 221; masked word count first
+// in the arm 135 (count reloaded after the flag test), at the top 208; `(table->count + 31) >> 5` at the
+// top 208. bitset_or for the two OR loops 181 (827; no descending AND helper exists).
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {
@@ -1458,6 +1524,8 @@ void function_170630(long player_index);
 // diagnostic only), so the fix is the callee's consistent (second, first, out) reorder.
 // Real-element receiver 7; forceinline (second, first, out) forwarder 7; timer cursor from the
 // element with state inside the guard 7; named delta 7; state-taking inline call helper 7.
+// Round 25 (0x170bb0's file held): real-pointer base with indices 7; pointer-add element 7; byte
+// base from the global 36; flag test through the state pointer 28; timer cursor in the guard 18.
 // @retail 0x16fe90
 void function_16fe90(long user_index)
 {
@@ -1496,8 +1564,13 @@ struct s_camera_clip_reference_16ebf0
 	byte field_14[4];
 };
 
-// score 120 (was 140): frame 0x98 and state/forward/up/point homes now agree.
+// score 120 (was 120): frame 0x98 and state/forward/up/point homes now agree.
 // Left: forward/position saved registers, cross-product carriers and the stacked clipping flag.
+// score 120 (was 120): frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
+// position pointers take EBP/EBX for retail's EBX/EBP, the cross product's forward.j/up.k xmm0/xmm1
+// colouring, and the clipping call: retail passes the flag in DL and the end point in ESI, ours pushes
+// the flag and passes the point in EDX. That is 0x171d00's own convention (BLOCKED-BY 0x171d00, a held
+// file), and its longer flag code shifts everything after the call.
 // Native byte clipping truth 120; short/long/dword/word 124/123/123/124; entry fraction 140,
 // with word truth 124; byte truth plus role names 120, native state-field receivers 206,
 // delayed original-position receiver 250 (caller lost), inner alias removed 120, staged cross 121.
@@ -1616,6 +1689,19 @@ struct s_camera_clip_reference_16ebf0
 // Round 42: position declared after directions 249; forward/up full state receivers 119/119;
 // working matrix inputs both/forward-only 120/120; early matrix declaration 120; const position
 // pointer 120; two-read forward receiver 120. One-point gains rejected; original body restored.
+// N227: Independent computed left-axis output, simple/staged cross, direct/retained matrix
+// inputs and native/CRT transfers: eight at 239/976. Original cross destination, copies
+// and complete body restored; forward/position saved-register exchange remains.
+// Round 45 (lane 9): BLOCKED-BY 0x171d00 (held file): retail passes the clip flag in DL and the end point in ESI.
+// Flag false by default with one `= true` under retail's nesting 165; plane test through plane_distance_to_point 127;
+// plane terms spelled i, k, j 120 (retail's j, k, i product order, aligned 88 -> 86); with a cluster pointer local
+// 120; with a reference-table base local 120.
+// Round 90 (fast): forward pointer local declared before/after the position pointer 118/118 (plain
+// fast 119); forward and up pointer locals in all six declaration orders 166..248; up pointer only
+// 166; position written as the field expression (forward then takes EBX, but position is spilled)
+// 203, with forward/up pointer locals 203/206; a typed observer view (position/forward/up/flags
+// fields) 120 (identical code) in every pointer form; position through the pointer at each subset
+// of its four uses (copy, call, interpolation, store-back): only the interpolation decides, 119/220.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

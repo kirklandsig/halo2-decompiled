@@ -76,19 +76,55 @@ static inline bool bungienet_block_available(void)
 
 static inline long bungienet_user_voice_setting(short kind)
 {
-	if (kind == 1 && bungienet_block_available())
-		return g_4d8800.voice_setting;
-	return 1;
+	long setting;
+	if (kind == 1)
+	{
+		if (bungienet_block_available())
+			setting = g_4d8800.voice_setting;
+		else
+			setting = 1;
+	}
+	else
+		setting = 1;
+	return setting;
 }
 
-// score 11 (was 11): only registers differ. Retail keeps the request pointer in ECX, the
-// kind in AX, the setting in ECX and `changed` in DL; ours uses EAX, CX, EDX and CL.
+// score 4 (was 4): only the request pointer and the kind differ: retail ECX and AX, ours EAX
+// and CX. Before round 55 retail kept the request pointer in ECX, the
+// kind in AX, the setting in ECX and `changed` in DL; ours used EAX, CX, EDX and CL.
 // The volatile read keeps retail's 16-bit load and register compare of the kind (a plain
 // read compiles to `cmp word ptr [eax + 0xe], 1`, 32). Same output as the older
 // local_0/local_1 copy form. Tried: plain read (32); kind read inside the condition (32);
 // controller index read first (12); if/else and `setting = 1; if` forms (11, 15);
 // `switch (kind)` (17, puts setting in ECX but movsx/dec the kind); word kind (11);
-// bool temp for the condition (41); `changed = setting != old` (25).
+// bool temp for the condition (41); `changed = setting != old` (25); without the volatile:
+// helper reading the kind from the request 32, kind by const reference 32, single-exit setting
+// helper 30, nested kind test 32 (every matched function with retail's unfolded word load and
+// register compare tests the value twice, e.g. `type == 3 || type == 4`).
+// Round 55: the setting helper as a single exit with an else on each failing arm 4 (kept: setting ECX,
+// changed DL); nested returns `if (kind == 1) { if (available) return x; return 1; } return 1;` 4; the
+// same with a plain read 32 (95 bytes, folded compare), single exit with a plain read 32, the kind passed
+// straight 32; an added `kind == 0` test first 32 (103 bytes, but retail's ECX/AX pair); the index read
+// first 5; word/long kind parameter 4/4; inverted `kind != 1` chain 4; `old != setting` 5. Names, a
+// byte-offset read, the dword's high half, a reference parameter: the compare still folds.
+// Round 121: plain read through a `short const *` helper parameter 32 (95 bytes); forceinline helper 4 (same
+// code); the controller pointer taken before the setting 15; the controller index read at each use 23 (99
+// bytes); a one-expression ternary helper, plain read 32. One-file LTCG probe (exact here), plain read: a 16-bit
+// bitfield kind, a byte-pointer read, the header type's view, by-reference/pointer parameters, `1 == kind`, the
+// helper written in place: all fold the compare (`cmp word ptr [eax + 0xe], 1`).
+// Round 466: Controller before selector 15; old state before selector 24; controller before kind 14;
+// controller before kind then old state 24; complete controller/old state before kind 24;
+// the latter three early-old-state graphs with direct change-result production 39/38/38.
+// Original acquisition order restored; request/kind registers remain.
+// Round 219: availability nested/negative-guard/true-result forms 4/4/4;
+// native bit availability 31; named selection result 11; availability outside kind 9;
+// nested availability with long change result 12, negative guards with short result 13.
+// Original request/kind pair remains EAX/CX versus retail ECX/AX.
+// Round 145: a plain read stays in a register when the kind has a second use that constant-propagates
+// away: `setting = kind` in the not-available arm 4 (same code as the volatile read; not kept, the
+// assignment only steers). Kind read, setting, then index 23 (kind AX, request EDX); index first with that
+// arm 5; handler typed as the pending-message header with a last-result helper 32; `kind == 0` arm
+// merged into the default 32 (103 bytes, retail's ECX/AX pair).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

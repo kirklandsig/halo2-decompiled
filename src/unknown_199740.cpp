@@ -62,6 +62,15 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // direct test result 54; success from pool admission 66; inverse failure result 120;
 // result assigned in both allocation outcomes 124; entry allocator-output workspace 22.
 // All result forms and workspace lifetimes restored; shared helper bodies and qualifiers unchanged.
+// Round 51: pool declaration split 3; pool declared before result 3; result declaration split 3;
+// result renamed 3; callback-context names early/late 3/3; combined pool/result/context forms 3;
+// callback-context declaration split 3. Original restored; the duplicate low timestamp store remains.
+// Round 131: the same low-dword hoist above the last push is in 0x6a8a0, 0x18f260, 0x12d400 and
+// 0x223b60; a compile-only screen ties every reader spelling (two volatile dwords, LARGE_INTEGER
+// halves or QuadPart, a two-long array, unsigned, declared then assigned, braces, plain inline, a
+// separately defined reader inlined at link time). Real build: pool flags as one chained assignment
+// 5 (0x3d stored first); the helper's result declared before its start read 3 (0x18f260 75,
+// 0x6a8a0 12); start declared then assigned 3; unsigned reader local 3; plain `inline` reader 3.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

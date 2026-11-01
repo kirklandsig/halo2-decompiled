@@ -13,6 +13,7 @@
 #include "async.h"
 #include <xtl.h>
 #include <string.h>
+#include "unknown_080e10.h"
 
 /* the part of a bitmap's data block the cache keeps track of */
 struct s_bitmap_data
@@ -538,12 +539,6 @@ long __stdcall function_12d2f0(long size, long user_data, long update, long rele
 
 double timing_ticks_to_seconds(__int64 ticks);
 
-static __int64 read_tsc(void)
-{
-	volatile __int64 t = 0;
-	__asm rdtsc
-}
-
 /* 0x12c600 (xbox_texture_cache_update.cpp): the cache's per-frame update */
 void function_12c600(void);
 
@@ -684,30 +679,8 @@ short bitmap_get_mipmap_count(short width, short height, short depth, short form
 long log2_floor(dword value);
 
 /* builds a bitmap's hardware texture header over its description, pointing
-   into the shared pixel data */
-// score 12 (was 12): the frame and the prefix through +0xe7 agree; in the two
-// later logarithm loops retail copies the value into the branch (cmp ebx, 1 /
-// mov edx, ebx / je) and counts the depth in EAX, while ours copies before
-// the test and counts the depth in EDX.
-// Kept: the hardware format a plain local (no volatile) and the
-// the last two log2 loops differ: retail copies the height and the
-// depth after the `cmp 1` test and counts the depth in EAX; ours copies before the `jbe` and
-// counts the depth in EDX. Kept: the hardware format a plain local (no volatile) and the
-// 32-bit sizes taken right after the mip count call in width, height, depth order (12); the
-// same in long, unsigned long or one declaration 12; levels declared at the call 12; chained
-// zero stores 14; in height/width/depth 14, height/depth/width 15, depth/width/height 15,
-// width/depth/height 58. Sizes after the format store: depth/height/width 25,
-// height/depth/width 26, the others 59-60; sizes before the call 104, after the type test 109,
-// none (sizes passed to log2_floor) 103; chained zero stores 25; levels declared at the call
-// 25. With the volatile: height/depth/width 35, the others 56-64. Earlier: the default
-// format in a plain local 109 (when the sizes followed the format store); the if/else 86; the
-// sizes read from the fields at each use 124; the sizes declared before the format 106;
-// `g_4e646c + hardware_data` 109; the format read before the data 110; the dword sizes taken
-// before the call 88; the sizes passed straight to log2_floor 92; a `local_0` for the
-// dimension bits 77; short levels 63; the dword sizes after the type test 76; the ternary as
-// `type == 1 ? 3 : 2` and every operand order of the format expression 60.
-// Early width/height/depth/width-height/width-depth/height-depth promotions 80/90/78/91/109/109; late height and late height-depth 111/107.
-// Logarithm inline/force-inline declarations 12/12; immutable dimensions 12; immediate short/long results 12/12; shifted masks 12; explicit Format assignments 12; long results with immutable dimensions 12.
+   into the shared pixel data; the logarithms come from log2_floor, which
+   copies its argument into a local before the loop */
 // @retail 0x12c820
 void texture_cache_bitmap_build_texture(s_bitmap_data *bitmap)
 {
@@ -876,15 +849,21 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 /* function_12d2f0, pumping the cache until a block is free: not at all
    (type 0), or for up to 30 pumps and 0.1 seconds (type 1) or 90 pumps and
    one second (type 2) */
-// score 2 (was 2): the value is stored to the stack before EDI is pushed; retail pushes EDI
-// first and stores it afterwards.
-// score 2 (was 2): timer zero store still precedes the EDI save; split start 2; direct start 2;
+// score 2 (was 2): the tick reader's volatile zero stores are scheduled before EDI is pushed;
+// retail pushes EDI first and stores them afterwards. Tried: split start 2; direct start 2;
 // immutable start 2; result declaration before start 2; counter declaration before start 2;
-// timeout before start 15; pump bound before start 10; nested allocation result 2.
+// timeout before start 15; pump bound before start 10; nested allocation result 2; the reader
+// `inline` 2 or unsigned 2; the reader storing rdtsc's halves into its local 129; the
+// existing header reader function_80e13 2 (kept); the counter declared in the loop block 2;
+// the size and page tests nested as in function_80e14 2.
+// Round 101 (lane 7), `--fast`: `_ReadWriteBarrier();` before the reader, as matched 0x8c790 does, 2 (the stores then
+// follow `push edi` as retail, but `xor esi, esi` sinks below it too); that with result declared before the barrier
+// 111 (306 bytes, four callers lost); start declared first with the zero-initialized locals ahead of the barrier 113;
+// the barrier right after the reader 6; the barrier with the counter declared in the loop's block 2.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
-	__int64 start = read_tsc();
+	__int64 start = function_80e13();
 	long result = 0;
 	real timeout = 0.0f;
 	long maximum_pumps = 0;
@@ -920,7 +899,7 @@ long function_12d400(long type, long size, long user_data, long update, long rel
 				}
 				else
 				{
-					__int64 elapsed = read_tsc() - start;
+					__int64 elapsed = function_80e13() - start;
 					if (elapsed < 0)
 					{
 						elapsed = 0;
@@ -988,6 +967,24 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// score 3 (was 3): the plain (full) check agrees with the fast one; the whole difference is the
+// masked level address loaded into EDX where retail reuses the base register, which is dead after
+// that load.
+// This round: the mask literal with eight digits, the whole expression cast, the address cast, the
+// index as an unsigned long and as an unsigned int, the address in an unsigned int local, the array
+// through a pointer local, the mask in a named constant and the level in a local at the top of the
+// function all give 3, byte-identical to the baseline.
+// score 3 (was 3): this round: the level address read through a byte pointer to the array, the
+// masked value carried through a pointer-typed local, and the array typed as pointers all give
+// byte-identical code to the baseline (3). Still the masked level address is loaded into EDX where
+// retail reuses the base register, which is dead after that load.
+// This round (score 3, was 3): the mask spelled as a complement, a dword cast, a zero-padded literal,
+// the array through a pointer local, a store-then-mask pair, a named local for the unmasked address
+// and a local copy of the level all compile identically; the masked level address is still loaded
+// into EDX where retail reuses the dead base register. Also this round: the mask as an unsigned
+// literal, a long cast around the whole expression, a dword local masked and then stored, the mask
+// operands the other way round, an unsigned long local and the element reached by pointer
+// arithmetic all give the same three instructions.
 // score 3 (was 3): the masked level address is loaded into EDX, retail reuses the base register,
 // which is dead after that load.
 // Entry data declaration 3; level-index local 3; reversed subscript 3; 28-bit field view 3;

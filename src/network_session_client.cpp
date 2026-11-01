@@ -27,22 +27,18 @@ struct s_session_summary
 	long player_values248[16];
 	long player_values288[16];
 	long player_machines[16];
+
+	bool remove_machine(s_session_id *id);
 };
 long __stdcall function_063190(void *summary, long user);
 long session_summary_get_player_value(s_session_summary *summary, long player_index, long variant_index);
 long network_session_find_member(c_class_58d20 *session, const s_session_member_identity *identity);
 void network_session_disband_member(c_class_58d20 *session, long member_index);
 __declspec(noinline) long network_session_cancel_reservations(c_class_58d20 *session, const s_session_id *id);
-bool session_summary_remove_machine(s_session_summary *summary, s_session_id *id);
 bool network_session_host_set_summary(c_class_58d20 *session, const s_session_summary *summary);
 
-// score 9 (was 9): Frame and both scans agree; final summary address is reused rather than rematerialized.
-// only the summary address still differs: retail recomputes `lea eax,[esp+0x24]`
-// after the push, ours reuses the `ebx` copy of `&summary`.
-// Round 296: Explicit inline/noinline call-summary subsets for cancellation/removal/publication (all seven combinations) 9 each; named removal result 9. Complete body and declarations restored.
-// Round 44: post-remove pointer/reference 9 each; read-only source 9; one-element summary array 9;
-// output-pointer copy 9; direct tail session reads 9; final-call session local 9;
-// direct summary initialization 9. Opening body restored.
+/* disbands the other members that share the machine id, cancels its
+   reservations and takes the machine out of the published summary */
 // @retail 0x6d380
 void __stdcall function_06d380(c_session_client *client, const s_session_id *id)
 {
@@ -77,14 +73,11 @@ void __stdcall function_06d380(c_session_client *client, const s_session_id *id)
 		}
 	}
 	network_session_cancel_reservations(client->session, id);
-	c_class_58d20 *session = client->session;
-	s_session_summary *source = 0;
-	if (session_state_is_live(session) && session->flag49fd)
-		source = (s_session_summary *)session->data4a00;
+	s_session_summary *source = (s_session_summary *)client->session->get_data_4a00();
 	if (source)
 	{
 		s_session_summary summary = *source;
-		if (session_summary_remove_machine(&summary, (s_session_id *)id))
+		if (summary.remove_machine((s_session_id *)id))
 			network_session_host_set_summary(client->session, &summary);
 	}
 }
@@ -584,72 +577,192 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 	return result;
 }
 
-// score 55 (was 55): aligned frame agrees. The stored machine/player pointers preset to NULL and
-// set when the session is live and has them (0x6ec80's form), with the summary from the existing
-// getter, give retail's test schedule at 49 (not kept: a gain of 6, and it adds the live-state
-// test). Left: the colours. Retail takes the session in
-// EBX (its callers copy it there) and gives the loop temporaries ESI/EDI; ours keeps the session in
-// ESI (a first pass with the session on the stack and a harness build give ESI for every body tried,
-// even with either loop removed; unrelated code doesn't move it).
+// score 22 (was 22): kept in round 184 (coordinator ruling): the variant address named before the summary
+// getter gives the session EBX as in retail, and 0x6e500 and 0x72700 match with it. Left: the opening's
+// second lea after the je (retail's comes before it) and a one-step scratch rotation through the summary
+// lea, the mask temp and the copy loop.
+// Before (55): aligned frame agrees; the code is retail's apart from the colours. Retail takes the
+// session in EBX (its callers copy it there) and gives the loop temporaries ESI/EDI; ours keeps the session
+// in ESI and the loop temporaries in EBX/EDI. Deleting the whole tail (live test, 0x4994 setter, machine
+// limit) moves it to EBX (diagnostic 244, 321 bytes); deleting either setter alone does not; a /Gd first
+// pass and a harness build give ESI for every body, even with either loop removed. The stored machine/player
+// pointers preset to NULL and set when the session is live and has them (0x6ec80's form) give retail's test
+// schedule and opening scratch registers at 49 (session still ESI, also without the tail; not kept: a gain
+// of 6). The --fast image doesn't represent this function (116 for the unchanged source): use the plain check.
+// Tried: countdown native object copy 55; native address copy 55; machine object reference 55; machine value
+// copy 55; short machine alias 55; immutable member count 55; machine counter names 55; top-tested countdown
+// 114; member count read before the clears 129; summary set after the clears 129; machine pointer before the
+// clears 55; zero initialisers for the two buffers 151; summary as a conditional 131; summary NULL in an
+// else 131; as a session method 55; the address copy as a plain for loop 114 (477 bytes); memcpy for the
+// address copy 55; machine array indexed at both uses 55; members array pointer for the address copy 55;
+// address cursor in the copy loop 59; one index for both loops 55; bit-first mask test 55; nested mask and
+// slot tests 55; existing setter: void result, guard exits, test-derived result and direct success 55 each;
+// native result 146 (out of line); shared live predicate, native receiver and input order 55 each;
+// force-inline native/original result 55/55; limit helper as one `if` 55; live and 0x5dd0 tests nested 55;
+// state macro for the tail's live test 221 (setters stop inlining); limit setter as a cross-file session
+// method beside 0x5c490 55 (inlined, session still ESI); state read once in the limit helper 55; inline live
+// predicate in the limit helper 55; named player pointer 58 (52 with the preset pointers); members array
+// pointer plus a player pointer 58; short player-loop index 128 (492 bytes); output pointer walked beside the
+// player loop 58; source/output player cursors 58; player buffer declared first 55; players cleared first 53
+// (with the preset pointers: declared and cleared first 53/53); summary at function scope 63; early `return
+// false` / `return true` exits 143; result false in an else 153; result set at the top of the state block
+// 98; member count read at each use 55; the live/0x5dd0 tail as an inline helper 55. With the preset
+// pointers: untyped pair 49; player index declared with the buffers 49; a plain `for` copy loop gives
+// retail's copy-loop scratch registers but folds the player loop's mask read (108, 477 bytes). A 96-form
+// screen (opening test x summary x copy loop x count local x buffer order x player pointer) found nothing
+// below 49; a 600 s permuter run (reduced image 143 against 49) found nothing. Round 82: existing live
+// query in the outer tail 130 (451 bytes); in the limit helper 55; both 130; byte function result 95 (497);
+// short limit value 55; byte limit-helper result 146 (430); unsigned machine countdown 55.
+// Lane 17 r1: the 0x4994 setter's body visible in this file (diagnostic) 55, session still ESI; address
+// pointer named before the mask store 55; summary read just before the player loop 76; copy loop as a
+// signed-bound do-while 65; preset pointers reproduced 49; with that do-while 117.
+// the aligned frame and every instruction agree apart from the colours: retail
+// takes the session in EBX (its callers copy it there) and gives the player-loop index ESI and the
+// player pointer EDI; ours rotates them (session ESI, index EDI, player pointer EBX). Deleting the
+// whole tail (live test, 0x4994 setter, machine limit) moves the session to EBX (diagnostic 244,
+// 321 bytes), deleting either setter alone does not; a /Gd first pass and a harness build give ESI
+// for every body, even with either loop removed. The stored machine/player pointers preset to NULL
+// and set under the flag (or the live and flag tests, 0x6ec80's form) give retail's scratch
+// registers at the start, 49 (not kept: a gain of 6 from a flag-set-then-tested form); with them a
+// plain `for` copy loop gives retail's copy-loop scratch registers but folds the player loop's mask
+// read, 108 (477 bytes).
 // Tried: countdown native object copy 55; native address copy 55; machine object reference 55;
-// machine value copy 55; short machine alias 55; immutable member count 55; machine counter names 55;
-// top-tested countdown 114; member count read before the clears 129; summary set after the clears
-// 129; machine pointer before the clears 55; zero initialisers for the two buffers 151; summary as a
-// conditional 131; as a session method 55; the address copy as a plain for loop 114 (477 bytes);
-// bit-first mask test 55; nested mask and slot tests 55; short player index 128 (492 bytes); member
-// copy address cursor 59; walked output pointer 58; player buffer declared first 55; summary declared
-// at function scope 63; existing setter: void result, guard exits, test-derived result and direct
-// success 55 each; native result 146 (out of line); shared live predicate, native receiver and input
-// order 55 each; force-inline native/original result 55/55. With the stored pair: untyped pair 49;
-// result false in an else 153; summary NULL in an else 131; early false return 143; players cleared
-// first / declared and cleared first 53/53; result set at the top of the live block 98; player index
-// declared with the buffers 49.
-// aligned frame agrees; the code is retail's apart from the colours: retail takes
-// the session in EBX (its callers copy it there) and gives the loop temporaries ESI/EDI; ours keeps the
-// session in ESI. Deleting the whole tail (live test, 0x4994 setter, machine limit) moves it to EBX
-// (diagnostic 244, 321 bytes), deleting either setter alone does not; a /Gd first pass and a harness
-// build give ESI for every body. Tried: countdown native object copy 55; native address copy 55;
-// machine object reference 55; machine value copy 55; short machine alias 55; immutable member count
-// 55; machine counter names 55; top-tested countdown 114; member count read before the clears 129;
-// summary set after the clears 129; machine pointer before the clears 55; zero initialisers for the
-// two buffers 151; summary as a conditional 131; as a session method 55; the address copy as a plain
-// for loop 114 (477 bytes); bit-first mask test 55; nested mask and slot tests 55; short player-loop
-// index 128 (492 bytes); address cursor in the copy loop 59; output pointer walked beside the player
-// loop 58; player buffer declared first 55; summary at function scope 63; existing setter: void
-// result, guard exits, test-derived result and direct success 55 each; native result 146 (out of
-// line); shared live predicate, native receiver and input order 55 each; force-inline native/original
-// result 55/55; limit helper as one `if` 55; named player pointer 58; state macro for the tail's live
-// test 221 (setters stop inlining); limit setter as a cross-file session method beside 0x5c490 55
-// (inlined, session still ESI); state read once in the limit helper 55; inline live predicate in the
-// limit helper 55; members array pointer for the address copy 55; those plus a player pointer 58;
-// early `return false` / `return true` exits 143; machine array indexed at both uses (no address
-// pointer) 55; one index shared by both loops 55; nested live and 0x5dd0 tests 55; memcpy for the
-// address copy 55.
-// session in ESI. Deleting the whole tail (live test, 0x4994 setter, machine limit) moves it to EBX,
-// deleting either setter alone does not; a first pass with the session on the stack (/Gd) and a
-// harness build give ESI for every body tried. Tried: countdown native object copy 55; native address
-// copy 55; machine object reference 55; machine value copy 55; short machine alias 55; immutable member
-// count 55; machine counter names 55; top-tested countdown 114; member count read before the clears
-// 129; summary set after the clears 129; machine pointer before the clears 55; zero initialisers for
-// the two buffers 151; summary as a conditional 131; summary NULL in an else 131; as a session method
-// 55; the address copy as a plain for loop 114 (477 bytes); memcpy for the address copy 55; machine
-// array indexed at both uses 55; members array pointer for the address copy 55; address cursor in the
-// copy loop 59; one index for both loops 55; bit-first mask test 55; nested mask and slot tests 55;
-// existing setter: void result, guard exits, test-derived result and direct success 55 each; native
-// result 146 (out of line); shared live predicate, native receiver and input order 55 each;
-// force-inline native/original result 55/55; limit helper as one if 55; live and 0x5dd0 tests nested
-// 55; live macro in the tail 221 (setters out of line); limit setter as a cross-file session method
-// beside 0x5c490 55 (inlined, session still ESI); state read once in the limit helper 55; inline live
-// predicate in the limit helper 55; named player pointer 58 (52 with the preset pointers below);
-// short player-loop index 128; output pointer walked beside the player loop 58; player buffer declared
-// first 55; players cleared first 53; summary at function scope 63; early returns 143; result false in
-// an else 153; result set at the top of the state block 98; member count read at each use 55; the
-// live/0x5dd0 tail as an inline helper 55. The stored-data pointers preset to NULL and set under the
-// live and flag tests (0x6ec80's form, or the flag alone) give 49: the scratch registers at the start
-// become retail's, the session stays ESI (also without the tail); with them a plain `for` copy loop
-// gives retail's copy-loop scratch registers but folds the player loop's mask read (108, 477 bytes).
-// A 96-form screen (opening test x summary x copy loop x count local x buffer order x player pointer)
-// found nothing below 49; a 600 s permuter run (reduced image 143 against 49) found nothing.
+// machine value copy 55; short machine alias 55; immutable member count 55; machine counter names
+// 55; top-tested countdown 114; member count read before the clears 129, at each use 55; summary
+// set after the clears 129; machine pointer before the clears 55; zero initialisers for the two
+// buffers 151; summary as a conditional 131, NULL in an else 131, at function scope 63; as a
+// session method 55; the address copy as a plain for loop 114 (477 bytes), memcpy 55, address
+// cursor 59, members array pointer 55; machine array indexed at both uses 55; one index for both
+// loops 55; bit-first mask test 55; nested mask and slot tests 55; short player-loop index 128 (492
+// bytes); named player pointer 58 (52 with the preset pointers); output pointer walked beside the
+// player loop 58; source/output player cursors 58; player buffer declared first 55; players cleared
+// first / declared and cleared first 53/53; existing setter: void result, guard exits, test-derived
+// result and direct success 55 each; native result 146 (out of line); shared live predicate,
+// native receiver and input order 55 each; force-inline native/original result 55/55; limit helper
+// as one `if` 55; live and 0x5dd0 tests nested 55; state macro for the tail's live test 221
+// (setters stop inlining); the live/0x5dd0 tail as an inline helper 55; limit setter as a
+// cross-file session method beside 0x5c490 55 (inlined, session still ESI); state read once in the
+// limit helper 55; inline live predicate in the limit helper 55; early `return false` / `return
+// true` exits 143; result false in an else 153; result set at the top of the live block 98; player
+// index declared with the buffers 49 (preset form); untyped stored pair 49. A 96-form screen
+// (opening test x summary x copy loop x count local x buffer order x player pointer) found nothing
+// below 49; a 600 s permuter run found nothing. Round 82: existing live query in the outer tail 130
+// (451 bytes), in the limit helper 55, both 130; byte function result 95 (497); short limit value
+// 55; byte limit-helper result 146 (430); unsigned machine countdown 55. Lane 13 round 18: the
+// function and its limit helper moved into unknown_058dd0.cpp beside 0x6e6b0 (/O2, retail's
+// neighbour) 55 (same code); the player-loop index renamed 55, the session parameter renamed 55
+// (same code: names don't move the registers); named player pointer 58 (same rotation); the
+// flag-only preset pointers 49 (session still ESI).
+// Round 127 (lane 4): the register parameter comes from a first pass with the session on the stack:
+// ours loads it once into ESI at entry, so LTCG passes it in ESI; retail's first pass gave it EBX
+// (its callers do `push ebx; mov ebx, esi; call`). A /Gd compile-only harness of this file with
+// get_data_4a00, set_value_4994 and function_058d20 defined inline reproduces it: without the tail
+// the pass gives the session EBX, the index ESI and the player pointer EDI (retail's, copy loop
+// included); one setter alone, either setter, or the tail without the live test all give ESI; so do
+// dropping the two address tests, the mask test or set_data_4f24 (diagnostics), while dropping the
+// summary getter or the call's two session field arguments gives EBX. Real trials: the function as
+// a session method 55 (same code); the limit helper in set_value_4994's shape 55; member count
+// read before the summary 131; summary fetched after the copy loop 76; the copy loop through a
+// members pointer 55. Harness-only: index declared at block top, the loop argument hoisted, the
+// player loop as a forceinline helper, all ESI.
+// Round 107: in the first-pass harness removing either in-loop session argument of the 0x6e910 call (the
+// 0x4db0 address or the 0x49c8 value), or the member count read, gives EBX/ESI/EDI; named copies of them
+// (inside the call block or before the loop) and a players array pointer are propagated back (ESI). Real
+// (fast with 0x58d20/0x6e500/0x72700/0x6e6b0): limit setter only when the 0x4994 setter succeeds 154 (421
+// bytes); players array pointer for the test and the call 55; dword player index 56; named argument
+// pointer inside the call block 55; mask/slot test as `continue` 55.
+// Lane 14 r19: diagnostics (reverted): without the three in-loop session uses the session is not
+// enregistered at all (152); without only the 0x49c8 read in the call block it takes EBX with retail's
+// index ESI and player pointer EDI (35, the rest is the constant), so the session outweighs the loop index
+// by less than one call-block use. Forms (fast, listing the inlined callees 0x5c490 0x58d20 0x5b080
+// 0x5c5c0 0x6e910, which reproduces the plain 55): variant address named before the loop 52 (substituted
+// back); `continue` guards 55; `do { } while (++i < 16)` 221; `while (i < 16)` 221; the loops through
+// the membership getter 0x5a680 55; 0x6e910's team parameter as `long` (no `char` truncation) 55.
+// Round 32 (lane 11, plain check): the 0x49c8 value through the existing getter 142 (503 bytes); shift-first
+// mask test `(mask >> i) & 1` 126 (475 bytes); `session->players + i` 55; the address copy as member and
+// address pointer walks 59; `(mask & (1 << i)) != 0` 55. A compile-only first pass (this file /Gd with the
+// setters and getters inline) reproduces ESI and the known flip (no 0x49c8 read: EBX/ESI/EDI); the member
+// count or the 0x4f20 tests through force-inline helpers stay ESI (parameter copies are propagated), as do a
+// named has-data test, the variant cast, unsigned/short-cast indices and the output as `players + i`.
+// Round 21 (lane 14, fast with the inlined callees): the call's last argument through the existing
+// get_value_49c8() 142 (503 bytes: the live test comes back); the copy countdown declared before its
+// index 55 (same code); the result initialised from the state test 169 (507); the copy loop counting
+// member_count itself down 118; the machine-address pointer written at both uses 55 (same code).
+// Round 97 (lane 8, fast with the inlined callees): the mask test with the bit first 55; the machine mask
+// stored after the copy loop 139 (495 bytes); the player-loop index declared with the buffers (no preset
+// pointers) 55; a short copy-loop index 153 (467 bytes); the summary declared after the buffers 55.
+// Round 51 (lane 16, fast with the inlined callees): the address copy as `if (n > 0) for (i = 0; i != n;
+// i++)` (the rolled-countdown form of 0x2be050) 114 (477 bytes), as a plain `for (i < n)` 114 (477 bytes).
+// Round 113 (lane 6, fast with the inlined callees): variant address and players base named before the
+// player loop 52; address pointer declared with the buffers 55; const session parameter 55; short copy index
+// 153 (467 bytes); 0x6ec80's preset stored pair plus the variant address named before the loop 46 (opening
+// scratch registers retail's, session still ESI), plus a players base 46, with a plain `for` copy 108 (477
+// bytes: retail's copy prologue, but the mask read folds into the test), with that the bit-first mask test,
+// a distinct copy index name or a mask local in the loop 108 each. Diagnostic on the 46 form: the 0x49c8
+// argument as a constant gives EBX/ESI/EDI with only the copy prologue (count spill before the leas) left, 25.
+// Round 19 (lane 2, fast with the inlined callees): the summary read directly under its flag (no
+// getter) 55; the summary as 0x72330's live-and-flag ternary 131; the opening test in conjunctive form
+// 55; the player index declared at the function top 55; an explicit `continue` arm 55. Diagnostics: the
+// summary as a constant NULL gives the session EBX (129 overall); the summary's address
+// taken keeps ESI (55, same code), so the two summary field reads, not its stack home, tip the session.
+// Round 30 (lane 13, fast): the call's variant address and 0x49c8 value both named before the player
+// loop 130 (493 bytes): the session moves to EBX with retail's index ESI and player EDI, but the value
+// takes a stack slot (frame 0xec0); both named after the summary getter 71, before the member count
+// read 65 (483 bytes, the same registers; left the value slot, its store/load and the folded mask
+// test); the value alone before the loop 137; the variant alone before the member count 52. Named
+// copies inside the loop or a `long const *` to the value are propagated back (session ESI).
+// Round 117 (lane 6, fast with the inlined callees): player loop bounded by `i != 16` 56; player index declared at
+// function scope 55 (same code); the team argument as plain `i` 55 (same code); `dword` player index 56; `short`
+// player index 128 (492 bytes).
+// Round 183 (lane 3): `const byte *variant = session->data4db0;` declared before the summary getter and
+// passed to 0x6e910 gives the session EBX (index ESI, player EDI) and 22 (kept in round 184 by coordinator
+// ruling); with it 0x6e500 and 0x72700 match in their recorded forms. Left:
+// the opening's second lea after the je and a one-step scratch rotation through the summary lea, the mask
+// temp and the copy loop. The variant at function top, after the summary or in the loop block: ESI; the
+// summary as `flag49fd ? data4a00 : NULL` with the variant in the loop block: EBX but an if/else summary
+// 126. The preset stored-pointer opening (retail's lea schedule and opening registers) keeps ESI in every
+// form tried (real 46, with the variant 46; ~600 first-pass harness forms); the plain `for` copy loop gives
+// retail's copy code but folds the mask read into the test (100, 477 bytes; one extra temporary before the
+// player loop unfolds it in the harness). Pointer locals to the mask or the 0x49c8 value are propagated
+// back; a two-ternary stored-pointer opening keeps EBX and retail's summary/mask registers but adds the
+// ternary code. First-pass harness: only in-loop uses decide the order (one session use fewer or one index
+// use more flips it); out-of-loop uses, names and a fastcall receiver do not.
+// Round 31 (lane 13, compile-only first-pass harness): 0x6e500 and 0x72700 both match once this function
+// takes the session in EBX (see their notes), so this register is all that blocks them. Diagnostics that
+// give retail's EBX/ESI/EDI: one more in-loop index use (`value49c8 + i`), the variant or summary argument
+// NULL, the 49c8 argument replaced by a player field. The session cannot take EDI (live across `rep stosd`),
+// so whichever of session and loop index ranks first takes ESI; retail's index outranks the session by less
+// than one call-block use. No flip from: typed member-machine field, typed machine-list struct, both (6
+// forms); the preset stored pair with or without the live test, with the summary moved or the variant named
+// (10); 250 random combinations of 12 natural dimensions (opening, buffer/memset order, summary position,
+// count local, index scope, mask/slot spellings, nested tests, `players + i`, nested tail); const parameter,
+// function-scope or shared index, the size macro (5). Frame alignment comes from the players memset (no
+// effect). Flags: only /O1 and /Os give EBX, with different code.
+// Round 143 (lane 4, fast with the inlined callees and both callers, faithful 22): every opening that
+// computes both stored addresses before testing them gives retail's opening schedule and summary/mask
+// registers but the session ESI (0x6e500 69, 0x72700 94): NULL-preset pair 46, if/else pair 46, the pair
+// assigned players first 46, a two-out-pointer inline getter 46; on the preset pair the variant named at
+// the top of the state block 46 or just before the player loop 46.
+// Round 122 (lane 6, fast with the inlined callees): the preset stored pair, a plain `for` copy loop and the
+// 0x49c8 value named before the player loop 116 (493 bytes: every instruction retail's, session EBX, but the
+// value takes a stack slot, frame 0xec0); preset pair + `for` copy + players base local 109 (477 bytes, session
+// ESI); if/else stored pair + `for` copy 108; `for` copy + named player pointer 100 (477, the mask read folds);
+// preset pair + `for` copy + named player pointer 108. First-pass harness (this file's body with the inlined
+// callees, /Gd): the preset pair + `for` copy is retail's code up to the player loop with the session in ESI;
+// deleting the whole tail (live test and both setters) gives EBX there, deleting one setter, the live test,
+// the summary or the set_data_4f24 call does not; 176 statement orders of variant/summary/memsets/count/mask
+// store with the `for` copy loop give nothing below the current order.
+// Round 57 (lane 16, fast with the inlined callees): the two block addresses named inside a `flag4f20` block that
+// jumps to the result store 22 (same code: the second lea still follows the first test); the buffers declared
+// before the variant 22 (same code); a `for` copy loop bounded by `session->member_count` 138 (session ESI);
+// 0x6ec80's live-and-flag opening as an inline out-pointer getter 46 (opening schedule, summary lea and mask temp
+// become retail's; session ESI, index EDI, cursor EBX); that with a `for (i < member_count)` copy loop and one
+// index shared by both loops 108 (477 bytes). Diagnostics: a plain `for` copy loop on this body 100 (477 bytes:
+// the copy loop, its prologue and the out-cursor lea become retail's, the summary lea and mask temp stay rotated,
+// the player loop folds the mask read); the getter opening with a `for` copy loop and the 0x49c8 argument as 0
+// gives retail's EBX/ESI/EDI and retail's code up to the player loop (97): only the folded mask read and the
+// player loop's argument temporaries (out ECX, summary EDX for retail's EAX/ECX) remain, so retail's form looks
+// like that opening plus the `for` copy with the session ranked below the index.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -658,6 +771,7 @@ bool function_06e720(c_class_58d20 *session)
 	{
 		if (!session->flag4f20 || !&session->data4f24 || !&session->data4f90)
 		{
+			const byte *variant = session->data4db0;
 			s_session_summary *summary = (s_session_summary *)session->get_data_4a00();
 			s_unknown_108 machines;
 			s_session_player players[16];
@@ -680,7 +794,7 @@ bool function_06e720(c_class_58d20 *session)
 			{
 				if ((session->player_mask & (1 << i)) && session->players[i].unknown14 != NONE)
 					function_6e910(&session->players[i], addresses,
-						session->data4db0, summary, (char)i, &players[i], session->value49c8);
+						variant, summary, (char)i, &players[i], session->value49c8);
 			}
 			session->set_data_4f24(&machines, (s_unknown_3648 *)players);
 			if (session_state_is_live(session) && session->value5dd0 != NONE)
@@ -911,7 +1025,7 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  long count, const dword *identities, const long *values, const long *other_values,
  bool reserve, long timeout, const s_session_id *id, const void *extra);
 
-// score 9 (was 40): the four unrolled copies of the member's twelve bytes now match
+// score 9 (was 9): the four unrolled copies of the member's twelve bytes now match
 // retail; what is left is that our destination's base address is computed before the
 // branch, so the flag byte is loaded into cl instead of al and the player mask into
 // ecx instead of eax, while retail computes the base after the mask has been stored.
@@ -926,6 +1040,16 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // destination in the other registers, ours copies from esi to ecx and retail
 // from ecx to esi, and the count's increment sits before the loop counter's
 // reload in ours and after it in retail
+// Round 15: the destination declared or assigned inside the branch (also at function top) 195/195/195 (the count
+// leaves ebx for the state pointer); with a mask local 357; indexed destination `identities[count]` 195, through a
+// destination local 195, `identities[count++]` 40 (retail's setup, the copy's registers swapped); the destination
+// set before the memset 216; the destination inside the branch with the count first/last 203/216; the count
+// after the pointer step 17.
+// Round 43 (lane 10): `identities[count]` with the increment after the copy gives retail's copy order
+// and IV setup but flips the colouring (state EBX, current ESI, count spilled) 195; with it: count
+// declared first 195, `joining` declared before `current` 199, `&identities[count]` 195, `identities +
+// count` 195, a 12-byte struct copy into `[count++]` 195; the element pointer `identities[count++]` named
+// before the copy 40 (as the plain post-increment form).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

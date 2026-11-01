@@ -137,6 +137,10 @@ void function_254200(void)
 
 // score 4 (was 4): in the two records that follow the second reservation retail loads the
 // 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h
+// first; only that order differs, the pool address of the constant is masked by the check.
+// Round 34 (lane A, machine 3): the constant through a named local keeps 4, so the order is the
+// live-in order of the whole-program build (retail reloads ascending, ours descending) and not
+// reachable from here.
 // first; the constant's pool address differs as well and the check cannot mask it.
 // shared left edge lifetimes 162;
 // shared right edge lifetimes 118;
@@ -197,6 +201,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the other three, and the colour is read through a pointer with the alpha as a byte; what is left
 // is that in the last quad's third and fourth vertices retail loads y into a register before it
 // adds the offset, where ours copies the offset and folds the load into the addition, and that
+// after the second reservation retail reloads the lower coordinate before the 16777215 constant.
+// The pool address of the constant is masked by the check; only the order of the two loads differs.
+// Round 34 (lane A, machine 3): the y sums of the third and fourth vertices are folded by the
+// commutative-operand canonicalisation of the whole-program build: swapping their operand order
+// keeps 18, swapping the whole quad gives 91, and the constant through a named local keeps 18;
+// what is left is the fold in those two vertices and the reload order after the reservation.
 // after the second reservation retail reloads the lower coordinate before the 16777215 constant,
 // whose pool address differs as well and that the check cannot mask.
 // Round 83 on the round-220 near source (color pointer, per-use coordinates, byte alpha, scalar size;
@@ -363,6 +373,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the quad through a forceinline helper 348 (not inlined under the region's inline_depth(0)); the
 // point parameter renamed to sort after the size 18; the size computed after 0x1cf50 26; the size's
 // address taken 18. All restored.
+// Round 134 (m3 lane 4): the size local named half_size 18; the size held in the scale parameter
+// (diagnostic) 29 (the y fold stays, so it is not the size's symbol or slot); the size computed after
+// 0x1cf50 26 (as before); the last quad's texture calls through D3DDevice:: 18; the size as a
+// `real const &` 18. All restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

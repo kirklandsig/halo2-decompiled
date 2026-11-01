@@ -15,6 +15,8 @@ detonation. */
 #include "object_iterator.h"
 #include "effects.h"
 #include "sound_sources.h"
+#include "impacts.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <string.h>
 
@@ -383,6 +385,16 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// score 3 (was 3): this round: retail keeps the rotating-flag OR and store ahead of the
+// angle duplicate and the first axis load; ours still hoists that load above the flag
+// store and sinks the store below the duplicate. The axis copy-in and the normalizer
+// re-read as an array (the helper's v->n[] terms, and a local real *axis_values) leave
+// the load hoisted (3, 3, 3; component stores through that pointer 68); the helper
+// without the inline keyword leaves real calls (168, and 0xfa580 stops matching);
+// __forceinline and a const pointer parameter change nothing (3, 3); a reference to the
+// axis (all, copy only, normalize only) and a helper taking a reference parameter give
+// 14/3/14/14; the flag through a dword pointer is 3 and through a pointer local does
+// not compile.
 // score 3 (was 3): the flag OR/store crosses the angle duplicate and first
 // axis load differently. Forced inline, speed/axis/angle declarations, the
 // first-product order and *= no change; shared normalize 14; j+(k+i) 14;
@@ -574,91 +586,27 @@ struct s_projectile_material_response
 
 s_projectile_material_response g_547660;
 
-// score 34 (was 34): word input, material-pointer formation and ordinal/loop entries still differ.
-// Prior: Input index load width, loop entry alignment and response cursor calculation differ.
-// Indexed responses 69; pointer stepped in body 69; entry result 67; direct count 75;
-// direct material global 72; body range validation 69; single exit 69; entry result/indexed 67;
-// native current ancestry index 69; entry result/current index 67.
-// Native table-end traversal: cached count / result-gated 54/36, relational 54/36;
-// per-use count 60/65/60/65; result-gated ordinal 57/55, nullable material 57/55;
-// indexed producer/result-first/current-short combinations 58/56/58/56;
-// direct table bound 36, with result first 34; without unused parameter reference 49/49.
-// Kept direct table bound/result-first 34 (147/145 bytes), plain confirmed;
-// input index width, loop entries and cursor arithmetic remain.
-// Short ancestry with direct endpoint 34; positive ordinal/body cursor 49; unguarded ordinal 55;
-// positive while ordinal 49; short ancestry/ordinal 48; per-use count/ordinal 66;
-// multiply-used response base 34; response base/short ancestry 34. Word input and cursor/loop entries remain.
-// Typed material table: cached header endpoint/count once or per-use 34/65; cached header ordinal 49/66;
-// per-use header endpoint 34/71 and ordinal 69/66. Typed parent member does not repair the word input.
-// Result-owned response cursor: endpoint 40, ordinal 39, relational endpoint 40;
-// direct ordinal/endpoint success returns 79/67; result cursor with per-use count
-// ordinal/endpoint 70/73; short ancestry with result ordinal 39. Restored.
-// Ordinal reset before material lookup, ancestry/entry lifetime with cursor/indexed candidates
-// 58/56/58/56; immutable current-material values with those four forms 58/56/58/56.
-// Native word input and response scan entry remain; opening body restored.
-// Round 6: counted response loop 56 (retail's single guard and counter, registers rotate, inner
-// loop unaligned), with a count guard 47, with a pointer cursor 55; the NULL-default material
-// getter shape around those 34/56/47; short walk local without/with the reference 51/34, counted
-// 65/56. Compiled alone with every argument on the stack, each form (short, word or long
-// parameter, walk local, read through the reference) loads the index as a dword, never retail's
-// word load that keeps it off the register-argument list.
-// Round 8: compiled alone, the index loads as a word only when nothing reassigns it in a loop (the
-// loop-carried copy widens the entry load), so the walk is not a loop over the parameter as written;
-// counted response loop 56 (alone: retail's guard/counter shape, but index EDI, material ECX and the
-// response ESI where retail has ESI/EDI/EDX), NULL-default getter with it 56, while-counted 56,
-// tail-recursive call on the parent 72 (made a loop, result dropped), counted without the reference
-// 64, walk local read through the reference 34. Round 101: a word parameter with short-cast range
-// tests 56 (146 bytes, movzx); `return` of the call on the parent when nothing matched 69 (VC makes
-// a rotated loop, still a dword load); the counted loop reading the element through the index at
-// each use 56 (140 bytes); the counted loop testing the definition's count at each pass 70; the
-// parent read only when nothing matched 74. Screened alone (synthetic shapes too): every loop form
-// over a short index, with the index read through the parameter's address or not, loads a dword;
-// the read through the address gives the word load only when the value is not loop-carried
-// (0x1ed70). A scan of the matched functions finds no word-loaded parameter that a loop reassigns.
-// 64, walk local read through the reference 34.
-// Round 10: retail's entry jmp over the loop pad follows from its 5-byte word load. A walk local
-// initialised from the parameter 34 (copies coalesce), with the counted response loop 55, either
-// without the reference 51/65 (the index then arrives in EDX); a pointer to the index walked from
-// the parameter to each parent field 49 (word loads, but at the loop head), with the counted loop
-// 47; the existing global_material_get (inline in damage.cpp) for the lookup 34 (same code).
-// Round 12: a counted scan gives retail's shape but colours index/material/counter/pointer EDI/ECX/
-// EDX/ESI (retail ESI/EDI/ECX/EDX) with the dword entry load: a named response base indexed 54,
-// the element indexed off the definition 56, a walk local read through the reference 56, the
-// material declared before the loop 56; the pointer scan with a walk local read through the
-// reference 34 (same code). A read through the reference loads a word only when no loop carries it.
 // @retail 0xfd4c0
 s_projectile_material_response *__stdcall projectile_get_material_response(s_projectile_definition const *definition,
-	short material_index)
+	c_type_47f957 material_type)
 {
 	s_projectile_material_response *result = NULL;
-	/* retail keeps material_index on the stack */
-	short const *reference = &material_index;
 	long response_count = definition->material_response_count;
-	byte *materials = (byte *)g_4e034c;
+	long i;
 
-	while (!result && material_index != NONE && material_index >= 0 &&
-		material_index < *(long *)(materials + 0x150))
+	while (!result && global_material_get(material_type.m_index))
 	{
-		byte *material = *(byte **)(materials + 0x154) + material_index * 0xb4;
-
-		if (!material)
-			break;
-
-		if (response_count > 0)
+		for (i = 0; i < response_count; i++)
 		{
-			s_projectile_material_response *response = (s_projectile_material_response *)definition->material_responses;
+			s_projectile_material_response *response = (s_projectile_material_response *)definition->material_responses + i;
 
-			while (response != (s_projectile_material_response *)definition->material_responses + response_count)
+			if (response->material_index == material_type.m_index)
 			{
-				if (response->material_index == material_index)
-				{
-					result = response;
-					break;
-				}
-				++response;
+				result = response;
+				break;
 			}
 		}
-		material_index = *(short *)(material + 8);
+		material_type.m_index = *(short *)(global_material_get(material_type.m_index) + 8);
 	}
 	if (!result)
 		result = &g_547660;
@@ -984,6 +932,38 @@ real function_30bf0(vector3f *v);
 // Round 222: found byte/short/long/dword with result first at entry, all 245; arc-only result,
 // all 257. Original body restored; frame 0x28/0x30, rounded horizontal root and separate
 // divisions remain.
+// Lane 14 r16: double -1.0 with an uncast t2 root together 273; two_a written out at both
+// divisions 248 (no reciprocal: both become x87 fdiv as in retail, frame 0x2c), that with
+// `root * (-1.0f / two_a)` 248 (retail's fld -1/fdiv/fmul order); the named two_a with that
+// order 232 (the SSE reciprocal returns); sqrtf for the horizontal length 232. Body restored.
+// Round 10 (m3 lane 2, one-file harness identical to the real build): three causes remain, none
+// with a natural form: retail never enregisters the forced-speed and time-scale pointers (it loads
+// each at its use, so EDI is free for the distance output that 0xfa580 takes in EDI), it keeps the
+// horizontal root in the entry block (stored as a float, compared in SSE), and it divides by two_a
+// twice without a reciprocal. Two_a written out with the forced-speed test first 237 (ret 0x28, loses
+// 0xfa6a0, 0x26f150, 0x1f8100 and 0x2900b0); gravity and horizontal tests as nested ifs 232; chosen
+// speed defaulted at its declaration with the forced test first 238; the horizontal variable reused
+// for the velocity's horizontal length 232; the time-scale speed chosen by a ternary with an else 261
+// (971 bytes); six spilled-scalar renames 232 (harness).
+// Round 22 (m3 lane 15, --fast with the five callers, which alone builds another convention): t2 divided by
+// `(a * 2.0f)` 248 (callers lost); optimal time from `-1.0f / (a * 2.0f)` 271; forced speed read through its
+// reference at both uses 232 (same code); minimum speed as if/else 232 (same code); time-scale clamp as a stored
+// product with if/else-if 253. The read through the address folds back to the parameter, which ours enregisters in
+// EDI from entry, so the distance output is not kept in EDI from entry as retail keeps it for 0xfa580.
+// Round 34 (m3 lane 11): delta through fa580's plain component loop 233; forced/time-scale pointers read
+// plainly with `if (forced_speed)` first 288 and forced first with the address reads 287 (callers'
+// convention lost in both); a clamp `if (gravity < 0.0f) gravity = 0.0f;` before `if (gravity > 0.0f &&
+// ...)` in place of `!(0.0f > gravity) &&` 232 (986 bytes; plain 232, callers kept): the horizontal root
+// moves into the entry block, rounded to a float in a dead parameter home and compared in SSE with the
+// epsilon shared with delta.k as retail (aligned difference 227 -> 213), not kept as the clamp's store
+// only shapes the code; on the clamp, two_a written out at both divisions 276 and the time scale read
+// plainly 248 (callers lost in both). Diagnostic (reverted at once): both pointers read through volatile
+// casts give retail's EDI distance and EDX gravity pointer (216; 212 with the clamp), so the remaining
+// causes are those two pointers' entry registers, the reciprocal of two_a and the xmm homes of delta.
+// Round 36 (m3 lane 11): the velocity's horizontal speed through magnitude2d 232 (same x87 order);
+// optimal time as `sqrt(-root / two_a)` 236 (the SSE reciprocal stays); two_a written out at both divisions
+// with plain pointer reads 247 (ret 0x28, callers lost); C++ references to the two pointer parameters 232
+// (same code); `if (0.0f > gravity) gravity = 0.0f;` ahead of the vertical delta 247.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1203,6 +1183,39 @@ extern vector3f *g_4687ac;
 // Round 213: existing staged cross with original/shared input differences and original/bounded
 // initial ray 163/163/165/165; consistent radius-field counterparts 181/188/173/180.
 // Original body restored; tag EBP and native frame 0x34 endpoint/query overlap remain.
+// Round 42: normalized side consumed as final negative endpoint 164 (frame 0x3c);
+// complete scalar cross input, direct up fields and both 163 each; endpoint reuse with
+// scalar input/direct up/both 164 each, with bounded first ray 166. Uniform radius
+// fields on endpoint reuse alone/all-input graph 181, with bounded first ray 173 each.
+// All original executable source restored; frame 0x34 and tag/query allocation remain.
+// Round 10 (m3 lane 2): retail computes each endpoint product twice (no common side * radius between
+// the start and end points: separate radius copies, as an inlined two-point ray test's parameters
+// give); block scopes give the slot sharing but not the products. Each query vector in its own block
+// 166 (frame 0x30); the two side query vectors only 164; all three with the radius read again inside
+// the radius block 171; endpoints through vector3f_add_scaled with 0 - radius / -radius 180/180 (769
+// bytes). Body restored.
+// Lane 15 round 18: retail inlines the two-point ray test 0x16a040 for all three queries (its
+// vector homes give retail's sharing: first query/start, both offset queries). With 0x16a040
+// made `inline` (noinline declaration dropped): three calls 187 (frame 0x3c); radius field at
+// each use 166 (integer registers and opening as retail; end.z spilled into end's home); block
+// radius local 188/170; origin-side endpoints first 174 (frame 0x30); endpoints through
+// vector3f_add_scaled 158 (F0 spill as retail); with a named negative radius 159; offset queries
+// joined by || 158. Not kept: 0x1c8df0 then inlines three of its 0x16a040 calls (170 -> 457).
+// Round 22 (m3 lane 15, one-file harness exact at 163, radius form 181 in --fast too): radius field at each use
+// 181 (definition in EBP as retail); single-exit result 184, with the radius at use 187; first query vector through
+// vector3d_from_points3d 163, with the radius at use 188; side delta through it 163, with the radius 181, both 188;
+// endpoint declarations at the block top 163; first query vector reused for both offset queries 163, with the
+// radius 180; a separate opposite query vector 164; opposite endpoints computed first 186.
+// Round 34 (m3 lane 11): BLOCKED-BY 0x16a040's noinline declaration (kept out of line for 0x1c8df0's calls): retail's
+// three queries are that test inlined. The three queries as calls to it 328 (611 bytes, out of line); the query
+// vectors renamed 163 and the endpoints renamed 163 (same code, so slot order here does not follow names); the side
+// delta computed k, j, i (retail's load order) 166; the radius read from the field in the test and into a block
+// local 184 (the collision pointer keeps EBP).
+// Round 36 (m3 lane 11): the three queries as calls to 0x16a040 with a __forceinline redeclaration here 328
+// (the defining file's noinline wins); with that noinline declaration dropped 187 (inlined, frame 0x3c;
+// 0x1c8df0 170 -> 457, 0xcf040/0x24da18/0x24e59f stay matched); on that, endpoints through vector3f_add_scaled
+// 173, radius compared from the field and read in the block 170, radius field at every use 158 (definition in
+// EBP as retail; frame 0x40 vs 0x34 and the shared return-true block remain). All restored.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1268,6 +1281,14 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// score 4 (was 4): this round: retail's 0xfd740 takes its six selector outputs
+// in the order (effect index 0, sound 2, effect index 1, effect index 2,
+// sound 0, sound 1), the first two on the stack and the last four in ecx, edx,
+// esi and edi; our callee takes them in the order (effect index 0, sound 0,
+// effect index 1, sound 1, effect index 2, sound 2) and reads the last four
+// from esi, edi, ebx and edx. The four addresses are the same set, so only
+// the registers and their order differ; matching them needs the callee's
+// parameter order changed, which is not ours to change. BLOCKED-BY 0xfd740.
 // score 4 (was 4): only the register arguments of the 0xfd740 call differ (retail
 // passes the first sound in esi, the second effect in ecx, the second sound in edi
 // and the third effect in edx; ours ebx/edi/esi/edx), set by that callee's own body.
@@ -1366,6 +1387,20 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // cannot keep retail's zero in EBX across that call (the point then takes EBX). Flag-bit
 // member for both `|= 4` 115 (same code); tag before the flag 115 (same code); markers
 // before the scales 115; compression before the point copy 117; velocity copy first 178.
+// Round 22 (m3 lane 15): NUMBEROF bounds 115 (retail's `jb` in both loops; positional count unchanged); dword
+// counter 115; sound index read at each use 115; sibling 0xfcea0's request order with NUMBEROF 120; sound records
+// at function scope 115. Retail pushes the 16-bit material raw to 0xfd740 where ours zero-extends it for that
+// callee's `long` parameter: BLOCKED-BY 0xfd740 for its parameter width as well as its EBX argument.
+// Round 34 (m3 lane 11): first difference (+0xd) is still that convention: retail passes 0xfd740 four register
+// pointers (EDI, ESI, EDX, ECX) and keeps the point in EDI, ours five (EBX too) with the point in EBX; retail's
+// caller 0xa1df0 zero-extends the word before the call, so retail's raw push fits a 16-bit callee parameter.
+// No trial: the callee is contributor code.
+// Round 36 (m3 lane 11): the alternate tag (+0xec) in a named local 149; the final tag (+0x144) in a named
+// local 150. Root of the 0xfd740 convention: retail's 0xfd740 keeps the tag index in EBX for 0x1883e0, which
+// takes it there only with its 4th/5th parameters as c_type_47f957 (0x1883e0's note). With that form, 0x188180's
+// call and the 0xfd740/0xfd7d0 call sites converted (diagnostic, reverted) this is 29 (0x1883e0 matches, 0xfd740
+// 49 -> 8): BLOCKED-BY 0x1883e0 (its class form is held by src/impacts.cpp and the 0xfd740/0xfd7d0 call sites).
+// What then remains: the raw 16-bit index push, 0xfd740's output order, `jb` bounds, the zero-store order.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
@@ -1481,7 +1516,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
-// score 332 (was 332): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
+// score 315 (was 315): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
 // Speed update is still called instead of expanded; 1226/1261 bytes.
 // Native flag tests 380; complete water result 375; both 380; plain velocity-component
 // loop 364 fast, 360 plain (kept); loop/flags 381; loop/water 364; all three 381;
@@ -1513,6 +1548,20 @@ PRIVATE inline long projectile_object_root(long object_index)
 // Round 222: shared zone predicate 346, with shared scaled sum 332; both library copies tie each
 // form. Shared zone with cached tag, with/without scaled sum or copies, 381 each. Original
 // body/include restored; slot/input allocation and speed-update expansion remain.
+// Lane 14 r16: BLOCKED-BY 0xfbfd0 (contributor code): retail expands it inline after 0xfbd40, which
+// keeps index * 12 in EBP and the definition in EDI from entry. A definition local at entry 364
+// (EDI as retail, 1176 bytes), with the bitfield test 395, with `(flags >> 2) & 1` 363; that last
+// with `inline` on 0xfbfd0 (diagnostic only, not kept) 313 at 1248 bytes. Body restored.
+// Round 34 (m3 lane 11): the unit's seat bits copied with the existing word_flags_set on the +0xc0 word 315 (kept:
+// the tail is now retail's `shr dl; test dl, 1` and unmerged `or/and byte ptr` exactly; byte_flags_set 332, same
+// code as the if/else). On that: the unit word read at each use in the seat test 347 (still `test, 6`); both seat
+// tests through TEST_FIELD_BIT 333 (retail's separate byte shifts appear, in BL/DL, 1243 bytes); a definition local
+// at entry for every use 380; the definition flag through flag_bits.unknown2 347; as `(flags >> 2) & 1` 315 (same
+// code). Still BLOCKED-BY 0xfbfd0 (contributor) for retail's inline copy and its EBP-held index * 12.
+// Round 36 (m3 lane 11): the water test with one `under_water = true` under `&& (!(water & 0x80) || 0 > dot)`
+// 315 (same code); the under-water flag through bit_vector_set(&object_flags, 3, under_water) 344 (retail's
+// exact `mov bl, 1; test bl, bl` single-store block, but two fewer instructions ahead of the missing 0xfbfd0
+// expansion); with a definition local at entry 364; with the single assignment 344.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -1635,14 +1684,8 @@ bool __stdcall function_f8200(long projectile_index, byte const *data, long unus
 				(((unit_flags >> 1) & 1) || ((unit_flags >> 2) & 1) || weapon_index == *(long *)(unit + 0x3e4)))
 			{
 				*(dword *)&projectile->flags |= 0x8000;
-				if ((*(byte *)(*(byte **)(header + 8) + 0xc0) >> 2) & 1)
-					*((byte *)projectile + 0xc0) |= 4;
-				else
-					*((byte *)projectile + 0xc0) &= ~4;
-				if ((*(byte *)(*(byte **)(header + 8) + 0xc0) >> 1) & 1)
-					*((byte *)projectile + 0xc0) |= 2;
-				else
-					*((byte *)projectile + 0xc0) &= ~2;
+				word_flags_set((word *)((byte *)projectile + 0xc0), 2, (*(word *)(*(byte **)(header + 8) + 0xc0) >> 2) & 1);
+				word_flags_set((word *)((byte *)projectile + 0xc0), 1, (*(word *)(*(byte **)(header + 8) + 0xc0) >> 1) & 1);
 				*(long *)((byte *)projectile + 0xb8) = *(long *)(*(byte **)(header + 8) + 0xb8);
 			}
 		}
@@ -1691,6 +1734,47 @@ real function_17c900(short function_type, real input);
 // Round 294: Unsigned word/dword salt 360/371; paired word/dword phase counters 354/371;
 // word-word/dword-word/word-dword/dword-dword 354/354/371/371. Complete body
 // restored; stacked-index/output-EBX transport and vector homes remain.
+// Lane 14 r16: retail writes the output in each of three exits (two point setters and a plain copy)
+// and reads the index again for the salt: late named salt with the three exits 382 (the index stays
+// an EAX argument copied to EBX, the output goes to EBP); parameters swapped 382 (same code); a
+// target pointer local 382; `(void)&projectile_index` 382; the salt written at both uses 328 (retail's
+// convention: index on the stack, frame 0x30, first difference +0x4f; aligned difference 263 -> 162,
+// not kept as it is a value written out at each use); without the target local 328; that with
+// normalize_inline 326 (aligned 168); with a wander direction vector 362 (aligned 150). Remaining:
+// retail's zero register in XMM4 from the to_target block and the normalized components kept in
+// XMM1-3. Body restored.
+// Round 10 (m3 lane 2): output written in each of the three exits with the entry salt 377 (1477
+// bytes); salt named after the center pointer 347; game time named in the wander branch 348; that
+// with the salt named there too 365; the wobble clock as an if/else in place of the ternary 348.
+// The salt written at both uses again gives retail's convention, 329, and with the three exits 328
+// (aligned difference 140, 70 with registers masked: the rotation's products and the normalized
+// components' homes remain). Body restored.
+// Round 22 (m3 lane 15): the header normalize_inline 348; lead field read at each use 369; the file normalize
+// helper with one exit 344 (1454 bytes, four points; 0xfa580 stays matched, 0xfbd40 3); that with the output
+// written at three exits 358; plus the salt computed in the wander branch 345 (projectile in ESI as retail, index
+// EAX to EBX, output EBP, frame 0x2c); plus a target pointer local 345 (same code).
+// On the one-exit helper: salt in the wander branch alone 359; three exits + wander salt + lead read at each use
+// 351 (1463 bytes); three exits + lead at each use 361; lead at each use 352 (1463 bytes).
+// Round 34 (m3 lane 11): the salt written at both uses with the output written at three exits (two point setters
+// on aim_point, the plain copy in an else) gives retail's whole convention (index on the stack re-read for the
+// salt, output in EBX, definition spilled, frame 0x30; identical to +0x4f) at 328, aligned difference 162 (0xf8eb0
+// 946 -> 969); left: retail's early SSE zero (xmm4) and to_target's components kept in xmm1-3 across the normalize
+// merge, and the rotation's register homes. On that form: normalize3d 336; vector3d_from_points3d for to_target
+// 350; lead field read at each use 341 (1463 bytes, index back in a register); wobble clock as if/else 328 (same);
+// up vector read through the global at each use 328 (same).
+// Round 36 (m3 lane 11): on round 34's form, the wander offset as a named direction vector before the scaled
+// add 362 (its x87 tail is retail's exactly; that form is 19 bytes long elsewhere: retail keeps to_target in
+// xmm3-xmm1 and a zero in xmm4 across the normalize merge and re-reads the lead field at its second use). On
+// this form: that vector 365; the salt read late through the index's address 366 (index copied to EBX at
+// entry); normalize3d in place of projectile_normalize 344 (1454 bytes); with the wander vector 343 (1470
+// bytes); on that, the lead field at each use 349, salt named in the wander branch 361, cross3f for the axis
+// 343 (same code), output written at three exits 378, to_target through vector3d_from_points3d 377, the lead
+// and wander adds through vector3f_add_scaled 343/343 (same code).
+// Round 16 (m3 lane 17, fast): salt declared at entry and assigned in the wander branch 365 (1469 bytes), with
+// the output written at the three exits 382 (1480 bytes); to_target declared first 348 (same code); salt
+// products as `3 * salt` / `7 * salt` 348 (same code); the wander amount as one conditional expression 348
+// (same code). Retail's caller sets the output with `lea ebx, [esp+0xc4]` and pushes only the index, and
+// this body saves only EBP/ESI/EDI: the output arrives in EBX and is never written there.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2516,7 +2600,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
-// score 1162 (was 1162): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// score 1190 (was 1197): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
 // Independent damage scopes 1162 (kept); direct sound/late effects/both/scoped both 1223/1185/1223/1199; role names/chains/external normalization 1185/1185/1323.
 // Full count/potential conjunction/input aggregate/assignment helper/uninitialized direction 1201/1216/1198/1198/1185; array aggregates/plain loop/unsigned index 1166/1348/1185.
@@ -2551,6 +2635,26 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // Round 213: existing final-velocity friction/noise/rest helper producers, seven subsets,
 // 1162 each; complete graph with reflected receiver setter 1162. Original body restored;
 // frame 0x220/0x218 and velocity/request homes remain.
+// Round 440: Native normal/point/both geometry values 1329/1262/1362, producer and entry storage alike;
+// both library-copy forms 1362. Frames 0x228/0x234 regress; original geometry reads and every body statement restored.
+// Native material-value callee and consistent call construction 1190; restored with the exact-only callee.
+// Round 22 (m3 lane 15): 1197 -> 1190 from 0xfd4c0 taking the material type (both calls wrap the index). The
+// velocity stays on the stack because the unmatched 0xfd7d0 takes an out-pointer in ESI, so ours reloads the
+// velocity after that call (BLOCKED-BY 0xfd7d0); retail also pushes the material to it raw (16-bit parameter).
+// Material local as c_type_47f957 1210; second lookup from c_type_47f957(damage.material_index) 1196; the damage
+// record view's material field typed c_type_47f957 1196 (0xfc330 527 -> 522); both 1210; one function-scope
+// damage record 1197 (frame 0x278).
+// Round 34 (m3 lane 11): still BLOCKED-BY 0xfd7d0 at entry (our build gives it register pointers in EBX/EDI/ESI/ECX and
+// a `long` element where retail passes EAX/EDI/EDX/ECX and pushes the 16-bit value raw). The three projectile flag
+// sets of the stop arm as three dword ORs 1190 (same code, VC merges them into one `or 0x814`); through the existing
+// bit_vector_set 1279 (4904 bytes): retail's exact three-store sequence, frame 0x21c, the projectile in EBX and the
+// response pointer spilled to [esp+0x14] as retail (aligned difference 850 -> 748), but longer. Reflection dot
+// through dot3f 1190; grouped `k + (j + i)` 1190 (retail's j, i, k evaluation; masked difference 620 -> 613);
+// `j + (i + k)` 1190; `k + (j + i)` with the j operands swapped 1190 (same code).
+// Round 36 (m3 lane 11): the reflect arm's object-flag toggle through bit_vector_set(&object_flags, 3, !bit)
+// 1192 (retail's two loads, plus a `not cl`); as a bitfield assignment 1277 (4900 bytes). 0xfd7d0 is the
+// blocker: with 0x1883e0's class parameters (diagnostic) 0xfd7d0 62 -> 69 and this 1220. Retail's velocity in
+// ESI also lets it tail-merge the two `*velocity = *g_4687a4` copies; ours keeps both.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)
@@ -2657,7 +2761,7 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 	*(short *)((byte *)projectile + 0x132) = material_index;
 	*(vector3f *)((byte *)projectile + 0x134) = collision->normal;
 
-	s_projectile_material_response *response = projectile_get_material_response(definition, material_index);
+	s_projectile_material_response *response = projectile_get_material_response(definition, c_type_47f957(material_index));
 	real impact_cosine = 0.0f - (collision->normal.k * velocity->k + collision->normal.j * velocity->j +
 		velocity->i * collision->normal.i);
 
@@ -2749,7 +2853,7 @@ no_effects:
 		function_30bf0(&damage.direction);
 		damage.unknown84 = *((byte *)definition + 0x128) & 0x3f;
 		damage.material_index = collision->unknown24;
-		damage.unknown80 = projectile_get_material_response(definition, collision->unknown24);
+		damage.unknown80 = projectile_get_material_response(definition, c_type_47f957(collision->unknown24));
 		damage.location = collision->location;
 		damage.unknown7e = *(short *)((byte *)projectile + 0x1a8);
 		damage.scale = damage_scale;

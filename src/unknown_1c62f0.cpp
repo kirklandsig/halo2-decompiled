@@ -77,108 +77,29 @@ void c_animation_channel::clear()
 	unknown0e = NONE;
 }
 
-// score 36 (was 36): incoming graph save and the late graph store still differ. With retail's
-// store order (graph after unknown0d) and the byte-pointer clear the body equals retail except that
-// the animation id is copied through ECX (retail: ESI, while CX holds unknown0e from an early load and
-// a late store), so ESI is never modified and LTCG passes graph straight in ESI (retail: ECX, then
-// push esi; mov esi, ecx); the four matched callers break. Early frame-position store kept (36).
-// store order (graph after unknown0d) and the byte-pointer clear the body equals retail except
-// that the animation id is copied through ECX (retail: ESI, while CX holds unknown0e), so ESI is
-// never modified and LTCG passes graph straight in ESI (retail: ECX, then push esi; mov esi, ecx);
-// the four matched callers break (only their graph argument register differs). Retail hoists the
-// unknown0e load above the graph store, which is what leaves ESI for the id copy; ours hoists the
-// id copy instead (its store moves above the graph and frame stores). Early frame-position store
-// kept (36).
-// Forms: sentinel/word/byte clear chains 41/41/43; two-byte memset 43; stored flags 41; stored-ID
-// result 76; renamed late graph 42; dword/long flags plus early frame 36/37; paired defaults 42;
-// identifier memcpy 36; metadata before resets 42; trailing defaults 41; redundant byte clear
-// removed 36; early derived state 38; explicit state bit 35; defaults plus memcpy 42;
-// validity-result 43; animation guard first 44; inline/noinline declarations 41; existing reset 43;
-// state memset 51; high-bit predicate 41; ID word copies 50; retail store order 51; counter from
-// bit 15 as conditional/ternary 43/43 (retail order 49/51); graph as a by-value class 43 (on the
-// stack); graph store first/after the NONE words 41/41, after the zero words/unknown0d/frame 42
-// each; inline definition in retail order 42, with graph copied to a local 42; nested validity
-// gates 36; separate invalid guards 42; eager validity tests 47; short-pair memset 50 (eager
-// validity and short-pair memset lose the four checked callers); early short metadata 43; early
-// flags word 41; early long metadata 43; named short promotion 36; success result/nested success
-// result 49/49; early invalid guard with early frame 36; role-named inputs 36; late rate/short
-// metadata/both 36/36/36; both with the success result 49; out-of-line member declaration 36/42;
-// immutable input ID 36/42; ID sentinel memset 50/51; direct state bytes 43/51.
-// Round 75: existing clear() then retail-order assignments 51; const graph 51; __fastcall member
-// declaration 51 (LTCG overrides it); retail order with the byte-pointer clear 42; eight orders of
-// the graph/frame/id/rate/unknown0e/unknown10 assignments 42 each.
-// Round 5: `unknown10 |=` the flag bit with plain byte clears 43 (the clear folds away, graph in EDX,
-// five callers lost); retail order with unknown0e before graph 42; `animation_id = c_type_709360()`
-// for the NONE pair, current/retail order 55/59 (the dword store absorbs both word stores); retail
-// order with unknown0e converted to a short local before graph 42 (propagated; retail's movsx
-// still holds CX across the id copy, ours copies the id first).
-// Round 113 (the compile-only /Gd pass loads graph once into ESI for every late-store order, which
-// is what makes it an ESI argument): retail order with the graph parameter cleared when the index
-// is NONE 51 (same code); graph store after unknown16/unknown08 43/40 (graph EDX, flags ECX);
-// after unknown0c/flags 51; frame first with graph late 39; retail order with the byte pair 42
-// (ESI argument, NONE in ECX as retail).
-// Round 95 (one-file harness, LTCG conventions reproduce: retail order passes graph in ESI there
-// too): on retail's order, graph copied to a local first, the parameter set to NONE when the id
-// is NONE, the last flags bits from the stored field, the frame store before graph 51 each in
-// the build (126 bytes, the matched callers lose); the current form with the last flags bits
-// from the stored field 36.
-// Round 30: retail's store order read from its listing (retail's clear()/reset() keep source
-// order) 51 (graph in ESI, five matched callers break); default-constructed id for the two NONE
-// stores 62 (dropped as dead); that order with unknown0e after unknown0d 51; unknown0e after
-// the id copy 36; flags stored next to the derived byte 36. Retail hoists the unknown0e load
-// above the graph store, which is what leaves ESI for the id copy. All restored.
-// Round 118 (one-file harness): all 120 orders of the graph/frame/id/rate/unknown0e stores after
-// unknown0d pass graph in ESI; so do the stores through a forced-inline initializer taking every
-// parameter (its argument copies are propagated) and the id NONE words and/or unknown0c/unknown0d
-// stored through pointers (as reset()/clear() do), which on retail's order give 43 in the build
-// (the matched callers lose). On the current order: the id words through a pointer 36; unknown0c/
-// unknown0d through a char pointer 34; both 34 (two-point gains, pointer locals: not kept).
-// from the stored field 36. Round 118 (one-file harness): all 120 orders of the late
-// graph/frame/id/rate/unknown0e stores pass graph in ESI, as do a forced-inline initializer taking
-// every parameter and pointer stores for the id words.
-// Round 30: retail's store order read from its listing 51 (graph in ESI, five matched callers
-// break); default-constructed id for the two NONE stores 62 (dropped as dead); that order with
-// unknown0e after unknown0d 51; unknown0e after the id copy 36; flags stored next to the derived
-// byte 36. Retail hoists the unknown0e load above the graph store, which is what leaves ESI for
-// the id copy.
-// Round 83: retail order 42 (callers lose); unknown0e stored right after unknown0d 42 (stored at
-// once, ECX free for the id copy); the two NONE id words as one chained assignment, retail
-// order/current 41/36; the two zero words chained 38.
-// Round 85: the byte pair as plain unknown10/unknown11 clears (no pointer) 43 (the four matched callers
-// lose); that with retail's order after an early graph store 43; id before rate before unknown0e 36;
-// frame store after unknown0d 41; frame, id, rate, unknown0e last in retail's order 41.
-// the id copy 36; flags stored next to the derived byte 36.
-// Round 42 (all with graph in ESI and the six matched callers off by 1-68): retail order with
-// unknown0e stored first/before unknown0d 40/42, graph stored last 42, id stored last 44; existing
-// reset() or clear() inlined first, then retail's assignments with or without frame/rate 51 (the
-// unknown10 clear is dropped, flags move to ECX); the graph/frame/id/rate/unknown0e/flag-bit stores
-// in a forced-inline helper taking unknown0e as a short (call-site conversion) 42.
-// Round 85: the byte pair as plain unknown10/unknown11 clears (no pointer) 43 (the four matched callers
-// lose); that with retail's order after an early graph store 43; id before rate before unknown0e 36;
-// frame store after unknown0d 41; frame, id, rate, unknown0e last in retail's order 41.
 // @retail 0x1c6470
 bool c_animation_channel::set(long graph_tag_index, word flags, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e)
 {
 	if (graph_tag_index != NONE && animation_id.index != NONE)
 	{
-		this->frame_position = 0.0f;
+		short *local_0 = (short *)&this->animation_id;
+		local_0[0] = NONE;
+		local_0[1] = NONE;
+		byte *local_1 = &this->unknown10;
+		local_1[0] = 0;
+		local_1[1] = 0;
 		this->graph_tag_index = graph_tag_index;
-		this->animation_id.graph_index = NONE;
-		this->animation_id.index = NONE;
-		this->unknown10 = 0;
-		byte *local_0 = &this->unknown10;
-		local_0[0] = 0;
-		local_0[1] = 0;
+		this->animation_id = animation_id;
 		this->unknown14 = 0;
 		this->unknown16 = 0;
 		this->unknown08 = unknown08;
 		this->unknown0c = unknown0c;
 		this->flags = flags;
 		this->unknown0d = unknown0d;
-		this->unknown0e = unknown0e;
+		this->frame_position = 0.0f;
 		this->rate = 1.0f;
-		this->animation_id = animation_id;
+		this->unknown0e = unknown0e;
 		this->unknown10 = (flags >> 14) & 2;
 		return true;
 	}
@@ -716,8 +637,13 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 	return events;
 }
 
-/* Channel and callback access through local pointers preserves the stack-only entry convention. */
-// score 97 (was 97): adjacent flag load/byte clear and callback reload still differ; direct parameters
+/* Callback access through a local pointer preserves the stack-only entry convention. */
+// Earlier at 97 (MiniMax S, 10-31): retail loads the flags word before the byte clear (movzx edx, word ptr
+// [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
+// clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
+// volatile slot, kept one load but changed the register allocation (133, 132, 141).
+// score 93 (was 97): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
+// one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
 // 126; clears spanning clamp 136, with word events 136. Original body and parameter accesses restored.
 // adjacent word-load/byte-clear order and callback reload remain.
@@ -747,70 +673,108 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // exits 97; first/loop failure exits 97; all dispatch failure exits 97; all failures with direct final
 // update 109; native events with direct final update 109. Word-load/state-clear scheduling and second
 // callback reload remain. Original body restored.
+// Round 3 (lane 18): retail stores the looked-up variant to the channel, tests flag 8, sets the rate and
+// only then stores the identity local from the same register. The channel field stored first and the
+// identity reread after the rate 103; a variant local stored to the channel and, after the rate, to the
+// identity 99 (the identity store lands where retail's does, but the result is read from the stack, not
+// through EAX); chained identity/channel assignment 97 (same code); flag1 tested as `(flags >> 1) & 1` 90
+// at 531 bytes (`test al, 2` in place of retail's shr/test; the gain is only realignment); no volatile read,
+// with the third dispatch reading the parameter 133 (+0x4). Original body restored.
+// Round 126: the callback read through the pointer at every dispatch (no volatile) 133 (loaded at entry);
+// read as the plain parameter at every dispatch, pointer dropped, channel pointer kept 125 (LTCG passes
+// the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); the volatile read at the first two
+// dispatches 97 (same code); the pointer read at the first and the parameter at the others 133; the
+// channel flags read into a local before the byte clear 121 (538 bytes).
+// Round 315: Independent initial/end/loop dispatch outputs with native-word versus long carriers, all
+// eight masks 97. Every one-use result form is restored. Original shared result, callback
+// observations, parameter aliases and state graph retained; word-load schedule and second callback
+// reload remain.
+// Round 22 (lane 13; aligned difflib count 15 at 97: the flags-word load after the byte clear, the
+// second-dispatch callback reload, the identity spill before the rate branch and the third
+// dispatch's argument registers): next frame computed before the position store 97 (aligned 18);
+// the callback sampled once into a named local from the volatile read 132 (frame 0x10); a named
+// loop-frame value for both 97 (same code); flag 1 as `((dword)flags >> 1) & 1` 97 (same code);
+// the rate reset before the identity store 98.
+// Round 116 (lane 6, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 still match): at the second dispatch both
+// builds hold the callback in EBX; ours reloads it only because the first read is volatile. Frame limit
+// after the clamp 118; byte clear before the event-word clears 116; event-word clears after the clamp 114;
+// `next_frame < 0.0f` 97 (same code); frame limit after the byte clear 119.
+// Round 16 (m3 lane 17, fast): the `&channel` pointer local is what keeps the first-dispatch flags load
+// below the byte clear (channel read directly: flags load hoisted as retail, but the identity compares
+// are CSE'd into CX, 113); the identity compared through an `operator==` on the identity type with
+// channel read directly 93 (memory-operand compares as retail); on it: no volatile 136; channel store
+// first and the identity re-read after the rate 98; a variant local initialised from the call 94 (it
+// becomes the return buffer); the variant local declared, then assigned and stored to the identity
+// after the rate 93 (the variant block is then retail's instruction for instruction; not kept, same
+// count); plain callback at the second dispatch 93 (same code); user read through its address without
+// volatile 133; flags through a plain word cast 97 (same code). Left: the second-dispatch callback reload
+// (volatile), after which the third dispatch's scratch registers are rotated one step (EAX/ECX/EDX).
+// Round 470: six lexical orders of the position/limit/next scalars 97 each;
+// first and last float orders with later saved-identity names 97/97. Original
+// names and body restored; adjacent flags scheduling and callback reload remain.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)
 {
-	c_animation_channel *const *local_0 = &channel;
 	animation_event_callback const *local_3 = &callback;
-	c_type_709360 animation_id = (*local_0)->animation_id;
-	s_graph_tag *graph = c_animation_channel_get_graph(*local_0);
-	s_animation *animation = (*local_0)->function_1c6440();
-	real position = (*local_0)->frame_position;
+	c_type_709360 animation_id = channel->animation_id;
+	s_graph_tag *graph = c_animation_channel_get_graph(channel);
+	s_animation *animation = channel->function_1c6440();
+	real position = channel->frame_position;
 	real last_frame;
 	real next_frame;
 	long events;
 
-	(*local_0)->unknown14 = 0;
-	(*local_0)->unknown16 = 0;
+	channel->unknown14 = 0;
+	channel->unknown16 = 0;
 	next_frame = frame;
 	last_frame = (real)animation->frame_count - 0.0001f;
 	if (0.0f > next_frame)
 	{
 		next_frame = 0.0f;
 	}
-	(*local_0)->unknown11 &= ~0xe;
-	events = animation_events_dispatch(graph, animation, (*local_0)->flags, position, next_frame, *(animation_event_callback volatile *)local_3, user);
-	if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+	channel->unknown11 &= ~0xe;
+	events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, *(animation_event_callback volatile *)local_3, user);
+	if (animation_id == channel->animation_id)
 	{
-		(*local_0)->unknown14 |= events;
+		channel->unknown14 |= events;
 		if (next_frame >= last_frame)
 		{
-			events = animation_events_dispatch(graph, animation, (*local_0)->flags, position, FLT_MAX, *local_3, user);
-			if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+			events = animation_events_dispatch(graph, animation, channel->flags, position, FLT_MAX, *local_3, user);
+			if (animation_id == channel->animation_id)
 			{
-				(*local_0)->unknown14 |= events;
-				if (TEST_FIELD_BIT((*local_0)->flag1))
+				channel->unknown14 |= events;
+				if (TEST_FIELD_BIT(channel->flag1))
 				{
-					if (((*local_0)->flags & 0x20) && animation->loop_frame_index == 0)
+					if ((channel->flags & 0x20) && animation->loop_frame_index == 0)
 					{
-						animation_id = state->variant_get((*local_0)->animation_id);
-						(*local_0)->animation_id = animation_id;
-						if ((*local_0)->flags & 8)
+						animation_id = state->variant_get(channel->animation_id);
+						channel->animation_id = animation_id;
+						if (channel->flags & 8)
 						{
-							(*local_0)->rate = 1.0f;
+							channel->rate = 1.0f;
 						}
-						animation = (*local_0)->function_1c6440();
+						animation = channel->function_1c6440();
 					}
 					position = (real)animation->loop_frame_index;
 					next_frame = next_frame - last_frame + position;
-					events = animation_events_dispatch(graph, animation, (*local_0)->flags, position, next_frame, *local_3, user);
-					if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+					events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, *local_3, user);
+					if (animation_id == channel->animation_id)
 					{
-						(*local_0)->unknown14 |= events;
-						(*local_0)->unknown11 |= 4;
+						channel->unknown14 |= events;
+						channel->unknown11 |= 4;
 					}
 				}
 				else
 				{
-					(*local_0)->unknown11 |= 8;
+					channel->unknown11 |= 8;
 					next_frame = (real)animation->frame_count - 0.0001f;
 				}
 			}
 		}
-		if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+		if (animation_id == channel->animation_id)
 		{
-			(*local_0)->set_frame_position(next_frame);
+			channel->set_frame_position(next_frame);
 		}
 	}
 }

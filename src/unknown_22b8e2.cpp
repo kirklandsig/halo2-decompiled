@@ -3,6 +3,7 @@
 #include "camera_storage.h"
 #include "unknown_0259d0.h"
 #include "globals.h"
+#include "bitmap_sequences.h"
 
 struct s_4e6950
 {
@@ -36,34 +37,13 @@ bool function_22acb4(long);
 void function_1396c7(long, point2f *);
 void function_2d140(long, real const *, long, long, s_filter_vector const *);
 
-// score 120 (was 120): mode/resource/point frame homes permuted, offset join and bound schedule.
-// Retail's offset switch has no return: each case converts its pair and shares the adds, the
-// default keeps the point. Per-case sums with a default copy 157 (switch shape retail's, frame
-// and bound schedule worse; case/default order 157); offsets added in place 145; a copy plus
-// `+=` per case 163; the two reciprocals first 144, with the per-case sums 160 (bound block start
-// now retail's, frame +8); the table filled vertex by vertex 173/180.
-// Native offset/resource/sequence data declarations, all seven combinations 120;
-// complete native graph plus case-local converted pairs/default point 163.
-// Mode/resource/point homes, offset join and bound scheduling remain; original declarations retained.
-// Round 208: native four-float grid with pointer-selected offsets, bounds read
-// everywhere/from reused integer inputs 146/120; case-converted offsets 159/139.
-// Early grid declaration repeats those four scores. All body/type changes restored;
-// mode/resource/point homes and offset/bound schedule remain.
-// Round 424: actual 0..2 mode in signed byte/byte/short/word 210/210/210/210;
-// each with both native integer spans named at the reciprocals 210/210/210/210.
-// All restored; mode/resource/point homes and offset/bound schedule remain.
-// Round 42: the per-case sums put mode and resource in retail's homes (aligned 118 -> 106) but swap
-// the point and the result id (the compile-only build gives retail's order there, LTCG does not);
-// on them the point/result/x,y declarations moved or default first 157 each (identical), the result
-// initialised to NONE at its declaration 172 (alone 134); the bounds converted in retail's dd2, dd6,
-// dd4, dd0 order 123, with the reciprocals first 143, with the per-case sums too 159.
 // @retail 0x22b8e2
 void function_22b8e2(s_22b8e2 const *arg_0, long arg_1, color4f const *arg_2)
 {
 	long local_0 = function_13a690(arg_0->field_1c);
 	long local_1;
-	long local_2;
 	point2f local_4;
+	long local_2;
 	switch (local_0)
 	{
 	case 0: local_1 = arg_0->field_2c; break;
@@ -83,60 +63,54 @@ void function_22b8e2(s_22b8e2 const *arg_0, long arg_1, color4f const *arg_2)
 	}
 	if (arg_0->field_24 != NONE)
 	{
-		byte const *local_5 = g_4e3b44[arg_0->field_24 & 0xffff].bytes;
-		if (local_3 >= 0 && local_3 < *(long const *)(local_5 + 0x3c))
+		s_bitmap_tag_22ae21 const *tag = (s_bitmap_tag_22ae21 const *)g_4e3b44[arg_0->field_24 & 0xffff].bytes;
+		if (local_3 >= 0 && local_3 < tag->sequence_count)
 		{
-			byte const *local_7 = *(byte const *const *)(local_5 + 0x40) + local_3 * 0x3c;
-			long local_8 = *(long const *)(local_7 + 0x34);
-			long local_9 = 0;
-			if (local_8 > 0)
+			s_bitmap_sequence_22ae21 const *sequence = &tag->sequences[local_3];
+			if (sequence->sprite_count > 0)
 			{
-				if (local_8 > 1 && function_22acb4(arg_1))
-					local_9 = 1;
-				local_2 = *(short const *)(*(byte const *const *)(local_7 + 0x38) + local_9 * 0x20);
+				long index = 0;
+				if (sequence->sprite_count > 1 && function_22acb4(arg_1))
+					index = 1;
+				local_2 = sequence->sprites[index].bitmap_index;
 			}
-			else
+			else if (sequence->bitmap_count > 0)
 			{
-				short local_10 = *(short const *)(local_7 + 0x22);
-				if (local_10 > 0)
-				{
-					if (local_10 > 1 && function_22acb4(arg_1))
-						local_9 = 1;
-					local_2 = *(short const *)(local_7 + 0x20) + local_9;
-				}
+				long index = 0;
+				if (sequence->bitmap_count > 1 && function_22acb4(arg_1))
+					index = 1;
+				local_2 = sequence->first_bitmap + index;
 			}
 		}
-		else if (local_3 == 0 && *(long const *)(local_5 + 0x3c) == 0 && *(long const *)(local_5 + 0x44) > 0)
+		else if (local_3 == 0 && tag->sequence_count == 0 && tag->bitmap_count > 0)
 			local_2 = 0;
 	}
 	function_1396c7(arg_0->field_1c, &local_4);
-	short const *offsets;
 	switch (local_0)
 	{
-	case 0: offsets = arg_0->field_44; break;
-	case 1: offsets = arg_0->field_44 + 2; break;
-	case 2: offsets = arg_0->field_44 + 4; break;
-	default: return;
+	case 0: local_4.x += arg_0->field_44[0]; local_4.y += arg_0->field_44[1]; break;
+	case 1: local_4.x += arg_0->field_44[2]; local_4.y += arg_0->field_44[3]; break;
+	case 2: local_4.x += arg_0->field_44[4]; local_4.y += arg_0->field_44[5]; break;
 	}
-	real local_26 = (real)offsets[0] + local_4.x;
-	real local_27 = (real)offsets[1] + local_4.y;
-	real local_11 = (real)g_4b9dd2;
-	real local_12 = (real)g_4b9dd0;
-	real local_13 = (real)g_4b9dd6;
-	real local_14 = (real)g_4b9dd4;
 	real local_15 = 0.5f / (g_4b9dd6 - g_4b9dd2);
 	real local_16 = 0.5f / (g_4b9dd4 - g_4b9dd0);
-	real local_17 = 1.0f - (local_26 - local_11) * local_15;
-	real local_18 = 1.0f - (local_13 - local_26) * local_15;
-	real local_19 = 1.0f - (local_27 - local_12) * local_16;
-	real local_20 = 1.0f - (local_14 - local_27) * local_16;
+	real local_11 = (real)g_4b9dd2;
+	real local_13 = (real)g_4b9dd6;
 	real local_21[9][4];
-	local_21[8][0] = local_21[5][0] = local_21[2][0] = local_13;
-	local_21[6][0] = local_21[3][0] = local_21[0][0] = local_11;
-	local_21[7][0] = local_21[4][0] = local_21[1][0] = local_26;
+	local_21[5][0] = local_21[2][0] = local_13;
+	real local_14 = (real)g_4b9dd4;
+	local_21[8][0] = local_13;
+	local_21[0][0] = local_11;
+	real local_12 = (real)g_4b9dd0;
+	local_21[6][0] = local_21[3][0] = local_11;
+	local_21[7][0] = local_21[4][0] = local_21[1][0] = local_4.x;
 	local_21[8][1] = local_21[7][1] = local_21[6][1] = local_14;
 	local_21[2][1] = local_21[1][1] = local_21[0][1] = local_12;
-	local_21[5][1] = local_21[4][1] = local_21[3][1] = local_27;
+	local_21[5][1] = local_21[4][1] = local_21[3][1] = local_4.y;
+	real local_17 = 1.0f - (local_4.x - local_11) * local_15;
+	real local_19 = 1.0f - (local_4.y - local_12) * local_16;
+	real local_18 = 1.0f - (local_13 - local_4.x) * local_15;
+	real local_20 = 1.0f - (local_14 - local_4.y) * local_16;
 	local_21[0][2] = local_17;
 	local_21[0][3] = local_19;
 	local_21[1][2] = 1.0f;

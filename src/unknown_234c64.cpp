@@ -277,9 +277,30 @@ void c_window_channel::v9()
 // and 4/25/4/25. All regress; original callback observation and body restored.
 // A twice-used callback snapshot, with both request types and both result
 // declaration orders, scored 29 in all eight forms (79/78 bytes).
+// Round 26 (lane 10): a header inline method on s_screen_request calling 0x149f49 on `this`,
+// used by v9 and v10, matched both; not kept (an inline twin of an existing function used only
+// where it helps). Request at function scope 13; `request.type = 0` after the call 12.
 // Round 78: type-field callback address 3; shared request pointer/reference 3/3;
 // message-cast callback 3; result before builder/at function scope 3/3; type-field
 // builder and callback 3; shared message pointer 3. Original body restored.
+// Round 7 (m3 lane 2): every other caller of 0x149f49 that uses its request afterwards reuses ECX
+// (they call the local request's own load field). The request at function scope 13; type cleared after
+// the builder call 12; builder through a forced-inline helper's parameter 3; type cleared before the
+// request's declaration 5; `screen` declared first and assigned later 3.
+// Round 206: pending-record pointer/reference bound at entry/in branch 3/3/3/3;
+// complete pending-record snapshot with live callback 47, with retained callback 47,
+// at entry 47, after type clear 43. Snapshots add a 0x40 frame; original restored.
+// Round 208: builder mask unsigned 3 (caller loss); native message timeout; native message pointer
+// 3; value construction 3; one-element request array 3; one-element message array 3; local names 3;
+// native result declared early 3; immutable result 3. All bodies and declarations restored; the
+// request-address reload remains.
+// Round 321: Native message storage with admission scope/early screen/zero-store boundary subsets: 3/3/3/3/5/5/5/5.
+// Round 321: The address reload still differs; original derived request, callback and virtual dispatch restored.
+// Round 56: inline definition 3; array-decay id 3; user-mask/channel/window locals 3/3/3;
+// explicit pending receiver 3; explicit callback dereference 3; explicit setter receiver 3.
+// Round 43 (lane 10): plain parameters local with its own field_c store 3; the builder given the
+// first member's address 3; one base pointer for the callback and setter (callback result passed
+// directly) 25; early return with the request at function scope 13, declared after the test 3.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

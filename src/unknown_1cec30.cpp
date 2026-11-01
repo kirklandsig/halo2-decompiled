@@ -17,6 +17,7 @@ static __forceinline long real_to_long(real value);
 #include "havok_reference.h"
 #include "unknown_122870.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 #include "constraint_helpers_314090.h"
 #include "joint_descriptions_312920.h"
 
@@ -809,6 +810,19 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // rigid body again after the vector's stores; ours reads it once into esi. Tried: the Havok vector declared
 // at the top, in the outer block, with the body read at its use, with every local at the top, or with the
 // body in a named local for the test: 46 each (retail's reload, but the flag byte goes to bl: push ebx).
+// Round 89: slot as a `hkRigidBody *const &` reference with the vector at the top and no own-parameter read
+// 44 (component in EDX); that reference with the own-parameter read 39 (reloads after activation too); slot
+// pointer with the vector after/before it in the flag block, getter for the fixed test, `== false`, own
+// parameter read into a new local: 48 each (retail's code but for BL); one `&&` test with the getter twice
+// 53. Matched code has 263 `mov dl, [edx+N]` loads, so BL means our first body load stays live.
+// Round 139: the getter into a body local with no own-parameter read 41 (component in EDX, callers
+// lose matches); the slot pointer with the vector in the flag block and the byte in a named bool 48
+// (BL); that without the own-parameter read 47; the slot computed before one `flag1 || fixed` test
+// with the vector at the top 48; the body as a `hkRigidBody *const &` with the vector in the flag
+// block 46 (index moves to ECX). Diagnostic: the vector stores through an opaque pointer (forcing
+// the reload) still give BL 52, so a shared first body load is not what takes DL. In every form our
+// build never loads the fixed byte into the dying base register (ECX base -> DL, EDX/EAX base -> BL),
+// where retail does (`mov edx, [eax]; mov dl, [edx + 0x40]`).
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -918,6 +932,10 @@ void function_1d1540(s_havok_component *component);
 // Reset/rebuild inline/noinline contracts, original then aligned-copy/fixed-or-flag-first graphs
 // 81/81/81/81/81/81/81/81/88/88/88/88/27/27/27/27. Original executable source restored. All four 27
 // forms still lose matched 0x1d1b60 at 59 in the reduced image.
+// Round 28 (lane G): the declaration order does not decide the argument registers: with retail's
+// order (transform, index, component) and the old order kept only for the caller in another file,
+// the score is still 81 here and 38 in 0x1d0c20, and matched 0x1d1b60 stays matched, so the order
+// was left as it is. What still differs: retail keeps the component in EBX, ours on the stack.
 // Both-inline paired form: plain 27 at 220 bytes; matched 0x1d1b60 loses 59; rejected.
 // Round 158: assigned copy + body pointer + m_fixed first 88 at 230 (retail's code; a /Gd first
 // pass loads the component once into ebx, yet it stays a stack argument); same with set() 88; flag5
@@ -932,6 +950,54 @@ void function_1d1540(s_havok_component *component);
 // Round 431: Library transform copies with original/fixed-first body receiver: memcpy and memmove, then
 // both with the inverse reserved at entry: 81/85/77/76/81/85/77/76. The 76 forms are five-point gains
 // only; both 77 forms lose matched 0x1d1b60 at 60. Original executable body restored.
+// Round 89: the 88 body with each other parameter order 88 each (0x1d0c20 40); without 0x1d1b60's call to
+// 0x1d0c20 86 (still a stack argument). A /Gd first pass of the 88 body uses EBX, ESI and EDI (component in
+// EBX); without the 0x1d1540 call also all three (stack); without the 0x1d1260 call only ESI and EDI
+// (component an EDI argument); matched 0x1cbf50's first pass uses ESI and EDI and LTCG passes its parameter
+// in the unused EBX. Lead: a body whose first pass needs at most two callee-saved registers.
+// Round 108 (on the 88 body: hkTransform::set copy, body pointer, m_fixed first): control 88 at 230; the
+// fixed arm's refetch assigned back to the body pointer 88; the body pointer declared first, or declared
+// after the copy target and assigned at the fetch, 88/88; the setter declared without `inline` (both arms
+// call it, 182 bytes) 112, the component still loaded from its stack home into EBX, so the body held across
+// the inlined setter's calls is not the cause; the same-file caller's call removed (diagnostic) 86, the
+// component then loaded into ESI, still a stack argument. Original body restored.
+// Lane 15 round 18: 0x1d8e80 moved to its address neighbours' file (src/unknown_1d8dd0.cpp): identical
+// code (81); the 88 body with that move 88 (its /Gd first pass then uses only ESI+EDI, component in
+// EDI, so the two-register rule does not decide it); flag5 first 27 again (component EDI, 0x1d1b60
+// lost at 59, 0x1d3fc0 149 -> 179, 0x1d5120 77 -> 15); that with the move 27; flag5 first with the
+// plain struct copy 85. Diagnostics: the 88 body's /Gd pass loads the component once into EBX (flag5
+// first: EDI) and only the EDI form becomes a register argument; without 0x1d0c20's call LTCG gives the
+// 88 body the component in ECX and the index on the stack, without 0x1d5120's call nothing changes, and
+// 0x1d0c20's aligned transform moved into a forceinline helper changes nothing: 0x1d0c20's call decides it.
+// Round 93 (lane 8): the 88 body (set copy, body pointer, m_fixed first) again 88 (230 bytes; its code is
+// retail's but for the component loaded from [ebp + 8] into EBX with push/pop, ret 4); that keeping the
+// first body pointer for the fixed arm's call (no second fetch) 77 at 220 (index ECX, component an EDI
+// register argument, only ESI saved and EBX unused; 0x1d5120 77 -> 15, but matched 0x1d1b60 59 and
+// retail fetches again after 0x1d1260); the transform by reference 88; inverse declared with local 88;
+// the second fetch into the body local 88. The lead stands: LTCG made the component a register argument
+// only when the first pass left a callee-saved register free.
+// Round 250: One body receiver with conditional post-reset refetch: constructor copy, flag/fixed-
+// first and bool/byte refresh 81/81/81/81 at 220 bytes; set copy 85/85/86/86 at 231. Frame/component
+// convention remains; every matched control survives.
+// Round 13 (lane 18, fast, with 0x1d0c20/0x1d1b60/0x1d5120/0x1d3fc0): retail's argument setup at both
+// callers is ECX (index), then EBX (component), then EAX (transform), so the setup-order rule gives
+// (transform, component, index): on this body 81 (0x1d1b60 lost at 2), on the 88 body (set copy, body
+// pointer, m_fixed first) 88; the 88 body with a const body pointer 88; the transform by reference 88;
+// the component by reference 88 (the 88 forms keep 0x1d5120 at 73, 0x1d0c20 40). A /Gd compile-only first
+// pass of this body keeps the component in ESI and never touches EBX, yet LTCG still stacks it, so the
+// first pass alone does not predict the EBX parameter.
+// Round 41 (lane 11, fast, with 0x1d0c20/0x1d1b60/0x1d5120): the 88 body again 88 (0x1d0c20 40, 0x1d5120 73);
+// on it the plain struct copy in place of set() 85 at 220 bytes (rep movsd, component still loaded from
+// [ebp + 0xc] into EBX; 0x1d0c20 38, 0x1d5120 77); the fixed arm refetching into the body pointer and
+// returning on its own 88. On the plain-copy body, parameters (transform, index, component) 85 (same code;
+// definition, both declarations and both calls changed together) and (component, index, transform) 85 with
+// matched 0x1d1b60 lost at 2.
+// Round 60 (m3 lane 9, fast with 0x1d0c20/0x1d1b60/0x1d5120): on the 88 body (set copy, body pointer,
+// m_fixed first; aligned 8, only the component's stack home): the definition marked `inline` 88; the
+// reset test as a named bool 154 (278 bytes); the body read by direct rigid_bodies indexing 88; the fixed
+// and flag tests nested with a return in the reset arm 88; the transformed flag read before the copy 88.
+// It is on the object/havok call cycle (0x1d1260 and 0x1d1540 reach it again through 0x1d1b60 ->
+// 0x1d0c20 without any stubbed function), so where LTCG enters that cycle may decide its convention.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -955,6 +1021,17 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 	}
 }
 
+/* the Havok frame of a game matrix (its scale is not carried) */
+PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransform *frame)
+{
+	havok_from_vector3d(&frame->m_rotation.m_col0, &matrix->forward);
+	havok_from_vector3d(&frame->m_rotation.m_col1, &matrix->left);
+	havok_from_vector3d(&frame->m_rotation.m_col2, &matrix->up);
+	hkVector4 position;
+	havok_from_vector3d(&position, (vector3f const *)&matrix->position);
+	frame->m_translation = position;
+}
+
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
@@ -968,18 +1045,17 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 // register argument puts it in EDI, not EBX, and costs matched 0x1d1b60. Round 33: the shared
 // world-to-local transform step as a force-inline helper (also used by 0x1d0ee0, which stays matched)
 // 38, with 0x1d0cf0's retail body 40; that with a volatile read of 0x1d0cf0's component at the
-// 0x1d1540 call/the 0x1d1260 call/the second body fetch 40/40/40.
+// 0x1d1540 call/the 0x1d1260 call/the second body fetch 40/40/40. Round 89: through the existing
+// component_matrix_frame converter 38 (same code, kept), with 0x1d0cf0's retail body 40.
+// Round 28 (lane G): retail's arguments here are (matrix, index, component) as in 0x1d0cf0; the
+// declaration order does not change the registers LTCG picks (0x1d0cf0 81 and this 38 either
+// way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
 	hkTransform transform;
-	hkVector4 translation;
 
-	transform.m_rotation.m_col0.set(matrix->forward.i, matrix->forward.j, matrix->forward.k);
-	transform.m_rotation.m_col1.set(matrix->left.i, matrix->left.j, matrix->left.k);
-	transform.m_rotation.m_col2.set(matrix->up.i, matrix->up.j, matrix->up.k);
-	translation.set(matrix->position.x, matrix->position.y, matrix->position.z);
-	transform.m_translation = translation;
+	component_matrix_frame(matrix, &transform);
 	havok_component_rigid_body_transform_set(rigid_body_index, component, &transform);
 }
 
@@ -1447,6 +1523,20 @@ PRIVATE __forceinline real const &component_time_step()
 // the same with the step on the right of both products 43; time-step reference declared first 142,
 // with the stop-first test 142; time step copied into a value local 99 (acceleration in xmm0 as
 // retail, but the step stays in a register instead of the memory multiply).
+// Round 115 (lane 6, fast): the stop-first test with the stop ticks and tick distance named 43; the time
+// step bound inside the scale helper between the exponent result and the mass division, the helper
+// returning the step 31 (the time-step global is then loaded before the mass test, still loaded before
+// its product); the helper scaling its own acceleration parameter 132 (the acceleration load hoisted);
+// the step as a value local at function scope 147 (479 bytes); `(velocity * delta_time)` as the first
+// factor of the stop distance 26. One-file LTCG harness screens (exact here, ~45 forms): every product
+// operand order, either test order, value/reference/pointer/struct-pointer reads of the step and the
+// stop distance's groupings give the load-first products; an intervening float store (to a file global
+// or through `ratio`) never folds the step either, and `(void)&local` changes nothing.
+// Lead (harness diagnostics): the product's operand order follows where the step's value is first defined.
+// A step value read before the exponent test and used only in the step product gives retail's in-place
+// `mulss xmm0, [mem]` with the scaled value in xmm0, but it is spilled across the power call (`mulss xmm0,
+// [esp+8]`, 160, 490 bytes); read after the exponent result 50; a constant multiplier also puts the scaled
+// value in xmm0. Retail loads the global right at the product, so its step read must rank earlier in another way.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2149,9 +2239,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
-// score 109 (was 109): aligned frame 0x34 agrees; the normal's loop registers (retail keeps the inverse in
-// xmm1 and scales j, k in place), velocity j/k loaded before its length test (retail reloads them into
-// xmm2/xmm3 ahead of the branch), and the property value 0 kept in EDI across the erase remain.
+// score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
+// Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
+// branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
+// three), the speed products the same way (retail scales j, k in place), and the property value 0 kept
+// in EDI across the erase. At 109 the contact loop's normal sums took xmm4/xmm1/xmm3 (retail
+// xmm3/xmm2/xmm4) and the normal block copied the inverse for all three (retail keeps it in xmm1 and
+// scales j, k in place).
 // Tried: velocity sums as running sum plus material vector 131 kept; speed sum declared before the
 // velocity 127 kept; normal scaled j, k, i 109 kept (k, j, i 110; i, k, j 121; j, i, k 124; k, i, j 122;
 // all in place 109); velocity scaled j, k, i as well 109; inlined property setter passing the value as
@@ -2168,57 +2262,73 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // length 123; shared inverse 162; both 168; outer sample vector 109; vector plus length/inverse/both
 // 123/162/168; all with one scan ordinal 168; setter taking the property word by value 173 (the zero
 // goes to EBX before the search, retail EDI); velocity through the existing normalize3d 109; one vector
-// local for both sums 109; compound velocity scale 109; normal declared first 113.
-// xmm1 and scales j, k in place), velocity j/k loaded before its length test, and the property value 0
-// kept in edi across the erase remain.
-// Earlier at 137: aligned frame 0x34 agreed; normal/velocity XMM roles, early velocity loads and property-zero retention.
-// Earlier: the velocity sums in the material loop load the
-// aligned frame 0x34 agrees; normal/velocity XMM roles, early velocity loads and property-zero retention remain.
-
-// Earlier 109 (was 137): the velocity sums in the material loop load the
-// running sum second in retail, and the final scale and its stores are
-// scheduled differently.
-// Round 128: shared dot input order 137; consistent inverse-first/inverse-last products 137/137;
-// dot with either product form 137/137; mode snapshot 192; snapshot plus dot 192; sample default
-// before matched query 208. Frame and sample boundary preserved; normal/velocity XMM roles and
-// final zero remain.
-// Round 187: complete contact input/normal sum/both 220/267/463; complete velocity sum 283;
-// symmetric scaled components, separate speed product, material count after store and corrected-boundary speed-first each 137;
-// fallback-first 150; separate normal/velocity/both normalization inputs 443/232/478. All restored.
-// Earlier at 137: the velocity sums in the material loop load the
-// scheduled differently; initial normal XMM roles also differ.
-// Round 138: native flag byte, signed index, both fields, native bit, bit/index, Boolean bit,
-// Boolean bit/index and readonly native contacts all 137. Normal/velocity XMM roles and
-// property-zero retention remain; frame 0x34 agrees.
-// Aligned frame 0x34 agrees; normal/velocity XMM roles and final property-zero retention differ.
-// Corrected-boundary compound sums 137; plain axis accumulation 184; byte material count 451;
-// unsigned other count 137; corrected-boundary final shared scale 214.
-// Round 53: velocity sums as running sum plus material vector 131 kept; speed sum declared before
-// the velocity 127 kept; normal scaled j, k, i 109 kept (k, j, i 110; i, k, j 121; j, i, k 124;
-// k, i, j 122; all in place 109); velocity scaled j, k, i as well 109; inlined property setter
-// passing the value as the 0x1cf3b0 setter does 216.
-// Round 245 (fast): Existing squared-length normal/sample/both/velocity/normal-velocity/sample-velocity/all
-// boundaries 109 each; shared self-dot at all magnitudes 109. Current j/k/i normal publication
-// and matched sample boundary preserved; first normal XMM roles, early velocity loads and property-zero lifetime remain.
-// Round 342: Shared normal/velocity length 123; shared inverse 162; both 168; outer sample vector 109;
-// vector plus length/inverse/both 123/162/168; all with one scan ordinal 168. Exact-length inverse forms regress; originals restored.
-// Round 157: normal reciprocal identity 138; velocity reciprocal identity 170; both reciprocals 184;
-// early normal length zero 109; early velocity length zero 109; both length defaults 109; reciprocals and
-// lengths 184; all with early speed sum 392. Original executable source restored.
-// Round 201: Successive normal/velocity sum workspace 109; with shared length/inverse/both
-// 115/109/123; the same four with persistent sample 109/115/109/123. Original accumulators restored.
-// Round 184: Native contact/material/both add boundaries 157/162/210; reversed complete inputs
-// 157/162/210; existing vector assignment at contact/material sums 144/114. Original sums and
-// matched sample boundary restored.
-// Round 426: complete normal/velocity/final scaled-product staging, all seven
-// subsets, 109 each; complete staged outputs through the existing vector setters 127.
-// Original products, j/k/i normal publication and matched sample boundary restored.
-// Round 193: Magnitude pointer inline and vector-reference forced/ordinary inline 109/109/109; vector-value
-// forced/ordinary inline 490/490; scalar-value forced/ordinary inline 193/193; scalar-reference input 109.
-// Original helper contract restored; first normal XMM ownership and velocity preloads remain.
-// Round 41: shared assignment at normal/velocity/both normalization 127/109/127; shared scale
-// at those boundaries 127/109/127; fallback assignment 355; normal plus fallback assignment 355.
-// Original normalization and fallback restored.
+// local for both sums 109; compound velocity scale 109; normal declared first 113;
+// normal/velocity reciprocal identity 138/170, both 184; early normal/velocity/both length zero 109 each;
+// reciprocals and lengths 184, with early speed sum 392; successive normal/velocity sum workspace 109,
+// with shared length/inverse/both 115/109/123, the same with a persistent sample 109/115/109/123; native
+// contact/material/both add boundaries 157/162/210; reversed complete inputs 157/162/210; existing vector
+// assignment at contact/material sums 144/114; complete normal/velocity/final scaled-product staging, all
+// seven subsets, 109 each; staged outputs through the existing vector setters 127; magnitude pointer inline
+// and vector-reference forced/ordinary inline 109/109/109; vector-value forced/ordinary inline 490/490;
+// scalar-value forced/ordinary inline 193/193; scalar-reference input 109; shared assignment at
+// normal/velocity/both normalization 127/109/127; shared scale there 127/109/127; fallback assignment 355;
+// normal plus fallback assignment 355. Round 89: retail's velocity j/k loads are hoisted ahead of the
+// length (both arms need them in registers) where ours folds them into `inverse * [j]` inside the branch;
+// its three inline property updates look like inlined copies of the matched 0x1cf3b0 setter (out of line
+// on the cold no-material path). The existing 0x1cf3b0 setter at every site 355 (not inlined), with an
+// `inline` declaration 436 (the cold call inlined too); velocity normalised into a separate direction vector
+// with a struct/per-field copy in the else arm 204/149; plain `inline` property helper 109; typed surface
+// velocity field 109 (kept, same code).
+// Round 93 (lane 8): the contact sum through vector3f_add(&contact->normal, &normal, &normal) and the
+// normal scaled through vector3f_scale(&normal, 1 / length, &normal) 109 -> 91 (kept, with the velocity's
+// hand-written length/scale block as normalize3d(&velocity), the same code); either alone 157/127. On
+// 109: velocity scale through vector3f_scale or `*=` 109/109; normal `*=` 127; the normal inverse declared
+// before the loop 109; one inverse shared by both blocks 162 (1454 bytes; velocity's three loads hoisted
+// like retail's j/k, but i too), with velocity and speed declared at the top as well 162; inverse or
+// inverse plus speed declared after velocity 109/109; speed declared before the velocity loop 109;
+// both sums through vector3f_add 210, plus helper scales 205/139 (the velocity length sums i first);
+// velocity sum and scale through helpers 157. On 91: velocity sum through vector3f_add either order
+// 396/396 (1426 bytes), with normalize3d or vector3f_scale 139/139; the result scaled into velocity then
+// set 159; velocity declared at the top 407; speed summed and averaged in one `speed` local 138 (the
+// speed products all in place), with velocity declared before it 142; velocity declared before
+// speed_sum 95; both 413. Round 131 (lane 4) on 91: the setter taking the property word by value
+// 155 (1467 bytes; the zero goes to EBX before the search, retail EDI), by const reference 155;
+// speed computed before the velocity normalization 430 (1403 bytes); one setter call in the
+// no-contact arm with a conditional value 267 (1371 bytes); the contact test inverted 207 (1498
+// bytes). The matched normal block shows the shape retail's velocity block needs (i scaled through
+// a copy of the inverse, j and k in place in registers loaded before the branch).
+// Round 134 (m3 lane 4) on 91: the inline property setter building its property word before the search
+// (`s_havok_property_word word(value);` first) 155 at 1467 bytes: the three setter sites then are
+// retail's exactly (`xor edi, edi` before the search, `push edi` after the erase, shared tail), but with
+// the velocity block still 5 bytes long the loop padding shifts; worth retrying once the velocity block
+// fits. The velocity normalized through the normal block's length local and vector3f_scale 179; the
+// existing normalize_inline 175 (x87 order k, i, j); a normalized copy of the velocity (diagnostic) 211
+// (1474 bytes); compound `+=` velocity sums 97. All restored.
+// Round 37 (lane 10, fast): retail's velocity scale and its speed scale both read as (s * i, j * s,
+// k * s); no existing helper has that order. The velocity through the existing normalize_inline 175
+// (its length order differs, first difference +0x2d5); through the function's `length` local and
+// vector3f_scale like the normal block 179; the inline setter passing its value through its address
+// (`*(s_havok_property_word const *)&value`, as the out-of-line setter does) 163 (1467 bytes); the speed
+// sum before the velocity sums 91 (same code);
+// the result written through `body->unknown30` with no pointer local 99.
+// Round 464: success-boundary velocity/speed/other-contact default subsets
+// 339/192/305/284/412/337/411; velocity and speed at material admission with
+// late other-contact zero 411. Original default lifetimes and helpers restored.
+// Round 60 (lane 16): a compile-only screen reproduces our velocity block exactly; over ~60 forms (four
+// loop-sum forms, normalize3d / own length + vector3f_scale / an inverse shared with the normal block,
+// three product orders, three else arms, three length expressions, declaration order, scaled set) only
+// the shared inverse hoists the velocity loads, and then all three (retail: j and k only). LTCG: the
+// setter building its word first 155 (aligned 25 -> 22: only the velocity block and loop padding
+// remain); the shared inverse with an own velocity length 199 (the normal block changes from +0x53),
+// with the word-first setter 192; vector3f_add velocity sums + shared inverse + word-first setter 404,
+// with the length as sqrt(dot3f) 404.
+// Round 14 (lane 17, fast): the length kept from normalize3d in a named local 91; the speed products'
+// operand order (v * s for all three, s * v for all three) 91/91; the material count cast to real 91;
+// the result pointer declared before the normalization 263 (1403 bytes). Diagnostics (written-out
+// normalization, not kept): the scale as (s * i, j * s, k * s) 91 (identical code: operand order is
+// not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
+// k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
+// unscaled else), reloading only i; ours reloads all three in each arm.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2244,9 +2354,7 @@ void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_ind
             }
             if (!found)
             {
-                normal.i = contact->normal.i + normal.i;
-                normal.j = contact->normal.j + normal.j;
-                normal.k = contact->normal.k + normal.k;
+                vector3f_add(&contact->normal, &normal, &normal);
                 materials[material_count++] = surface->material;
             }
         }
@@ -2254,17 +2362,14 @@ void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_ind
     if (material_count == 0)
     {
         havok_entity_property_2003_set((hkEntity *)body->rigid_body, 0);
-        component_surface_vector_clear((hkVector4 *)((byte *)body + 0x30));
+        component_surface_vector_clear(&body->unknown30);
         body->unknown44 = 0;
         return;
     }
     real length = component_surface_length(&normal);
     if (!(fabs(length) < 0.0001f))
     {
-        real inverse = 1.0f / length;
-        normal.j = normal.j * inverse;
-        normal.k = normal.k * inverse;
-        normal.i = inverse * normal.i;
+        vector3f_scale(&normal, 1.0f / length, &normal);
     }
     else
         normal = *g_4687b0;
@@ -2287,16 +2392,9 @@ void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_ind
         velocity.k = velocity.k + local_c7c2ff.k;
         speed_sum += component_surface_length(&local_c7c2ff);
     }
-    real velocity_length = component_surface_length(&velocity);
-    if (!(fabs(velocity_length) < 0.0001f))
-    {
-        real inverse = 1.0f / velocity_length;
-        velocity.i = inverse * velocity.i;
-        velocity.j = velocity.j * inverse;
-        velocity.k = velocity.k * inverse;
-    }
+    normalize3d(&velocity);
     real speed = ((bool)((component->unknown04 >> 18) & 1) ? 1.0f : 2.5f) * speed_sum / material_count;
-    hkVector4 *result = (hkVector4 *)((byte *)body + 0x30);
+    hkVector4 *result = &body->unknown30;
     result->set(speed * velocity.i, velocity.j * speed, velocity.k * speed);
     if (other_contacts == 0)
     {
@@ -2786,6 +2884,32 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // Round 183: target entry inline/noinline 50/50; state-update inline alone/with entry
 // inline/noinline 50/50/50; state-update noinline alone/with entry inline/noinline 50/50/50.
 // Paired getter unchanged; all contracts restored.
+// Round 47: array operator[] at all five/first-only/late-three sites 10/7/10; array reference for the
+// bound/all reads 7/10; size reference 7; shared data pointer 171; final call scope 7. Original body restored.
+// Round 37 (lane 10): the final call's setup needs 0x1d1010 as (component, index, change) (7 -> 5 in round
+// 15, not kept: 0x1d24a0 920 -> 966), whose call lines include contributor function 0xe0ef0 (BLOCKED-BY
+// 0xe0ef0). The [offset + data] order never flips in the full build when the loop shrinks: without the
+// angular cap 333 (492 bytes), without the head kind test 171 (653), without the last change block 185
+// (600), without the pre-loop impulse block 227 (628), without the cap and the last block 425 (410); all
+// keep [offset + data] (the reduced-harness size lead does not carry over). Plain compile-only builds keep
+// it for direct data[i] reads and an explicit `data + i * 0x60` at all five sites as well. Candidate forms:
+// the index declared before the change vector 7; the velocity pair declared before the head kind test 7;
+// `angular, linear` declared in that order 7; the entry tests as one early return 7; the velocities through
+// the existing out-of-line linear/angular getters 274 (551 bytes, calls kept; the head read then turns to
+// [data + offset]).
+// Round 15 (m3 lane 2): 0x1d1010 declared (component, index, change), as every retail call sets the
+// component register last, 7 -> 5, but 0x1d24a0 920 -> 966 (and 0x1d1010 then needs 0x1d09d0's array-pointer
+// getter form): not kept (coordinator). On 5: kind tests through an inline rigid-body method wrapping the
+// virtual call 13; direct data[i] reads at all five sites 8; separate linear/angular inline getters 139;
+// named cap results 5; index declared before the change vector 5; one body pointer for the head test
+// and the velocity read 152. Compile-only: the order turns to
+// retail's only without the head kind test or without the capped velocity block (or with only one capped
+// velocity), so it follows the loop's size, not a spelling; 256 combinations of declaration, index,
+// increment, direct-read and initializer forms and unused locals never flip it.
+// Round 117 (fast; the matched 0x1d1c10 loop gives retail's [data + offset] with the same getter):
+// the head kind code in a named local 7; a rigid-body local for the head test 8; the velocity pair
+// declared with the change vector 7; the 0xbba20 call before the change vector 22; the index named
+// rigid_body_index as in the siblings 7.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {
@@ -2845,15 +2969,6 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransform *frame)
-{
-    havok_from_vector3d(&frame->m_rotation.m_col0, &matrix->forward);
-    havok_from_vector3d(&frame->m_rotation.m_col1, &matrix->left);
-    havok_from_vector3d(&frame->m_rotation.m_col2, &matrix->up);
-    hkVector4 position;
-    havok_from_vector3d(&position, (vector3f const *)&matrix->position);
-    frame->m_translation = position;
-}
 // score 206 (was 206): Frame 0xb4 and extent agree; body base/stride and protected relative-call
 // input registers remain. BLOCKED-BY 0x1d83e0 (contributor code): retail passes the component to it
 // in EAX and loads the component into EAX at entry; ours passes it in ECX, and the EAX/ECX roles
@@ -2892,6 +3007,8 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // Round 182: first/second/both actual link references 206/206/206; native body
 // record references confined to count/node searches, alone/with either/both links
 // and mutable body records, 332/332/332/332/332. Original records and body restored.
+// Round 89: blocker confirmed in the full build: retail loads the component into EAX before each 0x1d83e0
+// call and 0x1d83e0 reads it from EAX at entry; ours uses ECX on both sides.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3020,14 +3137,6 @@ PRIVATE __forceinline void function_1cf529(hkVector4 const *arg_0, real *arg_1)
  arg_1[2] = local_2;
 }
 
-struct s_1cf530
-{
- dword field_0;
- dword field_4 : 18;
- dword field_5 : 1;
- dword field_6 : 13;
-};
-
 struct s_1cf531
 {
  word field_0 : 11;
@@ -3039,7 +3148,20 @@ struct s_1cf531
 // spill slot), the rigid-body element is formed offset-first in retail (data + offset, ours offset + data),
 // retail loads the vector's y early and stores it after z, and the scratch registers rotate from there.
 // Tried: the element through the array's operator[] 27; the vector through _mm_setr_ps or _mm_set_ps 104;
-// the magnitude in a second local for the finiteness result 27; the bits read as long 27.
+// the magnitude in a second local for the finiteness result 27; the bits read as long 27; the magnitude
+// renamed either side of the other locals 27/27; the finiteness test through a by-value bit helper 25 (the
+// magnitude then shares the friction pointer's slot, as in retail; a new one-caller helper, not kept). With
+// that helper: element fields read at each use 105; the rigid body read before the vector 25; the corrected
+// vector updated in place in the impulse 44; impulse/difference vectors renamed 25/25; `index + data` 25
+// (same code); the 0.6 scale declared before the vector 25. Typed field at +0x30 and named flag18 bit
+// (kept, same code). Still differ: (B) element address data + offset in retail; (C) y stored after z;
+// (D) the corrected vector spills to 0x30 in retail (ours 0x40).
+// Round 139: the corrected vector computed in place in the impulse vector 46 (908 bytes; the store
+// goes to retail's 0x30, but the final product loads the impulse into a register where retail folds
+// a spill reload as its memory operand); that with the final product impulse-first 43; the impulse
+// as an __m128 with the product in a new vector 107 (frame 0x64, the copy forwarded from the scaled
+// vector), also with the copy in its own block 107; the surface components in named x/y/z locals
+// 27; the surface vector through havok_from_vector3d 27.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
@@ -3068,11 +3190,10 @@ void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, l
  if (!arg_2 && (arg_1->field_44 & 0x20))
  {
   s_havok_component_rigid_body *local_6 = &local_2->rigid_bodies.data[arg_1->field_45];
-  if (local_6->unknown44 == 2 && !TEST_FIELD_BIT(((s_1cf530 *)local_2)->field_5))
+  if (local_6->unknown44 == 2 && !TEST_FIELD_BIT(local_2->flag18))
   {
    hkVector4 local_7;
-   const real *local_8 = (const real *)((byte *)local_6 + 0x30);
-   local_7.set(local_8[0], local_8[1], local_8[2]);
+   local_7.set(local_6->unknown30(0), local_6->unknown30(1), local_6->unknown30(2));
    hkRigidBody *local_9 = local_6->rigid_body;
    __m128 scale = _mm_set_ss(0.6f);
    local_7.m_quad = _mm_mul_ps(_mm_shuffle_ps(scale, scale, 0), local_7.m_quad);

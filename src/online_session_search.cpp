@@ -49,6 +49,22 @@ static inline s_type_9df9da *online_task_try_and_get(long task_index)
 	return task;
 }
 
+/* the details a session's qos reply carries (at +0xa4 of a search result): whether
+   they arrived, then the values the reply holds (0x14c bytes) */
+struct s_search_result_details
+{
+	bool valid;
+	byte unknown01[5];
+	short session_kind;
+	byte unknown08[0x18 - 0x8];
+	XNKID session_id;
+	XNKEY session_key;
+	XNADDR session_address;
+	byte unknown54[0x68 - 0x54];
+	long unknown68;
+	byte unknown6c[0x150 - 0x6c];
+};
+
 /* a session a search found (0x204 bytes) */
 struct s_search_result
 {
@@ -67,15 +83,8 @@ struct s_search_result
 	long unknown7c;
 	long unknown80;
 	s_qos_result qos;
-	byte unknowna4[0xaa - 0xa4];
-	short session_kind;
-	byte unknownac[0xbc - 0xac];
-	XNKID session_id;
-	XNKEY session_key;
-	XNADDR session_address;
-	byte unknownf8[0x10c - 0xf8];
-	long field10c;
-	byte unknown110[0x1f8 - 0x110];
+	s_search_result_details details;
+	long unknown1f4;
 	long field1f8;
 	long field1fc;
 	long field200;
@@ -119,18 +128,6 @@ struct s_search_session
 	long value;
 };
 
-long g_4ce394;
-long g_4ce118;
-long g_4ce11c;
-long g_4ce200[10];
-long g_4ce230;
-long g_4ce234;
-long g_4ce238;
-long g_4ce23c[9][9];
-long g_4ce380;
-long g_4ce384;
-double g_4ce388;
-long g_4ce390;
 
 
 
@@ -592,9 +589,9 @@ bool __stdcall session_search_result_precedes(void const *a, void const *b, void
 		return true;
 	if (first->field1fc < second->field1fc)
 		return false;
-	if (first->field10c > second->field10c)
+	if (first->details.unknown68 > second->details.unknown68)
 		return true;
-	if (first->field10c < second->field10c)
+	if (first->details.unknown68 < second->details.unknown68)
 		return false;
 	return false;
 }
@@ -661,61 +658,6 @@ done:
 	return result;
 }
 
-// score 113 (was 111): the details cursor is entry+0x1f8 (retail entry+0x10c), so every field
-// offset differs, and the kind/count homes differ. Cursor taken from the results before the
-// end pointer gave retail's results reuse after the compare (128 -> 113). Round 52:
-// single-exit compare 128; typed details block 128; separate details cursor 154, with the typed
-// block 154; then on the kept form: distance local 113; typed details block 113; count/value/kind
-// declared in reverse 113; details flag read through the details pointer 182; score reset after
-// the filter 181. Earlier:
-// Initial results snapshot 183; scalar/cursor role names 128; exact end-pointer test 128;
-// repeated-use computed distance 128; shared maximum bonus 128; persistent details cursor 154.
-// frame 0x10 agrees; initial results observation,
-// details/score cursor base and input/score homes remain. Native score fields
-// 213; complete count-clamp arms 213; named interpolation fraction 213; indexed
-// result loop 214; single total-score accumulator 229.
-// Initial snapshot plus persistent details cursor 190; with invalid-entry continue 199;
-// early details-state observation 196; count/value/kind read order 128;
-// ordinary-field defaults before details 173. Original body retained.
-// Equality input orientation 128; kind field at scoring 197; value field at distance 128;
-// individual field-selection results 128; details field at each use 195;
-// ordinary invalid-entry continue 128; changed-results scope 128; ordinary-fields arm first 128.
-// Round 164: native detail inputs 128; full results lifetime 182; native full results 182;
-// entry input scope 128; loop input scope 128; entry scope results 182; native loop scope 128;
-// native entry results 182.
-// Round 167: complete typed details pointer/direct fields 128/213;
-// pointer with signed difference/range step/both 128/128/128;
-// pointer with full results lifetime 182; direct difference/range step 213/213.
-// Original results observation and details/kind/count homes remain.
-// Round 378: retained distance limit, paired detail thresholds, both groups,
-// count limit, distance/count, thresholds/count and all three groups each 113;
-// all groups with the shared maximum distance bonus 113. Frame and initial
-// results reuse still agree; details cursor and kind/count homes remain.
-// Original body restored.
-// Round 54: score/distance/bounded as the struct's named entry fields 204; details pointer
-// declared before the loop 113; details inputs read entry-relative 113; details pointer as
-// the named field's address 113; details pointer as a long array with indices 113.
-// Round 71 (one-file harness, exact for this function): VC re-bases the second cursor on the
-// most-used cursor offset (the score), whatever is first or used as a value; with the score
-// fields entry-relative there is no second cursor at all (161 instructions). Score reset through
-// the entry 111; score/distance/bounded entry-relative 2nd cursor lost; all fields entry-relative
-// the same; typed details pointer 111; kind/value/count as three ternaries 111; kind compare
-// reversed 111. Retail also keeps the search pointer in EDI through the scoring block (both
-// detail-threshold globals CSEd), which needs count in EBP and kind on the stack.
-// Round 221: Single details induction with byte bounds, detail-relative/named scores 166/173;
-// owner-record bounds 186/170; complete conditional input producers give the same four counts.
-// All restored. Unchanged reduced control 113 versus full baseline 111.
-// Per-use selected count with ternary/result-first clamp: retained kind/value [168, 170];
-// direct value [168, 170]; direct kind [180, 182]; both direct [180, 182].
-// Original inputs restored; details cursor and kind/count/search homes remain.
-// Round 208: uniform twice-used validity before score reset, bool/byte/short/long
-// 169/169/166/168; with native score/distance/count fields 209/209/206/208.
-// All restored; details cursor and kind/count/search homes remain.
-// Round 102 (fast): the score updates through a `long *` to the score field 184 (the second cursor
-// goes); every entry field except valid read relative to the details cursor 171 (cursor base entry+1),
-// the same with unknown01 on the entry 164 (base entry+0x120); a screen of the 31 combinations of
-// header/ordinary/details-input/qos/score field groups moved between entry and cursor gives bases 0x1f8
-// (113 at best), 0x1, 0x11c or no cursor, never retail's 0x10c.
 // @retail 0x91000
 void __stdcall session_search_score_and_sort(s_session_search *search)
 {
@@ -725,21 +667,21 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 	s_search_result *local_0 = entry + MAXIMUM_SEARCH_RESULTS;
 	for (; entry < local_0; entry++)
 	{
-		byte *local_1 = (byte *)entry + 0x10c;
-		(*(long *)(local_1 + 0xec)) = 0;
+		s_search_result_details *details = &entry->details;
+		entry->field1f8 = 0;
 		if (entry->valid && entry->unknown01 && !session_search_result_allowed(search, entry))
 			entry->unknown01 = false;
 		if (entry->valid && entry->unknown01)
 		{
-			bool has_details = SEARCH_FLAG(entry, 0xa4);
+			bool has_details = details->valid;
 			long kind;
 			long value;
 			long count;
 			if (has_details)
 			{
-				kind = (*(long *)local_1);
-				value = (*(long *)(local_1 + 0x14));
-				count = (*(long *)(local_1 + 0x10));
+				value = SEARCH_LONG(details, 0x7c);
+				kind = details->unknown68;
+				count = SEARCH_LONG(details, 0x78);
 			}
 			else
 			{
@@ -747,20 +689,23 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 				value = SEARCH_LONG(entry, 0x5c);
 				count = SEARCH_LONG(entry, 0x6c);
 			}
-			(*(long *)(local_1 + 0xf0)) = abs(value - SEARCH_LONG(search, 0x4c));
-			if ((*(long *)(local_1 + 0xf0)) <= g_4ce230)
-				(*(long *)(local_1 + 0xec)) += g_4ce234 - ((g_4ce234 - g_4ce238) / (g_4ce230 + 1)) * (*(long *)(local_1 + 0xf0));
+			entry->field1fc = abs(value - SEARCH_LONG(search, 0x4c));
+			if (entry->field1fc <= g_network_configuration.value1f0)
+				entry->field1f8 += g_network_configuration.value1f4 - ((g_network_configuration.value1f4 -
+					g_network_configuration.value1f8) / (g_network_configuration.value1f0 + 1)) * entry->field1fc;
 			if (kind == SEARCH_LONG(search, 0x38))
-				(*(long *)(local_1 + 0xec)) += g_4ce380;
-			long bounded = count < 0 ? 0 : (count > g_4ce384 ? g_4ce384 : count);
-			(*(long *)(local_1 + 0xf4)) = bounded;
-			(*(long *)(local_1 + 0xec)) = (long)((*(long *)(local_1 + 0xec)) + bounded * g_4ce388);
+				entry->field1f8 += g_network_configuration.value340;
+			long bounded = count < 0 ? 0 : (count > g_network_configuration.value344 ? g_network_configuration.value344 : count);
+			entry->field200 = bounded;
+			entry->field1f8 = (long)(entry->field1f8 + bounded * g_network_configuration.value348);
 			if (has_details)
 			{
-				if ((SEARCH_LONG(entry, 0xf8) < g_4ce11c || SEARCH_LONG(entry, 0xfc) < g_4ce118) &&
-					SEARCH_LONG(search, 0x58) >= g_4ce11c && SEARCH_LONG(search, 0x5c) >= g_4ce118)
-					(*(long *)(local_1 + 0xec)) += g_4ce390;
-				(*(long *)(local_1 + 0xec)) += g_4ce23c[SEARCH_LONG(search, 0x6c)][SEARCH_LONG(entry, 0xb8)];
+				if ((SEARCH_LONG(details, 0x54) < g_network_configuration.valuedc ||
+					SEARCH_LONG(details, 0x58) < g_network_configuration.valued8) &&
+					SEARCH_LONG(search, 0x58) >= g_network_configuration.valuedc &&
+					SEARCH_LONG(search, 0x5c) >= g_network_configuration.valued8)
+					entry->field1f8 += g_network_configuration.value350;
+				entry->field1f8 += g_network_configuration.value1fc[SEARCH_LONG(search, 0x6c)][SEARCH_LONG(details, 0x14)];
 			}
 			if (entry->unknown74)
 			{
@@ -770,13 +715,13 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 				long score;
 				if (index < 9)
 				{
-					real lower = (real)g_4ce200[index];
-					real upper = (real)g_4ce200[index + 1];
+					real lower = (real)g_network_configuration.value1c0[index];
+					real upper = (real)g_network_configuration.value1c0[index + 1];
 					score = (long)(lower + (value - index) * (upper - lower));
 				}
 				else
-					score = g_4ce200[9];
-				(*(long *)(local_1 + 0xec)) += score;
+					score = g_network_configuration.value1c0[9];
+				entry->field1f8 += score;
 			}
 		}
 	}
@@ -812,16 +757,16 @@ bool session_search_select(s_session_search *search, s_search_session *session)
 			}
 		}
 		bool ready = selected && (ready_count == candidate_count ||
-			(ready_count >= (candidate_count >> 2) && session_search_elapsed(search->start_time) > g_4ce394));
+			(ready_count >= (candidate_count >> 2) && session_search_elapsed(search->start_time) > g_network_configuration.value354));
 		if (ready)
 		{
 			if (session)
 			{
 				memset(session, 0, sizeof(*session));
-				session->kind = selected->session_kind;
-				session->id = selected->session_id;
-				session->key = selected->session_key;
-				session->address = selected->session_address;
+				session->kind = selected->details.session_kind;
+				session->id = selected->details.session_id;
+				session->key = selected->details.session_key;
+				session->address = selected->details.session_address;
 				session->value = selected->qos.rtt_median;
 			}
 			result = true;

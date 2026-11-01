@@ -452,6 +452,17 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
+// image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
+// call convention in src/unknown_01cf50.cpp.
+// this round: no new form. Retail's argument values for the call to 0x144f0
+// are (tag, 0, 0, 1, bitmap, 0.0f) and naming them that way leaves the score at 100, so the call
+// site was left as it was: the six arguments are still pushed on the stack where retail passes the
+// first three in EAX/ECX/EBX, because 0x144f0's definition (src/unknown_01cf50.cpp) carries no /Gr
+// flag; the colour/draw schedule after the call still differs.
+// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
+// it with tag/stage/fallback in EAX/ECX/EBX and three stack arguments, our tree uses the standard
+// six-argument convention, so the call site and the colour/draw schedule after it differ.
 // score 100 (was 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
 // Earlier: the record index is scaled by 0x40 in retail and by 0x4 here, and the table retail reads is not the one this tree reads
 // Current stride agrees; the hoisted zero, callee convention and color/draw
@@ -469,6 +480,11 @@ void function_1cf50(void);
 // colour global as a dword/byte union read after the store 98, with the manager change 98 (union with anonymous
 // bytes / byte array 98/98); shifts of the global after the store 100; `& 0xff` channels of the global/local 98/100;
 // union colour local copied to the global, channels from either 98/98 (unions get a stack copy, `sub esp, 8`).
+// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
+// retail calls it with the tag, stage and index in EAX/ECX/EBX and three stack arguments, our tree
+// uses the standard six-argument convention, so the call site and the colour/draw schedule after it
+// differ. (The fast score reads 100 or 101 depending on the size of the reduced image; that is a
+// layout artefact of the reduced build, not a source change.)
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
@@ -1205,7 +1221,17 @@ static inline long render_memory_allocate(long bytes)
 // score 1 (was 1): the permutation pointer arrives in eax, retail passes it in ecx; the register is fixed by the caller function_4c690, which is not retail's yet
 // frame pointer 27; alias analysis off 1; global expressions off 62; inline depths one/zero 1/89; native result/count 1/1; input role names 1;
 // the permutations last or first (old order kept for the caller by a forwarding overload) 1/1; a const member of a 16-byte permutation type 1;
-// extra_bytes read once through its address 1; (void)&node_count 1.
+// extra_bytes read once through its address 1; (void)&node_count 1; the node-count callee's parameters
+// reordered (permutations first, both callers) 1; the count read back through node_count 1; the output
+// pointer as a conditional argument 27; the byte count as a conditional expression 54; bytes declared
+// before the count call 15. Every parameter position, __stdcall/__cdecl and flag set keeps eax.
+// Round 10: model index and lod address-taken 1; node count and extra bytes address-taken 1; the count read
+// back through node_count 1; the output pointer as a conditional expression 27; bytes assigned in an else 54.
+// One-file LTCG probe (this file + 0x137650/0x137800's files): an entry calling this function directly
+// also gets eax, so the caller does not fix it; unused extra parameters are dropped and every position of
+// the permutations still gets eax.
+// Round 63: const count 1; const result 1; permutation-array and node-array declarators 1/1;
+// sizeof(transform4x3f) in the size product 10; const extra_bytes 1; inline/forceinline target 1/1.
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)
@@ -1327,6 +1353,15 @@ struct s_batch_cache_4b5d0
 struct s_133f70;
 
 // score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
+// (add eax, ecx; lea ebx, [eax + 0xbc]/[eax + 0x44]) are reachable in the source but our compiler folds the
+// field offset into the load or into one lea, so the instruction count and the encoded sizes change and the
+// tail is compared out of step (byte home 319, split record 318); the 0x23690 call keeps its order in a
+// register (another file's callee), so the tail stays one instruction out of step as well. The parameter
+// frame matches retail slot for slot (object_index entry+4, distance entry+8, record entry+0x10, read
+// from retail's own call site at 0x1339f1), so the prologue differs only in the register and the position
+// of the distance load (retail EAX before the force push, ours ECX after it) and in the dead lea retail
+// keeps in the 0x4ed284 test.
 // Round 15: split entry-count declaration 213; cache levels base with 0xbc at the index 197; native entry
 // arithmetic 197; full second-cache record 325; two-step second cache 197; Boolean builder with wide previous 177;
 // signed-byte previous 319; direct cache publication 348. Levels offset and Boolean builder with wide previous kept.

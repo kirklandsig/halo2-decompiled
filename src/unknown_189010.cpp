@@ -149,6 +149,12 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
+// and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
+// and our link inlines, in src/unknown_221490.cpp.
+// score 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
+// retail homes the request in EBX and reloads the state flags after the first 0x221810 call,
+// ours forwards them across it and builds the flag word in EDX where retail builds it in EAX.
 // score 110 (was 110): Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
 // Frame 0xa8 and request EAX agree; first class-query expansion and header homes differ.
 // BLOCKED-BY 0x21d110 and 0x221810 (their tag/state registers): retail homes the request in EBX and
@@ -211,6 +217,18 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Round 194: native source-location mutable/const with source/copied priority 181/181/110/110;
 // the same four with library publication 181/181/110/110. Original location-first
 // body restored; input ownership regresses, and single-consumer copies only tie.
+// Round 85: retail-order header with conditional object/platform clears 163 (498 bytes);
+// separate location masks 110; the high-byte flag8 view 128 (486); an ordinary inline query
+// declaration 110; state/tag declarations swapped 110; tag pointer renamed 110; immutable tag
+// pointer 110; early uninitialized flags 110; split tag declaration/assignment 110. All restored;
+// first query expansion, initial tag spill and playback convention remain.
+// score 110 (was 110): this round: no new form. The first class lookup is still expanded here and
+// called in retail: our link inlines 0x221810 (src/unknown_221490.cpp, matched) into it, so our
+// compiler forwards the state flags across that call, while retail treats the call as opaque and
+// reloads them. Suppressing the inline (inline depth zero) costs six matched callers of this
+// function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
+// state registers decide where the request is homed.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -602,8 +620,10 @@ long function_1891d0(long object_index, long marker_name, s_sound_label_play con
 // Round 30: named result with one return 51; velocity/root/point/compression 52;
 // point/velocity/root/compression 49; compression/velocity/point/root 52;
 // point/root/velocity/compression 52. Restored; still BLOCKED-BY 0xba300's convention.
+// The play record comes before the marker name: callers set up register arguments last to first, and retail's
+// 0xc5890 loads the marker (eax) before the play record (edi).
 // @retail 0x189210
-long function_189210(long object_index, long marker_name, s_sound_label_play const *play)
+long function_189210(long object_index, s_sound_label_play const *play, long marker_name)
 {
 	s_object_marker marker;
 	s_sound_position position;
@@ -622,8 +642,14 @@ real function_30bf0(vector3f *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
 #pragma inline_depth(0)
-// score 2 (was 2): success result/pop schedule. BLOCKED-BY 0xf8eb0: a reduced build without
-// that caller matches and one with it reproduces the swap. Round 52 (fast, caller included):
+// score 2 (was 2): success result/pop schedule (retail pops ESI before `mov al, 1`). It follows
+// the link-time context, not this body or its caller's call: a 67-source reduced image matches,
+// any image of 541+ sources (0xf8eb0's, or any of 0xfc330/0xfcdd0/0x10c880/0x17a8a0/0x184440)
+// gives the swap, and in 0xf8eb0 the result ignored or the call removed still gives it; the
+// 0x189fe0 tick conversion simplified, 0x189210's result used, `inline` on 0x1895f0 2 each.
+// Round 25: early false returns 175; one nested eligibility condition, no gotos 157; the
+// distance test written `distance_squared <` 2; 0x1895f0 reading tag_index plainly 2 (0x1895f0 8).
+// Earlier, BLOCKED-BY 0xf8eb0 (a reduced build without that caller matched). Round 52 (fast, caller included):
 // noinline declaration 2; plain returns 175; no inner block 2; success falling through to the
 // label 2. Earlier: result before submit/request 181/181;
 // forward/velocity/location library copies 2/2/2; location before velocity 23;
@@ -635,6 +661,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Success result/pop order remains. Request/forward/distance/combined scope endings 2 each plain;
 // projection component loop 2 plain; difference/paired component loops fast 4/4;
 // projection library clear fast 161. Reduced exact results need plain confirmation.
+// Round 11 (lane 17, plain): without the inline_depth pragmas 269 (callees inlined, 733 bytes); the
+// success result set before the final call 181; length_squared reused for the second length 160;
+// dot3f for the projection length 166, for the perpendicular distance 158. The sources that bring the
+// swap (0xfc330, 0x10c880, 0x17a8a0, 0x184440) are all callers of 0x1895f0 that ignore its result.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

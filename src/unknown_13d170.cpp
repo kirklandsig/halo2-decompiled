@@ -232,6 +232,27 @@ struct s_block_candidate
 // end, retail keeps them in the loop); case 1 as `if (...) better = true;` 382. Retail keeps the
 // offset in EBX through the scan and spills `next` (+0x4c); ours keeps `next` and the tail.
 // DL190: Existing calling iterator with fields/aggregate 424/424; direct step 418/418; native datum iterator 409/404 (frame 0x1054, but out-of-line). Allocated lookup/absolute getter 367/367 at retail length (three-point gains rejected). Original iteration, allocation and body restored; page/ring carriers remain.
+// Round 228: earlier head retirement/tail commitment/both 369/370/369; too-small
+// candidate continue alone/with head/with tail/with both 370/381/370/386; all plus timestamp
+// maximum 367 at retail length (three-point lead rejected). Original body restored.
+// Round 237: Computed page-size long/dword, each with named-mask expression, original/entry constant result lifetime: 370/370/370/370/413/413/413/413.
+// Original executable body restored.
+// Round 27 (lane 14), aligned counts in brackets (control 370 [355]): busy handled at the end of the block arm
+// (`if (busy) { head = tail; continue; }`, scan unconditional) 377 [252] at retail length 1213, retail's
+// none/block/gap arm order; with busy = proc && proc(current) 377 [239]; that with the policy cases in
+// default/1/0 source order 377 [239] (same code); with offset = 0 declared at entry 380 [257] (EBX pushed
+// first as retail); with the allocation success returning directly 381 [244]. On the 239 form, retail still
+// lays out the no-candidate limit update + return right after the loop guard and keeps the case 0/1 bodies in
+// the loop (ours puts both at the end), and uses its zero EBX as offset (frame 0x1050 versus 0x1054).
+// Round 242: Actual queued-candidate count long/dword/short/word, capacity-bound and
+// not-full admission 407/407/406/418/407/407/406/418. All recover frame 0x1054 but
+// grow code; original ring state and body restored, page-offset/tail homes remain.
+// Round 8 (lane 17): the segment arms as an else-if chain 370 (same code); busy as a ternary on the callback 371;
+// segment pages/time declared before the while 370; `if (!busy) scan else head = tail` 397 (1181 bytes); busy
+// assigned in each arm without an initializer 369.
+// Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
+// bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
+// restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

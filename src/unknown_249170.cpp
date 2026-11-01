@@ -2,6 +2,7 @@
 #include "unknown_0259d0.h"
 #include <math.h>
 #include "effects.h"
+#include "normalize3d.h"
 
 // @flags /O2 /Ob1 /arch:SSE /Gr
 
@@ -68,8 +69,9 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 	return g_468760;
 }
 
-// score 6 (was 6): what is left is the case 1 fsin/xorps order and the first normalisation product
-// pair (retail folds i and loads j; ours loads i and folds j). Round 42: one function-scope seed
+// score 2 (was 2): what is left is the case 1 fsin/xorps order; the first normalisation product
+// pair (retail folds i and loads j; ours loaded i and folded j) matches since round 91.
+// Round 42: one function-scope seed
 // pointer assigned in cases 5, 6, 7 and 9 (it then shares one home, the dead system argument's, as
 // in retail) 57 -> 6; on it function-scope sine/azimuth/radius/polar/radial/all six 314/36/32/313/
 // 395/422, extents 23, direction 356; tail without the volatile casts (plain, scale helper, `*=`)
@@ -117,6 +119,47 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // Original six differences remain: ring trig/zero order and the first normalization product pair.
 // On the original case-home graph, pointer-returning shared normalization/speed/both scales 47/47/47;
 // paired ring sine/cosine values alone or with each scale combination 497 each (exact-only, restored).
+// Round 91: both scales through the existing vector3f_scale on &particle->velocity, without the
+// volatile casts, 6 -> 2 (kept); the same on the velocity pointer local 47; the speed in a named local
+// first 24; the volatile casts dropped from the plain products 47. Case 1: zero stores after both trig
+// stores 2; no sine local 286; sine and cosine locals with their products 504; zero pair first 2;
+// position.y from the sine local 2; zero stores last 17; position.x copied from velocity.i 2;
+// velocity.i zeroed before the sine 2; radius-first products 2; permuter 68 tries, none under 2.
+// Round 207: float trig family 29; native reciprocal-root intrinsic 688 (16-byte aligned frame,
+// nine match losses, restored); native component array with inherited/ordinary reads 6/47;
+// all three tail declarations at entry 6; tail local names 6; reciprocal/squared-speed declaration
+// at entry separately 6/6. Original frame, helper, field accesses and qualified reads restored.
+// Round 16: normalisation operands swapped 6 (same code); without the casts, compound `*=` 47, tail
+// stores through particle->velocity 105, tail reads through particle->velocity 88 (that one keeps
+// retail's load-multiply-store order: the loads and stores sit on two unrelated bases); case 1 with
+// the zero stores last 21, a chained zero 6, a cosine local 504.
+// Round 207: float trig family 29; native reciprocal-root intrinsic 688 (16-byte aligned frame,
+// nine match losses, restored); native component array with inherited/ordinary reads 6/47;
+// all three tail declarations at entry 6; tail local names 6; reciprocal/squared-speed declaration
+// at entry separately 6/6. Original frame, helper, field accesses and qualified reads restored.
+// Round 12 (m3 lane 2; one-link harness with 0x247950's, 0x246cd0's, 0x259d0's and 0x1462e0's files
+// reproduces case 1 exactly): case 1 sinf 6, cosf 4; `position.x = velocity.i = 0.f` 2; velocity through
+// vector3f_assign with sine/cosine arguments 549 (2300 bytes: case 1's tail cross-jumps into case 2's);
+// a double sine 507. Harness only: the two zero stores in all 60 placements among the four trig stores
+// (both statement orders) keep xorps (or the velocity lea) between fld and fsin; the velocity through
+// vector3f_assign and the position through real_point3d_set 493; the position setter alone 305 (positional).
+// Round 29 (lane 11): case 1 with sinf for the sine 6, cosf for the cosine 4, both 8; the cosine store
+// before the sine store 11 (the one-use sine is evaluated at its use, after the fcos); the sine declared
+// before the radius call 2 (same code: it is carried past the call). Our scheduler fills the fld latency
+// before case 1's fsin with the xorps (as retail does in case 6) where retail's case 1 and case 4 do not.
+// Round 96 (one-link harness with 0x247950's, 0x246cd0's, 0x259d0's and 0x1462e0's files; case 1 swap
+// reproduced): the two zero stores placed before/after the sine definition in all four combinations keep the
+// swap; either one before the radius call 549-563 (stores move ahead of the call); a cosine local after
+// velocity.j / after position.x with sine/cosine products 321 (swap kept); `real const sine` 2 (same code);
+// position.y before velocity.k / velocity.k before position.y 2 (same code); sine declared ahead of the
+// radius call and assigned after it 2 (same code).
+// Round 211: shared seed cursor extended to cases 1/0/4/8/0+1/1+4/1+8/0+1+4+8
+// 2/16/2/16/9/16/9/24.
+// returned random-vector outputs in cases 2/3/5/2+3/2+5/3+5/all; all with sphere position helper
+// 78/460/75/477/527/473/532/535.
+// All source forms restored; case 1 fsin/xorps scheduling remains.
+// Round 58: reverse zero-field dependency 4; velocity/position/both zero components through the unions 2/2/2;
+// all velocity/all output components 2/2; entry-wide tail velocity pointer 512; const case radius 2. Body restored.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
@@ -306,14 +349,9 @@ void function_249170(real const *values, s_particle_spawn_state *particle, s_par
 	if (speed_squared != 0.f)
 	{
 		real inverse_speed = particle_inverse_sqrt(speed_squared);
-		velocity->i = inverse_speed * velocity->i;
-		velocity->j = velocity->j * inverse_speed;
-		velocity->k = *(real const volatile *)&velocity->k * inverse_speed;
+		vector3f_scale(&particle->velocity, inverse_speed, &particle->velocity);
 	}
-	real speed = function_246cd0(&definition->speed, values);
-	velocity->i = velocity->i * speed;
-	velocity->j = *(real const volatile *)&velocity->j * speed;
-	velocity->k = *(real const volatile *)&velocity->k * speed;
+	vector3f_scale(&particle->velocity, function_246cd0(&definition->speed, values), &particle->velocity);
 }
 
 // @retail 0x249aa0

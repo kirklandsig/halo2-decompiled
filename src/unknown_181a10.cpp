@@ -382,10 +382,13 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // opposite order (retail j, first, i; ours first, i, j). Shared component base 8; i, j, k
 // declared at the top 8; chained FLT_MAX stores 8; contact pointer walk 8; shape calls
 // through the field pointers 168; about 300 natural forms compiled alone keep the slot order.
-// opposite order.
-// First component/outer index/inner index spill cycle remains. Indexed second/first/both shape reads
-// fast 24/79/8; indexed second kind 24; both/second entry shape reads 135/135;
-// indexed second/both shape addresses 24/8. All new scores reduced; original frame and loops restored.
+// Indexed second/first/both shape reads 24/79/8; indexed second kind 24; both/second entry
+// shape reads 135/135; indexed second/both shape addresses 24/8; first body through an entry
+// pointer 8; contact index declared outside the loops 8; first body read in the outer loop 211;
+// second's body array in a local 158; second's count in a local 151. Round 60: the loop indices
+// renamed outer/inner 8 (same slots: these are spill homes, names do not order them); the collector
+// and contact buffer declared before the loops 181; i and j declared before the loops 8; an early
+// NONE return in place of the enclosing test 87; second declared before first, assigned in order 8.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -585,6 +588,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // masks 0..7, 334 each (1243 bytes, frame 0x3c); native shape entry/surface/kind bitfields
 // with uniform at-use encoded data, masks 0..7, 358 each. Original shape layout, snapshots,
 // normal workspace and full body restored; frame 0x48 versus 0x44 and classifier homes remain.
+// Native unsigned interval/complement, material-case order and discarded coefficient masks
+// 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
+// Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
+// queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -7,7 +7,7 @@
 // @flags /O2 /arch:SSE /Gr
 
 __declspec(noinline) void *function_122c10(long arg_0, long arg_1);
-void function_db760(long arg_0, long arg_1, long arg_2, long arg_3);
+void function_db760(long region_index, long object_index, long permutation_index, long mode);
 struct s_18444a;
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3);
 extern byte *g_4ed280;
@@ -24,59 +24,8 @@ static __forceinline long function_9c912(long arg_0, long arg_1, long arg_2)
     return local_0;
 }
 
-// score 29 (was 29): left are the frame (sub esp, 8: the object index gets its own slot, where
-// retail keeps a 4-byte frame and the object index in arg_1's slot and the permutation in arg_3's)
-// and the call setup, BLOCKED-BY 0xdb760 (contributor; retail takes the permutation in ebx and the
-// object on the stack, ours the object in ebx). Kept (round 78): the clamp as if/else-if/else
-// (retail's unthreaded `cmp; mov ecx, 1; jg; mov ecx, esi`), the mode read at each use, the
-// permutation read into its local before the parameter store (no `lea edi, [esi + 4]`: table in
-// esi, event in edi as retail) and no false assignments (result reloaded from its slot).
-// Tried: clamp of a re-read mode 84 (310 bytes); a plain permutation local 110/109 (the object
-// index then stays in ebx, as 0xdb760 takes it), with no false assignments 70; no false
-// assignments alone 59, inner one removed 58, outer one removed 68; PIN(mode, 0, 1) 66, with no
-// false assignments 75; event pointer declared at the top 82; the clamp helper plain static or
-// extern 57; a named tag table local 57; the permutation re-read at each use 57; the original
-// parameter order 86 (84 without false assignments); the parameter store at the call 120, inside
-// the range test 29, the range test on the parameter 84; locals renamed 29/31; result declared
-// after the object index 51; the object index computed before the result flag 51 (4-byte frame,
-// the result byte takes the parameter home); existing object_get, region word view, typed event
-// view, named permutation-table pointer 90; object failure early return 91. Round 117: the
-// permutation stored in arg_1 or arg_2 instead of arg_3 120 (271 bytes, 4-byte frame, the object
-// index in ebx); the bit test on the stored permutation 120; the object index also stored in the
-// unused arg_0 3 (retail's code except three parameter-home offsets, the minimum with this
-// callee is two; a second parameter reuse, not kept), arg_0 for the object index alone 120; the shift and
-// the permutation lookup on event[1] at each use 29; the damage tag read before the region test 59;
-// the region flags pointer formed just before the bit test 115 (276 bytes).
-// retail keeps a 4-byte frame and the object index in arg_1's home and the permutation in arg_3's)
-// object on the stack, ours the object in ebx). Everything between agrees. The frame follows from
-// the blocker: the permutation stored back into arg_3 is a new web that takes arg_1's dead home
-// first, and the object index (defined before arg_3's first read) has no other home it may use.
-// Kept (round 78): the clamp as if/else-if/else (retail's unthreaded `cmp; mov ecx, 1; jg; mov ecx,
-// esi`), the mode read at each use, the permutation read into its local before the parameter store
-// (table in esi, event in edi as retail) and no false assignments (result reloaded from its slot).
-// Tried: clamp of a re-read mode 84 (310 bytes); a plain permutation local 110 (lane 11: 74, the
-// object index then stays in ebx as 0xdb760 takes it; with no false assignments 70); no false
-// assignments 107 (result only on the stack), inner one removed 58, outer one removed 68; PIN(mode,
-// 0, 1) for the clamp 66, with no false assignments 75; the member's fields copied in the other
-// order; event pointer declared at the top 82; the clamp helper plain static/extern 57/57; a named
-// tag table local 57; the permutation re-read at each use 57; the original parameter order with the
-// new clamp/reads 86, without false assignments 84; a plain permutation local with them 109; the
-// parameter store at the call 120, inside the range test 29, the range test on the parameter 84;
-// locals renamed 31; result declared after the object index 51; object index declared before the
-// result (defined after it) 29; the object index stored into arg_1 and passed from it (diagnostic,
-// copy-propagated away) 29.
-// Tried: clamp of a re-read mode 84 (310 bytes, retail's unthreaded clamp); a plain permutation
-// local instead of the reused parameter 110 (lane 11: 74 at 280 bytes, the object index then
-// stays in ebx as 0xdb760 takes it), with no false assignments 70; no false assignments 107
-// (result only on the stack), inner one removed 58, outer one removed 68; PIN(mode, 0, 1) 66
-// (301 bytes); the member's fields copied in the other order; event pointer declared at the top
-// 82; the clamp helper plain static/extern 57/57; a named tag table local 57; the permutation
-// re-read at each use 57; the original parameter order with the new clamp/reads 86, without false
-// assignments 84; the parameter store at the call 120, inside the range test 29, the range test
-// on the parameter 84; locals renamed 31; result declared after the object index 51 (round 80:
-// 297 bytes and a 4-byte frame, but the result byte takes the parameter home and the event
-// pointer moves to ebx). Round 80: the event parameter or the object index renamed to sort
-// before or after the other 29 each (identical code).
+/* applies a section response event to an object: when the event names a valid region and an intact
+   permutation of it (for mode 1, one with an effect), destroys that permutation through function_db760 */
 // @retail 0x9c910
 bool c_damage_section_response_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -110,7 +59,7 @@ bool c_damage_section_response_event_definition::v11(long arg_0, long const *arg
                             {
                                 if (event[2] != 1 || *(long *)(*(byte **)(region + 0x10) + permutation_bit * 0x50 + 0x34) != NONE)
                                 {
-                                    function_db760(region_index, (long)arg_3, object_index, event[2]);
+                                    function_db760(region_index, object_index, (long)arg_3, event[2]);
                                     result = true;
                                 }
                             }
@@ -139,7 +88,18 @@ struct s_9cca0
 
 // score 9 (was 9): the two vector copies and the global's test are ordered
 // differently; retail sinks the k component's store past the global's test and
-// loads the tag after it, ours stores the tag before the test
+// loads the tag after it, ours stores the tag before the test. The test can only
+// move above the event's stores when LTCG knows the event's address does not
+// escape: passing it to a small non-capturing callee instead of 0x184440 gives
+// retail's order, so this waits on 0x184440's body (BLOCKED-BY 0x184440).
+// Tried: the first zeroing through the member array 9; the tag in a local 58;
+// the tag test on the input 9; the vectors copied with memcpy 9; `&field_7e` 9.
+// Round 19: the global flag read into a named bool before the event 53; the marker stored
+// before the tag 10; the input as a typed struct 9 (same code); the vectors copied by component
+// through source pointers 50; the tag stored first after the zeroing 31. Diagnostics in 0x184440:
+// without its set_location call, or with a non-recursive stand-in for it, the test moves above
+// the k store as in retail but the vector copies then store i early (12), so the escape comes
+// through the recursive set_location and is not the whole difference.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -284,24 +244,23 @@ struct s_input_9c610
     byte field_34;
 };
 
-// score 23 (was 31): only the call to function_e4a20 at the end differs (and
-// the branch offsets past it): retail passes the point in eax and the object in
-// ecx, ours the point in ecx and the object on the stack, which follows from
-// function_e4a20's own body (BLOCKED-BY 0xe4a20). Tried: the flags store first
-// of the second copy group 23 (kept); before the vector copy 67; first of all
-// 67; before field_3c 27.
-// Shared absolute lookup inline 23, out of line 122; shared index
-// reconstruction 107; both shared inline operations 114; point local at
-// notification 23, before guard 23, across dispatch 23; shared lookup
-// with point lifetime 23. Native frame/report copies still agree.
-// final validity predicate 129; byte success result 23; unsigned reconstructed handle 23;
-// signed-byte material 46; bool presence field 23; named validated tag result 23; source-width
-// pool index 112; unsigned salt word 24.
-// Byte notification read 46; byte tail read 23; both byte reads 46; word notification read 46.
-// Word tail read 23; both word reads 46; signed-byte tail read 23; byte notification/signed tail 46.
-// score 13 (was 23): flag 7 of +0x20 as TEST_FIELD_BIT((x >> 7) & 1) 13 (retail tests it as a
-// signed byte, mov al / test al, al / jns; a char < 0 test, a byte mask or a byte shift 23; flag 1
-// rewritten the same way 56, both 63).
+// score 13 (was 13): BLOCKED-BY 0xe4a20. The call to function_e4a20 at the end differs: retail
+// passes the point in eax and the object in ecx, ours the point in ecx and the object on the
+// stack, which follows from function_e4a20's own body. Flag 7 of +0x20 retail tests as
+// `mov al / test al, al / jns`: the plain `input->field_20 & 0x80` gives that test and retail's
+// length (429), but with the shorter call setup every later line shifts, 23 (also as a char < 0
+// test or a byte mask); use it once 0xe4a20 is fixed. TEST_FIELD_BIT((x >> 7) & 1) 13 (kept),
+// TEST_FIELD_BIT(x & 0x80) 13; flag 1 rewritten the same way 56, both 63; one flags local for
+// the copy and both tests 49. Earlier (at 23): the flags store first of the second copy group
+// 23 (kept); before the vector copy 67; first of all 67; before field_3c 27. Shared absolute
+// lookup inline 23, out of line 122; shared index reconstruction 107; both shared inline
+// operations 114; point local at notification 23, before guard 23, across dispatch 23; shared
+// lookup with point lifetime 23. Final validity predicate 129; byte success result 23; unsigned
+// reconstructed handle 23; signed-byte material 46; bool presence field 23; named validated tag
+// result 23; source-width pool index 112; unsigned salt word 24. Byte notification read 46; byte
+// tail read 23; both byte reads 46; word notification read 46; word tail read 23; both word
+// reads 46; signed-byte tail read 23; byte notification/signed tail 46.
+// Round 11 (lane 17): unchanged; 0xe4a20 (contributor code, src/bipeds.cpp) is still todo at 104.
 // @retail 0x9c610
 bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

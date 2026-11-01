@@ -49,18 +49,20 @@ PRIVATE inline long block_entry_value_get(s_22bfc0_block const *block, char seco
 	return block->entries[index].value;
 }
 
+// Both take the definition first: their one caller (0x13992a) sets the
+// definition up before the flag, as retail does.
 // @retail 0x22bfc0
 long function_22bfc0(
-	char second,
-	s_22bfc0_definition const *definition)
+	s_22bfc0_definition const *definition,
+	char second)
 {
 	return block_entry_value_get(&definition->block, second);
 }
 
 // @retail 0x22bff0
 long function_22bff0(
-	short element_index,
 	s_22bff0_definition const *definition,
+	short element_index,
 	char second)
 {
 	s_22bff0_element const *element = &definition->elements[element_index];

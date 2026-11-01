@@ -258,7 +258,13 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
-// score 49 (was 49): our size-optimized build hoists the buffer address 0x55c6e4 into EBX
+// score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
+// Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
+// in a named engine local 32, with the tag read after it 32; on the one-copy form the output local 54
+// and the engine local 54 (the buffer address still hoisted into EBX at the definition test). In all
+// of retail's size-built game code only this function and unmatched 0x2ca284 both push an address
+// constant and load it into a register (0x2ca284 has calls between its uses), so no matched sibling
+// shows the idiom.
 // (saved in the prologue) for its two uses, the translator's pushed argument and the copy's
 // EAX source; retail pushes it as an immediate and moves it into EAX again. VC7.1 /O1 always
 // keeps a twice-used address constant in a callee-saved register when one use is on every
@@ -485,6 +491,80 @@ done:
 // 54; the name typed as dword 49/54. Round 36, on the retail-order body: the missing-definition path
 // copying and returning early 72 (189 bytes); `&g_55c6e4[0]` at both uses 54; the buffer named in a
 // local for both uses 54; const definition pointer and tag read 54; the default label first 54.
+// Round 317: Existing getter default-first/complete-result arms, crossed with case-9 priority
+// and direct tag consumption, 52/56/59/54/63/45/61/45. Four-count leads rejected;
+// all original getter statements, shared buffer and parser body restored.
+// Later (32, from 49): retail's case order (0, 1, 9, 2, 3, 4, 7, 8) with the copy repeated after the
+// translation; ours still keeps the switch's value in EDI from the entry and pushes the buffer address
+// in ESI where retail pushes it as an immediate, and the selector load lands in ECX.
+// Round 109 (lane 5, fast; parse_variant stays matched), on the 32 form: the tag read before the
+// variant call 44 (tag in EBX, buffer still cached in ESI); the tag read in the translator call 45
+// (globals in EBX, selector in EAX as retail); `if (!globals) goto done;` 32 (same code); numeric
+// case order 38; the variant read raw with the tag load before the fallback (getter written out,
+// diagnostic) 33 (tag load in retail's slot but in ECX, so ESI stays free to cache the buffer). A
+// speed-preference diagnostic inlines the definition getter and the copy (118 at 224 bytes), so a
+// speed setting alone does not give retail's immediates. Matched siblings parse_variant and
+// parse_mapname cache their buffer constant in ESI; here retail's ESI holds the tag.
+// Round 109 (lane 6, fast): one shared copy after the `if (globals)` block (the switch's default
+// skipping the translator) 54: the tag then sits in ESI, EDI is pushed only around the switch and
+// popped after the translator, as retail, but the buffer address is hoisted into EBX at the globals
+// test for its two uses; on it the tag read before the variant call 57, the selector straight from
+// the getter with the tag first 57, `if (!globals) goto done;` 54, the tag read at the translator call
+// 45 (171 bytes; the selector then in EAX as retail, still the EBX buffer).
+// Round 98 (lane 8; LTCG env link, address-taken entry; env rows positional/aligned, base 42/35): one
+// shared copy after the `if (globals)` block with the default's `goto done` 47/29 (173 bytes, buffer
+// hoisted into EBX); with `&g_55c6e4[0]` at the translator 47/29; the tag read at the translator call
+// 43/33 (174 bytes); `name_id` declared before the definition lookup 42/35 (identical); the translator
+// called in each case with the shared copy 42/35 (170 bytes).
+// Round 24 (lane 14, fast), all on the natural one-copy form (54: buffer address hoisted into EBX at the
+// globals test, selector in ECX, tag loaded after the range compare): the buffer address read once into a
+// named `wchar_t *` local used by the translator and the copy 54 (same code); numeric case order 49; an
+// early `if (!globals) goto done;` with function-scope locals 54; `name_id` preset NONE with `default:
+// break` and the translator under `if (name_id != NONE)` 54; the four parse buffers as one two-dimensional
+// array (sym+offset constants) 54. Retail's translator takes the name in EDI (its matched body), so EDI's
+// late push is the call's argument register; the EBX hoist is the only thing the natural form lacks.
+// Round 181 (lane 3): a compile-only /O1 screen hoists 0x55c6e4 into a callee-saved register in all
+// six exit shapes tried (natural, copy on both paths, early null return, default copy and return,
+// both exits, per-case translator), so no exit shape removes it. Real build: the natural form 54
+// (173 bytes, every row aligned but the EBX hoist and the late tag load); an early copy-and-return
+// for a missing definition on the current form 77 (194 bytes); the default case copying and
+// returning 32 (same count); the natural form with the tag read before the variant call 57 (171
+// bytes) and just before the translator 45 (171 bytes).
+// Round 9 (lane 17, fast): a compile-only /O1 screen of 128 combinations (tag/variant/name declaration
+// orders, retail or numeric case order, `goto done` or a NONE-guarded call, shared or repeated copy,
+// `if (globals)` or `if (!globals) goto done`, the buffer named in a local or not) keeps 0x55c6e4 in a
+// register on at least one path in every one. Real: tag first, NONE guard, early goto and a named
+// buffer 57 (171 bytes); the name declared before the tag with a named buffer 54 (173 bytes); the name
+// first, NONE guard and repeated copy 68 (189 bytes); tag first, repeated copy and early goto 44 (178
+// bytes); numeric order, NONE guard, repeated copy, early goto and a named buffer 72 (189 bytes).
+// Round 41 (lane 11, fast): the natural one-copy form again 54 (173 bytes; `mov ebx, 0x55c6e4` placed
+// right after the globals test, ahead of its `je`, so it dominates both uses; the selector then lands
+// in ECX and the tag load after the range compare); on it a NONE-defaulting switch with the translator
+// under `if (name_id != NONE)` and one copy 54 (173 bytes), the tag read before the variant call 57 (171
+// bytes); the tag (or the tag, variant and name) declared at function scope 54/54 (same code). Matched
+// parse_leader caches its buffer in ESI only because its first copy needs it there.
+// Round 119 (fast, on the 32 form): the name declared before the variant 32; the selector read into a local
+// before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
+// the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
+// its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 108 (lane 8; a one-file LTCG harness with the callee files and the ballast object gives this code
+// exactly): the variant getter's fallback written as a ternary 48 (178 bytes; parse_variant stays matched); one
+// shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;
+// a named pointer to the tag field read at the translator call 45 (178 bytes, globals in EBX); the tag declared
+// at function scope 32 (identical). All real (fast).
+// Round 14 (lane 17, fast; parse_variant stays matched), on the natural one-copy form (54): the shared
+// getter's fallback as a ternary 54 (same code: the tag load stays after the fallback join), with the tag
+// read before the variant call 57 (171 bytes; the tag loads before the call); the selector read into a
+// local before the tag 54; numeric case order 49 (173 bytes); numeric order with the tag read first 55
+// (171 bytes). Retail's tag load sits between `test eax, eax` and `jne` in the call's block, so in its IR
+// the tag read precedes the fallback branch.
+// Round 13 (lane 18, fast; parse_variant stays matched): a compile-only /O1 screen hoists 0x55c6e4 exactly
+// when the translator path uses that address twice (a different buffer at the copy removes it), and the
+// matched siblings here hoist theirs in retail too, so a file-flag change would not fit them (the earlier
+// favour-speed diagnostic stays a flags lead only). Real: numeric-to-retail case order with the tag read in
+// the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
+// with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
+// named once for the translator and the copy 32; the tag read in the translator call alone 45.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
@@ -504,6 +584,9 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		case 1:
 			name_id = 0x1000010d;
 			break;
+		case 9:
+			name_id = 0x700010e;
+			break;
 		case 2:
 			name_id = 0x600010f;
 			break;
@@ -519,13 +602,12 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		case 8:
 			name_id = 0xb000115;
 			break;
-		case 9:
-			name_id = 0x700010e;
-			break;
 		default:
 			goto done;
 		}
 		function_1a0180(tag_index, name_id, (word *)g_55c6e4);
+		parse_copy(buffer, g_55c6e4);
+		return;
 	}
 done:
 	parse_copy(buffer, g_55c6e4);

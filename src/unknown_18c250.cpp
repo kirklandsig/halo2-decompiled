@@ -88,9 +88,13 @@ static inline vector3f *cross3f(vector3f const *a, vector3f const *b, vector3f *
 	return result;
 }
 
-static inline vector3f *function_x84d9e8(vector3f *vector, vector3f const *axis, real sine, real cosine)
+/* the axis and the vector are taken into locals in that order: it sets the order of the cross
+   product's operand loads (0x18c250) */
+static inline vector3f *function_x84d9e8(vector3f *vector_in, vector3f const *axis_in, real sine, real cosine)
 {
 	vector3f cross;
+	vector3f const *axis = axis_in;
+	vector3f *vector = vector_in;
 
 	cross3f(axis, vector, &cross);
 	vector->i = cosine * vector->i + sine * cross.i;
@@ -99,25 +103,6 @@ static inline vector3f *function_x84d9e8(vector3f *vector, vector3f const *axis,
 	return vector;
 }
 
-// score 6 (was 6): cross-product operand preloads and SSE allocation remain.
-// shared cross-product interface 6;
-// plain component rotation loop 47;
-// shared cross product and component loop 47;
-// cosine vector snapshot 35;
-// rotation output vector snapshot 136;
-// shared cross product and cosine vector 35;
-// shared cross product and rotation output 136;
-// shared cross product with distinct rotation input and output 134;
-// void rotation return 6; cosine-in-place i/j/k/i+j/i+k/j+k 12 each;
-// sine-in-place cross i 15; single-precision trig 46; scalar trig results 6;
-// value-returning cross 123; reference cross interface 6; array component cross 6.
-// Axis/input/both scalar snapshots 48/53/56; paired products 34;
-// cross inputs by value axis/input/both 150/157/193; rotation axis by value 150.
-// Round 70: retail loads axis j for the i-row first product and vector i for the j-row one; VC picks
-// the loaded operand itself (all 64 product operand orders and all helper parameter orders give this
-// code or worse). Axis/vector pointer aliases in the helper 11 (fixes those two, flips the k-row
-// second product), vector alias first 12; axis local before the call 39; point-typed helper 6;
-// input alias 13; cross/rotation statement orders 7-39; helper in another file 6; angle wrapper 38.
 // @retail 0x18c250
 bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {
@@ -170,6 +155,18 @@ bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker
 // Round 431: common word/long datum slots 151/23; with machine receiver reacquired 151/23;
 // root-location returned output original/word/long slot 172/108/172; long slot with overlap-safe location copy 53.
 // Frame and normal block agree; machine receiver, cluster-map registers and final publication order remain.
+// Round 7 (m3 lane 2): `object` reassigned from the header for the machine read 23; local names sorted
+// first/last 23/23; `indices[...] * 18 + row` 23; the requested-audible nibble read into a char before the
+// location copy 17 (after-call DL as retail; one-use read ahead of a store, kept only on a match), the same
+// read after the copy 22; with the early read, a 64-bit copy 17; the copy's high dword written first
+// (cast form, diagnostic) 21, retail's first loads and stores, so the copy order follows source order.
+// Round 42: named machine object 23; header local in the machine arm 23; indices local 23; object local
+// reassigned from the header 23; one header local for the type and machine reads 137. Only dropping the (word)
+// cast gives retail's cluster lea/base order, but retail zero-extends the index.
+// Round 43 (lane 10): `machine_index & 0xffff` for the cast 23 (same code); the location local at function
+// scope 23; `forward` declared before `matrix` 23; a byte object type 110; a cluster table pointer local
+// 23; 1-3 unused locals at the top (diagnostic, numbering) 23 each. Retail reuses the dying register in
+// both the machine read (EBP) and the cluster sum (EAX holds the row, then the table).
 // @retail 0x18c3b0
 bool __stdcall function_18c3b0(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {
@@ -352,6 +349,18 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// score 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
+// retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
+// into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
+// where retail uses lea ecx. This round: the front end canonicalises the sum, so every spelling gives the
+// same two loads with the offset first and as the add's destination: the pointer first, both operands as
+// dwords in either order, a dword-typed view of the promotion data, the offset cast to unsigned, int or
+// size_t, the sample pointer in a local before or inside the block and the offset hoisted before the block
+// all give the same bytes (7), as do the sum through an address local, the pointer local with += and the
+// index form; reading the scale's bits without the volatile pointer gives the same bytes
+// (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
+// last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
+// 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
@@ -571,7 +580,18 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
-// score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// Round 30 (lane D): assigning the root-location result to the destination, and keeping it in a local
+// instead, both score 279; a local copy of the sound type for the type-1 test scores 289, the flag test
+// through the flag0 bitfield and the type mask shifted as an unsigned 1 both score 279 with the same
+// code, and the mask shifted the other way scores 285. A build without the type shift has frame 0x88,
+// so the extra dword is the spill of the literal 1 that the flag test, the type-1 test and the shift
+// share. What still differs: the frame stays 0x8c against retail's 0x80 and the datum/tag homes differ.
+// Original body kept.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Earlier 280 from 280: Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain. BLOCKED-BY 0xba300.
 // Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain.
 // Round 9 (lane 10): retail's case-3 failure byte is a dead store into the slot the audibility output
@@ -651,6 +671,16 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // Round 217: native root output at query/entry scope via aggregate/library copy 305 each; with
 // native velocity output 337 each. Frame 0x8c and datum/tag homes remain. Root-location callee
 // now matches and uses object ECX/output EAX; original body restored.
+// DL201: effect/audibility ordinary, inline and force-inline contracts, all eight pairs
+// 279/556/279/492/279/492/556/756. Ordinary inline forms tie; forced audibility expansion
+// loses seven matched callers. All original declarations, definitions and body restored.
+// Root-location query now matches; datum/tag homes and the constant-one spill remain.
+// Round 247: complete object-phase spatial output at phase/entry scope, with native/
+// library marker-position and full-output transfers in all eight combinations, 371
+// each (frame 0xb0; reduced 0x21db80 loses). Original direct fields, receiver pair,
+// provider calls, output publication and complete body restored.
+// Round 267: all five other flags/owner/byte entry-publication orders and three native shared-zero
+// chains each score 279. Original initial stores restored; frame 0x8c, datum/tag homes and one spill remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

@@ -645,6 +645,17 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Consumed count 9 fast; initialized divisor 61; shared start numerator 9;
 // compound step 9; nested validation 9; division normalization 56;
 // common exit 9; parallel endpoint numerators 9. Fast baseline 9, full 2.
+// Parameter names in either sort order 2; polygon test nested 9 fast; loop index
+// declared at the top 9 fast; count stored as one expression and halved from the
+// field 9 fast; while loop 9 fast (the restore pair unchanged in each).
+// Round 117 (fast, the restore pair read in each): loop bound `i != half` 9; step products as
+// `32 * (i + 1)` and `32 * i` 9; hill copied into a local at entry 9; `(short)index + 11` 9; a
+// test of index ahead of the count test (diagnostic) 33 with the pair unchanged, so the pair does
+// not follow the next use; const-qualified parameters 9; a 600 s permuter run, 54 variants, none below 9.
+// Round 98: an unsigned index parameter 9 fast; a zero-initialized divisor 9 fast;
+// an inclusive loop bound 64 fast; both guards as `> 3` 12 fast; `index + 0` at the final call
+// 9 fast; a read-only callee index 9 fast; a read-only callee index and pointer 9 fast;
+// the function placed before its callee 9 fast. Full baseline 2; all restored.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
@@ -1172,30 +1183,22 @@ void c_game_engine_45c948::v12()
 	}
 }
 
-// score 14 (was 14): retail loads the engine global g_4e6948 into edx at the
-// top of the function, ours loads it into ecx just before the mode test (as retail
-// compiles the identical matched 0x2bd260), so the load and the compare come in the
-// other order. Direct final-field initialization 6.
-// top of the function, ours loads it just before the mode test, so the load
-// and the compare come in the other order.
-// The early global and compare schedule remains; direct final-field initialization 6.
-// Split sentinel/mode guard 17; middle/early predicates and direct options tests 13;
-// payload between zero stores 8; both zeros first 13; partial aggregate 56/119;
-// type before payload 6; middle predicate with that order 6; subtype readback 6;
-// parameter address 6; shared send 6; void-return send 6; force-inline send 6.
-// Round 107: options pointer read first, mode test read first, parameter read first: 14 each with
-// identical code (statement order does not move the allocation); dword parameter 14; definition
-// placed after the class 14.
-// Marked initializer/returned receiver/dispatcher/both/receiver plus dispatcher 49/53/47/73/77;
-// early mode exit 27; marked initializer/returned receiver in mode scope 40/45;
-// visible initializer/dispatcher/both forced inline 14/14/14. Frame 0x24 still agrees.
+/* retail fills this event field by field, as the other engines' event
+   senders do, not through the shared initializer */
 // @retail 0x2bf480
 void c_game_engine_45c948::v6(long a)
 {
 	s_event event;
 
-	game_engine_event_initialize_inline(&event, 9, 0);
+	event.type = 9;
+	event.subtype = 0;
+	event.cause_player_index = NONE;
+	event.cause_team = NONE;
+	event.effect_player_index = NONE;
+	event.effect_team = NONE;
+	event.f = 0;
 	event.a = a;
+	event.g = NONE;
 	game_engine_event_send_inline(&event);
 }
 
@@ -1508,6 +1511,19 @@ struct s_territory_tag
 // Tried: the player lookup before the position copy 29; the mask update first
 // 50, or between the copy and the player lookup 32; the tag chain as byte
 // offsets 24; a const player pointer 24; a 600 s permuter run, none below 24.
+// Round 16: the existing position-copy helper 43; game_engine_get() 24; the tag index as
+// a ternary 41; placement declared first 24; tag index at function scope 48; placement at
+// function scope 24; the test without the short cast 51; player declared at the block top
+// 24; the created object in its own local 24; an early NONE return 62.
+// Round 56: inline definition 24; copy helper with masked player index 43, with
+// marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
+// index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
+// Round 11 (lane 18), fast: the copy helper with the tag index set per arm 65 (271 bytes; every line
+// after the 0xb7930 call is retail's, the NONE lands after the test); the helper with the initialised
+// index 43 (the chain's middle pointer takes ECX and every later scratch register rotates by one); the
+// chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
+// walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
+// marker index read once into a short local for the test and the copy 84 (281 bytes).
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

@@ -335,6 +335,15 @@ void function_13ad48(long user_index, byte const *selectors, real *values, byte 
 
 bool function_22acb4(long player_index);
 
+// This round (score 165, was 165): retail's first mask folds the 0x36 == NONE
+// condition into its base value and then tests 0x36 == 0 before 0x36 == 1, while
+// ours folds the 0x36 == 1 condition and tests it first; putting retail's order
+// in the source scores 192, the 0x3c conditions written as set/clear pairs 253,
+// the third mask starting at one and testing the types in order 190, and any
+// combination of them is worse again. Retail keeps the first mask in ebx and
+// spills it to the dead user_index slot, ours keeps it in edi and spills the
+// second mask to a slot of its own, so our frame is one dword deeper than
+// retail's and every later register home shifts.
 // score 165 (was 165): extra second-mask spill and persistent constant homes remain.
 // Retail reads the mode word as NONE, 0, 1 in that order and the type bits as
 // 1, 2, 3; either order alone scores 190-196, both 196, the 0x3c block written
@@ -470,6 +479,30 @@ bool function_22acb4(long player_index);
 // second-mask slot remains; original phase order, observation and complete body restored.
 // Round 424: physical item-selection orders 2143/2413/2431/3142/3412/3421/4132/4213
 // all 165 at 884 bytes. Original order restored; extra second-mask spill and constant homes remain.
+// N227: Set-first total updates in first/second/third/fourth/first-second/second-third/
+// second-fourth/all result families 304/287/281/285/303/285/304/347. Original setter restored.
+// Round 237: Complemented word result families first/second/third/fourth/first-second/second-third/second-fourth/all: On recovered complemented-second frame, first enum/independent second/third 123 subsets 1-7 and all with signed second: 178/244/252/250/242/274/245/289/230/234/271/247/228/230/267/262.
+// Original executable body restored.
+// Round 27 (lane 14): long flags 165 (same code). Retail CSEs the constant 1 into EDI (three cmp ax, di,
+// and ebx, edi, cmp type, edi) so (char)flags & 1 stays movsx ebx, al / and ebx, edi; ours narrows it to
+// and cl, 1 and CSEs 2 (EBX) and 0xffef (EDI) instead. On the retail block order (232, aligned 37): long
+// flags 232, (word)((long)(char)flags & 1) 232, byte flags 233, long second 287 (aligned 19: 1 in EDI as
+// retail, second still in ECX with its own slot, 0xfffd CSEd into EBX for the third/fourth clears).
+// Round 242: Existing shared word-bit setter in first/second/first-second/third/first-third/
+// second-third/all-three/all-four result families 165/299/299/165/165/299/299/299. Original macro,
+// result domains, enum producers, query and aliased stores restored; second-mask spill remains.
+// Round 8 (lane 17), on the retail-order body with a short second (283, aligned 19: VC narrows `(char)flags & 1`
+// to `mov cl, al; and cl, 1` while EBX still holds the first mask, so the second takes ECX and a slot and 0xfffd
+// is hoisted into EBX; retail spills the first, then `movsx ebx, al; and ebx, edi`): the second declared at entry,
+// before/after the first, with the third 283 each; `(char)flags` then `&= 1`, `(word)(char)`, `(short)(char)` 283
+// each; word `(word)(char)` 232; long `(short)(char)` 287; long second 287 (aligned 18, `and ecx, edi` but
+// zero-extended into CL); `*first_out` stored right after the first mask 263 (878 bytes, status in EDI).
+// Round 258: Previously untried complete result-phase schedules 2143/2413/2431/3142/3412/4132/4312/4321
+// 288/268/274/284/283/254/273/290. Original phase/query/output order restored; extra second-mask spill
+// and persistent constant homes remain.
+// Round 264: Whole-word OR expressions for second/third/fourth families, subsets
+// 1/2/4/3/5/6/7, then all four masks 306/271/316/299/348/333/364/387. Original
+// mutable producers, pure query and aliased output order restored; second spill remains.
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)
@@ -1202,6 +1235,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // 116/118/118/125/118; draw result as a ternary 158 or stored as the failed result 118 (also alone);
 // one shared offset, with or without a shared count 127/127; offset declared before the mask
 // zeros, before the setup call or first, with the sibling first loop 1/1/1.
+// Round 20: an indexed first loop (`for (long i = 0; i < count; i++)`, element field_24 + i * 0x50) is
+// exact once at most one later loop has a `> 0` guard: with the later loops in the current for form 6
+// (both zero EBX before their guards); later sibling loops guarded `>= 1` 12 (`cmp eax, 1; jl`, the rest
+// of both loops exact); all three indexed 118; chained mask zeroing with the indexed first loop 122;
+// indexed first, sibling second, for-form third 3 (only the third xor-before-guard); indexed first and
+// third with the sibling second 118. Two later zero guards (or indexed zero starts) keep the zero live.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

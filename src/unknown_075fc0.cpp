@@ -70,10 +70,14 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
-// score 408 (was 408): retail's frame is 0x34 and it holds `this` in edi, forming the channel
+// score 408 (was 408): frame 0x3c versus 0x34; observer/channel/result and counter homes remain.
+// Earlier: the 388 form below (four call-result and state locals as word, exact
+// 1369-byte length) was not kept: retail keeps these in 32-bit homes with no 16-bit operations,
+// so the word type is score-picked. Frame 0x3c versus retail 0x34; homes differ.
+// Earlier at 408: retail's frame is 0x34 and it holds `this` in edi, forming the channel
 // pointer as observer + index*0x528 with the 0xa8 folded into every field displacement; ours has a
 // 0x3c frame, spills `this` and adds 0xa8 to the channel base, and composes the counter's halves.
-// score 408 (was 408): frame 0x3c/0x34; channel/result homes and the counter copy remain.
+// Earlier: frame 0x3c/0x34; channel/result homes and the counter copy remain.
 // Native channel 434; primary/both counter products 448/419; native products 446/423;
 // native live flag/callback/both 441/439/432; direct counter product 419;
 // both/primary word concatenation 423/431; native both/primary concatenation 415/441.
@@ -108,6 +112,23 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // Round 270 M: sequential snapshot OR/add low word 408/418; scratch declared first
 // 408/418; packet output initialized first 424/420; both entry lifetimes 424/420.
 // Same counter bits throughout; original composition, lifetimes and complete body restored.
+// Round 314: Persistent cursor with pointer/indexed fields and ternary/branch window: state-first
+// 407/430/413/419; identity-first 407/430/413/419. One-count best is rejected; original finder,
+// channel/counter/result graph and body restored at 408; frame 0x3c versus 0x34 remains.
+// Round 207: canonical host-result byte/word/long 408/404/407; packet-result
+// byte/word/long 408/410/425; both word/long 397/424. Both word carriers 397
+// plain, kept; independent four-point host gain excluded. Provider definitions,
+// call tuples, counter bits, returns and every output are unchanged.
+// On paired word results: derived callback/channel-active/forced-send word domains,
+// seven nonempty subsets [426, 411, 405, 408, 388, 395, 389]; signed short call results 397.
+// The paired call results and callback/secondary-output states as words gave
+// 388 plain (not kept, see above); channel-active remained Boolean.
+// Round 247: single remaining-budget admission with maximum/available block-quotient
+// rounding subsets 427/428/430/429; separate raw/aligned capacity counterparts
+// 427/428/430/429. Original tail, counters, result graph and entire body restored.
+// Round 260: Shared threshold/payload/both rounders 428/428/437; separate raw/capped allowance 408, with
+// shared rounders 437; query-phase zero packet result 407, with shared rounders 438, all 438. All
+// restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

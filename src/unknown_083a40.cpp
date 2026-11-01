@@ -231,7 +231,9 @@ struct s_simulation_session_player
 	long machine_index;
 	long controller_index;
 	long unknown14;
-	byte unknown18[0x13c - 0x18];
+	byte unknown18[0xa8 - 0x18];
+	dword configuration[0x24];
+	byte unknown138[0x13c - 0x138];
 };
 
 /* whether the watcher's record of a player differs from the session's */
@@ -552,7 +554,7 @@ bool function_84560(s_simulation_world_owner *watcher)
 
 void simulation_player_collection_swap(s_type_c67652 *collection, long player_index, long other_index, s_simulation_player_update *update);
 
-// score 32 (was 32): the address of the record is computed in EDX and the zero kept in EBX;
+// score 28 (was 32): the address of the record is computed in EDX and the zero kept in EBX;
 // retail computes it in ECX and stores it first, so the block order differs.
 // inline/noinline swap declaration 32; apply-update declaration 32; both 32;
 // collection preheader 277; const session 32; const collection 32; array-base key 32;
@@ -630,6 +632,74 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // to the else branch 9/16; the first loop's increment as a statement 9/16, its index stored first
 // 10/18, its key through `watcher->players` 9/16, the mark call given the update's index 104/281; the
 // closing stamp through the session local 41/62; permuter (600 s, 75 tries) none better.
+// Round 19 (lane 13): `collection` declared at the function top or right after the session 228/228
+// (1088 bytes); declared at the top and assigned in the loop 32 (same code); `occupied` declared before
+// `slot` 32; the swap order above with the top-declared collection 36 (registers masked 8 against 10: the
+// occupied key's association, the preheader cursor store and the last record's reads remain).
+// Round 31 (lane 10), one-file harness (this file + unknown_084a90.cpp, exact): on the swap order
+// above, `collection` declared after `source` 36; the occupied key as `&collection->players[i].key`,
+// `(&collection->players[i])->key` or `(collection->players + i)->key` 36 each; the last record's
+// reads before the update pointer 40, swapped 47, read at their stores 110 (1053 bytes); every
+// combination of those 32 forms 36-110 (real --fast agrees: 36/36/110, 0x84e90 still matches).
+// Round 177: `collection` declared in each branch where it is used 32 (same code; 36 on the swap order
+// above, aligned 24 against 14: the swap call becomes retail's, the occupied block's ECX/EDX and the last
+// record's two source reads swap); the machine pointer taken after the `unknown14 == NONE` test 186 (1071
+// bytes); the conflict scan's `memcmp(...) == 0` 32; the machine table filled with memcpy 32; the last
+// record's machine copied with memcpy 32 (all same code).
+// Round 26 (lane 15, fast): each update record as its own block-scoped local (the changed, removed and added
+// records), all three or only the removal, with role names or all named `update`, 32/32/32 (same code); on the
+// swap order above 36 (aligned 18/17 either way); the configuration pointer declared in the branch that compares
+// it 32, on the swap order 36.
+// Round 36 (lane 10, fast): one function-scope update pointer for both loops 32; `slot`/`occupied` at
+// function scope 32; the occupied record through its own scoped pointer 32, the last record likewise 32,
+// both 32 (all same code). Retail loads `updates` last in the swap and occupied set-ups and groups
+// (collection + offset) first in the occupied key, as if that sum were treated as loop-invariant.
+// Round 54 (lane 12, fast with 0x69260/0x84e90): retail loads the occupied key's IV offset before the
+// `updates` pointer; the occupied key pointer named before the update 49 (ours still adds offset + cursor
+// first); `++*count;` as its own statement at the four second-loop sites 32 (same code); both 49; the
+// swap callee as (collection, player, update, other) with the key pointer first 44, with the count
+// statements 36.
+// Round 59 (lane 12, one-file harness with unknown_084a90.cpp, exact: 32): `long unknown14` read
+// before the NONE test and used in the test, the conflict scan and the last record 104 (1054 bytes,
+// fast agrees), with the last record's controller index read at its store 108, with the scan
+// reading the field 104; the find-slot/swap/remove/add tail as an inline helper on the collection
+// 555 (not inlined), forceinline 32 (same code); the occupied key copied from
+// `&collection->players[i]` 32 and from `collection->players[update->player_index].key` 32 (same code).
+// Round 36 (lane 10, fast): one function-scope update pointer for both loops 32; `slot`/`occupied` at
+// function scope 32; the occupied record through its own scoped pointer 32, the last record likewise 32,
+// both 32 (all same code). Retail loads `updates` last in the swap and occupied set-ups and groups
+// (collection + offset) first in the occupied key, as if that sum were treated as loop-invariant.
+// Round 42 (lane 1, fast with 0x69260/0x84e90): the three spots share one pattern: retail reuses the
+// register just freed (ECX for the preheader cursor before the offset, ECX for `updates` after the slot
+// push) where ours takes another free one (EDX), so the scheduler moves the store or the load. One
+// function-scope index for the three loops 32; the swap given `&watcher->players` 32; a block-scoped
+// update pointer in each second-loop block 32; the session player as `session->players + i` 32 (all
+// identical code); the conflict scan without its flag (`break`, then `if (j < 16) continue;`) 230.
+// Round 120 (lane 6, fast): `machines` declared at function scope 32; `collection` declared after `source`
+// 32; a `player_mask` local for the second loop's test and the conflict scan 32; the live test through the
+// existing function_058d70 32; the second loop's player fields read at each use 32 (all identical code).
+// Round 34 (lane 13, LTCG harness, base 16 positional = 32): the session read before the initial count
+// harness 23 (aligned 18); the initial count read inside the live-session block harness 50 (1063 bytes); the
+// configuration as `const byte *` 32; the member count in a local for the machine copy 32; the swap's
+// update named in its own block 32 (the last three identical code).
+// Round 24 (m3 lane 2): `configuration` declared inside the branch that compares it 32 (same code); the
+// compare's operands swapped (`memcmp(player->configuration, configuration, ...)`) 157; the first
+// branch's type stored before its index 32; `update` declared at the function top 32, `slot` and
+// `occupied` there 32 (all same code).
+// The remaining spots are the preheader cursor (ECX/EDX), the swap call's `updates` load and the
+// occupied key's association; the calls flagged after it are the one-byte shift, not a callee change.
+// Round 107 (lane 8, fast; aligned = difflib count): the session player's configuration as a real member
+// read at each use (no `configuration` pointer local; the last record's `source + 0xa8` too) 28 (aligned 11,
+// kept: the preheader cursor now takes ECX and is stored at once as retail); left: `updates` loaded before
+// the swap call's slot push (retail after it, in ECX) and the occupied key (retail (collection + offset) +
+// cursor; ours (offset + cursor) + collection, with `updates`/offset loads in the other registers). On 28:
+// the swap callee as (collection, player, update, other) at its definition and call 32 (aligned 21: the
+// swap call and the occupied loads become retail's, the key sum keeps our grouping, so the key copy and the
+// last record's `updates` load trade ECX/EDX); `collection` defined before the loop 277 (1072 bytes), with
+// that swap order 276. On 32: the memcmp `continue` as an if block 32 (same code); the conflict flag in the
+// scan's loop test 310 (1077 bytes); an early-return session guard 32 (same code). On 28 (after the full
+// check): the swap's update through the `update` local 28 (same code); the occupied key through the loop-top
+// `player` 291.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
@@ -660,18 +730,17 @@ void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_
     continue;
    s_type_c67652 *collection = &watcher->players;
    const s_simulation_session_player *source = (const s_simulation_session_player *)&session->players[i];
-   const void *configuration = (const byte *)source + 0xa8;
    s_simulation_owner_player *player = &watcher->players.players[i];
    s_simulation_player_update *update;
    if ((watcher->players.player_mask & (1 << i)) && !player->flag0c)
    {
-    if (!memcmp(configuration, player->configuration, sizeof(player->configuration)))
+    if (!memcmp(source->configuration, player->configuration, sizeof(player->configuration)))
      continue;
     update = &updates[++*count - 1];
     update->player_index = i;
     update->type = 4;
     memcpy(update->key, source->key, sizeof(update->key));
-    memcpy(update->configuration, configuration, sizeof(update->configuration));
+    memcpy(update->configuration, source->configuration, sizeof(update->configuration));
     simulation_player_collection_apply_update(collection, update);
    }
    else
@@ -716,7 +785,7 @@ void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_
     update->field_2_2 = false;
     update->controller_index = controller_index;
     update->unknown20 = unknown14;
-    memcpy(update->configuration, (const byte *)source + 0xa8, sizeof(update->configuration));
+    memcpy(update->configuration, source->configuration, sizeof(update->configuration));
     simulation_player_collection_apply_update(collection, update);
    }
   }

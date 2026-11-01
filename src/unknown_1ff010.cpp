@@ -505,12 +505,17 @@ done:
 
 #include "props.h"
 #include "unknown_11cc90.h"
+#include "vector2f_products.h"
 
 void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
-// score 130 (was 130): frame 0x20 agrees. Retail tests the planar length after the scale products
+// score 77 (was 134): frame 0x20 agrees. Retail tests the planar length after the scale products
+// Round 28: the existing rotate_vector_170d70 (src/unknown_170d70.cpp) for rotate_direction 130 at retail's 850
+// bytes (aligned 106 -> 88; lead), with the output through vector3f_scale 147 (830); vector3f_scale for the output
+// alone 147 (828); rotate_direction with scalar cross terms (dot first, or (1 - cosine) first) 134/134 (0x1ecf50
+// 120 -> 148). No existing 2D dot or perp-dot helper exists for the facing/side tests.
 // with the zero in xmm0 and does not carry that zero into the inlined rotation (memory 0.0 for i, a
 // fresh xorps for j/k); ours zeroes xmm6 before the divide and keeps it through the rotation, whose
 // loads, dot order and registers then differ. Retail multiplies the facing components as registers
@@ -576,7 +581,39 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // native guarded input plus field reads 131; complete vector setter at requested direction/turn
 // input/both 176/147/168; completed output workspace 130; workspace plus requested/turn/both
 // 176/147/168; direct final setter 147 (828 bytes); round 42: turned, horizontal or the planar
+// magnitude/x/y at function scope 130 each (identical). Round 19: the inline planar normalisation
+// still compares the length before the divide where retail compares it after, and carries the
+// magnitude and the reciprocal in different registers. Round 8 (lane 2): the cause is the 0.0f
+// constant: ours zeroes xmm6 once and keeps it from the length test through the rotation's cosine
+// products, retail keeps the zero in xmm0 for the three tests and rematerialises it (memory, then
+// xorps) in the rotation, so it follows the rotation helper's shape (src/unknown_1eb8a0.cpp, another
+// lane's file this round). Horizontal pair as an aggregate of the two components 166 (835 bytes);
+// only the normalized turned pair stored back into the direction 176 (801); the k copy dropped
+// (pair stored back) 159 (818); integer-zero magnitude test 130; speed-first output products 130.
 // magnitude/x/y at function scope 130 each (identical).
+// Round 231: facing-first positive / both positive predicates / facing-first nonzero /
+// both nonzero predicates 205/231/211/237; with direct component output
+// 175/193/181/199. Original admission and aggregate output restored.
+// Round 28 (lane 10): with direct output stores the aligned count drops 106 -> 93 (the tail and the
+// turned copy then follow retail); the four missing instructions are the facing products, which ours
+// write as `movaps reg, x; mulss reg, [field]` where retail loads the field and multiplies by x.
+// Normalization products as scale * x, y * scale 130 (identical); direct stores 147 (828 bytes, aligned
+// 93); output through vector3f_scale 147 (same code); direct stores without named x/y 160 (821 bytes);
+// normalization as if (!(fabs < eps)) { scale } else zero 131 (845 bytes).
+// BLOCKED-BY 0x1eb8a0 (the form of its inline rotation helper, src/unknown_1eb8a0.cpp).
+// Round 231: facing-first positive / both positive predicates / facing-first nonzero /
+// both nonzero predicates 205/231/211/237; with direct component output
+// 175/193/181/199. Original admission and aggregate output restored.
+// Round 179: the facing and side tests through the shared two-pointer dot_product2d/cross_product2d
+// (include/vector2f_products.h) 106 (865 bytes; the side test now matches), with the output stored
+// straight into velocity as speed-first products 77 (846 bytes), kept, with `horizontal` a vector2f
+// 77. Only the dot helper 146, only the cross helper 150; the side bool before the turned copy 130;
+// rotate_vector_170d70 or a local copy in 0x1055b0's axis-first form for rotate_direction 77 each
+// (identical code: the rotation's source form is canonicalised, so the BLOCKED-BY above no longer
+// holds). Left: ours zeroes XMM6 before the divide and carries that zero into the rotation's first
+// cosine product, so the turned components colour XMM4/XMM7/XMM5 as k/j/i where retail has
+// XMM4/XMM6/XMM5 as i/j/k; retail's test zero is XMM0 after the scale products, and it multiplies x
+// as `movaps xmm1, scale; mulss xmm1, [x]`.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
@@ -601,15 +638,13 @@ long function_1ff360(long actor_index, point3f const *target, vector3f *velocity
 	vector3f direction = *(vector3f *)((byte *)actor + 0x7e8);
 	if (actor->unknown26c == NONE)
 	{
-		point2f horizontal;
+		vector2f horizontal;
 		memcpy(&horizontal, &direction, sizeof(horizontal));
-		real magnitude = normalize2d_fast((vector2f *)&horizontal);
-		real x = horizontal.x;
-		real y = horizontal.y;
-		if (magnitude > 0.0f && actor->unknown290.j * y + actor->unknown290.i * x < 0.0f)
+		real magnitude = normalize2d_fast(&horizontal);
+		if (magnitude > 0.0f && dot_product2d((vector2f const *)&actor->unknown290, &horizontal) < 0.0f)
 		{
 			vector3f turned = actor->unknown290;
-			bool left = actor->unknown290.i * y - actor->unknown290.j * x > 0.0f;
+			bool left = cross_product2d((vector2f const *)&actor->unknown290, &horizontal) > 0.0f;
 			real sine = (left ? 1 : -1) * 0.5f;
 			rotate_direction(&turned, g_4687b0, sine, 0.0f);
 			if (normalize2d((point2f *)&turned) > 0.0f)
@@ -627,7 +662,8 @@ long function_1ff360(long actor_index, point3f const *target, vector3f *velocity
 		}
 	}
 	real speed = *(real *)((byte *)actor + 0x7f4);
-	vector3f result = { direction.i * speed, direction.j * speed, direction.k * speed };
-	*velocity = result;
+	velocity->i = speed * direction.i;
+	velocity->j = speed * direction.j;
+	velocity->k = speed * direction.k;
 	return object_index;
 }

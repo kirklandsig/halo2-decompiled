@@ -10,6 +10,8 @@
 #include "unknown_234c64.h"
 #include "unknown_030290.h"
 #include "globals.h"
+struct short_rectangle2d;
+void function_1fa50(short_rectangle2d const *bounds, word const *text, void const *clip, void const *position, long line_gap, real scale, long color, void const *shadow);
 
 void unicode_string_copy(word *destination, const word *source, long maximum_count);
 void function_22d2ee(word *string, long maximum_length);
@@ -166,7 +168,9 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 96 (was 96): Frame 0x10 and timing setup agree; the advance loop is retail's with EAX, ECX and
+// score 96 (was 96): the advance loop still rotates the direction, frame and flags through
+// EAX, ECX, EDX and EDI where retail keeps its own order; the else branch matches exactly.
+// Earlier note: Frame 0x10 and timing setup agree; the advance loop is retail's with EAX, ECX and
 // EDX rotated (direction EAX for ECX, frame/flags ECX for EDX, the flag-2 test EDX for EAX), and retail
 // divides the fraction before the key differences. Round 87: fraction before the keys/between keys and
 // delta with every loop-end order 205..207 (next time leaves its stack home for EBX, though the loop
@@ -224,6 +228,55 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 79: fraction-first with outer next time 206; active fraction scope 206; outer elapsed 206;
 // outer frame time 206; outer next with active fraction 206; all outer timing 206;
 // sum-only/full per-iteration direction on that graph 206/206. Original 96 body restored.
+// Round 8 (lane 2): the rotation continues after the loop (retail's zero is EAX there, ours EDI),
+// so it is a whole-function allocation shift. Disposal false from its declaration (no pre-loop
+// store) 96; disposal declared before the restart flag 96; frame time, next time, elapsed
+// declared in reverse 96; disposal reset before elapsed 96; `this != get_screen()` 97.
+// Round 233: native full-width signed count/current/both/direction/count-direction/current-
+// direction/all three/all plus duration fields: 96/96/96/96/96/96/96/96. Original shared field
+// declarations and body retained; direction/frame and lookahead/fraction homes remain.
+// Round 11 (lane 2): with the fraction first (retail's after-loop registers and division schedule; in
+// the loop direction ECX and frame EDX as retail, but next time takes EBX, so valuea/mask swap EAX/EDI
+// and no zero register): one-file LTCG screens of all 6 timing declaration orders, 6 initialisation
+// orders, 6 loop-end orders, `next_time <= time`, long next time, the disposal reset dropped/declared
+// first/initialised, long next frame, `elapsed <= 0`, the clamp before the next-frame switch, one key
+// read, an uncast elapsed, a named const fraction, and 150 random combinations of these all keep next
+// time in EBX. Real: fraction first with the clamp before the next-frame switch 213 (659 bytes); with a
+// long next frame 206 (660 bytes); on the plain body, long next frame 211 (660 bytes), the clamp before
+// the next-frame switch 167 (656 bytes), `elapsed <= 0` 151 (658 bytes).
+// Round 105: the post-loop block is rotated the same way (retail zero EAX, next ECX, current EDX,
+// direction EDI). Per-pass direction local 96; current-frame local 98; both 98; direction-first
+// lookahead sum 96; direction-first sums in both places 96 (identical code).
+// Round 17 (m3 lane 2, fast): an animation-state pointer for every member read 96 (identical
+// code); the same pointer only in the active branch 228 (661 bytes); `next_time <= time` 100; the
+// boundary disposal as `if (flag && type == 0) { dispose = true; break; }` 96; the flag-3 test as
+// `== 0` 96; 1-8 unused initialised locals at the top (diagnostic: symbol numbering) 96 each, so
+// the rotation is not a numbering tie.
+// Round 9 (lane 17, fast): the scale blend through the file's existing interpolate_linear 110 (659 bytes; first
+// difference +0x15); the loop as `for (; time >= next_time; next_time += frame_time)` 96 (identical code); that
+// with disposal false from its declaration and direction-first frame sum 96; timing locals initialised at their
+// declarations (frame time, next time, elapsed) with the frame declared before the loop 96; disposal declared
+// before an uninitialised restart flag cleared before the loop 111 (first difference +0xf).
+// Round 62 (lane 12, fast): next time's home flips with each of two changes. Plain body with the expression
+// restart: [ebp-0xc] (96); plain body with `if (type == 0 && (bit 1 || bit 2)) restart = true;` in both
+// boundary blocks: EBX, 226 (645 bytes); the fraction right after the elapsed clamp with the expression
+// restart: EBX, 207; the fraction there with the true-only restart: [ebp-0xc], 197 at 645 bytes, and then the
+// prologue, the timing homes, the zero cached in EBX and the whole loop head are retail's, with only retail's
+// two false stores (`mov byte ptr [ebp-1], 0`) missing. The true-only test is a diagnostic (retail stores both
+// values). On the fraction-first form: restart as an explicit if/else 207 (same as the expression); next time
+// scoped to the `for` 206; no per-pass disposal reset 207.
+// Round 104 (lane 8, fast): fraction-first is aligned 35 (base 97), its loop scratch registers
+// retail's; there next_time renamed (advance_time/step_time) 207/207 (names move no register), and
+// the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
+// the base: the declared current/following key pointers used for delta/offset/scale 225 (644 bytes),
+// with the fraction before the delta 225; identical switch cases merged in all four switches 209.
+// Round 142 (lane 4, fast): fraction first (diagnostic) 207; with no per-pass disposal reset 207; the
+// boundary disposal as `if ((valuee & 2) && type == 0) { dispose = true; break; }` 96 (same code), with
+// fraction first 207, with fraction first and no reset 207, with no reset 96; the key table read before
+// the next-frame switch 145 (656 bytes).
+// Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
+// next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
+// 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
@@ -723,9 +776,9 @@ c_class_1a2c81 *c_class_1a2c81::find_text(long index)
 }
 
 // @retail 0x22ee27
-c_class_1a2c81 *c_class_1a2c81::find_bitmap(short index)
+c_class_1a2c81 *c_class_1a2c81::find_bitmap(long index)
 {
-	return find_child(8, index, false);
+	return find_child(8, (short)index, false);
 }
 
 // @retail 0x22ee37
@@ -1501,13 +1554,6 @@ bool function_13ee20(word const *string, long font);
 void function_235d69(short_rectangle2d const *rectangle, real depth,
 	short_rectangle2d const *screen, color4f const *color);
 
-class c_1fa50
-{
-public:
-	void function_1fa50(short_rectangle2d const *bounds, void const *clip,
-		void const *option, long flags, real scale, long count, void const *data) const;
-};
-
 byte g_51ec04;
 
 /* Draws widget text with cursor progression, projection and tab stops. */
@@ -1628,7 +1674,7 @@ void function_22cd48(c_class_22cc8e *text, short_rectangle2d const *bounds,
 		}
 		real scale = (last.x - first.x) * text->value20 / (real)(bounds->right - bounds->left);
 		if (function_13ee20(buffer, g_4e73a0.font))
-			((c_1fa50 const *)buffer)->function_1fa50(&projected, &projected_clip, 0, 0, scale, 0, 0);
+			function_1fa50(&projected, (word const *)buffer, &projected_clip, 0, 0, scale, 0, 0);
 	}
 	if (g_51ec04)
 	{

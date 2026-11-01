@@ -344,6 +344,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
+// `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
+// size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
 // score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // the retry ordinal as a function-scope local 239 (MiniMax E run 12; under the keep bar, restored).
 // Round 231: shared retry helper/native byte block/both/shared audio arrays/helper-arrays/byte-
@@ -401,6 +404,51 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 431: Allocation-clock/memory-decoder/texture-output consumption scopes, seven subsets; all with
 // read-only movie input: 244/244/244/244/244/244/244/244. Original consumption scopes, helpers and
 // complete executable body restored.
+// Round 21 (lane 13): retail builds this body with SSE (movss stores of 1.0f, `fld; fcompi` for the
+// timeout) while this file has no /arch:SSE; no other function here has float code. Retail's size is
+// `((flags & 0x100) | 0x40) << 16` with the mask spilled to a dword slot (the 0x40 frame) and the
+// start time's low half in EDI. `dword large = flags & 0x100` 273; the mask test written at both
+// uses (retail's or/shl size) 269; the allocation result declared after the start time 256; both
+// 287; `(real)` on the seconds before the 0.1f compare 244 (float compare, still fcomp/fnstsw).
+// Round 104: retail is SSE code (movss stores, fcompi), so the body belongs with src/unknown_1564e0.cpp's SSE
+// Bink functions (moved there, with the memory helper in unknown_01e930.h). There: the ternary testing
+// `(flags & 0x100)` itself gives retail's and/or 0x40/shl 0x10 (a `large` local gives neg/sbb); the movie open as
+// an if/else with a call per arm gives retail's branch and spills the mask; `size` read back from
+// permanent_memory_size after the three stores gives retail's ebp size/esi block/edi start; the retry loop as a
+// do/while is unrotated (for (;;) and do-while(true) rotate); `!((real)timing_ticks_to_seconds(elapsed) < 0.1f)`
+// gives fld dword/fcompi/jbe; `function_1358c0(g_55ece8.format)` stays a call; the success path inside a positive
+// last texture test puts the shared failure exit last; one bool for both loading queries gives cmp al, bl.
+// Together aligned 109 -> 74 but 322 at 1061 bytes: frame 0x44 (retail packs start with the first clock temporary
+// and the second clock temporary with the memory status, ours the other way), two zero stores to the status slot
+// at entry unexplained, D3DDevice_IsBusy out of line in every unrotated loop form, the size constant 10 in ebp.
+// Lane 18 round 6: the calls line up by position through SwitchToThread; after it ours trails by 13 instructions
+// (the rotated loop's second allocation call and the failure exit placed after the loop). Size query called with
+// `g_55ece8.format` (stays a call, 10 not in EBP) 245; that plus long width/height in 0x23e340 and its
+// declaration 252; do/while retry loop 315 (1061 bytes, unrotated, D3DDevice_IsBusy a call); the same with the
+// attempts branch ending in `continue` 315; do/while plus the format-field query 311. Original body restored.
+// Round 109 (lane 6, fast; the body re-checked against retail field by field, no value difference): the size as
+// `(flags & 0x100) ? ...` with the movie flags still from `large` 275; both through the mask, no `large` 269; the
+// retry counter declared after the block pointer 260, before it 260; `!(seconds < 0.1f)` 244 (same code). The x87
+// `fcomp qword`/fnstsw compare and the 1.0f stores stay non-SSE while the file has no /arch:SSE.
+// Round 7 (lane 17, fast, in this file): the retry loop as `do { block = ...; if (!block) { retry or timeout
+// arm } } while (!block);` 315 at 1061 bytes (aligned 109 -> 123); the movie open as an if/else with a call
+// per arm 251 (aligned 120); the format's bits read as `function_1358c0(g_55ece8.format)` 245 at 1100 bytes
+// (aligned 109 -> 96: the call stays out of line as retail's, where `function_1358c0(10)` folds to a table
+// load; lead); that with the sound interface read once into a local 251 (aligned 107), with
+// `dword large = flags & 0x100` 278 (aligned 99).
+// Round 9 (lane 17, fast; aligned base 109): the mask tested at both uses with the movie open as an if/else
+// with a call per arm 278 (1102 bytes, frame 0x44, aligned 136); that with the format-field size query 286
+// (1112 bytes, aligned 119); a dword mask local for both uses with the per-arm open 283 (frame 0x44); a dword
+// mask local for the open and the size ternary on `flags & 0x100` 269 (frame 0x3c, aligned 111; diagnostic, a
+// local/direct mix), with the per-arm open 278. Retail's movss 1.0 stores and fld/fcompi timeout compare need
+// /arch:SSE, which this file's flags lack (build flags are the user's decision).
+// Round 256: Shared width/height/both short locals 255/254/257; promoted long locals 256/255/259;
+// both short/long at entry 257/259. Original dimension reads and complete body restored; frame
+// 0x3c and clock/output homes remain.
+// Round 475: Plain surround-volume/stereo-volume/stereo-bin producer subsets
+// 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
+// Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
+// leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

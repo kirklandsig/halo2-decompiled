@@ -61,7 +61,7 @@ void function_11bed0(s_location *location, point3f const *point);
 void function_3d2c0(void);
 void function_3ea60(void);
 void function_c15a0(void);
-void __stdcall function_2bcd0(long first, long second, bool enabled, long fourth,
+void __stdcall function_2bcd0(long first, bool second, bool enabled, bool fourth,
     long fifth, long sixth, real value);
 
 /* Store each existing view fragment within its declared object. */

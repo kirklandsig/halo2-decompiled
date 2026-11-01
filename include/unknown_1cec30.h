@@ -258,7 +258,9 @@ struct s_havok_component_rigid_body
 	point3f position;
 	vector3f linear_velocity;
 	vector3f angular_velocity;
-	byte unknown24[0x40 - 0x24];
+	byte unknown24[0x30 - 0x24];
+	/* the velocity of the surfaces the body rests on (function_1d87b0) */
+	hkVector4 unknown30;
 	hkRigidBody *rigid_body;
 	byte unknown44;
 	byte flags45;
@@ -404,6 +406,12 @@ struct s_havok_component
 			dword flag10 : 1;
 			dword flag11 : 1;
 			dword flags12 : 20;
+		};
+		struct
+		{
+			dword : 18;
+			/* no surface-velocity push (function_1d87b0, function_1cf520) */
+			dword flag18 : 1;
 		};
 	};
 	long object_index;

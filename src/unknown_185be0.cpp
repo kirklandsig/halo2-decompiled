@@ -142,7 +142,7 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 767 (was 767): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
+// score 731 (was 731): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
 // Earlier 780 (was 780): Frame 0xe0 and state/output carriers agree; the flag bits are now set with retail's branches. Left: settings/zero homes, clamp-arm placement and unthreaded repeated flag tests.
 // Round 86 (fast, aligned counts in brackets, 383 at the start): turn rates assigned in both arms (retail loads
 // the stored rates on the else path) 788 [367] and the attachment index NONE per path (retail sets it on each
@@ -283,6 +283,21 @@ union s_185be7
 // Round 222: native control bit with arithmetic/real-array entry; live/cached/constant roots 767
 // each, complete per-field roots 1006 each. Original body and shared type restored; control-
 // root/NONE and settings/zero homes remain.
+// Round 231: all four rate bounds once 963; exponent once 731 (kept, plain); both 962;
+// shared two-row retained weight 913; bounds/weight 966; exponent/weight 811; all three
+// 963, with read-only rate receiver 963. Keep only the exponent shared by its test and
+// power call; control-root/NONE, settings/zero homes and flag joins remain.
+// Independent final input-five/four/seven Boolean ownership, subsets 1-7: 728/754/776/750/777/757/786; all with selected-input Boolean 784.
+// The three-point input-five lead is below the retention gate; every original predicate observation, individual helper call, root and full body restored.
+// Round 452: shared object/header getters and readonly settings, subsets 1-7,
+// 731 each; complete shared graph with ordinary lookup/predicate inline 810.
+// The control-root/NONE and range-result homes remain; original full source restored.
+// Round 461: raw third-input byte/word/long/dword across duration and latch tests
+// 734/730/733/733; complementary inactive bool/byte/short/long 731/731/728/730.
+// Gains at most three rejected; original Boolean carrier and complete body restored.
+// Round 265: library range / paired axis-duration / paired response-weight-angle
+// selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
+// upper-first nesting 1320. Native frame, original custom clamps and full body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -321,8 +336,9 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                     real local_16 = 0.0f;
                     if (local_15 > 0.0f)
                         local_16 = function_185be1((magnitude3d((vector3f *)(local_11 + 0x88)) - local_14) / local_15, 0.0f, 1.0f);
-                    if (*(real *)(local_13 + 0x5c) != 0.0f)
-                        local_16 = (real)pow(local_16, *(real *)(local_13 + 0x5c));
+                    real exponent = *(real *)(local_13 + 0x5c);
+                    if (exponent != 0.0f)
+                        local_16 = (real)pow(local_16, exponent);
                     if (*(real *)(local_13 + 0x44) > 0.0f || *(real *)(local_13 + 0x48) > 0.0f)
                         local_5.field_0[0] = ((*(real *)(local_13 + 0x48) - *(real *)(local_13 + 0x44)) * local_16 + *(real *)(local_13 + 0x44)) * 0.01745329238474369f;
                     if (*(real *)(local_13 + 0x4c) > 0.0f || *(real *)(local_13 + 0x50) > 0.0f)

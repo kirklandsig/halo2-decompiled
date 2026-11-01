@@ -4,6 +4,7 @@
 #include "unknown_0259a0.h"
 #include "unknown_1e3920.h"
 #include "unknown_26b230.h"
+#include "vector_products.h"
 #include <string.h>
 
 /* slot handler 0x81 (g_47eff8): the actor looks for a way around (a prop to
@@ -93,6 +94,18 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // native initial origin with both output copies 215. Original producers and complete body restored.
 // Round 90: end named below/ground/target 23/26/23; both conversions passed straight to the call 26;
 // a position pointer for the final call 160; the step scale written in the call 23; tick names 23.
+// Round 40: helper storing a local point once 316; end from a by-value point producer 226;
+// end/delta/start/origin renamed 23 each (frame unchanged); ticks and call as an inline/forceinline
+// helper 267/335.
+// Round 91: a position pointer for origin/trace/final, origin/final, trace/final and origin/trace
+// 23/23/131/23; its early declaration 52; height/origin/final and height/trace/final 24/24;
+// reversed rounded-count productions 30; all restored.
+// Round 61: the cause is 0x26d100's `&point` read: it makes the end point escape, so its stores are ordered
+// against the up-vector loads and get a later frame slot. 0x26d100 reading `point` directly 4 (its callers'
+// setup then moves point into ECX); 0x26d100's parameters as (up, point, output, collision), the order its
+// own bytes give (point the only stack argument), with start computed before direction and result first:
+// this function and 0x26d100 match (fast) with every matched caller kept. BLOCKED-BY 0x270400 (two of
+// the call lines are in contributor code); without the reorder start/result first 37 on 0x26d100.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {
@@ -210,7 +223,6 @@ bool __stdcall function_1c1d50(long actor_index, s_type_f17a25 *path)
 }
 
 void scripted_vector_scale(vector3f const *vector, real scale, vector3f *result);
-void scripted_vector_add_scaled(vector3f const *a, vector3f const *b, real scale, vector3f *result);
 
 // @retail 0x1c1e70
 bool function_1c1e70(long actor_index, s_type_f17a25 *path)
@@ -234,7 +246,7 @@ bool function_1c1e70(long actor_index, s_type_f17a25 *path)
 	perpendicular.k = facing.k;
 	directions[0] = facing;
 	scripted_vector_scale(&facing, 0.70710677f, &directions[1]);
-	scripted_vector_add_scaled(&directions[1], &perpendicular, 0.70710677f, &directions[1]);
+	vector3f_add_scaled(&directions[1], &perpendicular, 0.70710677f, &directions[1]);
 	scripted_vector_scale(&facing, 0.70710677f, &directions[2]);
 	directions[2].i = directions[2].i - perpendicular.i * 0.70710677f;
 	directions[2].j = directions[2].j - perpendicular.j * 0.70710677f;
@@ -244,7 +256,7 @@ bool function_1c1e70(long actor_index, s_type_f17a25 *path)
 	directions[4].j = perpendicular.j * -1.0f;
 	directions[4].k = perpendicular.k * -1.0f;
 	scripted_vector_scale(&facing, -0.70710677f, &directions[5]);
-	scripted_vector_add_scaled(&directions[5], &perpendicular, 0.70710677f, &directions[5]);
+	vector3f_add_scaled(&directions[5], &perpendicular, 0.70710677f, &directions[5]);
 	scripted_vector_scale(&facing, -0.70710677f, &directions[6]);
 	directions[6].i = directions[6].i - perpendicular.i * 0.70710677f;
 	directions[6].j = directions[6].j - perpendicular.j * 0.70710677f;

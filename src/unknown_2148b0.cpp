@@ -20,22 +20,6 @@ extern s_cache_copy_request g_55be24[2];
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
-// score 2 (was 2): Frame agrees; numerator conversion follows the denominator reload instead of preceding it.
-// Tried accumulate fraction 29; real numerator 29; integer numerator 40; extended numerator 29; converted
-// operands 32; integral and real 32; fraction and total 32; integral operands 28. Plain total 37;
-// double fraction 86; double operands 3; branch-assigned fraction 27; fraction first 2;
-// state snapshot 2; range selection 42; high range first 43; mixed precision division 2.
-// Implicit numerator 2; implicit denominator 2; nested total guard 2; low state uses initial fraction 39;
-// active result first 39; denominator at least one 41; outer branches reversed 31; unit numerator factor 2;
-// entry completed local 51.
-// nonzero unsigned total 3; upper clamp first 20; optional output clamp 39; inactive entry return 63;
-// availability from tests 49; both results by branch 45; inclusive low bound 4; inclusive high bound 4.
-// Clamp inside the active branch 40; numerator assigned then divided 29; named denominator 32;
-// clamp as two ifs 2; numerator named in the division arm 29. A non-volatile total converts the
-// numerator first but keeps total in EAX (37); a volatile numerator goes through EAX (40).
-// Round 39: the else arm as one ternary 42; a real numerator before the total test 50, at the top 58;
-// the middle range before the high range 15.
-// No other unsigned conversion in retail follows an fild (byte scan), so no matched model for the order.
 // @retail 0x2148b0
 bool function_2148b0(real *progress)
 {
@@ -54,7 +38,8 @@ bool function_2148b0(real *progress)
 		}
 		else if (g_55bcf8.total > 0)
 		{
-			fraction = (real)g_55bcf8.completed / (real)g_55bcf8.total;
+			// + 0.0f: kept only with the match (it loads the count before the total is reread, as retail)
+			fraction = ((real)g_55bcf8.completed + 0.0f) / (real)g_55bcf8.total;
 		}
 		result = true;
 	}

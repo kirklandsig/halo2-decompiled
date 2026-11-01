@@ -45,7 +45,18 @@ struct s_6ec83
 #pragma pack(pop)
 
 // score 13 (was 53): the two stack slots are swapped: retail keeps the short at esp+0x14 and
-// the pointer at esp+0x10, ours the other way round.
+// the pointer at esp+0x10, ours the other way round; the mask is zeroed before the guard.
+// The mask scoped inside the guard gives both retail's slots and its zeroing, but then NONE
+// and zero take edi and ecx (retail ecx and esi) and the machines pointer is not kept in ebx:
+// 223, with the declarations moved 223/223/223/223, with a for loop 348, the counter declared
+// first 223, the mask declared first 273. Machines pointer and short as settings fields 171
+// (slots right, the short's first store not widened); the existing pair getter for the 4da0
+// values 72 (227 scoped); out-parameter getters 13; renamed locals 13.
+// Round 32: pointer/short declarations swapped 13, both declared after the settings block 13 (local_9
+// for the pointer or local_10 for the short: 13 each, so the slot order is not by name); the short's
+// NONE as its declaration's initialiser 42, the pointer's 0 262 (both, harness, no gain); mask scoped
+// in an inverted guard 223; with the mask scoped: a players pointer local, the counter declared first,
+// the mask declared at the top and zeroed in the guard (harness, 217-219 positional, no gain).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
@@ -59,30 +70,30 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
     local_26.field_0.field_14 = NONE;
     local_26.field_0.field_c = 0;
     local_26.field_0.field_24 = NONE;
-    if (arg_0->state > 2 && arg_0->state <= 8)
+    if (session_state_is_live(arg_0))
         local_26.field_0.field_24 = arg_0->value4da8;
     local_26.field_0.field_28[0] = NONE;
     local_26.field_0.field_28[1] = NONE;
-    if (arg_0->state > 2 && arg_0->state <= 8)
+    if (session_state_is_live(arg_0))
     {
         local_26.field_0.field_28[0] = arg_0->value4da0;
         local_26.field_0.field_28[1] = arg_0->value4da4;
     }
     local_26.field_0.field_8 = 0;
-    if (arg_0->state > 2 && arg_0->state <= 8)
+    if (session_state_is_live(arg_0))
         local_26.field_0.field_8 = arg_0->data4db0;
     local_3 = NONE;
-    if (arg_0->state > 2 && arg_0->state <= 8)
+    if (session_state_is_live(arg_0))
         local_3 = arg_0->value5dd0;
     local_26.field_0.field_10 = NONE;
-    if (arg_0->state > 2 && arg_0->state <= 8)
+    if (session_state_is_live(arg_0))
         local_26.field_0.field_10 = arg_0->value4dac;
     local_26.field_0.field_20 = NONE;
     local_26.field_3c = arg_0->value18;
     arg_0->get_values_4d08(&local_26.field_0.field_1c, &local_26.field_0.field_14, &local_26.field_0.field_c);
     local_2 = 0;
     local_26.field_0.field_18 = 0;
-    if (arg_0->state > 2 && arg_0->state <= 8 && arg_0->flag4f20)
+    if (session_state_is_live(arg_0) && arg_0->flag4f20)
     {
         local_2 = &arg_0->data4f24;
         local_26.field_0.field_18 = &arg_0->data4f90;

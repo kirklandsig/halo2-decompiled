@@ -67,6 +67,27 @@ struct s_saved_game_location_table
 };
 typedef char assert_saved_game_location_table_size[(sizeof(s_saved_game_location_table) == 0x40004) ? 1 : -1];
 
+/* walks one storage device's list of files: get copies the current file's
+   location, and the caller advances the index */
+struct s_saved_game_location_iterator
+{
+	s_saved_game_location_table *table;
+	long index;
+};
+
+/* copies the current file's location, false past the last */
+inline bool saved_game_location_iterator_get(s_saved_game_location_iterator *iterator, s_saved_game_file_location *location)
+{
+	bool result = false;
+
+	if (iterator->index < iterator->table->count)
+	{
+		*location = iterator->table->entries[iterator->index];
+		result = true;
+	}
+	return result;
+}
+
 /* the cache g_51ea14 points to, allocated by 0x215880: the built-in files,
    the files found on the hard disk (memory unit 0), the generation stamped
    into file indices, and a buffer for copying files */

@@ -26,11 +26,11 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 	s_actor_view *local_0 = actor_get(arg_0);
 	*(bool volatile *)&local_0->unknown50c = false;
 	*(long volatile *)&local_0->unknown5ac = NONE;
-	*(short volatile *)&local_0->unknown5b0 = NONE;
-	*(short volatile *)&local_0->unknown5b4 = 0;
+	local_0->unknown5b0 = NONE;
+	local_0->unknown5b4 = 0;
 	*(short volatile *)&local_0->unknown5b6 = 0;
 	local_0->unknown4ac = 0;
-	*(short volatile *)&local_0->unknown504 = 0;
+	local_0->unknown504 = 0;
 }
 
 // score 14 (was 14): ours keeps the scaled actor index in ECX and the actor pointer in EAX,
@@ -39,7 +39,17 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 // before the state 14; helper taking the actor pointer 14; actor_get spelled out,
 // index first, or as an array element (first get, second, or both) 14; the flag read
 // into a local first 14; if/else form 14; the reference in a local first 28; actor_get
-// after the if 25; no actor local 34.
+// after the if 25; no actor local 34. Round 15: the existing 0x1f86a0 inlined at link time 18
+// (same swap); result declared first 14; slot read directly 14; actor_get at one use 25;
+// eight spellings of the helper's address (cast, integer sum, data/pool/offset locals) 14;
+// definition order in the file 14. The swap needs the reset's second actor pointer: with one
+// or two reset stores (folded address) the index takes EAX as in retail.
+// Round 28: the slot block read through slot->unknownc 14; the reset helper plain inline 14; its
+// parameter/local named actor_index/actor 14; a result local 14; (harness: declaration order,
+// const actor 14). Three of the reset's volatile stores (0x5b0, 0x5b4, 0x504) made plain: 14,
+// kept; making any fourth one plain raises the count. Round 64: actor flag in the reset 20;
+// that with a direct reference lookup 33; shared unmasked index local 14; in-place index mask 14;
+// each pair of the remaining qualified stores made plain 18; reset before the actor flag 31.
 // @retail 0x1b1eb0
 bool __stdcall function_1b1eb0(long actor_index, s_slot *slot)
 {

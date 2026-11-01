@@ -58,8 +58,13 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
-// score 34 (was 34): the vtable slot at [eax] is never filled in, so the two stores that follow
-// start one field too late; retail stores the vtable there first.
+// score 34 (was 34): the base vtable store is still dropped and the pool placement
+// still reloads g_479888 at the join where retail reloads it on the constructed arm.
+// Earlier headers, merged: unchanged that round (34); a one-file LTCG probe keeps the
+// store only for a load through an unknown pointer between the two stores, which
+// belongs to the abstract allocator's constructor in the header and so is out of reach
+// from this file (34); the vtable slot at [eax] is never filled in, so the two stores
+// that follow start one field too late; retail stores the vtable there first (34).
 // Retail keeps the abstract allocator's vtable store only here (0x146b80, 0x146e30 and 0x22c3e0
 // drop it), as if something read memory between the two vtable stores; that also keeps 1 in edx.
 // Without `block` (g_479888 read at both placements) the reload sits on the constructed arm as in
@@ -104,6 +109,82 @@ bool g_47f05b;
 // inlines them) 34/34/34, no other function changes; the block typed as its layout (fixed allocator, buffer,
 // pool) 34; the count flag stored first 38. With the vtable store forced (diagnostic only) 12 at 147 bytes:
 // the rest is the pool placement's reload of g_479888 at the join, where retail reloads on the constructed arm.
+// Round 3 (lane 18, header constructors, with 0x146b80/0x146e30/0x22c3e0): the count header's 1 as a member
+// initializer 34; the abstract loop counting down 33 (0x146b80 2, 0x22c3e0 lost); its NONE test as `i < 3`
+// 34; the fixed base storing the count first 32 (0x146e30 120 -> 121); the size before the buffer 33
+// (0x146b80 2). The base vtable store is dropped in every form.
+// Round 235: publish fixed identity before construction, saved/published placement
+// and published buffer 35/35/46; pool identity with saved/published placement 52/52;
+// both identities 53/53/64. All original publications and executable code restored.
+// Round 22 (lane 13, fast with 0x146b80/0x22c3e0 matched): the three global stores after the
+// first construction 41 (143 bytes); g_479880 stored first 39; the block typed `byte *` 34;
+// the first placement as an explicit if/else on the block 34; the block typed as the fixed
+// allocator with the buffer at `block + 1` 34 (close to the listed `fixed + 1` form); g_479890
+// stored first 39.
+// Round 97 (lane 8, fast with 0x146b80/0x146e30/0x22c3e0/0x1c2690): retail's 0x4798b4 is the reference
+// count (+4) of the game's allocator object at 0x4798b0 (0x1473b0 returns it); the increment through
+// 0x1473b0 34 (same code), with g_479888 at both placements 38. The fixed class without the
+// intermediate base 31 (its vtable store moves up beside the abstract stores; 0x146b80 3). g_479888 at
+// both placements re-measured 38: retail's reload and layout, the 1 as three immediates, no base store.
+// An explicit `block ? new (block) ... : NULL` after the global stores 34 (same code).
+// Round 32 (lane 11, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0; retail's 0x453760 is the abstract class's
+// own vtable, eight pure slots, and 0x146b80 builds the same class at 0x105410 with the store dropped): the
+// fixed class flattened onto the abstract one 31 (0x146b80 3); `::new` 34; the refcount header as a member
+// in place of a base 34; the abstract constructor storing NONE before its zero loop 31 (0x146b80 4); the
+// masked size in a named local 34. The store is dropped in all (141 bytes).
+// Round 7 (m3 lane 18, fast with 0x146b80/0x22c3e0 matched): the pool address read from g_479888
+// before the fixed construction 43 (140 bytes); the block typed as one layout struct (fixed
+// allocator, buffer, pool) read from g_479888 at each placement 38 (144 bytes); the fixed placement
+// from g_479888 with the buffer from `block` 36 (146 bytes: reload on the constructed arm, but the 1s
+// become immediates, no base store); the layout struct through `block` with the pool through
+// g_479888 34 (same code). Diagnostic only (header): a global read in the fixed base constructor,
+// between the two vtable stores, still drops the base store.
+// Round 113 (lane 6, fast with 0x146b80/0x22c3e0 matched): a typed fixed pointer from g_479888 with the
+// buffer at `fixed + 1` 34 (same code), read after the three global stores 34; the first placement through
+// g_479888 with the buffer through `block` 36 (146 bytes by chance: block copied to EDX, the 1s immediates,
+// no vtable store); neither local (diagnostic, listed) 38 (reload on the constructed arm as retail, 1s
+// immediates); a buffer local read from g_479888 before the global stores 38.
+// Round 53: `block` for the placement and the pool with the buffer from g_479888 43; `block` read after
+// the three stores with the placement from g_479888 36 (146 bytes), with the buffer from g_479888 38;
+// `block` (at the top or after the stores) used only for the pool 34/34 (149 bytes). Compile-only, all
+// store orders and `block`/g_479888 mixes for placement, buffer and pool: the 1 in a register comes only
+// with both from `block`, the arm reload only when the arm reads g_479888; never both, no base store.
+// Round 100 (lane 8, one-file harness exact with unknown_22c0a0.cpp): diagnostic only, a compiler barrier at the end of
+// the abstract constructor keeps the base vtable store (12 at 147 bytes; 0x146b80/0x22c3e0 lose), and with the size-only
+// constructor it is an exact 0, so the kept store is the last difference. Forms: the size-only buffer as
+// `(byte *)this + sizeof(*this)` 35; the size-only constructor setting the buffer in its body after a NULL base argument
+// 35; an explicit upcast at the publish 35; `byte *block` 34 (same code); the fixed allocator in a typed local first 38.
+// Round 22 (m3 lane 2, fast with 0x146b80/0x22c3e0 matched): `_ReadWriteBarrier()` after the three global stores 41,
+// the same with g_479888 at both placements 41 (144 bytes); `g_4798b4++` before the constructions 48 (137 bytes); the
+// size-only constructor 35, with the barrier after / before the global stores 41/34.
+// Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
+// buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
+// named const 34 (same code); the pool address named after the first construction 34 (same code).
+// Round 122 (lane 5, fast with 0x146b80/0x22c3e0 matched): the size-only constructor re-measured 35
+// (140 bytes, only the abstract vtable store missing); on it, the fixed base's buffer/size stores under
+// a constant-folded `if (size > 0)` 35 (a folded branch does not keep the store); the buffer as `block +
+// sizeof(c_havok_fixed_memory)` 34 (same code); the buffer named after the three global stores 36 (146
+// bytes, the 1s become immediates); `g_479894 = NULL; if (block) g_479894 = new (block) ...` 32 (139
+// bytes, the NULL store moves above the test, the vtable store still dropped).
+// Round 106 (lane 7, fast with every function of the files using the header): the size-only
+// constructor (buffer `this + 1`) 35 (140 bytes; 0x146b80/0x22c3e0 kept); the abstract constructor
+// clearing its four words with memset and then storing NONE 38 (152 bytes), clearing three words 37
+// (149), each with the size-only constructor 46/27 (153/150): the base vtable store is still dropped
+// and 0x146b80/0x146e30/0x22c3e0 lose (memset keeps a pointer to the words). Compile-only is not
+// exact here (the constants' registers differ).
+// Round 105 (lane 8, fast with 0x146b80/0x22c3e0/0x146ac0): retail 0x146b80 and 0x146e30 build the
+// same class at g_479888 + an offset and drop the base store; only here (object at g_479888 itself,
+// buffer at this + 0x30) is it kept. Header forms: the abstract array value-initialised with NONE set
+// in the body 42 (0x146b80 21, 0x22c3e0 219); the fixed base storing buffer, count, size 33 (Round
+// 103's count-before-size form re-measured); the abstract loop zeroing all four slots, then NONE 21
+// (144 bytes; the plain dead zero store at +0x14 survives the loop, but the vtable store is still
+// dropped; 0x146b80 15, 0x22c3e0 207). Diagnostics (not kept): the pool constructed first 52; the
+// pool construction removed 75: the base store is dropped either way, so nothing after the
+// construction keeps it.
+// Lane 12 r66 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0; a /GL- compile-only build also drops the store):
+// g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
+// sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
+// construction in a typed local published after the pool construction 38 (154 bytes).
 // @retail 0x146a20
 void function_146a20(void)
 {
@@ -297,6 +378,12 @@ void function_146de0(void)
 	}
 }
 
+// score 120 (was 120): the function still misses retail's inline of the texture cache
+// update (0x12c600) at this one call site and stays 22 bytes short; unchanged this
+// round
+// score 120 (was 143): the function still misses retail's inline of the texture
+// cache update (0x12c600) at this one call site, so it stays 22 bytes short;
+// this round's trials in this file found no lower form of it
 // score 120 (was 143): BLOCKED-BY 0x12c600: retail inlines the texture cache update (0x12c600)
 // at this one call site only (its other 13 callers call it), ours calls it; the padding is consumed
 // only when the allocation succeeds and the handle is published inside the retry loop.
