@@ -286,6 +286,16 @@ static __forceinline bool structure_bsp_collision_available()
 // retail function finds no other `mov r8, 1; jmp` to a `test r8, r8` past a call: only 0x14af40 shares it.
 // N round 257: Complete native collision output on the inverted probe graph, byte/bool result and bool/byte found, raw/native triangle sentinel 53/53/53/53/63/63/63/63.
 // Original record declarations, byte buffer and complete body restored.
+// Round 25 (m3 lane 2, fast; a compile-only /O2 screen of this file reproduces the threading): `found = false;`
+// placed at the join before `if (!excluded)` around the requery, the && flag guarding 0xbf9a0, 77 (263 bytes:
+// the store is sunk into the excluded arm and both tests thread); `result = false;` at the join with
+// `if (excluded) return result;` 102 (302 bytes: the flag test stays un-threaded, `mov al, 1; jmp`, but the
+// store stays, the flag is spilled and NONE takes EBP); `found = !excluded;` at the join with `if (found)`
+// around the requery 86 (291 bytes: un-threaded, but sete and a spilled flag); that with the collision read
+// through `source.collision` at every use 86 (same code); with the model result stored in `result` first
+// 92 (296 bytes). The screen keeps the flag test only when the flag-test block's predecessor on the excluded
+// edge is not the arm that sets the flag (a computed value or a memory test first); every such form that
+// keeps the semantics adds code at the join, and the flag is then spilled where retail spills the collision.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -836,6 +846,14 @@ done:
 // threading); the existing 0x10a0b0 called, with `inline` on its definition, 162 (stays out of line,
 // 0xd2a50 99); the flag and a `modeled` result set in if/else arms (false and the 0xbf9a0 result in
 // the eligible arm) 125 (same code).
+// Round 25 (m3 lane 2, fast): the exclusion named in two parts (`bool scenery = ...; bool excluded = scenery &&
+// ...`) 125 (same code); as `object[0xaa] == 6 ? policy != 2 : false` 133 (470 bytes, setne/test, still
+// threaded); the retry test as `if (result || !(flags & 1) || ++attempts >= 3) break;` 125; the flag inverted
+// (`bool lightmapped = type != 6 || policy == 2`) 125; no flag, the model query and requery nested under
+// `if (type != 6 || policy == 2)` 125 (same code: the source's flag is threaded away completely). Diagnostic
+// only (it requeries after a failed model lookup, so not keepable): `if (!result && !excluded)` in front of the
+// requery keeps retail's `mov bl, 1; jmp` / `test bl, bl`, NONE in EBX with the back edge's `or ebx, -1` and
+// the result in its parameter slot in a compile-only screen, but 157 (488 bytes) in the real build.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
