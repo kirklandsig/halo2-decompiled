@@ -221,6 +221,11 @@ void function_44720(void)
 // Round 467: Accepted entry level named at its original read in long/short/word/byte,
 // used by admission and cached submission predicate 155/151/151/152; predicate at its
 // submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 52 (lane 1, fast with 0x44720): on the level-at-call form (re-measured 135, 487 bytes) the material
+// index as a long 132; that with the lookup given `&g_4ba138[(short)index]` 130 (510 bytes); with the weight
+// also a long 145; the entry as `g_4ba138 + (short)index` 135. On the current form the material index as a
+// long 126. Retail's material index takes EAX after the in-place `and eax, 0xf` (the lookup re-reads the
+// flags); ours loads it into ECX and keeps the flags in EAX through the lookup.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
