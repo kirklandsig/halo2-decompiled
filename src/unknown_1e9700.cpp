@@ -73,6 +73,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax R (11-01): no new form, no lower score; retail's maximum lives in ECX with the counter
+// in AX and the enable byte in AL, ours keeps the maximum in EAX, the enable byte in DL and
+// materialises the -1 default twice; still BLOCKED-BY 0x196960/0x1968b0 in another lane's file.
 // score 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
 // bytes, the value loaded with the sign-extending idiom), through an unsigned 16-bit local (112),
 // and through a short cast, a word read of the counter and a word cast (107 each). Still the

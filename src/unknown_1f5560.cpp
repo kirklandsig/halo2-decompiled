@@ -817,6 +817,9 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
+// stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
+// (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
