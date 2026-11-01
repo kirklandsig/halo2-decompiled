@@ -404,6 +404,16 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // locals, declaration orders, short/inline/early conversion on the scaled_difference3f delta all identical; rate
 // products staged before the conversion with that delta 51+ positional; ~450 random prediction/delta/correction
 // combinations none below the round 46 form.
+// Round 48 (m3 lane 11, fast): every stage through the existing helpers (vector3f_add_scaled into a predicted
+// point, vector3d_from_points3d, vector3f_scale by the ticks, vector3d_from_points3d for the delta, the delta
+// scaled in place then vector3f_add) 57: retail's whole store/delta/sum shape, colours rotated as with the
+// 1.0f scaled_difference3f delta (ticks and k XMM4, i XMM2, j XMM3 where retail has XMM3/XMM4/XMM2); that
+// with the 1.0f scaled_difference3f delta 57; the delta copied per component then subtracted in place, k, i, j,
+// 34; the predicted point with a `long ticks` local and deltas k, i, j 30; that with the delta copied i, k, j
+// then subtracted k, i, j 29 (366 bytes). Screen only: local names, declaration order, ticks
+// or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
+// (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
+// XMM4); `delta = velocity;` then in-place subtractions 82-90.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

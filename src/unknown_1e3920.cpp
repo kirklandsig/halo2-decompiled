@@ -650,6 +650,12 @@ real function_267370(long object_index);
 // Round 282: native up values mutable/const 195/195; normalized left value 193;
 // up plus left mutable/const 237/237; native axis alone/with up/with both 175/235/264
 // (calibrated fast). Original frame 0x90, early NONE sharing and cross operands retained.
+// Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
+// alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
+// shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
+// clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
+// chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
+// the zone helper's compares 98 (same code: the constant is shared either way).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1640,7 +1646,7 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
-// score 251 (was 263): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
+// score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
 // rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
 // retail's code; the actor index stays in EDI instead of EBX and the object pool is reloaded instead
@@ -1725,6 +1731,23 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // callees in that span are leaves, so it is not a callee summary). `inline` on 0x1e53e0 265 (0x2758b0
 // 21 -> 113); the pool read into a local before 0x1e5240's test 263 (same code); NONE-first weapon query
 // results 275; the lookups through a plain static getter taking the pool 263 (same code).
+// Round 42 (m3 lane 13, fast): retail loads the pool global between the inlined 0x1e5240's NONE compare and its
+// branch and holds it in EDI to the end (actor ESI, options EBP, the random state EBX from its first draw); ours
+// never carries the global across 0x1e5280 (it reloads it at each lookup, so the actor takes EDI, the options ESI
+// and the random state EBP). Diagnostics with the lookups indexed by hand through a pool local (not keepable):
+// the local at the top 283 (1237 bytes; pool held in ESI but spilled, options EBP as retail), after the actor 283,
+// after the 0x1e5240 call 278 (loaded after 0x1e5280, spilled). A pool local before the NONE test inside 0x1e5240
+// (0x1e5240 still MATCH) 251 (same code here: the caller's lookups stay separate loads). The unit-index test split
+// from the actor state tests 251 (same code).
+// Round 38 (m3 lane 14, fast): retail re-fetches the unit after 0x1e53e0 (the two equipment queries' lookups)
+// where ours keeps it in EBX, i.e. retail's LTCG treats 0x1e53e0 as possibly writing memory and ours as pure.
+// Diagnostic (reverted at once): a function-static store in 0x1e53e0 gives this body retail's shape (actor in ESI,
+// the pool global loaded once and held, the unit re-read after the call; aligned 183 -> 167) but 265 at 1247
+// bytes, the pool in EBP and the options in EDI (retail EDI/EBP) and the grenade test laid out longer; its other
+// callers keep their scores (0x1e04a0, 0x1e5380 match, 0x2758b0 21). Lead: a 0x1e53e0 form with the same bytes
+// that LTCG cannot prove pure. Removing the 0x1e1a00, 0xc6f80 or weapon calls (diagnostics) does not make ours
+// hold the pool. Forms: ticks as a short 251; a named group index for the counter 251; the grenade test by De
+// Morgan 251; the weapon pair declared before the unit 251; `fraction = fraction * 0.5f` 251 (all same code).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

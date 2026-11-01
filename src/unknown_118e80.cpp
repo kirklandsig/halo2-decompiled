@@ -184,8 +184,8 @@ void function_b7360(long object_index);
 void function_bba20(long object_index);
 real function_30bf0(vector3f *vector);
 void function_118e80(long object_index, vector3f *forward);
-bool function_1faf80(vector3f *facing, long object_index, void const *settings_pointer,
-	vector3f const *control, real threshold, real *turn);
+bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
+	real threshold, vector3f *facing, real *turn);
 void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *target, real rate, real max_angle, real scale);
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 real function_11ce20(vector3f const *a, vector3f const *b);
@@ -339,7 +339,7 @@ void function_1197b0(long object_index)
 	s_facing_definition_1197b0 *definition = (s_facing_definition_1197b0 *)g_4e3b44[object->definition_index & 0xffff].bytes;
 	if ((bool)((definition->flags >> 4) & 1))
 	{
-		function_1faf80(&object->requested_forward, object_index, definition->settings, &object->control, 0.9f, &object->turn);
+		function_1faf80(object_index, definition->settings, &object->control, 0.9f, &object->requested_forward, &object->turn);
 		return;
 	}
 	real max_angle = definition->max_angle;

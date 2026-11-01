@@ -2706,7 +2706,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
 // retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
 // has ESI, so the two roles are swapped.
-// score 103 (was 103): the store through the named `globals` local was tried again and scored
+// Earlier: the store through the named `globals` local was tried again and scored
 // 180 in the full build against the 103 baseline, so it was reverted; the globals pointer stays
 // live in EDI through both iterator loops and retail keeps it in ESI, reloading it only at the
 // two stores; target/point homes still differ.
@@ -2765,6 +2765,12 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // word-flags/continue form 103; position copied before the last unit is stored 101; loop 1's body nested
 // under `unit != NONE` 103. On that 101 form: loop 2 in 0x14d3a0's form 101, `if (!failed)` final store 101,
 // busy store through `globals` 101, `if (last_unit == NONE) return;` before loop 2 101.
+// Round 48 (m3 lane 11, plain; --fast gives 193 here): the root walk as a do-while 103 (same code); the
+// final store through `globals` under `if (!failed)` 176 (618 bytes). The hoisted g_4e8c20 load passes
+// only the out-of-line 0x6b380 call: loop 2 stepping through the inline copy (0x16bc00 called directly)
+// gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
+// 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
+// loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
