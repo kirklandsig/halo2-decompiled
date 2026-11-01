@@ -1444,6 +1444,13 @@ void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rea
 // level_offset` 200; named bins with every gain and the sum read at use 231 (545 bytes). Retail's entry sum
 // (level copied through EAX into the dead parameters slot, then addss from it) is also the shape a 4-byte
 // decibel struct or long-bits copy gives (as 0x2afb80's attenuation), not only /Op.
+// Round 193 (lane 3, fast; control 200, 0x2af800 55): the send sum through decibels_add at the top with
+// the rear locals 208 (the sum sinks to the call); the level staged as long bits and the offset sum named at
+// the top, rear locals kept 201; the same with every gain read at use 212 (565 B: retail's entry exactly, the
+// level bits and the sum sharing the dead parameters slot, but one extra 4-byte slot and x87 mode-one sends);
+// that with one union reused for both mode-one sends in add_send 212 (0x2af800 55). Diagnostic only: that
+// entry with add_send's per-send settings-gain locals (a reverted form) 193 (0x2af800 44; the SSE adds load
+// the union first, retail the gain). That entry with the four mix-bin numbers as named long locals 212.
 // @retail 0x2af920
 void c_sound_effects::add_sends(s_sound_send_parameters *parameters, long unused, long mode, s_mixbin_settings *mixbins)
 {

@@ -1944,6 +1944,12 @@ void function_269250(long clump_index, long actor_index);
 // the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
 // into a register and leave the selection in memory as retail: the selection wins the callee-saved register
 // only through the call in the walk plus its post-loop uses.
+// Round 193 (lane 3, plain): the in-arm compare gives retail's 480 bytes and homes (126), but our found
+// block is laid out after the improve block (0x26ae30's identical walk keeps retail's order); a
+// memory-only selection (diagnostic, reverted) gives the pool EBX but promotes the walk index into EBP
+// and sends the actor to the stack, 145. On the in-arm form: the walk reading g_4f55d0->active at each
+// step 126 (same code); score declared per actor 126; activity snapshot before the walk init 126; the
+// creation arm assigning the selection 126 (same code); creation arm first 130.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2172,6 +2178,14 @@ void function_269250(long clump_index, long actor_index)
 // Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
 // order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
 // deletion/pool scheduling remain; all matched controls survive.
+// Round 193 (lane 3, fast): the 3 form under s_prop_pool_storage 3; with separate pool globals it
+// matches but 0x25d770 2 and 0x25d810 91, also with the prop pool defined first in globals.cpp, declared
+// first in globals.h, grouped with the clump pool (one struct, node separate) or the node pool grouped with
+// the tracking pool: 0/2/91 each. Whenever the two pools are separate symbols 0x25d770/0x25d810 give the
+// node pool the first register (one use each, node referenced first); as one symbol 0x26ae30 does (node
+// referenced last); retail gives the prop pool the first register in all three. The 3 form's cleared prop
+// is a flag set and tested, kept only on a match: a shared-declaration conflict with matched 0x25d770 and
+// 0x25d810, not a body problem. The 3 form with the node scan started from the prop pointer 208 (709 B).
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2295,7 +2309,7 @@ int __cdecl function_269da0(void const *a, void const *b);
 void bitset_or(dword const *a, dword const *b, dword *destination, long bit_count);
 void *actor_get_character_situation_entry(long actor_index);
 
-// score 71 (was 283): the cluster loop (hoisted reset word in SI, NONE in EDI), the marking loop and the
+// score 71 (was 71): the cluster loop (hoisted reset word in SI, NONE in EDI), the marking loop and the
 // second selection loop now equal retail; left: the prop-loop head (ours loads the count before the prop
 // pool and keeps the pool in EDI where retail has EDX) and the first selection loop's `add ebx, 0x10`,
 // where retail re-derives the candidate from the cursor (doing that here drops the reset hoist, 301).
@@ -2398,6 +2412,13 @@ void *actor_get_character_situation_entry(long actor_index);
 // Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
 // with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
 // allocation remain; all matched controls survive.
+// Round 193 (lane 3, plain; 283 -> 71 before this round): both selection loops re-deriving the candidate
+// after `++cursor` give retail's selection loops exactly but 301: our allocator then promotes g_502420 into
+// EDI across the cluster loop and drops the bsp-word/NONE hoists, and swaps the marking loop's walker/object
+// table registers. Adding g_4686c4 read into a long local before the distance store 26 (not kept: a one-use
+// early read; its movsx can never equal retail's compiler-hoisted 16-bit `mov si`), as short 275 (a 32-bit
+// load). On the both-loop form: candidate declared at the top 301; bitset/candidate arrays declared at the
+// top 301; one iterator per actor loop 301; the cluster loop's first actor through the clump pointer 372.
 // @retail 0x269870
 void function_269870(long clump_index)
 {

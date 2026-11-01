@@ -140,6 +140,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // `common_bits = width_bits; if (height_bits < width_bits) common_bits = height_bits;` 119 (still cmov); that
 // with y looked up before x in both arms 125 (302 bytes, 0x136140 kept); `long const` copies 82 (same
 // code); y_bits declared before x_bits 82 (same code).
+// Round 193 (lane 3, fast with 0x136140): x and y used directly with the existing log2_floor (retail's
+// loops) 119 again: our allocator then keeps the width count in EDI (retail ECX) and moves x into EBX, and
+// LTCG passes width/x in EAX/ECX and y on the stack (0x136140 28). On that form: the minimum as if/else 119;
+// the height logarithm first 118 (0x136140 8, y still on the stack), with the if/else minimum 118; the high
+// arm's ORs low part first 119; `!=` tail tests 119.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
