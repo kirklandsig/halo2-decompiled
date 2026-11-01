@@ -591,6 +591,12 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
 // 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
 // but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Round 109 (lane 8, fast; aligned = difflib count 234): the pitch axis set field by field 333; the collision
+// result declared at function scope 333, the ray at function scope (assigned in the loop) 333, both 333 (all
+// same code: VC packs the frame the same whatever the scopes); `clear = true` first in each pass with the
+// function-scope collision result 327 (the listed long-clear-first form; 1424 bytes). Retail keeps a zero in
+// ECX for the result byte and the attempt counter, and pushes EBX only at the loop (ours at entry, for the
+// default best vector's k).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

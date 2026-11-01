@@ -1780,25 +1780,6 @@ struct s_squad_definition_entry;
 struct s_squad_definition_view;
 s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 
-PRIVATE __forceinline bool audio_team_is_hostile(short team)
-{
-    bool result = true;
-    if (team != NONE)
-    {
-        long mode = g_4e6948->state;
-        if (mode == 1)
-        {
-            if (team >= 0 && team < 16)
-                result = !function_0bfe60((dword const *)((byte *)g_4f55ec + 0xc4), team * 16 + 1);
-        }
-        else if (mode == 2)
-            result = function_15e020(team, 1);
-        else
-            result = team != 1;
-    }
-    return result;
-}
-
 PRIVATE __forceinline bool audio_target_is_known(byte *unit, long object_index)
 {
     if (object_index != NONE)
@@ -1825,112 +1806,6 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
     return false;
 }
 
-// Round 26 (lane I, fast; all eight queue functions measured together, control
-// 154 at 2265 bytes): the 0x100 group's source index read again from the source
-// pointer after the hostility calls, so that the source pointer stays in esi across
-// them as retail's does, 221 at 2273 bytes: the group then matches retail
-// instruction for instruction (the aligned diff falls from 57 to 36 differing
-// instructions), but the function is 30 bytes over retail's, so the positional
-// score rises. That form with the 0x40 failure split into two statements (`!actor`
-// and the two level lookups) 302 at 2274 bytes: the private copy of the shared tail
-// disappears and both the 0x40 and the 0x100 group then match retail, but `flags &
-// 0x40` is tested twice (`mov eax,ebx; and eax,0x40` instead of retail's `test
-// bl,0x40`) and the epilogue order is still ours. The split alone 298 at 2273; the
-// split with the 0x40 test through a `bool` local 645 at 2183 (the whole register
-// allocation is reshuffled); the split with the 0x40 test written once 632 at 2200
-// bytes (an earlier lane's split trial gave the same numbers). The body is unchanged.
-// Retail's own tail has two failure blocks of its own, not one shared one: at 0x20dd34
-// the type store, the eligible store and a jump to the join (the 0x40 group and the
-// "the required level is not the current level" case both jump there, so those two
-// failures are one block in retail), and at 0x20dfe1 the same two stores with the type
-// taken from edx, falling through to the reload of the definition and then to the join.
-// The 0x40 failure jumps past that reload, which is why retail's copy of the failure
-// does not need it.
-// Round 25: the 0x100 group's switch with an explicit `default: eligible = false;`
-// (retail's default arm jumps into the shared `eligible = false` store) compiles to
-// byte-identical code - MSVC drops the store as a known value - so the body is
-// unchanged. The failure stores moved into the two failure arms (so that the success
-// path is the function's fall-through, as in retail's layout) measure 586 at 2258
-// bytes, so the body is unchanged as well.
-// score 154 (was 160): 2265 bytes against 2243. The required actor level is read
-// into a `current` local before the request's required level, so the call comes
-// first and the request's level is read after it, as retail does; the request
-// pointer then stays in esi across the calls, as retail's does.
-// score 160 (was 200): 2265 bytes against 2243. The 0x100 group's source index
-// is read into a `long source_index` local (the `source` test is now an `if`
-// around it), so the `!= NONE` test compares a register value instead of a
-// memory operand, and the same local indexes the player record.
-// score 200 (was 221): 2273 bytes against 2243. The current actor level is read
-// straight into the comparison (`required != function_272ab0(...)`) instead of
-// through a `short current` local, which drops the local and its reload.
-// score 221 (was 277): 2273 bytes against 2243. The 0x40 test is now computed
-// into a `blocked` flag, the 0x80/0x100 groups run only when it is clear and the
-// failure (`eligible = false`) is the group's last statement, so it reaches the
-// shared tail like retail's instead of keeping a private block; the 0x39d test
-// is `!(object[0x39d] > 0)`, which gives retail's `ja`.
-// MiniMax I (10-31) review: the run's 453 -> 419 (fast) came from the `blocked` flag alone, a one-use
-// local (kept only with a match): the same changes with the 0x40 test as an if/else (`eligible = false`
-// in the if) 453, the flag's condition inlined into `if (!(...))` 650. The body stays as it was.
-// score 277 (was 277): 2265 bytes against 2243. The 0x40 test's failure keeps
-// its own `reload definition; eligible = false; jmp` block where retail jumps
-// into the shared `eligible = false; reload` tail (and its no-actor path into
-// the 0x20 failure), and the success exit is laid out before the failure exit
-// (so three jumps to it are long); `object[0x39d]` tests with jne, retail ja.
-// Round 291: Existing hostility/known-target/current-target result graphs, all seven subsets, then all
-// with mode read at each test: eight fast scores 545 (control 545; full 527).
-// Round 169 (plain counts): per-site failures under eligible guards 290; the
-// state read twice through prop_node_get and the actor index read in the
-// known-target helper 442 (aligned 35); the required bit as a dword of the
-// short 277; the 0x40 test split into two arms, swapped, or followed by
-// `if (eligible)` 632 (allocation reshuffled); the two failure arms as an
-// else-if chain 302; the success exit after the failure exit (label or
-// single exit) 277; the pool passed to the target helpers 599-649.
-// Round 224: complete request-word/team/actor live-observation masks 1..7 and
-// all with direct priority 545/610/610/545/545/610/610/660 (reduced control 545, full 527).
-// Two-consumer required-friendly policy with bool/byte/short/long requirement and
-// bool/long friendliness 549/545/549/545/551/610/544/610 reduced. Boolean pair restores
-// frame 0x2c and first +0x37, but plain 530 at 2273/2243 regresses; restored.
-// Original frame, observation points and all helper/call inputs retained.
-// Round 44 (lane 16, plain counts): retail's 0x80 no-actor/squad-NONE branches and the 0x100
-// switch default jump to the `eligible = false; reload definition` tail (only squad-entry-null
-// goes to the reload alone), so retail stores eligible again there; ours sends all of them to the
-// reload. Tried: `else eligible = false` in the 0x80 group plus `default: eligible = false` 277
-// (VC drops both stores, same code); the 0x80 result in its own bool 283 (BL, flags no longer in
-// BX); the switch result in its own bool 289 (DL); the 0x80 group as a forced-inline bool helper
-// 299 (LTCG then inlines 0x203330); the 0x40 test as `!(actor && (a != NONE || b != NONE))` 277
-// (same code); the loop's success return in the else arm after the advance code 277 (same code).
-// Round 18 (lane 14, fast; this function's reduced-image control is 453 at 2273 bytes against the full
-// build's 277): `object[0x39d] <= 0` gives retail's `ja` but not its target, 453; the 0x40 test with the
-// actor test negated as a whole 453 (same code); the 0x80 block as an `else if` with the 0x100 test after
-// it 453; the 0x40 failure as the else arm 638 (frame 0x28); `<= 0` with the failure arm braced 453.
-// Everything before the 0x40 failure block matches but for branch targets: ours reloads the definition
-// before `eligible = false`, retail stores first and so shares the 0x1a block's tail.
-// Round 30 (lane 11, plain; aligned diff 29 at 620/617 instructions): `object[0x39d] <= 0` 277 (retail's
-// `ja`, aligned 28; the 0x40 block and the exits are the rest); the 0x80 failure as an else arm with the
-// squad lookup's clear inside the then arm 277 (aligned 30); the last eligibility block nested in the
-// 0x40 block's `if (eligible)` 277 (same code), inside the 0x40 test's else arm 277 (same code); the 0x40
-// result as an assignment with the later tests under `if (eligible)` 652. Diagnostic: the success exit
-// written after the failure exit with a label 277 (same code: VC places the success exit first whatever
-// the source order); a compile-only harness keeps the exit order and the success block's load order
-// (weight, tag value, tag pointer; retail loads the tag pointer first) for a break with a retest, a found
-// flag, `tag_index[0]`, a copied tag and a weight pointer local.
-// Round 26 (lane 14, fast; faithful with the file plus 0x1a6fe0, 0x1a7ad0, 0x272ab0, 0x1c9e50, 0x20f1a0,
-// 0x1144a0, 0x114440, 0x20f040, 0x203330, 0x25d770 and 0x25d810 in the image: control 277; aligned 29):
-// the 0x40 failure as its own statement with the 0x80/0x100 groups under `if (eligible)` 277 (same
-// code); the same with `!actor` and the two lookups as separate failure statements 632 (2200 bytes,
-// registers reassigned from the prologue); the 0x40 failure as the else arm with the inverted test 632;
-// `!actor` and the lookups as two else-if failure arms each repeating the 0x40 test (diagnostic) 302;
-// the success stores tag first 277 (same code); `object[0x39d] <= 0` 277 (retail's `ja`, aligned 28).
-// Round 49 (lane 16, plain): the 0x80 group with no early clear and `else eligible = false` on
-// both failures 271 (the no-actor and squad-NONE exits then reach retail's shared clear-and-reload
-// tail, but the squad-entry-null exit does too and the group's early clear is gone; 2260 bytes);
-// that with the failure arm first 271; with the squad bit as a ternary 271; with `default:
-// eligible = false` in the 0x100 switch 271; the clear moved inside the actor arm before the
-// lookup with an outer else 277 (all three exits right, the clear lands before the call); early
-// clear plus outer else 277 (the else is dropped). Retail keeps the early clear and the redundant
-// failure clears, which ours removes as known-false stores. Diagnostic: the eligible flag's
-// address escaping sends the 0x40 failure into the shared tail (as retail) but reshuffles the
-// whole function (614/664).
 // @retail 0x20d8c0
 short function_20d8c0(long source_index, s_audio_priority_table *table, byte const *request,
     long object_index, long target_index, long previous_index, long *tag_index, real *weight)
@@ -1942,6 +1817,9 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
     bool eligible = true;
     real scale = 1.0f;
     long source_unit_index = NONE;
+    bool found = false;
+    real result_weight;
+    long tag;
     byte *target = NULL;
     if (target_index != NONE)
         target = *(byte **)(g_4e0300->data + (target_index & 0xffff) * 12 + 8);
@@ -1971,7 +1849,7 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
         }
         if ((bool)((*(dword *)(object + 0x134) >> 3) & 1))
             eligible = false;
-        if ((object[0xaa] || !object[0x39d]) && eligible &&
+        if ((object[0xaa] || object[0x39d] <= 0) && eligible &&
             (previous_index == NONE || function_114440(object_index) !=
              *(long *)(g_4f9398->data + (previous_index & 0xffff) * 0x54 + 0x4c)))
         {
@@ -2008,7 +1886,7 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
                 {
                     bool friendly_required = (bool)((((dword)*(short const *)(request + 0xa)) >> 2) & 1);
                     bool friendly = false;
-                    if (!audio_team_is_hostile(*(short *)(object + 0x138)))
+                    if (!team_is_enemy(*(short *)(object + 0x138), 1))
                         friendly = true;
                     else if (actor && *(long *)(actor + 0x7c) != NONE &&
                         element_502420_get(*(long *)(actor + 0x7c))->member_count > 1)
@@ -2049,44 +1927,51 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
                         scale *= 1.1f;
                 }
                 if (eligible && (flags & 0x20) && (!source || *(long *)(source + 0x13c) == NONE) &&
-                    audio_team_is_hostile(*(short *)(object + 0x138)))
+                    team_is_enemy(*(short *)(object + 0x138), 1))
                     eligible = false;
             }
             if (eligible)
             {
                 word flags = *(word const *)(request + 0xa);
-                if ((flags & 0x40) && (!actor ||
-                    (actor_behavior_find_level(*(long *)(object + 0x12c), 0x22) == NONE &&
-                     actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE)))
-                    eligible = false;
-                else
+                if (flags & 0x40)
                 {
-                    if (flags & 0x80)
+                    if (actor)
                     {
-                        eligible = false;
-                        if (actor && *(long *)(actor + 0x30) != NONE)
-                        {
-                            byte *squad = g_51e9d8->data + (*(long *)(actor + 0x30) & 0xffff) * 0x98;
-                            byte *squad_entry = (byte *)function_203330((s_squad_definition_view const *)squad);
-                            if (squad_entry)
-                                eligible = (bool)((*(dword *)(squad_entry + 0x24) >> 4) & 1);
-                        }
+                        if (actor_behavior_find_level(*(long *)(object + 0x12c), 0x22) == NONE &&
+                            actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE)
+                            eligible = false;
                     }
-                    if (eligible && (flags & 0x100))
-                    {
+                    else
                         eligible = false;
-                        if (source && *(long *)(source + 0x13c) != NONE)
+                }
+                if (eligible && (flags & 0x80))
+                {
+                    eligible = false;
+                    if (actor && *(long *)(actor + 0x30) != NONE)
+                    {
+                        byte *squad = g_51e9d8->data + (*(long *)(actor + 0x30) & 0xffff) * 0x98;
+                        byte *squad_entry = (byte *)function_203330((s_squad_definition_view const *)squad);
+                        if (squad_entry)
+                            eligible = (bool)((*(dword *)(squad_entry + 0x24) >> 4) & 1);
+                    }
+                    else
+                        eligible = false;
+                }
+                if (eligible && (flags & 0x100))
+                {
+                    eligible = false;
+                    if (source && *(long *)(source + 0x13c) != NONE)
+                    {
+                        if (*(short *)(object + 0x138) == 1)
+                            eligible = true;
+                        else if (!team_is_enemy(*(short *)(object + 0x138), 1))
                         {
-                            if (*(short *)(object + 0x138) == 1)
-                                eligible = true;
-                            else if (!audio_team_is_hostile(*(short *)(object + 0x138)))
+                            byte *player = g_4e8c24->data + (*(long *)(source + 0x13c) & 0xffff) * 0x21c;
+                            switch (*(short *)(object + 0x138))
                             {
-                                byte *player = g_4e8c24->data + (*(long *)(source + 0x13c) & 0xffff) * 0x21c;
-                                switch (*(short *)(object + 0x138))
-                                {
-                                case 2: eligible = player[0x88] == 0; break;
-                                case 3: case 7: eligible = player[0x88] == 1; break;
-                                }
+                            case 2: eligible = player[0x88] == 0; break;
+                            case 3: case 7: eligible = player[0x88] == 1; break;
+                            default: eligible = false; break;
                             }
                         }
                     }
@@ -2127,7 +2012,7 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
                 type = NONE;
             else if (eligible)
             {
-                real result_weight = function_20f1a0(object_index, type) * scale;
+                result_weight = function_20f1a0(object_index, type) * scale;
                 if (*(long *)(object + 0x13c) != NONE)
                     type = NONE;
                 else
@@ -2136,18 +2021,16 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
                     if ((target && *(long *)(target + 0x13c) != NONE) ||
                         (source && *(long *)(source + 0x13c) != NONE))
                         probability = *(real *)(definition + 0x44);
-                    g_4e7408->unknown0 = g_4e7408->unknown0 * 0x19660d + 0x3c6ef35f;
-                    dword random = g_4e7408->unknown0 >> 16;
+                    dword random = random_next(&g_4e7408->unknown0);
                     if (!(probability > (real)random * (1.0f / 65535.0f)))
                     {
                         while (type != NONE && definition)
                         {
-                            long tag = NONE;
+                            tag = NONE;
                             if (((long *)queue)[type] <= time && function_1144a0(object_index, type, &tag))
                             {
-                                *weight = result_weight;
-                                *tag_index = tag;
-                                return type;
+                                found = true;
+                                break;
                             }
                             type = *(short *)(definition + 8);
                             result_weight *= 0.8f;
@@ -2161,8 +2044,14 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
     }
     else
         type = NONE;
-    *weight = 0.0f;
-    *tag_index = NONE;
+    if (!found)
+    {
+        *weight = 0.0f;
+        *tag_index = NONE;
+        return type;
+    }
+    *weight = result_weight;
+    *tag_index = tag;
     return type;
 }
 

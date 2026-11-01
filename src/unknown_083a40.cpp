@@ -554,7 +554,7 @@ bool function_84560(s_simulation_world_owner *watcher)
 
 void simulation_player_collection_swap(s_type_c67652 *collection, long player_index, long other_index, s_simulation_player_update *update);
 
-// score 28 (was 32): the address of the record is computed in EDX and the zero kept in EBX;
+// score 28 (was 28): the address of the record is computed in EDX and the zero kept in EBX;
 // retail computes it in ECX and stores it first, so the block order differs.
 // inline/noinline swap declaration 32; apply-update declaration 32; both 32;
 // collection preheader 277; const session 32; const collection 32; array-base key 32;
@@ -694,6 +694,14 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // scan's loop test 310 (1077 bytes); an early-return session guard 32 (same code). On 28 (after the full
 // check): the swap's update through the `update` local 28 (same code); the occupied key through the loop-top
 // `player` 291.
+// Round 109 (lane 8, fast; aligned = difflib count, base 8): on the swap order above (36 in its notes, 32 now,
+// aligned 15): the second-loop player as a const pointer 32 (28 without the swap order, same code); the occupied
+// record's key copied before its type/index stores 37; the occupied record's update as `update = updates +
+// *count; ++*count;` 32 (1056 bytes, aligned 9: its head indexes by the old count, but after the key the copy
+// takes retail's EDX/ECX and the last record's reads become retail's, so the last record's register trade on the
+// swap order follows the key copy's registers); the last record's two source reads before its update pointer
+// 36; `collection` declared before the second loop 276 (1072 bytes); the occupied key through
+// `watcher->players.players[i].key` 292 (frame 0x8c). Permuter (600 s, 74 tries) none better.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

@@ -1770,6 +1770,11 @@ real function_17c900(short function_type, real input);
 // bytes); on that, the lead field at each use 349, salt named in the wander branch 361, cross3f for the axis
 // 343 (same code), output written at three exits 378, to_target through vector3d_from_points3d 377, the lead
 // and wander adds through vector3f_add_scaled 343/343 (same code).
+// Round 109 (lane 8, fast with 0xf8eb0/0xf86f0; aligned = difflib count 218): `to_target` declared before the
+// aim point 348; `point3f const *center` 348; the drift test as `distance > 0.0001f && flag` 354 (1471 bytes); the
+// up-vector pointer declared after `axis` 348; the lead block's speed through the existing magnitude3d 348 (LTCG
+// inlines it; identical code). The index EAX/output-stack convention (retail: index on the stack, re-read for
+// the salt, output in EBX) still sets every register from the first instruction.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
