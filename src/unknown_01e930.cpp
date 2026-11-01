@@ -494,6 +494,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // subsets 1/2/4/8/3/12/7/15: 244/244/244/244/244/244/241/239. Original early cleanup returns, complete body and file policy restored.
 // Round 446: complete native 64-bit size/retry/mode storage, seven subsets
 // 280/298/314/288/317/339/363; all with native skip storage 363. Original domains and complete body restored.
+// Round 292: Actual allocation byte count reused for movie mode, equality/inequality/greater/inclusive
+// tests with conditional/per-arm open, 267/267/267/267/275/275/275/275. Original mode carrier,
+// helper bodies, clocks, calls and whole body restored; frame 0x3c/0x40 and output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

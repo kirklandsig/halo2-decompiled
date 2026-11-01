@@ -506,6 +506,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // found combinations, 140/140/140/140; with existing complete center conversion
 // 130/130/130/130 at 928 bytes, frame 0x44, caller 2 -> 11. Original search,
 // center transfer, helpers, arithmetic and complete body restored.
+// Round 292: Overlap-safe previous transform/velocity-pair/center transfers, subsets 1/2/4/3/5/6/7,
+// 236/229/220/219/223/243/256; all with existing center converter 248. Original complete file,
+// helpers, copies and caller restored; input register pair, physics spill and projection schedule remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
