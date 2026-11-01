@@ -302,6 +302,12 @@ union s_185be7
 // 935/935/800; default before lower bound/selected record 735/735; the three
 // branch-owned forms with exponent declaration at range scope 935/935/800.
 // Original fraction producer, exponent observation and complete body restored.
+// Round 487: plain mapping loops for independent bindings / action masks / both / movement masks /
+// bindings+movement / action+movement / all 725/725/725/731/725/725/725; all with native output
+// initialization 1027. Bindings or action masks with the two-use short inactive predicate 723/723;
+// the action-mask loop with the inactive predicate scored 723 at 3770/3777 bytes. Not kept (m3 review):
+// retail has no mask table or loop (one hoisted test of the flag, then three immediate ors or three
+// ands), and the short inverted predicate alone is a 2-point form. Entry root/NONE and scalar homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

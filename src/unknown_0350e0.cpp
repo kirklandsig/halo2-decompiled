@@ -68,7 +68,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
-// score 356 (was 372): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
+// score 356 (was 356): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
 // difference: both matrices (forward axis angle step*0.5 from 0x485624.., up axis angle step*0.3 from 0x485630..,
 // constants 0.5 / 0.3 / 1.0 read from the XBE), all nine entries of each, and the up*k + left*j + forward*i sum order
 // of the vector rotation (0x3a148-0x3a2f0, 0x3a37c-0x3a526) agree with the source. Only scheduling and registers differ.
@@ -85,6 +85,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // to SSE where retail keeps both angles on the x87 stack), in place with the squares before sine/cosine (390), in place
 // with named sine products (356), in place with each rotated vector stored right after its own local (368); on the
 // in-place + named-angles form: the matrices declared second, first (353), the angles declared before them (353).
+// Round 487: first-turn results at declaration 376; with direct final publication 376; final publication
+// alone 357; diagonal-first matrix stores 367; alias-safe explicit output with staged components 380;
+// that output form with global first-turn inputs 472; native returned-vector initialization with late
+// inputs 376; diagonal-first/late-input/direct-final combination 390. All eight forms and existing helpers
+// restored. Frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain. Earlier score was 372.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2379,7 +2384,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
-// score 317 (was 405, 424 originally): the logic was walked against retail block by block (0x4ac30-0x4b159) and
+// score 317 (was 317): the logic was walked against retail block by block (0x4ac30-0x4b159) and
 // agrees: the four passes (pairs to the front, first flagged entry, drop of just-created flagged entries, duplicate
 // key removal), both sorts (modes 1 and 2), the decay loop, the growth loop and the output copy. What is left is
 // register allocation. Retail keeps `first` in edx and the state in ebp for the first three loops and reloads `first`
@@ -2395,6 +2400,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // declaration order of first/last/requested/found/i (317-319), per-loop `long i` (317), an `entries` alias (317),
 // a copy of `first` for the later calls (370), found set before/after the swap (360/318). Without the
 // "last >= i" forms 390; "limit <= i" stops the unrolling (802).
+// Round 487: persistent-count / ordinal / paired / complete role names 317 each; no separate found flag 436;
+// prefix count initialized before admission 331; separate named phase ordinals 317; retained-only removal
+// cursor advancement 318. All eight executable forms restored; frame 0x30 agrees, early prefix/state
+// register roles and the two counter homes remain exchanged. Earlier scores were 405 and 424.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3143,7 +3152,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
 }
 
-// score 394 (was 460, 952 originally): the four corners are written out (retail has four copies of the scale
+// score 394 (was 394): the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
 // 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
 // (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
@@ -3167,6 +3176,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // declared before corners (388), plus the offsets through real_point3d_set (389), plus the corner helper adding the
 // origin after the transform (`origin->x + transformed.x`, as retail orders that add; 402, 1786 bytes), plus the
 // colour's red/green/blue set before alpha or the colour declared at function scope (388).
+// Round 487, all with native color4f: aggregate offset 388; complete transformed-point staging through
+// the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
+// names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
+// frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
