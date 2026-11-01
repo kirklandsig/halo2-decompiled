@@ -760,6 +760,11 @@ real g_55e618;
 // 0x10c frame, so the collision record escapes in retail as in ours and the early argument read is not
 // escape-driven. Re-measured in the env only (listed above): the velocity pointer, with dot3f, with
 // vector3f_scale 183/102 each.
+// Round 67 (lane 12, same env; positional/aligned): the tangent through the existing vector3f_assign 74/84 (same
+// code); with the perpendicular through vector3f_scale 76/87; the final velocity through vector3f_assign 175/77
+// (1545 bytes); the velocity pointer with perpendicular/tangent/final setters, with dot3f, or with only the final
+// setter 184/103 each (1541 bytes, frame 0x118: perpendicular still gets no home); the pointer declared at the
+// loop top and used for the displacement too 279/201 (1567 bytes).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

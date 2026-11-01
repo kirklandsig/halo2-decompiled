@@ -142,6 +142,10 @@ void function_213970(void);
 // the call; the re-read getter alone: load after the clears in EAX, copied to ESI before the compare. On the
 // separate globals (--fast): no pragma + re-read getter 153; with the helpers 153; helpers under the size
 // pragma stay out of line. Still BLOCKED-BY the block definitions above.
+// Round 67 (lane 12, fast, separate globals): a file-local language getter returning the re-read global, under
+// the size pragma 131; one compare-and-set helper (field address, value) for both preference fields with the
+// header getter 131; helper with the re-read getter 131; the same two without the size pragma 153/158. Still
+// BLOCKED-BY the block definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

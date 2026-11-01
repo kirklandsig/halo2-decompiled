@@ -632,6 +632,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // constant choice is no numbering tie); the two `(void)&parameter;` statements were dead (removed: identical
 // code); without them, the jitter add through the existing vector3f_add 130 (1077 bytes, as round 91: not kept);
 // the movement scaled through the existing vector3f_scale 132; the direction normalised through it 132.
+// Round 67 (lane 12, fast, 0x24590 listed): limits, the jitter offset or both through the existing
+// vector3f_assign 132/132/132; a `vector3f *velocity = &state->velocity` pointer declared after the enable store
+// and used for every velocity access 128 (gain 4, not kept), declared just before the first velocity store 141;
+// on the top pointer: projection and movement through vector3f_add_scaled/vector3f_add 128, the jitter add
+// through vector3f_add 128, all three 128, the movement add alone 128, limits through vector3f_assign 128.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

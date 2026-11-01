@@ -1774,7 +1774,8 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
-// score 77 (was 77): node/matrix entry order and the forward/up xmm homes remain (retail forward
+// score 9 (was 77): only the node/matrix entry order remains (round 67). Earlier: node/matrix entry order and
+// the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
 // The point computed into position, normalize3d and cross3f give retail's early up.j/up.k loads.
 // Node index first 107 (marker index sign extension hoisted); forward without locals 132;
@@ -1839,6 +1840,16 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
 // else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
 // indexings 77 (identical); the zero position as a chained assignment 79.
+// Round 67 (lane 12, fast with 0x178360; plain 9): the forward rows through the existing vector3f_assign
+// (forward's fields then written only through the setter) give retail's forward block, xmm homes and
+// cross product: 77 -> 9 (758 bytes, kept). Left: retail copies the node index first (CX, before the
+// matrix load) where ours loads the matrix first and copies the index through DI, and keeps the markers
+// base in EAX (ours EBX). Node copy first on this body 101 (entry exact, but the marker index sign
+// extension hoists above the matrix test and is shared by both arms); with the matrix read in the arm
+// 101; declarations first 101; with an else-arm marker pointer 198; with the arms inverted 189. Earlier
+// on the old body: the position rows in each of the other five product orders (all rows or row 2 only)
+// 77 (identical); one or two unused locals 77; an extra named store to forward.i/j/k or position.x/y/z
+// in the else arm (diagnostic) 128/94/92/211/212/212.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -1873,9 +1884,10 @@ void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *
 		real j = marker->forward.j;
 		real k = marker->forward.k;
 
-		forward.i = matrix->forward.k * k + matrix->forward.j * j + matrix->forward.i * i;
-		forward.j = matrix->left.k * k + matrix->left.j * j + matrix->left.i * i;
-		forward.k = matrix->up.k * k + matrix->up.j * j + matrix->up.i * i;
+		vector3f_assign(&forward,
+			matrix->forward.k * k + matrix->forward.j * j + matrix->forward.i * i,
+			matrix->left.k * k + matrix->left.j * j + matrix->left.i * i,
+			matrix->up.k * k + matrix->up.j * j + matrix->up.i * i);
 	}
 	else
 	{
@@ -3257,7 +3269,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
-// score 88 (was 88): frame 0x94 agrees; the scale default/conditional branch, the point transform's
+// score 74 (was 74): the scale block and the point transform's y copy remain; the lens call now agrees (round 67).
+// Earlier: frame 0x94 agrees; the scale default/conditional branch, the point transform's
 // y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) and the lens call
 // setup remain. The lens call is BLOCKED-BY 0x2dba0: retail passes its tag index in ecx and the
 // position on the stack, ours the other way round (its body is in a contributor's file).
@@ -3301,6 +3314,19 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // branch, ours only x; no helper spelling (local orders, `*=`, a scale local) or placement changes it.
 // Forward/up before the point 334; colour after the transform 219; position copied last 92; copies in
 // up/forward/position order 92; default-first scale before the copies 312.
+// Round 67 (lane 12; the lens call now agrees, so only the scale block and the y copy remain): the
+// house scale form of 0x17a380 (`real scale = 1.0f;` declared before the color copy, `if (a) scale =
+// effect->scale_a; if (b) scale = effect->scale_b * scale;`) 270 (1519 bytes: the scale block is then
+// byte for byte retail's and the y copy is the only difference left); default-if after the color 272.
+// Cause of the y copy, pinned in the compile-only screen: any other reference to `position.y` by name
+// in this function (a store before the node test, or even after the transform in the tdtl arm) gives
+// retail's `movss xmm5; movaps xmm4, xmm5` and scale-first product; on the house scale form the
+// diagnostic store gives retail's whole transform block (295 only from the extra store and moved
+// homes). Naming forward, up, color, position.x or position.z does not. Position copied field by
+// field or by an aggregate initializer gives the y copy but movss copies (177/177 screen against 163);
+// memcpy, a const source pointer, a separate declaration, function-scope position, the copy after up
+// and renames give no change; the shared point helper reading a point copy or with an if/else
+// 211/169 and worse in all three matched users.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
