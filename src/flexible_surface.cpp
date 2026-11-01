@@ -327,6 +327,10 @@ void function_117510(long index)
 // still reuses the top link->a read where retail reads it again); fast root in place on length 155 (base 148),
 // in place on squared 151 (base 138). Base forms: link + i 138, rest at use 172, i,j,k / helper squares 138,
 // `!(>=)` clamp 138, vector3f_scale correction 138, b first / a,b locals swapped 172/172. All restored.
+// Round 39 (lane 13, harness, base 138, per-use 151 / aligned 91): per-use with the rest square at the top 152 (aligned
+// 85), delta as j, k, i statements 151 (87). Diagnostics only: a compiler barrier after the fast root 138 (aligned 74),
+// after the clamp 134 (aligned 72: retail's link setup and pin-test re-read appear). Retail has something VC treats as a
+// memory write between the top link->a read and the first pin test; no source construct found yet.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -519,6 +523,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // float factors in their own `wave` statement 118; sinf/cosf in the tail in three spellings, with or without the
 // split, 156 (883 bytes: the cos operands reorder, the sinf argument is not stored, 0.01f * 0.3f fold); cross3f
 // on the global without the `old` copy 152 (854 bytes, frame stays 0x28), with the split tail 147.
+// Round 39 (lane 13, harness, base 119): retail's frame 0x20 holds time, tick/angle/cosine, the 0x30bf0 result/cross k,
+// sine, random int/cross j/a stored tail float and axis; the global is read straight into registers (j, k early, i
+// late). Rotation on the global with cross3f(&g_55ecd4, ..) 152 (854), projection first 148 (852), dot3f(&axis,
+// &g_55ecd4) 153 (856); diagnostics (scalar cross, kept only with a match): 0x177d10's own form with its axis_k local on
+// the global 135 (862, aligned 101), on an `old` copy 148.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -553,7 +562,9 @@ void function_117dd0(long index, vector3f *wind)
 	double strength = (fabs(g_55ecd0) + 0.0075f) * definition->wind_scale * 0.08000000566244125f;
 	wind->i = (real)(g_55ecd4.i * strength); wind->j = (real)(g_55ecd4.j * strength); wind->k = (real)(g_55ecd4.k * strength);
 }
-// score 72 (was 80): frame 0x48 and normal.k cursor agree; weight publication, the Verlet x register (retail keeps it
+// score 63 (was 72): frame 0x48, normal.k cursor and the history (else) loop agree; weight publication, the Verlet x
+// register (retail keeps it in xmm6 to the final add, ours stores it) and vector scheduling remain.
+// Earlier: frame 0x48 and normal.k cursor agree; weight publication, the Verlet x register (retail keeps it
 // in xmm6 to the final add, ours stores it), vector scheduling and the history-loop base remain.
 // Earlier: frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
 // Earlier: 744 bytes and the normal.k cursor agree; retail adds the acceleration as the first operand and
@@ -635,11 +646,17 @@ void function_117dd0(long index, vector3f *wind)
 // i,k,j / k,i,j / i,j,k 82/82/81 (736 bytes), j + (i + k) / (i + k) + j 105/105 (aligned 55: retail's dot), k + (i + j)
 // 109, force-first products 82/105, written projection 113, tangent statements 68, written drag 179, force-update
 // orders 68, history copy before the drag / after the Verlet / after the force update 113/116/77.
+// Round 39 (lane 13, same harness): one function-scope `vertex` pointer assigned in both loops 68 -> 59 (retail's else
+// loop; --fast and plain 72 -> 63, kept). On it a 22-dimension coordinate descent found nothing lower: dot
+// `(i + k) + j` / `j + (i + k)` 105/105 (aligned 45, 744 bytes), acceleration-first Verlet 114, weights first 61, written
+// dots i,k,j / k,i,j / i,j,k 81/81/80 (736 bytes); weights first with `(i + k) + j` 104, acceleration first with it 80,
+// both 82; weight names in the other sort order with either preheader order 59/61 (names move no home).
 // @retail 0x118140
 void function_118140(long index)
 {
 	s_surface_record *record = surface_record(index);
 	s_surface_definition *definition = surface_definition(record);
+	s_surface_vertex *vertex;
 	vector3f wind;
 	function_117dd0(index, &wind);
 	if (record->speed < 1.5f)
@@ -654,7 +671,7 @@ void function_118140(long index)
 			vector3f force = wind;
 			if (!bit_vector_test(record->pinned, i))
 			{
-				s_surface_vertex *vertex = &record->vertices[i];
+				vertex = &record->vertices[i];
 				point3f position = vertex->position;
 				point3f previous = vertex->previous;
 				position.x *= current_weight; position.y *= current_weight; position.z *= current_weight;
@@ -674,7 +691,11 @@ void function_118140(long index)
 			}
 		}
 	}
-	else for (long i = 0; i < definition->vertex_count; ++i) record->vertices[i].previous = record->vertices[i].position;
+	else for (long i = 0; i < definition->vertex_count; ++i)
+	{
+		vertex = &record->vertices[i];
+		vertex->previous = vertex->position;
+	}
 }
 
 // @retail 0x118430
@@ -778,6 +799,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // types read per scan 322 (aligned 258 -> 225, 1467 bytes: retail's pointer-walking scans), also with the count read
 // per scan 322; a counted side loop with `side == 0 ? 1 : -1` signs, two spellings 331 (1465); lighting and loop
 // 327; all three 320 (1481). All restored.
+// Round 39 (lane 13, harness, base 324 / aligned 258): binormal straight from *g_4687a8 326 (1469), position from the
+// vertex 324 (1464), both 326 (1481), short strip index 324 (same code); rest pointer first 324 (aligned 215, --fast
+// 422), with per-scan types 322 (aligned 182, 1467), with lighting NULL-first 320 (--fast 418), all three 318 (--fast
+// 429). All restored; BLOCKED-BY 0x1ccb0 remains.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
