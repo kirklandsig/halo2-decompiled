@@ -385,10 +385,10 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
-// score 316 (was 379): the distance to the centre is now computed and compared in double, so the
+// score 316 (was 316): the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
 // bound is still one product where retail has two and the frame is 0x34 versus 0x30.
-// score 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// Earlier at 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
 // Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
 // the fade clamp now computes a single radius*1.5 product, so the
 // radius keeps retail's xmm3; our fade block is still one instruction shorter than
@@ -426,6 +426,10 @@ PRIVATE inline long polygon_round_19f(real value)
 // perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner
 // radius at its use 430; on the uv form: bottom by fields 374, bottom right after the index 375 (step in EBP,
 // pointer spilled instead), edge with one cast 374, top from the vertex 377, top.z assigned 375.
+// Earlier selected count 316 from 379.
+// Round 287: Native homogeneous-position/RGBA/both/UV/position-UV/RGBA-UV/all emitted records
+// 426/319/426/316/426/319/426; all with top declared first 426. All record forms require an exact match;
+// complete original output storage, cursor, parameter home and body restored.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

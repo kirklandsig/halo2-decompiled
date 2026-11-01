@@ -413,6 +413,9 @@ short *function_e70b0(long unit_index, short *value);
 // Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
 // lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
 // mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
+// Round 287: Parameter-index/slot/both, inline-output/index-output/slot-output/all lexical
+// identities 49/49/49/49/49/49/49; all three alternate identities 49. Original names and body
+// restored; actor/index ECX/EDX and final setup remain.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

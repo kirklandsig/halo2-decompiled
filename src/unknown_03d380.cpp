@@ -387,6 +387,9 @@ void function_125a90(long value);
 // 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
 // assigned on every path with no initializer 36 and the negated test with the kind arm first 36
 // both compile to the same code (VC normalises the arm order).
+// Round 287: Paired unsigned/signed-byte policies, each isolated byte policy, and paired byte
+// mask-predicate producers 36 each; paired unsigned/signed-byte policies with the native long
+// inner type test 46 each. Original policy storage, producers and body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
