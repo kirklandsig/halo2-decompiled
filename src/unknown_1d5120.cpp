@@ -178,10 +178,6 @@ void function_1d56f0(s_havok_component *component)
 // the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
 // cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
 // The body was left as it is.
-// score 77 (was 77): the 19 aligned differences are all in the tail after the component lookup, whose calling
-// convention is set by 0x1d0cf0 in another file, so the tail cannot be aligned from here; the lookup still reads
-// `[eax + edx + 0x40]` where retail's order differs. This round: no source form of this body moved the score, so
-// the body was left as it is.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
