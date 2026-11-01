@@ -1994,6 +1994,13 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // Round 251: Remaining-expression / counter-first / both / compound reserve store / remaining-compound /
 // counter-compound / all / all with magazine roots 180/130/180/124/180/130/180/180. Original restored;
 // magazine/transfer and pooled receiver homes remain.
+// Round 62: nested other-weapon pointer as in 0x1008f0 with the slot test on weapon->definition_index
+// (no definition-index local) 198 (571 bytes; fast 175 at 585); magazine-offset local 177 (fast);
+// definition read in the range test 198 (fast, 568 bytes); available before weapon/definition 182 (fast);
+// unit-index local 124; first-block take without the short local 124. One-link diagnostic: with the
+// entry weapon read not touching the pool global, the slots take retail's pool-in-EBP/unit-spilled
+// shape (aligned 83), so the entry read joins the loop's pool range; no source form found that splits it.
+// Round 62, later: `taken` as a short 209 (fast, 611 bytes).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

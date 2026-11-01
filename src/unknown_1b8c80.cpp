@@ -1284,6 +1284,10 @@ struct s_seat_selection
     short seat_index;
     byte flags;
     byte unknown7;
+    short unknown8;
+    byte unknowna[2];
+    real near_radius;
+    real far_radius;
 };
 
 bool function_2676d0(long actor_index);
@@ -1334,13 +1338,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-struct s_1ba091
-{
-    s_slot_memory_entry *field_0;
-    s_slot_entry_iterator field_4;
-};
-
-// score 198 (was 198): the frame 0x14 agrees; retail takes the object-header data before scaling
+// score 134 (was 198): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
+// and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
+// object-header data in the prologue and reads the flags once above the slot-flag test.
+// Before round 62: the frame 0x14 agrees; retail takes the object-header data before scaling
 // the actor (actor index in EDX, ours ECX), keeps the loop entry in EBX (spilled at F+4), spills the
 // 0x20 mask byte to F+3 and re-reads the flags for the 0x40 test; ours keeps the entry in memory
 // (iterator struct member) and the flags or the mask in BL. Earlier headers, merged: the frame 0x14
@@ -1419,6 +1421,16 @@ struct s_1ba091
 // the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
 // the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus
 // `byte specified = flags & 0x20` (retail's masked byte, spilled to F+3) 238.
+// Round 62 (fast, confirmed plain): plain iterator and entry locals, a byte mask, 0x1bead0's fallback
+// element local assigned after its test and the radii through the selection (s_seat_selection grown to
+// +0x14, as 0x1ba5c0 also reads them) 156 (kept); one 0x1fb7e0 call per seat type 135 (kept, retail's
+// branchy constants into one call, no sbb); the radii stored in the default arm before/after the flags
+// 135/134 (original order kept). On that: positive admission 135 (aligned 93); default stores in retail's
+// order 133; default object index through the slot state 229; both of the first two 133; no mask local
+// 245 (868 bytes), with positive admission 241 (864 bytes, frame 0x14 but the flags byte in BL); `same`
+// as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
+// `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
+// root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
@@ -1428,32 +1440,34 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
     s_seat_selection *selection = (s_seat_selection *)&state->unknown1c;
     if (*(long *)((byte *)unit + 0x14) != NONE)
         return NONE;
-    s_1ba091 local_0;
-    local_0.field_4.actor_index = actor_index;
-    local_0.field_4.reference.unknown2 = 0x4c;
-    local_0.field_4.reference.unknown0 = NONE;
+    s_slot_entry_iterator iterator;
+    iterator.actor_index = actor_index;
+    iterator.reference.unknown2 = 0x4c;
+    iterator.reference.unknown0 = NONE;
     long joint_index = NONE;
-    while ((local_0.field_0 = function_26f0c0(&local_0.field_4)) != NULL)
+    s_slot_memory_entry *entry;
+    while ((entry = function_26f0c0(&iterator)) != NULL)
     {
-        s_4c_element *element = (s_4c_element *)element_502424_get(local_0.field_0->unknown4);
-        bool specified = (selection->flags & 0x20) != 0;
+        s_4c_element *element = (s_4c_element *)element_502424_get(entry->unknown4);
+        byte specified = selection->flags & 0x20;
         bool same = specified && function_baf40(element->object_index) == function_baf40(selection->object_index);
         if ((element->unknown86 ? !(selection->flags & 0x40) || !same : specified && !same))
-            joint_decline(actor_index, local_0.field_4.reference.unknown0);
-        else if (function_26ecc0(actor_index, local_0.field_4.reference.unknown0, (s_joint_behavior_state *)slot))
+            joint_decline(actor_index, iterator.reference.unknown0);
+        else if (function_26ecc0(actor_index, iterator.reference.unknown0, (s_joint_behavior_state *)slot))
         {
-            joint_index = local_0.field_0->unknown4;
+            joint_index = entry->unknown4;
             break;
         }
     }
     if (joint_index == NONE)
     {
-        joint_index = function_26e940(actor_index);
-        if (joint_index != NONE)
+        long element_index = function_26e940(actor_index);
+        if (element_index != NONE)
         {
             *((bool *)slot + 0xc) = true;
-            state->element_index = joint_index;
+            state->element_index = element_index;
         }
+        joint_index = element_index;
     }
     if (joint_index != NONE)
     {
@@ -1473,11 +1487,11 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
             selection->object_index = element->object_index;
             selection->seat_index = NONE;
             selection->flags |= 0x29;
-            state->unknown28 = 11.0f;
-            state->unknown2c = 14.0f;
+            selection->near_radius = 11.0f;
+            selection->far_radius = 14.0f;
         }
         if (!(selection->flags & 0x20) || selection->object_index == NONE || element->object_index == NONE ||
-            !function_1ba990(actor_index, selection->object_index, ((selection->flags >> 6) & 1) != 0, state->unknown28, state->unknown2c, false))
+            !function_1ba990(actor_index, selection->object_index, ((selection->flags >> 6) & 1) != 0, selection->near_radius, selection->far_radius, false))
             goto failed;
         if (function_2676d0(actor_index) && function_1e2030(actor_index))
         {
@@ -1492,11 +1506,9 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
             s_vehicle_seat_definition *seat = &definition->seats[selection->seat_index];
             if (actor->unknown26c == NONE)
             {
-                short type;
-                if (TEST_FIELD_BIT(seat->flags.bit2)) type = 0x65;
-                else if (TEST_FIELD_BIT(seat->flags.bit3)) type = 0x67;
-                else type = 0x68;
-                function_1fb7e0(type, actor_index, 0, selection->object_index, NONE);
+                if (TEST_FIELD_BIT(seat->flags.bit2)) function_1fb7e0(0x65, actor_index, 0, selection->object_index, NONE);
+                else if (TEST_FIELD_BIT(seat->flags.bit3)) function_1fb7e0(0x67, actor_index, 0, selection->object_index, NONE);
+                else function_1fb7e0(0x68, actor_index, 0, selection->object_index, NONE);
                 function_f5d10(selection->object_index, selection->seat_index, true);
             }
         }
