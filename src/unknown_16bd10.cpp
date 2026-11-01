@@ -738,6 +738,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Earlier (236): the first difference at the switch's dispatch is the default jump target (the
 // code after the switch), so the case bodies' sizes differ and the switch region shifts with it.
 // Earlier (236): frame 72 agrees; the camera mode and the object index are read into
+// this round found the first difference at the switch's dispatch —
+// the default jump target (the code after the switch) is not where retail puts it, so the
+// four case bodies are laid out differently and the whole switch region differs with it.
+// Earlier 236 (was 236): frame 72 agrees; the camera mode and the object index are read into
 // named locals before the switch and the test; direction preload, length/zero XMM roles and
 // flag stores still differ.
 // frame 0x48 agrees; direction preload, length/zero
@@ -838,6 +842,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // accumulator); new: both 387/127; j-first length with the plane dot's operands reversed 238/122;
 // with the plane declared after the scalars 238/122; one 0x40 flag update after the point-type
 // switch 399 (1704 B); the length zero test first in the if/else 236/127. All restored.
+// Round 68 (lane 12): retail carries 0.0 in XMM0 into the timer test from every inner-switch path (the
+// point-category arm's length test leaves it there), which follows from its d.j preload; the double
+// `flags = 8` store is retail's. Timer as an if/else statement 244 (1700 bytes); length summed j-first
+// 238; both 246; distance dot with position first 236 (same code), with the j-first sum 238. Unused-local
+// probes +1/+2/+3/+4/+8/+12 236/245/369/236/236/385 (diagnostic). Original body kept.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

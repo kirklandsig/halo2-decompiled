@@ -122,6 +122,20 @@ static __forceinline long real_to_long(real value);
 // owner and per-use cap subsets; scores 373/424/438/350/447/449/449/384.
 // Original executable source restored; no qualifying gain.
 // The 350 form uses one-use early range captures and did not match; restored under the exact-match gate.
+// Round 110 (lane 8, fast): retail's sign test is `test eax, 0x80000000; mov [ecx], eax; jbe`, which
+// `if ((local_11 & 0x80000000) > 0)` reproduces exactly: 375 (1863 bytes; the longer test is not yet offset);
+// `local_11 >= 0x80000000` 380, `local_11 > 0x7fffffff` 380, `local_11 >> 31` 373 (same code). The early
+// bounds form again (first/second limits and the third draw's bounds read before the draws, all three draws
+// through `&local_10->unknown0` with function_259d0): 340 (1844 bytes, first difference +0x1ab: the head,
+// frame 0x48, third input in ESI and state in ECX are retail's), with the masked `> 0` sign test 337 (1847);
+// both use one-use bound locals, so not kept. Past +0x1ab retail has two point copies and the NONE-output
+// path laid out at the end: 0x210850 inlined at link time (52 other callers keep it out of line; its body
+// written here is not allowed), BLOCKED-BY 0x210850. A store through an unknown pointer added to 0x2104b0
+// (diagnostic, restored) changes nothing here. On the early form: the third draw's bounds as one
+// `real_bounds` copy with the lower bounds as call arguments 334 (plain; 1856 bytes, first +0x1ab, but
+// copied through integer moves where retail loads them with fld, so not retail's form: not kept); with
+// the lower bounds as named locals 348, the copy first 348; scalar bounds with lower-bound locals 350.
+// All three range draws through `&local_10->unknown0` (function_259d0) without early bounds 436 (1856).
 // Round 123 (lane 6, fast): the displacement magnitude stored before the side vector 373; the +0x7c0 zero stored
 // before the +0x7bc copy 416 (1852 bytes); the +0x714 copy before the time store 372; the sign test as
 // `(long)seed < 0` 417; the magnitude's terms in i/j/k order 373.
@@ -135,6 +149,12 @@ static __forceinline long real_to_long(real value);
 // `(local_11 & 0x80000000) > 0` 269 (1876, retail's `test eax, 0x80000000; jbe`); with +0x38 named once for its two
 // uses 299; with a function_210850 call (stays out of line) 453 (1799). Env: every order of the cross components 181
 // or worse (aligned, 186 base); k * 0 named 192.
+// Round 30 (lane 2, fast; sequence-aligned counts in brackets, this body 324): retail forwards the sign test's
+// seed store into the three draws and stores the seed once after the third, loading every bound (+0xc, +0x10,
+// +0x14/+0x18, +0x1c, +0x38) before the draws; ours reloads and stores the seed per draw. The sign test as
+// `_random(...) > 32767` 435 (and/cmp 0x7fff0000, not retail's test/jbe); the third draw's bounds as an early
+// real_bounds copy 417 [388]; the second draw through function_259d0 like the other two 413 [298], with +0x38
+// as a named local read with the limits (used twice) 412 [291], plus the early real_bounds copy 437 [352].
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

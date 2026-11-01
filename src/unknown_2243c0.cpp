@@ -325,6 +325,20 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // instance's group with the fallback as default 165; the fallback read through the same instance pointer 168.
 // Env only (first 82 instructions, control 53): the switch with a `& 0xffff` fallback 75, through TAG_GROUP/TAG_GET
 // 75, a const group local with a `& 0xffff` fallback 75.
+// Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
+// the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
+// element's field through a named `long const *` 117 (same code); the pass block's address named right
+// before its read (`local_passes`, retail reads it after the second ordinal) 117 (same code), with the grouped
+// zeros 120, with the masked fallback 152.
+// Round 48 (m3 lane 11, fast; control 117): the fallback through the existing TAG_GET with the original group test
+// 152 (the same code as `local_tag & 0xffff`: in-place mask as retail, but the tag table moves into ECX ahead of the
+// frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
+// 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
+// the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
+// Round 40 (lane 13, fast): dword tag with a `& 0xffff` fallback 152; the `& 0xffff` fallback with the four
+// cache zeros grouped 149 (head and stage in ESI as retail, but the tag table goes to ECX above the frame
+// where retail keeps it in EDI); the grouped zeros with the second ordinal read through a named element
+// pointer 120 (still fused); on the 149 form the sums written parameter first 149, the root handle named 149.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

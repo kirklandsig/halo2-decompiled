@@ -300,6 +300,11 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // first 192 (same code); plane d cleared before normalizing 200; fraction as one conditional 259; the
 // clamp as an if/else-if on a copy 256; the hit block's fraction stored after the normal and d 192
 // (same code: retail's fraction-first store order is scheduling).
+// Round 68 (lane 12): start copy first with the direction from the copy 230 (retail's single start loads,
+// exact LCS 132 against 133, but origin is still re-read from the shape, so no edge spills); copy first
+// with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
+// writes with `found = true` last 239 (1045 bytes); a short count local for the call 297. Unused-local
+// probes +1/+2/+3/+4/+8/+12 all 192 (diagnostic: no symbol-numbering effect here).
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

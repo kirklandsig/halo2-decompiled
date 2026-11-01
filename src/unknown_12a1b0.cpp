@@ -1307,6 +1307,16 @@ struct s_looping_detail_request
 // identical, the query stays inlined); the skip as the for's own counter harness 121 against the control's 110
 // (533 bytes); `result = true` at the arm's top harness 177. The query's body (0x14dde0) sits in a file another
 // lane holds this round, so its inline cost was not tried from the callee side.
+// Round 128 (m3 lane 6, plain): retail calls 0x14dde0 from seven sites (0x1132f0, 0x125b40, 0x1391ed, 0x1df3e0,
+// 0x219ed0, 0x240820 and this one) and inlines it at four (0x11b350, 0x13c250, 0x15c150, 0x225730); only this
+// site differs. 0x14dde0's body as `return local_player_next_inline(NONE);` (same bytes, larger before folding)
+// 127, every caller unchanged; the count test as `>= 1` 128, as `!= 0` (diagnostic) 127, the query still
+// inlined; the definition index named once for the lookup and the audible arm's call 159; the camera position
+// as one pointer local for the add and 0x11bed0 125 (two points, not kept).
+// Round 48 (m3 lane 11, plain): the file is already /Ob1 and 0x11b350 (an /Ob1 file) inlines the query in retail,
+// so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
+// site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
+// bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1601,6 +1611,20 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // no short cast 247-367; track_definition/current/count declarations moved 247. Diagnostic (volatile reads of
 // index and track_index at the creation call, reverted) 323: the frame becomes 0x128 with retail's homes, but the
 // creation constant takes EBP where retail holds NONE in EBX and track_definition in EBP; renames move no home.
+// Round 128 (m3 lane 6, plain): retail's frame is 16 scalar slots, the two arrays and a 0xa0-byte request with
+// nothing shared (0x40 + 0x48 + 0xa0 = 0x128); ours has 17 slots (playback and `active` spilled, no count) and the
+// 0x90 request. Retail's count slot lets playback die before the second pitch-range loop, so `active` takes EDI
+// there and NONE sits in EBX. Tried: `gains` declared before `sounds` 305 (identical code); one count local read
+// before each loop 460 (1939 bytes, frame 0x128, playback in EDI as retail, but the iterator counter spills and
+// &sounds[i] takes EDI); that with the gain through the existing decibels_add 481 (1955 bytes, frame 0x12c);
+// the 0xa0 request with decibels_add 432 (1939 bytes); all three 481 (1955 bytes, frame 0x13c).
+// Round 48 (m3 lane 11, plain): NONE held in EBP across the whole update block is what pushes the playback
+// pointer out of EDI. Both pitch-range loops declaring `count = playback->pitch_range_count` in the for init
+// 365 (frame 0x128 and retail's EDX/EAX array-initialisation registers, but 20 scalar slots plus the 0x90
+// request where retail has 16 plus 0xa0, first difference +0x39); that with the 0xa0 request 368 (frame
+// differs again); that with the pitch through a bounds pointer and a named lower bound as in 0x21b940 460
+// (1939 bytes); the count in the first loop's init only 427 (1907 bytes); both counts with the gains array
+// declared before the sounds 366.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

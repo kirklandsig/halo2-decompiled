@@ -1462,6 +1462,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // at its declaration 126; the three queries (mode, teams, values) declared before the count locals 94;
 // `(void)&index_count` 83 (same code: the slots are not set by an address taken this way). An LTCG env link
 // with the direct callees' objects does not reproduce this function (callee clobber sets reach further).
+// Round 129 (m3 lane 6, fast): both fills as `for (long j = index_count; j < 16; j++)` 172 (420 bytes); with
+// for-scoped scan counters 172; and the allocation loop's counter for-scoped too 172; item_count declared
+// first with both index fills 172; branch two's index fill with mode queried first 110 (437). The reload of
+// player_count after 0x19a9b4 follows the escape of &player_count into contributor 0x594a0 (0x199dc9's
+// callee), as 0x25042d's players[i] reload follows contributor 0x596a0: neither is this body's.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2626,6 +2631,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // alone: declared first in the function 92, the last loop with its own counter 92, the colour array at function
 // scope 92. The last loop's extra bytes stay: retail gives bitmap_a EBX, ours spills it and reloads the screen
 // into EBX once per pass.
+// Round 129 (m3 lane 6, fast): the first loop's item fields written through list.items[i] (no item
+// pointer) 250 (930 bytes); the first loop's search counter declared in its for 95 (same code); player
+// looked up before the item pointer is formed 95 (same code); that with a separate second-loop counter
+// 93; separate text and bitmap locals for the second loop's lookups 95 (same code).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -3077,6 +3086,24 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // on this body 48. Diagnostics on the identical-branch 13 form (not keepable): the counter renamed, or a separate
 // row counter declared after / before `text`, 13 each (names and declaration order do not move the row loop's
 // ESI/EDI pair); the row bitmap flag as `squad && i < count` 36; the row compares reversed 15.
+// Round 129 (m3 lane 6, fast): per-section title/map text and bitmap variables on the variable flag 171 (879),
+// with row-scoped row widgets too 171, on the expression flag 63; `searching = !A; if (searching) searching =
+// !B && !C;` 50 (881); `searching = !A; if (searching && B) searching = false; if (searching && C) searching =
+// false;` 45 (885); `searching = true; if (A) searching = false; if (searching && (B || C)) searching = false;`
+// 13 at 877 (the row loop's i/text swap only; a flag tested afterwards, not kept); on that 13 form a
+// for-scoped `player_index` with row-scoped widgets 15, i declared first 13, i/bitmap/text after has_game 13,
+// row_text/row_bitmap 15, the row bitmap as `squad && i < squad->player_count` 36, the row text's arms
+// swapped (`!squad || i >= count` first) 13; a 600 s permuter run on it found nothing under 13 (49 tries).
+// Round 40 (lane 13, fast): the bitmap flag as `squad && i < count` 51. The tail as `bool searching =
+// true; if (A) searching = false; if (searching && (B || C)) searching = false;` 13 at 877 bytes (the
+// else-if tail without identical branches; a flag tested afterwards, so not kept unmatched). On that 13
+// form: item-loop counter / row-loop counter in their own `for` 13/13; `dword i` 16; the bitmap flag as
+// `squad && i < count` 36 or `squad ? i < count : false` 40 (both give retail's row registers, i EDI and
+// text ESI, but store one materialised bool where retail stores in each arm); the bitmap if/else inverted
+// 25; the text test inverted 13; row-scoped text and bitmap 15; `count > i` in both blocks / the bitmap
+// block 15/14; `4 + i`, `5 + i` 13; `? true : false` in the bitmap arm 13; `if (bitmap && squad) ... else
+// if (bitmap)` 13; declarations i/bitmap/text 13; i/text/bitmap ahead of squad 13; the bitmap arm's
+// comparison named `visible` 13; `if (!bitmap) continue;` ahead of the bitmap if/else 13.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {
