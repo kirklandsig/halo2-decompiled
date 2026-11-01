@@ -472,6 +472,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 }
 
 // score 278 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
+// negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
+// 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
 // Earlier (278): frame 0x40 and length agree; early root EBX retention, actor ownership and paired-edge float/vector scheduling remain.
 // Earlier: Frame 0x40 agrees; early root EBX retention and float/vector scheduling remain.
 // Earlier 278 (was 278): frame 0x40 agrees; early pathfinding EBX ownership and float scheduling differ.
