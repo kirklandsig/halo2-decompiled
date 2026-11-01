@@ -104,6 +104,9 @@ struct s_9cca0
 // ifs 9 (same code); the two long fields copied after the vectors 29; the input pointer declared before
 // the event 9 (same code); the marker stored right after the zeroing 10. 0x184440's file is on another
 // lane's list this round.
+// Round 70: the callee's record type shared and used directly 9; the existing point setter 57;
+// the existing vector setter 57; an aggregate location copy 9; the local declarations swapped 9;
+// the global pointer saved at entry 70, between the vector copies 9, and after them 9.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

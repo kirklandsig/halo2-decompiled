@@ -2295,6 +2295,9 @@ long voice_players_share_team(long other, long player)
 // tests with the mask inside 56; the mask declared after the mode 25 (same code). Diagnostic: a write to
 // an unrelated global added to 0x53c30 does not end the mode's availability (56): the link tracks
 // which globals a callee writes.
+// Round 71: global test with inline membership 56; inline session/both 56 (membership 97, rejected);
+// mask before mode 56; inner mode getter 56; mask outside 25; const mode 56; force-inline mode 56.
+// Original body and helper declarations restored.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
