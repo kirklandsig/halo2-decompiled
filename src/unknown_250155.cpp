@@ -1475,6 +1475,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // first with both index fills 172; branch two's index fill with mode queried first 110 (437). The reload of
 // player_count after 0x19a9b4 follows the escape of &player_count into contributor 0x594a0 (0x199dc9's
 // callee), as 0x25042d's players[i] reload follows contributor 0x596a0: neither is this body's.
+// Round 114 (m3 lane 7, fast): the comparator chosen by nested if/else assignments 83, the scan counters declared
+// in their fors 83, both maxima through the CRT's __max 83, every loop counter for-scoped 83, the branches swapped
+// (`mode == 3 || (mode >= 1 && !teams)` first) 83 (all the same code). Retail's homes follow the names
+// (index_count -8, item_count -0xc, player_count -0x10, this -0x14); ours put item_count at -8 whatever the names.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2642,6 +2646,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // pointer) 250 (930 bytes); the first loop's search counter declared in its for 95 (same code); player
 // looked up before the item pointer is formed 95 (same code); that with a separate second-loop counter
 // 93; separate text and bitmap locals for the second loop's lookups 95 (same code).
+// Round 114 (m3 lane 7, fast): the widget helper as plain `static inline` 242 (862 bytes, not inlined); its default
+// as one chain `*text_a = *text_b = *bitmap_a = *bitmap_b = NONE;` 93 (925); the last loop's indices declared at
+// function scope 95 (same code); the `case 0: case 2:` arm first 95 (same code); bitmap_b stored before bitmap_a in
+// the arms 96.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
