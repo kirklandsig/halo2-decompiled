@@ -2773,6 +2773,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
 // 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
 // loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
+// Round 288: Normalized first-iterator result in byte/char/short/long, each with signed/dword next
+// index, 103/103/103/103/103/103/103/103. All tie with full-context controls; original bool/long
+// helper, all iterator stores, traversal, copies, globals observations and whole body restored.
+// Global-pointer web and target/point homes remain.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

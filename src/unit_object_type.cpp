@@ -7055,9 +7055,9 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
-// score 653 (was 700): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
+// score 653 (was 653): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
+// Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
 // shared final cross 723; direction plus velocity values 628 (rejected: lose matched 0x1e5af0), with names 628 (unconfirmed);
 // parallel predicted-angle results 723. The angular-velocity value alone preserves all matches.
@@ -7095,6 +7095,10 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // complete planning scopes without/with motion or common output 653/653/653/653; planning with
 // original speed initialization 700; only both speed results initialized at entry 653 (plain kept).
 // Frame 0x94 and direction staging remain; every original vector, arithmetic tree and call is retained.
+// Round 288: Complete frame-input value/ijk/ikj/kji staging on entry-zero speed graph, each
+// without/with complete from-frame input value, 613/685/647/625/647/625/647/625. Best value-only form
+// reaches retail 2483 bytes at 613, but all eight lose exact callers (43/210); all original helpers,
+// body, parameter delivery and entry speed zeros restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
