@@ -208,6 +208,9 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 // Round 122: no __stdcall 680 fast, with the flag last 680 fast (still ret 0x1c, flag from the stack);
 // `standard` marker 680 plain (realigns, frame 0x148c, 2466 bytes); with whole-array memset fills 666, plus sums
 // declared first or renamed 666/666 (sums stay at +0x80 where retail has +0x870).
+// Round 491: native-pair additive/all seeded phase loops, per-sample/shared output pairs 630/762/630/762
+// reduced; ordinary-level counterparts 644/778/644/778 (control 680). Best additive loop 757 plain,
+// 2239/2384, rejected; original complete body restored.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,
