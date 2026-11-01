@@ -990,7 +990,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 482 (was 482): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 315 (was 482): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1037,6 +1037,14 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // three divides 599. Diagnostic: dead initialised locals change it by count alone (+1..+12:
 // 479/479/539/315/483/480/480/480/479/479/483/483, any position); +4 gives 2826 bytes and fixes most of
 // the projection rows, so a natural form with that many more symbols is the lead.
+// Round 68 (lane 12): the cone arm's four bounds values as named locals, each used for the bounds and two
+// corners, 315 (2826 bytes; kept): the first cross now loads up/reference as retail, leaving register
+// permutations, normalize3d's j, i, k sum and the projection rows' term order. On 315: the bounds in
+// x0, y0, x1, y1 order (retail's store order) or after the corners 315/315; plane written through a plane
+// pointer 543 (with corner order 543); normalize_inline 567; cross3f for the left cross 526, with
+// normalize_inline 541; depth from the radius local 556; reference selected before the negate 498;
+// unused-local probes +1/+2/+3/+4/+8/+12 483/480/480/480/483/467 (diagnostic). Before the named values:
+// bounds in corner order alone 482.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1105,14 +1113,18 @@ void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab co
             real scale = 1.0f / shape->origin_offset;
             real half_width = shape->cone_render.width * scale * 0.5f;
             real half_height = shape->cone_render.height * scale * 0.5f;
-            bounds.x0 = center.x - half_width;
-            bounds.x1 = center.x + half_width;
-            bounds.y0 = center.y - half_height;
-            bounds.y1 = center.y + half_height;
-            entry->points[0].x = bounds.x0; entry->points[0].y = bounds.y0;
-            entry->points[1].x = bounds.x1; entry->points[1].y = bounds.y0;
-            entry->points[2].x = bounds.x1; entry->points[2].y = bounds.y1;
-            entry->points[3].x = bounds.x0; entry->points[3].y = bounds.y1;
+            real x0 = center.x - half_width;
+            real x1 = center.x + half_width;
+            real y0 = center.y - half_height;
+            real y1 = center.y + half_height;
+            bounds.x0 = x0;
+            bounds.x1 = x1;
+            bounds.y0 = y0;
+            bounds.y1 = y1;
+            entry->points[0].x = x0; entry->points[0].y = y0;
+            entry->points[1].x = x1; entry->points[1].y = y0;
+            entry->points[2].x = x1; entry->points[2].y = y1;
+            entry->points[3].x = x0; entry->points[3].y = y1;
             entry->point_count = 4;
         }
         entry->flag8c = true;
