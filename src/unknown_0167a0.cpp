@@ -196,6 +196,9 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 23 (lane 17, fast): the restore block's packed word read inside the chain index 47; the pass
 // pointer stored to its field and read back 47; the parameters and tables stores as chained
 // assignments 47; the pass store chained 47; the restore guard as `different_tag || changed` 49.
+// Round 281: multi-use addresses of the actual table/entry/range pointer fields, each alone,
+// table-entry/table-range/entry-range pairs and all three, 47 each; early table-field address 47.
+// Restore-load order and the sampler state convention remain; original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

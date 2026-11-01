@@ -73,6 +73,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// Earlier 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
 // MiniMax R (11-01): no new form, no lower score; retail's maximum lives in ECX with the counter
 // in AX and the enable byte in AL, ours keeps the maximum in EAX, the enable byte in DL and
 // materialises the -1 default twice; still BLOCKED-BY 0x196960/0x1968b0 in another lane's file.
@@ -83,18 +85,18 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // the 15-bit value with the 16-bit idiom (xor eax,eax; mov ax,[...]) with one -1 default and the
 // enable byte in AL; ours zero-extends the value into EAX, keeps the enable byte in DL and
 // materialises the -1 default twice. Still BLOCKED-BY 0x196960/0x1968b0, whose file is held.
-// score 107 (was 107): this round: the comparison written the other way round (the counter first)
+// Earlier 107 (was 107): this round: the comparison written the other way round (the counter first)
 // gives 107, and the counter read through a 16-bit local, at block scope or at function scope, 112
 // with and without that comparison (419 bytes). Still the maximum's register home: retail keeps the
 // old maximum in ECX and the counter in AX and reads the 15-bit value with the 16-bit idiom
 // (xor eax,eax; mov ax,[...]) into ECX with one -1 default and the enable byte in AL, ours
 // zero-extends the value into EAX, keeps the enable byte in DL and materialises the -1 default
 // twice. Still BLOCKED-BY 0x196960/0x1968b0 (retail inlines both; their file is held).
-// score 107 (was 107): this round: the player maximum read as a nested initialise/compare/assign
+// Earlier 107 (was 107): this round: the player maximum read as a nested initialise/compare/assign
 // gave 109, the same nested read for the team maximum 117 and the player maximum alone 112.
 // Still the enable reloads and the maximum-register homes: retail keeps the old maximum in ECX
 // and the -1 comparison in EAX, ours merges the enable into DL and the maximum into EAX.
-// score 107 (was 107): no frame; enable reloads and maximum-register homes differ.
+// Earlier 107 (was 107): no frame; enable reloads and maximum-register homes differ.
 // Four meaningful inputs agree; the converter consumes ECX and preserves player EDX.
 // Earlier: the two maximum
 // reads as `if (g_510ca0) x = i != NONE ? value : NONE` gave retail's nested
@@ -111,6 +113,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // (401/413 bytes), and with the player setter 202 (362); index admission nested after the limit
 // reads 110 (420); early consecutive and row declarations 107/107; team-mode byte and nested
 // team guards 107/107. Original scalar limits, counter operations and guards restored.
+// Round 279: admission index/writable/enabled/improved 103; writable/index/enabled/improved 104;
+// enabled/index/writable/improved 106; enabled/writable/index/improved 106;
+// writable/enabled/improved/index 104; enabled/improved/writable/index 107;
+// improved/index/enabled/writable 107; improved/writable/enabled/index 107.
+// Best admission with short maximum / separate increment / conditional clamp / per-use counter
+// 103/103/105/103. Four-point gain excluded; original body restored.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

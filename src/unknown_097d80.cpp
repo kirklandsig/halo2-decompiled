@@ -227,6 +227,9 @@ struct c_aggregate : c_child
 // collection-child, dispatch-boundary and cleanup-block cursor subsets 0-7:
 // 81/83/145/146/121/123/167/168. Original outputs and signed traversals restored; frame and lowest
 // two loop/output homes remain.
+// Round 282: Native collection array-end traversals (child end with indexed/advancing boundaries,
+// boundary end with indexed/advancing child), independent outputs 169/149/148/145;
+// shared query output 168/149/147/130. Original frame and body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

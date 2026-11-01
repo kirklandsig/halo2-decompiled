@@ -2244,6 +2244,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
 // Round 491: actual four-record end traversal != with long/short/word/byte ordinal 286/283/283/280; <
 // counterparts 286/283/283/280. Original countdown, cursor, ordinal and complete body restored.
+// Round 280: joint direct/conditional parent-short producers with decoded slot/header offset
+// and shifted/direct tail request 279/294/288/290/284/273/266/266. Original executable
+// body restored; object/offset homes and low-mask EBP ownership remain.
+// Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
+// outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
+// Native object/offset and low-mask homes remain; original tests, stores and body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

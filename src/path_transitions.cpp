@@ -588,6 +588,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Round 325: Complete native surface snapshot at dispatch, crossed with both difference setters,
 // ordinary result and actor-valid direction scope: 387/397/365/366/397/401/373/380.
 // All restored; root retention is not recovered and most frames/extents grow.
+// Round 275: complete native vertex values in paired/actor/trace cases 502/337/400;
+// paired-actor/paired-trace/actor-trace/all 526/551/438/575; all with shared
+// differences 583. Exact-only snapshots restored; early root/actor ownership and vector scheduling remain.
 // Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
 // round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
 // a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21

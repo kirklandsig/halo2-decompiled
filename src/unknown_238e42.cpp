@@ -1007,6 +1007,9 @@ bool __stdcall function_2399da(long controller_index)
 // Round 325: Permission flag read at every use (shift/mask), crossed with all-use own-rank fields
 // and direct full-identity member presence: 142/163/142/163/142/163/142/163. All restored;
 // the changed flag lifetime shortens the body and changes saved-register ownership.
+// Round 275: one common denial-message result, long/dword/short/byte carriers with zero/NONE
+// representations 172/177/172/177/173/181/161/161. Exact-only message guards restored; frame
+// 0xf00 agrees, identity/rank EAX/ECX ownership and the extra removal move remain.
 // Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
 // own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
 // permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an

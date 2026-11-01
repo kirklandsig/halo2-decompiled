@@ -69,6 +69,9 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// score 49 (was 49): frame 0xc and actor/node homes agree; the busy test becomes a numeric select,
+// shifting fallback and separate zero/success epilogues.
+// Earlier: the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
 // score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
@@ -207,6 +210,8 @@ bool function_25d9b0(long prop_index);
 // else-arms `result = 0` 48 (556; retail's `xor eax, eax` zero exit, still a select; one point, not kept), with
 // a long priority 60/53, with a long invitation index 141/140. A short result zeroed in an if/else is what
 // gives retail's 32-bit `xor eax, eax`; `return 0` gives `xor ax, ax`.
+// Round 278: full-width return result at entry/default, entry/complete, evaluation/default,
+// evaluation/complete: short priority 87/64/94/64; long priority 81/53/90/53. Restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

@@ -778,6 +778,9 @@ struct s_device_machine_view
 // pointer 122 (all the pushed ESI); screens only: `register` on the flags or machine flags, `!= 0` masks, the
 // flags word at its read, machine flags first (ESI); the bitfield copy tested with `&` frees EAX only by
 // spilling the copy to the stack. 1-7 dead temporaries (diagnostic) leave both forms unchanged.
+// Round 276: complete group value before/after the machine test, masked bits/word
+// masks without/with velocity zero 199/203/192/199 and 204/207/200/204.
+// Original pointer and values restored; word-load/EAX sharing and zero move remain.
 // Round 127 (lane 5, fast): word-local masks + the 0x1200055f zero store re-measured 122 (pushed ESI);
 // `__assume(group != NULL)` after the lookup on it 122 and on the lane S form 34 (same code: it is no
 // third reference); the lane S bits masked straight from the field 34 (same code). Matched 0x107870
@@ -1103,6 +1106,9 @@ bool function_108530(long device_index, long name)
 // entry or before pins 140/163/151; reset outputs with field-owned cruise velocity 166; with
 // stored initial-speed reads 140; both phase results selected from their nonzero tests 152,
 // at entry 172; before pins with field-owned cruise velocity 163. Original body restored.
+// Round 276: complete native motion result published at the tail, declared at reset/entry,
+// with local/field cruise speed and up/down phase order 173/174/173/174 each.
+// Original field stores restored; frameless initial-speed/ramp-down ownership remains.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1576,6 +1582,9 @@ bool function_0b6760(s_index_pair const *pair);
 // path, so its stack home is not register pressure from a live range.
 // Round 229 (lane P): native header type-byte field unmeasured; original record and body
 // restored after the check stalled. Frame/index/state/result homes remain as above.
+// Round 276: actual header/device byte members 294/294; with ordinary index,
+// header/device/both 395/395/395; with ordinary saved pointer 386/386; both
+// with ordinary index and saved pointer 412. All declarations and storage restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

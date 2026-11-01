@@ -150,6 +150,9 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
+// operand order, cold clear and output/angle scheduling differ.
+// Earlier: frame 0x54 and selection inputs agree; comparison order,
 // MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
 // and a one-caller forceinline wrapper of 0x14d040; the retail callees stay out of line at inline_depth(0)).
 // score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
@@ -277,6 +280,8 @@ void player_action_initialize(s_player_action *arg_0);
 // as two ifs (the release test after the toggle block) 147; with a named pressed bool 140; the nested
 // latch with the release store only when held 136. BLOCKED-BY 0xcbec0 (a contributor's function inlined
 // here), and the toggle flag set inside the test needs a byte match to be kept.
+// Round 278: standard signed-counter lower/upper bounds with built-in or native
+// long predicates, eight non-original combinations: 263/285/259/281/301/277/299/299. Original counter restored.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

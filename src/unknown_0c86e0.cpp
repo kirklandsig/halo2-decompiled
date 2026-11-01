@@ -106,6 +106,9 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Earlier: this round: the fast check reads 107 at 362 bytes against retail's 376 again
 // Earlier at 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
 // Earlier at 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// Frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// Earlier: this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// Earlier: frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // frameless entry saves, unit reload and sentinel carriers differ.
 // frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // Earlier: frameless entry saves, unit reload and sentinel carriers differ.
@@ -174,6 +177,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // indexing, seven nonempty subsets 107 each; complete graph with native long user ordinal 110.
 // Original types, both player queries, prior-state lifetime and entire body restored;
 // entry saves, fresh unit lookup and sentinel carriers remain.
+// Earlier: this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// Round 280: complete pre-reset prior-state predicate, reset/preserve decision, bool/long
+// storage and producer/entry declaration 110/110/113/113/113/113/116/116. Original complete
+// body restored; merged lookup and late prior-state carrier remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

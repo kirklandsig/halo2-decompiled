@@ -468,6 +468,12 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 325: Actual inlined status/clock temporary identities in both lexical orders, with
 // coordinated consumer-clock identities, all eight 244 at 1098 bytes. All original
 // helper and consumer identities restored; frame 0x3c/0x40 and early homes remain.
+// Round 275: explicit word-unit allocation masks, long/dword mask and size carriers, ternary/per-arm
+// open 269/278/269/278/269/278/269/278; retained byte-unit masks 272/280/272/280. Exact-only
+// arithmetic producers restored; frame 0x3c/0x40, zero/clock/output homes and instruction policy remain.
+// Round 277: standard elapsed bound/volume fills/material pair fills, subsets 1..7,
+// 301/278/332/258/322/300/352; all with volume declarations first 352. All file
+// controls survive; original body restored, frame and clock/output homes remain.
 // Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
 // neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
 // allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start

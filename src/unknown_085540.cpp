@@ -1238,6 +1238,9 @@ bool function_68670(byte *source, long size, void *block);
 // Round 328: Separate sequence output with complete case orders 021d/102d/120d/201d/210d/
 // d012/d201/1d02, all 137 at 561/553 bytes. Exact-only copy forms restored; original header,
 // dispatch, ring observations and body retained. Header/sequence homes and size register remain.
+// Round 282: Received-header aggregate/memset initialization at function/loop scope,
+// direct sequence 171/159/170/161; separate sequence 191/186/176/167.
+// Initialization does not recover the header home or DX size; original executable body restored.
 // Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
 // header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
 // 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not

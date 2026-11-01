@@ -294,6 +294,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (long)text + start`, and with the existing 0x11c9a0 for the length 27 each (0xb5f10 6 each). Hybrids:
 // the text read before `count++` 31 (0xb5f10 6); nested length local, text read before the compare and
 // `start += (long)text` after the clamp 40 (0xb5f10 35); the first lead with a named `end` 21 (same code).
+// Round 282: Shared end-pointer scan with a separate signed/unsigned length counter,
+// unequal/ordered end tests, original/direct source: 36/36/36/36/40/40/40/40.
+// Search sibling 19 and caller 6/96 lose their matches; helper and full body restored.
 // Round 21 (lane 17, fast with 0xb5f10/0xb61d0): on the lead with nested sign tests, a named length and an early
 // one-use `source = string + start` (21: entry and colours retail's; the scan walks in ECX and counts in EDX, and the
 // add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the

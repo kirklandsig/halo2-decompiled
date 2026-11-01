@@ -804,6 +804,9 @@ void c_session_client::function_06dbc0()
 // joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
 // explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
 // (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
+// Round 275: existing busy predicate with a separate producer force-inline declaration, bool/byte/
+// short/long results and early/combined admission, eight forms 100 each (84 bytes). Predicate remains
+// out of line; original body and producer declaration restored. This/id register ownership remains.
 // Round 113 (lane 8): separate case 7 and case 8 bodies (0x58d90's own form) re-measured 47 (plain check
 // agrees): retail's direct 7-entry jump table, and the only difference left is `this` in EDX where retail
 // moves it to EBX at entry (mode/index then take ESI for retail's EDX, id EBX for retail's EBP). On that

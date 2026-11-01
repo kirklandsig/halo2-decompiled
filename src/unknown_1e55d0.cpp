@@ -169,6 +169,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // same-shape arm last as an if/else swap 319 (same code); current shape read once for both tests 368;
 // the capsule radius clamp as a conditional expression 319 (same code); the ease state as the switch's
 // default instead of case 6 with __assume 336.
+// Round 280: aligned-helper conditional radius selection, matrix-first declaration,
+// result-first lower clamp and consistent minimum-radius snapshot combinations: eight
+// forms 319 each. Original helper and complete body restored; pointer ownership remains.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

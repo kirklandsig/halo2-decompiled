@@ -1452,6 +1452,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 235: uniform published-length field consumers with combined admission/entry-base/
 // late-result subsets 0-7: 577/562/569/564/571/571/577/570. All regress both caller
 // levels; original local length, selection, helper graph and complete body restored.
+// Round 273: Repeated primary/secondary/ambient output-field pointers in single/pair/all
+// subsets 535/529/530/532/533/537/533; all with primary direction 532. Original fields,
+// native workspaces, helper contracts and body restored; frame 0x2c versus 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2095,6 +2098,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 329: Three-entry sample-offset table, long/dword entries with initializer,
 // ascending assignments, descending assignments and plain indexed loop,
 // 603/603/555/575 each. No exact match; independent offset locals and full body restored.
+// Round 273: Complete encoded decoder input value/reference-copy/library-copy/native
+// five-short array copy 687 each; weights-first value/pointer-copy/reference-copy/library-copy
+// 699 each. Original decoder, separate samples, shared offsets and complete body restored.
+// Frame 0x90 agrees; status +0x30 versus +0x24 and mesh +0x2c versus +0x20 remain.
 // Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
 // with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
 // restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
