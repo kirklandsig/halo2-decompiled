@@ -77,6 +77,10 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // screen); with that kept, the 1.0 case's `return true` 117, `return true` with the early result in a
 // `found` local 117, through a `real one` local 117, `enabled = true; return enabled;` 117, the name
 // tests chained as an else of the early test 117 (each 1.0 return cross-jumps into the early return).
+// Round 466: Enabled declared after override, declared at entry but initialized after override,
+// initialized on complete name/lookup paths, and that graph with its own one-value exit:
+// 51/51/119/131; with override index scoped to the actual flag branch 51/51/119/131.
+// Original output lifetimes and separate recursive result restored; constant epilogue remains.
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {

@@ -736,6 +736,16 @@ struct s_device_machine_view
 // load refuses it). Diagnostics: no machine test 108 (the table base then takes ESI), the machine
 // test after the group test 113. Matched 0x1bb1d0 and 0x1c7450 do load 16 bits into a pointer's own
 // register across a branch, so the conflict is not the load width alone.
+// Round 41 (lane 11, fast; on the word-local masks + 0x1200055f zero store, 122): the group pointer named
+// for the power group 122; the flags local named `flags` 122 (names never move the pushed ESI); a named
+// delay-time local in case 0x5000561 131; a named position-speed local in case 0xf00055e 136; a named
+// cruise-speed local in case 0x1200055f 89 (657 bytes); `(machine_flags & 0xd) | (both bits)` 135;
+// `else if` for the group test 23 (654 bytes; identical arms, not kept); `(machine_flags & 0xd) ||
+// (both bits)` 23 (654 bytes), the same with direct field reads 111. The two 23 forms are not retail's
+// control flow (retail's machine-set movaps falls into the group test; they skip it) and only fit the
+// length because the block shrinks by the zero store's size: there the table base and index are
+// computed after the machine flags load and the word load folds the address (`mov ax, [esi + eax*4 +
+// 2]`), so the 16-bit load shares EAX only once the address computation sinks below the machine test.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1017,6 +1027,13 @@ bool function_108530(long device_index, long name)
 // the half time or the deceleration test, and `(void)&` of it: 121 each (identical code, the address
 // folds away); the inner block's locals, or position/delta/distance, or both, declared uninitialised
 // at the top: 121 each (identical code).
+// Round 41 (lane 11, fast, with both callers): retail's clamp/pin phase keeps the ramp-down time only in its
+// stack slot and uses seven xmm registers (duration 5, ramp-up 7, remaining 1, one 4, position 3, target 2,
+// zero 0), leaving xmm6 free for the initial velocity; ours holds the ramp-down in xmm1 and fills all eight.
+// The ramp-up clamped to the duration before the ramp-down zero clamp 123; the initial velocity stored first
+// in the inner block 122; the half ramp-up time named before the half ramp-down 123; the cruise time named
+// right after the remaining-time clamp 140 (the remaining time dies early, a `push ecx` frame, 0x108600 31 ->
+// 26, 0x108670 13 -> 28; still ret 0x18); the motion's duration stored first among the reset fields 121.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1478,6 +1495,14 @@ bool function_0b6760(s_index_pair const *pair);
 // DL where retail keeps a stack byte); on that, the result declared first 353, the state test before
 // the result and definition 352, the definition before the state and result 348. Retail compares the
 // state offset in memory and re-reads it with movsx (no CSE); ours loads it once.
+// Round 41 (lane 11, fast): plain index 395 (1478 bytes); plain index with both event ids as selects between
+// two field reads 367 (1488 bytes; aligned with registers masked 69 rows against this body's 120: what is
+// left is the callee-saved permutation, the result in DL where retail keeps a stack byte, the state offset
+// loaded once, the index * 12 spill); on that, the closing block setting `result = true` before its calls
+// and falling through to the one `return result;` 379 (1495 bytes, retail's length, result still in DL);
+// on this body the same 303 (1510 bytes); the b3 byte tested `<= 0` 294 (retail's `ja`, same count); the
+// state as one conditional expression 300 (1512 bytes). Retail's result byte never crosses a call on any
+// path, so its stack home is not register pressure from a live range.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
