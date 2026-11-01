@@ -10,6 +10,7 @@
 #include "object_markers.h"
 #include "unknown_16d180.h"
 #include "matrix_transform.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <xmmintrin.h>
 #include <string.h>
@@ -639,7 +640,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 230 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // Earlier round: the root-walk loop and the table read are the only places
 // left that could give retail's frame shape, so each was tried alone and together: the table
@@ -732,6 +733,15 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // distance_squared` 227. Retail's latch NONE re-test and abs-index spill follow from its frame
 // pointer (the handle lives in memory); the zoom argument's 32-bit widening needs 0xc8880's
 // parameter (contributor, left alone).
+// Round 38 (m3 lane 14): both callers now match and the old BLOCKED-BY 0x268c90 no longer explains the frame:
+// with either caller alone in the image (0x268c90, or the table-called 0xbf2c0) ours never self-aligns, though
+// both call sites sit 4 bytes off an 8-byte boundary (0xbf2c0 after four pushes, 0x268c90 after a 0x50 frame and
+// four pushes) in retail and ours alike; 0xbf380's frame (0x2a04 against our 0x2a08) and
+// the table entry make no difference (diagnostics). Our LTCG self-aligns this body only with no caller in the
+// image, so the frame is BLOCKED by the toolchain's alignment rule, not by any caller's source. Fast, caller
+// included: the cluster test through the existing bit_vector_test 230 (same code, kept: it replaces that
+// helper's body written out); the distance through length_sq3f 230; the range test as an else-if 230; the
+// model index read at each use 227 (below the bar); a named radius for the square 230.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -753,7 +763,7 @@ bool function_bba80(long object_index)
         short cluster = function_b8a80(root, &links);
         while (cluster != NONE)
         {
-            if (((dword *)((byte *)g_4e6948 + 0x1138))[cluster >> 5] & (1 << (cluster & 31)))
+            if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
                 break;
             cluster = function_b8b20(&links);
         }

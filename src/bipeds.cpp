@@ -2702,8 +2702,8 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 
 struct rigid_transform_scaled;
 struct real_quaternion_transform;
-bool function_1faf80(vector3f *facing, long arg_159e6d, void const *definition_flight, vector3f const *control,
-	real rate, real *turn);
+bool function_1faf80(long arg_159e6d, void const *definition_flight, vector3f const *control, real rate,
+	vector3f *facing, real *turn);
 bool function_bf5d0(long object_index);
 void matrix4x3_rotation_between_vectors(transform4x3f *matrix, vector3f const *arg_5f338b,
 	vector3f const *arg_bc44c6);
@@ -2766,7 +2766,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 			{
 				real rate = (biped->control_flags & 8) ? 0.99f : *(real *)(definition + 0x24c);
 
-				function_1faf80(&biped->facing_goal, arg_159e6d, definition + 0x2cc, &biped->control, rate,
+				function_1faf80(arg_159e6d, definition + 0x2cc, &biped->control, rate, &biped->facing_goal,
 					&biped->unknown3a0);
 			}
 			else
