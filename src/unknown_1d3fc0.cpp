@@ -134,6 +134,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // orders x every operand spelling) never drop the k preload and the spelling never matters; the dot's argument
 // order and all six projection row orders compile the same; distinct in/out pointers, products through
 // locals and a magnitude helper compile like the control.
+// Round 291: up evaluated before forward, returned/pre-call receiver masks and symmetric
+// dot roles, 112/112/153/153/112/112/153/153. Original helper and body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

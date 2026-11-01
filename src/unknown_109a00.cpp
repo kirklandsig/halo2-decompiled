@@ -481,6 +481,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
 // declared before the default body 154; the entry before the object 151; the object through a `headers` local
 // (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
+// Round 291: uninitialized entry/component/physics pointer declarations at entry, all
+// subsets then existing center conversion, 112/112/112/112/112/112/112/149. Original body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
