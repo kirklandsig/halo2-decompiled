@@ -460,10 +460,10 @@ void function_1cf50(void);
 // site was left as it was: the six arguments are still pushed on the stack where retail passes the
 // first three in EAX/ECX/EBX, because 0x144f0's definition (src/unknown_01cf50.cpp) carries no /Gr
 // flag; the colour/draw schedule after the call still differs.
-// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
+// Earlier at 100 (from 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
 // it with tag/stage/fallback in EAX/ECX/EBX and three stack arguments, our tree uses the standard
 // six-argument convention, so the call site and the colour/draw schedule after it differ.
-// score 100 (was 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
+// Earlier at 100 (from 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
 // Earlier: the record index is scaled by 0x40 in retail and by 0x4 here, and the table retail reads is not the one this tree reads
 // Current stride agrees; the hoisted zero, callee convention and color/draw
 // scheduling differ. Record view, byte-channel locals, material/color results,
@@ -480,11 +480,14 @@ void function_1cf50(void);
 // colour global as a dword/byte union read after the store 98, with the manager change 98 (union with anonymous
 // bytes / byte array 98/98); shifts of the global after the store 100; `& 0xff` channels of the global/local 98/100;
 // union colour local copied to the global, channels from either 98/98 (unions get a stack copy, `sub esp, 8`).
-// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
+// Earlier at 100 (from 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
 // retail calls it with the tag, stage and index in EAX/ECX/EBX and three stack arguments, our tree
 // uses the standard six-argument convention, so the call site and the colour/draw schedule after it
 // differ. (The fast score reads 100 or 101 depending on the size of the reduced image; that is a
 // layout artefact of the reduced build, not a source change.)
+// Round 69 (m3 lane 9): no new form; the first difference (+0x1f) is the loop-wide `xor ebx, ebx` that
+// feeds the zero pushes of 0x144f0's standard six-argument call; retail sets EBX/ECX to zero at the call
+// (0x144f0 takes three register arguments there, ret 0xc). BLOCKED-BY 0x144f0 (a contributor's file).
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
