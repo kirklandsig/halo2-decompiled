@@ -212,6 +212,9 @@ short __stdcall function_2551c0(long actor_index)
 // written-out dot in i, k, j order with direction first gives retail's j, k, i (not keepable: dot3f by hand, and the
 // rotation then reschedules); no form on the vector_k base gives retail's cross_k product (v.j copied, axis folded).
 // The state read through a typed `slot->unknownc` data struct (offsets 0xc lower) 89 (820 bytes).
+// Round 329: Complete first/second/both cross-product parts named across all rows
+// 68/68/67; with cosine complement, first/second/both 118/118/67; both with
+// named dot, without/with complement 67/67. Original helper and callback restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -724,6 +727,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 327: Complete entry readiness in bool/byte/short/long storage, positive and
+// complementary graphs, 87 each at 963 bytes. Unit argument and scalar homes remain; two-point
+// gains rejected.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

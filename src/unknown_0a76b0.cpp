@@ -1357,6 +1357,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // harness also merges it for inline getters taking the pool, the data pointer or the index);
 // `function_ee8a0(unit_index, primary)` 197 (591 B); the state name as a ternary 188 (604 B, but a branch
 // and jump where retail stores the 0x288 field and then overwrites it).
+// Round 324: lexical receiver/hand/paired-weapon home subsets 1-7, then all with
+// the companion-weapon test named by its role, 148/148/148/148/148/148/148/148. Original body
+// restored; early pool load, second unit lookup and hand lifetime remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1594,6 +1597,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // `result = false;` right after the getter with one `return result` 171 (517 B: the NONE path is no longer
 // jump-threaded, as in retail, but the weapon takes EBP and the pool is not kept); `if (weapon_index == NONE)
 // return false;` 142 (524 B); a typed request struct for the byte at +4 138 (same code).
+// Round 324: lexical weapon/mode/slot home subsets 1-7, then all with the Boolean
+// flag named by its animation role, 138 each. Complete original body restored;
+// same-block pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {

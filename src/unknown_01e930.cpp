@@ -465,6 +465,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // elapsed renamed waited 244, start renamed clock_start 244, both 244 (homes unchanged); the retry counter
 // renamed retries 244; block declared before the size test 256 (the listed 256 form), with waited 256.
 // Retail's SSE code (movss 1.0f stores, fld/fcompi timeout) still needs /arch:SSE, which this file lacks.
+// Round 325: Actual inlined status/clock temporary identities in both lexical orders, with
+// coordinated consumer-clock identities, all eight 244 at 1098 bytes. All original
+// helper and consumer identities restored; frame 0x3c/0x40 and early homes remain.
 // Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
 // neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
 // allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start

@@ -223,6 +223,10 @@ struct c_aggregate : c_child
 // J228: one object pointer across collection/dispatch or all three phases, crossed with a shared
 // query output and a common fixed-child ordinal: eight at 31/373. Shared output recovers 0x8020
 // but exchanges the loop homes; separate outputs retain 0x8024. Original body restored.
+// Round 328: Shared collection/information output with an actual cleanup-item pointer;
+// collection-child, dispatch-boundary and cleanup-block cursor subsets 0-7:
+// 81/83/145/146/121/123/167/168. Original outputs and signed traversals restored; frame and lowest
+// two loop/output homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -334,6 +334,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // J228: existing indexed scaled-difference helper with shared scaled-point/scalar interpolation
 // subsets 281/281/283/283; each with fraction first 261/261/263/263. The delta loop stays
 // rolled under size optimization and grows the frame/body. Original helpers and body restored.
+// Round 328: Complete playback case orders 021/120/201/210 across all four
+// switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
+// case order restored; direction/frame/flags and interpolation carriers remain.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

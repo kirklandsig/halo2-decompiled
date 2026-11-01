@@ -146,6 +146,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 325: Existing tokenizer cursor held in its actual output parameter, with empty-result select,
+// retained-token delimiter input and counters-before-table subsets, all eight 248 at 733 bytes.
+// Original tokenizer and loader restored; outer EBP preservation and read-size homes remain.
 // Round 31 (m3 lane 2, fast): the token walk with one tokenizer call in the while condition (next
 // starting at the buffer) 287 (690 bytes); the done flag declared `bool volatile` as file_read_string
 // 0x121a40 does 128 (same code); that with the size zero-initialised as there 122 (the earlier 6-point

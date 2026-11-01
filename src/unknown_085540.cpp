@@ -1032,6 +1032,7 @@ bool function_68670(byte *source, long size, void *block);
 
 // score 72 (was 72): earlier: the case-0 copy of the header value, block- and function-scoped,
 // header/sequence homes, the size register, forwarded read position and prefix stores differ.
+// frame 0x14454 agrees; header/sequence homes, short-size register and cursor reload remain.
 // Earlier: the case-0 copy of the header value, block- and function-scoped,
 // scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
 // ring cursor stays in esi across the first read and the used count is updated through a register,
@@ -1234,6 +1235,9 @@ bool function_68670(byte *source, long size, void *block);
 // declarations, definition and calls: original/header-loop/separate-copy/both 71/118/138/138
 // each. Matched reader and three controls survive; the one-point gain is rejected. Original
 // reader contract and target body restored; header exposure and DX lifetime remain.
+// Round 328: Separate sequence output with complete case orders 021d/102d/120d/201d/210d/
+// d012/d201/1d02, all 137 at 561/553 bytes. Exact-only copy forms restored; original header,
+// dispatch, ring observations and body retained. Header/sequence homes and size register remain.
 // Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
 // header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
 // 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not

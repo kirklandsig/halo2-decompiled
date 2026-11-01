@@ -552,7 +552,7 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
-// score 53 (was 67): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
 // packed source-byte carriers and initialization homes differ.
@@ -670,6 +670,9 @@ void function_1537f0(s_profile_record *record);
 // the record initializer already leaves in field 0x7f) 53 (255 bytes, plain). On that: `entry !=
 // g_4cf98c + 350` 53, the record before the identity 53, an XUID identity 53, the identity `= { 0 }` 53. The
 // identity is still folded in every form.
+// Round 327: Carried entry pointer with direct long/unsigned-long/short/word count-up and
+// countdown bounds, 53 each at 255 bytes. Identity homes still fold; original pointer walk and
+// all initializers restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

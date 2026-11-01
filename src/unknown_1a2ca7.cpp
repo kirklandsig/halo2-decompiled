@@ -900,7 +900,9 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 
 /* adds the senders of the player's messages (at most 20) to the players
    list, except those given and those already on it */
-// score 81 (was 81): BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
+// score 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
+// Earlier: this round: the listing was re-read only. Retail keeps the excluded-XUID
+// BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
 // only. Retail keeps the excluded-XUID
 // MiniMax R (11-01): no new form, no lower score; retail keeps the excluded-XUID cursor in EDI
 // and passes it to 0x63d00 in EDX, while our LTCG keeps the cursor in EDX and passes it in ECX,
@@ -920,6 +922,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
 // Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
 // Earlier: five declaration-order trials for the swapped count and
+// Earlier: this round's five declaration-order trials for the swapped count and
 // BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
 // only. Retail keeps the excluded-XUID
 // Earlier, 81 (was 81): this round's five declaration-order trials for the swapped count and
@@ -957,6 +960,9 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // Round 50: account-entry, added player and account-id role names 81 each; split message and
 // player declarations 81 each; inline reference allocation 81; account-copy buffer name 81;
 // exclusion declarations swapped 81. Opening body restored.
+// Round 326: complete exclusion tally, pointer/index traversal and additive/conditional
+// increments 138/138/117/118; those four with the plain getter 150/150/151/151.
+// Original accumulated Boolean, traversal, inherited local read and complete body restored.
 // Round 113 (lane 8, fast with 0x63d00): `if (xuid_equal(...)) is_excluded = true;` (listed, 113) gives
 // retail's exclusion-loop body exactly, so the rest is allocation: retail treats 0x63d00 as clobbering EDX
 // (cursor in EDI, `mov edx, edi` per call, sender spilled to +0x6c and reloaded into ECX), ours keeps the
@@ -1544,6 +1550,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // named both after user 126; named friend-first after user 126. count homes, early count retention and
 // membership flag reloads remain.
 // Earlier, 117 (was 117): this round: the two member counts in a local two-member struct (both kept
+// Earlier score 117 (was 117): this round: the two member counts in a local two-member struct (both kept
 // in memory) give 124, the same as exchanging the two declarations; the score stays 117. The
 // member count is still read into ESI and pushed where retail keeps it in EAX, and the count
 // homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
@@ -1561,6 +1568,10 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // Round 25 (lane 17, fast): friend count first with the clan count named member_count 124 (friend count
 // still [ebp-8] and in ESI at once); counts zeroed then set by two ifs 242 (839 bytes); counts as if/else
 // arms 117 (same code); inverted ternaries `!pool ? 0 : count` 121; friend-first if/else arms 124.
+// Earlier score 117 (was 117): this round: the listing was re-read to place the first difference; the
+// Round 326: accepted-work/whole-function task-handle snapshots with original counts 220/220,
+// friend-first counts 239/227, counts after user copy 229/229, both count forms 239/229.
+// Complete original body restored; count homes, early retention and membership reloads remain.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

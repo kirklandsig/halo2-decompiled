@@ -585,6 +585,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
 // of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
 // for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 325: Complete native surface snapshot at dispatch, crossed with both difference setters,
+// ordinary result and actor-valid direction scope: 387/397/365/366/397/401/373/380.
+// All restored; root retention is not recovered and most frames/extents grow.
 // Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
 // round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
 // a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21

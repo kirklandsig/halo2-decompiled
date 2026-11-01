@@ -677,6 +677,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // J228: rectangle-helper orders bounds/result/top/text/left and top/bounds/result/text/left
 // each 114; swapping the output order each 116; each with shared flash/post-pow row scale
 // 275/276. Every reordered helper loses its match (4/10), so all contracts and bodies restored.
+// Round 328: Carried message pointer with short/long/unsigned-long/word/byte row counters
+// 453/420/420/420/417; ordinary end-pointer for/while and direct active-range traversal
+// 322/322/322. Original indexed traversal restored; scalar, predicate and point homes remain.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

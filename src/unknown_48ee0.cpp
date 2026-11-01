@@ -155,6 +155,9 @@ extern real g_4c9798[36];
 // each (every spelling compiles to the divide first; retail multiplies by 0.75 first). With 0x1ddd0 in
 // retail's convention (not kept: 0x1ddd0 21 -> 24, its caller 0x2d140 637 -> 686): 226; width first
 // 218; width first with long mode 189 (fast); with long mode and height limit 245; long height limit 240.
+// Round 325: Entry declaration families for both dimension results, all integer/real limits and
+// the actual point/normal workspaces, seven subsets and complete role identities, all eight
+// 230 at 1487 bytes. Original declarations restored; flags/mode/sizing and rounding homes remain.
 // Round 279: Complete immediate scalar results for projection/near/far row families,
 // seven nonempty subsets and all with both plane-distance results, 230 each. Original
 // compound updates and entire body restored; mode/size homes and rounding reloads remain.

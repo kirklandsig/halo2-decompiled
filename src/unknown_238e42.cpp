@@ -1004,6 +1004,9 @@ bool __stdcall function_2399da(long controller_index)
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
 // identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
 // rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 325: Permission flag read at every use (shift/mask), crossed with all-use own-rank fields
+// and direct full-identity member presence: 142/163/142/163/142/163/142/163. All restored;
+// the changed flag lifetime shortens the body and changes saved-register ownership.
 // Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
 // own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
 // permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an

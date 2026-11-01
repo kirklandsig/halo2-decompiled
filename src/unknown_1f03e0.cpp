@@ -512,6 +512,13 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 289: Inherited three-contact default, with direct average publication/shared addition/dot-order
 // interactions masks 0..7, 193/211/190/189/193/211/190/189. All restored; original
 // default publications, average join, helper bodies, calls and arithmetic retained.
+// Round 329: Corresponding first/second/both product parts in every first-cross row
+// 122/122/73; selected-cross rows 165/165/122; joint first/all parts 122/122.
+// Both parts named in the shared first-cross helper (contact_cross): plain 73 at 978/977 bytes,
+// not kept: the helper change raises its other callers (below).
+// Seven within-row second-product-first declaration orders all 73, with the same
+// caller counts; original product order and selected helper restored. Existing
+// unmatched callers: 0x1f1460 182 -> 200, 0x1f2250 418 -> 419, 0x1f0870 stays 590.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1561,6 +1568,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
 // at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
 // rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.
+// Round 329: Complete reset orders MNSZ/SNMZ/ZNMS/NSMZ/NZMS/MSNZ/SZNM/ZMSN
+// 223/221/222/221/222/222/222/223; N=normal, M=material, S=sentinel, Z=scalar zero. Both
+// reset phases use the same order; original stores and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

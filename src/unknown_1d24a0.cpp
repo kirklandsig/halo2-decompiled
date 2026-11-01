@@ -244,6 +244,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // the local) 941 (4232 bytes); the re-read after the lookup calls dropped 985 (frame 0x1ec); both 999.
 // Round 217: standard slot upper, paired byte bounds and response-fraction bounds, seven subsets,
 // then all with target-level bound: 998/980/1046/963/1006/1067/1131/1135. Original restored.
+// Round 331: Complete factor-first scale, reversed wide-dot and real-dot multiplicands, seven subsets
+// and all with planar product order: 902 each. Original private kernels and complete body restored;
+// entry/frame, second activity byte and lower vector/scalar homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
