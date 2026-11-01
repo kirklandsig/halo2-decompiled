@@ -567,7 +567,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
+// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
 // bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
 // (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
@@ -637,6 +637,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
 // rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
 // code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
+// Round 490: all returned RGB records by memcpy, long/bool timer, 479/477; with local rectangle
+// memmove 522/516. Native assignments with text/color/both workspace initialization 547/560/598;
+// both initialized with bool timer 598. All copies, defaults, predicates and body restored.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

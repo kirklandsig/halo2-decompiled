@@ -428,6 +428,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
 // switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
 // inverted 109 (544 bytes, branches laid out opposite to retail).
+// Round 490: existing producer returns long/unsigned long/short/word/byte/signed char, 115 each;
+// long result with direct size/handle input 138/134. Producer result width canonicalizes; restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

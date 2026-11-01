@@ -1030,7 +1030,8 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// score 72 (was 72): header/sequence homes, the size register, forwarded read position and prefix stores differ.
+// Earlier: the case-0 copy of the header value, block- and function-scoped,
 // scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
 // ring cursor stays in esi across the first read and the used count is updated through a register,
 // so the read's offset is still forwarded in edx instead of reloaded and the header size still
@@ -1152,6 +1153,9 @@ bool function_68670(byte *source, long size, void *block);
 // homes and in-memory ring updates). Left there: the size in SI where retail has DX, because ours
 // forwards the stored ring start (EDX) into the second read where retail reloads it, and the case-0
 // copy scheduling and 0x68670 argument order that follow from it.
+// Round 490: payload memmove with sequence-copy/header-lifetime subsets 104/132/128/128;
+// native memcpy with the header size at every case-1 guard/copy/send consumer, same subsets,
+// 95/119/131/131. Original copies, size consumers, header lifetime and complete body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

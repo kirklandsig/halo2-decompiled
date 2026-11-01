@@ -194,6 +194,9 @@ struct c_aggregate : c_child
 // 31 (same code); produced declared and zeroed at the loop-body top 125 (389 bytes); the boundary stored
 // before the child read 31; the cleanup through blocks[k] directly 31; both loops calling the concrete
 // child class (children[i] without the cast) 31. Still BLOCKED by the build flag.
+// Round 490: error-bounded collection 37; immediate failed-producer exit 83; bounded unsigned
+// ordinal 38; bounded shared query output 38 (frame 0x8020), iteration output 48, cleanup count
+// snapshot 80, real boundary dispatch 108; immediate exit with shared output 77. Original graph restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
