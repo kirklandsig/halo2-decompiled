@@ -302,7 +302,7 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 241 (was 261): frame 0x18, current ESI, groups EBX and the body loop index EDI now agree. Left: the
+// score 241 (was 241): frame 0x18, current ESI, groups EBX and the body loop index EDI now agree. Left: the
 // model pointer is in ESI where retail uses EDX, the output body index and the replaced flag swap BL/CL, the
 // availability stays in memory where retail reloads it into DL (so ours hoists 0x80000 into EBP), the two
 // flag bytes swap frame slots 2/3, and `next` is compared as a short where retail sign-extends it once.
@@ -414,6 +414,9 @@ struct s_flag_word_bits
 // ESI for EDX, body index ECX for EBX, replaced BL for CL); on it the mask test `body->flags & 0x20` 279 [144],
 // with both flags declared first 302 [185], the model read through owner at both uses 252 [129], the model local
 // before the body index 275 [188]; the clamp bound named `last` 242 [154].
+// Round 484: explicit empty-group return with mask/late availability/admitted policy
+// lifetime subsets 241/279/252/279/258/296/277/296. Frame stays 0x18; status,
+// model and promoted-neighbor homes remain. Complete original method restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

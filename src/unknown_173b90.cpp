@@ -1042,6 +1042,8 @@ public:
 // kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
 // negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
 // tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
+// Round 477: Perpendicular publication ikj/jik/jki/kij/kji 252/247/268/275/275; double absolute magnitudes with ijk/kji/jik 282/297/282.
+// One-point gain rejected; original frame 0x60, helper calls, magnitude types, all axis stores and full body restored. Cross/normalized-component and color/tag carriers remain.
 // Round 105 (lane 7, fast): the spawn location assigned before its scale 248 (same count); the parent colour in a
 // local before the child definition call 262 (1363 bytes); the name tests as an if/else chain 277; the particle
 // typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before

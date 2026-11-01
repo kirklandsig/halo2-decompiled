@@ -167,6 +167,9 @@
 // Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
 // 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
 // shape/basis homes and thirteen excess bytes remain.
+// Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
+// then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
+// original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

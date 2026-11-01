@@ -1476,6 +1476,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Upper-first ternary, sequential bounds, lower/upper-first conditional clamped-result construction:
 // 179/134/134/140; same four with exhaustive result production 201/177/177/177. Zero sharing and pre-loop
 // scheduling remain; original source restored.
+// Round 480: Complement low-bit mask at both count observations, with original/shared
+// recipient-bit consumers and original/native recipient accumulation: dword 138/158/174/181,
+// word 179/158/183/182. Original mask expressions, field accumulation and body restored;
+// zero reuse, pre-loop scheduling and the separate capacity epilogue remain.
+// Round 485: Serialized recipient-result word/dword, branch/conditional, original/per-mode
+// first-byte publication 132/166/132/166/132/166/132/166. Two-point gains rejected;
+// original serializer and capacity/result graph restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3380,6 +3387,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // scope and set per iteration 139 (same code); on the cursor form, the member bit cleared before the
 // delivery calls 161 (469 bytes); the route zeroed as `= { 0 }` 139 and as a chained assignment 139
 // (same code).
+// Round 485: Native wire header/relay/direct records, seven subsets 139 each;
+// all records with independent cursor 164. Actual record types and full body restored;
+// channel/cursor/member ownership and route homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -755,6 +755,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
 // code); the total converted after the task state store 42; the seek position written at each use in the
 // signature case / body case / both 221 (694 bytes) / 213 / 221 (695 bytes).
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -984,6 +987,9 @@ struct s_signed_file_write_parameters
 // 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
 // `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the
 // extend offset clamped from a named unclamped excess 129 (same code).
+// Round 484: native I/O header-failure/extension-admission/signature-admission joins,
+// subsets H/E/S/HE/HS/ES/HES and HES with explicit byte-count failure
+// 301/129/129/301/301/129/301/301; frame/capacity/offset homes remain. Original body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

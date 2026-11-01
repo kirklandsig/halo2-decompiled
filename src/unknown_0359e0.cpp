@@ -145,6 +145,12 @@ PRIVATE inline long swizzle_log2(dword value)
 // `common_bits = width_bits; if (height_bits < width_bits) common_bits = height_bits;` 119 (still cmov); that
 // with y looked up before x in both arms 125 (302 bytes, 0x136140 kept); `long const` copies 82 (same
 // code); y_bits declared before x_bits 82 (same code).
+// Round 483: six complete width/height/shared count naming orders 82 each;
+// first two naming orders with the existing shared logarithm 87/87. Native
+// count-home allocation does not change; original names and body restored.
+// Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
+// private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
+// 84/90. All three controls matched; original mask, helpers and tails restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

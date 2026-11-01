@@ -561,6 +561,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // test does not). Boolean departure with heading first and the `||` update 264, with memmove 273 (748 B,
 // points/indices in EBP/EBX); that with `|=` 295; long departure with `||` and memmove 236; done-flag
 // diagnostic on the memmove form 229.
+// Round 480: Shared native point-difference distance/angle/both producers
+// 203/213/213; with squared-length sum 203/213/213; paired squared terms
+// with/without the named sum 213/213. Original body restored; count/departure homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -831,6 +834,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // entry (retail scan). On the if/else fraction (249, 880 B): if/else-if clamp 249; clamp inside the nonzero
 // arm 249; `short last = count - 1` 273; previous side declared before the previous point 249; loop test
 // `i != count` 249; `points + count - 1` 249. Zero-denominator arm first (`== 0.f`) 198 (887 B).
+// Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
+// 278/278/278/278 and conditional collection 302/278/278/278. All restored;
+// native count ECX, prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

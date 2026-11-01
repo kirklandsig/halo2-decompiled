@@ -4452,6 +4452,9 @@ void function_15fe20(long team_index, color3f *color);
 // parameter 64; on the 61 form the weapon NONE default before the unit test 92 (2688 B, `or esi, -1`
 // placed as retail, both compares immediate), with the unit through engine_object_get 92.
 // Round 216: Type/timer/round-limit results before publication, seven subsets 659/644/662/687/660/684/670; all with the actual peer cases reversed 670. All restored; returned color transfers, NONE reuse and byte shift remain.
+// Round 480: Filled team-color output objects, rival/own/both, with native publication
+// 302/552/564; with library copies 302/552/564; overlap-safe publication 423,
+// complete individual palette copies 564. Original body restored; native color transfers remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

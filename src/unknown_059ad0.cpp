@@ -3539,6 +3539,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // through network_session_time_since 119 (same code); the reservation out-pointer declared for the whole loop 119.
 // Round 104's named source pointer re-measured plain 151 (463 bytes, aligned 32 against this body's 42: the first
 // attach and the merged reason-7 tails as retail, the member arm and reservation scratch still one step round).
+// Round 482: Independent added/replacement channel results, shared/long/const-long
+// producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
+// Control 119 with related caller retained; original channel join and body restored.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3795,6 +3798,9 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // before the address lookup 138 [18]. Retail treats 0x5fb00's ESI and 0x7ab10's EBX argument registers as clobbered
 // (it reloads the session and keeps the host in ESI); both callees preserve them and are matched, so this looks like
 // LTCG generating this caller before them: BLOCKED-BY 0x5fb00 and 0x7ab10 (code generation order), not this body.
+// Round 482: Five nonoriginal complete payload-copy orders 136/138/137/138/137;
+// three with metadata before payload 138/138/137. Original request construction
+// restored; host/session staging, clock expansion and cleanup placement remain.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4942,6 +4948,10 @@ struct s_membership_update_snapshot
 // first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
 // Necessary result-controlled error-continue loops first/second/both 696/704/732;
 // with signed-short ordinals 718/715/724. Original records and validation exits retained.
+// Round 482: Persistent member-record cursors first/second/both 697/769/761;
+// first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
+// both with unsigned-word application ordinal 743 (fast; unchanged control 523).
+// Every form regresses; original signed-short validation ordinal and full body restored.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
