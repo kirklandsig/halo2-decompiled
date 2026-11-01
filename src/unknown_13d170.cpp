@@ -250,6 +250,9 @@ struct s_block_candidate
 // Round 8 (lane 17): the segment arms as an else-if chain 370 (same code); busy as a ternary on the callback 371;
 // segment pages/time declared before the while 370; `if (!busy) scan else head = tail` 397 (1181 bytes); busy
 // assigned in each arm without an initializer 369.
+// Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
+// bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
+// restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

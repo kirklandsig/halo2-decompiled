@@ -202,6 +202,13 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // (local_5, local_4, local_6, local_12, local_7) 383 (identical: declaration order does not either).
 // Diagnostic: arg_2 read once through its address gives retail's convention, 368 here, with arg_2 then in EBX
 // for the whole body where retail keeps the +0x290 pointer in EBX and loads arg_2 into ESI after 0xb9dd0.
+// Round 469: Native coordinate aggregate construction of working/output/query vectors in
+// seven nonempty subsets, then all with shared final vector setters: 390/453/463/414/376/449/460/487.
+// Working/query aggregates recover actor EAX and ret 0x20 at 376 (gain seven, rejected).
+// On that graph, magnitude-result update/query outputs at entry/native vector-position names
+// in seven subsets, then all with position at entry: 446/376/446/376/446/376/446/446.
+// Independent native-vector producer orders 465/546/564/645 on that graph: 435/376/381/439.
+// Original copies, helper bodies and call roles restored; frame and input transport remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

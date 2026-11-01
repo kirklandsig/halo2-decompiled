@@ -152,6 +152,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // and branch shape, fast 532 (aligned difference 462 -> 434), plain 568 at 1879 bytes (aligned 481 -> 441;
 // the positional score rises with the shorter body). Fallthrough case 1 into case 0 545 fast; a plain real gain
 // selected through the pointer 566 fast, with the fallthrough switch 559.
+// Round 217: Complete active mixing-workspace aggregate zeros, seven subsets, then all with the
+// unused workspace zeroed: 605/597/640/585/619/619/651/665. Original native workspace initialization restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

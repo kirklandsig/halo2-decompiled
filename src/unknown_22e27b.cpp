@@ -257,6 +257,14 @@ static inline real interpolate_linear(real a, real b, real t)
 // with disposal false from its declaration and direction-first frame sum 96; timing locals initialised at their
 // declarations (frame time, next time, elapsed) with the frame declared before the loop 96; disposal declared
 // before an uninitialised restart flag cleared before the loop 111 (first difference +0xf).
+// Round 62 (lane 12, fast): next time's home flips with each of two changes. Plain body with the expression
+// restart: [ebp-0xc] (96); plain body with `if (type == 0 && (bit 1 || bit 2)) restart = true;` in both
+// boundary blocks: EBX, 226 (645 bytes); the fraction right after the elapsed clamp with the expression
+// restart: EBX, 207; the fraction there with the true-only restart: [ebp-0xc], 197 at 645 bytes, and then the
+// prologue, the timing homes, the zero cached in EBX and the whole loop head are retail's, with only retail's
+// two false stores (`mov byte ptr [ebp-1], 0`) missing. The true-only test is a diagnostic (retail stores both
+// values). On the fraction-first form: restart as an explicit if/else 207 (same as the expression); next time
+// scoped to the `for` 206; no per-pass disposal reset 207.
 // Round 104 (lane 8, fast): fraction-first is aligned 35 (base 97), its loop scratch registers
 // retail's; there next_time renamed (advance_time/step_time) 207/207 (names move no register), and
 // the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
@@ -271,6 +279,13 @@ static inline real interpolate_linear(real a, real b, real t)
 // false restart (`restart = cond`, if/else, `cond ? true : false`, `type == 0 ? ... : false`, reset-then-if) keeps next
 // time in EBX with fraction first (aligned 30-46); dispose/restart predicates as inline helpers 576-607 bytes; on
 // the plain body, target at each use 96 (same registers) and `if (...) restart = true;` 206.
+// Round 142 (lane 4, fast): fraction first (diagnostic) 207; with no per-pass disposal reset 207; the
+// boundary disposal as `if ((valuee & 2) && type == 0) { dispose = true; break; }` 96 (same code), with
+// fraction first 207, with fraction first and no reset 207, with no reset 96; the key table read before
+// the next-frame switch 145 (656 bytes).
+// Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
+// next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
+// 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

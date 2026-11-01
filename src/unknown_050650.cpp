@@ -249,6 +249,9 @@ static inline real actor_looking_normalize2d(point2f *vector)
 // defined after the caller single/named 6/2; single tree with the dot's y term first 6, reference-first 4.
 // Round 91: native fast normalization with horizontal term/operand orders 12/12/12/6/4/6/6;
 // the existing magnitude helper in the private normalizer 6; all restored.
+// Round 121: reference copy made after the aim test (nested ifs) 39; components read into named locals in the
+// private normalizer 6; header normalize2d_fast + dot_product2d on vector2f copies 38 (258 bytes); dot with the y
+// term first 8; one named squared magnitude 6. Compile-only: every 3D dot term/operand order gives identical code.
 // @retail 0x296d60
 PRIVATE bool function_296d60(real cosine, vector3f const *reference, vector3f const *aim, bool three_dimensional)
 {
@@ -589,6 +592,13 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
 // 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
 // but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Round 26 (m3 lane 2, fast): bool clear set at the top of each pass with `return true` after the best tail
+// 327 (0x297660 4: the collision flag then passes in BL); that with one `return result` 349 at 1435 B (retail's
+// late EBX push, EBX scratch, EBP/EDI best i/j, AL clear and DL result, the tail is retail's code, but the loop
+// body is 16 bytes longer and the x87 temp sits above the pitch axis, retail's at the frame bottom); on it the
+// candidate at function scope 349, the pitch axis member by member 349, the helper's cross terms j, k, i 349,
+// the ray through the existing vector3f_scale 347 (frame 0xa0). Diagnostic, reverted: that form with the header's
+// collision type at 0x5c 344 (retail's 0xa8 frame, first difference +0xa; the rotation stays 16 bytes longer).
 // Lane 18 r14 (one-link LTCG env with the callee-closure objects, exact for this function: env count 326 = check
 // 333): collision type at 0x5c 324; with byte clear 328; byte clear 330; byte clear set first in each pass 334;
 // that with 0x5c 329 (late EBX push, byte clear in AL); yaw-axis pointer local before the loop 334, with 0x5c 333;
@@ -772,6 +782,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case 2's remembered 0x1e3b00 block (case 1's copy cross-jumps into it; the 0xcafc0 blocks stay apart).
 // N round 257: Actual marker output at function/case/valid-reference/aiming lifetime, original/two-use marker-key observations 322/322/322/322/322/322/322/322.
 // Original marker lifetime, key reads and complete body restored; fast control 322, full 276.
+// Round 26 (m3 lane 2, plain): the marker position member by member 276 (same code); marker, case 3 and case 5
+// points as struct assignments together 306 (1388 B); that with point_valid set once at the aim label 370 (0x297660
+// 1); the remembered-prop test as `result = state->unknown00 != NONE; if (!result) goto done;` 375 (retail's
+// failure exit, shared by the normalize failures, both remembered NONE tests and case 1's state < 1, stores
+// result = false); point_valid renamed to sort after result 276 (homes unchanged).
 // Lane 18 r14 (one-link LTCG env with 333 objects, exact for this function: env count 233 = check 276; the
 // 0x1ffe00 call now pushes both arguments as in retail): the first difference is point_valid's byte (ours below
 // result, retail above); eleven renames of either flag (a_, zz_, valid_point, has_point, success, found ...)
@@ -1205,6 +1220,9 @@ struct s_actor_looking_structure_view
 // Round 27: fraction as a ternary after the query 144; `1 - cosine` named in the helper 23; cross terms
 // before the projection 158 (931 bytes); the 0.6 clamp as an if statement 141 (927 bytes); the dot in its
 // own local beside the score 33.
+// Round 121: score written forward-first (j,k,i) 23 (same code) / forward-first i,k,j 25; helper with cross i
+// before the projection (0x170d70's order) 23; cross terms in a vector3f local 62; the dot named before the
+// projection 23.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1332,7 +1350,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
-// score 442 (was 506): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
+// score 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
 // Tried the out-of-line predicate declaration 546 fast; horizontal aggregate copies 562 fast; initial native setters 546 fast;
 // explicit looking success/fallback stores 532 fast, 527 plain (three-point gain, restored); target point or selected vector
 // renamed 546 fast each; validity at function scope 546 fast; aggregate inputs plus explicit stores 549 fast;

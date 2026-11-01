@@ -309,6 +309,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // code); the stage/pass parameters as named const copies at the top 117; the first ordinal as `word`
 // 117; the pass element's field as `[1]` of a long pointer 117; the group test through
 // `g_4e3b44[(short)local_tag]` with no instance local 165.
+// Round 26 (m3 lane 2, fast): the head is the body of the existing inline material_parameters (unknown_0167a0.cpp,
+// whose matched 0x16b90 walks the same chain): that form 135 (in-place fallback mask, folded group read), with the
+// grouped cache zeros 163; the original head with a `& 0xffff` fallback and grouped zeros 149; the second +0x100
+// read named for the 0x1c590 call 117 (same code); the geometry test as an early return 117. The grouped zeros
+// alone re-measure 120: the chain is then two instructions short (retail's unfused ordinal load and dead `lea`).
+// Round 57 (lane 16, fast): the group tag read once into a named dword tested twice 165 (first difference +0xe);
+// the first ordinal read straight from block 0's address 117; the geometry test as an early return 117; the
+// cached pointers compared field first 119; no byte alias of the definition (casts of arg_0) 117 (same code).
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).

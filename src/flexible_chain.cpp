@@ -325,6 +325,13 @@ void __stdcall function_1160c0(real dt)
 // there for 179): the physics tag in a one-use local 172 and the physics index in a local used for the test and
 // the lookup 172 (both identical; the tag address is still formed before the -1 push); 1/dt before the loop 182;
 // a long loop index 289 (1358 bytes); the root test as `fabs(length) < .0001f` 172.
+// Round 35 (lane 13): rest-offset copy at the loop top (before the tick) 289 (1354 bytes; offset still homes
+// above previous); length/axis declared at the loop-body top 179 (same code); previous renamed last_position
+// 179 (no slot moves); the dot named before the complement product 179 (same code); a 600 s permuter run
+// (55 tries) none below 179.
+// Round 264: Existing initial/normalized axis setters and const native delta/target/offset,
+// subsets 1/2/4/3/5/6/7, then all with const assigned-once scalars 192/179/179/192/192/179/192/192.
+// Original producers and complete body restored; segment/previous/axis homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

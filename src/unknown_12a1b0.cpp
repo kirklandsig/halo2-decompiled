@@ -991,7 +991,7 @@ real sound_get_maximum_distance(s_sound const *sound, long definition_index);
 long __stdcall function_127d00(s_type_99c531 const *source, real maximum_distance, real *distance);
 short function_218f50(s_looping_playback_definition *definition, short previous, real pitch);
 short function_219110(s_set_ref *ref, short offset, dword *used_mask, short previous, dword *seed, bool *all_used, bool mirror);
-void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index);
+void sound_playback_set_chunk(long sound_index, long definition_index, short pitch_range_index, short permutation_index, short chunk_index);
 long __stdcall function_125e60(s_looping_track_sound *sound);
 
 // Creates one looping track sound; byte-matched at 832 bytes.
@@ -1065,7 +1065,7 @@ long function_21b940(long looping_sound_index, long definition_index, long pitch
 				short previous = (short)looping_sound_get_previous_permutation(definition, playback, chosen_range);
 				short permutation = function_219110((s_set_ref *)playback, chosen_range, &permutations, previous, seed, NULL, false);
 				looping_sound_set_permutations(sound, definition, playback, track_index, chosen_range, permutations, permutation);
-				sound_playback_set_chunk(result, definition_index, (char)chosen_range, (char)permutation, 0);
+				sound_playback_set_chunk(result, definition_index, chosen_range, permutation, 0);
 				function_125e60(playing);
 				looping_sound_link_sound(looping_sound_index, track_index, result);
 				++sound->playing_sound_count;
@@ -1435,6 +1435,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // flag test (`lea [x + x*4 + 0x23]`), retail loads the flags into EAX for the take test, the
 // shared take path schedules as the 0x21cb90 note says (BLOCKED-BY 0x2194c0's parameter order),
 // and retail extends the previous permutation (`movsx eax, ax`).
+// Round 36: the take twin indexing the track entry twice 146 (confirmed); the previous value through
+// the existing 0x21cc30 with an `inline` declaration 129 (retail's `movsx`, confirmed); the helper
+// without `inline` 172 (called out of line); `long previous` 129 (the same `movsx`). All restored.
 // Round 106: the transition flag set through the existing word_flags_set 75 (kept: the flag store
 // through a pointer stops the track-index read being reused across the pitch-range call, so the
 // definition takes ESI); the playing record before the definition 50 (kept); on that, `result`
@@ -1496,7 +1499,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 	short permutation = function_219110((s_set_ref *)playback, arg_58ecd0, &permutations, (short)previous, seed, NULL, false);
 	looping_sound_set_permutations(sound, definition, playback, playing->loop.track_index, arg_58ecd0, permutations, permutation);
 
-	sound_playback_set_chunk(sound_index, definition_index, (char)arg_58ecd0, (char)permutation, 0);
+	sound_playback_set_chunk(sound_index, definition_index, arg_58ecd0, permutation, 0);
 	if (playing->channel_index != NONE)
 	{
 		s_looping_voice_counts counts;
@@ -2078,7 +2081,7 @@ void function_21c400(short voice_index, real gain, s_looping_channel_spatializat
 				}
 				if (permutation_index != NONE)
 				{
-					sound_playback_set_chunk(voice->sound_index, playing->definition_index, playing->pitch_range_index, (char)permutation_index, next_chunk);
+					sound_playback_set_chunk(voice->sound_index, playing->definition_index, playing->pitch_range_index, (short)permutation_index, next_chunk);
 					playing->transition_pending = true;
 				}
 				else
