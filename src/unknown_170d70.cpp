@@ -1078,29 +1078,38 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
 
+// score 69 (was 126): logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
+// of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
+// of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
+// (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
+// `mov edi, [polygon+0x1c]` (count) and the origin pointer (retail addresses [eax+0x60] directly, we form
+// eax+0x60) still differ. Tried: long positive = cond ? 1L : 0L with an `axes` pointer (126, 129 direct), bool positive
+// (127 / 130), bool positive with `positive != 0` or byte/char positive (60 but the compiler then passes both
+// parameters on the stack, `ret 8`: not usable), long positive with `!= 0` (77), short positive (69, this form),
+// all 48 operand/sum orders of the origin dot product (135 each: the order does not change the code), origin
+// as a local pointer vs context->origin->position.x directly (126 vs 135).
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
-	long axis = function_120850(&plane->n);
-	long positive = ((real const *)plane)[axis] > 0.0f ? 1L : 0L;
+	short axis = function_120850(&plane->n);
+	short positive = plane->n.n[axis] > 0.0f ? 1 : 0;
 	point3f const *origin = &context->origin->position;
 	real distance = 0.0f - plane_distance_to_point(plane, origin);
 	point3f projected;
 	projected.x = plane->n.i * distance + origin->x;
 	projected.y = distance * plane->n.j + origin->y;
 	projected.z = plane->n.k * distance + origin->z;
-	short const *axes = g_440b94[axis * 2 + positive];
 	point2f point;
-	point.x = ((real const *)&projected)[axes[0]];
-	point.y = ((real const *)&projected)[axes[1]];
+	point.x = projected.n[g_440b94[axis * 2 + (positive != 0)][0]];
+	point.y = projected.n[g_440b94[axis * 2 + (positive != 0)][1]];
 	for (long i = 0; i < polygon->count; ++i)
 	{
 		point2f *destination = &points[i];
 		point3f const *vertex = &polygon->points[i];
-		destination->x = vertex->n[axes[0]];
-		destination->y = vertex->n[axes[1]];
+		destination->x = vertex->n[g_440b94[axis * 2 + (positive != 0)][0]];
+		destination->y = vertex->n[g_440b94[axis * 2 + (positive != 0)][1]];
 	}
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
