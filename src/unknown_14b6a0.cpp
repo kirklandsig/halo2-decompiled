@@ -311,6 +311,9 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 229: repeated recipient handle ownership with native recipient step, actual relocation/destination
+// sharing and repeated visit-stamp ownership: 222/228/222/228/222/228/222/228. All original
+// executable source restored; frame 0x50/0x3c and readiness/recipient sharing remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

@@ -541,6 +541,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `iterator.index` at every use 443 (identical to the listed 443); the 0x25d510 step made an extern function and
 // inlined across files 443 (identical; 0x25d510/0x25d580/0x25dac0/0x25b440 still match); the single call with
 // 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
+// Round 229: timer/view-first case orders 30421/34021/34201/34210/30241/32401/32104/34102
+// give 437/434/431/461/441/431/433/452. Fast frame 0xa0 recovered, actor input stays stacked;
+// all original cases, qualifiers, call boundaries and executable body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
