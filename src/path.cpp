@@ -475,6 +475,16 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // long count 365/272 (1406); `special` declared false at the else arm's start on those 351/266 and 365/272;
 // the short count with only that early `special` 368/216 (1368: retail's special sequence, best aligned);
 // that with the link count incremented after the copy 369/214.
+// Round 64 (m3 lane 16, fast; positional/aligned against 295/240, 0x270930 kept throughout): short link count
+// 366/210 (1368 bytes); with the type named once 347/290 (1388); the type alone 344/311; short count with `special`
+// false at the in-range arm's start and set by an if 363/190 (retail's special sequence); that with count declared
+// after the init loop 371/211, with the type 349/293, with the increment split from the copy 367/214; early special
+// alone 315/217, with the type 338/309. New lead: the link test as an inline predicate taking the pathfinding data
+// first (a new helper: diagnostic only) puts retail's pathfinding load ahead of the `jne` (short + early special
+// 363/214, alone 313/269); with a result variable in it (`if (type != NONE) return true; bool result = false; if
+// (valid) result = bit; return result;`) retail's `and al, 1; mov [esp + 0xf], al` store into the special slot appears,
+// 361/186 (1374 bytes); its plain/dword/long bit spellings 361/352/361, on the long count 355, with the late count
+// 365, with the named type 351, with the split increment 360.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

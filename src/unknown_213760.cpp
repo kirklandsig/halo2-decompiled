@@ -1324,6 +1324,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 6, at query and write 6 (the listed 6: resize handle EAX, header address ECX, close copy EDX, each one register
 // before retail's), at resize, write and close 118; the getter at resize and write with the plain
 // `written = bytes == 0x800` 110. All restored: no match, and a getter with one caller is not kept.
+// Round 64 (lane 16, fast), on round 56's 6 form (reproduces at 6): the resize handle local before `bool resized;`
+// 6, `const` 6, the done flag declared once before the loop 6 (same code each); the close passing the resize handle
+// local 129 (915 bytes); the size limit read just before the size query 284 (902 bytes). s_file_handle cannot take a
+// copy constructor (it is a member of the task union), so retail's by-value handles are plain struct copies.
 // @retail 0x213970
 void function_213970(void)
 {

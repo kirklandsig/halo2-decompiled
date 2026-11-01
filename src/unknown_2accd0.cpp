@@ -743,6 +743,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Round 64 (lane 16, fast): the signature state as the switch's `default:` 177 (688 bytes); the scratch clamp
+// through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
+// code); the total converted after the task state store 42; the seek position written at each use in the
+// signature case / body case / both 221 (694 bytes) / 213 / 221 (695 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -964,6 +968,10 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Round 64 (lane 16, fast): the header-site memset count read from the record's size field (diagnostic)
+// 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
+// `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the
+// extend offset clamped from a named unclamped excess 129 (same code).
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -160,6 +160,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes
 // to the stack); on that form the body array first 118, the model first 122, a byte shift in case 0 124, int type
 // 124, result first 124, the rigid body at each use 97 at 260 [122], the rigid body after the kind-7 path 103.
+// Round 64 (lane 16, fast; caller 0x1d5bf0 in brackets): one type read as a byte 94 [13], as a long 96 [13];
+// on the one-read body the owner read once through `&owner` 96 [13], the level through `&level` 96 [13], the kind
+// through `&kind` 65 at 260 bytes [194: kind on the stack, ret 0xc], the rigid body as `base + index * sizeof`
+// byte arithmetic 96 [13]. Every one-read body takes component in ECX and the index in EAX.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
