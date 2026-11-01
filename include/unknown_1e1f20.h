@@ -25,7 +25,8 @@ struct s_unit_weapon_view
 	byte type;
 	byte unknown0ab[0x212 - 0xab];
 	char current_weapon_index;
-	byte unknown213[0x218 - 0x213];
+	char next_weapon_index;
+	byte unknown214[0x218 - 0x214];
 	long weapon_indices[4];
 	byte unknown228[0x24c - 0x228];
 	long driver_index;
