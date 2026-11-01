@@ -167,6 +167,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // Round 280: aligned-helper conditional radius selection, matrix-first declaration,
 // result-first lower clamp and consistent minimum-radius snapshot combinations: eight
 // forms 319 each. Original helper and complete body restored; pointer ownership remains.
+// Round 284: inactive-tail early return, activity bool/byte/short/long and separate
+// refreshed-object lifetime: 319/319/318/319 twice. One-point word-storage gain rejected;
+// original aligned helper and complete body restored. Entry pointer ownership remains.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

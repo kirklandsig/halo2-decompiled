@@ -148,6 +148,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Round 279: Existing status producer writes the real final payload directly, before/after
 // the disjoint range helper, crossed with constructor-owned zero and native flag bits:
 // 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.
+// Round 284: shared actual invitation/session/voice icon-result publication, subsets
+// 1-7: 490/389/487/374/487/390/669; all with native short session/voice results 673.
+// Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

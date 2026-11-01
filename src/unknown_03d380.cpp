@@ -389,6 +389,10 @@ void function_125a90(long value);
 // 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
 // assigned on every path with no initializer 36 and the negated test with the kind arm first 36
 // both compile to the same code (VC normalises the arm order).
+// Round 284: complete policy observations from incoming flags, b/a/both 103/143/144;
+// those with the native inner type comparison 104/144/145; both with short/byte type
+// carriers 149/152. Original policy snapshots, type and complete body restored;
+// scaled ordinal before policy load and decision-block placement remain.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
