@@ -671,6 +671,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // both through the existing vector3f_assign 233 each (1020 bytes). On the plain long our build merges limits.j and
 // limits.k into one value (two stores and one spill where retail keeps XMM6/XMM7 copies and three stores); the
 // volatile long is what keeps them apart here, and no tried form keeps them apart without it.
+// Round 293: Plain indexed jitter sign/on, per-coordinate, on-first and branch-selected stages,
+// inherited sample 182/238/165/177; ordinary sample 222/179/218/243. The first and third
+// recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -896,6 +899,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // copy 206 (slot fixed, the scale goes through memory); the same by hand 203; in place plus
 // `!(fabs(angle) < 0.0001f)` 200; copy then scale in place 220; `moved_away = false` set inside the
 // test 159 (retail's `xor dl, dl` ... `mov dl, 1`, a flag set in a test: only with a match).
+// Round 293: Complete scalar velocity-product schedules ijk/ikj/jik/jki/kij/kji
+// 219 each (frame 0x24, retail length); all-input then all-product and per-row compound
+// producers 213/213. Original sampled-vector, frame 0x18 and full body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
