@@ -195,6 +195,20 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
 // 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
 // its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
+// Round 143 (lane 4, fast with the file, faithful 92): the node's direction copied field by field from the
+// struct 177 (608 bytes: the direction lives in registers, no store-back, and still no early Y load), from
+// the direction locals 177, with no direction locals 177; the direction from vector2d_from_points2d 91 (as
+// lane 17 r1: Y is then popped and the squares start with X), that with no direction locals 91. Matched
+// 0x294050 gets the early loads for every component but the first (j, k) under the same x87 sum.
+// Compile-only screen (/O2 /arch:SSE, reproduces our code): the early Y load (and retail's XMM4 zero)
+// appears only when the direction comes from vector2d_from_points2d and the walk reads it only through
+// the existing dot_product2d and cross_product2d (the dot and the second cross factor, any normalizer
+// form); it is then a hoisted load, so Y lands in XMM1 and the second factor loads other.x instead of
+// multiplying Y in place as retail does (real 106, 634 bytes). Direct reads, locals, scalar locals or a
+// helper copying into locals never give it. A hoisted load is never multiplied in place by a memory
+// operand (a Y-first cross helper, the sibling/cross check moved after the walk loop, or no node copy:
+// still `movss xmm5, [other.x]; mulss xmm5, y`), and the check after the loop adds an unthreaded
+// `index != NONE` test; retail's in-place `mulss xmm0, [edx+0xc]` needs Y as a variable.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
