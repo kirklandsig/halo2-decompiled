@@ -1495,6 +1495,9 @@ void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rea
 // level_offset` 200; named bins with every gain and the sum read at use 231 (545 bytes). Retail's entry sum
 // (level copied through EAX into the dead parameters slot, then addss from it) is also the shape a 4-byte
 // decibel struct or long-bits copy gives (as 0x2afb80's attenuation), not only /Op.
+// Round 231: native scalar memcpy level/rear/channel, paired groups and all inputs
+// 209/209/200/213/209/209/213; complete memmove 219. Original scalar acquisitions,
+// channel decision, providers, sum and full body restored.
 // @retail 0x2af920
 void c_sound_effects::add_sends(s_sound_send_parameters *parameters, long unused, long mode, s_mixbin_settings *mixbins)
 {

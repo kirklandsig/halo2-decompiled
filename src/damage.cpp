@@ -2589,6 +2589,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // test (5), the team test as an early return before the enemy block (5), the enemy branch scaling `damage` in
 // place with one final return (32), `enemy = team < 0 || team >= 16 || !bfe60(...)` (73). Every `return damage`
 // becomes one block whose damage location (xmm1 or the stack home) the allocator picks; its order follows that.
+// Also tried: damage declared before the random amount (5), team read at every use (5), a positive
+// allegiance predicate (74, frame 4), enemy assigned in the valid/invalid team arms (67, frame 4), one result
+// across both engine/team paths (42, frame 0xc), both paths scaling damage in place (5), the engine product
+// computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4309,6 +4313,9 @@ dword function_db810(long object_index, long node_index)
 // Also tried: `model_index` renamed (4) and every head local renamed (4: names do not steer it), no `object`
 // local with DAMAGE_OBJECT(object_index) at each use (17), `result = lowest_rank = 0x7fffffff` (7), `lowest_rank`
 // declared first (7); the permuter (51 tries) found nothing under 4.
+// Also tried: result before the object lookup (17), rank before it (7), both before it (17), rank after the
+// model lookup (6), a signed-short rank (4), the pointer advanced in the body (4), a count-consuming while
+// with pointer advance in the body (4), read-only physics/rows/node indices (4).
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {

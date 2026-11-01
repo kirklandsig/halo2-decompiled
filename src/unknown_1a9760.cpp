@@ -123,6 +123,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // projection i, j, k [166]; local_6 through a named offset vector, grouped or i, j, k [164/164], with the i, j, k
 // projection [171]. Diagnostic (not kept): normalize3d/dot3f/vector3d_from_points3d expanded under a scoped inline
 // window 211 (1015 bytes).
+// Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
+// component if/conditional selections 204/220; reused side predicate 204; existing negative
+// scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

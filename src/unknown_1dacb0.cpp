@@ -1193,6 +1193,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 216: Complete selected identifier through optional outputs and return copy
 // after outputs/after requests, with member/native iterator and before/after-lookup reset:
 // 998/998/998/998/1017/1017/1017/1017. Original constructor and publication lifetimes restored.
+// Round 234: Downstream request eligibility as the actual urgent argument, bool/byte/short/long after
+// outputs 996/995/1008/1009; before outputs 996/995/1009/1010. Original search and request guards
+// restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1347,6 +1350,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 216: Complete selected identifier through optional outputs and return copy
 // after outputs/after requests, with member/native iterator and before/after-lookup reset:
 // 998/998/998/998/1017/1017/1017/1017. Original constructor and publication lifetimes restored.
+// Round 234: Downstream request eligibility as the actual urgent argument, bool/byte/short/long after
+// outputs 996/995/1008/1009; before outputs 996/995/1009/1010. Original search and request guards
+// restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

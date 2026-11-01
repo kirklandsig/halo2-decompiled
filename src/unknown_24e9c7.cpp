@@ -235,6 +235,9 @@ struct s_24e9c7_bounds
 // Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
 // complete double graph with double returned-height carrier 211. All real carriers restored;
 // early across spill, shifted scalar homes and SSE schedule remain.
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

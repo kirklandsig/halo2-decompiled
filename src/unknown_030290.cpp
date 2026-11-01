@@ -349,6 +349,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // b.x/b.y in retail's xmm7/xmm6, but the second inlined transform still moves x out of xmm7 and spills x
 // and z where retail keeps x in xmm7 and spills only z); on it z, x, y displaced order 204 (971 B);
 // helper coordinates declared z, y, x 218 (966 B). Original body restored.
+// Round 230: Origin/displaced inverse defaults staggered across the first/second transform
+// boundaries: entry-between/between-entry/both-between/entry-before/before-entry/both-before/
+// between-after/after-between 237/237/272/208/208/204/282/274. Both final staggered forms
+// recover frame 0x2c but regress. Original defaults restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

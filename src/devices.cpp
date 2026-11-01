@@ -1099,6 +1099,10 @@ bool function_108530(long device_index, long name)
 // 0x108670 13 -> 34).
 // Round 216: Bounded up/down-time producers and local/field cruise-speed ownership; then standard minimum/maximum duration/ramp floors and upper bounds:
 // 128/128/142/142/137/137/138/138/143/148/163/151/166/167/181/217. Original executable source restored.
+// Round 229 (lane P): both phase-distance outputs at common final stores, initialized at reset,
+// entry or before pins 140/163/151; reset outputs with field-owned cruise velocity 166; with
+// stored initial-speed reads 140; both phase results selected from their nonzero tests 152,
+// at entry 172; before pins with field-owned cruise velocity 163. Original body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1570,6 +1574,8 @@ bool function_0b6760(s_index_pair const *pair);
 // on this body the same 303 (1510 bytes); the b3 byte tested `<= 0` 294 (retail's `ja`, same count); the
 // state as one conditional expression 300 (1512 bytes). Retail's result byte never crosses a call on any
 // path, so its stack home is not register pressure from a live range.
+// Round 229 (lane P): native header type-byte field unmeasured; original record and body
+// restored after the check stalled. Frame/index/state/result homes remain as above.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

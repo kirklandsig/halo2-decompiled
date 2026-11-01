@@ -1446,6 +1446,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 268: shared final color-scale scalar pairs 1-2/1-0/2-0/all, original luminance
 // workspace 567 each; split luminance producers 529/529/529/567. Frame stays 0x2c;
 // caller 364 and exact caller survive all eight. Original scalar graph and body restored.
+// Round 232: Ordered normalizer single-result zero/magnitude defaults, direct/shared
+// scale, forced/ordinary inline: 530 each (caller 457/413 versus 364). Original
+// returned-length contract, helper, all inputs and full body restored.
+// Round 235: uniform published-length field consumers with combined admission/entry-base/
+// late-result subsets 0-7: 577/562/569/564/571/571/577/570. All regress both caller
+// levels; original local length, selection, helper graph and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2092,6 +2098,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
 // with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
 // restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
+// Round 231: structure/model/both admission guards 817/618/642; the same guards with
+// test-produced shared status 817/798/776; both guards with special-material single
+// completion and test-produced/original status 816/797. Original admission and body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

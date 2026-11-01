@@ -425,6 +425,10 @@ static inline bool teams_enabled_19e1c0()
 // Plain result 691 (control); with a `length` local and `length > remaining ? remaining : length` in the four
 // name/team cases 692, as `remaining < length ? remaining : length` 692; the length local with the volatile
 // result 412 (1444 bytes); plain result with the token fallback clamp as a ternary 693, with both 694.
+// Round 231: case-owned copy/formatter/replacement results and their paired families
+// 573/416/461/516/631/588; complete case results with original/remaining-first
+// native copy clamps 540/540. Formatter-only gives retail length at 416; original
+// result ownership, all cases, text buffer, loop and full body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

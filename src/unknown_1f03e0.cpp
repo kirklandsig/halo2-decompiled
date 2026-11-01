@@ -730,6 +730,13 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // keeps [edi+0x104/0x108]), declared after `up` 297 (1229), declared at function scope 288 (breaks
 // 0x1e5af0). Retail keeps up in XMM5-7 through the state dot and the forward cross and multiplies the
 // forward from memory into its own registers; ours keeps up in XMM4-6 as the destinations.
+// Round 232: Angle initialized before limited copy, declared before up/beside axis/
+// at entry 190/182/182/182; those four with named cosine complement 188/180/180/180.
+// Two-count best rejected; original angle lifetime, expressions and complete body restored.
+// Round 235: shared initial dot with settings/forward/both receiver removal, then
+// each cosine-complement interaction and two dot declaration-scope combinations:
+// 262/262/266/262/262/262/266/262. All lose the caller match; original dot,
+// receivers, scalar graph, helper declaration state and complete body restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -938,6 +945,12 @@ struct s_flags_1f0870
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
 // Round 288: Continued magnitude/input squared sum/both/history squared sum/magnitude+history/input+history/all/all with entry magnitude,
 // 593/590/593/590/593/590/593/593 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 232: Branch-owned initial gravity/general-only damping/general-only flying
+// scope subsets and complete graph with early bounded-step declaration 610/629/638/626/628/634/637/637.
+// All restored; original frame, flag observations and shared normalization retained.
+// Round 235: complete movement-scale/history-anchor/both/current+scale/current+anchor/
+// all/current/all with split anchor assignment: 623/665/672/627/661/666/621/666. Current-value
+// forms revisit the clean store graph; original observations and full body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1315,6 +1328,10 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // Round 289: Response-only selected contact address, with preferred cursor/count-store phase/entry success
 // result interactions masks 0..7, 430/456/429/455/524/521/525/522. All restored; original
 // receiver, qualified count, copies, response order and arithmetic retained.
+// Round 235: existing normalizer complete native/scalar/native-scale/scalar-setter
+// input captures, original exits 555/425/555/419; single-result joins 555/567/555/567.
+// Candidate-dot admission bool/byte/short/long 419 each; rejection 420 each.
+// Original normalizer, comparisons and full body restored; zero/count homes remain.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

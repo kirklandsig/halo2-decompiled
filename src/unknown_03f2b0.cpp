@@ -1505,6 +1505,9 @@ struct s_133f70;
 // Round 122 (plain; fast scores 353 and misleads): type stored through one ternary 175 (aligned 80); named
 // flag-byte pointer 175; header before the count store 176; entry-table test nested 175; one shared cache-index
 // local for both 0x3ddd0 lookups 175.
+// Round 234: Complete twice-used encoded stamp, packed/expression or successive operations 359/359;
+// split/expression or successive parts 342/342; those four with native previous byte 283/283/286/286.
+// Original repeated stamp observations and body restored.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

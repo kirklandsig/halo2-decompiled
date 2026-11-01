@@ -737,6 +737,10 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // byte and this guard form (no word local) is 50 with only the `||` tail left; byte-typed bools 50;
 // the `||` stored in a third bool 50. The `short` size also needs src/unit_object_type.cpp's
 // declaration (a contributor's file), so it stays held: BLOCKED-BY 0xbc380.
+// Round 227: native controller/counters/selector/all field stores 83/83/83/83;
+// allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
+// same result arms with the existing animation helper 130/120. All restored; post-reset
+// table/object/result homes, native size load and saved-key tests remain.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
@@ -1087,6 +1091,10 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs
 // and all 156 each; all with selected point/normal/location library copies 156. Original
 // expressions and body restored; quotient/query, selected homes and word loads remain.
+// Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
+// complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
+// with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
+// homes, word loads and zero allocation remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
@@ -1310,6 +1318,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // components named 94/94/94; the pair with the existing final flag setter, alone/staged, 94/94.
 // All five matched controls survive. Original declarations and body restored; the byte force
 // contract still needs coordinated declarations in protected contributor files.
+// Round 226: overlap-safe library copies at requested/output-basis/velocity masks 1-7:
+// 263/148/272/54/265/154/275; contiguous paired axes 314. Velocity-only memmove 54/1034 not kept:
+// retail copies inline, so the memmove call is one retail does not make. Original copy restored;
+// basis MOV/LEA, component loads and force publication remain.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

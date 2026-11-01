@@ -1849,6 +1849,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // defined `inline`, before the link stores, 300. A data local at entry for the object and
 // the ancestry walk, the parent and header from `pool->data` after it 302, header first 302, the walk alone 292;
 // the object through the header view, header at entry 285.
+// Round 231: complete point-result/rotation staging 284/284; per-row/all partial pairs
+// 293/293; all row products 283; conditional scaling alone 285, with complete
+// point-result/rotation staging 284/284. Every row-staging form loses the matched
+// sibling; original two-caller helper and complete body restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

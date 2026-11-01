@@ -335,6 +335,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // instance's group with the fallback as default 165; the fallback read through the same instance pointer 168.
 // Env only (first 82 instructions, control 53): the switch with a `& 0xffff` fallback 75, through TAG_GROUP/TAG_GET
 // 75, a const group local with a `& 0xffff` fallback 75.
+// Round 230: In-place fallback normalization with original/root/directory/nested/before-cache
+// lifetimes 152/152/152/152/152; original handle with root/directory/nested scopes 117/117/117.
 // Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
 // the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
 // element's field through a named `long const *` 117 (same code); the pass block's address named right

@@ -620,6 +620,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 150: distance terms swapped (ring product first) 90; angle terms swapped (ring term first) 90; both 90;
 // the distance without the explicit double cast 90; the rotation's dot as dot3f(vector, axis) 90 (all the same
 // code: the ring still converts with fild).
+// Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
+// unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
+// ring, word spoke, helper and complete body restored; ring conversion/spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

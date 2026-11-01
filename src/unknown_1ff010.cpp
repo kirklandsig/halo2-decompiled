@@ -511,7 +511,7 @@ void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
-// score 77 (was 134): frame 0x20 agrees. Retail tests the planar length after the scale products
+// score 77 (was 77): frame 0x20 agrees. Retail tests the planar length after the scale products
 // Round 28: the existing rotate_vector_170d70 (src/unknown_170d70.cpp) for rotate_direction 130 at retail's 850
 // bytes (aligned 106 -> 88; lead), with the output through vector3f_scale 147 (830); vector3f_scale for the output
 // alone 147 (828); rotate_direction with scalar cross terms (dot first, or (1 - cosine) first) 134/134 (0x1ecf50
@@ -619,6 +619,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // straight into direction on success (no k or fallback copy) 167 (790 bytes); integer-zero literals in both
 // tests 77; the rotation's cosine through a named zero local 77 (diagnostic only). The first difference is
 // still the magnitude compare and its XMM6 zero scheduled above the divide.
+// Round 234: Eager geometric admission, direct/length-first/facing-first/separate predicates
+// 180/177/190/174; with native planar component input 199/196/198/193. Original short-circuit admission
+// and library copy restored.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
