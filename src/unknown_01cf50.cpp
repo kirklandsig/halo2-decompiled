@@ -5493,7 +5493,7 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
-// score 223 (was 241): the handle now goes into the context's second dword and the availability
+// score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
 // flag drives the table test, as retail does; left is our ebx zero register against retail's
 // edi, the loop counter in edi against retail's esi, and the permutations in eax at 0x3e380.
 // score 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes

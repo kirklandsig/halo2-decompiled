@@ -3105,9 +3105,10 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	return next_index;
 }
 
-// score 3 (was 12): the node's point transform now has its own helper (the shared point helper sums the
-// rows in the other order, which the matched 0x179fb0 and 0x17a380 need). All three rows match retail;
-// only the three coordinate loads differ: retail loads x, y and z, ours z, x and y.
+// score 12. MiniMax C (11-01) reached 3 with a second copy of the point helper whose rows sum
+// left*y + forward*x + up*z (the shared helper's order is what the matched 0x179fb0 and 0x17a380 need):
+// all three rows then match and only the loads differ (retail x, y, z; ours z, x, y). Not kept at review
+// (a copied helper body without a match); a match through it would keep it.
 // score 12 (was 12): only rows x and y of the node point transform differ: retail sums them as
 // left*y + forward*x + up*z (row z as written), the function-wide reassociation order. Round 170: the
 // single exit (`result = true; goto done;`) gave the early BL, and 0x152450's `next` player search the rest.
@@ -3180,27 +3181,6 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 // gives retail's rows x/y but loads z first, 11, and breaks matched 0x179fb0/0x17a380); row z follows the
 // symbol count. Point copied then transformed in place 230; through a position local 257; returned
 // pointer for the delta 20; absent-node branch first 149; radius once per player 161.
-/* the node's position through its matrix (0x1778d0): each row sums left*y + forward*x + up*z, the
-   order the shared point helper does not use */
-static inline point3f *effect_matrix_transform_point_1778d0(transform4x3f const *matrix, point3f const *point, point3f *out)
-{
-	real z = point->z;
-	real x = point->x;
-	real y = point->y;
-	real scale = matrix->scale;
-
-	if (scale != 1.0f)
-	{
-		x = scale * x;
-		y = scale * y;
-		z = scale * z;
-	}
-	out->x = matrix->left.i * y + matrix->forward.i * x + matrix->up.i * z + matrix->position.x;
-	out->y = matrix->left.j * y + matrix->forward.j * x + matrix->up.j * z + matrix->position.y;
-	out->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
-	return out;
-}
-
 // @retail 0x1778d0
 bool function_1778d0(void)
 {
@@ -3244,7 +3224,7 @@ bool function_1778d0(void)
 							transform4x3f matrix;
 
 							function_17aec0(location->node_index, effect, &matrix);
-							effect_matrix_transform_point_1778d0(&matrix, &location->matrix.position, &point);
+							effect_matrix_transform_point(&matrix, &location->matrix.position, &point);
 						}
 						else
 						{
