@@ -1195,7 +1195,9 @@ void __cdecl function_24970(s_histogram_state *state)
 // subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
 // place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
 // LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
-// none changes the pair.
+// none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
+// in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
+// subtraction readback plus final memset 35; a named post-store zero used twice 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {

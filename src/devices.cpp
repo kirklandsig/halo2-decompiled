@@ -1224,7 +1224,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the animation as a const reference 203; sampled declared after the time 2; time before the animation 2.
 // Round 30: sampled at function scope 39; the animation direct-initialised 2; time declared beside speed and
 // assigned in the block 2; time computed after the first sample call 20; had_animation set before the node
-// lookup 31.
+// lookup 31. Round 99: existing vector subtraction/length helpers 2; seconds divided by 30 2;
+// sampled renamed 2; start renamed 2; an independent duration matrix 13; step declared beside speed 2;
+// a forceinline distance helper 2; one shared distance local 33. All restored.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
