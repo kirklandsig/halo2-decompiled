@@ -159,6 +159,11 @@ void function_213970(void);
 // With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
 // the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
 // Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
+// Round 50 (m3 lane 11, fast; still BLOCKED-BY the separate global definitions): block B's scalar and
+// NONE/flag stores interleaved in address order 131; the file handle record cleared after the last block
+// word 131; the version update before the language query 128 (three points, dropped); block B's string and
+// request clears first, then its header, then block A 131; the file array cleared per element in a loop
+// 131. Repeats as checks: the language getter at both uses 129; block A's NONE store between its clears 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

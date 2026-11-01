@@ -227,6 +227,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Original kernels and full body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
 // linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 50 (m3 lane 11, fast): retail's byte slots hold local_17 (record bit 2) at +9 and local_1 at +0xa where
+// ours has them the other way; local_17 renamed to sort before local_1, local_1 renamed to sort after it,
+// local_17 declared at the top, local_17 declared between local_0 and local_1: 902 each (identical code); the
+// early return as a single-exit if 902 (identical code).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

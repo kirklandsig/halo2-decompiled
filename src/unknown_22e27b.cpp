@@ -277,6 +277,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
 // next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
 // 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
+// Round 50 (m3 lane 11, fast), all on the fraction-after-clamp form (207; true-only restart there 197 at
+// 645 bytes, aligned 10, only the two false stores missing): restart cleared then set true-only 193 (656
+// bytes); restart as if/else, inverted if/else, nested on the type test, ternary 207 each; restart cleared
+// before a nested type test 210; restart byte/char/long/short 207/207/229/231; dispose byte/char/long/short
+// 207/207/198/200; dispose declared first 207; dispose initialised 207; boundary dispose true-only 207, with
+// the true-only restart 197.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
