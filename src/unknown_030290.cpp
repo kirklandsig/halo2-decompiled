@@ -336,6 +336,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round N284: Native real absolute-value APIs at the three epsilon consumers,
 // masks 1..7 195/195/195/195/195/195/195; all with displaced-factor admission first 219.
 // Original absolute tests, inverse defaults, alias-safe helper and complete body restored.
+// Round 131 (lane 5, fast): displaced point through the existing vector3f_add, displacement first, 195
+// (same code); locals named so the first point and inverse sort after the second's 195 (same code: names
+// do not move these slots); round 28's direct inverses with y-first displaced point re-measured 206 (971 B:
+// b.x/b.y in retail's xmm7/xmm6, but the second inlined transform still moves x out of xmm7 and spills x
+// and z where retail keeps x in xmm7 and spills only z); on it z, x, y displaced order 204 (971 B);
+// helper coordinates declared z, y, x 218 (966 B). Original body restored.
 // Round 477: Native translation at entry/post-scale with no/right/up/forward axis capture 261/690/690/690/260/690/690/690.
 // Translation alone recovers frame 0x2c but changes the scale carrier; paired captures outline. Original alias-safe helper and complete body restored.
 // Round 483: independent reverse-displacement admission with entry/perspective

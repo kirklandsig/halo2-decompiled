@@ -394,6 +394,9 @@ short __stdcall function_1b3ea0(long actor_index)
 // offset 26 each; the reset in retail's store order as a forceinline or static helper 26 (identical code).
 // Round 71: PRIVATE/inline/both 26 each; const actor/state/both 26 each; activation from the slot
 // Boolean/sentinel 49/47; reset index signed/unsigned word 39/37 (sibling regressions; restored).
+// Round 133: actor declared before the slot state 26; the slot state as a reference 26; the existing
+// 0x1f86a0 called for the reset 80 (a call; its file is /Ob1); the bit set as `= 1` 26; the slot's
+// byte store after the reset 26 (zero in ECX, other store order).
 // @retail 0x1b3ee0
 bool __stdcall function_1b3ee0(long actor_index, s_slot *slot)
 {
