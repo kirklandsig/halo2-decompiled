@@ -176,6 +176,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Round 260: Double endpoint differences with byte-byte/short-byte/word-byte/long-byte/byte-short/byte-
 // word/short-short/word-word carriers 437/513/513/510/451/451/515/515. Original distance, counters,
 // helpers and body restored.
+// Round 479: complete normalizer-square/distance-square/dot product parts,
+// masks 1/2/4/3/5/6/7: 407/408/407/407/406/407/406; all plus named
+// squared sums 402. One/two/six-point reductions rejected; helpers and body restored.
+// Candidate input retained on normalizer/dot, all-part and named-sum graphs
+// 405/405/405; named-sum graph with signed-word counters 444. Original input
+// observations, helpers, counters and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

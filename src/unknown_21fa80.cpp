@@ -154,6 +154,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // selected through the pointer 566 fast, with the fallthrough switch 559.
 // Round 217: Complete active mixing-workspace aggregate zeros, seven subsets, then all with the
 // unused workspace zeroed: 605/597/640/585/619/619/651/665. Original native workspace initialization restored.
+// Round 479: shared native active-mixbin workspace for first/submix, first/routing,
+// submix/routing and all phases, declared before updates 535/542/532/542;
+// at entry 535/542/532/542 (fast control 532). Original workspaces and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
