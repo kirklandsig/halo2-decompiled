@@ -1015,6 +1015,8 @@ public:
 // kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
 // negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
 // tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
+// Round 477: Perpendicular publication ikj/jik/jki/kij/kji 252/247/268/275/275; double absolute magnitudes with ijk/kji/jik 282/297/282.
+// One-point gain rejected; original frame 0x60, helper calls, magnitude types, all axis stores and full body restored. Cross/normalized-component and color/tag carriers remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

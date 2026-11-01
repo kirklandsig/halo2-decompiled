@@ -196,6 +196,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 471: Uniform weighted-point second/first product and sum producers, seven
 // nonempty combinations 222/222/224/221/222/222/224; complete producers with earlier
 // blend-scale storage 224. Original expression producers, helper and full body restored.
+// Round 477: Native input-vector scale induction long/dword/short/word with cursor 312/312/355/355; indexed rows 309/309/358/358.
+// Original scalar snapshots, scale producers, separate offset loops, output cursor and entire body restored; frame and coefficient/input/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

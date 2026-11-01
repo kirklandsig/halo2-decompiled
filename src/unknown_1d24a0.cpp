@@ -225,6 +225,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 255: existing shared difference API in the repeated subtract kernel, crossed
 // with radial/planar residual and initial displacement consumers, all eight 920.
 // Original kernels and full body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
+// Round 477: Add/subtract publication ikj/jik/jki/kij/kji 903/902/903/903/903; add-only jki/kji and subtract-only kji 904/904/904.
+// Original repeated producers, short scale loop, accepted angular consumers and complete body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

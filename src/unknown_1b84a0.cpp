@@ -295,7 +295,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 113 (was 147): the search tail's three exits now fall to one `return result` (retail's
+// score 113 (was 113): the search tail's three exits now fall to one `return result` (retail's
 // reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
 // 0xf beside has_markers/available at 0xe, so later homes sit 8 higher), the result set with setne
 // (retail `mov al, 1` before the branch), 0x25d690 called after the marker call's first pushes, and
@@ -404,6 +404,8 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
 // 141; available/success declared at the search block's top, available alone, available at function
 // scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
+// Round 477: Comparison-produced entry result signed-byte/byte/short/long on aligned and native search requests 116/116/275/276 each.
+// Narrow results fold later returns to constants despite recovering frame 0x162c; original Boolean result, aligned request and complete body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
