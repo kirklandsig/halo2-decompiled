@@ -720,6 +720,14 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // Round 470: six lexical orders of the position/limit/next scalars 97 each;
 // first and last float orders with later saved-identity names 97/97. Original
 // names and body restored; adjacent flags scheduling and callback reload remain.
+// Round 130 (lane 6, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 still match): the flags load now sits before the
+// byte clear as retail's; left are the second-dispatch callback reload and the third dispatch's scratch rotation.
+// A named callback local read once through the volatile pointer for the first two dispatches, the third reading
+// `*local_3`, 141 (541 bytes, frame 0x10: the local spills); `next_frame -= last_frame; position = ...; next_frame
+// += position;` 93 (same code); a `variant` local assigned from the lookup, stored to the channel and to the
+// identity after the rate 93 (the variant block is then retail's, the rotation stays); `next_frame = next_frame -
+// last_frame + (real)loop_frame_index;` before position 93 (xmm0/xmm1 swapped); the third dispatch passing the
+// `callback` parameter itself 93 (same code).
 // Round 126 (m3 lane 5, fast; retail's callback acts as a memory value: loaded at the first dispatch, reused
 // at the second, reloaded after the join at the third): a local taken from the volatile read before the
 // first dispatch, used at the first two 141 (frame 0x10, the zero in EBX), at all three 135; a local from a

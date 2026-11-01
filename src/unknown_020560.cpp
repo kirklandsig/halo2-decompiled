@@ -1477,6 +1477,11 @@ long __stdcall function_3bf20(s_slot *slot, byte *data);
 // before the slot test 84 (it still moves); the counter read first with the slot test inverted 6;
 // the counter read right after the lookup call 6; the global and slot tests joined by `&&` with
 // one else 22 (the slot pointer is then computed before the global test).
+// Round 131 (m3 lane 6, fast): the query as a forceinline helper returning validity with the amount
+// and availability through pointers, the counter read at its global block top 6 (the load still
+// sinks); the slot's validity in a bool local 80 (332 bytes); the counter read into the frame local
+// at the global block top, replaced by the set in the arm 6; the bit index as `/ 32` and `% 32` 108;
+// the bit named before the clamp 100.
 // @retail 0x3c270
 bool __stdcall function_3c270(dword value)
 {

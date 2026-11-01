@@ -176,10 +176,18 @@ void function_1d56f0(s_havok_component *component)
 // that tail but the lookup's SIB order. A byte offset local added first, the component through a const
 // reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
 // 77 each (still `[eax + edx + 0x40]`).
-// score 77 (was 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// A later round: no new source form of this body was found: the 19 aligned differences stay in
 // the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
 // cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
 // The body was left as it is.
+// Round 130 (lane 6, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x1d0ee0; the two stacked notes merged into this one,
+// nothing dropped): BLOCKED-BY 0x1d0cf0, which sits on a long LTCG call cycle (0x1d1260 -> impacts.cpp ->
+// unknown_175bd0.cpp -> damage.cpp -> 0x1d1b60 -> 0x1d0c20 -> 0x1d0cf0, and 0x1d1540 -> 0x1c39c0 -> ...). The
+// translation built straight into the result (no `local_8`) 64 (811 bytes, frame 0xf4: positional only, retail
+// keeps the temporary and its movaps copy); 0x1d0cf0's definition marked `inline` 77; 0x1d0cf0 as a
+// s_havok_component member (`this` = the component, as the rigid_body_* members) 78 (0x1d1b60 lost at 2); the
+// count stored after the setter call 64 (positional only: retail stores it before the call); `local_0 = true`
+// before the setter call 78.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

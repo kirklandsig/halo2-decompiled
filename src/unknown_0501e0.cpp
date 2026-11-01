@@ -211,6 +211,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 483: coherent radius from output/producer, branch/common publication
 // and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
 // All regress; initial stores, alias-sensitive reads, original helper/body restored.
+// Round 131 (m3 lane 6, fast): each view transformed right after its own offset loop 309 (1079 bytes);
+// with each depth limit right after its view 295 (1094 bytes); the view vectors declared before the
+// offsets 221 (same code); the blend divisor as `local_4 + local_5` 221 (same code); the depth limits
+// grouped `k * (k * 4.f)` 226 (1148 bytes).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

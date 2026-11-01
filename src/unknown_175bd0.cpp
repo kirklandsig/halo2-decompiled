@@ -3096,6 +3096,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // bytes, 0x176f60 25), with spawn at function scope 109 (0x176f60 25). With the mode per call the effect
 // index is computed in EAX and moved to EBP (retail computes it in EBP from the stack slot), so LTCG passes
 // it in a register, and the definition takes EBX where retail spills it. 0x175a80 gets retail's registers.
+// Round 130 (lane 6, fast with 0x176f60): retail's 0x54 frame reads as the spilled definition at [esp+0x10],
+// two unused dwords and the particle-location cursor (a 12-byte record like the spawn record of 0x178c80)
+// ahead of the 0x34-byte matrix; that layout needs the per-call mode (convention change above). On this
+// cached-mode body: the type-query block's braces removed 93; the particle-location cursor declared at function
+// scope 93; the matrix declared outside the loop 93; the particle-location pointer declared before its test 93
+// (all four the same code); `tinted()` called in the colour call's argument list 120 (325 bytes, 0x176f60 25).
 // Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
 // mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
 // early `return next_index;` on the definition test 94; the mode per call with that early return 111

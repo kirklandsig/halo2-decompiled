@@ -1244,9 +1244,15 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // test instead of the `current` pointer gives 184 again, both reverted. Still differs in the
 // owner, the name count and the zero's allocation and the requested cursor.
 // Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain;
+// the zero kept in EDX from the parameters test through both loops is the first difference (+0x1d).
+// Round 31 (lane D): unchanged this round, and no new form was tried; still
 // differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
 // measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
 // in the requested cursor.
+// Earlier: unchanged. Retail guards the session state (a state of 2 or less, or more
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
 // Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // Round 31 (lane D): 184 (was 184): unchanged this round, and no new form was tried; still
 // Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
@@ -1257,6 +1263,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
 // Still differs in the owner, the name count and the zero's allocation and the requested cursor.
 // Earlier 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Earlier: frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier: the frame 0xe4 still agrees; the owner, the name count, the
 // zero's allocation and the requested cursor are unchanged, and this round's trials
 // in this file found no lower form of them
@@ -1386,6 +1393,11 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // Round 256: Scalar cache test first crossed with bounded byte count, uniform current-field reads
 // and copy-first completion: 222/223/211/226/213/248/238/234. Original cache guard, count,
 // receivers, publication and body restored; owner/count/zero homes remain.
+// Round 131 (m3 lane 6, fast; the stacked score lines merged into this one note): the record defaults
+// stored in retail's emitted order (40, 44, 48, 70, 74, 4c, 78, team, 7e, 7f, 84, 8c, 88, 8a, 7d) 212 (928
+// bytes); only the 7d default moved last 212; the name count declared first in the function 211 (927
+// bytes); the names array declared first 211; a requested-record pointer declared after `current` for all
+// fifteen reads 224 (891 bytes).
 // Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
 // 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
 // block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).

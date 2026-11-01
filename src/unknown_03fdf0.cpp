@@ -386,6 +386,20 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Env-only on the aligned-18 form: a for loop 22, n/index before the copy 69, entries or first declared at
 // function scope 18/18, index before n 18, `&g_4ba138[first]` 18, current set to first + count 42; a separate
 // loop cursor copied from entries 55; no first local 49.
+// Round 130 (lane 6; LTCG env link through 0x404b0, env positional/aligned, real `--fast` where given): the
+// indexed form with the copy source written as the field, no first local (current set from previous, the copy
+// destination and the loop index read previous) and entries set after the selection: aligned 7, real 131 at
+// 508 bytes: the head is retail's instruction for instruction through +0x5a (index EDX, count AX/EAX, zero ECX,
+// previous loaded into EDI after the pushes, entries built in EDX after the copy, `mov ebx, edx` cursor), and
+// only retail's `mov [esp+0x14], edi` spill of first and its `mov esi, [esp+0x14]` reload at the loop entry are
+// missing (ours re-reads previous there). Every form that keeps first in a local gives it a register: as a
+// local for all three uses 63 (real 164, 492 bytes; both parameters move to the stack), current/destination
+// from previous and first only for the index 19 (real 162: first copied to EBP, mode left in memory where
+// retail keeps mode in EBP and spills first), first read back from current 53, one variable for first and
+// index 39, first or index declared at function/if top 53-64, a dword first 19/63, `first + n` (or `n + first`)
+// per iteration 46-52, the selection at function top/if top/after the copy/before the loop/in the loop body/
+// inline in the test 45-77; local names (first/start/base_index, entries/source/records) never move a
+// register. The current indexed form re-measured 144 (real), with a long count named in the block 140 (real).
 // Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
 // the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
 // current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),

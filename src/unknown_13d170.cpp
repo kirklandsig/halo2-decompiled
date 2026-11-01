@@ -273,6 +273,10 @@ struct s_block_candidate
 // assignment/memcpy 370 each; each with native successful-datum lookup 367 at 1213 bytes
 // (three-point gains rejected). Original helper use, iterator, lookups and body restored;
 // frame/page-tail homes and policy blocks remain.
+// Round 131 (m3 lane 6, fast): `long offset = 0;` as the first statement 373 (push/pop order and the pages
+// register become retail's, the zero moves to EDI, frame still 0x1050); offset declared after the result,
+// before the clamp 400 (1231 bytes); the clamp as an if/else-if chain 370 (same code); both 373; offset
+// first with the candidate stored previous/offset/time/pages 372.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

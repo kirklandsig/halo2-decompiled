@@ -388,9 +388,10 @@ PRIVATE inline long polygon_round_19f(real value)
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
 // score 316 (was 379): the distance to the centre is now computed and compared in double, so the
+// the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
 // bound is still one product where retail has two and the frame is 0x34 versus 0x30.
-// score 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// Earlier at 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
 // Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
 // the fade clamp now computes a single radius*1.5 product, so the
 // radius keeps retail's xmm3; our fade block is still one instruction shorter than
@@ -423,6 +424,13 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 415: ordinary variant/body cursor step with native current/previous vertices and
 // top-first declarations, seven subsets 429/416/396/432/429/416/396; all with CRT input copies 396.
 // Both matched callers lose two in every trial; complete executable body restored.
+// Round 132 (lane 6, fast): the variant parameter read directly, without the volatile reference,
+// 401 (both matched callers lose, 2 each); read once through a plain const address 400 (frame 0x30,
+// aligned 128 against 157, but pass moves to EDI and the callers lose, 8 and 11); the double distance
+// with `1.5f * radius` written at both uses 391; the attribute scan indexed as `types[i]` 395; the
+// material default as an if/else 316 (same code). Retail's colour temporary reuses the spread slot
+// (0x14) because its radial denominator sits in the dead perimeter slot; ours keeps a reciprocal in
+// the spread slot through the loop, which is the extra frame dword.
 // Round 122 (fast): retail also inlines 0x1ccb0(59)/0x1cd90 here (both in an /Ob1 contributor file; inline
 // declarations here 379). Ours keeps &vertices[index].y in EBP, so the step and fade denominator lose retail's EBP and
 // perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner

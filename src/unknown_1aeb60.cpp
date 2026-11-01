@@ -416,6 +416,11 @@ short *function_e70b0(long unit_index, short *value);
 // Round 55 (fast): `now` declared at function scope 49; `long const now` with a named `real const elapsed`
 // and `10.0f < elapsed` 49; the final mode read through the entry actor pointer 132 (423 bytes);
 // `state->ticks -= 1;` 49; the unit index through a `long const &` 49.
+// Round 132 (lane 6, fast with 0xe70b0 in the image): the actor pointer renamed to sort after the
+// index 49; the timer read once into a short local and stored back 49; the final guard named as a
+// bool 49; the slot view and that timer local read before the actor lookup 123 (index still ECX); a
+// plain `inline` declaration of 0xe70b0 here 49. In every block retail's scratch registers sit one
+// allocation on from ours, as if one more temporary came first.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
