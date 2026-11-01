@@ -13,7 +13,7 @@ struct members_372300
 {
 	long *data;
 	long size;
-	long capacity_and_flags;
+	long written; // filled index slots while the group is exported
 };
 
 struct array_groups_372300
@@ -49,6 +49,9 @@ public:
 	grouping_3720a0(array_2d91d0 *parents, array_2d91d0 *scratch);
 	__declspec(noinline) ~grouping_3720a0();
 
+	long join(long first, long second);
+	void compress_paths();
+
 	// starts `count` bodies each in its own group, then joins the two
 	// bodies of each pair
 	void function_372200(array_2d91d0 const *pairs, long count);
@@ -60,6 +63,8 @@ public:
 	{
 		return ((long *)parents->data)[0] == -parents->size;
 	}
+private:
+	long root(long index);
 };
 
 #endif

@@ -93,7 +93,16 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	return result;
 }
 
-// score 107 (was 131): frameless entry saves, unit reload and sentinel carriers differ.
+// score 107 (was 107): this round: the fast check reads 107 at 362 bytes against retail's 376 again
+// and no new form was tried; the difference is still blocked by 0xbadc0's memory-effect knowledge in
+// src/unknown_0bad50.cpp, which makes our link keep the entry fetch.
+// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// re-fetches the unit after its two 0xbadc0 calls, our link proves the callee writes no memory
+// and keeps the entry fetch, so every later register home shifts.
+// score 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// frameless entry saves, unit reload and sentinel carriers differ.
+// frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// Earlier: frameless entry saves, unit reload and sentinel carriers differ.
 // entry saves, fresh unit reload and sentinel carriers still differ.
 // frameless entry saves, unit reload and sentinel carriers differ.
 // Native player-table stride and byte eligibility/prior-state combinations 131
@@ -128,6 +137,26 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Round 202: Prior-state long/short/byte storage, eligibility long/short/byte storage, and both long/both short 106/105/107/103/97/107/102/96 fast.
 // Short eligibility 97/376 plain; both short 96/376 fast add word tests and padding; aligned instructions worsen.
 // Original executable source restored. Entry register saves, the fresh unit lookup and sentinel/result homes remain.
+// Round 183: one reset/sound domain, separate/merged user guards 126/126; native prior-level
+// snapshots 127/127; final sound-tag result 126/126; those result forms with paired reset
+// stores chained 126/126. Original query graph, bool lifetimes and complete body restored.
+// Player early/conditional returns 113/113; weapon-slot early/conditional returns 100/107;
+// sound early/conditional returns 110/110; all producers early/conditional 105/114. The
+// seven-point slot gain is below the required eight; original producers restored.
+// Round 267: masked slot/header record/pool descriptor/header table 107/119/107/117;
+// descriptor with byte/long slot 111/114; preserved-state return 126, with header 129.
+// Original producers and complete executable body restored.
+// Round 270: player/weapon/both sentinel declarations first 119/107/119;
+// native signed-byte slot alone/with player/with weapon/with both 111/123/111/123;
+// both sentinel declarations with consistent direct reset-unit observations 150.
+// Original producers and complete executable body restored; fresh lookup remains.
+// Round 76: late false 122; result arms 121; late false with long user 125; late fresh unit 122;
+// original fresh unit 107; direct reset lookups 175; false after entry 107; false before weapon 120.
+// Original body restored.
+// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// retail re-fetches the unit after the two calls because its compiler treats 0xbadc0 as writing
+// memory, while our link knows it writes none, so the unit and the flag registers are homed
+// differently and the entry prologue differs.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

@@ -118,7 +118,7 @@ bool c_simulation_view::channel_ready(void)
 {
 	bool result;
 	if (channel_index != NONE)
-		result = network_observer_channel_ready(observer, channel_index, 0x2b);
+		result = network_observer_channel_ready(observer, 3, channel_index, 0x2b);
 	else
 		result = true;
 	return result;
@@ -521,7 +521,7 @@ void simulation_view_baseline_update(s_simulation_view_baseline *baseline)
 			}
 			else if (view->channel_index != NONE)
 			{
-				network_observer_mark_message(view->observer, view->channel_index, 0x2b);
+				network_observer_mark_message(view->observer, 3, view->channel_index, 0x2b);
 			}
 		}
 	}
@@ -806,58 +806,117 @@ static inline long view_buffer_write(s_ring_buffer *buffer, long count, const vo
 }
 bool function_1995a0(const byte *source, dword source_size, byte *destination, long *compressed_size, dword capacity, long level);
 
-// score 90 (was 90): ours is seven bytes longer: the running total is zeroed
-// in a stack slot here and in a register in retail, and the two stack slots
-// that hold the count and the flag are at other offsets.
-// Round 109: direct view plus writer forceinline 93; unsigned writer result 93;
-// writer reference 93; native count 93; unsigned offset 93; word kind 93;
-// named packet record 93; moving payload pointer 144.
-// score 90 (was 90): with the chunk test through a bool (unrotated loop, base rebuilt each pass), the
-// count in a `remaining` local (compressed size scoped to the compressor call, copied when it
-// succeeds), no gotos and the last write tested for success first, only four single instructions
-// differ (20, aligned 4): flag 130; plus remaining 58; scoped 51; copy on success 38; failures
-// returned 63; single-exit breaks 38; success first 20; then element address 20; offset first 20;
-// header = { 1 } 22; flag before the header 125; count before cursors 24; all of it without the flag 128.
+// score 14 (was 14): retail's code apart from two single differences: retail stores kind 1
+// between the header's two zero stores (ours after both), and forms the data address with
+// `add eax, ebp` (ours `lea ecx, [eax + ebp]`). The loop runs while the writes succeed: the
+// unrotated head (zero and kind 1 before the count test, ring base rebuilt each pass) only
+// appears when the loop tests a value the failures clear, and the compressed size has to end
+// with its block for the remaining count to share its slot.
+// Round 81: `while (result)` with the terminal record's break 14 (kept); the same with a named
+// `byte *data = destination + offset;` for the data write 2 (the add is retail's; only the kind
+// store order is left, so it waits on a match); harness: `= { 1 }`, union or nested-struct
+// initialisers, kind set in both arms, `|=`/`++` kind, an init helper, two partial memsets (the
+// order is retail's, but the zero then feeds `cmp eax, ecx`), a named count test, the clamp as an
+// if, offset declared at the top (worse), write_wrapped parameter orders, /G5-/G7 and /Ob2: none
+// moves the kind store.
+// Earlier (score 49, the old for-loop body): left were the prologue (retail pushes
+// ebp before ebx and copies the count into the compressed size's slot), the loop head (retail sets
+// the header's zero and kind 1 at the head, before the count test, and rebuilds the ring base each
+// pass; ours peeled the test) and the count and data-address registers in the loop body.
+// Retail's unrotated head only appears with a flag tested at the head (a bool set by the count
+// test, or `while (!done)` with `done` set by the terminal record), which the compiler keeps;
+// with the compressed size scoped to the compressor call, a `remaining` copy made on success and
+// single-exit breaks that form gives 20 (aligned 10); with the offset zeroed beside the count
+// copy and the offset advanced before the count it gives 14 (aligned 4), but every flag-free
+// spelling rotates the loop (128), so it is not kept. Its two single differences: retail sets
+// kind 1 between the two zero stores and forms `destination + offset` with `add eax, ebp` (ours
+// `lea ecx, [eax + ebp]`).
+// Tried: flag 130; plus remaining 58; scoped 51; copy on success 38; failures returned 63;
+// single-exit breaks 38; success first 20; then element address 20; offset first 20;
+// header = { 1 } 22; flag before the header 125; count before cursors 24; all of it without the
+// flag 128; direct view plus writer forceinline 93; unsigned writer result 93; writer reference 93;
+// native count 93; unsigned offset 93; word kind 93; named packet record 93; moving payload
+// pointer 144; terminal-record do loops 89; positive-chunk finalization 85. On the 20 form: the
+// view read through its address or directly 20/20; offset declared at the top 42; `&destination[offset]`,
+// a const void cast or `offset + destination` 20 each; remaining declared first 20; a named
+// condition or a plain test 128; offset stored before the size 66; ring base first 34;
+// `while (result && !done)` 136; `while (!done)` 20; a named chunk size 111; view count first 24;
+// offset zeroed with the count copy 18; then offset advanced first 14. On the 14 form: header
+// `= { 0 }` 21; `memset(&header, 0, 8)` 14; helper source before count 14; byte data cast 14;
+// destination read once through its address 14; a void destination 14; dword offset 14; offset
+// declared first 14; word size 15; the terminal record at the loop head with a break 128; a
+// break to a terminal record after the loop 159.
+// Round 95 (lane 14's 14 form reproduced; one-file harness exact for it): deleting any other
+// statement moves neither single, so both are local. `add eax, ebp`: `&destination[offset]`,
+// `offset + destination` or a const void cast 14 each; the real s_ring_buffer::write at the data
+// write 162 (stays out of line); that method declared inline in its file 14 (LTCG inlines it with
+// the same `lea ecx`; 0x869a0 2 -> 99); harness: byte source, forceinline copy, position local,
+// size local, kind cast, `memset(&header, 0, 8)`, header declared outside the loop, word kind,
+// a pointer-based kind store, `0 < remaining`, a long flag: no change.
+// Round 22 (one-file harness with src/unknown_199560.cpp, exact): `header.size = 0;` or
+// `header.offset = 0;` after the kind 14/14; the header value-initialised from a named type
+// (`= s_header()`, declared or assigned) 24/24; `= { 0, 0, 0 }` then the kind 117.
+// Round 84: the terminal arm written first 14; memset and kind 1 in each arm 74; a value-initialised
+// header (`= s_header()`) 24 (410 bytes); the clamp as `remaining < 1024 ? remaining : 1024` 17; a
+// do/while under `if (result)` 14. Compile-only probes (a constructor, a constant zero header copy,
+// a memset of a copy, bitfield or union kinds, `*(char *)&kind`, a pointer memset) all store both
+// zeros before the kind; no other retail function stores between an 8-byte memset's two halves.
+// Round 89, each with the named data pointer: two partial memsets 18; direct offset zero after
+// the first partial memset 112; explicit field stores 118; aggregate `= { 0 }` 9; named-type value
+// initialization 17; early data address with two partial memsets 18; header outside the loop 18;
+// named positive-count test 18; terminal size memset 18. All restored because none matched.
+// Round 137 (lane 4), each with the named data pointer (2): `header.offset = offset;` before the size in both arms
+// 56 (the offset stores merge into the head); the offset stored once in the head before the kind 126 (414 bytes;
+// stores keep program order); two partial memsets 18 again (head store order is retail's, but the zero is a shared
+// constant: `cmp eax, ecx` and the terminal `mov word [esp+0x16], cx`), with `remaining >= 1` 21, `0 < remaining`
+// 18; `= { 0 }` in place of the memset 9 (409 bytes); permuter 2.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
- c_simulation_view *const *view_argument = &view;
  bool result;
- long compressed_size;
- result = function_1995a0(game_state_globals.base_address, source_size, destination, &compressed_size, capacity, 9);
- if (result)
+ long remaining;
+ long offset;
  {
-  long offset = 0;
-  for (;;)
+  long compressed_size;
+  result = function_1995a0(game_state_globals.base_address, source_size, destination, &compressed_size, capacity, 9);
+  if (result)
   {
-   struct { short kind; short size; long offset; } header;
-   memset(&header, 0, sizeof(header));
-   header.kind = 1;
-   if (compressed_size > 0)
-   {
-    header.size = (short)(compressed_size > 1024 ? 1024 : compressed_size);
-    s_ring_buffer *buffer = (s_ring_buffer *)&(*view_argument)->unknown9c;
-    header.offset = offset;
-    if (view_buffer_write(buffer, sizeof(header), &header) == NONE ||
-     view_buffer_write(buffer, header.size, destination + offset) == NONE)
-     { result = false; goto local_0; }
-    compressed_size -= header.size;
-    offset += header.size;
-    (*view_argument)->unknownac++;
-   }
-   else
-   {
-    header.size = 0;
-    s_ring_buffer *buffer = (s_ring_buffer *)&(*view_argument)->unknown9c;
-    header.offset = offset;
-    if (view_buffer_write(buffer, sizeof(header), &header) == NONE)
-     { result = false; goto local_0; }
-    (*view_argument)->unknownac++;
-    break;
-   }
+   offset = 0;
+   remaining = compressed_size;
   }
  }
-local_0:
+ while (result)
+ {
+  struct { short kind; short size; long offset; } header;
+  memset(&header, 0, sizeof(header));
+  header.kind = 1;
+  if (remaining > 0)
+  {
+   header.size = (short)(remaining > 1024 ? 1024 : remaining);
+   s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
+   header.offset = offset;
+   if (view_buffer_write(buffer, sizeof(header), &header) == NONE ||
+    view_buffer_write(buffer, header.size, destination + offset) == NONE)
+    result = false;
+   else
+   {
+    offset += header.size;
+    remaining -= header.size;
+    view->unknownac++;
+   }
+  }
+  else
+  {
+   header.size = 0;
+   s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
+   header.offset = offset;
+   if (view_buffer_write(buffer, sizeof(header), &header) != NONE)
+    view->unknownac++;
+   else
+    result = false;
+   break;
+  }
+ }
  return result;
 }
 
@@ -873,13 +932,22 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
  return (byte *)function_80e14(size, owner, 0, release, 30, 0.1f);
 }
 
-// score 22 (was 22): the dword local is written before the byte local; retail writes the byte
-// first and then the dword into the structure.
 // score 22 (was 22): ours hoists the time stamp's volatile low store and the header memset's
-// low store, and packs start's spill apart from the volatile. Tried: the volatile and start
-// renamed 22; used zeroed before start 22; the header declared before the view stores 22.
-// _ReadWriteBarrier before the first allocation 19 (retail's store order; start's spill still
-// apart from the volatile's slot); before the count increment 27; before both allocations 19.
+// low store, and packs start's spill apart from the volatile. The dword local is written before
+// the byte local; retail writes the byte first and then the dword into the structure. Tried: the
+// volatile and start renamed 22; used zeroed before start 22; the header declared before the
+// view stores 22. _ReadWriteBarrier before the first allocation 19 (retail's store order; start's
+// spill still apart from the volatile's slot); before the count increment 27; before both
+// allocations 19. Each stamp's start spill shares its own volatile's slot in retail (ours pairs
+// the two volatiles): the helper's volatile renamed after `start` 22; the helper's result declared
+// before start 32 (and 0x6a8a0, 0x80e10, 0x18f260 worse). With the barrier: the header memset
+// before `unknownac = 0` 19; `long size` before the count increment 19. A compile-only build
+// gives the +0xc/+8 ring stores and the hoisted header store for every statement order.
+// Round 140 (lane 4): the ring pointer declared first in the block 25; `unknownac = 0` ahead of the
+// ring stores 200 (644 bytes); `header.value` assigned before kind and size 25; the count increment
+// after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
+// wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
+// the reader's local non-volatile 250 (its zero stores vanish).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -931,7 +999,10 @@ bool function_685f0(void *block, long *size, byte *destination, long capacity);
 // score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
 // the address first. The registers that carry the destination and the capacity are the
 // callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
-// off retail.
+// off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
+// in edx; its body is contributor code).
+// Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
+// `mov edi, edx`) and this is its only caller, so no caller form was retried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
@@ -959,12 +1030,119 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 97 (was 97): the two fields of the record are read into the registers in the opposite
+// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
+// ring cursor stays in esi across the first read and the used count is updated through a register,
+// so the read's offset is still forwarded in edx instead of reloaded and the header size still
+// lands in si. Retail's dx load of the size kills the remainder left in edx by the idiv, which is
+// what forces its reload; ours keeps the remainder for the second read. The permuter ran without
+// finding a better form. The header home, the size register, the forwarded cursor and the grouped
+// case-1 stores remain.
+// Retail treats the read header as reachable through the ring buffer: it reloads
+// Earlier (72): retail treats the read header as reachable through the ring buffer: it reloads
+// the start after each read call and reloads the header size after the start/used stores. The
+// header's value sent directly (its address escapes) gives that; retail still sends a copy at
+// esp+0x14 (header at esp+0xc, ours at esp+0x10), interleaves the message's zero and value stores
+// and keeps the header size in dx where ours uses si.
+// Earlier score 97: the window fields now load in retail's order, but retail subtracts the span
+// from 0x200 into eax where we subtract 0x200 from the span, and our ring buffer update reuses
+// the start read before the read call instead of reloading it as retail does.
 // order (+0x1c before +0x18), so the rest of the block follows differently.
-// score 97 (was 97): a `used = next - end` local gives retail's window test exactly (135 from the
+// Earlier: a `used = next - end` local gives retail's window test exactly (135 from the
 // listing shift); retail also reloads the buffer start after each read call and loads the header
 // size after the start store, as if the call might touch the buffer. Window as shift 97; window
 // pointer 97; inline read method 135; header size per use 135; buffer hoisted out of the loop 204.
+// Round 182: Self-aligned standard entry, case-workspace scopes and complete ring-field forms do not recover receiver and reader visibility
+// Trials 1-8: 179, 172, 179, 172, 164, 159, 164, 159.
+// Distinct native byte-buffer class with ordinary/inline/noinline/both reader knowledge:
+// 97/352/97/97; with the occupied-span subexpression 135/353/135/135. Original class identity,
+// all member declarations, caller body and window form restored; reload/count-update gap remains.
+// Round 222: connection-ready bool/byte/short/long on original entry, each 97; each with named
+// occupied span 135. Original body restored; reader visibility, cursor reloads and count updates
+// remain.
+// Earlier note (score 97): retail behaves as if the read call could write any memory: it reloads the
+// Earlier: retail behaves as if the read call could write any memory: it reloads the
+// buffer start after each read, updates the used count in memory (`add [ebx+0xc], -8`) and loads
+// the header size only after the start/used stores; ours keeps the start in ESI across the first
+// read and hoists the header size. Retail also subtracts the span from 0x200 into EAX (ours adds
+// 0x200 to the reassociated span), and in case 1 keeps two dead zero stores, each just before its
+// field's value store. A one-file compile without whole-program optimization (read call opaque)
+// gives retail's reloads and late header load.
+// Tried: window as shift 97; window pointer 97; inline read method 135; header size per use 135;
+// buffer hoisted out of the loop 204; `used = next - end` local (retail's window test exactly, 135
+// from the listing shift); self-aligned standard entry, case-workspace scopes and complete ring-field
+// forms 159-179; a distinct byte-buffer class with ordinary/inline/noinline/both reader knowledge
+// 97/352/97/97, with the occupied-span subexpression 135/353/135/135; connection-ready
+// bool/byte/short/long 97 each, each with a named occupied span 135; used update first 97; named next
+// start 143; buffer outside the loop 201; payload count as short or read at each use 97; cases in
+// order 2, 1, 0 97; header renamed 97; parameter-address carrier removed 179; copy method inline 352,
+// inline plus out of line 97.
+// Round 17: case 1's offset/size zeroed by a memset of an {offset, size} header member 146 (keeps
+// retail's zero stores, aligned diff 53 -> 45, but stores both zeros first), per-field memsets 145;
+// with the named span for the window 137 (window exact, aligned 38); on that, used update first 137,
+// named short payload size 137, a shared inline read helper mirroring view_buffer_write 137 (same code).
+// Round 232: Native signed header bitfields kind/size/both/value/kind-value/size-value/all, then all with occupied-window local
+// 97, 97, 97, 97, 97, 97, 97, 135. Original executable source restored.
+// Round 107: the message's offset/size cleared with memset (retail's surviving zero stores) 146
+// (8 bytes longer); occupied-span local + memset 137; that without the view address line 154; the
+// header value sent directly 163; all three 72 (kept); without the memset 120; without the span local 144.
+// On the 72 form: short size local 72 (identical); size declared at function scope 72 (identical);
+// header and payload declared in the loop 118; without the view address line 168; message size
+// assigned before its offset 73.
+// Round 33 (lane 10), on the 72 form: the payload read using header.size at each use (no size
+// local) 116 (554 bytes); case 1's offset and size each cleared by its own memset just before its
+// value store 97; the header declared inside the loop 118 at retail's 553 bytes (the header size
+// then takes DX as in retail, but view/size swap ESI/EDI, used is updated through a register and
+// the start is forwarded); that with case 0 sending a block-local copy of the value 137; payload
+// declared before the header 72 (identical). Retail's frame is exactly header 0xc, value copy 0x14,
+// payload, block, message (0x14454 bytes), so case 0 sends a copy; what escapes its header is open.
+// DL209: Case/function-scope sequence copies by memcpy/memmove 137/137/153/153; complete
+// native/memcpy/memmove/field header copies 147/147/155/142. Separate-copy home returns but reload
+// knowledge is lost; all copies restored.
+// Round 114 (lane 6, fast): case 0 sending a block-local copy of the value 137 (561 bytes; the header
+// then sits at retail's esp+0xc, but the start stays in ESI across the read and `used` is updated
+// through a register); the copy declared at function scope 137; header and payload read by an inline
+// helper taking the header by pointer (header->size read inside it) 72 (identical code: VC resolves
+// the pointer), with the case 0 copy 137; the copy with `used` updated before `start` 137. Retail's
+// 0x1a19a0 copies with inline rep movs, so it is no more opaque to LTCG there than here.
+// Round 23 (72): case 1's offset and size each cleared by its own memset 97; case 0 sending a
+// `long message` copy (header then at esp+0xc as retail, but the start stays in ESI across the
+// first read and the used count is not updated in memory) 137; payload declared before the header
+// 72; the header alone declared in the loop 118 (553 bytes, the size in DX as retail but the view in
+// ESI); the payload alone declared in the loop 118 (553 bytes: case 1's interleaved zero/value
+// stores exactly as retail; the view/size ESI/EDI swap, the header at +0x10 and the first update's
+// register form remain); that with case 0's `long message` copy 146. On the loop-scoped payload
+// form: the buffer pointer declared first in the loop 95 (543 bytes); the occupied span written in
+// the window test 146; the header also in the loop after the payload 118; the view address line
+// after the header declaration 118.
+// Round 49 (lane 16, fast): case 0 sending a memset one-field message 137 (retail's header home
+// +0xc and copy +0x14, but the start stays in ESI across the first read and the header size is
+// hoisted); the payload count declared before its test and tested as a long 106 (553 bytes, header
+// size in DX as in retail, but a 32-bit test and the start forwarded through EAX); that with the
+// case-0 message 129; the count declared before the short test 155; case 2's failure through the
+// existing fail helper 72 (identical code, kept). Diagnostics: the case-0 message with the header's
+// address forced to escape restores retail's reloads and late header load (retail behaves as if the
+// read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
+// stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 108 (lane 8; a one-file LTCG harness, this file + 0x1a19a0/0x68670/0x75e80 files, gives the build's 72
+// exactly): a compile without whole-program optimization does not give retail's code (retail passes the read and
+// send arguments in registers, so retail's object is LTCG). Real (fast): the payload test written `>= 1` 63 (553
+// bytes, but `cmp si, 1; jl` where retail has `test dx, dx; jle`: alignment only, not kept); the buffer start read
+// into a local for the first read and update 78 (543 bytes); payload declared before the header 72 (identical);
+// the kind read into a short local for the switch 72 (identical); case 0 sending a copy of the value made before
+// the switch 142 (558 bytes). Harness: case 0's block-local copy 137 (header at retail's +0xc, but the start then
+// stays in ESI across the read and `used` is updated through a register), without the view address line 154.
+// Round 59 (fast), all with case 0 sending a block-local copy (frame and case 0 then retail's, 137):
+// case 1's offset/size each cleared by its own memset 135 (560 bytes); header and payload declared in
+// the loop 146; payload alone in the loop 146; the payload size at function scope 137; header and
+// payload in the loop with per-field memsets 144. Retail treats the header as escaped (start reloaded
+// after the first read, used updated in memory) although its copy keeps &header from the send.
+// Round 44 (lane 10, fast): `long size = header.size;` ahead of the short test, used by the payload
+// read 155 (506 bytes); case 0 sending a function-scope `long value` copy 137 (561 bytes); the switch
+// on `(long)header.kind` 72 (identical); the payload block's used update before the start update 103
+// (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
+// live from the test into the cases (reloaded after the payload read); ours coalesces it with the
+// long size in ESI.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
@@ -977,7 +1155,8 @@ void __stdcall function_865d0(c_simulation_view *view)
   s_link_connection *connection = link_connection_get(view->unknown3c);
   if (connection->state != 5 || !(connection->flags & 0x10)) break;
   s_network_stream_header *stream = network_stream_get(connection->stream_index);
-  if ((512 - (stream->window.next - stream->window.end)) * 32 < 0x600) break;
+  long occupied = stream->window.next - stream->window.end;
+  if ((512 - occupied) * 32 < 0x600) break;
   s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
   buffer->read_wrapped(buffer->start, sizeof(header), &header);
   buffer->start = (buffer->start + (long)sizeof(header)) % buffer->size;
@@ -992,16 +1171,12 @@ void __stdcall function_865d0(c_simulation_view *view)
   switch (header.kind)
   {
   case 0:
-   {
-    long value = header.value;
-    view_send_message(view, 0x29, sizeof(value), &value);
-   }
+   view_send_message(view, 0x29, sizeof(header.value), &header.value);
    break;
   case 1:
    {
     struct { long offset; long size; byte bytes[0xfff8]; } message;
-    message.offset = 0;
-    message.size = 0;
+    memset(&message, 0, 2 * sizeof(long)); // the offset and size words
     message.offset = header.value;
     message.size = header.size;
     if (message.size > 0) memcpy(message.bytes, payload, message.size);
@@ -1014,11 +1189,7 @@ void __stdcall function_865d0(c_simulation_view *view)
     memset(&block, 0, sizeof(block));
     if (!function_68670(payload, header.size, &block))
     {
-     if (!view->failure_reason)
-     {
-      view->set_state(0, NONE);
-      view->failure_reason = 5;
-     }
+     view->fail(5);
      return;
     }
     view_send_message(view, 0x27, sizeof(block), &block);

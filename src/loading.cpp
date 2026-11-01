@@ -17,7 +17,7 @@ long cache_copy_priority(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 bool map_names_equal(char const *map_name, char const *other_map_name);
 bool function_2141f0(void);
-bool function_2148b0(long progress);
+bool function_2148b0(real *progress);
 
 extern char g_55bd21[0x103];
 extern bool g_55bd0c;
@@ -318,7 +318,7 @@ bool __stdcall function_163890(char const *map_name, long mode)
 				{
 					if (map_names_equal(g_55bd21, map_name))
 					{
-						function_2148b0((long)&progress);
+						function_2148b0(&progress);
 					}
 				}
 				else

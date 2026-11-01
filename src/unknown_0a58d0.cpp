@@ -285,25 +285,40 @@ struct s_z_state_world
 	long state;
 };
 
+// score 11 (was 11): this round: the fast check reads 11 at 120/120 bytes again and no new form was
+// tried; the difference is still the database pointer in ECX where retail keeps it in EDX and the
+// active byte folded as `mov cl, [eax + edx + 0x20b2]`.
+// score 11 (was 11): this round: reading the active byte from the array element with the database
+// read early still folds the byte as retail does (`mov cl, [eax + edx + 0x20b2]`) and keeps the
+// database in EDX, but the database load is hoisted above the object lookup and the record address
+// comes out as `add eax, edx` with the 0x20ac folded into every field offset (19). Taking the record
+// pointer before the active test does not change that (19). A named world pointer moves the world to
+// ECX and the state to EDX (21). Still the database pointer in ECX where retail keeps it in EDX.
 // score 11 (was 11): the entity pointer is materialised in EAX and the record is read through it;
 // retail folds the address into the load itself.
 // The fold is the scheduler's rewrite of `lea; mov cl, [eax+6]`; ours can't do it because the
 // database pointer is in ecx (retail edx) and the active byte goes to cl. Tried: inline active
 // test, record getter or dispatch helper 11; world local in the inner block 11; state through the
 // re-read 11; database local 11; active read before the pointer (72 spellings) 14-21; renames 11;
-// a 600 s permuter run, none below 11.
+// a 600 s permuter run, none below 11. Round 89: the world global read at each use (no local, no
+// address cast) builds the same code; with one world local for both reads ours is retail with ecx and
+// edx swapped (world and database in ecx), 18 in every spelling: state local, identifier declared
+// first, object local, database and index locals, state-test helper, unsigned identifier, entity
+// table types; database read from the global in the state block 11 (sunk past the test).
+// Round 60: the records inside a nested table struct at 0x2098 11; the record by pointer addition
+// 11; the active test and the dispatch joined in one condition 13; an object pointer local for the
+// identifier read 11; the size and data read into named locals before the dispatch 35 (the callers'
+// convention flips: 0xa9640, 0xa96d0, 0xa9770, 0xa98b0, 0xa9940 and 0xa9570 lose their match).
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
 	bool result = false;
-	s_z_state_world *world = (s_z_state_world *)g_4cf77c;
-	if (world->state == 4 || world->state == 5)
+	if (((s_z_state_world *)g_4cf77c)->state == 4 || ((s_z_state_world *)g_4cf77c)->state == 5)
 	{
 		long identifier = ((s_object_header *)g_4e0300->data)[index & 0xffff].object->field_d4;
 		if (identifier != NONE)
 		{
-			// Preserve the later world-pointer read when selecting the record.
-			s_z_entity_record *entity = &((s_z_state_world *)*(void * const *)&g_4cf77c)->database->entities[identifier & 0x3ff];
+			s_z_entity_record *entity = &((s_z_state_world *)g_4cf77c)->database->entities[identifier & 0x3ff];
 			if (entity->active)
 			{
 				long type = entity->type;
@@ -316,23 +331,51 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
-// score 11 (was 11): the database pointer takes ECX, so the active byte cannot fold into the scaled address.
+// score 11 (was 11): this round: the database as a byte pointer with the active byte read from the
+// array 14; the record address as an integer 11; a named world pointer 21; the database read
+// before the state test 11; the database as a long address 14; the database local with the record
+// read from a second global read 14; the state in a named local 11 (same code). Still the database
+// pointer in ECX where retail keeps it in EDX.
+// This round, again: the active byte read from the array element with the record taken inside the
+// branch 14 (123 bytes, the address is materialised before the byte); the record pointer, the type
+// and the definitions each split from their initialiser 11 (the permuter's two candidates); the
+// world local used for the database only 11 (same code); the state local with a world local 11
+// (same code); the identifier read before the state test 22; the world local used for both reads 18
+// (the database is then updated in place, but in ECX with the world). A permuter run produced no
+// variant below 11. Still the database pointer in ECX where retail keeps it in EDX.
+// MiniMax G (10-31): the database pointer is still loaded into ECX where retail loads
+// it into EDX, and the active byte is still read through the materialised record address instead
+// of the array; a database local with the byte read from the array, the same with the record
+// address taken inside the test, a world local, the record read without any pointer at all, the
+// modulo and mask index forms and the database read before the state test all score 14 or worse.
+// Earlier: the database pointer takes ECX where retail keeps it in EDX, and ours takes the
+// record address before the active test and reads the byte through it (`lea eax, [eax + ecx + 0x20ac]`,
+// `mov cl, byte ptr [eax + 6]`), while retail reads the byte from the array and takes the address after.
 // Early definitions 31; direct dispatch 13; const record 11; record reference 11; separate index mask 11;
 // short type 22; definitions first 13; definition local 13; function-scope database 11; function-scope type 11.
 // Signed accepted-state range 12; state/all rejection guards 11/11; database reference/const
 // receivers 11/11; complete payload inputs 11; native active byte with nested/rejection guards 11/11.
+// This round: the head (world in EDX, state in ECX) only comes out that way when the world pointer is
+// read from the global again, but then the database load keeps ECX; reading the database from the world
+// pointer itself moves the world to ECX and the state to EDX. Only the early-database form puts the
+// database in EDX, and it then folds the active byte as retail does (`mov cl, [eax + edx + 0x20b2]`),
+// but it loads the database before the state check, which moves the world to EAX and the index to ECX,
+// and the record address becomes `add eax, edx` with the array offset folded into every field.
+// Shapes tried: world read once 18; database local 18; re-read of the global 11; state read from the
+// global 11; array form of the active byte 14/21; const world 18; void world 18; named database 11/18.
+// The permuter could not finish a run here: it builds the whole program for its baseline and the
+// machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
+// builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
+// Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
 // @retail 0xa99f0
 void function_a99f0(long index, long *block)
 {
-	s_z_state_world *world = (s_z_state_world *)g_4cf77c;
-	if (world->state == 4 || world->state == 5)
+	if (((s_z_state_world *)g_4cf77c)->state == 4 || ((s_z_state_world *)g_4cf77c)->state == 5)
 	{
 		long identifier = ((s_object_header *)g_4e0300->data)[index & 0xffff].object->field_d4;
 		if (identifier != NONE)
 		{
-			// Read the shared world through its const pointer at the later use.
-			world = (s_z_state_world *)*(s_simulation_world *const *)&g_4cf77c;
-			s_z_entity_record *entity = &world->database->entities[identifier & 0x3ff];
+			s_z_entity_record *entity = &((s_z_state_world *)g_4cf77c)->database->entities[identifier & 0x3ff];
 			if (entity->active)
 			{
 				long type = entity->type;
@@ -629,12 +672,8 @@ bool function_aa970(long index)
 
 #include "unknown_0d0690.h"
 #include "unknown_0259d0.h"
+#include "vector_products.h"
 
-// score 37 (was 37): the float is added into the accumulator and stored back; retail loads it into
-// a separate register, adds and stores that.
-// BLOCKED-BY 0xd0620 (its iterator in ebx); also tried the accumulator from header->object 37, a masked
-// child index local 37, an index-first byte offset 37, the accumulator declared before the displacement 37,
-// a position pointer local 57
 // @retail 0xaa9e0
 void function_aa9e0(long index, point3f const *previous_position, vector3f const *velocity)
 {
@@ -649,13 +688,13 @@ void function_aa9e0(long index, point3f const *previous_position, vector3f const
 
   if (previous_position)
   {
-   vector3f *accumulated = (vector3f *)(object + 0x270);
    vector3f displacement;
 
    vector3d_from_points3d(previous_position, (point3f const *)(object + 0x64), &displacement);
-   accumulated->i += displacement.i;
-   accumulated->j += displacement.j;
-   accumulated->k += displacement.k;
+   /* retail's sums keep each store next to its add: the operand and the destination are
+      separate pointers to the accumulated vector */
+   vector3f *accumulated = (vector3f *)(object + 0x270);
+   vector3f_add(accumulated, &displacement, (vector3f *)(object + 0x270));
   }
   if (velocity)
   {
@@ -666,7 +705,7 @@ void function_aa9e0(long index, point3f const *previous_position, vector3f const
    velocity_change.j *= elapsed;
    velocity_change.k *= elapsed;
   }
-  function_d0620(index, &iterator);
+  function_d0620(&iterator, index);
   while (function_d0690(&iterator))
   {
    byte *child = (byte *)((s_object_header *)objects->data)[iterator.child_index & 0xffff].object;
@@ -675,9 +714,7 @@ void function_aa9e0(long index, point3f const *previous_position, vector3f const
    {
     vector3f *accumulated = (vector3f *)(child + 0x270);
 
-    accumulated->i += velocity_change.i;
-    accumulated->j += velocity_change.j;
-    accumulated->k += velocity_change.k;
+    vector3f_add(accumulated, &velocity_change, (vector3f *)(child + 0x270));
    }
    *(dword *)(child + 0x134) |= 0x10000000;
   }
@@ -686,7 +723,7 @@ void function_aa9e0(long index, point3f const *previous_position, vector3f const
 
 
 long function_b5990(long tag_index, bool flag);
-void function_b5920(long identifier);
+void function_b5920(long identifier, long object_index);
 void object_dispatch_detach_simulation_entity(long object_index);
 struct s_effect_object_placement;
 
@@ -711,7 +748,7 @@ void function_a7a60(long index)
  long identifier = header->object->field_d4;
  if (identifier != NONE)
  {
-  function_b5920(identifier);
+  function_b5920(identifier, index);
   s_object_view *object = ((s_object_header *)g_4e0300->data)[index & 0xffff].object;
   object_dispatch_detach_simulation_entity(index);
   object->field_d4 = NONE;
@@ -852,6 +889,12 @@ PRIVATE inline bool z_state_real_valid(real value)
  return (*(long *)&value & 0x7f800000) != 0x7f800000;
 }
 
+// matches retail byte for byte: both decoded counts are read into long locals, the first from the
+// stored byte before the first word read and the second from the state field after it, which
+// reproduces retail's register use in the widening and in the final bound test.
+// Long, unsigned long and int first-count locals all match; an unsigned short local gives 37 and a
+// byte second-count local gives 9.
+// Earlier forms (before the 0x195240 argument
 // score 9 (was 9): the two mask-count arguments are extended into ECX/EDX where retail
 // uses EAX (so the first word store comes after the second count load), and the bound test
 // holds the size in EAX where retail uses ECX. Earlier forms (before the 0x195240 argument
@@ -947,8 +990,10 @@ bool function_a6d50(long flags_address, long state_address, s_bitstream *stream)
   if (result && (state[0x61] <= 16)) result = true; else result = false;
   if (state[0x61] > 0)
   {
-   *(word *)(state + 0x62) = (word)function_1959c0(stream, state[0x61]);
-   *(word *)(state + 0x64) = (word)function_1959c0(stream, state[0x61]);
+   long first_bit_count = state[0x61];
+   *(word *)(state + 0x62) = (word)function_1959c0(stream, first_bit_count);
+   long bit_count = state[0x61];
+   *(word *)(state + 0x64) = (word)function_1959c0(stream, bit_count);
   }
   *flags |= 0x200;
  }
@@ -1093,7 +1138,7 @@ bool function_a69a0(long a, long b, long c, long d, long e, bool f, long g)
 
 
 quaternionf *function_141f60(matrix3x3 const *matrix, quaternionf *out);
-void function_11d790(quaternionf const *q, vector3f *axis, real *angle);
+void function_11d790(quaternionf const *q, real *angle, vector3f *axis);
 matrix3x3 *function_141e10(matrix3x3 *out, quaternionf const *q);
 
 PRIVATE inline void z_orientation_matrix(vector3f const *forward, vector3f const *up, matrix3x3 *matrix)
@@ -1106,10 +1151,6 @@ PRIVATE inline void z_orientation_matrix(vector3f const *forward, vector3f const
  matrix->up = *up;
 }
 
-// score 4 (was 4): both extraction calls form the angle address before the axis address.
-// Reused axis/angle output pointers 10; reused angle output pointer 6; saved/current output
-// pointer pairs 10/10; extraction calls swapped 7; axis declarations swapped 4; axis names 4;
-// forced orientation inline 4.
 // @retail 0xa9b40
 void function_a9b40(long index, s_z_copy_state *state)
 {
@@ -1125,8 +1166,8 @@ void function_a9b40(long index, s_z_copy_state *state)
  vector3f const *current_forward = (vector3f const *)(object + 0x70);
  function_141f60(&saved_matrix, &saved_rotation);
  function_141f60(&current_matrix, &current_rotation);
- function_11d790(&saved_rotation, &saved_axis, &saved_angle);
- function_11d790(&current_rotation, &current_axis, &current_angle);
+ function_11d790(&saved_rotation, &saved_angle, &saved_axis);
+ function_11d790(&current_rotation, &current_angle, &current_axis);
  if (current_angle - saved_angle > 0.0001f)
  {
   real weight = 0.35f;

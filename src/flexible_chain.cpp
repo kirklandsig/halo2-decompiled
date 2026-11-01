@@ -262,7 +262,72 @@ void __stdcall function_1160c0(real dt)
 // Round 382: complete delta/axis squared-product phases, three-use free blend weight,
 // all combinations and full projection products 179/179/179/179/179/179/179/179.
 // Original product phases and complete executable body restored.
+// Round 384: native node/segment element references, readonly segment, their combinations and
+// two-use physics-index capture 179 each (eight forms).
+// Original complete body and all provider interfaces restored; frame 0xa4, segment/previous/axis
+// homes and rotation schedule remain.
 // Round 223: Existing target/interpolation/prediction point constructors, seven subsets 179/179/179/179/179/179/179; all with complete direction/velocity setters 183. Original producers and body restored.
+// Round 386: preserve native previous aggregate; independent complete rest-offset,
+// axis and prediction coordinate domains in all seven subsets, then native role names
+// 280/197/289/216/273/193/293/293; original native domains and complete body restored.
+// Round 387: Complete delta/axis squared sums 179/179/179; native double distance-root alone and with those sums 249/249/249/249, both named roots 249. All expression stages restored.
+// Round 32: existing in-place axis scale 179; original-angle segment-first 276;
+// tiny-axis-owned fallback 294; scale/segment 276; scale/fallback 294; segment/fallback 247;
+// all 247, cosine-first all 247. Original producers, fallback and include set restored.
+// Round 251: interpolation-owned stiffness 315; velocity-owned reciprocal 294;
+// both 320; rest offset after readonly angle/trigonometry 229; with stiffness/
+// reciprocal/both 299/288/310; all with the native prediction constructor 310.
+// Original producer points and complete body restored; segment/previous/axis homes remain.
+// Round 393: published-node previous, three-use old-position snapshot and native velocity
+// publication subsets 179/263/263/262/262/390/390; all with immutable snapshot 390. Body restored.
+// Round 262: complete segment/node/both receivers at uses 350/193/359;
+// repeated stiffness alone/segment/node/both 301/475/309/480 (restored);
+// separate segment base 278. Original receivers and computed stiffness restored.
+// Round 226: complete rotation base sums, sine-scaled transverse terms and rotated components,
+// all seven combinations and full graph with existing point publication 179 each.
+// Original body restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 395: native node cursor 329; with readonly segment 329, invariant reciprocal 327, both 327;
+// invariant vertical on those four graphs 338/338/326/326. All original induction and scopes restored.
+// Round 397: one direction workspace; complete target scalars, noninitial branch first and readonly segment masks 0..7
+// 246/318/277/323/246/318/277/323; all restored.
+// Round 185: Plain target/interpolation/velocity coordinate-loop subsets
+// 188/194/200/639/194/200/634; all with complete direction loop 615. Original native arithmetic
+// statements, copies, segment loop, homes and every call tuple restored.
+// Round 181: outer/per-selection count 298/179; inclusive bound live/selection/outer
+// 302/302/235; ordered terminal selection live/selection/outer 180/180/298. Original body restored.
+// Y423: Existing staged cross with paired differences, scaled target and velocity
+// helper subsets 192/265/186/265/204/273/198/273 fast (control 179);
+// all regress. Original complete body and include list restored.
+// N226: Current position owns the constrained target; direction-workspace/axis-scale/
+// blend-owned-stiffness masks 0..7 give 208/252/208/252/285/334/285/334.
+// All shorten the body and lose the original frame; complete original body restored.
+// Round 46: retail's low frame slots run length +0, segment/scale +4, axis +8..+0x10, rest offset
+// +0x40, previous +0x4c; ours run axis, segment/scale, length and previous +0x40 (the order is
+// reversed). Retail scales axis j/k in place on reloaded values (`mulss xmm3, xmm0`). Length declared
+// before axis 179; inverse time step before the loop 189; segment pointer before node 276; vertical
+// before the loop 301; existing normalize3d for the axis 179 (identical code, not kept: round 62
+// found it costs 0x73360 in the full build).
+// Round 208: Prediction rows xzy/yxz/yzx/zxy/zyx: 217/217/187/187/218; reverse prediction with
+// velocity rows jik/jki/kji: 218/217/217. Original row order restored; two forms keep 0xa4 but
+// regress, the others enlarge the frame. Segment/previous/axis homes and rotation schedule remain.
+// Round 242: Long/word/signed-byte/byte node ordinals 290/180/282/282;
+// with invariant reciprocal 296/190/279/279. Original short induction,
+// reciprocal scope and complete body restored; segment/previous/axis homes remain.
+// Round 43 (one-file LTCG link of this file with the callee closure and the inlining ballast object,
+// equal to the full listing): renaming axis/length/segment/previous/offset (five name sets, both
+// orders of each pair) leaves every stack home and instruction unchanged, so the reversed slot order
+// does not follow local names; the rotation through an inline (vector, axis, sine, cosine) helper
+// on an offset copy, explicit or staged cross terms, about 240 (harness 218 against 161, 1370 bytes);
+// stiffness computed after the tick increment about 183 (harness 165); the axis scaled with *= 179 (same code).
+// Round 53: the axis j/k (or all three) scaled with `*=` 179/179 (same code); the segment index in a short
+// local 290; `definition->segments + (...)` 179; length declared then assigned 179.
+// Round 35 (lane 13): rest-offset copy at the loop top (before the tick) 289 (1354 bytes; offset still homes
+// above previous); length/axis declared at the loop-body top 179 (same code); previous renamed last_position
+// 179 (no slot moves); the dot named before the complement product 179 (same code); a 600 s permuter run
+// (55 tries) none below 179.
+// Round 264: Existing initial/normalized axis setters and const native delta/target/offset,
+// subsets 1/2/4/3/5/6/7, then all with const assigned-once scalars 192/179/179/192/192/179/192/192.
+// Original producers and complete body restored; segment/previous/axis homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

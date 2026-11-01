@@ -127,22 +127,23 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	out->y = ((real const *)&point)[vertical_axis];
 }
 
-// score 158 (was 164): plane-distance store base and projection/edge scheduling remain; both indices long 179f, horizontal long 164f, vertical long 179f, captured-index Y-first 164f, plane view after normal copy 181f.
+// score 138 (was 138): frame 0xc and matrix/dot prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
+// At 158: plane-distance store base and projection/edge scheduling remain; both indices long 179f, horizontal long 164f, vertical long 179f, captured-index Y-first 164f, plane view after normal copy 181f.
 // Read-only projection metadata 164; selector field inputs 164; output reference 164; shared
 // point construction 162; vertical index first 164; table row before point 158 (kept); complete
 // edge predicate 166; row helper input 160; inverse at entry 230; normal block copy 168; copy-
 // return plane receiver 158 at 993 bytes; copy return with early row 171; early row with shared
 // point construction 160.
-// score 152 (was 158): plane store base and projection/edge scheduling still differ.
+// At 152: plane store base and projection/edge scheduling still differ.
 // return native destination 158f; native component array 158f.
 // transform workspace name 158f; native output first contract 168f.
 // native matrix reference 158f; copied normal receiver 161f.
 // nested edge validation 158f; conditional inverse publication 152p.
-// score 138 (was 152): plane-distance base, projection selectors/stores and inverse schedule remain.
+// At 138: plane-distance base, projection selectors/stores and inverse schedule remain.
 // Shared projection operation 334; native plane result 237; row-selector local 152;
 // bounds-first/vertical-first helper contracts 140/140; pointer-input point initializer 152;
 // vertical result snapshot 170; first-edge squared length 138; corrected contract/length combinations 146/146.
-// score 138 (was 138): Plane-distance base, projection selectors/stores and inverse scheduling remain. external output record
+// At 138: Plane-distance base, projection selectors/stores and inverse scheduling remain. external output record
 // 146; external corner array 138; output and corner array 146; external normal receiver 166; external
 // bounds record 146; matrix memcpy 138; bounds memcpy 152; normal memcpy current length 152.
 // Plane-distance base, projection publication and inverse scheduling still differ.
@@ -157,11 +158,84 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Distance-only plane scope 143; second-edge squared result 146; both 147; external basis
 // references 152; first/all bound-first products 138/138; basis plus lengths 154; completed
 // Y/X projected values plus lengths 158.
-// score 138 (was 138): plane-distance store base, product operand order and the positive register differ.
+// At 138: plane-distance store base, product operand order and the positive register differ.
 // Plane pointer for the normal copy/dot/store 157 (store base as retail, dot operands flip); point-first
 // dot through it 153; pointer for copy and store only 151; projected y stored first 138; the existing
 // function_120810 for each corner projection 189 at 966 bytes, though its inlined lookup is retail's
 // exact sequence (start from it: the products then reorder).
+// Existing projection with all parallel products 191; point setter 189; bound-first products 189; matrix/bound/basis references 189/189/189; all parallel offsets 185; setter plus matrix reference 189. Restored.
+// Overlap-safe matrix/bounds/both/normal/matrix-normal/bounds-normal/all transfers
+// 253/237/273/210/262/234/282; all plus existing final projection 294. Original body and private helper
+// restored.
+// Round 288: complete shared corner-vector producers, forward/left affine and two-scale sums,
+// each with private/shared final projection 265, 250, 265, 250, 265, 241, 265, 241. Original body and helper restored.
+// Native side field byte/signed-char/char 142/142/142; with existing final projection 193/193/193;
+// byte/signed-char side with a reused short axis result 164/164. Original Boolean field, body and helper restored.
+// Lane 14 r11: the existing projection helper 0x120810 per corner 189 (966 bytes; its lookup is
+// retail's `shl`/`movsx` sequence, the products reorder); with natural row orders 189. Edges typed
+// point2f and formed by the existing vector2d_from_points2d 142 (992 bytes; aligned 152 -> 138:
+// retail's four edge stores then the reloads); on that, the inverse as if/else 157, as one inline
+// ternary 156, both lengths named 150, first length named with if/else 143 (986 bytes, aligned 131:
+// zero path stores the shared zero as retail; the epsilon load is hoisted and the projection lookup
+// and product orders remain). Next: the edge helper with if/else plus a form for the lookup.
+// Round 107 (fast; aligned count = unmatched instructions after alignment, base 94/93): bounds by
+// value to the corner helper 192; corner helper forceinline 138 (identical); edges through
+// vector2d_from_points2d with an if/else inverse 143 (986 bytes, aligned 86/87: the tail is retail's
+// but for the epsilon load and the determinant reusing e1.j); that plus each corner through the
+// existing 0x120810 180 (975 bytes, aligned 50/54: lookup, stores and tail retail's; left are the
+// products' operand order per corner, retail's `mov al, [positive]` before each corner's products
+// with `movzx` at the index, the first corner's axis in ax/positive in cl, and the plane store
+// through the normal's base); with real_point3d_set as the lookup's argument 180; with the side
+// byte read before the point 180 (aligned 56/60).
+// Lane 15 r17, on the existing 0x120810 per corner (189): plane pointer 198, with a point-first dot
+// 196 (store base as retail; the first two dot products then load the point first); edges as a
+// vector2f through vector2d_from_points2d with the inverse as if/else 182 (975 bytes; the tail is
+// then retail's but for the first cross product, which loads e0.i where retail copies e1.j's
+// register); natural cross order 182 and retail's corner-1 product operand orders 182 (both identical
+// code: in this form every product loads the matrix field first whatever the source order).
+// Round 129: in the corner helper, the table row as `positive + axis * 2` 138; a named long row
+// index 140 (aligned 152 -> 121: later corners' product operand orders move toward retail's); with
+// y stored before x 140 (aligned 119); row index named in axis-first order 140 (aligned 121); both
+// coordinates read through the row index into named values 176 (970 B). Retail's lookup is
+// `shl eax,1` + two movsx loads, y copied through xmm0 and stored first.
+// Round 17 (m3 lane 2, fast): the corner helper's lookup through the existing function_120810 189
+// (966 bytes); with the edges through vector2d_from_points2d and an if/else inverse 182 (975
+// bytes); that with a plane pointer for the normal copy, dot and store 190; that with the axis in a
+// short local used for the store and the normal index 185; the axis local on the current body 160.
+// Retail's first corner keeps the axis in AX (re-extended at the lookup) and the side in CL; ours
+// keeps one sign-extended axis in ECX and the side in AL, so 4 corners x 2 bytes are missing.
+// Round 10 (lane 17, fast): the corner point through the existing matrix_transform_vector of {x, y, 0} plus the
+// position 444 (1171 bytes: the up terms are not folded); the corner point as a `real point[3]` passed to the
+// existing function_120810 185 (970 bytes); that with the edges through vector2d_from_points2d and an if/else
+// inverse 180 (975 bytes); that with the point built inside the call's first argument 180 (same code: the axis
+// and side loads do not move ahead of the products); the plane set through a small inline helper taking
+// (plane, normal, point) 151: the normal copy, the d store through the normal's base `[eax+0xc]` and the call
+// argument are then retail's, only the dot's i term loads the point first, but every corner product's operand
+// order changes with it (the order follows something global, not the corner's own source).
+// Round 62 (lane 12, fast): edges typed `vector2f` (the file's duplicate `struct vector2f` dropped for the
+// header's union) with both squared lengths through the existing dot_product2d, the determinant through the
+// existing cross_product2d and an if/else inverse 176 (965 bytes: the four edge stores come first and the
+// determinant is retail's but for reloading e1.j; the squares go in place where retail copies first, and the
+// shared zero moves from XMM3 to XMM1, reordering every corner's products); that with the determinant written
+// out 160 (969 bytes: e1.j then stays in a register as retail); that with the ternary inverse 206; the current
+// body with an if/else inverse 140 (the zero path stores XMM3 as retail, the edge stores still interleave);
+// the plane's d as dot3f(position, normal) 144.
+// Round 104 (lane 8): a compile-only screen reproduces the corner product operand orders exactly; they
+// shift with the function's symbol numbering (1-8 unused locals at the top or in the corner helper,
+// diagnostic only, give 7-24 product mismatches against the current 10), so they follow how many
+// locals and inline temporaries the source has. Real: bounds typed box2f with named corner fields 138
+// (identical); the corner point as a three-component loop with the table row first 139 (985 bytes);
+// corner helper taking axis/side by value through the existing 0x120810 191 (966 bytes); the
+// component loop through 0x120810 191; corners through quad->corners without the pointer local 193
+// (953 bytes). Screens: 384 helper shapes on 0x120810 19-24 mismatches (only row order counts).
+// Best screen 7 with four extra function-scope locals and one in the helper: retail's body may have
+// more named locals than ours (in combination, not singly).
+// Round 62 (fast, 0x120810 listed): edges through vector2d_from_points2d with an if/else inverse 157 (986 bytes);
+// the existing 0x120810 per corner 189 (966); both 182 (975, aligned 55); with the corner helper taking axis and
+// side by value 180 (975, aligned 49, the closest: left are the plane store base, the bool in EAX for ECX, the
+// product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
+// locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
+// retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -604,6 +678,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // restored.
 // Round 243: Existing tag record with native signed mode, const/mutable 572/572; actual limit
 // flags byte/word/bool 572 each; tag plus each native flag declaration 572 each. All restored.
+// Round 172: shared grouping/selected plane with short/word/long/dword outstanding total,
+// original first-use lifetime 843/843/840/840; group-entry lifetime 843/843/840/840.
+// Original separate planes and total restored; definition/count/plane homes and rotation spills remain.
 // Round 166: On the exact-frame square/cosine-pair graph, tag/array-count/plane-endpoint lexical
 // roles in all seven subsets 564 each; the uninitialized tag declaration before both scratch
 // arrays 564. Original names, declarations and whole body restored; first tag/count/plane homes
@@ -614,6 +691,38 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Round 236: complete square lifetimes before angle/before sine/between sine-cosine, reversed
 // cosine-pair/square orders, early-square pair combinations and six-part names
 // 617/607/564/611/564/611/583/564; all restored.
+// Round 387: Negative/positive decoded-plane native setters, uniform per-use tag lookup and combinations 581/798/814/785/741/851/820/820; complete squared-axis sum included last. All restored.
+// Round 221: native basis/rotation/both/position/basis-position/rotation-position/all setters
+// 726/564/726/560/717/560/733; all plus axis setter 592. Four-point position gains rejected;
+// original basis, complete rotation copy, matrix position and body restored.
+// Round 262: actual distance/construction inline/noinline call summaries, separately
+// and all four pairs 758/564/564/564/758/758/564/564. Original declarations, private
+// helpers and body restored; definition/count/plane homes and rotation spills remain.
+// Round 178: complete-vector memcmp 771; with decoded-output-first copy 774;
+// result-first angle 770; both 776; with the complete rotation-result setter
+// 771/774/770/776. Original equality, plane and rotation producers restored.
+// Round 273: independent first/candidate/selected plane declarations at function entry,
+// seven subsets 564 each; all three plus the quad declaration at entry 564. Original
+// declarations and complete body restored; definition/count/plane homes still differ.
+// Round 38: Staged cross product, with cross lifetime local/group and sign expression/branches,
+// 559/559/559/559 fast at 3631 bytes, frame 0x21e4; each with common angle result 618
+// at 3632 bytes. Five-point best rejected; original cross call, angle helper and body restored.
+// Round 420: present-first-face region 564; missing-candidate continue 564; present-first-face region +
+// missing-candidate continue 564; ordered geometry rejection guards 564; present-first-face region +
+// ordered geometry rejection guards 564; missing-candidate continue + ordered geometry rejection guards
+// 564; present-first-face region + missing-candidate continue + ordered geometry rejection guards 564;
+// present-first-face region + missing-candidate continue + ordered geometry rejection guards + single
+// angle result 564. Original body restored.
+// Round 429: exact-frame count order 563 (one-point gain rejected); edge fields at use 694;
+// both 694; complete group-owned selection workspace 769; count/workspace 768; edge/workspace
+// and all three 790/790; all with ring anchor at use 707. Original body restored.
+// DL round 206: selected edge direction at acceptance 647; with early pivot offset 633;
+// with native point setter 648; early offset and point setter 682; those four with
+// the staged shared cross product 647/633/648/682. Frames shrink to 0x21d4/0x21cc;
+// original endpoints, pivot timing, helper operations and complete body restored.
+// Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
+// 704/594/727/669/726/660/742/755. Original complete executable source restored.
+// J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

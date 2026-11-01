@@ -370,7 +370,7 @@ bool function_122d60(unsigned __int64 location, long size, void *buffer)
 
 long map_location_get(char const *map_name);
 bool map_names_equal(char const *map_name, char const *other_map_name);
-bool function_2148b0(long progress);
+bool function_2148b0(real *progress);
 extern char g_55bd21[0x103];
 extern char const *g_4687fc;
 extern char const *g_468800;
@@ -388,7 +388,7 @@ static __forceinline void cache_map_progress(char const *name, real *output)
 	else if (location == 2)
 	{
 		if (map_names_equal(g_55bd21, name))
-			function_2148b0((long)output);
+			function_2148b0(output);
 	}
 	else
 	{
@@ -396,58 +396,9 @@ static __forceinline void cache_map_progress(char const *name, real *output)
 	}
 }
 
-// score 39 (was 39): frame/output-home reuse remains.
-// Earlier allocation: frame 0x24 versus 0x18; independent query homes still differ.
-// Frame 0x24 versus 0x18; opaque query homes still cannot reuse the incoming slot.
-// Incoming name/mode/type names 39/39/39; name plus type 39; helper input/output/state names 39/39/39;
-// all boundary names 39. Original operations, helper, parameters and query outputs retained.
-// frame 0x24 versus 0x18; independent query homes still differ.
-// Output-first helper 80; ordinary inline 80; depth one 80; not-loaded arm first 128;
-// guarded stages 126; nested name guard 76 fast, 74 plain.
-// Later-three scratch 194; menu/shared scratch 180; final-pair scratch 109;
-// nested-guard value return 211; post-switch validity 76; scoped later scratch 194;
-// nested-guard direct persistent outputs 203 (fast preview 76). Original body retained.
-// Direct menu/shared/campaign outputs 157/148/134; paired direct menu/shared 207;
-// menu/campaign 192; shared/campaign 179; early menu completion 232;
-// per-query completion lifetimes 256. Independent query homes and incoming-slot reuse still differ.
-// Current independent-output trials: loaded/readback names 76/76; delayed accumulation 256;
-// delayed map weight 224; delayed accumulation plus names 256; completion selections 76;
-// final result selection 76; query declarations together 76.
-// Return-by-value helper 211; one shared scratch local 194; scoped same-name scratch 194;
-// scoped distinct scratch 208 (a shared temp lets the compiler store 1.0f/0.0f straight to
-// the homes and skip the scratch reload on the non-call paths, breaking the per-query block
-// order retail shows with its reused incoming-slot scratch); param address reads removed 76;
-// mode==0 divide arm first 67 KEPT; case-2 break 69; accumulate form 69.
-// Earlier allocation: Frame 0x24 versus 0x18 remains. Initial bool/long/short state 258/287/73; private
-// Frame 0x24 versus 0x18 remains. Initial bool/long/short state 258/287/73; private
-// helper publication 206; private bool/long state 242/262; private late weight 258; private predicate and
-// late weight 228 (fast).
-// frame/output-home reuse remains; existing helper output plus
-// scalar return for menu/shared/campaign 68/68/68, each pair 68/68/68,
-// all later or all four return consumers 68/68. Original helper and readbacks retained.
-// Earlier allocation: every instruction has retail's shape; the frame is 0x24 against 0x18, since
-// every instruction has retail's shape; the frame is 0x24 against 0x18, since
-// retail keeps the three later query outputs and the campaign progress in the dead map-name slot.
-// Mode switch alone 75 (73 for the kept form with the mode if/else); product operands swapped 75;
-// scoped query outputs 206; one shared query output 207; the existing out-of-line progress query
-// called 499, inlined 214 (inline on its definition breaks 0x2c8a0).
-// frame/output homes and high-clamp exit still differ.
-// Separate final result: entry-one clamps 268/268; uninitialized 68/78;
-// dispatch-one 92/93; normalized result 102/101 (lower/upper first).
-// Late menu/shared/campaign readbacks 205/188/173; paired menu/shared 214;
-// all late readbacks 231; reference output 39; reference plus late readbacks 231;
-// completed query producers 223.
-// Further trials: weight after entry/map/menu query 45/63/81;
-// accumulation after entry/map/menu query 136/135/136;
-// both scalars after map/menu query 148/148.
-// Helper writing its own result local and copying it out (direct or kept caller copies) 206/206,
-// frame 0x1c; one scratch for the three queries 206; one scratch or scoped scratches with the
-// helper plain inline 206/206. Any shared scratch slot also drops the non-call-path scratch
-// stores and the reload.
 // @retail 0x122dd0
 real __stdcall function_122dd0(byte *map_name, long mode, long type)
 {
-	(void)&mode;
 	real map_weight = 100.0f;
 	real progress = 0.0f;
 	long location = map_location_get((char const *)map_name);

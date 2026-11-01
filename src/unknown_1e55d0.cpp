@@ -53,7 +53,43 @@ bool function_1c5210(transform4x3f const *matrix, void *shape, long component, l
 
 static __forceinline long real_to_long(real value);
 
-// score 353 (was 353): Plain frame 0x8c versus retail aligned 0x94; saved object roles, capsule staging and tail expansion remain.
+/* sets or clears the blocked flag by testing a capsule just inside the shape at the component's
+   position */
+static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *component, byte const *input, byte *out)
+{
+	real margin = g_47f05c + 0.001f;
+	real radius = *(real *)((byte *)shape + 0xc) - margin;
+	if (g_47f05c > radius) radius = g_47f05c;
+	c_z_capsule_temp capsule((byte *)shape + 0x10, (byte *)shape + 0x20, radius);
+	transform4x3f matrix;
+	((s_havok_component *)component)->rigid_body_matrix_get(0, &matrix);
+	matrix.position.z += margin * 0.5f;
+	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
+	else *(dword *)out &= ~2;
+}
+
+// MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
+// trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
+// stack slot; 1176 bytes against retail's 1164.
+// Round 16: retail takes its first argument in EAX and copies it to EBX at once, and reads the
+// third argument from [ebp+0xc]; ours takes the same three arguments in the same registers, but
+// keeps the output pointer in EDI and the input pointer in EBX where retail keeps them the other
+// way round.
+// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
+// BLOCKED-BY 0x1ec690 (round 30): retail passes the case-3 callee's input in EDI with two stack arguments; our
+// stub (src/stubs/bipeds.cpp) takes ECX/EDX and one stack argument, which is what moves input/output to
+// EBX/EDI here.
+// Earlier: retail's aligned frame (and esp, -16; 0x94) and prologue. Left: the move and
+// input pointers trade EBX and EDI (retail move EBX, input EDI, physics read from its stack slot at
+// each use; ours keeps physics in ESI), and the inlined 0xb77d0 lacks retail's velocity null test
+// (1176 bytes against 1164).
+// Round 74: the capsule test (an automatic 16-byte-aligned capsule, the flag update inside its scope)
+// moved into a force-inline helper: the frame aligns as retail's while 0xb77d0, 0x1c4b00, 0x1ed340 and
+// 0x2901e0 keep matching (the aligned local in this body itself moves 0x1c4b00's EBX argument to the
+// stack) 353 -> 319; replaces the hand-aligned placement-new buffer and the explicit destructor call.
+// At 319 or worse: move/state/input alias declaration orders 319 each; case 6 before 4/5 (retail's
+// block order) 318; compound test as an if/else 388 (1212 bytes); 0xb77d0 called (stays out of
+// line) 374; input flag as a shifted bit 325; both 366.
 // Global optimization off 988, inline depth 2 348, no reference truth test 348, shape flag result 352, combined 352.
 // Base-position/velocity/both input values 379f/382f/413f; move-stage handle 352f;
 // minimum-radius value 352f; activity/compound byte 352f/352f; header offset 352f.
@@ -96,6 +132,38 @@ static __forceinline long real_to_long(real value);
 // Round 237: component/body at uses and one input handle 368/357/356; component-body/
 // component-handle/body-handle/all 398/367/356/359; all with automatic capsule 344, losing seven
 // checked matches (control 353). Original body restored; plain frame and callee propagation remain.
+// Round 14: the placement-new buffer as a 16-byte aligned local reaches 305 with retail's exact
+// aligned frame and length (1164 bytes), the automatic aligned local 307; both break the matched
+// functions 0xb77d0, 0x1c4b00, 0x1ed340 and 0x2901e0 (29/49/133/45) that the plain form keeps
+// matching. Original body restored; plain frame and callee propagation remain.
+// Round 390: Separate target inline/noinline contracts with manual/aligned-byte/automatic
+// capsule lifetimes and aligned-byte period observation: 353/353/305/305/307/307/306/306. Original body restored.
+// Aligned forms recover frame 0x94 but lose four matched controls; declaration contracts do not fix it.
+// Round 269: velocity pointer 319; direct state parameter 319; both 319; direct input parameter 319;
+// velocity/input 319; state/input 319; all 319; all with shared squared length 319. Original body restored.
+// Round 418: native capsule component/flag-word/both/read-only-shape/
+// component-shape/flags-shape/all/output-first contracts 319/319/319/319/319/319/319/319.
+// All original contracts restored; aligned frame retained, move/input/physics
+// ownership and the velocity null test remain.
+// Round 308: Tail-handle/entry-point-workspace/native-byte-countdown subsets 325/319/325/319/325/319/325;
+// all with word countdown 325. Every form preserves four matched controls; original lifetimes and
+// carrier restored. Aligned frame agrees; pointer ownership and native velocity guard remain.
+// Round 223: existing complete velocity updater on the aligned-helper graph, with fallback-kind/step/both,
+// 374/386/370/382; each with direct state/input parameters 374/386/370/382. Updater stays out of line;
+// original aligned capsule helper, expanded motion update and complete body restored.
+// Round 2 of lane 18: the shape decision as a force-inline bool helper (compound arm returning the
+// two-way test, else the direct compare) with early returns/one result 388/388 (1212 bytes; gives
+// retail's block layout, the non-compound and capsule arms after the return, but the input then reloads
+// from its slot and the velocity pointer takes EBX); with case 6 before 4/5 388; with a velocity
+// pointer 388; both 388. Original body restored.
+// Round 30 (lane 11, plain): the disabled 0x1ec690 draft (src/unknown_1eb8a0.cpp) activated with the stub
+// removed 349: LTCG then passes that input in EDI and moves the output pointer to EBX as retail, but the
+// draft is far off (601) and matched 0x2901e0 and 0x1ed340 stop matching (29/45); reverted.
+// Also (fast): the velocity reference as a pointer local with `velocity &&` kept 319 (same code; VC folds
+// the null test, where retail tests the pointer reloaded from its slot: 0xb77d0's inlined body, which
+// LTCG cannot inline from its /Ob1 file).
+// Also (fast): the rate on the right of each position product 319; the activity bit in shift form 319;
+// the object lookup and activity read before the position computation 324 (1180 bytes). All restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
@@ -143,21 +211,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_bipe
 		bool same = current == shape || compound && *(c_z_shape_view **)((byte *)current + 0x30) == shape;
 		if (same) *(dword *)out |= 2;
 		else if (shape->v5() == 7)
-		{
-			real margin = g_47f05c + 0.001f;
-			real radius = *(real *)((byte *)shape + 0xc) - margin;
-			if (g_47f05c > radius) radius = g_47f05c;
-			byte capsule_storage[sizeof(c_z_capsule_temp) + 15];
-			c_z_capsule_temp *capsule = new ((void *)(((dword)capsule_storage + 15) & ~15UL))
-				c_z_capsule_temp((byte *)shape + 0x10, (byte *)shape + 0x20, radius);
-			transform4x3f matrix;
-			((s_havok_component *)component)->rigid_body_matrix_get(0, &matrix);
-			matrix.position.z += margin * 0.5f;
-			if (!function_1c5210(&matrix, capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
-			else *(dword *)out &= ~2;
-			/* the capsule adds nothing to destroy: retail calls the reference object's destructor */
-			capsule->c_reference_a9f20::~c_reference_a9f20();
-		}
+			capsule_update_1e55d0(shape, component, input, out);
 		else if (shape->v5() == 4 || (shape->v5() == 0x15 && (*(c_z_shape_view **)((byte *)shape + 0xc))->v5() == 4)) *(dword *)out |= 2;
 		else *(dword *)out &= ~2;
 	}

@@ -32,7 +32,27 @@ typedef void *(__stdcall *texture_allocate_proc)(long size, long alignment);
 // spills the header register into the dead width slot before the allocation call and makes the null
 // result only on the failure path. Tried: the dimensions used directly 46; each path storing the
 // outputs and returning 52 (retail's tests, no spill); `if (!result) buffer = 0;` 28; a named
-// validity bool 28; a dword aligned size 28.
+// validity bool 28; a dword aligned size 28; long width/height here and in the caller's
+// prototype 27 (176 bytes: the entry and the caller's movsx pushes as retail; the spill, the
+// early null and the field order still differ); with that, result starting as the header and cleared with the buffer 42 (failure
+// path as retail), result = header at the top 69 (header moves to eax), result set in both arms
+// or the test inverted 69, the lock store first 31 (43 with the header result).
+// Round 12 (fast): ours makes the null result in ECX before the tests (`xor ecx, ecx; cmp edi,
+// ecx`), and that extra instruction stands where retail's dead spill is, so the positions after it
+// line up. Result set in both arms 69; result = header just before the allocation call, cleared
+// in the else 69 (copy coalesced into the header's register, header moves to eax); `return buffer
+// ? header : 0` with no result 68 (branchless sbb, but the Lock store then takes EBX's zero);
+// result = 0 at the top 83 (own stack slot); `result = header` first in the success arm and
+// result = 0 in the else 51 (both tails and the tests exactly retail's, ECX then stays reserved
+// through the arm); that with the Lock store first 51 (180 bytes, Lock from EBX as retail); that
+// with long width/height here and in the caller's prototype 52 (176 bytes; caller 244 -> 246);
+// with long width/height, the header itself cleared in the failure arm 68, result set at the end
+// of the arm 68. Retail's result is set late yet not coalesced with the header, and its spill
+// stores the header register: a copy of the header defined after width's read and live across
+// the allocation call would give both; no source form tried keeps that copy apart.
+// The failure result rewritten 69 (181 bytes); the result declared before allocation 28; the buffer
+// before aligned 28; all declarations at entry 28; the result before Lock/Data 33/35; a promoted
+// height with the failure result 66 (182), with Lock first 31. Body restored.
 // @retail 0x23e340
 D3DTexture *function_23e340(short width, short height, short format,
 	texture_allocate_proc allocate, long *size, void **data, D3DTexture *header)
@@ -568,11 +588,121 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// score 58 (was 338): camera-basis scheduling/register allocation still differs.
-// Retail loads previous_up.k after storing distance and holds right.i/j/k in
-// xmm2/xmm1/xmm0; ours uses xmm2/xmm0/xmm1. Retail's second cross product copies
-// registers and addresses forward through ecx; ours mixes ecx/edi and stores up.i early.
-// The else branch stores forward.j/k through ecx in retail and through edi here.
+// score 57 (was 57): camera-basis register allocation differs. Retail loads previous_up.k into
+// xmm0 after storing the distance and holds right.i/j/k in xmm2/xmm1/xmm0 (ours loads it before
+// the store, into xmm1, and right lands in xmm2/xmm0/xmm1); retail computes the second cross
+// product staged (all products, then the stores through eax), copying right's components
+// (movaps, then a memory multiply). The else branch stores forward.j/k through ecx in retail and
+// through edi here. Kept: cross3f for the second product 57 (was written out by hand).
+// Tried: cross3f_staged for the second product 217 (1270 bytes; aligned 37 from 44, retail's
+// reads and stores, u.k/right.i colours swapped); both products staged 221; previous_up read
+// after the forward copy 268, before the distance 241; direction_from_angles in the else branch
+// 224 (angles read once), with cross3f_staged 220; a forward pointer local in the else branch 55
+// (the else branch is then retail's), 225 aligned 43 in an earlier build, with the staged
+// product 217 [35: only previous_up.k's register is left], in both branches with the staged
+// product 221, on that right or direction declared first 217/217, both products staged 221, the
+// first product reading direction 223; staged first product 222; direction declared before
+// previous_up 57; the first product taken from the direction local 217 (1261 bytes); the
+// distance in a named local stored after the forward copy or after the first product 227/233,
+// the same on the staged/pointer form 221/232; previous_up copied after the direction
+// difference 99, on the staged/pointer form 241.
+// Round 22 (one-file harness with the callee files, exact: 58 for the build's 57): the first
+// product's operand order in each component, all 8 orders, 58 each and 217 each with the staged
+// second product (identical code: the products are canonicalised); first product from the
+// direction local with the staged second product 223, with both products from direction (cross3f
+// or staged second) 229/229; up staged into a local, then copied 253 (1290 bytes).
+// Lane 17 r1: right declared first 57; const previous_up 57; a forward pointer in both branches with
+// cross3f 325 (1268 bytes); previous_up copied after the direction difference 98; staged second product
+// with the else-branch forward pointer 217 (1270 bytes): retail's staged order (k, j, i, then the stores)
+// but right's colours follow previous_up.k, which ours loads into a free register before the distance
+// store where retail loads it into xmm0 after that store.
+// Lane 13 round 18 (base: staged second product + forward pointer in the else branch, 217 at
+// 1270 bytes, 35 aligned): both products staged 221; previous_up copied after the direction 241;
+// first product from the direction local with a plain second product 217 (1261 bytes, 47
+// aligned); the distance stored after the products 224 (it then holds xmm0 across them). A
+// compile-only build of the file reproduces the first product's colours (u.k in xmm2 even with
+// the distance on x87); there u.k takes retail's xmm0 only when no distance store sits between
+// the call and the products (dropped or moved after them: 19-21 differing SSE lines against 33);
+// none of 48 helper/operand/copy-placement combinations does better than the base.
+// Round 322: Complete scalar up snapshot i/j/k permutations all 107; memcpy snapshot 57; memmove 327 at retail length. Original aggregate copy, products and body restored; up K/distance scheduling remains.
+// Round 127 (lane 4): cross3f_staged for the second product 217 again (1270 bytes; aligned, only
+// the first product's colours (right.i/k swapped), the second product's operand order (ours loads
+// forward's component and multiplies right's register, retail copies right's register and
+// multiplies forward from memory) and the else branch's stores remain); on it: a force-inline
+// helper reading the angles through the observer and writing through the output pointer (as the
+// matched 0x23d790 builds its forward vector) 221, alone 222; a forward pointer local for the copy
+// and both products 221; the distance in a named local 217 (same code). Diagnostic only: one no-op
+// product on the distance before the staged products 55 at 1262 bytes (the staged code shrinks by
+// 14 bytes), two/three 203/223: the operand orders follow VC's tuple numbering, as in 0x293130.
+// Round 46 (lane 9): a forward pointer in the camera branch only (copy and both products through it) 221
+// (1273 bytes), with the staged second product 221 (1272); the second product reading the direction local 224
+// (1268), staged 224; the player state named before the previous_up copy 57 (identical). On the base the first
+// product is retail's sequence with up.k in xmm1 (loaded before the distance store) where retail loads it into
+// xmm0 after the store, so right's j/k colours swap and the second product is not staged.
+// Round 111 (lane 6, fast): command declared before observer 57; the staged second product reading forward through
+// a second view of the command (`((s_follow_output_23de50 *)output)->forward`) 55 (1262 B: the second product then has
+// retail's operand order and stores), with the view for the first product only 55; that plus a forward pointer in
+// the else branch 53 (else branch retail's; only previous_up.k in xmm2 loaded before the distance store, retail xmm0
+// after it, swapping right.i/right.k, remains); on 53: previous_up copied after the direction difference 96, after
+// the forward copy 128, between the distance and the copy 100, right declared first 55, const previous_up 53, staged
+// first product 54 (1264 B), first product from direction 220, the up output through the view 53, five declaration
+// orders of previous_up/direction/right 53 each.
+// Round 33 (lane 10): retail's second product is exactly cross3f_staged's order (k, j, i, then the stores),
+// 217 at 1270 bytes again (up.k then in xmm2); the field-of-view copy moved to the start of the camera
+// branch 248 (1261 bytes), with the staged product 114 (1262); the else-branch forward pointer 55 again,
+// with the staged product 217; the distance in a named local stored at once 57 (identical). A compile-only
+// /FAs build reproduces our camera colouring but returns the distance on x87 (xmm0 stays free there).
+// Round 114 (lane 6, fast): right or direction declared at function scope 57/57; the second product's
+// output through the output view (plain cross3f) 57; the forward copy as memcpy 57; the else branch's
+// cosine declared at function scope 57 (all identical code).
+// Round 133 (fast): the direction through the existing scaled_difference3f with a 1.0f scale 223 (1266
+// bytes); the forward copy field by field 232 (1274 bytes), as memcpy 57 (identical); memcpy with
+// cross3f_staged for the second product 217 (1270 bytes), for both products 221 (1272). The 3 extra bytes are
+// the second product's three `movss x, [forward]; mulss x, right` pairs, where retail copies right's register
+// and multiplies forward from memory (one byte shorter each). A one-file harness with the callee files gives
+// 362 at 1246 bytes here (not exact).
+// Round 137 (lane 4): else branch through a named forward pointer 55 (else branch retail's); the second product as
+// cross3f_staged through a `vector3f const *forward` local 221 (1272 bytes), with the else pointer 221; on the else
+// pointer: a named up pointer for the second product and its normalize 222 (1273), the first product staged 222.
+// Round 59 (lane 12, fast): the first product reading the direction local with the forward copy
+// after it 217 (1261 bytes, every product register moves), with cross3f_staged for the second
+// product 223 (1266); either with a forward pointer in the else branch 217/223; the else branch
+// without the cosine local (cos(pitch) at both uses) 238 (1284 bytes).
+// Round 42 (lane 11, fast): the side vector built in command->up and crossed in place with
+// cross3f_staged (cross3f/staged first product) 252/243 (1291/1289 bytes: the first product's stores
+// stay and the second reloads them); the staged second product with each product's operands swapped
+// (b * a) 217 (1270, canonicalised like cross3f_staged); the first product from the direction local
+// 217 (1261, again); a forward pointer for the copy and the first product with the staged second
+// product reading command->forward 217 (1270), the pointer taken after the copy 217 (propagated).
+// Retail's second product treats forward's loads as values newer than right's (as the listed second
+// view of the command gives), so something between the products separates them; no plain form did.
+// Round 65 (lane 12, fast): the second product in place on the output (first product into command->up,
+// then cross3f_staged from it into it, no right local) 252 (1291 bytes); a cross returning its output
+// pointer passed straight to the normalize 57 (same code); the first product as a cross returning the
+// vector by value 303 (1332 bytes); the second product staged in place on right, then copied to the
+// output 260 (1296 bytes); the distance stored through a pointer to its field 57 (same code).
+// Round 58 (lane 16, fast): both products cross3f_staged through command->up (first into up, second
+// in place) 243 (1289 bytes: up stored and reloaded); `cross3f(&forward, &previous_up, &right)` then
+// `cross3f(&right, &forward, &up)` (the same up) 57: previous_up's loads become retail's (j xmm3, i
+// xmm4, k xmm0 after the distance store), but the first product's subtractions are then negated;
+// that with cross3f_staged for the second product 59 (1262 bytes); the cross3f body behind a (b, a)
+// parameter order (diagnostic) 57 (identical: only the formula's load order moves previous_up.k);
+// right negated after the forward-first product (diagnostic) 256 (the negation is not folded); on the
+// forward-first form: the first product as cross3f_staged 57, previous_up copied after the direction
+// difference 249 (1272 bytes).
+// Round 15 (lane 17, fast): a cross helper returning its result pointer, the second product passed
+// straight to the normalize 57 (same code), both products through it nested with staged components
+// 221 (1272 bytes), plain components nested 57; a player-state pointer local for the previous_up copy
+// 57; previous_up declared at function scope 57. Diagnostics: the first product's components in j, i,
+// k order (up.k named first) with the staged second product, written out 218 (forward read through
+// edi), through a pointer helper 219 (up.k then in xmm2, loaded before the distance store).
+// Round 17 (lane 17, fast): both products staged with the first in place into the previous_up copy 222
+// (1270 bytes); the else branch through a force-inline helper reading the angles through the observer and
+// writing through its forward pointer (0x23d790's form) 222 (1273 bytes: the else branch is retail's, but
+// the first product recolours, up.k xmm2, and the second loses its memory operands), with cross3f_staged
+// for the second product 221 (1272); the camera basis as a force-inline helper with pointer parameters 296
+// (1267, frame differs); `right` renamed `left` 57 and previous_up/direction renamed up/a_direction 57
+// (identical code: local names do not move these registers).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
@@ -629,14 +759,7 @@ void __stdcall function_23de50(void *state, void *input, s_observer_command *out
 		command->forward = direction;
 		vector3f right;
 		cross3f(&previous_up, &command->forward, &right);
-		{
-			real k = command->forward.i * right.j - command->forward.j * right.i;
-			real j = command->forward.k * right.i - command->forward.i * right.k;
-			real i = right.k * command->forward.j - right.j * command->forward.k;
-			command->up.i = i;
-			command->up.j = j;
-			command->up.k = k;
-		}
+		cross3f(&command->forward, &right, &command->up);
 		function_30bf0(&command->up);
 		command->field_of_view = observer->field_of_view;
 		command->offset = *g_4687a4;

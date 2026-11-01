@@ -336,20 +336,6 @@ struct s_request_object_header
 
 bool function_1df560(short team_a, short team_b);
 
-// score 47 (was 47): retail keeps the scaled index in EAX and reads the field
-// as [eax+esi+0x28], and loads the table pointer after the index is scaled;
-// ours materialises the record pointer in EBX and reads [ebx+0x28].
-// Ours gives the state EAX for the final call's `state + 0x140` argument
-// (`add eax, 0x140`), so the record moves to EBX; retail keeps the record in
-// EAX and passes `lea eax, [edx+0x140]`. Tried: state declared first 47; a
-// previous-request pointer 47; the state as a byte offset 47; no record
-// local, a fresh one for the unit 52; the copies without `current` 47.
-// Also tried: the unit index in a local (before or after the copies) 47; a short
-// local index 58; the player as an array element 47; an early return 47; the
-// local index read again for the state 58; the unit tests in one condition 47;
-// the local index read without the player local (before or after it) 47; the
-// player table in a local 47; the request pointer as an early local 64; the
-// counter through a byte local 47.
 // @retail 0x1e6b00
 void function_1e6b00(long player_index, s_request_source *source)
 {
@@ -357,49 +343,26 @@ void function_1e6b00(long player_index, s_request_source *source)
 	long index = player->local_player_index;
 	if (index != NONE)
 	{
-		s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[index];
-		s_request_source *current = (s_request_source *)((byte *)state + 0x88);
-		*(s_request_source *)((byte *)state + 0xe4) = *current;
+		s_request_source *current = (s_request_source *)((byte *)&((s_local_player_state_view *)g_51e9c0)[index] + 0x88);
+		*(s_request_source *)((byte *)&((s_local_player_state_view *)g_51e9c0)[index] + 0xe4) = *current;
 		*current = *source;
 		if (player->unit_index != NONE)
 		{
 			s_request_object *unit = ((s_request_object_header *)g_4e0300->data)[player->unit_index & 0xffff].object;
 			if (unit->field_1fc == NONE && source->field_20 != 0xff && source->field_20 != unit->field_216)
 			{
-				state->field_197++;
-				state->field_196 = (byte)(g_510c54->field_2_3 * 2);
+				((s_local_player_state_view *)g_51e9c0)[index].field_197++;
+				((s_local_player_state_view *)g_51e9c0)[index].field_196 = (byte)(g_510c54->field_2_3 * 2);
 			}
 		}
-		function_1e8ce0((s_request_state *)((byte *)state + 0x140), source);
+		function_1e8ce0((s_request_state *)((byte *)&((s_local_player_state_view *)g_51e9c0)[index] + 0x140), source);
 	}
 }
 
-// score 51 (was 51): index EBX/mask EBP priority, repeated output load and low/high store order remain.
-// retail keeps the index in EBX and the mask in EBP (ours
-// the other way round), loads the output pointer once above the last test and
-// stores the low flag word first in the inlined update. Without the read
-// barrier: high word through the pair and low word through the state array 51
-// (retail's load order and `mov eax, mask; and eax, low`); both through the
-// pair 77, both through the state array 77-80, mask local / term order /
-// `21 == index` / limit or next locals / swapped arms 51-52.
-// Earlier: retail saves the pointer argument in EBX and shifts the mask in EBP.
-// Round 129: flag view declared after both value terms read from the array 77 (state
-// moves to EAX); unsigned index 51; explicit else arm 51; constant update before the output
-// stores 54; `limit > 0` 51. Screened: array/element-address flag views, the transition
-// slot for the recursion, a next-value local, the absent-entry arm last, output stores
-// swapped, call before the stores, all 45-78 in screen terms (base 45).
-// score 51 (was 51): index/mask roles and the output join remain; tested completion
-// with separate/state/ticks/both stores 116/112/114/120; shared setter variants
-// 83/111/108/109. Original early-result body restored.
-// index/mask registers and the repeated output load remain.
-// Declared paired-word view with mixed/pair/array/mirrored reads 51/77/80/77;
-// paired snapshot before/after pointer lifetime and low-first snapshot 115/115/115;
-// paired snapshot with one shifted mask 85.
-// Early dependency predicate, native signed ordinal, both, native recursive slot, predicate/slot all 51;
-// request value advanced in place alone/with native ordinal 58/58; adjacent recursive ordinal 51.
 // @retail 0x1e8d80
 bool __stdcall function_1e8d80(long index, s_local_player_state_view *state, s_entry_420 *entry, s_request_transition *output)
 {
+	bool completed = false;
 	s_flag_pair *flags = (s_flag_pair *)((byte *)state + 0x170);
 	long value = ((flags->high & (1 << index)) ? 2 : 0) + ((state->request_flags[0] & (1 << index)) ? 1 : 0);
 	if (index == 21)
@@ -408,25 +371,29 @@ bool __stdcall function_1e8d80(long index, s_local_player_state_view *state, s_e
 	{
 		output->state = 4;
 		output->ticks = g_510c54->field_2_3 * 5;
-		return false;
 	}
-	if (entry->limit != 0 && entry->limit <= 3)
+	else if (entry->limit != 0 && entry->limit <= 3)
 	{
 		if (value + 1 >= entry->limit)
 		{
+			completed = true;
 			output->state = 5;
 			output->ticks = 0;
 			function_1e6a00(3, flags, index);
-			return true;
 		}
+		else
+		{
+			output->state = 4;
+			output->ticks = g_510c54->field_2_3 * entry->duration;
+			function_1e6a00(value + 1, flags, index);
+		}
+	}
+	else
+	{
 		output->state = 4;
 		output->ticks = g_510c54->field_2_3 * entry->duration;
-		function_1e6a00(value + 1, flags, index);
-		return false;
 	}
-	output->state = 4;
-	output->ticks = g_510c54->field_2_3 * entry->duration;
-	return false;
+	return completed;
 }
 
 // @retail 0x1e8fa0
@@ -514,14 +481,7 @@ struct s_request_profile
 	byte field_148[0x1e0 - 0x148];
 };
 
-// score 108 (was 108): aligned frame 0x1e8 agrees; player/version registers and flag reads differ.
-// Default profile 164; early memset 150; unsigned version 143; aligned byte prefix 180;
-// unsigned local index 143; aligned dword prefix 180; common bits 370; separate tick reset 335.
-// All use ordinary player data and native loops; original profile and body retained.
-// A plain 32-entry loop of `ticks = 0; state = function_1e7a10(local_index, i) ? 5 : 0;` gives retail's
-// per-element flag reloads and bool select but stays rolled (337, 357 bytes): with if/else, a
-// pointer local, a bool local, short/int/unsigned/do/while counters, an inline transition helper,
-// inline/forceinline on 0x1e7a10 alike; noinline 373; the four-way body calling it 154.
+/* copies each requesting player's profile flags into its local state and resets the 32 transitions */
 // @retail 0x1e73b0
 void function_1e73b0()
 {
@@ -531,13 +491,12 @@ void function_1e73b0()
 		long player_index = local_index == NONE ? NONE : g_4e8c20->entries[local_index];
 		if (player_index != NONE)
 		{
-			s_player_request_view *player = (s_player_request_view *)(*(byte *volatile *)&g_4e8c24->data + (player_index & 0xffff) * 0x21c);
-			long profile_index = *(long *)((byte *)player + 0x24);
-			if (profile_index != NONE)
+			s_player_request_view *player = (s_player_request_view *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c);
+			if (*(long *)((byte *)player + 0x24) != NONE)
 			{
 				s_request_profile profile;
 				long version;
-				s_player_slot *slot = &g_54e8e0[profile_index];
+				s_player_slot *slot = &g_54e8e0[*(long *)((byte *)player + 0x24)];
 				if (slot && (*(byte *)slot & 0x10))
 				{
 					profile = *(s_request_profile *)((byte *)slot + 0x18);
@@ -548,37 +507,30 @@ void function_1e73b0()
 					memset(&profile, 0, sizeof(profile));
 					version = NONE;
 				}
-				s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
-				memcpy(state->request_flags, profile.flags, sizeof(profile.flags));
-				state->version = version;
-				dword flags0 = state->request_flags[0];
-                dword flags1 = state->request_flags[1];
-                for (long i = 2; i - 2 < 32; i += 4)
+				memcpy(((s_local_player_state_view *)g_51e9c0)[local_index].request_flags, profile.flags, sizeof(profile.flags));
+				((s_local_player_state_view *)g_51e9c0)[local_index].version = version;
+				for (long i = 0; i < 32; i += 4)
 				{
-					{
-						s_request_transition *transition = &state->transitions[(i - 2)];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << (i - 2))) ? 2 : 0) + ((flags0 & (1 << (i - 2))) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
-					{
-						s_request_transition *transition = &state->transitions[(i - 1)];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << (i - 1))) ? 2 : 0) + ((flags0 & (1 << (i - 1))) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
-					{
-						s_request_transition *transition = &state->transitions[i];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << i)) ? 2 : 0) + ((flags0 & (1 << i)) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
-					{
-						s_request_transition *transition = &state->transitions[(i + 1)];
-						transition->ticks = 0;
-						long value = ((flags1 & (1 << (i + 1))) ? 2 : 0) + ((flags0 & (1 << (i + 1))) ? 1 : 0);
-						transition->state = value == 3 ? 5 : 0;
-					}
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].ticks = 0;
+					if (function_1e7a10(local_index, i))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].ticks = 0;
+					if (function_1e7a10(local_index, i + 1))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 1].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].ticks = 0;
+					if (function_1e7a10(local_index, i + 2))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 2].state = 0;
+					((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].ticks = 0;
+					if (function_1e7a10(local_index, i + 3))
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].state = 5;
+					else
+						((s_local_player_state_view *)g_51e9c0)[local_index].transitions[i + 3].state = 0;
 				}
 			}
 		}

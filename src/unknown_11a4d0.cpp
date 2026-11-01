@@ -494,7 +494,7 @@ void function_11ade0(long unit_index, long vehicle_index, long label)
 				{
 					if (label == definition->seats[seat_index].label &&
 						function_c8f60(vehicle_index, seat_index) == NONE &&
-						function_c8200(vehicle_index, seat_index, unit_index))
+						function_c8200(unit_index, vehicle_index, seat_index))
 					{
 						s_unit_request request;
 						request.type = 0x1c;
@@ -601,7 +601,7 @@ short function_11b0c0(long vehicle_index, long filter_range, long volatile list_
 					for (long i = 0; i < seat_count; i++)
 					{
 						s_object_seat *seat = &seats[i];
-						if (seat->object_index != NONE && function_c8200(seat->object_index, seat->seat_index, object_index))
+						if (seat->object_index != NONE && function_c8200(object_index, seat->object_index, seat->seat_index))
 						{
 							s_unit_request request;
 							if (unit->parent_index != NONE)

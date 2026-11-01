@@ -29,35 +29,7 @@ public:
 	float radius;
 };
 
-// the one-byte answer of a cast, returned through a hidden pointer
-// (src/unknown_2deda0.cpp)
-struct answer_2deda0
-{
-	char value;
-
-	answer_2deda0(bool value_) : value((char)value_) {}
-};
-
-struct segment_2deda0
-{
-	__m128 start;
-	__m128 end;
-};
-
-// where a cast hit: the surface normal, the part hit and the fraction of the
-// segment travelled
-struct hit_2deda0
-{
-	__m128 normal;
-	long part;
-	float fraction;
-};
-
-class sphere_2deda0
-{
-public:
-	answer_2deda0 function_2deda0(segment_2deda0 const *segment, hit_2deda0 *hit) const;
-};
+#include "sphere_2deda0.h"
 
 // the point of a segment closest to a point (src/unknown_2ddfc0.cpp)
 class segment_2ddfc0

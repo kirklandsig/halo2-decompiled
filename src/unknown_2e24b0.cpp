@@ -8,14 +8,7 @@
 #include "sweep_search_2e1090.h"
 
 // moves the boxes' endpoint indices past the new ones (src/unknown_2dfcc0.cpp)
-struct quantized_box_2dfcc0;
-
-class quantized_boxes_2dfcc0
-{
-public:
-	void function_2dfcc0(quantized_box_2dfcc0 *boxes, long count, unsigned short const *limits);
-	void function_2dfdc0(quantized_box_2dfcc0 *boxes, long count, unsigned short const *limits);
-};
+#include "quantized_boxes_2dfcc0.h"
 
 // takes two entries out of an axis's endpoints (src/unknown_2dffa0.cpp)
 class array_2dffa0

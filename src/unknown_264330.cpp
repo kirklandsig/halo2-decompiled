@@ -7,6 +7,7 @@
 
 // @flags /O2 /arch:SSE /Gr
 #include "object_masks_storage.h"
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 struct s_object;
 s_object *function_badc0(long object_index, dword type_mask);
@@ -146,53 +147,51 @@ finished:
 	}
 }
 
-// score 1 (was 1): ours compares esi with ecx, retail copies esi into edi and compares edi with ecx.
 // @retail 0x265050
 void function_265050(long actor_index, long prop_ref_index)
 {
-	struct { byte *definition; long volatile missing_owner; } scratch;
 	byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
 	byte *reference = g_502418->data + (prop_ref_index & 0xffff) * 0x3c;
 	long object_index = *(long *)(reference + 0x20);
 	byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-	byte *&definition = scratch.definition;
-	definition = *(byte **)((byte *)g_4e3b44 + (*(long *)object & 0xffff) * 16 + 8);
+	byte *definition = *(byte **)((byte *)g_4e3b44 + (*(long *)object & 0xffff) * 16 + 8);
 	if (*(real *)(definition + 0xd0) + 10.0f > *(real *)(reference + 0x28))
 	{
 		short state = *(short *)(actor + 0x358);
 		if (state < 2 || (state == 2 && *(long *)(actor + 0x360) != object_index &&
 			*(real *)(actor + 0x394) > *(real *)(reference + 0x28)))
 		{
+			long owner_index = NONE;
 			memset(actor + 0x358, 0, 0x58);
 			*(short *)(actor + 0x358) = 2;
 			*(long *)(actor + 0x360) = *(long *)(reference + 0x20);
 			*(real *)(actor + 0x36c) = *(real *)(definition + 0xd0);
 			*(short *)(actor + 0x35a) = 0;
 			*(long *)(actor + 0x368) = prop_ref_index;
-			long parent_index = *(long *)(object + 0xc8);
-            scratch.missing_owner = NONE;
-            long selected;
-            if (parent_index == NONE) goto owner_missing;
-            {
-                byte *parent = (byte *)function_badc0(parent_index, NONE);
-                if (!parent || !((1 << parent[0xaa]) & 3)) goto owner_missing;
-                selected = parent_index;
-                long unit_index = *(long *)(actor + 0x18);
-                if (unit_index != NONE && selected == unit_index)
-                    *(short *)(actor + 0x35a) = 2;
-                else if (!function_1df560(*(short *)(actor + 0x24), *(short *)(parent + 0x138)))
-                    *(short *)(actor + 0x35a) = 1;
-            }
-            goto owner_selected;
-owner_missing:
-            selected = scratch.missing_owner;
-owner_selected:
-            *(long *)(actor + 0x364) = selected;
+			if (*(long *)(object + 0xc8) != NONE)
+			{
+				byte *parent = (byte *)function_badc0(*(long *)(object + 0xc8), NONE);
+				if (parent && ((1 << parent[0xaa]) & 3))
+				{
+					owner_index = *(long *)(object + 0xc8);
+					long unit_index = *(long *)(actor + 0x18);
+					if (unit_index != NONE && owner_index == unit_index)
+						*(short *)(actor + 0x35a) = 2;
+					else if (!function_1df560(*(short *)(actor + 0x24), *(short *)(parent + 0x138)))
+						*(short *)(actor + 0x35a) = 1;
+				}
+			}
+			*(long *)(actor + 0x364) = owner_index;
 			function_25b910(actor_index, prop_ref_index);
 		}
 	}
 }
 
+// matches: the facing is fetched by calling function_cb7e0, the unit vector getter,
+// which LTCG inlines here. That inlined copy is what loads the object into ecx,
+// adds 0x168 and reads the three components, the way retail does; the else branch
+// reads the object index out of the reference again, so its second pool lookup
+// stays separate from the inlined one.
 // score 67 (was 67): retail loads the array base into esi and copies the three fields in a different order, ours
 // uses ecx. The cause is one choice: retail keeps the object array base live in esi across the two calls and
 // fetches the object again from ebx in the else branch, while ours keeps the first object pointer in esi and
@@ -201,6 +200,26 @@ owner_selected:
 // or without an object local (96); the facing as a const reference (99); a volatile load of the second object
 // pointer (103; 102 without the object local: it keeps the element address in esi instead); no object local
 // (67); the two ifs folded to if / else if (66); direction.i computed before the facing (67).
+// Round 242: native displacement initializer / position copy then subtract 67/67;
+// either with native-width narrowed category 76/76; existing facing getter plus either
+// direction form 109/109, with native-width category 75/75. Original body restored;
+// header-base retention and the second object lookup still differ.
+// Round 248: Per-use reference handle, late/early headers 67/110;
+// typed counterparts 67/110; wide narrowed category 76/77, typed 76/77.
+// All restored; header-base retention and the second object lookup still differ.
+// Round 96: the second lookup's address as headers + 8 + i * 12, &headers[i * 12] + 8 or an
+// element-pointer index 67/67/67 (VC folds them into one address); the facing copied field by
+// field 102; the else branch re-reading g_4e0300->data into headers 96. Diagnostic (reverted):
+// calling 0x264260 or 0x30bf0 through a function pointer makes ours reload the object pointer
+// but keep the element address (lea esi), not retail's header base; BLOCKED-BY 0x264260's
+// side-effect summary (it reads only through its pointers) in part.
+// Round 78: a compile-only build of this body (every callee opaque) keeps the header base and
+// fetches the object again after the calls exactly as retail; only LTCG's knowledge that
+// function_30bf0 and function_264260 write no object memory merges the second lookup into the
+// first (function_264260 is a pure leaf in an avoid-listed file). Direction through
+// vector3d_from_points3d 67; header base read before the position call 109; facing copied
+// member-wise 102; direction before the object lookup 75; object lookup after the zero-length
+// fallback 154.
 // @retail 0x264940
 void function_264940(long actor_index, long prop_ref_index)
 {
@@ -213,9 +232,8 @@ void function_264940(long actor_index, long prop_ref_index)
 		long object_index = *(long *)(reference + 0x20);
 		point3f position;
 		function_b9dd0(object_index, &position);
-		byte *headers = g_4e0300->data;
-		byte *object = *(byte **)(headers + (object_index & 0xffff) * 12 + 8);
-		vector3f facing = *(vector3f *)(object + 0x168);
+		vector3f facing;
+		function_cb7e0(object_index, &facing);
 		vector3f direction;
 		direction.i = position.x - *(real *)(actor + 0x238);
 		direction.j = position.y - *(real *)(actor + 0x23c);
@@ -234,13 +252,13 @@ void function_264940(long actor_index, long prop_ref_index)
 		}
 		else
 		{
-			object = *(byte **)(headers + (object_index & 0xffff) * 12 + 8);
-			if (*(long *)(object + 0x13c) != NONE)
+			byte *owner = *(byte **)(g_4e0300->data + (*(long *)(reference + 0x20) & 0xffff) * 12 + 8);
+			if (*(long *)(owner + 0x13c) != NONE)
 			{
 				if (category <= 0)
 				{
 					actor[0x30c] = true;
-					*(short *)(actor + 0x310) = ai_player_index_get(*(long *)(object + 0x13c));
+					*(short *)(actor + 0x310) = ai_player_index_get(*(long *)(owner + 0x13c));
 				}
 				else
 				{
@@ -261,37 +279,6 @@ void function_264940(long actor_index, long prop_ref_index)
 	}
 }
 
-// score 353 (was 353): the frame is still 0x24 against retail's 0x20, ours keeps the
-// object in EBP where retail keeps it in EDI, and the prop-index field is still read
-// before the object-index field. The body is 1540 bytes against retail's 1538.
-// Frame 0x24 versus 0x20; object/view allocation and cached object index differ.
-// Full-width unit mask 439; sampled-time reuse 380; deferred tracking view 431; fallback state default 358; inline depth one 358.
-// j92: frame 0x24 versus 0x20 and object/view homes remain; real object/header types and selection inline declarations tie; expiry snapshot regresses.
-// typed object view 358; typed header lookup 358; typed object header 358; tracking expiry snapshot 385;
-// selection inline declarations 358.
-// Earlier: frame 0x24 versus 0x20 and object/view homes remain.
-// Shared state/related/both distances 358/359/359; native actor/datum/origin references
-// 358/358/358; shared direction setter 358; reused byte approach category 370.
-// Round 310: state word snapshot 358; long state snapshot 365; long update 434;
-// entry vector workspaces 358; speed category result 358. Frame 0x24/0x20 and object/view homes remain.
-// Round 211: Direct time 442; signed-byte/word update 358/429; word approach category 360; named expiration
-// 358. Frame and object/view homes remain.
-// Round 176: Branch-produced approach categories signed-byte/byte/word/long
-// 370/371/360/360; highest-category-default forms 392/392/394/393. Frame
-// 0x24 versus 0x20 and object/view homes persist; all original categories restored.
-// Disjoint velocity/facing scope 358; semantic vector names 358; both 358; shared speed length 358;
-// shared speed dot 358; shared approach dot 358; length/approach helpers 357; scoped two-dot helpers 357.
-// Complementary bool/byte/short/long complete update predicates 442/442/425/377;
-// complementary conditional producers 359/359/429/422. Original update restored.
-// Round 337: complete origin point/scalars 419/427; sampled state position 444;
-// origin scalars/point with state position 463/457; const native copies 457;
-// entry origin copy 498; both native inputs with shared difference 457. All restored.
-// Round 358: Shared expiry/buildup/both tick conversions 358/358/358; both with state word/separate
-// current state/both state forms 358/357/357; unit predicate 447; disjoint vectors 358. One-count
-// gains rejected; body restored.
-// Round 205: Complete actor/reference/prop getter receiver masks 1/2/3/4/5/6/7
-// 353/586/586/499/499/778/778; all with current-time observations 748. Original
-// object snapshot and complete body restored; frame and object/view homes remain.
 // @retail 0x264330
 void __stdcall function_264330(long actor_index, long prop_ref_index, s_2641c0 *context,
 	s_2640c0 *motion, bool force)
@@ -302,6 +289,7 @@ void __stdcall function_264330(long actor_index, long prop_ref_index, s_2641c0 *
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
 	byte *prop = (byte *)prop_get(reference->prop_index);
 	byte *unit = NULL;
+	s_type_f95cd3 *view = NULL;
 	bool update = false;
 	long time = g_510c54->game_time;
 	if ((1 << object[0xaa]) & 3)
@@ -314,7 +302,6 @@ void __stdcall function_264330(long actor_index, long prop_ref_index, s_2641c0 *
 	else if (reference->type != *(short *)(prop + 2) && unit && *(short *)(prop + 2) == 6 &&
 		(real)(time - *(long *)(unit + 0x2e0)) * g_510c54->rate > 5.0f)
 		reference->type = 6;
-	s_type_f95cd3 *view = NULL;
 	s_type_5cfb45 *state = NULL;
 	if (reference->tracking_index != NONE)
 	{
@@ -334,56 +321,71 @@ void __stdcall function_264330(long actor_index, long prop_ref_index, s_2641c0 *
 		}
 		function_25ccd0(state, reference->object_index, reference->unknown1c, motion);
 	}
-	state = function_25d690(reference);
-	if (!(view)) {
-		real x = state->position.x - context->field_c.x;
-		real y = state->position.y - context->field_c.y;
-		real z = state->position.z - context->field_c.z;
-		reference->unknown28 = (real)sqrt(z * z + y * y + x * x);
-	} else {
+	s_type_5cfb45 *known_state = function_25d690(reference);
+	if (view)
+	{
 		vector3f *direction = (vector3f *)((byte *)view + 0x2c);
-		direction->i = state->position.x - context->field_c.x;
-		direction->j = state->position.y - context->field_c.y;
-		direction->k = state->position.z - context->field_c.z;
+		direction->i = known_state->position.x - context->field_c.x;
+		direction->j = known_state->position.y - context->field_c.y;
+		direction->k = known_state->position.z - context->field_c.z;
 		reference->unknown28 = function_30bf0(direction);
 		if (reference->unknown28 == 0.0f) *direction = *g_4687a8;
 		if (view->unknown50 != NONE && view->unknown50 + real_to_long((real)g_510c54->field_2_3 * 5.0f) < time)
 			function_265c30(prop_ref_index, actor_index, false);
-		if (update)
-		{
-			vector3f velocity;
-			function_ba1d0(reference->object_index, &velocity, NULL);
-			real speed = (real)sqrt(velocity.k * velocity.k + velocity.j * velocity.j + velocity.i * velocity.i);
-			byte *fields = (byte *)view;
-			fields[0x3a] = speed < 0.1f ? 0 : speed < 0.5f ? 1 : speed < 1.0f ? 2 : 3;
-			real approach = 0.0f - (direction->k * velocity.k + direction->j * velocity.j + direction->i * velocity.i);
-			fields[0x3b] = approach < -1.0f ? 0 : approach < -0.5f ? 1 : approach < -0.1f ? 2 :
-				approach < 0.1f ? 3 : approach < 0.5f ? 4 : approach < 1.0f ? 5 : 6;
-			if (*(char *)(fields + 0x3b) < 4)
-			{
-				view->unknown64 = false;
-				view->unknown66 = 0;
-			}
-			else
-			{
-				++view->unknown66;
-				if (view->unknown66 >= real_to_long((real)g_510c54->field_2_3 * 0.2f))
-				{
-					view->unknown66 = g_510c54->field_2_3;
-					view->unknown64 = true;
-				}
-			}
-			fields[0x38] = reference->unknown28 < 1.0f ? 0 : reference->unknown28 < 6.0f ? 1 :
-				reference->unknown28 < 10.0f ? 2 : reference->unknown28 < 30.0f ? 3 : 4;
-			vector3f facing;
-			if (unit) function_cb7e0(reference->object_index, &facing);
-			else facing = *(vector3f *)(object + 0x70);
-			view->unknown39 = (char)function_264260(direction, &facing, reference->unknown28);
-		}
 	}
-	if (state->unknown66)
+	else
 	{
-		long related_index = function_25d810(state->unknown3c, actor_index, false);
+		real x = known_state->position.x - context->field_c.x;
+		real y = known_state->position.y - context->field_c.y;
+		real z = known_state->position.z - context->field_c.z;
+		reference->unknown28 = (real)sqrt(z * z + y * y + x * x);
+	}
+	if (view && update)
+	{
+		vector3f *direction = (vector3f *)((byte *)view + 0x2c);
+		vector3f velocity;
+		function_ba1d0(reference->object_index, &velocity, NULL);
+		real speed = (real)sqrt(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k);
+		byte *fields = (byte *)view;
+		if (speed < 0.1f) fields[0x3a] = 0;
+		else if (speed < 0.5f) fields[0x3a] = 1;
+		else if (speed < 1.0f) fields[0x3a] = 2;
+		else fields[0x3a] = 3;
+		real approach = 0.0f - (direction->k * velocity.k + direction->j * velocity.j + direction->i * velocity.i);
+		if (approach < -1.0f) fields[0x3b] = 0;
+		else if (approach < -0.5f) fields[0x3b] = 1;
+		else if (approach < -0.1f) fields[0x3b] = 2;
+		else if (approach < 0.1f) fields[0x3b] = 3;
+		else if (approach < 0.5f) fields[0x3b] = 4;
+		else if (approach < 1.0f) fields[0x3b] = 5;
+		else fields[0x3b] = 6;
+		if (*(char *)(fields + 0x3b) < 4)
+		{
+			view->unknown64 = false;
+			view->unknown66 = 0;
+		}
+		else
+		{
+			++view->unknown66;
+			if (view->unknown66 >= real_to_long((real)g_510c54->field_2_3 * 0.2f))
+			{
+				view->unknown66 = g_510c54->field_2_3;
+				view->unknown64 = true;
+			}
+		}
+		if (reference->unknown28 < 1.0f) fields[0x38] = 0;
+		else if (reference->unknown28 < 6.0f) fields[0x38] = 1;
+		else if (reference->unknown28 < 10.0f) fields[0x38] = 2;
+		else if (reference->unknown28 < 30.0f) fields[0x38] = 3;
+		else fields[0x38] = 4;
+		vector3f facing;
+		if (unit) function_cb7e0(reference->object_index, &facing);
+		else facing = *(vector3f *)(object + 0x70);
+		view->unknown39 = (char)function_264260(direction, &facing, reference->unknown28);
+	}
+	if (known_state->unknown66)
+	{
+		long related_index = function_25d810(known_state->unknown3c, actor_index, false);
 		if (related_index != NONE)
 		{
 			s_prop_datum *related = prop_ref_get(related_index);
@@ -396,7 +398,7 @@ void __stdcall function_264330(long actor_index, long prop_ref_index, s_2641c0 *
 			function_265290(actor_index, related_index);
 		}
 	}
-	else if (unit && (state->unknown5f || function_10f8f0(reference->object_index) == 0x500000a))
+	else if (unit && (known_state->unknown5f || function_10f8f0(reference->object_index) == 0x500000a))
 		function_265550(actor_index, prop_ref_index);
 	else if (reference->type == 3)
 		function_265050(actor_index, prop_ref_index);
@@ -489,6 +491,49 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // Round 239: original shared actor/reference/prop getter force-inline declarations,
 // all seven subsets and all three with unsigned full next/current handles: 420 each.
 // Original getters, handle domains and body restored.
+// Round 384: retained actor/node/both lookups 441/442/462; unsigned full handles 420;
+// unsigned handles with retained actor/node/both 441/442/462; all on a plain linked-list for 466.
+// All lookup lifetimes, handle domains, traversal and complete original body restored.
+// Round 231: case orders 04231/04321/02341/03241 give 436/441/436/441;
+// 40231/40321/23041/32041 give 436/441/446/433. Last form recovers frame 0xa0
+// and 1616 bytes but keeps stacked actor input; every original case and body restored.
+// Round 389: native double timer/planar pair/both 423/421/424; unsigned bounded
+// decrement 420, with timer/planar/both 423/421/424; complete precision graph with
+// wide decrement 424 (fast control 420). Original precision, domains and body restored;
+// frame 0xa4 and actor/node/flag homes remain. Planar precision forms were exact-only.
+// Round 238: Concrete motion/context/both output types 420 each; motion/context/both with the
+// native actor receiver 420 each; both with context-first declarations 420; all with entry
+// workspaces 420. All original types, declarations, fields, qualifier and directives restored.
+// Round 250: dispatch release bool/byte/short/long at dispatch entry 420/420/420/420;
+// node entry 420/420/420/420. All exact-only result flags restored; frame and actor homes remain.
+// Round 41: Joint reset/eligibility/tracking predicate declarations, all eight ordinary
+// inline/noinline combinations, 420 each. Callees remain matched; frame 0xa4 and stacked
+// actor input remain. Every separate declaration and complete original body restored.
+// Round 442: Completion/release/publication ordinary-inline declarations, seven subsets and all
+// with final publication, 420 each in eight compiled forms. All temporary declarations and
+// original body restored.
+// Round 114 (lane 5): retail's loop slots are an {index, next} iterator struct ([esp+0x14]/[esp+0x18])
+// and its loop is un-rotated: the walk through s_iterator with a forceinline step (the matched
+// 0x25d510/0x25d580 form) reading iterator.index gives retail's length, slots and stack sample/update
+// bytes, 443 (plain inline step 443; with the two true flags split in either order 443/443; with a
+// plain short maximum 442, its dword store and spill as retail). Retail inlines 0x2641c0 here and in
+// 0x263210 but not in 0x264210: the noinline declaration dropped 485 (with the iterator walk 469, frame
+// 0xa0) and 0x264210 then inlines it too and stops matching. Ours also inlines 0x25c820 at the release
+// label where retail calls it out of line (tail-merged with case 1's call); the release pair written in
+// each case 583 (inlined at every site). The actor index stays stacked: ours gives EBX to the index copy.
+// Round 21 (m3 lane 2, fast; EBX goes to the `update` bool in the walk, the only callee-saved byte
+// register, as it lives across the 0x2640c0/0x2641c0 calls): `sample = true; update = true;` 424;
+// sample/update declared after the node call 420; update declared first 422; sampled_one declared
+// before maximum 420; the update test nested under `if (sample && update)` 420.
+// Round 256: Case priorities beginning with 1 10423/14023/14203/14230/13042/13402/13420/14320 give
+// 422/422/425/419/449/452/457/445; one-point form rejected. Original cases and body restored;
+// frame and actor homes remain.
+// Round 144 (lane 4, fast with 0x1e34e0): retail inlines 0x2641c0 here (actor flag test, then 0x28fa60 or the
+// 0x38-byte copy), which our build calls out of line (pinned for 0x264210). Diagnostic only, a local forceinline
+// copy of that body 486 (1700 bytes; the update flag still takes EBX and the actor stays a stack argument, so the
+// inline alone does not move the convention); sample/update declared at function scope 420; the maximum test
+// as `(short)maximum < field` 421; the 0x25d610 test nested under `sample && update` 420; the sampler result
+// clearing the flag with the 0x264b50 call in its else arm 458 (1656 bytes).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -801,10 +846,10 @@ void __stdcall function_263210(long actor_index)
 }
 
 long function_baf40(long object_index);
-short __stdcall function_1c8df0(short target_cell, short source_cell, point3f const *target,
+short __stdcall function_1c8df0(short source_cell, short target_cell, point3f const *target,
 	long object_index, void const *source, long mode, bool narrow, bool attached, bool alternate,
 	long *hit_object);
-short function_25c9d0(long actor_index, long prop_ref_index, bool player, long sight,
+short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
 short function_25cb60(long actor_index, long object_index, short type, void *sample,
 	void *point, long location, long sight);
@@ -813,12 +858,25 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
-// score 331 (was 331): the tracking view is cleared before the tracking test, so the
+// score 267 (was 265): actor EBX, prop ESI, squad and unit homes, the type-15 arm and the 0x25c9d0
+// call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
+// scheduling before the branch, the suppression/current byte homes swapped ([esp+0x12]/[esp+0x13]),
+// and at the first 0x1c8df0 call retail spills the root into the squad's slot and keeps the hit
+// pointer in EDX where ours keeps the root in EAX and spills the hit pointer (so the root and the
+// priority swap homes and everything after shifts one instruction); 0x25cb60's sight is pushed after a
+// movsx (retail: as is), BLOCKED-BY 0x25cb60 (its sight parameter width). 1276 bytes against 1268.
+// Earlier (331): the tracking view is cleared before the tracking test, so the
 // pointer is zeroed where retail zeroes it instead of being assigned in an else
 // branch. Retail holds the actor in EBX and spills it at [esp+8] right after the
 // actor[9] test where ours holds it in ESI and spills it at [esp+0x14]; retail keeps
 // the squad pointer at [esp+0x10] where ours uses [esp+0xc]. The body is 1251 bytes
 // against retail's 1268.
+// Earlier (319): retail holds the actor in EBX (spilled at [esp+8]) and the prop in ESI where
+// ours swaps them, keeps the squad pointer at [esp+0x10] where ours uses [esp+0xc], acquires the
+// object, suppression, current flag and unit pointer before the actor-type branch, and after the
+// 0x1c8df0 call keeps a zero in EBX and the sight in ESI. The body is 1253 bytes against 1268.
+// The tracking view is cleared before the tracking test, so the pointer is zeroed where retail
+// zeroes it instead of being assigned in an else branch.
 // Equal-zero reference, equal-four sight, view zero, priority zero, paired defaults, all defaults chains
 // 363/363/363/363/363/363; alternate-view short pair memmove 374; copy field order 363 (control 363).
 // Original stores, body and local pointer qualifier retained; full baseline 358.
@@ -857,11 +915,68 @@ real function_296600(long actor_index, long prop_ref_index);
 // Round 237: shared initial view lookup 372; actor/reference/prop at uses 414/503/415;
 // actor-reference/actor-prop/reference-prop/all 573/468/570/657 (fast control 372; full 331).
 // All restored; actor ESI and saved/squad/flag homes remain.
+// Round 245: Signed-short three-input priority trees in six candidate orders
+// 352/352/350/351/353/353; two reversed comparison trees 352/351
+// (fast control 356, full 331). Sub-eight gains rejected; original body restored.
+// Round 174 (fast control 372/1262, full 331/1251): existing saved-pointer
+// actor_snapshot/retained_actor/actor_saved/saved_owner identities, each with
+// original/actor_squad receiver identity, 372 each. All restored; full frame 0x20
+// agrees, actor ESI/EBX and saved/squad/flag homes remain.
+// Round 231: positive current/unit bool-byte-short pairs 372/372/372/372/372/365/365/365;
+// short-current priority tree/accumulator/full-width priorities 366/364/368 (fast control 372).
+// Accumulator ordinary 338 versus 331, rejected; original predicates, priorities and body restored.
+// Round 389: suppression byte/short/long 372/363/366; unsigned timestamp 372; native
+// wide timestamp alone/with byte/short/long suppression 377/377/377/376 (fast control
+// 372). Short suppression plain 344 versus 331; all original types and body restored.
+// DL167 (fast control 356, full 331): repeated flag25/flag23/parent observations,
+// entry masks 1..7 348/349/367/353/354/369/359; all byte 367. First-mode flag25,
+// flag25+parent, flag23, both flags and byte flag25 350/355/351/337/357;
+// both flags+parent 333; byte pair/+parent 358/359. Shared mode 371/366/368;
+// shared object getters ordinary/ancestry/all 333 each. Full flag25/pair/pair+parent
+// 354/350/351 versus 331; all restored. Actor ESI/EBX and saved/squad homes remain.
+// Round 397 (fast control 356, full 331): complete tracking-root view access; root branches, ordinary saved actor and readonly source-view masks 0..7
+// 355/360/378/376/355/360/378/376; all restored.
+// Round 240: Complete pre-branch object/suppression/current acquisition in six
+// producer orders 360/360/376/394/391/387; first two with the saved-pointer declaration
+// before actor construction 360/360 (fast control 356, full 331).
+// Original observations, qualified local pointer and complete body restored.
+// Round 250: paired ancestry category outputs in char/byte/short/long, category-first
+// 375/375/381/377, priority-first 375/375/381/377 (fast control 372, full 331).
+// All exact-only field-result forms restored; actor ESI/EBX and saved/squad homes remain.
+// Round 90 (full LTCG relink screens; --fast misbuilds this function): the mode argument written in
+// both 0x1c8df0 calls 319 (plain, kept: retail evaluates the hit pointer, then the mode). On it: the
+// sight parameter of 0x25c9d0 short 350 (sight then in ESI as retail, prop takes EBX); the type-15 arm
+// as an if/else on a found index (other_index NONE unless 0x25d810 finds one; view handled in both
+// arms) 334 at 1268 bytes, that arm then identical to retail; with MAX(priority, MAX(object, extra))
+// 350; with the object/suppression/current/unit acquired before the actor-type branch 347; without the
+// volatile saved actor 332 (actor EBX, prop ESI as retail; aligned 128 against 248); with `unit = object;
+// if (type) unit = NULL;` 330 (plain 338 at 1270); that plus the short sight 342 (zero in EBX, sight in
+// ESI as retail; left: squad kept in EDX not at [esp+0x10], the stack zero for retail's cmovne, root/hit
+// pointer slots at the 0x1c8df0 call). Those restructured forms align far better and are the base to
+// continue from; renaming current/suppressed 0 change; typed prop record 358 (control 322).
+// Round 92 (plain): round 90's restructured body (no volatile saved actor, object/suppression/current/unit
+// before the actor-type branch, if/else on the found index, MAX twice) with the unit NULL-first and set
+// when the object type is 0: 338 at 1268 bytes (cmov, register zero); renaming current to sort after
+// suppressed 338 and declaring it first 338 (byte homes unchanged); with 0x25c9d0's sight short 294;
+// the unit's NULL defined before the suppression test 269 (squad spilled, the cmovne from the unit's
+// NULL home as retail); the existing prop record type, its +0x25 flag passed directly 265, kept;
+// on it, the game time read after the object lookup 268.
+// Round 114 (lane 5, plain checks; --fast misbuilds it): the object lookup ahead of the prop lookup and
+// the time read (the order matched 0x264330 uses) 242 at 1277 bytes, not kept: an aligned diff of the
+// listing is unchanged (96), the head folds the prop table load (`add esi, [edx+0x44]`, retail loads it
+// into EAX) and the one-instruction shift realigns the tail; object/prop/unit/time 242 (aligned 96);
+// object/time/prop 239 (aligned 98); prop/object/time 270 (aligned 99); object-first with current declared
+// before suppressed 361 (1268 bytes, actor then in EBP); object-first with the time read right after the
+// reference lookup 262, with current computed there 303 (aligned 105 each); root and sight declared at the
+// top of the else block 267; root declared at the function top 267 (both identical code). Left: retail's
+// EAX/ECX roles for the object and its table, the current/suppressed byte homes, the root kept in EAX at
+// the first 0x1c8df0 call (retail stores it into the squad's slot and loads current into AL, so its hit
+// pointer stays in EDX where ours spills it), the root/priority homes after it, and BLOCKED-BY 0x25cb60
+// (contributor) for the movsx of the sight.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
 	byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
-	byte *volatile saved_actor = actor;
 	if (!actor[9])
 		return;
 	byte *squad;
@@ -877,47 +992,57 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 		if (tracking)
 			view = &tracking->view;
 	}
-	byte *prop = (byte *)prop_get(reference->prop_index);
+	s_type_76cf92 *prop = prop_get(reference->prop_index);
 	long time = g_510c54->game_time;
+	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
+	byte *unit = NULL;
+	bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
+	bool current = *(long *)(actor + 0x338) == prop_ref_index;
+	if (object[0xaa] == 0)
+		unit = object;
 	if (*(short *)(actor + 4) == 15 && *(long *)(actor + 0x26c) != NONE)
 	{
 		byte *parent = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x26c) & 0xffff) * 12 + 8);
 		long other_unit = *(long *)(parent + 0x248);
-		s_type_f95cd3 *other_view = NULL;
-		bool copied = false;
+		long other_index = NONE;
 		if (other_unit != NONE && other_unit != *(long *)(actor + 0x18))
 		{
 			byte *other = *(byte **)(g_4e0300->data + (other_unit & 0xffff) * 12 + 8);
 			long other_actor = *(long *)(other + 0x12c);
 			if (other_actor != NONE)
+				other_index = function_25d810(reference->object_index, other_actor, false);
+		}
+		if (other_index != NONE)
+		{
+			s_prop_datum *other_reference = prop_ref_get(other_index);
+			s_type_f95cd3 *other_view = function_25d740((s_prop_node *)other_reference);
+			reference->unknown26 = other_reference->unknown26;
+			reference->unknown27 = other_reference->unknown27;
+			if (view)
 			{
-				long other_index = function_25d810(reference->object_index, other_actor, false);
-				if (other_index != NONE)
+				if (other_view)
 				{
-					s_prop_datum *other_reference = prop_ref_get(other_index);
-					other_view = function_25d740((s_prop_node *)other_reference);
-					reference->unknown26 = other_reference->unknown26;
-					reference->unknown27 = other_reference->unknown27;
-					copied = true;
+					view->unknown06 = other_view->unknown06;
+					*(short *)((byte *)view + 2) = *(short *)((byte *)other_view + 2);
+					*(short *)((byte *)view + 4) = *(short *)((byte *)other_view + 4);
+					view->unknown8a = other_view->unknown8a;
+					view->unknown8c = other_view->unknown8c;
+				}
+				else
+				{
+					view->unknown06 = 4;
+					view->unknown8c = 4;
+					*(short *)((byte *)view + 4) = 0;
+					*(short *)((byte *)view + 2) = 0;
+					view->unknown8a = 0;
 				}
 			}
 		}
-		if (!copied)
+		else
 		{
 			reference->unknown27 = 0;
 			reference->unknown26 = 0;
-		}
-		if (view)
-		{
-			if (other_view)
-			{
-				view->unknown06 = other_view->unknown06;
-				*(short *)((byte *)view + 2) = *(short *)((byte *)other_view + 2);
-				*(short *)((byte *)view + 4) = *(short *)((byte *)other_view + 4);
-				view->unknown8a = other_view->unknown8a;
-				view->unknown8c = other_view->unknown8c;
-			}
-			else
+			if (view)
 			{
 				view->unknown06 = 4;
 				view->unknown8c = 4;
@@ -929,34 +1054,27 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	}
 	else
 	{
-		byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
-		bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
-		bool current = *(long *)(actor + 0x338) == prop_ref_index;
-		bool is_unit = object[0xaa] == 0;
-		long root = function_baf40(is_unit && *(long *)(object + 0x14) != NONE ? *(long *)(object + 0x14) : reference->object_index);
-		long mode = prop[0x25] && prop[0x23] ? 2 : 0;
-		short sight = function_1c8df0(*(short *)((byte *)motion + 0x28), *(short *)((byte *)sample + 0x28),
-			&motion->field_0, root, sample, mode, false, *(long *)(actor + 0x26c) != NONE, !current,
+		long root = function_baf40(unit && *(long *)(unit + 0x14) != NONE ? *(long *)(unit + 0x14) : reference->object_index);
+		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), *(short *)((byte *)motion + 0x28),
+			&motion->field_0, root, sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 			current ? (long *)(actor + 0x348) : NULL);
-		actor = saved_actor;
-		if (*(long *)(actor + 0x7c) != NONE && prop[0x25] && 25.0f > reference->unknown28 &&
+		if (*(long *)(actor + 0x7c) != NONE && prop->unknown25 && 25.0f > reference->unknown28 &&
 			(sight == 0 || sight == 1))
 			function_268c60(*(long *)(actor + 0x7c));
 		if (view)
 			view->unknown06 = (short)sight;
-		if (!prop[0x26] && !suppressed)
+		if (!prop->unknown26[0] && !suppressed)
 		{
-			short priority = (short)function_25c9d0(actor_index, prop_ref_index, prop[0x25] != 0, sight,
+			short priority = (short)function_25c9d0(actor_index, prop_ref_index, prop->unknown25, sight,
 				sample, (byte *)motion, (long)&suppressed);
 			if (reference->state >= 3 && view)
 			{
 				s_type_5cfb45 *state = function_25d690(reference);
 				if (!view->unknown88)
 				{
-					long other_mode = prop[0x25] && prop[0x23] ? 2 : 0;
-					short other_sight = function_1c8df0(*(short *)((byte *)state + 0x2c),
-						*(short *)((byte *)sample + 0x28), (point3f const *)((byte *)state + 0x30),
-						root, sample, other_mode, false, *(long *)(actor + 0x26c) != NONE, !current,
+					short other_sight = function_1c8df0(*(short *)((byte *)sample + 0x28),
+						*(short *)((byte *)state + 0x2c), (point3f const *)((byte *)state + 0x30),
+						root, sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 						current ? (long *)(actor + 0x348) : NULL);
 					view->unknown8c = (short)other_sight;
 					view->unknown8a = function_263810((point3f const *)sample, actor_index, (point3f const *)((byte *)state + 0x30), NULL, 2, (short)other_sight, true, NULL);
@@ -977,8 +1095,7 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 				*(short *)((byte *)view + 2) = (short)object_priority;
 				*(short *)((byte *)view + 4) = (short)extra_priority;
 			}
-			short combined = object_priority > extra_priority ? object_priority : extra_priority;
-			reference->unknown26 = (char)(priority > combined ? priority : combined);
+			reference->unknown26 = (char)MAX(priority, MAX(object_priority, extra_priority));
 			if (reference->unknown26 == 1 && reference->state >= 1)
 				reference->unknown26 = 2;
 		}

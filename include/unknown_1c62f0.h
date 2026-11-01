@@ -44,7 +44,7 @@ public:
 	void update(s_animation_state *state, animation_event_callback callback, long user);
 	void set_frame_ratio_and_advance(real ratio, s_animation_state *state, animation_event_callback callback, long user);
 	real get_frame_ratio() const;
-	real get_duration() const;
+	__declspec(noinline) real get_duration() const;
 	real get_event_time() const;
 	bool is_unflagged0() const;
 	bool is_unflagged6() const;

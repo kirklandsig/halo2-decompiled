@@ -659,8 +659,8 @@ short __stdcall function_26e8a0(long actor_index, short slot_index, bool active)
 // @retail 0x26f060
 bool actor_has_joint_invitation(long actor_index, short type)
 {
-	s_slot_owner_entry *actor = ACTOR_ENTRY(actor_index);
 	bool result = false;
+	s_slot_owner_entry *actor = ACTOR_ENTRY(actor_index);
 
 	for (short i = 0; i < k_maximum_joint_invitations; i++)
 	{

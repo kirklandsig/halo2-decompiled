@@ -12,7 +12,9 @@
 #include "globals.h"
 #include "data_array.h"
 #include "effects.h"
+#include "vector_products.h"
 #include "normalize3d.h"
+#include "matrix_transform.h"
 #include <xtl.h>
 #include "unknown_246cd0.h"
 
@@ -470,19 +472,111 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
-// score 56 (was 56): Offset initialization, scalar initializer order, property reloads and rotation scheduling differ.
-// Combined entry decisions 53; entry decisions with shared cache 53; scale/alpha/both result locals 119/56/119;
-// saved successor 217; particle cache with scale result 119; combined entry/property/cache 116.
-// score 56 (was 56): entry branch, property reload pairs and rotation scheduling differ;
-// forward/left/up/all axis receivers 118/55/55/118; forward/left/up/first-pair values 182/167/181/289;
-// left/up receivers with empty-list return and scale-first initialization 52/52, but the return only repeats the loop test (reverted in review).
-// Captured position/late output 353; captured velocity/late output 357; both 437;
-// translation component loop 56; inner cache member 56; derived mask at use 198;
-// scale initialized at property selection 273; translation value 160.
-// score 56 (was 56): the definitions indexed (index++) put the offset's zero store after the
-// list test and fix the three reload pairs (with scale declared first, all but the rotation
-// blocks match), but turn the rotations' products around and add 10 bytes: indexed 119,
-// indexed with scale first 117; plus split += rows 116; plus a matrix pointer local 123.
+// score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
+// input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
+// product before the forward one (retail forward first, loading forward.i into a register); the
+// offset's zero store comes before the list test (retail after); the two 1.0 stores are swapped; and
+// after each property call ours reloads the particle before the emitter definition (retail the
+// other way round).
+// Tried: combined entry decisions 53; entry decisions with shared cache 53; scale/alpha/both result
+// locals 119/56/119; saved successor 217; particle cache with scale result 119; combined
+// entry/property/cache 116; forward/left/up/all axis receivers 118/55/55/118; forward/left/up/first-pair
+// values 182/167/181/289; left/up receivers with empty-list return and scale-first initialization
+// 52/52 (the return only repeats the loop test); captured position/late output 353; captured
+// velocity/late output 357; both 437; translation component loop 56; inner cache member 56; derived
+// mask at use 198; scale initialized at property selection 273; translation value 160; the
+// definitions indexed (index++), which put the offset's zero store after the list test and fix the
+// three reload pairs but turn the rotations' products around and add 10 bytes: indexed 119, with
+// scale first 117, plus split += rows 116, plus a matrix pointer local 123; scale declared before
+// multiplier alone 54 (fixes the 1.0 store order only); existing 0x173c10 for both hand-written mask
+// refreshes 56 (same code, kept); on the indexed form input-first products 117 and a greedy screen of
+// every rotation row's term order 116 at best; the offset as a for-loop init 56; complete
+// position/velocity/both row products 127/56/127; all-products before stores 164/121/171; both input
+// copies on complete-product graph 170; shared translation add with row products 127; indexed
+// definitions plus scale-first defaults with those six product graphs 103/117/103/141/153/116. With
+// the helper: row i's terms in every order 42; row i right-grouped (four groupings) 45-49; indexed
+// definitions 115 (1136 bytes), with scale first 113; scale first alone 40; locals renamed to sort
+// the other way 42; helper with an unconditional copy, a result local, or the copy inside its own
+// block 50/287/50 (0x2477b0 then differs).
+// Round 19: in the first rotation only row x differs (ours evaluates forward.i*x first, so x and z
+// take each other's XMM registers; rows y and z agree apart from them). The row x pair swapped in both
+// rotations 56 (identical: VC orders the products itself, by the function's tuple count); both
+// rotations through the existing in-place matrix_transform_174420 119, on the indexed form 121; on
+// this body the translation as `+=` 56, a named scale value at both scale sites 119 (1136 bytes), the
+// 0x107f0 mask named 55 (second rotation's register numbering only); on the indexed form with scale
+// first (117, every non-rotation difference fixed): `+=` 117, named scale value 121, named mask 117.
+// Round 307: Complete per-emitter alpha/color/scale policy subsets 248/267/261/255/246/241/282;
+// one raw flag observation 260. Policy homes enlarge the frame; original property observations
+// and shared in-place rotations restored.
+// Round 43: indexed definitions 115 and with scale first 113 again (the rotation sums reorder in every row;
+// the compile-only screen reproduces it, and 50 placements of the index, copies, result pointers and the
+// next-index read keep it); the next index read after the callback 231, on the indexed form 218;
+// rotation result pointers declared first 42 (identical).
+// Round 27: the emitter definition computed first in the loop body 47 (fixes all three reload pairs:
+// they follow where the definition's value is computed, but the emitter lookup then comes after it);
+// declared first and assigned in place 42 (same code); the offset declared at the function top 65 (the
+// zero store follows the declaration). On the indexed form with scale first (113, 1136 bytes; only the
+// two rotations differ: rows i/j/k sum k,i,j / j,i,k / i,k,j against retail j,i,k / i,k,j / i,k,j):
+// the 0xf80f mask passed inline 113 and the index declared at the function top 113 (rotations unchanged).
+// Round 13 (fast): the existing vector3f_add for the translation 122 (1136 bytes); both rotations through the
+// existing in-place vector3f_rotate_into_axes 84, with vector3f_add 111; emitter_definition computed before
+// particle_index 42 (same code), with scale first 40; on the indexed form with scale first:
+// vector3f_rotate_into_axes 102, with vector3f_add 120, vector3f_add alone 115. Diagnostics (not kept): no-op
+// `(real)(x * 1.f)` chains in the callback's scale argument cycle row i through y,z,x (base) / z,x,y / x,y,z
+// with rows j and k fixed, never retail's y,x,z; on the indexed form with scale first a four-deep chain gives
+// 33 at 1130 bytes (every difference but row i of both rotations, one load pair and the branch offsets fixed).
+// Round 93 (lane 8): the helper's copy loads the vector j, k, i where retail loads j, i, k, and row i's
+// sum follows that order. Scale initialised before multiplier 40 (the 1.0 stores only); with the two
+// particle copies swapped 48; with them declared at the inner loop's scope and assigned after the
+// particle lookup 40; with them made just before the rotation test 352 (1187 bytes); indexed
+// definitions with scale first 113 (1136 bytes) and alone 115.
+// Lane 16 r48 (fast): long-indexed definitions 115 (1136 B); colour declared first 42; offset step before
+// the emitter step 42; offset declared before the emitter index 42; dword offset 42. A compile-only build
+// of this file reproduces both rotations op for op (9 ops from retail's 33): row i's terms in all six
+// orders and both groupings, member-wise copies in all six orders (these become float copies), `+=` or
+// swapped translation adds, the motion rotation first, swapped particle copies, scale first, colour or
+// result pointers first, the masks inline, the next index read after the callback and an emitter-first
+// body all leave row i at j,k,i; indexed definitions (long/short) 33/46.
+// Round 95 (lane 8): the zero store after the list test is the mark of an index that VC
+// strength-reduces into the offset (retail keeps only the offset IV), so retail likely indexed the
+// definitions; the indexed form `&(*(T **)(definition + 0x34))[index]` 115 (1136 bytes, aligned 38 ->
+// 91: every rotation row's sum order changes); with scale first 113; with the definition computed
+// before the emitter lookup 126, both 124; the index as a for-loop counter 115 (same code).
+// Round 114 (lane 6, fast): scale initialised before multiplier 40 again (the 1.0 stores only; below
+// the margin); the particle position copied as a vector3f (no casts) 42 (identical); the next index
+// read right after the particle lookup 272 (1113 bytes); color declared first 42; the 0xf80f mask
+// passed at the call 42; on scale-first, the translation after the motion rotation 84.
+// Round 27 (lane 13): both rotations through the existing vector3f_rotate_into_axes 84; the multiplier as a
+// ternary 186; indexed definitions with a 16-bit index 271; indexed + scale first + the definition before the
+// emitter lookup 124; the colour declared at the function top 42 (identical). A compile-only screen of the whole
+// file (it reproduces our rotations exactly; ~110 forms) shows flat row sums canonicalised (every term and
+// operand order identical) and four row-order states that cycle as whole-function tuples are added (indexed
+// form +1, each no-op product past the first +1, a 16-bit index +2); none is retail's for either rotation.
+// Helper shapes (row statements jki/kij, unconditional copy, copied parameter, component locals, row locals,
+// `+=` rows), inline datum getters and index types (long/dword/int/short/word, pointer arithmetic), each in all
+// four states: no form gives retail's left/forward/up row i with forward/up/left rows j and k.
+// Round 137 (lane 4): scale first 40; indexed definitions 115, with scale first 113 (1136 bytes: every difference
+// before the first rotation is retail's, the rotations differ from the helper copy's store order on, ours i first,
+// retail j first); on that, the particle copies swapped 121, declared before the particle lookup and assigned after
+// it 113 (same code).
+// Round 59 (lane 12, fast): the scale product as `scale = ...; scale *= multiplier;` at both scale
+// sites 124 (1138 bytes); that on the indexed form with scale first 119 (1140 bytes, every rotation
+// row reorders); const emitter definition and particle pointers 42; the particle loop as a do/while
+// under its existing `if` 42; the emitter definition computed before the first-particle read 42.
+// Round 140 (lane 4): the reload pairs follow where the emitter definition is formed relative to the
+// emitter lookup: formed first, with scale first, 45 (reloads and 1.0 stores as retail, the outer
+// address computation then leads); the offset advanced before the next index 42 (same code); the
+// offset declared first 42 (same code); the offset as `dword` 42; the transform test read once into a
+// bool for both tests 326 (1156 bytes).
+// Round 46 (m3 lane 10, fast): the emitter's next index read right after the emitter lookup 318 (1150
+// bytes), with scale first 318; the 0xf80f particle mask computed right after the emitter mask read 263
+// (1117 bytes), with scale first 261; the emitter mask read from the definition at both uses 239 (1136 bytes).
+// Round 59 (lane 16, fast with callees and 0x2243c0): one flags local for the six flag tests 292 (1157 bytes);
+// the emitter mask declared just before its first use 236, at the emitter loop's scope 220; indexed
+// definitions with the flags local 297 (1159 bytes); the particle mask inline at its call 42 (identical). A
+// compile-only screen of 190 combinations (indexed, flags local, mask at each use, scale/colour/result pointers
+// first, mask scope, `+=` translation) shows five whole-function rotation states; the mask read at each use is
+// the only one with retail's rows i and j in both rotations (row k then left/forward/up), none is retail's.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -519,9 +613,7 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 			dword emitter_mask = emitter_definition->mask;
 			if (definition->unknown0c)
 				function_248450(&rotation, (s_particle_frame const *)emitter, &origin, &rotation_result, &origin_result, *((byte *)location + 2) != 0);
-			dword mask = emitter_mask & 0x107f0;
-			function_173ba0(~cache->mask & mask, cache->field_48, cache->field_4c, cache->field_50, cache->values);
-			cache->mask |= mask;
+			cache->function_173c10(emitter_mask & 0x107f0);
 			if (emitter_definition->flags & 1)
 				color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
 			if (emitter_definition->flags & 2)
@@ -539,8 +631,7 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 					cache->field_50 = particle;
 					cache->mask &= 0xffff07f0;
 				}
-				function_173ba0(~cache->mask & particle_mask, cache->field_48, cache->field_4c, cache->field_50, cache->values);
-				cache->mask |= particle_mask;
+				cache->function_173c10(particle_mask);
 				particle_index = particle->next_index;
 				if (!(emitter_definition->flags & 1))
 					color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);
@@ -550,17 +641,11 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 					scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
 				if (definition->unknown0c)
 				{
-					point3f position_input = translated_position;
-					translated_position.x = (rotation_result->left.i * position_input.y + rotation_result->forward.i * position_input.x) + rotation_result->up.i * position_input.z;
-					translated_position.y = (rotation_result->forward.j * position_input.x + rotation_result->up.j * position_input.z) + rotation_result->left.j * position_input.y;
-					translated_position.z = (rotation_result->forward.k * position_input.x + rotation_result->up.k * position_input.z) + rotation_result->left.k * position_input.y;
+					function_2477b1(rotation_result, (vector3f *)&translated_position, (vector3f *)&translated_position);
 					translated_position.x = origin_result->x + translated_position.x;
 					translated_position.y = origin_result->y + translated_position.y;
 					translated_position.z = origin_result->z + translated_position.z;
-					vector3f velocity_input = motion;
-					motion.i = (rotation_result->left.i * velocity_input.j + rotation_result->forward.i * velocity_input.i) + rotation_result->up.i * velocity_input.k;
-					motion.j = (rotation_result->forward.j * velocity_input.i + rotation_result->up.j * velocity_input.k) + rotation_result->left.j * velocity_input.j;
-					motion.k = (rotation_result->forward.k * velocity_input.i + rotation_result->up.k * velocity_input.k) + rotation_result->left.k * velocity_input.j;
+					function_2477b1(rotation_result, &motion, &motion);
 				}
 				callback(particle, cache, &translated_position, &motion, scale, &color, context);
 			}
@@ -760,8 +845,11 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 // vector half buffer 17; half names buffer/scaled 17/17; product declarations swapped 17;
 // second input alternate with declarations swapped/original 17/17.
 // Scale from the buffer through the unpacked result 42 (204 bytes); a 2400 s permuter run, no result.
+// Round 27 (lane 13): parameters reordered to (color_a, color_b, system, multiplied, tinted): all three retail
+// callers query the tint before the multiply flag, which a call written with the tint last evaluates first
+// (0x174a30 292 -> 248 with it); this body's code is unchanged (17), and so are 0x177040 and 0x178c80.
 // @retail 0x175a80
-void function_175a80(bool tinted, dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied)
+void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted)
 {
 	if (!multiplied)
 	{
@@ -803,13 +891,6 @@ public:
 	void function_248750(s_particle_system_datum *system, real dt, byte *location);
 };
 
-PRIVATE inline void particle_cross_174a30(vector3f const *forward, vector3f const *up, vector3f *out)
-{
-	out->i = up->k * forward->j - up->j * forward->k;
-	out->j = up->i * forward->k - up->k * forward->i;
-	out->k = up->j * forward->i - forward->j * up->i;
-}
-
 class c_particle_tag_view_174a30
 {
 public:
@@ -824,7 +905,8 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
-// score 292 (was 292): frame 0x60, 1372 bytes against 1355. Left: our entry stores a `result`
+// score 248 (was 248): 1355 bytes and frame 0x60 as retail (round 27 form, below). Before it (292,
+// 1372 bytes against 1355): our entry stored a `result`
 // slot (retail has none and returns `xor eax, eax` / `mov eax, 1` from the bool expression);
 // ours merges the flag-9 word update with the flag-8 clear (retail stores the word, clears flag 8
 // with `and byte ptr [ebp+0xd], 0xfe` and reloads); retail keeps the child index in EDI from the
@@ -898,19 +980,64 @@ public:
 // Round 234: native checked-particle record, mutable/readonly, ordinary/aggregate spawn
 // 292 each; those four with direct ordered completion 356 each (1355 bytes, frame 0x5c).
 // All record, request and completion forms restored.
+// Entry matrix/spawn/both workspaces with ordered completion 356/356/356;
+// with word receiver 353/353/353; both workspaces with original completion 292, with word receiver 290; original restored.
+// Round 387: Shared checked-datum boundary with native retained salt, tint consumer, word-pointer flags and ordered completion combinations 292/288/359/360/356/359/353/354; all restored.
+// Round 219: native negative-forward/perpendicular/both setters 294/292/294; cross setter 292;
+// negative/cross 294; perpendicular/cross 292; all 294; with normalization setter 294. Original
+// restored.
+// Round 221: final completion accumulation, two-part eager/logical and incremental eager/logical,
+// long 376/366/374/366; bool 367/359/360/359. Original result and body restored; Boolean
+// accumulation reaches 1355 bytes but changes the frame and regresses.
+// Round 173: coupled count/visibility/cleanup/unlink inline summaries, all six pairs,
+// count/visibility/cleanup and all four 292 each. Original declarations and complete
+// caller/provider bodies restored; entry completion, flag publication and child/tint homes remain.
+// Round 290: Native long/bool/byte/short emptiness results 295/346/346/292; with existing shared
+// word-flag publication 369/366/366/367. Original executable source restored.
+// Round 427: uninitialized child/successor/selector declarations at entry, all seven
+// subsets, then all with lexical handle names, 292 each. Original declaration scopes,
+// value observations and complete body restored; entry result/flags and child/tint homes remain.
+// Round 45: shared ordinary/staged cross producers, each with original/word receiver/
+// direct completion/both graphs, 292/290/356/353 each. Two-point gains restored;
+// original private cross, completion, flags and complete body retained.
+// Round 27 (lane 13): child->unknown24 read at each use instead of an index local 316 (aligned 117 -> 91:
+// child index in EDI at the loop head, particle in EBX, name index in EDI, as retail); plus the tint and
+// multiplied queries written in the 0x175a80 call 292 (tag object in EBX as retail; multiplied queried
+// first); plus the flag-9 update as a bitfield if/else `if (flag8) flag9 = true; else flag9 = false;`
+// (retail's word store, byte clear and reload) and the boolean-expression return 267 (word-pointer or
+// cast-per-use forms of the flag update 267/267; `flag9 = flag8` is branchless 354); plus
+// TEST_FIELD_BIT on flag0 252 (retail tests flag0 and flag3 as bytes, flag9 as a plain bit; on both
+// 274, on flag9 only 273); a named tint/both named/named multiplied 285/275/269; then 0x175a80's
+// parameters as (color_a, color_b, system, multiplied, tinted), so the call evaluates the tint query
+// first as all three retail callers do, 263 (frame 0x60, every stack slot as retail); then the
+// `volatile` parent dropped 248 (1355 bytes; VC no longer hoists the child-list address); the
+// existing normalize3d and vector3f_scale for the hand-written normalisation and negation 248
+// (identical, kept). Also tried: member function (this in ECX) 292; datum_get_inlined 292; parent
+// colour read into a local before the child definition call 274/262; an inline colour helper taking
+// the parent colour 414 (not inlined), forceinline 260 (colour read early as retail). Left (aligned
+// 59): the default case loads the velocity after the -1 constant and its cross product takes other
+// XMM registers; the fallback's x87 length sums k, j, i (retail j, i, k, a rotation: tuple count) and
+// retail keeps the normalised forward in xmm4/xmm2/xmm5 across the join (ours reloads); retail reads
+// the parent colour before the child definition call.
+// Round 59 (lane 12, fast): the fallback normalisation through the existing normalize_inline 248
+// (different code, same count); the existing cross3f for both cross products 248 (identical code,
+// kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
+// negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
+// tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
+// Round 105 (lane 7, fast): the spawn location assigned before its scale 248 (same count); the parent colour in a
+// local before the child definition call 262 (1363 bytes); the name tests as an if/else chain 277; the particle
+// typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
+// the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
+// returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
-	long result = false;
-	word flags = *((word *)particle_system + 6);
-	if (flags & 0x100)
-		flags |= 0x200;
+	if (particle_system->flag8)
+		particle_system->flag9 = true;
 	else
-		flags &= ~0x200;
-	*((word *)particle_system + 6) = flags;
+		particle_system->flag9 = false;
 	particle_system->flag8 = false;
-	flags = *((word *)particle_system + 6);
-	if (!(flags & 0x20) && !bit_vector_test(g_4c56c0, particle_system->location.cluster_index))
+	if (!particle_system->flag5 && !bit_vector_test(g_4c56c0, particle_system->location.cluster_index))
 		function_1753f0(particle_system);
 	s_effect_particle_system_definition *definition = particle_system->function_1751d0();
 	long location_index = particle_system->location_index;
@@ -931,10 +1058,9 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 		if (particle)
 		{
 			transform4x3f matrix;
-			long index = child->unknown24;
-			if (index != NONE && index < tag->count())
+			if (child->unknown24 != NONE && child->unknown24 < tag->count())
 			{
-				long name = names[index];
+				long name = names[child->unknown24];
 				switch (name)
 				{
 				case 0x20000ca:
@@ -949,32 +1075,18 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 					break;
 				default:
 				{
-					vector3f const *velocity = (vector3f *)(particle + 0x28);
-					matrix.forward.i = velocity->i * -1.0f;
-					matrix.forward.j = velocity->j * -1.0f;
-					matrix.forward.k = velocity->k * -1.0f;
+					vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
 					function_30bf0(&matrix.forward);
 					function_11d000(&matrix.forward, &matrix.up);
-					particle_cross_174a30(&matrix.forward, &matrix.up, &matrix.left);
+					cross3f(&matrix.forward, &matrix.up, &matrix.left);
 					break;
 				}
 				}
 			}
 			else
 			{
-				vector3f const *velocity = (vector3f *)(particle + 0x28);
-				matrix.forward.i = velocity->i * -1.0f;
-				matrix.forward.j = velocity->j * -1.0f;
-				matrix.forward.k = velocity->k * -1.0f;
-				real magnitude = (real)sqrt(matrix.forward.j * matrix.forward.j +
-					matrix.forward.i * matrix.forward.i + matrix.forward.k * matrix.forward.k);
-				if (!(fabs(magnitude) < 0.0001f))
-				{
-					real inverse = 1.0f / magnitude;
-					matrix.forward.i *= inverse;
-					matrix.forward.j *= inverse;
-					matrix.forward.k *= inverse;
-				}
+				vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
+				normalize3d(&matrix.forward);
 				real x = (real)fabs(matrix.forward.i);
 				real y = (real)fabs(matrix.forward.j);
 				real z = (real)fabs(matrix.forward.k);
@@ -996,7 +1108,7 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 					matrix.up.j = 0.0f - matrix.forward.i;
 					matrix.up.k = 0.0f;
 				}
-				particle_cross_174a30(&matrix.forward, &matrix.up, &matrix.left);
+				cross3f(&matrix.forward, &matrix.up, &matrix.left);
 			}
 			matrix.scale = 1.0f;
 			matrix.position = *(point3f *)(particle + 0x1c);
@@ -1005,24 +1117,19 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 			spawn.unknown = dt;
 			spawn.location_index = child->location_index;
 			c_type_4e7709 *child_tag = particle_object_for_tag(child->function_1751d0()->tag_index);
-			bool tinted = child_tag->tinted();
-			function_175a80(tinted, particle_system->color, 0xffffffff, child, child_tag->multiplied());
+			function_175a80(particle_system->color, 0xffffffff, child, child_tag->multiplied(), child_tag->tinted());
 			function_175270(child, &spawn, &matrix, false);
 		}
 		if (!function_174a30(child, dt))
 		{
-			s_particle_system_datum *volatile parent = particle_system;
-			particle_system_unlink(child, &parent->first_child_index, &parent->last_child_index);
+			particle_system_unlink(child, &particle_system->first_child_index, &particle_system->last_child_index);
 			function_174180(child_index);
 		}
 		child_index = next_index;
 	}
 	particle_system->flag0 = false;
-	if (function_1753a0(particle_system) > 0 && TEST_FIELD_BIT(particle_system->flag3))
-		result = true;
-	else if (particle_system->flag0 || particle_system->first_child_index != NONE || particle_system->flag9)
-		result = true;
-	return result;
+	return function_1753a0(particle_system) > 0 && TEST_FIELD_BIT(particle_system->flag3) ||
+		TEST_FIELD_BIT(particle_system->flag0) || particle_system->first_child_index != NONE || particle_system->flag9;
 }
 
 
@@ -1075,7 +1182,20 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
     result->k = a->i * b->j - a->j * b->i;
 }
 
-// score 213 (was 213): Frame/length agree; early EDI, tag/mask and child-render homes remain.
+// score 135 (was 135): frame and length agree, and so do the entry saves. Left: the tag index lands
+// in EAX (retail EDX, 0x137bd0's register) and the extra `mov edx, eax` shifts the camera block;
+// retail tests definition bit 5 as `mov dl; shr dl, 5; test dl, 1`; it reloads the location
+// after 0x1e4e0 (BLOCKED-BY 0x1e4e0, todo) and calls 0x1751d0 before pushing 0x40e30's arguments.
+// Round 74: retail's visibility semantics (not forced, bit 9 clear, cluster not in the set and not
+// visible: nothing is tested or stamped and the system draws) 213 -> 207; the fade sets the draw
+// flag (`draw = fade > 0`, `draw = true` when visible: retail's `mov bl, 1`) 166 (as `||` 175,
+// without the else 170); the child flag copied as a set/clear if/else 135 (1380 bytes). At 135 or
+// worse: early location index/request system 134 (one point); tag group as a switch 144, group read
+// twice 144, inverted test 135, reference declared first 135, const tag 135, tag through a named
+// definition 136, long group 135; bit 5 as byte shifts 135 (still `test byte`), in this function's
+// word-flag form 310 (retail's three instructions, but the location loop then runs out of step),
+// named 324; the in-view comparison written in place 297 (with the word form 351); cross product
+// before/between the camera copies 135; tag read into a local for 0x40e30 166.
 // Round 57: the child flag copy as a set/clear if/else (retail's `test word; or word / and byte`)
 // gives retail's entry saves (the early exits reach the child loop, which then uses edi) and
 // child loop, but the inner tag value lands in eax (retail edx) and the extra `mov edx, eax`
@@ -1117,6 +1237,27 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // Round 29: child set/clear 220; with early request/index 332; with shifted-word bit five 330;
 // with b-first cross products 366; duplicate tag carrier 314; conditional reference 220;
 // signed group 220; immutable tag 220. Original body restored; tag/group roles and child copy remain.
+// Round 248: definition-getter inline/noinline/both declarations 213 each; with child
+// set/clear stores 219 each; noinline/both with child stores and native word bit five 316/316.
+// Complete getter declaration and body restored; frame agrees, early EDI/tag and child homes remain.
+// Round 411: Availability rejection to the common child tail, with original/reference-first/
+// separate-tag/group-first declarations 135/135/135/135; definition rejection with the
+// same four declaration graphs 135/135/135/135. Original nested body restored; tag/group
+// ownership, definition bit five and callback reloads remain.
+// Round 411: existing shared lookup alone/field flags/request/both 135/343/133/331;
+// with word bit five, alone/field flags/request/both 310/340/129/328. The 133 and 129
+// forms are below threshold and restored. Callback inline/noinline/both 125/135/125;
+// the inline-only declaration of the external 0x1e4e0 (125) is not kept: no definition in this
+// file; complete original body and shared lookup linkage restored.
+// Round 35 (lane 9): the camera rotation through the shared vector3f_rotate_into_axes (accumulated rows,
+// which match 0x248450) 137: retail's x-row pair order (y * left, then z * up) is right, but the three
+// z * up products load the matrix operand first (retail loads z first). One grouped pair then
+// accumulated 135, operands written matrix first 137, `t + i` sums 137, column-wise accumulation 137.
+// The file-local expression-row helper (135) is kept.
+// Round 411: Availability rejection to the common child tail, with original/reference-first/
+// separate-tag/group-first declarations 135/135/135/135; definition rejection with the
+// same four declaration graphs 135/135/135/135. Original nested body restored; tag/group
+// ownership, definition bit five and callback reloads remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1167,8 +1308,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                         long cluster = system->location.cluster_index;
                         bool visible = function_3eb20(cluster) || (bool)(((dword)*(word const *)((byte const *)system + 0xc) >> 10) & 1);
                         bool in_pool = (g_547f88.flags[cluster >> 5] & (1 << (cluster & 31))) != 0;
-                        if (!force_visible && !(bool)(((dword)*(word const *)((byte const *)definition + 0x16) >> 9) & 1) && !in_pool && !visible) draw = false;
-                        else
+                        if (force_visible || (bool)(((dword)*(word const *)((byte const *)definition + 0x16) >> 9) & 1) || in_pool || visible)
                         {
                             if (!visible && !force_visible)
                             {
@@ -1194,8 +1334,9 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                                 if (!visible)
                                 {
                                     real distance = (real)(sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i) * g_4b9dcc);
-                                    if (!(function_249bb0((s_distance_fade const *)definition, distance) > 0.0f)) draw = false;
+                                    draw = function_249bb0((s_distance_fade const *)definition, distance) > 0.0f;
                                 }
+                                else draw = true;
                                 *(dword *)((byte *)location + 0x30) = g_4ba034;
                             }
                         }
@@ -1221,7 +1362,10 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
     for (long child_index = system->first_child_index; child_index != NONE; )
     {
         s_particle_system_datum *child = DATUM(g_510c74, s_particle_system_datum, child_index);
-        child->flag10 = system->flag10;
+        if (system->flag10)
+            child->flag10 = true;
+        else
+            child->flag10 = false;
         function_174420(child_index, view_pass, camera_relative, force_visible);
         child_index = child->next_index;
     }
@@ -1232,7 +1376,13 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 101 (was 101): frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
+// score 102 (was 102): this round: the availability flag written as `query(view) == 0` 102 (the
+// same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
+// bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
+// availability flag lives in bl because its NONE sentinel lives in ebp and frees ebx; ours keeps
+// the sentinel in ebx, so the flag lands in al and the same-view in bl instead of a stack byte.
+// The sentinel's register and the Boolean homes remain.
+// Frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // (coalesced; later NONE tests use immediates) and the availability flag in bl; ours keeps the
 // sentinel in ebx, the owner in edi and the flag in al, and tests the definition's bit 9 as a
 // byte instead of a shifted word. Owner/NONE coalescing and Boolean homes differ.
@@ -1259,6 +1409,46 @@ bool function_17afd0(long effect_index, long value);
 // NONE/owner sharing and availability/Boolean homes remain.
 // Next-used helper entry/advance/both 200/202/244; native draw/query+draw bits 101/128;
 // native bits with entry/advance helper 195/198; inline/outline-inline query 101/101.
+// Arm-specific draw calls with original/word flag 134/137; camera scoped 143/129;
+// arm-specific draw and camera 144/121; direct other-view eligibility 144/121.
+// NONE/owner sharing and Boolean homes remain; original shared draw call retained.
+// Round 290: Complete effect observations, pass-selected draw and shared cluster-bit boundary
+// subsets 106/143/144/102/106/143/144; complete pass result arms 144. Original executable source
+// restored.
+// Round 189: Complete pool-global observations 102; implied back-edge NONE arm removed 150;
+// existing calling iterator with aggregate/field initialization 252/252 (exact-only). Coordinated
+// cluster-provider inline alone/pool/iterator/advance 102/102/252/150. All provider declarations
+// and the original body restored.
+// Lane 13 r20 (fast): with view read from the global at each use, bit 9 as ((dword)word >> 9) & 1 and
+// availability as one `view != NONE && !query`: 123; owner declared first 125; availability as false-init
+// plus conditional set 138; owner assigned in an if/else 113 at retail length (effect index in EDI as
+// retail; NONE stays in EBX because availability lands in AL); bit 9 form alone 128; if/else owner with the
+// false-init availability 138 (availability spilled, same-view takes BL), without the bit form 150, with a
+// view local 138.
+// Round 43: bit 9 as (bool)(((dword)word >> 9) & 1) gives retail's movzx/shr/test 128 (491 bytes); with
+// the view global read at each use 124 (retail length, and retail's view reload after 0x17afd0); plus
+// the availability as one `g != NONE && !query` 123 plain (aligned 63 -> 51; NONE/owner in ebx/esi
+// against ebp, availability in al against bl, same-view in bl against its stack byte remain); with
+// false-then-set availability 138 (508 bytes) or same-view 122 (499); view global alone 143; attached
+// computed only when not same-view 163 (retail computes it on both paths), with the forms above 121-152.
+// Round 312: same-view classification after attachment on the retained availability gate,
+// bool/byte/short/long attachment with original/direct camera result 100/125/100/125/111/122/110/122.
+// Two-point gain restored; later-result forms can coalesce owner/NONE but regress overall. Original snapshot and body restored.
+// Round r4 (lane 17): camera flag renamed to sort after same_view 102 (slots unchanged: not name-ordered here); camera
+// flag declared before same_view 103; shifted word bit 9 + view global at each use + false-then-set availability 138
+// (508 bytes); owner = NONE at the top of the loop body 141 (488); same_view assigned in if/else arms 102 (same code).
+// Round 27 (lane 13, fast): availability false-then-set 144 (availability spilled, same-view in BL, NONE in EBX);
+// plus same-view declared before availability 144; plus owner in an if/else 142/142; plus the view global at each
+// use 148/148, with the if/else owner 150/150, with the shifted bit 9 138/138 (510 bytes); the effect index read
+// from the field at each use 106; one-expression availability + view at each use + shifted bit 9 + if/else owner
+// 113 (498 bytes; owner in ESI, view in EBP, NONE in EBX), without the owner form 123.
+// Round 105 (lane 7, fast): with the view global at each use, the shifted bit 9 and one-expression availability
+// 123 (496 bytes; NONE stays in EBX, so owner = NONE is a copy, not retail's EBP coalescing); availability
+// false-then-set (retail's `xor bl, bl` before the query) 138 (508 bytes, availability spilled, same-view in
+// BL), with the owner in an if/else 138, with same-view in an if/else 138, with the camera flag declared
+// before the owner 138; one-expression availability with the if/else owner 113 (498 bytes); owner declared
+// before the effect index 125; availability declared at the loop top 123. Retail keeps -1 in EBP until the
+// owner takes EBP; ours keeps -1 in EBX all through, so five values compete across the view query.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

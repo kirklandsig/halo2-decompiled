@@ -9,6 +9,7 @@
 #include "unknown_0259d0.h"
 #include "slot_handler.h"
 #include "unknown_293070.h"
+#include "data_iterator.h"
 static __forceinline long real_to_long(real value);
 
 /* a flock (g_51ecb4, ai.cpp): the index of its scenario definition at +2 */
@@ -467,55 +468,69 @@ void function_293a20(long flock_index)
 	}
 }
 
-PRIVATE __forceinline s_flock *function_295321(s_active_flock_iterator *arg_0, bool arg_1)
+struct s_flock_datum_walk
 {
-	s_flock *local_0 = NULL;
-	if (arg_1)
+	s_data_datum_iterator iterator;
+	long flock_index;
+};
+
+static inline void flock_datum_walk_new(s_flock_datum_walk *walk)
+{
+	if (g_4f55d0->active)
 	{
-		local_0 = (s_flock *)data_iterator_next_inlined(&arg_0->iterator);
-		arg_0->flock_index = arg_0->iterator.datum_index;
+		walk->iterator.data = g_51ecb4;
+		walk->iterator.index = NONE;
+		walk->iterator.datum_index = NONE;
 	}
-	arg_0->flock = local_0;
-	return local_0;
 }
 
-// score 99 (was 99): the walk over the active flocks is built with another
-// iterator shape, so the register choices and the instruction order differ.
-// State-pointer input, external activity reference, step input order, ordinary
-// inline, generic pointer result, inline depths two/three and walk name 99.
-// Boolean step 99; outer scenario entry 99; outer radius 99; zero iterator 110;
-// point memcpy 99; point value copy 103; const entry 99; byte activity 99.
-// Original iterator and private step retained.
-// score 99 (was 99): the shared step's not-found arm stores NULL, so the walk's test is
-// threaded to the exit (retail joins it). flock_iterator_next as the step 125; scenario
-// view local in the body 99; ticks without its local 99; radius as a ternary 107; a flock
-// pointer local 99.
+/* the next flock while the ai is active, or NULL */
+PRIVATE __forceinline s_flock *flock_datum_walk_next(s_flock_datum_walk *walk, bool active)
+{
+	s_flock *flock = NULL;
+
+	if (active)
+	{
+		s_data_datum_iterator *iterator = &walk->iterator;
+
+		if (data_datum_iterator_next_inlined(iterator))
+			flock = (s_flock *)iterator->datum;
+		walk->flock_index = iterator->datum_index;
+	}
+	return flock;
+}
+
 // @retail 0x295320
 void function_295320(point3f const *point)
 {
-	s_active_flock_iterator iterator;
-	flock_iterator_begin(&iterator, g_4f55d0->active);
-	while (function_295321(&iterator, g_4f55d0->active))
+	s_flock_datum_walk flocks;
+	flock_datum_walk_new(&flocks);
+	s_flock *flock;
+	while ((flock = flock_datum_walk_next(&flocks, g_4f55d0->active)) != NULL)
 	{
-		if (iterator.flock->unknown0c && iterator.flock->definition_index >= 0 &&
-			iterator.flock->definition_index < ((s_scenario_flocks_view *)g_4e0350)->flock_count)
+		if (flock->unknown0c && flock->definition_index >= 0 &&
+			flock->definition_index < ((s_scenario_flocks_view *)g_4e0350)->flock_count)
 		{
-			s_scenario_flock *definition = &((s_scenario_flocks_view *)g_4e0350)->flocks[iterator.flock->definition_index];
+			s_scenario_flock *definition = &((s_scenario_flocks_view *)g_4e0350)->flocks[flock->definition_index];
 			real radius = 3.0f;
 			if (definition->proximity_radius > 0.0f)
 				radius = definition->proximity_radius;
-			if (function_295490(iterator.flock_index, point, radius + 1.0f))
+			if (function_295490(flocks.flock_index, point, radius + 1.0f))
 			{
 				long ticks = real_to_long((real)g_510c54->field_2_3 * 3.0f);
-				iterator.flock->unknown24 = (short)ticks;
-				iterator.flock->position14 = *point;
-				iterator.flock->value20 = 2.0f;
+				flock->unknown24 = (short)ticks;
+				flock->position14 = *point;
+				flock->value20 = 2.0f;
 			}
 		}
 	}
 }
 
 /* the flock whose scenario definition has the name, or NONE */
+// matches: the walk over the flocks is the one 0x295320 uses; the step
+// reaches the iterator through a pointer, so LTCG does not follow the walk's
+// writes into the call, and the three callers (0x2a6200, 0x2a6270,
+// 0x2a6330) keep retail's code around it.
 // score 69 (was 69): the scenario view is read before the loop here and
 // after it in retail, so the loop body and the exit differ; ours is 187
 // bytes against retail's 193. Cause: retail keeps the flock pointer in ebp
@@ -524,25 +539,41 @@ void function_295320(point3f const *point)
 // straight to the NONE exit, frees ebp and hoists the view into it. Retail also
 // compares the loaded name with the argument on the stack. Tried: the step
 // body written out in flock_iterator_next 69; early returns 73; the result in
-// the loop condition 70; function_295321 as the step 72; name == entry 69.
-// score 69 (was 69): the shared step with its result preset to NULL (no store
-// in the not-found arm) and function_295321 as the wrapper 49 (191 bytes;
-// retail's join and test), but 14 matched iterator users elsewhere stop
-// matching, so not kept; the preset after the scan 85; not-found arm first 84;
-// the preset alone 69. Left: the zero sits inside the active block (retail:
-// loop top), the found arm is placed last, and the registers rotate.
+// the loop condition 70; 0x295320's former private step 72; name == entry 69;
+// the shared step with its result preset to NULL and that private step as the
+// wrapper 49 (14 matched iterator users elsewhere stop matching); the preset after the
+// scan 85; not-found arm first 84; the preset alone 69. The datum walk that
+// 0x295320 uses (s_flock_datum_walk) matches this body byte for byte, also with
+// the result declared after the walk or the activity read once, but matched
+// callers 0x2a6200/0x2a6270/0x2a6330 then pick other scratch registers around
+// the call (11/11/2; a noinline declaration changes nothing), so it is not used
+// here; the walk with early returns 39.
+// Left: the zero sits inside the active block (retail: loop top), the found arm
+// is placed last, and the registers rotate.
+// Native datum iterator with inlined scan, data/index seed, missing-index seed, null-datum seed,
+// complete seed 116/116/116/116; calling-scan counterparts 152/152/152/152.
+// Original captured activity and complete walk restored; the live-null exhaustion join remains.
+// Why the walk costs the callers: they are built as if this function wrote memory. With
+// the walk, LTCG sees it as free of side effects; any store added to the walk body (a
+// function-static, diagnostic) gives all three callers back (callee 82). Our forms that
+// keep the callers reach the step through flock_iterator_next with the iterator at +4
+// of its pointer parameter, which LTCG cannot follow; with the same step written in the
+// body, or through a helper whose iterator sits at offset 0, the callers break again,
+// even where this body is unchanged at 69. __stdcall declared (retail ret 4) changes
+// nothing. Round 14: the helper storing the flock only when the step finds one 69;
+// the helper with a local result 72.
 // @retail 0x2958a0
 long function_2958a0(long name)
 {
 	long result = NONE;
-	s_active_flock_iterator iterator;
-	bool active = g_4f55d0->active;
-	flock_iterator_begin(&iterator, active);
-	while (flock_iterator_next(&iterator, active))
+	s_flock_datum_walk flocks;
+	flock_datum_walk_new(&flocks);
+	s_flock *flock;
+	while ((flock = flock_datum_walk_next(&flocks, g_4f55d0->active)) != NULL)
 	{
-		if (((s_scenario_flocks_view *)g_4e0350)->flocks[iterator.flock->definition_index].name == name)
+		if (((s_scenario_flocks_view *)g_4e0350)->flocks[flock->definition_index].name == name)
 		{
-			result = iterator.flock_index;
+			result = flocks.flock_index;
 			break;
 		}
 	}

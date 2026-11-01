@@ -5,6 +5,7 @@
 #include "unknown_26b230.h"
 #include "unknown_0d0690.h"
 #include "unknown_2605d0.h"
+#include "unknown_25fc30.h"
 #include "unknown_2626b0.h"
 
 /* slot type 0x26, the slot tests 0x35, 0x34, 0x32, 0x33, 0x55, 0x30, 0x57
@@ -97,14 +98,6 @@ bool __stdcall function_1b6930(long actor_index, s_slot *slot)
 	return result;
 }
 
-struct s_1b69e0_choice
-{
-    s_type_c3b527 point;
-    short field_10;
-    short field_12;
-    long field_14;
-};
-
 bool function_1b60d0(long index, short type, short level);
 void function_25d420(long prop_index, short type, long actor_index);
 short __stdcall function_272af0(s_match_globals *structure, point3f const *point);
@@ -119,12 +112,25 @@ short __stdcall function_272af0(s_match_globals *structure, point3f const *point
 // or outer choice, the copy through a cast 2/2/2/2/2; choice read at each
 // use 33; the request's +4 store before +8 5; a pointer to the destination
 // point 2; choice or view renamed to sort after/before the other 2/2; choice or
-// view declared first 2/2; point copy before the state store 140.
+// view declared first 2/2; point copy before the state store 140; point copied
+// with memcpy 2; const choice through a const pointer 2; +0x74 stored before
+// +0x72 6; result set first in the success block 118; type NONE first in the
+// success block 92.
+// Round 101 (lane 7): the entry as the evaluated-position type the callee
+// copies out, its definition pointer read into a local before the view store
+// (kept, 2; replaces the made-up choice struct read through the entry's
+// address); a destination point pointer taken before that read 2; the read
+// after the view store 140; the local declared at the top of the view block 2;
+// the scratch buffer released in each arm 2.
+// Round 63: member-wise position copy 135; direct entry source for only the copy 15;
+// typed source pointer 2; +0x72 before the copy 14; both scalar stores before the copy 66;
+// scalar stores before the state 140; +0x72 first with state before the copy 140 (both
+// +0x74 positions).
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {
     bool unknown;
-    s_261d20_entry entry;
+    s_type_b36ac5 entry;
     s_2605d0_request request;
     bool result = false;
     s_actor_view *actor = actor_get(actor_index);
@@ -164,11 +170,11 @@ bool __stdcall function_1b69e0(long actor_index, long prop_index)
         s_reference reference = function_2605d0(actor_index, &request, (long)&entry, (long)&reference, scratch, &unknown);
         if (!REFERENCE_EQUAL(reference, g_470fa0) && !(reference.unknown2 & 0x8000))
         {
-            s_1b69e0_choice *choice = *(s_1b69e0_choice **)&entry;
+            s_type_d4fbfa const *definition = entry.definition;
             view->unknown70 = 1;
-            view->unknown78 = choice->point;
-            *(short *)((byte *)view + 0x72) = choice->field_12;
-            *(long *)((byte *)view + 0x74) = choice->field_14;
+            view->unknown78 = *(s_type_c3b527 const *)definition;
+            *(short *)((byte *)view + 0x72) = definition->unknown12;
+            *(long *)((byte *)view + 0x74) = definition->unknown14;
             short type = NONE;
             s_262b40_result *target = function_262b40(reference);
 
@@ -611,7 +617,7 @@ short __stdcall function_1b73b0(long actor_index, s_slot *slot)
 	{
 		s_object_child_iterator iterator;
 
-		function_d0620(actor->unknown26c, &iterator);
+		function_d0620(&iterator, actor->unknown26c);
 		while (function_d0690(&iterator))
 		{
 			s_slot_object_view *object = object_get(iterator.child_index);

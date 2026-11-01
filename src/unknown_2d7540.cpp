@@ -38,6 +38,54 @@ lane_a_registration_array::~lane_a_registration_array()
 
 lane_a_registration *g_480174;
 
+// Create services whose dependencies are ready, postponing failed factories
+// until a later pass. Successful retries rejoin the registration list.
+// @retail 0x2d7ca0
+void __cdecl initialize_registered_services_2d7ca0()
+{
+	lane_a_registration **link = &g_480174;
+	lane_a_registration *entry = *link;
+	lane_a_registration_array pending;
+	while (entry)
+	{
+		if (!*entry->storage)
+		{
+			c_sized_reference_a9ef0 *object = entry->create();
+			if (object)
+			{
+				*entry->storage = object;
+			}
+			else
+			{
+				pending.append(entry);
+				lane_a_registration *next = entry->next;
+				(*link)->next = 0;
+				*link = next;
+				entry = next;
+				continue;
+			}
+		}
+		link = &entry->next;
+		entry = *link;
+	}
+	while (pending.size)
+	{
+		for (long i = pending.size - 1; i >= 0; --i)
+		{
+			entry = pending.data[i];
+			c_sized_reference_a9ef0 *object = entry->create();
+			if (object)
+			{
+				*entry->storage = object;
+				*link = entry;
+				link = &entry->next;
+				--pending.size;
+				pending.data[i] = pending.data[pending.size];
+			}
+		}
+	}
+}
+
 // @retail 0x2d7dd0
 void __cdecl function_2d7dd0()
 {

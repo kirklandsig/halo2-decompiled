@@ -548,7 +548,7 @@ void function_1c7e70(long player_index, short value)
 		{
 			s_object_child_iterator iterator;
 
-			function_d0620(parent_index, &iterator);
+			function_d0620(&iterator, parent_index);
 			while (function_d0690(&iterator))
 			{
 				long actor_index = object_get(iterator.child_index)->actor_index;

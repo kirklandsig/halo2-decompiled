@@ -55,6 +55,18 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
+// `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
+// g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
+// byte temporary. Two arms with one call each 174 (VC moves `saved` to EBX, spills `this` to [ebp-4] and flips the
+// frame to unbiased); the permuter (26 tries in 300 s) found nothing better than the opening body.
+// Round 32 (second pass): our first half matches retail instruction for instruction; the twelve internal jumps
+// differ only because our second block is six bytes shorter, so the epilogue sits six bytes earlier. Retail's arms
+// are `if (selected == NONE) {default} else {selected}` (the test is `cmp esi,-1` and the jump goes to the
+// out-of-line selected arm). Retail calls 0x13fac0 out of line and reuses its ESI/EDI argument registers for the
+// 0x216a50 call that follows; our link inlines the copy into a wcsncpy call plus a terminator store, and 0x13fac0
+// lives in another lane's file. The two-arm rewrite again 174 (595 bytes, `this` in EDI spilled to [ebp-4], EBX
+// takes the 1<<index shift, `variant` moves to [ebp-0x154], the frame flips to `mov ebp,esp` with `sub esp,0x254`).
 // score 61 (was 61): biased 0x250 frame agrees; creation classification spill
 // and expanded string copy remain. File-type result 61; word classification 69;
 // direct source argument 61; unsigned saved handle 61; result plus word 69.
@@ -73,11 +85,11 @@ extern long g_55c154;
 // still differ. source default override 62; source existing override 61; source handle
 // lifetime 76; separate current selection 61; name generation result 61; saved handle
 // workspace 61; native generated name 61; native name source override 62.
-// score 61 (was 61): classification spill and selective copy expansion remain;
+// classification spill and selective copy expansion remain;
 // destination name after/before default 88/88; destination record late/early 88/88;
 // record/name receivers 88; publication order 174; named second load 61;
 // common name receiver 88; split loads plus common/default name receiver 199/199.
-// score 61 (was 61): classification spill and copy expansion remain;
+// classification spill and copy expansion remain;
 // external controller-slot / item-handle / list-receiver references 61/61/61;
 // controller-item / controller-list / item-list / all references 61/61/61/61;
 // all references with live type-field binding 61. Original inputs and body restored.
@@ -87,22 +99,50 @@ extern long g_55c154;
 // creation classification spill and selective copy expansion remain;
 // live entry-handle/edit-mode/type fields 61/61/61; handle-mode/handle-type/mode-type
 // field pairs 61/61/61; three live fields and external record combination 61/61.
-// score 61 (was 61): retail has two load arms (default/selected) and an out-of-line copy call.
+// retail has two load arms (default/selected) and an out-of-line copy call.
 // separate noinline declaration of the copy 61 (still inlined); single load re-testing the
 // selection 77; two load arms 174; two arms plus a shared default-name pointer 179 (the copy
 // becomes retail's register call, but zero is kept in ebx and this spills); arms on direct
 // entry reads 179.
+// Entry declarations with in-place assignments: source carrier 61; classification 61; both 61;
+// reversed pair 61; pair plus selected carrier 61; pair plus request workspace 61; pair plus
+// both buffers 61; pair with exchanged buffer declaration order 61.
+// Round 32 (lane 16): our link step inlines 0x13fac0 here because all three arguments fold (a
+// global destination, a local source, a constant count); 0x148c3e on main hits the same and reads
+// its count through a pointer. Two load arms (default first, selected first) 174/174, both with an
+// unbiased frame and the constant 1 in EBX; one load per arm into a shared result then the
+// original arms 110; 0x13fac0's terminator through a pointer to the last element 61 (callers kept,
+// copy still inlined); /arch:SSE on this file (diagnostic only) 72, still inlined.
+// Round 77: noinline declaration of the copy in its own file (retail's ecx/edi/esi call) 88
+// (one arm is short); two load arms 174, with that call 179 (EBX takes zero, saved and the
+// 0x54e4a0 constant, `this` spills to [ebp-4], unbiased frame); selected arm first 178;
+// saved declared at the top 179.
+// Round 21 (lane 10): a named count shared by the copy and the 0x238c69 call (`long maximum_count =
+// 0x20;`, as matched 0x148c3e passes it) keeps unicode_string_copy out of line with retail's
+// ecx/edi/esi call and no noinline. Two load arms with the inline copy 174; with the named count 179
+// (EBX holds saved and then &g_54e4a0, `this` moves to ESI and spills, unbiased frame); the count
+// declared at the arm's top 179; selected arm first 178; one load with the named count 88. Original
+// body restored.
+// Round 35: two load arms 174 again (`this` spills to [ebp-4], EBX takes the constant 1, unbiased
+// frame), with the shift bit test 174; the bit test as a signed shift 62 (sar); `selected == NONE`
+// tested twice without the classification local 77 (574 bytes). BLOCKED-BY 0x13fac0: our link
+// inlines the copy at this all-constant call site, where retail calls it.
+// Round 97 (lane 7): a named destination `word *variant_name = g_54e4a0.name;` for the copy and the
+// 0x238c69 call keeps 0x13fac0 out of line with retail's ecx/edi/esi setup: on the one-load body 88 (562
+// bytes; aligned differences 25 -> 19, only the duplicated selected-arm load left); on two load arms 179.
+// Two load arms with the named count: 179 (`this` in ESI and spilled, EBX holds a zero constant, `saved`
+// and the &g_54e4a0 address in turn); with the count named for both calls 179; with the variant global as
+// its own extern symbol 179 (same allocation).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
-	struct s_variant_flags { unsigned long pad : 21; unsigned long bit21 : 1; };
 	if (*item == NONE) return;
 
 	s_variant_item *entry = &((s_variant_item *)data->data)[*item & 0xffff];
 	s_game_variant variant;
 	byte name[0x100];
 	long selected = entry->variant;
-	if (selected != NONE && !(flag_a && TEST_FIELD_BIT(((s_variant_flags const *)&entry->variant)->bit21)))
+	if (selected != NONE && !(flag_a && (bool)(((dword)entry->variant >> 21) & 1)))
 	{
 		if (entry->value2 != NONE)
 		{
@@ -304,6 +344,18 @@ void c_class_2c9e69::select_last_variant()
 // Without the receiver qualifier one reload of the text is hoisted into EDI ahead of both arms
 // (retail reloads it per arm, EDI and EBX): plain receiver 36; text used directly in both arms 36;
 // per-arm receiver locals 36; named arm first 38; icon declared first 36. 600 s permuter run, none below 23.
+// Both arms reload the spilled text first; when both reloads land in EDI the two identical
+// loads are merged ahead of the variant test (even two qualified reads), and retail keeps
+// them apart only because its name arm reloads into EBX. Copies in both arms 36; name-arm
+// copy declared before the test 36, or at function top 36; name-arm copy only (text read
+// directly in the empty arm) 13 at 159 bytes, the name arm then exact except EDI for EBX.
+// Round 39: an early return for an absent datum 23; `else { name; if (text) ... }` 23; the arms swapped
+// (`variant != NONE` first, the empty copy kept) 30; the two lookups assigned after their declarations 23;
+// the variant named in the name arm 23.
+// Round 62: named condition declaration 36 (154 bytes); named condition with direct empty text 36; both condition
+// declarations 36; nested named condition 36; named condition with the inherited qualifier 36; empty condition with
+// direct named text 36; explicit/implicit assignment-condition receivers 36/36. Every form merges the loads into EDI.
+// Opening body restored.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

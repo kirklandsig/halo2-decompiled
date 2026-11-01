@@ -189,6 +189,13 @@ PRIVATE void game_time_set_speed_internal(real speed);
 
 /* advances the game time by a frame: the speed ramp, then the whole ticks
    due, the fraction carried to the next frame */
+// score 1 (was 1): the asynchronous path uses jle where retail jumps to the
+// shared jg tick-limit test. Twenty variants: nested limits, flag widths,
+// negated async test and explicit true/false async arms 1; reversed async
+// comparison 2, reversed sync comparison 4; boolean assignments 12; inverted
+// flag/async-first arms 35; shared final assignments 38; shared lower bound
+// 39; shared compared value with rejection label 40, without rejection 95.
+// Original retained: 476 bytes, as in retail.
 // @retail 0x146660
 void function_146660(real seconds, real *elapsed, long *ticks_due)
 {

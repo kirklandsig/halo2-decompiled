@@ -175,7 +175,7 @@ void __stdcall actor_behavior_81_update48(long actor_index, long unused)
 
 /* result = a & b, over bit_count bits */
 // @retail 0x1c2330
-void bit_vector_intersect(long bit_count, dword *a, dword *b, dword *result)
+void bit_vector_intersect(dword *result, dword *a, dword *b, long bit_count)
 {
 	long count = (bit_count + 31) >> 5;
 	long i;

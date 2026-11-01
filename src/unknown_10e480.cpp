@@ -145,9 +145,14 @@ extern real g_547648;
 void c_animation_channel_data_get(c_animation_channel const *channel, s_animation_data *data);
 
 // score 207 (was 207): Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
-// frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
-// Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
-// Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
+// Round 87: the cause is our inlining of 0x1c6440 in the weighted arm (retail calls it there and in the
+// third arm). With the getter out of line (noinline in its header, diagnostic only) the entry and the first
+// arm match retail (edi is the zero register, transforms is read from the stack): 174 at 940 bytes. Its
+// inlining here did not move with an extra getter use in the first arm, a shrunken third arm or the third
+// arm alone (which calls everything out of line even by itself). Tried: data write through a forceinline
+// wrapper 207; early return when the weighted play fails 207; unused reference dropped 212 (ret 0x14);
+// weight products global-first/grouped/frame-first 207/263/207; long sample frame used for the compare
+// and the conversion 257 (aligned 99/91 against 109/110).
 // Lane 8 r64: countdown weight with the `>= 3` case first (retail's fall-through) 215, kept; frame
 // byte in a long local 260 (32-bit compare as retail, aligned 119, 969 bytes); char/word loop index
 // 215 (identical: the loop stays a pointer plus spilled countdown); sampled flag declared before
@@ -234,6 +239,51 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 246: signed-char frame/weight/both fields 207/207/207; each with a twice-used long
 // frame 257/257/257; both with short frame/immutable frame-count snapshot 258/254. Original
 // field identities, observations and body restored.
+// Native complete weighted input value, mutable/const before/after the getter,
+// 346 each; each with a twice-used full-width sample frame 344. Original record
+// observations, arithmetic, separate constructors and full body restored.
+// Round 72: weight byte * scale named, then * frame 207 (retail's multiply order); frame byte in a
+// long local for compare and conversion 257 (retail's 32-bit compare, 967 bytes); both 257;
+// reversed frame-count compare 207; weight from the entry frame local 309.
+// DH round 230: Post-getter countdown snapshot in byte/short/long/word domains 207/216/280/215;
+// the same complete if/else weight producers 207/216/280/215. Original observations and body restored;
+// frame 0x30/0x2c, destination/ordinal homes and weighted getter expansion remain.
+// DH round 236: positive channel constructed at entry with independent countdown-channel,
+// real ordinal and existing sample-result entry lifetimes, eight subsets
+// 279/375/279/375/317/391/317/391. Original separate constructions, observations and body restored;
+// frame 0x30/0x2c, destination/ordinal homes and weighted getter expansion remain.
+// Round 398: actual eligibility retained for sampling and loop-result accumulation,
+// bitwise bool/byte/short/long 306/306/303/304; logical
+// accumulation with those carriers 324/324/314/310. Original result and body restored.
+// Round 186: double storage for initial/weighted/both/countdown/initial-countdown/weighted-countdown/all
+// results 285/326/352/290/314/305/330; weighted double with promoted sample frame 335.
+// Original scalar storage and body restored; frame, getter expansion and ordinal spill remain.
+// Round 297: On early weighted-output construction, frame rejection/nested
+// frame-first/both rejections 207 each; magnitude rejection/nested magnitude-first/
+// reverse rejections/reversed shared admission 262 each (frame 0x2c, 927 bytes);
+// combined frame-or-negligible rejection 207. Original loop and full body restored.
+// Round 225: fabsf with mutable/immutable weight, native real/double absolute
+// values, mutable/immutable and with immutable weight: 207 each. Original
+// absolute expression, frame tests and body restored; getter/ordinal/frame remain.
+// DL202: Native external frame/weight table direct/pointer/const-pointer/per-iteration pointer/reference/
+// const-reference 207/250/250/250/250/250; pointer/const-pointer with twice-used long sample
+// frames 222/222. Input aliases recover frame 0x2c but regress; original table fields,
+// observations, constructors and body restored. Destination/ordinal homes and getter expansion remain.
+// Round 241: early weighted output with long/dword/short/word contribution counts
+// 275/275/276/276; before getter 275/275/276/276. All result-storage diagnostics restored;
+// original Boolean, separate constructors, frame 0x30/0x2c and getter/ordinal differences remain.
+// Round 460: Positive admission bool/byte/short/long, then paired positive/nonzero admissions,
+// 207/207/207/207/343/343/337/337. Original direct frame tests, constructors and body restored;
+// frame 0x30/0x2c, weighted getter and ordinal homes remain.
+// Round 266: existing sample success before frame positioning or between positioning/sampling,
+// each in bool/byte/short/long storage, 276/276/279/278/276/276/279/278. Original result stores,
+// constructors and complete body restored; frame, getter and ordinal differences remain.
+// Round I (MiniMax lane I, fast): the getter called through a member-function pointer local (only to keep
+// it out of line, which the noinline ruling rules out) with the twelve samples walked by a frames pointer
+// that reads each weight as sample[12] 137 (frame 0x2c as retail's); the getter called directly with that
+// walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
+// 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
+// in the sampled block 189. Original body restored.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

@@ -4,6 +4,8 @@
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
+#include "vector_products.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <string.h>
 
@@ -115,20 +117,24 @@ static inline void quaternion_transform_vector(
 	out->k = v->k * s + q->k * dot + cross.k * w2;
 }
 
-/* the cross product, every component computed before the stores */
-static inline void cross_product3d_1417b0(vector3f const *a, vector3f const *b, vector3f *out)
-{
-	real k = a->i * b->j - a->j * b->i;
-	real j = a->k * b->i - a->i * b->k;
-	real i = a->j * b->k - a->k * b->j;
-
-	out->i = i;
-	out->j = j;
-	out->k = k;
-}
-
 /* the rotation that takes one unit vector to another */
-// score 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 200 (was 200): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
+// Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
+// the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
+// lands in the matrix parameter's home slot [esp+0x38], so the halves are two separate locals and not a struct.
+// Tried: the halves as plain locals 290 and with the clamp in place 290 (the sine half does take the parameter
+// home, but our frame then shrinks to 0x18 and the transform spills one slot instead of retail's three); the axis
+// components as named locals 282 and 325; a result vector in the transform helper 367 (frame grows, code grows).
+// Frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
+// Earlier 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
+// the sine half in the matrix parameter's home slot ([esp+0x38]) and the cosine half at the bottom local
+// ([esp+0x10]), while ours keeps both halves in the two-member struct at [esp+0x14]/[esp+0x18]; retail holds the
+// quaternion in xmm2/xmm1/xmm0 (i/j/k) where ours uses k/i/j. Tried: cross products with the vector operand first
+// 237 (identical - VC commutes the products); the axis components as named locals 344; the scale before the
+// crosses 325.
+// Earlier 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Lane 6 r85: helper with `s` computed first 302 (s and the doubled scalar hoisted above the matrix copy,
 // the doubled scalar spilled twice as retail, frame 0x20, constants one xmm lower); with vector-first
 // products 302 (identical code); with plain half-angle locals 291; doubled scalar after the cross 301;
@@ -199,6 +205,28 @@ static inline void cross_product3d_1417b0(vector3f const *a, vector3f const *b, 
 // pre-copy doubled scalar/quadratic scalar 302/347; scalar-first construction 272;
 // shared input dot and shared repair crosses on the shared-axis base 237 each.
 // Original body and both helpers restored.
+// Round 258: output/vector/quaternion contract with original/scalar-cross/scale-first/
+// both forms 237/281/302/306; vector/output/quaternion contract with those forms
+// 240/237/298/311. Original helper, three call roles and body restored.
+// Round 228: two-argument in-place helper with pointer/reference quaternion and vector
+// contracts 290/290/290/290; each with independent cross scalars 313/313/313/313.
+// Original helper contracts and complete body restored.
+// Round 242: Complete shared scale/add-scaled output pipeline with staged-cross/shared-dot/
+// independent-half subsets 0..7 363/363/358/361/355/356/349/350. Native half storage recovers frame
+// 0x24 but grows code; original helper and body restored, quaternion/cross spill overlap remains.
+// Round 255: shared real construction scale with independent-half/scalar-cross/staged-axis masks
+// 0..7 237/291/281/293/200/267/265/252. Staged axis plus real scale kept: 200 plain,
+// 1321/1317 bytes. Five further coefficient orders 256/205/205/257/260; scalar before
+// cross/ratio/scale 310/200/200. Frame and quaternion/cross spill homes remain.
+// Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
+// native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
+// frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
+// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// frame 0x1c/0x24 and quaternion/cross spill sharing remain.
+// Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
+// with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
+// 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -225,13 +253,9 @@ void matrix4x3_rotation_between_vectors(
 
 	if (sine != 0.f)
 	{
-		rotation.i = arg_5f338b->j * arg_bc44c6->k - arg_5f338b->k * arg_bc44c6->j;
-		rotation.j = arg_5f338b->k * arg_bc44c6->i - arg_5f338b->i * arg_bc44c6->k;
-		rotation.k = arg_5f338b->i * arg_bc44c6->j - arg_5f338b->j * arg_bc44c6->i;
+		cross3f_staged(arg_5f338b, arg_bc44c6, (vector3f *)&rotation);
 		real scale = state.sine_half / sine;
-		rotation.i *= scale;
-		rotation.j *= scale;
-		rotation.k *= scale;
+		vector3f_scale((vector3f *)&rotation, scale, (vector3f *)&rotation);
 		rotation.w = state.cosine_half;
 	}
 	else if (cosine < 0.f)
@@ -251,9 +275,9 @@ void matrix4x3_rotation_between_vectors(
 	if (!function_143120(&matrix->forward, &matrix->left, &matrix->up))
 	{
 		function_30bf0(&matrix->up);
-		cross_product3d_1417b0(&matrix->up, &matrix->forward, &matrix->left);
+		cross3f_staged(&matrix->up, &matrix->forward, &matrix->left);
 		function_30bf0(&matrix->left);
-		cross_product3d_1417b0(&matrix->left, &matrix->up, &matrix->forward);
+		cross3f_staged(&matrix->left, &matrix->up, &matrix->forward);
 	}
 }
 
@@ -501,20 +525,6 @@ void orientation_from_matrix4x3(
 	out->scale = matrix->scale;
 }
 
-__inline real normalize3d(vector3f *v)
-{
-	real m = (real)sqrt(v->i * v->i + v->j * v->j + v->k * v->k);
-	if (!(fabs(m) < 0.0001f))
-	{
-		real inv = 1.f / m;
-		v->i = inv * v->i;
-		v->j = v->j * inv;
-		v->k = inv * v->k;
-		return m;
-	}
-	return 0.f;
-}
-
 void function_142390(
 	plane3f const *plane,
 	transform4x3f *out);
@@ -523,31 +533,10 @@ static __forceinline void matrix4x3_basis_store(transform4x3f *out, point3f cons
 {
 	out->scale = 1.f;
 	out->forward = *forward;
-	vector3f left;
-	left.k = forward->j * up->i;
-	left.k -= forward->i * up->j;
-	left.j = up->k * forward->i - forward->k * up->i;
-	left.i = forward->k * up->j;
-	left.i -= up->k * forward->j;
-	out->left.k = left.k;
-	out->left.j = left.j;
-	out->left.i = left.i;
+	cross3f_staged(up, forward, &out->left);
 	out->up = *up;
 	real_point3d_set(&out->position, 0.f, 0.f, 0.f);
 	out->position = *position;
-}
-
-static __forceinline void plane_vector_normalize(vector3f *out)
-{
-    real k = out->k;
-    real magnitude = (real)sqrt(out->i * out->i + out->j * out->j + k * k);
-    if (!(fabs(magnitude) < 0.0001f))
-    {
-        real inverse = 1.f / magnitude;
-        out->i = inverse * out->i;
-        out->j = out->j * inverse;
-        out->k = inverse * k;
-    }
 }
 
 static __forceinline void function_x7a3668(plane3f const *plane, transform4x3f *out)
@@ -555,20 +544,42 @@ static __forceinline void function_x7a3668(plane3f const *plane, transform4x3f *
 	vector3f w;
 	point3f position;
 	function_11d000(&plane->n, &w);
-	plane_vector_normalize(&w);
+	normalize3d(&w);
 	position.x = plane->d * plane->n.i;
 	position.y = plane->n.j * plane->d;
 	position.z = plane->n.k * plane->d;
 	matrix4x3_basis_store(out, &position, &w, &plane->n);
 }
 
-// score 51 (was 51): the three components are squared and summed in a different order, the scaled
-// component is kept in a different register, and the cross product holds its operands in swapped
-// registers.
+// score 51 (was 51): frame 0x1c and sum grouping agree; the extra early first-component
+// load changes normalization-join registers and subsequent cross-product allocation.
 // The first difference is an extra early load of the first component (retail
 // loads only the second before the magnitude test). Second component scaled first
 // 52; first scaled as component * inverse 51; third stored first 53; first and
 // third read into locals 51; third scaled as k * inverse 51 (fast).
+// Round 406: direct nonnegative magnitude guard, length return and shared setter
+// 76/76/76/76; original magnitude expression at the caller boundary with the same
+// return/setter choices 89/89/89/89. All restored.
+// Round 22 (one-file harness, base 52 for the build's 51): the scale operand order of
+// each component, all 8 orders, makes no difference (with the third read through out-> 89
+// for every order and for sums i-j-k and j-i-k, 105 for j + (i + k)); component locals in
+// every subset and declaration order 52 when k is declared before j, 57 otherwise, 89 for
+// i alone; magnitude returned (early or else-zero) 52; `>=` guard 80; i/j scaled with *=
+// 52; the normalize written on w directly 91; cross3f_staged/cross3f (up, forward) into
+// out->left 77/82, through a local 105/105 (371 bytes).
+// Round 27 (fast): the file's own unused normalize3d 88; the shared normalize3d.h normalize (dot3f and
+// vector3f_scale) in place of it and the local normalize 68 at 353 bytes: the first component is then
+// scaled as retail (a copy of the inverse times the component in memory, only the second loaded before
+// the test), but the join keeps the first in xmm2 and moves the third to xmm4 (retail xmm4/xmm0) and the
+// cross products run in the other order; that with the position products before the normalize 83; the
+// local normalize without the third-component local 88; with dot3f for the magnitude 88.
+// Round 18 (lane 14): normalize helper plain `inline` 51 (same code); basis store plain `inline` 51;
+// magnitude through the existing length_sq3f 98 (332 bytes); normalize applied to the returned pointer
+// of 0x11d000 94 (354 bytes); position declared before the vector 51. Compile-only screens (which
+// reproduce the early first-component load): every subset of component locals x operand orders x
+// scale-statement orders (384 forms) at best the second-component local; the shared normalize3d.h
+// scale and the cross3f/cross3f_staged forms on it leave the position temporaries in xmm0 (retail
+// xmm2), the third component in xmm4 (retail xmm0) and the first in xmm2 (retail xmm4).
 // @retail 0x142390
 void function_142390(
 	plane3f const *plane,
@@ -578,7 +589,7 @@ void function_142390(
 }
 
 int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, transform4x3f *result);
-void function_11d790(quaternionf const *q, vector3f *axis, real *angle);
+void function_11d790(quaternionf const *q, real *angle, vector3f *axis);
 
 // @retail 0x1424f0
 vector3f *matrix4x3_rotation_between(
@@ -594,7 +605,7 @@ vector3f *matrix4x3_rotation_between(
 	function_141590(a, &inverse);
 	function_142a60(b, &inverse, &relative);
 	function_141f60(&relative.rotation, &rotation);
-	function_11d790(&rotation, out, &angle);
+	function_11d790(&rotation, &angle, out);
 	out->i *= angle;
 	out->j *= angle;
 	out->k *= angle;
@@ -766,7 +777,9 @@ void function_143250(
 	}
 }
 
-// score 2148 (was 2265): Full frame 0x300 agrees; rotation input and basis/matrix homes remain.
+// score 1766 (was 1766): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
+// Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
 // [4,5] 2286, [6,7] 2329.
 // Round 310: second-band product trees 2265; second-band full trees 2265; third-band
@@ -791,6 +804,68 @@ void function_143250(
 // at entry/publication 2163/2163; receiver with inlined negatives 2169/2169;
 // receiver with early negatives 2149/2149 (fast control 2266). Last form 2148
 // plain, 10390/10773 bytes; receiver used throughout the genuine shared matrix.
+// Round 385: Current shared-matrix receiver graph: independent native rows, all seven subsets
+// 2240/2237/2348/2191/2294/2286/2397; all with component-order names 2397 (fast control 2149; full
+// 2148). Original workspace and complete body restored; input and basis/matrix homes remain.
+// Round 259: complete matrix publication after its scalar producer, band masks
+// 2/4/6/1/3/5/7 in row order and all in original order: fast
+// 2067/2156/2236/2145/2051/2156/2263/2263 (control 2149). First and second
+// matrices in row order kept: 2050 plain, 10488/10773 bytes; every scalar
+// computation, input, precision boundary, order guard and helper tuple unchanged.
+// Round 263: complete column publication of band masks 1/2/3/4/5/6/7 and all reversed columns
+// 2051/2040/2040/2199/2199/2210/2210/2291 (fast control 2051). Five-by-five columns kept: 2039 plain,
+// 10500/10773 bytes; every scalar producer and helper tuple unchanged.
+// Round 268: native two-dimensional band rows, masks 1/2/3/4/5/6/7,
+// 2055/2088/2107/2123/2146/2179/2279; all arrays at entry 2279
+// (fast control 2040, full 2039). Original shared matrix and publication orders restored;
+// full frame 0x300, rotation admission and basis/matrix homes remain.
+// Round 271: exact first/second/both native retail matrix store orders after complete
+// producers, 2040/2051/2051; separate shared 49-element array alone/first/second/both
+// 2279/2279/2294/2294; complete graph with basis identity 2294 (fast control 2040).
+// Original shared workspace, publications and complete polynomial body restored.
+// Round 187: On retained publications, helper inline/noinline/both 2088/2039/2088; with independent basis 2347/2298/2347; first-matrix negative lifetimes with inline 2092, with both plus independent basis 2347. All restored; rotation admission and matrix homes remain.
+// Third-band row publications at the complete scalar producer, rows 0/1/2/3/4/5/6,
+// 2076/1997/1972/2026/1808/2105/2040; all rows in producer order 2272
+// (fast control 2040). Rows [2,4] 1879; rows [1,2,3,4] 1921. Single row 4
+// kept 1808 plain at 10731/10773 bytes; all scalar statements, precision boundaries,
+// matrix element values and application calls preserved. Rotation admission and basis/matrix homes remain.
+// Round 320: third-band row publication combinations [0,4]/[1,4]/[3,4]/[4,5]/[4,6]/
+// [0,1,4]/[3,4,5,6]/[0,1,3,4,5,6] 1843/1806/1837/1836/1799/1781/1915/2075.
+// Rows [0,1,4] kept: 1781 plain, 10789/10773 bytes, frame 0x314; all other measurements unchanged.
+// Only fourteen additional matrix stores move; every scalar, precision boundary, value and application tuple remains.
+// Round 447: Third-band retained late rows [0,1,4] by columns in six row orders, then descending columns across rows and within each row
+// 1791/1795/1795/1790/1795/1791/1812/1803. Rotation admission and basis/matrix spill homes remain.
+// Original executable source and all trial helper/interface changes restored.
+// Lane 10 round 34: retail passes rotation in EAX, coefficients in ECX, result in ESI and the order on the stack
+// (ret 4); ours stacks rotation and the order (ret 8). --fast pins conventions from the last full build, so only
+// plain checks show them. Plain: the parameters in retail's call-setup order (result, order, rotation,
+// coefficients; definition, declaration and four calls) 1781, rotation still stacked; 0x22850's coefficient loop
+// written as three per-channel calls as retail has them (and as its second half does) 1781 here, 0x22850 237->254;
+// the eight leading terms and the matrix as plain locals 2116 (frame 0x300 as retail, rotation still stacked).
+// Fast: rotation-first orders (rotation, order, result, coefficients) and (rotation, result, order, coefficients)
+// 1781 each (convention pinned); round 19's body 2266 (rotation stacked there too).
+// Round 215: producer-ready retained column 0 1768; producer-ready retained column 1 1782;
+// producer-ready retained column 2 1784; producer-ready retained column 3 1913; producer-ready
+// retained column 4 1772; producer-ready retained column 5 1766; producer-ready retained column 6
+// 1782; all producer-ready retained columns 1833; producer-ready retained columns 0 and 5 (one-
+// point increment rejected) 1765. Keep t06 producer-ready column 5, plain-confirmed 1781 to 1766
+// at exact 10773-byte retail length; all 11489 baseline matches preserved. Combined columns 0/5 at
+// 1765 add only one point and are rejected.
+// Round 255: producer-ready retained columns 1/5, 2/5, 3/5, 4/5, 5/6, 1/4/5, 2/4/5,
+// 4/5/6 score 1772/1768/1768/1772/1771/1802/1801/1783. Original publication graph restored;
+// frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// Round 263: Immutable first-assignment intermediates in all seven band subsets tie 1766 at 10773 bytes;
+// complete immutable graph without the mixed workspace 2229 at 10304 bytes. Original scalar declarations
+// and inherited workspace restored; frame, input admission and basis/matrix homes remain.
+// Round 145: the stacked rotation comes from the number of locals: LTCG passes it in EAX (retail's
+// `ret 4`, order alone on the stack) only while the function declares fewer than about 950 of them
+// (a one-file LTCG probe flips between 950 and 980 unused declarations on a cut-down body; block or
+// struct scope still counts). Plain checks: every term copy propagated (971 terms, rotation still stacked)
+// 1927 (10933 bytes); copies propagated and every single-use term written into its consumer (299 terms,
+// retail's convention) 1886 (10894); the first 400 single-use terms written in, copies kept (941 terms,
+// retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
+// 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
+// 0x23690 508->512 with retail's convention.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
@@ -2155,18 +2230,18 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	workspace.term_6 = rotation[2];
 	workspace.term_7 = rotation[3];
 	real *matrix = workspace.matrix;
-	matrix[2] = workspace.term_1;
-	matrix[0] = workspace.term_0;
 	term_9 = rotation[7];
 	term_8 = 0.0f - workspace.term_2;
 	term_11 = 0.0f - workspace.term_3;
 	term_12 = 0.0f - term_9;
 	term_13 = 0.0f - workspace.term_6;
-	matrix[3] = term_8;
 	term_10 = workspace.term_4;
-	matrix[4] = term_10;
 	result[0] = coefficients[0];
+	matrix[0] = workspace.term_0;
 	matrix[1] = term_12;
+	matrix[2] = workspace.term_1;
+	matrix[3] = term_8;
+	matrix[4] = term_10;
 	matrix[5] = term_13;
 	matrix[6] = workspace.term_7;
 	matrix[7] = term_11;
@@ -2196,11 +2271,9 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_34 = term_14 * term_18;
 	term_35 = term_33 + term_34;
 	term_36 = term_19 * term_17;
-	matrix[0] = term_35;
 	term_37 = term_20 * term_14;
 	term_38 = 0.0f - term_37;
 	term_39 = term_38 - term_36;
-	matrix[1] = term_39;
 	term_40 = sqrt(15.0);
 	term_41 = term_15 * term_40;
 	term_42 = (real)term_41;
@@ -2208,42 +2281,34 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_44 = term_43 * term_20;
 	term_45 = term_44 * term_19;
 	term_46 = term_45 * 0.200000003f;
-	matrix[2] = term_46;
 	term_47 = term_19 * term_18;
 	term_48 = term_20 * term_16;
 	term_49 = 0.0f - term_48;
 	term_50 = term_49 - term_47;
-	matrix[3] = term_50;
 	term_51 = term_17 * term_14;
 	term_52 = term_18 * term_16;
 	term_53 = term_52 - term_51;
 	term_54 = workspace.term_2;
 	term_55 = term_54 * term_18;
-	matrix[4] = term_53;
 	term_56 = workspace.term_6;
 	term_57 = term_17 * term_56;
 	term_58 = 0.0f - term_57;
 	term_59 = term_58 - term_55;
-	matrix[5] = term_59;
 	term_60 = workspace.term_4;
 	term_61 = term_60 * term_17;
 	term_62 = term_20 * workspace.term_2;
 	term_63 = term_62 + term_61;
-	matrix[6] = term_63;
 	term_64 = term_43 * workspace.term_4;
 	term_65 = term_64 * term_20;
 	term_66 = term_65 * -0.200000003f;
 	term_67 = term_20 * term_56;
-	matrix[7] = term_66;
 	term_68 = workspace.term_4;
 	term_69 = term_68 * term_18;
 	term_70 = term_67 + term_69;
 	term_71 = workspace.term_2;
-	matrix[8] = term_70;
 	term_72 = term_71 * term_17;
 	term_73 = term_56 * term_18;
 	term_74 = term_72 - term_73;
-	matrix[9] = term_74;
 	term_75 = term_21;
 	term_76 = term_71 * term_56;
 	term_77 = term_76 * 0.13333334f;
@@ -2255,7 +2320,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_83 = term_81 * term_43;
 	term_84 = term_83 * term_78;
 	term_85 = term_82 - term_84;
-	matrix[10] = term_85;
 	term_86 = term_23;
 	term_87 = term_86 * term_43;
 	term_88 = term_64 * term_71;
@@ -2269,14 +2333,12 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_96 = term_91 + term_95;
 	term_97 = 0.5f;
 	term_98 = term_93 * term_97;
-	matrix[11] = term_96;
 	term_99 = workspace.term_4;
 	term_100 = term_99 * term_99;
 	term_101 = term_100 - term_98;
 	term_102 = term_26;
 	term_103 = term_102 * term_97;
 	term_104 = term_101 - term_103;
-	matrix[12] = term_104;
 	term_105 = term_27;
 	term_106 = term_29;
 	term_107 = term_105 * term_43;
@@ -2289,7 +2351,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_114 = term_113 * term_78;
 	term_115 = term_111 + term_114;
 	term_116 = workspace.term_2;
-	matrix[13] = term_115;
 	term_117 = term_116 * term_116;
 	term_118 = term_117 * term_78;
 	term_119 = term_56 * term_56;
@@ -2311,12 +2372,10 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_135 = term_134 * 0.0333333351f;
 	term_136 = term_132 + term_135;
 	term_137 = workspace.term_2;
-	matrix[14] = term_136;
 	term_138 = term_125 * term_56;
 	term_139 = term_137 * term_16;
 	term_140 = 0.0f - term_139;
 	term_141 = term_140 - term_138;
-	matrix[15] = term_141;
 	term_142 = workspace.term_3;
 	term_143 = term_142 * workspace.term_2;
 	term_144 = workspace.term_4;
@@ -2326,10 +2385,8 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_148 = workspace.term_3;
 	term_149 = term_64 * term_148;
 	term_150 = term_149 * -0.200000003f;
-	matrix[17] = term_150;
 	term_151 = workspace.term_4;
 	term_152 = term_148 * term_56;
-	matrix[16] = term_147;
 	term_153 = term_151 * term_16;
 	term_154 = term_131 + term_29;
 	term_155 = term_153 + term_152;
@@ -2338,13 +2395,10 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_158 = term_56 * term_16;
 	term_159 = term_26;
 	term_160 = term_157 - term_158;
-	matrix[19] = term_160;
 	term_161 = term_21;
 	term_162 = term_161 - term_22;
-	matrix[20] = term_162;
 	term_163 = term_24;
 	term_164 = term_163 - term_23;
-	matrix[21] = term_164;
 	term_165 = term_25;
 	term_166 = term_165 * term_43;
 	term_167 = term_159 * term_43;
@@ -2354,9 +2408,7 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_171 = term_166 * term_170;
 	term_172 = term_167 * term_170;
 	term_173 = term_171 - term_172;
-	matrix[22] = term_173;
 	term_174 = term_30;
-	matrix[23] = term_169;
 	term_175 = 0.5f;
 	term_176 = term_174 * term_175;
 	term_177 = term_154 * term_175;
@@ -2364,7 +2416,30 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_179 = term_31;
 	term_180 = term_179 * term_175;
 	term_181 = term_178 - term_180;
+	matrix[0] = term_35;
+	matrix[5] = term_59;
+	matrix[10] = term_85;
+	matrix[15] = term_141;
+	matrix[20] = term_162;
+	matrix[1] = term_39;
+	matrix[6] = term_63;
+	matrix[11] = term_96;
+	matrix[16] = term_147;
+	matrix[21] = term_164;
+	matrix[2] = term_46;
+	matrix[7] = term_66;
+	matrix[12] = term_104;
+	matrix[17] = term_150;
+	matrix[22] = term_173;
+	matrix[3] = term_50;
+	matrix[8] = term_70;
+	matrix[13] = term_115;
 	matrix[18] = term_155;
+	matrix[23] = term_169;
+	matrix[4] = term_53;
+	matrix[9] = term_74;
+	matrix[14] = term_136;
+	matrix[19] = term_160;
 	matrix[24] = term_181;
 	function_143250(result + 4, 5, &matrix[0], coefficients + 4);
 	if (order <= 3) return result;
@@ -2629,7 +2704,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_440 = term_209;
 	term_441 = term_439 + term_438;
 	term_442 = 0.0142857144f;
-	matrix[0] = term_441;
 	term_443 = term_211;
 	term_444 = term_443 * term_442;
 	term_445 = term_440 * term_442;
@@ -2647,7 +2721,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_457 = term_222;
 	term_458 = term_427 * term_457;
 	term_459 = term_449 * term_457;
-	matrix[1] = term_456;
 	term_460 = 0.0357142873f;
 	term_461 = term_458 * term_460;
 	term_462 = term_459 * term_460;
@@ -2658,13 +2731,11 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_467 = term_463 + term_466;
 	term_468 = term_227;
 	term_469 = term_468 * 0.107142858f;
-	matrix[2] = term_467;
 	term_470 = term_231;
 	term_471 = term_470 * term_460;
 	term_472 = term_471 - term_469;
 	term_473 = term_472 * term_202;
 	term_474 = term_233;
-	matrix[3] = term_473;
 	term_475 = term_235;
 	term_476 = term_474 * term_464;
 	term_477 = term_236;
@@ -2677,7 +2748,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_484 = term_483 - term_480;
 	term_485 = term_243;
 	term_486 = term_485 + term_241;
-	matrix[4] = term_484;
 	term_487 = term_202;
 	term_488 = term_486 * term_487;
 	term_489 = term_238;
@@ -2702,7 +2772,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_508 = term_252;
 	term_509 = term_508 * 1.5f;
 	term_510 = term_237;
-	matrix[5] = term_507;
 	term_511 = term_251;
 	term_512 = term_511 * 0.25f;
 	term_513 = term_509 + term_512;
@@ -2718,7 +2787,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_523 = term_522 * workspace.term_2;
 	term_524 = term_518 - term_520;
 	term_525 = workspace.term_6;
-	matrix[6] = term_524;
 	term_526 = term_212;
 	term_527 = term_526 * term_521;
 	term_528 = term_207;
@@ -2742,7 +2810,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_546 = term_545 * term_543;
 	term_547 = term_55;
 	term_548 = term_547 * term_539;
-	matrix[7] = term_544;
 	term_549 = term_546;
 	term_550 = term_549 + term_548;
 	term_551 = term_139;
@@ -2763,7 +2830,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_566 = term_565 * term_266;
 	term_567 = term_566 * term_558;
 	term_568 = term_567 * -0.0238095243f;
-	matrix[8] = term_564;
 	term_569 = term_266 * term_558;
 	term_570 = 0.0238095243f;
 	term_571 = term_569 * term_543;
@@ -2776,13 +2842,11 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_578 = term_577 * term_570;
 	term_579 = term_574 - term_578;
 	term_580 = workspace.term_4;
-	matrix[9] = term_579;
 	term_581 = term_264;
 	term_582 = term_581 * term_580;
 	term_583 = term_582 * term_543;
 	term_584 = term_583 * workspace.term_3;
 	term_585 = term_584 * 0.142857149f;
-	matrix[10] = term_585;
 	term_586 = term_265;
 	term_587 = term_586 * term_266;
 	term_588 = term_587 * term_580;
@@ -2797,7 +2861,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_597 = term_596 * term_570;
 	term_598 = term_593 - term_597;
 	term_599 = term_268;
-	matrix[11] = term_598;
 	term_600 = term_269;
 	term_601 = term_600 * workspace.term_3;
 	term_602 = term_260;
@@ -2820,7 +2883,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_619 = term_618 * workspace.term_2;
 	term_620 = term_603 + term_619;
 	term_621 = term_244;
-	matrix[12] = term_617;
 	term_622 = term_206;
 	term_623 = term_621 * term_622;
 	term_624 = term_623 * workspace.term_6;
@@ -2835,7 +2897,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_633 = term_629 + term_632;
 	term_634 = term_117;
 	term_635 = term_634 * term_457;
-	matrix[13] = term_633;
 	term_636 = term_627 * workspace.term_0;
 	term_637 = term_636 * 0.0285714287f;
 	term_638 = term_192;
@@ -3223,7 +3284,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1006 = term_1003 - term_1005;
 	term_1007 = term_664;
 	term_1008 = term_1007 * workspace.term_3;
-	matrix[28] = term_1006;
 	term_1009 = term_378;
 	term_1010 = term_1009 * term_266;
 	term_1011 = term_1010 * term_442;
@@ -3262,11 +3322,9 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1044 = term_1041 - term_1043;
 	term_1045 = term_274;
 	term_1046 = term_393;
-	matrix[29] = term_1032;
 	term_1047 = term_1045 * workspace.term_7;
 	term_1048 = term_1044 + term_1047;
 	term_1049 = 0.0357142873f;
-	matrix[30] = term_1048;
 	term_1050 = term_396;
 	term_1051 = term_1050 * term_1049;
 	term_1052 = term_1046 * term_1049;
@@ -3289,14 +3347,12 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1069 = term_1068 * 0.25f;
 	term_1070 = term_1067 - term_1069;
 	term_1071 = term_267;
-	matrix[31] = term_1061;
 	term_1072 = workspace.term_4;
 	term_1073 = term_1071 * term_1072;
 	term_1074 = term_1073 * 2.0f;
 	term_1075 = term_1070 + term_1074;
 	term_1076 = term_727;
 	term_1077 = term_1076 * workspace.term_3;
-	matrix[32] = term_1075;
 	term_1078 = term_271;
 	term_1079 = term_1078 * term_266;
 	term_1080 = term_1079 * term_1072;
@@ -3338,8 +3394,10 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1116 = term_1115 * term_266;
 	term_1117 = term_1116 * 0.00476190494f;
 	term_1118 = term_1114 + term_1117;
-	term_1119 = term_414;
+	matrix[5] = term_507;
+	matrix[12] = term_617;
 	matrix[33] = term_1118;
+	term_1119 = term_414;
 	term_1120 = term_635;
 	term_1121 = term_1120 * workspace.term_5;
 	term_1122 = term_1121 * 0.0285714287f;
@@ -3370,7 +3428,6 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1147 = term_1146 * 0.0571428575f;
 	term_1148 = term_1143 - term_1147;
 	term_1149 = term_287;
-	matrix[34] = term_1148;
 	term_1150 = term_262;
 	term_1151 = term_1149 * term_1150;
 	term_1152 = term_1137 * term_1150;
@@ -3584,6 +3641,25 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 	term_1348 = term_1345 + term_1347;
 	matrix[47] = term_1335;
 	matrix[48] = term_1348;
+
+	matrix[0] = term_441;
+	matrix[1] = term_456;
+	matrix[2] = term_467;
+	matrix[3] = term_473;
+	matrix[4] = term_484;
+	matrix[6] = term_524;
+	matrix[7] = term_544;
+	matrix[8] = term_564;
+	matrix[9] = term_579;
+	matrix[10] = term_585;
+	matrix[11] = term_598;
+	matrix[13] = term_633;
+	matrix[28] = term_1006;
+	matrix[29] = term_1032;
+	matrix[30] = term_1048;
+	matrix[31] = term_1061;
+	matrix[32] = term_1075;
+	matrix[34] = term_1148;
 	function_143250(result + 9, 7, &matrix[0], coefficients + 9);
 	return result;
 }

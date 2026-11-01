@@ -19,6 +19,19 @@ PRIVATE byte *update_object_0a6430(long index)
 	return *(byte **)(g_4e0300->data + (index & 0xffff) * 12 + 8);
 }
 
+// score 16 (was 16): the 0x100 block's object pointer takes ECX (retail EAX, reusing the pool
+// base) and the pushed state pointer EDX (retail ECX), one scratch register on in rotation; the
+// 0x200 block loads the object pool before the index (retail after it, +1 byte). Tried: the
+// 0x100 compare reversed 17; the object read without a local 16; the tag lookups as tag-array
+// elements 16; the definition read straight from the object getter 16; the count cleared after
+// the object read 16.
+// Round 53: force-inline object getter 16; getter object return local 16; getter byte-offset
+// local 16; final declarations before assignments 16; count declared at function scope 16;
+// count initialized at function scope 184; final count comparison reversed 17; second word
+// read directly at the call 16. Opening body restored.
+// Round 28: getter as an s_object_header array element 16; a named short level in the 0x100
+// block 16; getter plain inline 16; 0x200 compare count-first 17; the shadowing definition
+// locals renamed 16.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

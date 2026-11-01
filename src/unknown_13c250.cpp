@@ -8,6 +8,10 @@ long __stdcall function_b7b40(void *arg_1);
 void __stdcall function_b8ee0(long arg_1, long arg_2, long arg_3, long arg_4);
 void function_b7680(long arg_1, real arg_2, real arg_3);
 long function_cbe60(long arg_1);
+long function_cbd50(long unit_index, short weapon_index);
+long players_first_active_local_player(void);
+bool function_14ddc0(long local_player_index);
+long function_14de70(long local_player_index);
 
 struct s_13c250
 {
@@ -31,45 +35,6 @@ __forceinline byte *function_13c251(s_record_pool *arg_1, long arg_2)
     return ((s_13c250 *)arg_1->data)[arg_2 & 0xffff].field_8;
 }
 
-static inline long local_player_first_index(void)
-{
-    long result = NONE;
-
-    for (long i = 0; i < 4; i++)
-    {
-        if (g_4e8c20->entries[i] != NONE)
-        {
-            result = i;
-            break;
-        }
-    }
-    return result;
-}
-
-static inline long local_player_next(long index)
-{
-    long result = NONE;
-    long start = index == NONE ? 0 : index + 1;
-
-    for (long i = start; i < 4; i++)
-    {
-        if (g_4e8c20->entries[i] != NONE)
-        {
-            result = i;
-            break;
-        }
-    }
-    return result;
-}
-
-static inline bool local_player_valid(long local_player_index)
-{
-    bool result = false;
-    if (local_player_index != NONE)
-        result = g_4e8c20->entries[local_player_index] != NONE;
-    return result;
-}
-
 struct s_player_13c250
 {
     byte unknown000[0x2c];
@@ -81,8 +46,19 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 {
     return TEST_FIELD_BIT(arg_1->field_10a2);
 }
+// score 144 (was 144): frame 0xd8 agrees; carried-item receiver reloads, append-count observations and
+// ranking handoff remain. Retail's count is a plain stack local: it stores count 1 straight at the
+// first append (the count known zero there, even after the 0xcbe60 call) and reloads the pool data at
+// the second carried lookup. Round 8 (lane 2): appends as `local_3[local_2] = x; local_2++;` 164 (840
+// bytes); as `local_3[local_2++] = x` 164; `if (!local_2)` 144; the scenario pointer read at each use
+// 144; plain count with one-expression appends 281.
+// Earlier: carried-payload reloads, memory count and ranking handoff remain;
+// receiver/count reloads and ranking dispatch remain; retail reads the
+// frame 0xd8 agrees; carried-item receiver reloads, append-count observations and ranking handoff remain.
 
-// score 144 (was 144): receiver/count reloads and ranking dispatch remain; retail reads the
+// Earlier: carried-payload reloads, memory count and ranking handoff remain.
+// ranking handoff remain (the carried-payload reloads, the memory count and the ranking handoff).
+// Earlier: receiver/count reloads and ranking dispatch remain; retail reads the
 // count once per append (no volatile re-read) yet keeps it in memory, and holds the found
 // candidate apart from the best-ranked one (0x5000720 is a switch case there).
 // Typed fallback entries 171; end cursor 173; signed-word count 168; byte count 195; carried tag
@@ -105,6 +81,75 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // Found candidate apart from the best, its tag a switch case 186; index ranking loop 171;
 // plain count 281; found plus index 179; found, index and plain count 205; append helper taking
 // the count's address 286; with the index loop 258.
+// Shared first / next / validity / first-next / first-valid / next-valid / all boundaries
+// 144 each; all shared boundaries with an ordinary count 281.
+// Round 412: candidate/class/both observations at each use 144/144/144; actual selected-candidate pointer alone/with candidate reads/with class reads/with both 183 each; complete pointer graph with unsigned ranks 183. Original body, count and every call restored.
+// Round 415: complete carried/scenario/tag receiver observations, alone and all combinations, 144
+// each; completed count on the complete receiver graph 181 at 831 bytes. Original body restored.
+// Round 44: separate preferred/best candidates on the pointer scan 180; with the preferred switch case
+// 183; indexed scan with the preferred case 176; indexed scan with the preferred pre-test 139 (subthreshold);
+// completed-count snapshot 165; known-zero carried append 196; known-zero fallback append 179;
+// one-observation second append 147. Opening body restored.
+// Round 231: complete priority-zero result, long / unsigned / short / enum
+// 176/176/181/176; each with ordinary cardinality 280/280/276/280. Original
+// ranking, inherited count and body restored; receiver reloads and ranking handoff remain.
+// Round 45 (lane 9): the fallback block walk as a plain indexed `for` (byte offsets) 144, same count, kept
+// (count/item now in retail's ECX/EDX). Retail shape: count a non-volatile stack local (immediate 1 on known-empty
+// appends, one read per later append), index ranking loop over a count copy held in EBX, 0x5000720 kept apart.
+// Count not volatile + index ranking over a `candidate_count` copy + preferred apart (switch case, then
+// `if (preferred == NONE) preferred = best`) 205 (823 bytes; aligned 93 -> 78, ranking and tail exactly retail's);
+// with `local_3[local_2++]` appends 249; appends through an inline helper taking &count 205 (same code); count and
+// entries as one {count; entries[4]} local 206 (aligned 20, every append retail's); plus the block walk as a `for`
+// with a pointer local 206 (aligned 21), reading the block address at each use 206 (aligned 11: only the carried
+// weapon lookup and padding left); second pointer local for the 0x213 slot 206; both slots through the existing
+// 0xcbd50 getter 206; a count store between the slot reads (diagnostic) 119 at 839 bytes, merge stays; main's
+// volatile count with the `for` and the count-copy ranking 173. Left on the aligned-11 body: retail reloads the
+// pool data and unit pointer for the 0x213 slot read (only `index * 12` kept, `lea; shl ecx, 2`); ours merges the two
+// lookups in every form (compile-only screen: pointer locals, scopes, if/else, ternary, long/char slots, inline
+// weapon-in-slot helper, unrolled two-slot loop, empty do/while at the join: all merged).
+// Round 28 (lane 10): retail's count is a non-volatile memory local (the first append and the
+// fallback's first append store the constant 1 after `count == 0`, each later append rereads it, and the
+// ranking loop reads it once into EBX), and retail does not merge the second and third unit lookups
+// (it reloads the pool data and reuses only index * 12). The existing unit_get_current_weapon for the
+// first carried item 144 (same code); the count as element 0 of a five-entry array (diagnostic) 209
+// (first appends fold, the count is cached in EBX); preferred tag as a switch case 176 (aligned 93 ->
+// 73: retail's compare tree, 841 bytes; same as the earlier native case); with a separate selected
+// result for it 179 (847 bytes); with a memset-zeroed plain count 276 (784 bytes).
+// Round 231: complete priority-zero result, long / unsigned / short / enum
+// 176/176/181/176; each with ordinary cardinality 280/280/276/280. Original
+// ranking, inherited count and body restored; receiver reloads and ranking handoff remain.
+// Round 56 (lane 12): the local player walk through the existing first/next/valid/player-index
+// functions (0x14dde0, local_player_next_inline, 0x14ddc0, 0x14de70) in place of this file's
+// copies 144 (identical code, kept), with the player index still read directly 144; both weapon
+// slots through the existing 0xcbd50 144 (identical code, kept); the lookup helper `inline`
+// instead of `__forceinline` 144; one unit pointer for the flag test and both slot reads 292
+// (886 bytes). A local weapons array between the lookups is scalarized (merge stays); 0x82d20's
+// reload comes from its address-taken weapons array, which this function lacks.
+// Round 241: three-handle table with separate/gathered slots, word/byte selectors and
+// qualified/plain counts 238/238/238/238/265/265/268/268. Grouped diagnostics restored;
+// original collection, pointer ranking and frame 0xd8 retained.
+// Round 40 (screen, base 138): the three weapons in a local array appended by a loop 234 (790 bytes), the
+// same array appended in three statements 138 (same code: the slot reads still share the unit pointer);
+// either with the count not volatile 258/273, the base so 273; the found unit kept and the lookups after the
+// walk under `if (unit != NONE)` 138 (same code).
+// Round 256: Cached candidate end with natural for, preferred switch case and default-rank
+// producer in all eight combinations: 181/328/177/177/185/350/196/196. Original collection,
+// ranking and body restored; receiver reloads and append-count observations remain.
+// Round 104 (lane 8, fast): one volatile read per append (`n = count; list[n] = x; count = n + 1`) 207
+// (822 bytes); index ranking over a count copy with 0x5000720 as a switch case setting the preferred
+// candidate 362 (996 bytes); both slots read inside the 0xcbd50 arguments 144 (identical); the flag
+// read as the declared bitfield 188; the fallback's second field in its own local 144 (identical).
+// Retail's count (memory-resident, yet the first append stores 1) fits an append helper taking the
+// count's address that only LTCG inlines; no such existing helper was found.
+// Round 35 (fast): the 0x213 slot read through object_get, or both slot reads through it, 144 each
+// (same code: the second unit lookup still merges, so the merge does not follow the getter's type; both
+// slot reads inline 0xcbd50 in retail too, so no callee summary is involved); one unit pointer for the
+// flag test and the first slot, re-fetched for the second (with `continue` for NONE), through either
+// getter 240/240 (858 bytes); the player loop index declared in the for-init 144 (same code).
+// Round 265: indexed ranking with default first/after rank two/after rank one, each
+// with ordinary/reversed rank-two labels, then default last with reversed rank-two
+// or rank-three labels: 326 each. Opening-switch indexed control also 326 (971 bytes).
+// Original pointer ranking and body restored; receiver/count observations and handoff remain.
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {
@@ -114,24 +159,18 @@ void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
     if (arg_1 != NONE)
     {
         local_2 = 0;
-        long local_6 = local_player_first_index();
-        for (; local_6 != NONE; local_6 = local_player_next(local_6))
+        long local_6 = players_first_active_local_player();
+        for (; local_6 != NONE; local_6 = local_player_next_inline(local_6))
         {
-            if (local_player_valid(local_6))
+            if (function_14ddc0(local_6))
             {
-                long local_8 = ((s_player_13c250 *)g_4e8c24->data)[g_4e8c20->entries[local_6] & 0xffff].unit_index;
+                long local_8 = ((s_player_13c250 *)g_4e8c24->data)[function_14de70(local_6) & 0xffff].unit_index;
                 if (local_8 != NONE && !function_13c253((s_13c251 *)function_13c251(g_4e0300, local_8)))
                 {
                     byte *local_9 = function_13c251(g_4e0300, local_8);
-                    short local_10 = (signed char)local_9[0x212];
-                    long local_11 = NONE;
-                    if (local_10 != NONE)
-                        local_11 = *(long *)(local_9 + local_10 * 4 + 0x218);
+                    long local_11 = function_cbd50(local_8, (signed char)local_9[0x212]);
                     local_9 = function_13c251(g_4e0300, local_8);
-                    short local_12 = (signed char)local_9[0x213];
-                    long local_13 = NONE;
-                    if (local_12 != NONE)
-                        local_13 = *(long *)(local_9 + local_12 * 4 + 0x218);
+                    long local_13 = function_cbd50(local_8, (signed char)local_9[0x213]);
                     long local_14 = function_cbe60(local_8);
                     if (local_11 != NONE)
                     {
@@ -178,21 +217,14 @@ void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
                 {
                     byte *local_19 = (byte *)g_4e3b44[*(long *)local_18->field_8 & 0xffff].bytes;
                     long local_20 = *(long *)(local_19 + 0x1c0);
-                    if (local_20 > 0)
+                    for (long local_21 = 0; local_21 < local_20; local_21++)
                     {
-                        byte *local_21 = *(byte **)(local_19 + 0x1c4) + 4;
-                        do
+                        long local_22 = *(long *)(*(byte **)(local_19 + 0x1c4) + local_21 * 8 + 4);
+                        if (local_22 != NONE)
                         {
-                            long local_22 = *(long *)local_21;
-                            if (local_22 != NONE)
-                            {
-                                long local_31 = local_2++;
-                                local_3[local_31] = local_22;
-                            }
-                            local_21 += 8;
-                            --local_20;
+                            long local_31 = local_2++;
+                            local_3[local_31] = local_22;
                         }
-                        while (local_20);
                     }
                 }
             }

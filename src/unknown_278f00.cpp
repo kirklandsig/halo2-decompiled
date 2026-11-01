@@ -144,8 +144,40 @@ bool function_a7670(long object_index);
 // Round 378: Existing component-index getter with ordinary/inline/forced/noinline
 // caller declarations 299 each; each with indexed cleanup 294. Query remains out
 // of line; original property scan, cleanup cursor, declarations and body restored.
+// Round 383: saved release-state truth byte/signed-byte/word/long with consumed cleanup
+// cursor 181/181/242/207; with cursor advanced after release 263/263/233/273.
+// Original saved truth, cursor timing and complete body restored.
 // Round 170: Recursive inline/forced-inline/noinline/inline-noinline declarations, then each with indexed
 // cleanup 181/181/181/181/196/196/196/196. Original recursive declaration and cursor restored.
+// Round 33: Complementary first membership result bool/byte/short/long with cursor cleanup,
+// then indexed cleanup: 181/181/182/260/196/196/197/264. Original result, both eager scans and body restored.
+// Round 176: Real pending field at +0xae as byte/signed-byte, each with Boolean/byte admission and
+// first-membership carriers, eight at 181. Native record offsets and all truth values preserved;
+// original pending field, flag carriers, signed bounds, both eager scans, retry and cleanup restored.
+// Round 249: Header pool/data observed at island/retry boundaries 181/281/181/281;
+// with indexed cleanup 194/288/194/288. Original observations and complete body restored.
+// Round 428: live list-array/list-bound/body-array field references, seven nonempty
+// combinations 181/181/181/181/181/181/181; all three by field pointers 181. Exact-only forms
+// restored; original field observations, both eager scans, retries and release graph retained.
+// Round 211: completed first-membership long/dword ordinal, direct/named result, cursor/indexed
+// cleanup, scores 182/197/259/263/182/197/259/263. Original executable form restored.
+// DL204: reverse first/second/both membership indices 260/256/245; reverse first cursor
+// alone/with reverse second 310/328; indexed-cleanup counterparts 241/336/252. Original restored.
+// Round 97 (lane 7): on the per-arm list base, second scan setting the shared found flag + inner bound
+// from the field + plain indexed cleanup 233 (957 bytes; aligned differences 93 -> 52: retail's scans, retry
+// head, cleanup and BL admission; left: outer index EDX, shifted spill slots, the body index stored at its
+// definition and loop tail where retail keeps it and the list in ECX/EDX on the unflagged path, the header
+// address folded after the `local_9 > 0` branch, loop padding); with a nested if for the flagged body 233; with
+// a counted retry loop 233; with the admission flag assigned in if/else arms 249; the shared found flag alone
+// 260. A renamed outer index moves no spill slot. Lead: on that base the outer selector is zeroed into EDX
+// (retail EAX), so the list lands in EAX (retail EDX) and every spill slot shifts by one; the one real extra
+// instruction is the body-index spill at loop entry (retail spills it only on the flagged path after `dec`).
+// Round 249: Real two-list parent record, indexed/branched arrays and branched/conditional
+// named members 281/181/181/181; those four with indexed cleanup 276/196/196/196.
+// Original parent observations, native child types, cleanup and complete body restored.
+// Round 267: reached-end comparisons for fixed selector, first/second membership, first processing,
+// cleanup, both searches, both processing loops and all five together each score 181.
+// Original loop tests restored; scratch EDX/EAX, list/index/count homes and cleanup induction remain.
 // @retail 0x278f00
 void function_278f00()
 {

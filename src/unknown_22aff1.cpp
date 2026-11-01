@@ -32,6 +32,7 @@ void function_22a664(s_widget_quad_2b11 const *, s_float_rect const *, long, lon
 color3f *unpack_color3f(dword, color3f *);
 bool function_22acb4(long);
 void function_1392c5(long);
+inline void point2f_set(point2f *point, real x, real y);
 
 PRIVATE __forceinline real function_22aff2(real arg_0)
 {
@@ -69,7 +70,11 @@ PRIVATE __forceinline real function_22aff5(real arg_0)
 }
 
 #pragma intrinsic(memcpy)
-// score 121 (was 121): frame homes differ: retail keeps vertical_scale at +0x08
+// score 3 (was 3): Spacing-scalar-before-vertex loading remains; frame 0x88 and every home agree.
+// Earlier: Repeated-translation scalar/vertex input-load order remains; frame homes, rounded offsets and spacing XMM roles agree.
+// Earlier: repeated-draw spacing XMM roles and vertex-translation
+// input-load scheduling remain; frame homes and rounded-offset memory operands agree.
+// Earlier at 121: frame homes differ: retail keeps vertical_scale at +0x08
 // (vertices at +0x0c), horizontal_scale in height's slot, the vertical offset in
 // width's and the horizontal offset in arg_3's; ours swaps the two axes and the
 // height/width homes and puts vertical_scale in arg_3's slot. Retail also reads both
@@ -92,6 +97,30 @@ PRIVATE __forceinline real function_22aff5(real arg_0)
 // used directly by repeated draw spacing 121; immutable palette with body cursor step 121.
 // Uniform two-row horizontal/vertical product and pair-sum operand orders 121 each;
 // complete input-color component publication 518.
+// Matched selection/transform separate declaration states default/inline/noinline,
+// all eight nondefault pairs 121 each; caller frame homes and rounded-offset memory/XMM
+// residency remain. Original helper declarations and complete body retained.
+// Entry validity, bitmap admission and completed-draw terminal guard graphs: eight forms
+// all 121; original nested admission lifetimes restored.
+// Round 78: point pointer stores/loads 450; read-only point pointer 121; indexed real offset 121;
+// destination vertical staging 480; axis initialization order 122; with axis declarations 122;
+// component order 120; plus early vertical-scale declaration 120. Original body restored.
+// Complete transformed horizontal/vertical/both input values 473/470/489; native origin 499;
+// horizontal+origin/vertical+origin/all transform inputs/all plus anchor 518/515/541/560.
+// Input copies enlarge the frame and do not recover offset memory operands; original inputs restored.
+// Round 315: Existing horizontal/vertical/both axis setters 116/119/68; vertex combinations
+// 121/116/119/68 and all anchors 68. On the recovered memory-offset graph, independent rounded scalars
+// 14; dimension/scale declaration combinations 68 or 14; rounded-point setter 143. Body-stepped
+// palette 14; constant ordinal between conversions 12; spacing/translation commutations 12; completion
+// before palette initialization 7; original arithmetic restored 7. Keep both existing axis setters,
+// independent twice-used offsets, the constant ordinal lifetime and completion publication. Existing
+// helper body and every marked call input unchanged.
+// Existing centering/repeat/construction setters, subsets 1-7: 369/342/384/7/369/342/384; all with half-spacing 384.
+// Producer-local real/integer repeat-count parts 3/7, isolated producer scopes 3/7; real part retained after width conversion.
+// Half-spacing and repeated-add input commutations 7; early real-span variants 3, restored. Coordinate pointer/completed sum/fixed do loop 3 each; array cursor 74.
+// Keep only the real repeat-count part at its original product; every arithmetic group, helper and marked call input remains original.
+// Round 46: Two-stage spacing/vertex accumulation 3/3; repeated-translation unsigned-long/short/word/byte ordinals 4/74/74/74; immutable spacing/spacing role name 3/3. Original body restored.
+// draws a bitmap widget: its quad from the anchored bounds, then the mode's palette, repeated or mirrored passes
 // @retail 0x22aff1
 void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real const *arg_3)
 {
@@ -114,8 +143,8 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 		{
 			drawn = false;
 			function_1396c7(*(word const *)(arg_2 + 0x1c), &origin);
-			horizontal_axis.x = 1.0f; horizontal_axis.y = 0.0f;
-			vertical_axis.x = 0.0f; vertical_axis.y = 1.0f;
+			point2f_set(&horizontal_axis, 1.0f, 0.0f);
+			point2f_set(&vertical_axis, 0.0f, 1.0f);
 			switch (local_0)
 			{
 			case 0:
@@ -139,20 +168,21 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 			}
 			g_4e6950.color = *(color4f const *)arg_3;
 			function_22bcaf((s_widget_transform_block const *)(arg_2 + 0x58), &origin, &horizontal_axis, &vertical_axis);
-			long local_44 = width;
 			real vertical_scale = (real)height;
+			long local_13 = 0;
 			real horizontal_scale = (real)width;
-			for (long local_13 = 0; local_13 < 4; ++local_13)
+			for (; local_13 < 4; ++local_13)
 			{
 				bool local_14 = local_13 > 1;
 				bool local_15 = local_13 == 1 || local_13 == 2;
-				point2f offset;
-				offset.y = local_14 ? (real)function_1d6d0((coordinates.y1 - anchor.y) * vertical_scale) :
+				real offset_y;
+				real offset_x;
+				offset_y = local_14 ? (real)function_1d6d0((coordinates.y1 - anchor.y) * vertical_scale) :
 					(real)-function_2b460((anchor.y - coordinates.y0) * vertical_scale);
-				offset.x = local_15 ? (real)function_1d6d0((coordinates.x1 - anchor.x) * horizontal_scale) :
+				offset_x = local_15 ? (real)function_1d6d0((coordinates.x1 - anchor.x) * horizontal_scale) :
 					(real)-function_2b460((anchor.x - coordinates.x0) * horizontal_scale);
-				vertices[local_13].x = horizontal_axis.x * offset.x + vertical_axis.x * offset.y + origin.x;
-				vertices[local_13].y = horizontal_axis.y * offset.x + vertical_axis.y * offset.y + origin.y;
+				vertices[local_13].x = horizontal_axis.x * offset_x + vertical_axis.x * offset_y + origin.x;
+				vertices[local_13].y = horizontal_axis.y * offset_x + vertical_axis.y * offset_y + origin.y;
 			}
 			if (*(word const *)(arg_2 + 0x1e) & 1)
 			{
@@ -187,10 +217,10 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 			case 5:
 			{
 				byte const *local_20 = (byte const *)g_510c4c + arg_0 * 0x6c;
-				dword local_21[5] = {0, 0xff0000, 0xff00, 0xffff00, 0x7f00ff};
 				drawn = true;
+				dword local_21[5] = {0, 0xff0000, 0xff00, 0xffff00, 0x7f00ff};
 				dword const *palette = local_21;
-				for (long local_22 = 0; local_22 <= 4; ++palette, ++local_22)
+				for (long local_22 = 0; local_22 <= 4; ++local_22)
 				{
 					bool local_47 = local_22 == 0;
 					real local_23 = function_22aff2(*(real const *)(arg_1 + 0x2c) - local_22);
@@ -230,6 +260,7 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 					}
 					function_22a664((s_widget_quad_2b11 const *)vertices, (s_float_rect const *)&coordinates,
 						*(long const *)(arg_2 + 0x24), bitmap_index, *(long const *)(arg_2 + 0x2c));
+					++palette;
 				}
 				break;
 			}
@@ -239,8 +270,8 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 				long local_29 = *(long const *)(arg_1 + 0x22c);
 				if (local_29 > 0)
 				{
-					real local_30 = (real)(local_44 + 1);
-					real local_31 = (real)(local_29 - 1) * (local_30 * 0.5f);
+					real repeat_span = (real)(local_29 - 1);
+					real local_31 = repeat_span * ((real)(width + 1) * 0.5f);
 					for (long local_32 = 0; local_32 < 4; ++local_32)
 						vertices[local_32].x -= local_31;
 					g_4e6950.field_4c = *(color3f const *)g_468718;
@@ -251,7 +282,7 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 						function_22a664((s_widget_quad_2b11 const *)vertices, (s_float_rect const *)&coordinates,
 							*(long const *)(arg_2 + 0x24), bitmap_index, *(long const *)(arg_2 + 0x2c));
 						for (long local_34 = 0; local_34 < 4; ++local_34)
-							vertices[local_34].x += local_30;
+							vertices[local_34].x += (real)(width + 1);
 					}
 				}
 				break;

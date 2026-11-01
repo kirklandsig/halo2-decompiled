@@ -114,29 +114,35 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 	return local_0;
 }
 
-// score 30 (was 30): projection operand loads and cross-product scheduling
-// differ; separate i/j/k product pairs 30/30/30; all product pairs 30;
-// positive/negative products first 30/30; scoped negative products 30;
-// cross-vector initializer 31.
-// +0x191 projection loads reverse stack/global operands;
-// cross-product SSE allocation and scheduling also differ. Earlier fraction,
-// case-tail, helper-parameter and case-order forms reached 121 before later fixes.
-// Tried: forward snapshot 151; ordinary cross output 212; shared cross helper
-// with axis snapshots 264; axis snapshots with existing stores 174; descriptive
-// vector names 30; vectors before switch 30; shared point difference 184; named
-// projections 83; projection operands exchanged 30; cross factors exchanged 30;
-// both operand exchanges 30. Opening executable body restored.
-// score 30 (was 30): complete displacement staging in 12/13/both 39/208/208;
-// destructive projected components in 12/13/both 99/212/218; staged 13 with
-// component products 212; staged 12 with both product sets 218. Load order remains.
-// projection operand loads and cross-product SSE ownership still differ.
-// This round: direct definition 119; cross-first lexical homes 119; direction-first lexical homes 119; cross declared first 119; pointer fractions with existing boundary 30; pointer fraction in first projection 119; pointer fraction in second projection 119; pointer fractions in both 119.
-// projection stack/global operands and cross-product XMM roles remain; partial projection sums 30/30/30, both sums 214; cross component orders 34/34/31/31/34; cross before displacement/after normalization 45/42; returned direction at three uses 77/74.
-// Plain (non-volatile) cross vector 212: case 13's projection becomes exact but the result moves to
-// xmm1 and case 13 merges into case 12's tail; with cross3f 212; with scale-first products or the
-// pointer fraction in case 12/13 212/212/212/212; cross.i subtrahend factors swapped 30 (same code).
-// score 30 (was 30): projection operand loads and cross-product XMM roles remain; typed source,
-// system, both, readonly system/both and direct source/system/both inputs all 30.
+// score 30 (was 30): case 12's projection loads the global factor first in all three products
+// (retail: the stack component first for k and j, the global for i); case 13's cross-product
+// XMM roles and scheduling differ. The volatile cross vector keeps case 13 apart: a plain one
+// (or any helper writing it) makes case 13 exact but moves the result to XMM1 and lets case 13
+// cross-jump into an earlier tail (212). Tried: separate i/j/k product pairs 30/30/30; all
+// product pairs 30; positive/negative products first 30/30; scoped negative products 30;
+// cross-vector initializer 31; projection operands exchanged 30; cross factors exchanged 30;
+// both operand exchanges 30; cross.i subtrahend factors swapped 30 (same code); forward
+// snapshot 151; ordinary cross output 212; shared cross helper with axis snapshots 264; axis
+// snapshots with existing stores 174; descriptive vector names 30; vectors before switch 30;
+// shared point difference 184; named projections 83; complete displacement staging in 12/13/
+// both 39/208/208; destructive projected components in 12/13/both 99/212/218; staged 13 with
+// component products 212; staged 12 with both product sets 218; direct definition 119;
+// cross-first lexical homes 119; direction-first lexical homes 119; cross declared first 119;
+// pointer fractions with existing boundary 30; pointer fraction in first/second/both
+// projections 119/119/119; partial projection sums 30/30/30, both sums 214; cross component
+// orders 34/34/31/31/34; cross before displacement/after normalization 45/42; returned
+// direction at three uses 77/74; plain cross vector 212, with cross3f 212, with scale-first
+// products or the pointer fraction in case 12/13 212/212/212/212; typed source, system, both,
+// readonly system/both and direct source/system/both inputs all 30; the particle file's
+// (up, forward) cross helper for case 13 212, computed before the point difference 211, its
+// vector declared first 212; vector3d_from_points3d for case 12's / both cases' difference
+// 31/31. Earlier fraction, case-tail, helper-parameter and case-order forms reached 121
+// before later fixes. Round 29 (lane 14): a compile-only screen reproduces case 12 exactly:
+// the address-taken direction is always the memory operand in every written-dot form; only
+// vector3d_from_points3d with dot3f loads it first (i, k, j order) 69; a plain cross vector
+// moves the result to XMM1 (also in the compile-only screen): with case 13 returning its
+// fraction directly 152, cases 12 and 13 both 162, the fraction's `+ 1` returned early 210,
+// the fraction as a ternary 210.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {

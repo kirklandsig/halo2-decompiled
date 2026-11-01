@@ -79,13 +79,28 @@ void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angu
 void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity, vector3f const *angular_velocity);
 matrix3x3 *function_142eb0(matrix3x3 const *right, matrix3x3 const *left, matrix3x3 *out);
 
-/* scales a vector down to the given length when it is longer */
+/* scales a vector down to the given length when it is longer; the double
+   scale goes straight to the helper (a named double local here would make
+   LTCG keep every caller's stack 8-byte aligned, padding their frames) */
 PRIVATE __forceinline void vector_limit_length(vector3f *v, real maximum)
 {
 	real length_squared = v->k * v->k + v->j * v->j + v->i * v->i;
 	if (length_squared > maximum * maximum)
 	{
 		scale_vector_by_double(v, maximum / sqrt(length_squared), v);
+	}
+}
+
+/* the same cap with the scale kept in a real, as the linear brake's cap is */
+PRIVATE __forceinline void vector_limit_length_real_scale(vector3f *v, real maximum)
+{
+	real length_squared = v->k * v->k + v->j * v->j + v->i * v->i;
+	if (length_squared > maximum * maximum)
+	{
+		real scale = maximum / sqrt(length_squared);
+		v->i = scale * v->i;
+		v->j = scale * v->j;
+		v->k = scale * v->k;
 	}
 }
 
@@ -108,7 +123,9 @@ PRIVATE __forceinline void motion_inverse_inertia_local(c_vehicle_step_motion *m
 	out->up.k = inertia.m_col2(2);
 }
 
-// score 1 (was 1): only the linear brake's zero k product differs: ours multiplies the double scale by a
+// score 0 (was 1): the linear brake's cap keeps its scale in a real, so retail's float zero
+// constant multiplies the scale (fmul dword) where the shared cap's double scale produced a
+// double zero (fmul qword); the angular cap keeps the shared double scale and is unchanged.
 // double 0.0 constant (`fmul qword`), retail by the float 0.0f (`fmul dword`).
 // Earlier: Frame 0x94 versus 0xc4; query/rotation overlap, motion/reciprocal and product/brake allocation remain.
 // Aligned frame remains 0x94 versus retail 0xc4; motion/reciprocal, product and braking scheduling still differ.
@@ -261,7 +278,7 @@ void __stdcall function_2056e0(long vehicle_index, s_vehicle_physics_state *stat
 		linear_brake.i = linear_velocity.i * scale;
 		linear_brake.j = linear_velocity.j * scale;
 		linear_brake.k = 0.0f;
-		vector_limit_length(&linear_brake, 270.0f);
+		vector_limit_length_real_scale(&linear_brake, 270.0f);
 		vector3f angular_brake;
 		angular_brake.i = angular_velocity.i * scale;
 		angular_brake.j = angular_velocity.j * scale;

@@ -55,8 +55,6 @@ struct s_bitmap_tag_22b7dd
 /* predicts the texture of the bitmap a widget shows in its current mode;
    false when the texture is not ready */
 // @retail 0x22b7dd
-// score 38 (was 38): the register that holds zero is EBX where retail uses EDX, so the index and the
-// count are kept in the other registers.
 bool function_22b7dd(byte const *arg_1, long arg_2)
 {
     s_bitmap_widget_22b7dd const *widget = (s_bitmap_widget_22b7dd const *)arg_1;
@@ -95,41 +93,34 @@ bool function_22b7dd(byte const *arg_1, long arg_2)
         }
         if (sequence_index >= 0)
         {
-            byte *bitmap;
             s_bitmap_sequence_block_22b7dd const *sequences = &tag->sequences;
             if (sequence_index < sequences->count)
             {
                 s_bitmap_sequence_22b7dd *sequence = &sequences->elements[sequence_index];
-                long bitmap_index;
-                long index = 0;
                 if (sequence->sprite_count > 0)
                 {
+                    long index = 0;
                     if (sequence->sprite_count > 1 && function_22acb4(arg_2))
                         index++;
-                    bitmap_index = sequence->sprites[index].bitmap_index;
+                    byte *bitmap = tag->bitmaps + sequence->sprites[index].bitmap_index * 0x74;
+                    if (!function_3bcb0((s_bitmap_data *)bitmap))
+                        result = false;
                 }
                 else if (sequence->bitmap_count > 0)
                 {
+                    long index = 0;
                     if (sequence->bitmap_count > 1 && function_22acb4(arg_2))
                         index++;
-                    bitmap_index = sequence->first_bitmap + index;
+                    byte *bitmap = tag->bitmaps + (sequence->first_bitmap + index) * 0x74;
+                    if (!function_3bcb0((s_bitmap_data *)bitmap))
+                        result = false;
                 }
-                else
-                {
-                    goto done;
-                }
-                bitmap = tag->bitmaps + bitmap_index * 0x74;
             }
             else if (sequence_index == 0 && tag->sequences.count == 0 && tag->bitmap_count > 0)
             {
-                bitmap = tag->bitmaps;
+                if (!function_3bcb0((s_bitmap_data *)tag->bitmaps))
+                    result = false;
             }
-            else
-            {
-                goto done;
-            }
-            if (!function_3bcb0((s_bitmap_data *)bitmap))
-                result = false;
         }
     }
 done:

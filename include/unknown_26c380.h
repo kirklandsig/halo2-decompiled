@@ -50,4 +50,10 @@ inline bool function_26c590(long node_index, point3f const *unused, s_path_trace
 		(s_path_location const *)location, result);
 }
 
+struct s_type_c3b527;
+
+/* traces from start (in sector_index) toward end (in target_sector_index) */
+bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
+	s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+
 #endif

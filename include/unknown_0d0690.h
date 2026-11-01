@@ -12,7 +12,7 @@ struct s_object_child_iterator
 	short child_short;
 };
 
-void function_d0620(long object_index, s_object_child_iterator *iterator);
+void function_d0620(s_object_child_iterator *iterator, long object_index);
 bool function_d0690(s_object_child_iterator *iterator);
 
 #endif

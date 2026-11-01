@@ -900,17 +900,44 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 
 /* adds the senders of the player's messages (at most 20) to the players
    list, except those given and those already on it */
-// score 81 (was 81): count/sender homes +0x6c/+0x68 remain reversed; nullable getter and exclusion cursor differ.
+// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
+// cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
+// in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
+// Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
+// score 81 (was 81): this round's five declaration-order trials for the swapped count and
+// sender homes: the count after the loop index, the sender held at function scope, the
+// exclusion flag declared before the sender, the exclusion flag held at function scope and
+// both of them at function scope; four of them score 81 and the flag-first one 80, too small
+// a gain to keep. Still the count and sender homes reversed, the sender set by a branch and
+// the exclusion cursor kept in EDX across the 0x63d00 call.
+// Round 19: unchanged; the added count and the message pointer keep their swapped homes
+// (+0x68/+0x6c) and the sender stays in edi because our LTCG keeps the exclusion cursor in edx
+// across 0x63d00; still BLOCKED-BY 0x63d00.
+// score 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
+// Earlier: count/sender homes +0x6c/+0x68 remain reversed; nullable getter and exclusion cursor differ.
 // Exclusion pointer at use 82; native exclusion result 132; enumeration-count lifetime 82; format buffers swapped 81; getter force-inline declaration 81.
 // Byte added count 103; signed/unsigned word exclusion result 128/128; cumulative conditional 113; rejection guards 81.
 // Current cumulative-result trials: plain getter 145; result-first plus plain getter 145;
 // read-only sender 81; read-only sender plus plain getter 145; native string buffer 75
 // (458 bytes, plain; rejected single-array wrapper); buffer plus plain getter 141;
 // loop-scoped index 81; indexed cumulative exclusions 81.
-// score 81 (was 81): retail keeps the sender in a stack slot (set by a branch, later reused for the
+// retail keeps the sender in a stack slot (set by a branch, later reused for the
 // player) and keeps the getter's null test; without the qualified read the test is folded away.
 // Plain message read 145; that with an if-set exclusion 150; if-set exclusion alone 113; the count
 // renamed result/sender_count/added 81 each; a message pointer stepped at the body's end 157.
+// Shared sender across allocation on cumulative exclusions 135; plain getter 145; literal success 138, plain/literal 150; library copy 135, plain/library 145; readonly/named shared sender 135 each.
+// Round 292: Existing equality/membership declarations, ordinary/inline/separate-noinline in all eight
+// nonoriginal pairs, 81 each; every provider declaration and body restored.
+// BLOCKED-BY 0x63d00: our LTCG knows xuid_equal never writes EDX and keeps the exclusion
+// cursor there across the call (sender in EDI); retail reloads `mov edx, edi` each pass and
+// spills the sender, as at all 21 retail calls of 0x63d00 (retail does rely on a preserved
+// EDX for other callees). Taking 0x63d00's address does not change ours. Round 14: stepped
+// message pointer 157; getter through the field at +0 145; ternary getter 145 (VC folds
+// `p ? p : NULL` to p, so only the qualified read keeps retail's test); sender reused for
+// the copy 135.
+// Round 50: account-entry, added player and account-id role names 81 each; split message and
+// player declarations 81 each; inline reference allocation 81; account-copy buffer name 81;
+// exclusion declarations swapped 81. Opening body restored.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1415,7 +1442,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
-// score 117 (was 159): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
+// Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
+// reloads remain; still BLOCKED-BY 0x63d00.
+// score 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
 // off 1206; bounded friend search 230; bounded member search 219; both 211; indexed merge-record pointer
 // 162.
 // Completed friend/member/both flag results 159/218/218; signed friend/member results
@@ -1439,7 +1468,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // differ. immutable count snapshots 124; native list record references 124; original count name
 // 124; original count observation order 117; original count names and order 117; row pair without
 // initial merge 219.
-// score 117 (was 117): count homes, early count retention and membership flag reloads remain.
+// count homes, early count retention and membership flag reloads remain.
 // On the recovered comparison carriers: outer/inner/both merge cursors 231/117/231;
 // friend/member/both search cursors 186/219/222; outer-plus-friend 236, inner-plus-member 217.
 // Count homes, early saved-count lifetime and memory flag updates remain. friend field binding 120; member
@@ -1449,10 +1478,35 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // 151/151; existing member-bit/friend-byte/both eligibility 186/117/189; independent
 // merge/friend ordinals 117; immutable count storage 117. Count homes, delayed count loads
 // and memory flag updates still differ.
-// score 117 (was 117): clan count renamed to sort after the friend count 117; friend count read
+// clan count renamed to sort after the friend count 117; friend count read
 // first 124 (its home stays ebp-8, loaded into esi at once); both 124; both counts before the
 // arrays 124; both list-contains helpers declared inline 117. Ours keeps flags20 in a register
 // across those helpers (they write no memory here); retail tests and updates it in memory.
+// friend-side count rename 117; friend-first with that rename 124;
+// retail equality call roles with the rename 159/844; nested friend/member/both membership
+// guards 117/117/117; counts before the user record 117; shared user pointer 117.
+// Count homes, the delayed count load and post-membership flag reloads remain.
+// BLOCKED-BY 0x63d00 (round 14): our LTCG knows xuid_equal never writes EDX and keeps
+// friend/presence pointers there across the calls (`mov esi, edx` after the call); retail
+// recomputes them, as at all 21 retail calls of 0x63d00. The flags20 register across
+// players_list_contains/friends_list_contains is the same gap (retail treats them as
+// writing memory). Separate noinline inline declarations of those two change nothing.
+// Round 14: retail's argument roles in the merge, friend-presence and player-presence calls
+// 159; that plus the friend count first 160; merge and player roles only 164; friend count
+// first 124; loop-scoped merge index 117.
+// Round 418: member count after user copy 124; friend count after user copy 118; both counts after user
+// copy 126; friend-first after user copy 126; named member after user 124; named friend after user 118;
+// named both after user 126; named friend-first after user 126. count homes, early count retention and
+// membership flag reloads remain.
+// score 117 (was 117): this round: the two member counts in a local two-member struct (both kept
+// in memory) give 124, the same as exchanging the two declarations; the score stays 117. The
+// member count is still read into ESI and pushed where retail keeps it in EAX, and the count
+// homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
+// 0x63d00 and 0x2b642e, whose files belong to other lanes.
+// score 117 (was 117): this round: the listing was re-read to place the first difference; the
+// member count is still read into ESI and pushed where retail keeps it in EAX, and the count
+// homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
+// 0x63d00 and 0x2b642e, whose files belong to other lanes.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

@@ -325,7 +325,7 @@ void function_2b9a00(s_particle_2b96 const *particle, real distance, vector3f *r
     }
 }
 
-PRIVATE __forceinline void normalize_particle_velocity_2b(vector3f *v)
+PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 {
     real squared = v->i * v->i + v->j * v->j + v->k * v->k;
     if (squared != 0.0f)
@@ -335,11 +335,41 @@ PRIVATE __forceinline void normalize_particle_velocity_2b(vector3f *v)
         v->j *= inverse;
         v->k *= inverse;
     }
+    return v;
 }
 
-// score 196 (was 196): frame 0xb4 and length agree; retail scales the attraction direction's j and k in
-// place where ours computes them into temporaries (three instructions), and its second velocity normalize
-// multiplies j and k from memory with deferred stores; loop-top reload order of the definition/first.
+// score 10 (was 10): frame 0xb4 and length 1516 agree. The back-edge parameter reloads (ours first,
+// next, definition; retail definition, next, first) and the maximum-speed branch's squared length
+// differ (ours the vector normalizer's k,i,j statements; retail (i+j)+k with k in the lower register).
+// Round 90: first-particle local 10; settings pointer 10; const properties 10; const particle 10;
+// const nearest 10; separate speed-squared value 10; length_sq3f 105; the particle squared helper
+// 107; force-inline dot3f declaration 10. Original body and declarations restored.
+// Round 125 (lane 4): a cache.values pointer local 10; properties read through the definition at
+// each use 297; the vector normalizer's sum as one expression 34; the velocity normalizer in both
+// branches with k read first and (i+j)+k 34; the first input mask read before the cache setup 38. A
+// one-link LTCG harness (exact for 0x2b98b0/0x2b9750) finds no body of the vector, direction or
+// velocity normalizer that gives this branch's (i+j)+k and keeps 0x2b98b0 and 0x2b9750: the k-first
+// i,j,k statement form needs a normalizer of its own.
+// Round 7 (lane 14): the minimum-speed normalization folds retail's j/k loads only when the maximum
+// branch sums its squared length in statements; maximum branch through the vector normalizer and the
+// minimum branch's normalize split from its scale 10 (kept); maximum branch alone 52; the direction
+// normalizer there 17; a one-caller i,j,k statement normalizer 9, with k read into a local first 2
+// (only the reloads left; not kept, new helper); the velocity normalizer in both branches with k (or
+// k,j,i) read first 10/10 (1517 bytes); next before properties 10; properties/next declared at the
+// loop 43/64; on the 2 form: parameter orders with the record second or before scale 2/2, particle
+// declared outside the loop 2, a separate particle mask 51, the successor through a local 2.
+// Round 9 (lane 14): change scaled through the file's scale helper 10 (same code); the maximum-change
+// scale the same 10; the change's squared length through the direction helper 42; the loop's mask
+// computed at the top of the loop 328; the maximum branch's final scale through the scale helper 45.
+// Earlier rounds (the minimum normalization then stored j and k one by one):
+// Round 90: the blend's previous add through vector3f_add with the squared speed from dot3f 34 (kept;
+// the add is retail's in-place block); with the direction/vector squared helpers 105/102, length_sq3f 113,
+// written-out sum 115; inverse-first j/k products in the normalizer 34 (same code); the minimum branch
+// split into normalize then scale 34; next declared before properties 34; dot3f in the normalizer or
+// for the change's squared length 34/34.
+// Frame 0xb4 agrees; 1517/1516 bytes. Back-edge parameter reloads and velocity
+// blend/normalization stores differ; shared scale return plus addition recovers the attraction's in-place products.
+// Earlier frame-matched body kept attraction j/k products in temporaries and deferred velocity stores.
 // Round 9 (lane 11): steering record replaced by plain locals 291 (frame 0xac); the distance estimate with
 // separate input and result variables (as flexible_surface.cpp) 254 (frame 0xb4); the 0x2b9750 call with
 // retail's argument registers 252; change zeroed i first 250; attraction delta and length through the
@@ -408,10 +438,62 @@ PRIVATE __forceinline void normalize_particle_velocity_2b(vector3f *v)
 // Round 211: Complete shared direction/velocity/scale input snapshots 563/327/585;
 // direction+velocity/direction+scale/velocity+scale/all 653/831/677/923; all with read-only
 // scale/velocity snapshots 923. All restored; normalization transfers and velocity stores remain.
+// Round 31: shared attraction scale return consumed by shared addition 159; native change-stage scales 196;
+// both boundaries 158 (only one additional point, not retained); settings/origin/first placeholder names 196,
+// with attraction/change/both contracts 159/196/158; all five placeholder names plus both contracts 158.
+// Original parameter names and both original change-scale stages retained.
 // Round 379: Successor after bounds/attraction/collision/at back edge 310/341/364/247; with separate particle-input mask 300/272/353/223. Original early snapshot and body restored.
 // DH round 215: Distinct velocity-normalizer store orders ikj/jik/jki/kij/kji,
 // existing shared scale at its output, and complete inverse-first products ijk/kji
 // 196 each. Original helper and every caller stage restored; reloads and transfers remain.
+// Round 34: On the retained attraction-return graph, shared change addition 67 (plain);
+// previous-scale/quarter-scale/both returns 171/112/173; those with shared change
+// 178/114/178; scaled previous addition 171; shared previous addition 93, with
+// shared change 112, with both native scales 110. Back-edge reloads and final stores remain.
+// Round 166: shared scaled-add blend boundaries quarter/previous/native-previous/composed
+// 124/117/124/115; each with both final returned-output scales
+// 124/125/124/122. Original blend stages and stores restored.
+// Round 228: Native velocity-normalizer output consumed by both final scales, pointer/reference
+// inputs with existing/shared scales 67/67/47/47; corresponding shared final squared producers
+// 116 each. Keep pointer output into shared scale, plain 47 (1517/1516 bytes); final-store and
+// back-edge reload differences remain. Original magnitude expression and pointer input retained.
+// DH round 230: On the retained normalizer-output graph, shared final addition/reversed inputs 115/119;
+// native normalizer values alone/with those additions 398/386/386; explicit source-output normalization
+// with shared scale alone/with those additions 138/177/183. All restored; final stores, lower tail and reload order remain.
+// Round 394: direct previous-vector scale producer with native/quarter/maximum/maximum+quarter/
+// initial/initial+quarter/initial+maximum/all scales 208/203/208/203/208/203/208/203; restored.
+// DH round 232: On the retained pointer-output graph, quarter-output/final-add composition 117;
+// final component loop 111; scaled-add publication 115; normalizer loop/ordinary inline/inverse
+// lifetime/native slot names 47 each; both publication and normalizer loops 107 at retail length.
+// Every executable form restored; lower-tail stores and back-edge reload order remain.
+// Round 6: the minimum branch alone differs in the tail (retail's j/k products are the copy and
+// in-place forms of values defined before the inverse; the identical maximum branch is
+// sequential in both). Minimum scale with the normalized pointer as its output 34; the in-place
+// scale helper on the normalized pointer 34; a named velocity pointer for the blend and clamp
+// 397, for the clamp only 260; previous velocity scaled into its own vector 191. Restored.
+// Round 282: selected-bound common completion, upper/lower defaults and split normalize/scale
+// 365/362/342/365; with shared change magnitude 359/360/355/359 (frame 0xac).
+// Shared normalization-product setter 37 (1519 bytes). All restored; native 0xb4 frame,
+// back-edge definition/first reloads and lower normalization publication remain.
+// Round 30: matched 0x30bf0/0x1201a0 get retail's paired j/k products from `v->i = v->i * inv;
+// v->j = inv * v->j; v->k = inv * v->k;` with a computed inv; with the asm-written inverse every
+// product order compiles the same. That order in the normalizer 34 (same code); file scale
+// helper in the normalizer 34 (same code); file scale helper for the minimum's final scale 34
+// (same code); squared-first minimum test 34 (same code); next assigned just before the loop 86.
+// Round 204: vector-squared input by const reference, ordinary/forced squared and normalizer
+// availability, and void/pointer normalizer output: eight contracts 10 each. All original
+// helpers and marked bodies restored; back-edge reloads and maximum squared producer remain.
+// Round 24 (lane 10): the vector normalizer's sum through length_sq3f 34 (0x2b98b0 59); the
+// vector-squared statements in i,j,k order 9 (0x2b98b0 61); the velocity normalizer with k read first
+// and i,j,k statements, in both branches 10 (1517 bytes: maximum branch exact, the minimum's j product
+// loads j instead of copying the inverse); successor read right after the particle pointer 328; cache
+// declared first 10. Compile-only screen of the tail (~900 forms): an expression sum in the maximum
+// branch always turns the minimum's j/k scale sequential; k read first with i,j,k statements gives the
+// whole tail, but no vector-squared body with it keeps 0x2b98b0 (its first normalize needs k,i,j).
+// Round 33 (lane 14): the back-edge reloads follow the prologue order in ours (first, next, definition)
+// and run reversed in retail. Loop over the index parameter with the head in a local 79 (1524 bytes);
+// index/head names 10 (same code); change zeroed i first 19; change declared at the loop top 10 (same
+// code); unsigned index 10 (same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -466,12 +548,7 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
             real squared = particle_direction_squared_2b(&delta);
             real amount = particle_distance_estimate_2b(squared) / attraction_radius * attraction_scale;
             normalize_particle_direction_2b(&delta);
-            delta.i *= amount;
-            delta.j *= amount;
-            delta.k *= amount;
-            change.i += delta.i;
-            change.j += delta.j;
-            change.k += delta.k;
+            vector3f_add(&change, vector3f_scale(&delta, amount, &delta), &change);
         }
         function_2b9a00(particle, function_246cd0(&properties[5].property, cache.values), &change);
         change.i *= scale;
@@ -491,23 +568,19 @@ void function_2b9b10(s_particle_properties_2ba const *definition, void const *or
         }
         vector3f previous = particle->velocity;
         scale_particle_vector_2b(0.75f, &previous);
-        particle->velocity.i += change.i;
-        particle->velocity.j += change.j;
-        particle->velocity.k += change.k;
+        vector3f_add(&particle->velocity, &change, &particle->velocity);
         scale_particle_vector_2b(0.25f, &particle->velocity);
-        particle->velocity.i += previous.i;
-        particle->velocity.j += previous.j;
-        particle->velocity.k += previous.k;
-        squared = particle->velocity.k * particle->velocity.k + particle->velocity.j * particle->velocity.j + particle->velocity.i * particle->velocity.i;
+        vector3f_add(&particle->velocity, &previous, &particle->velocity);
+        squared = dot3f(&particle->velocity, &particle->velocity);
         if (squared > maximum_speed * maximum_speed)
         {
-            normalize_particle_velocity_2b(&particle->velocity);
-            scale_particle_vector_2b(maximum_speed, &particle->velocity);
+            normalize_particle_vector_2b(&particle->velocity);
+            vector3f_scale(&particle->velocity, maximum_speed, &particle->velocity);
         }
         else if (minimum_speed * minimum_speed > squared)
         {
             normalize_particle_velocity_2b(&particle->velocity);
-            scale_particle_vector_2b(minimum_speed, &particle->velocity);
+            vector3f_scale(&particle->velocity, minimum_speed, &particle->velocity);
         }
     }
 }
@@ -621,11 +694,93 @@ real g_55e618;
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
 // both scales 129; coefficient local 102; displacement scale 129; snapshot plus loop 676;
 // shared tangent 190; shared start 102; both shared differences 102. Original body retained.
-// score 102 (was 102): retail copies dot for perp.i/j and multiplies perp.k in place, ours
+// Earlier: retail copies dot for perp.i/j and multiplies perp.k in place, ours
 // copies the normal components. On the velocity-pointer form with the position built first
 // and the products interleaved (185): velocity pointer before normal 187, normal pointer
 // after velocity 189, keep after the products 190 (1537 bytes, frame 0x118); interleaved
 // products on this body 209 / 211.
+// Round 410: Shared full-vector response assignment, with shared projection, shared tangent, and
+// both producers 191/191/191/191. Separate placement inline/noinline declarations with that
+// consumer 285/191; alone 289/102. All restored; sweep/collision homes and projection spills
+// remain.
+// Round 293: Destructive normal-copy projection/velocity-copy tangent/both 265/283/332; scaled response 101 (one-count gain rejected); projection/response 264, tangent/response 278, all stages 337, all with direct velocity producer 285. Original vectors and complete body restored.
+// Round 44: velocity read at each use 199; velocity pointer 194 (frame 0x118, sweep at +0x44); renamed
+// perpendicular/tangent locals 102/102 (no code change); normal read as a union member 605, with the velocity pointer
+// 601, interleaved 596. Grid of velocity copy/pointer/initialised copy, three dot-product text orders, sequential or
+// per-component interleaved perpendicular/tangent, keep factor early/late, position after/before the tangent: best 102
+// (this body), interleaved with the position first 124, pointer with the position first 125, the rest 194-237; the dot
+// product's text order never changed the code. Retail homes tangent at +0x38 and perpendicular at +0xa4.
+// Round 83: tangent/perpendicular/both declared before the sweep 102/102/102; scalar perpendicular
+// 147; scalar tangent 113; both scalar 140; call-only velocity pointer 102; that pointer with a
+// staged position 245. Original body restored.
+// Round r4 (lane 17): velocity pointer (no copy) 194 (1541 bytes, frame 0x118): every stack home below the
+// collision buffer then agrees with retail, which also homes perpendicular (perp.k spilled at +0xac) under the
+// buffer, and keeps the normal in registers until the position stores, which it sinks after impact.index;
+// tangent through the point-difference helper on that form 194; per-component perpendicular/tangent order 195;
+// position assigned after impact.index on the pointer/copy forms 194/102 (stores already scheduled the same);
+// a local copy of the normal for dot/perpendicular/position 279 (1590 bytes), with the velocity pointer 227 (1559).
+// Round 105: position through the existing real_point3d_set 245; with the velocity pointer 188;
+// velocity read at each use 189; pointer with interleaved perpendicular/tangent 185; the set nested
+// as placement_set's position argument 185/188/245 (code identical to the separate statement).
+// Retail loads the collision fields (and the call's last argument) above the particle stores; ours
+// cannot, so the collision local may escape through 0x1697c0 in our build.
+// Round 100 (lane 8, fast): dot3f(&velocity, normal) 102 and dot3f(normal, &velocity) 102 (same code); no velocity copy
+// with dot3f on the particle velocity 200, with the dot in i/k/j text order 199, velocity operand first 199 (frame
+// 0x118 each); the normal as a `vector3f const &` 102 (same code), with no copy 199; the placement's last argument read
+// into a local before the position stores (diagnostic) 137. 0x1697c0's callees that receive the result are all LTCG
+// bodies and none stores the pointer.
+// Round 115: position through the existing vector3f_add_scaled 102 (same code); perpendicular through the
+// existing vector3f_scale 102; both 102; with the velocity pointer 194 (frame 0x118: the perpendicular loses its
+// home); with the velocity read at each use 199. Local names do not move the stack homes (compile-only frame
+// listing unchanged for four renames); ours homes sweep, perpendicular, (cache, collision), tangent, retail
+// tangent, sweep, (cache), perpendicular, (collision).
+// Round 43 (one-file LTCG link of this file with the callee closure and the inlining ballast object, equal to
+// the full listing, 74 there): the collision pointer does reach a non-LTCG body (0x244980 stores it in its
+// ray-cast callback and hands that to the Havok cast at 0x2df720), but retail's Havok is the same, so that
+// does not separate the builds. On the velocity pointer form (harness 183, frame 0x118): keep computed after
+// the tangent 187; tangent declared before perpendicular 183; the impact declared at the block's top 183;
+// perpendicular and tangent interleaved per component 183, with keep late 187 (all at least 185 here).
+// Round 116 (lane 6, fast, LTCG build): four rename sets of perpendicular/tangent/sweep (normal/tangent
+// velocity, bounce/slide, travel, along/motion/rebound) 102 each (homes unmoved, so the same-size name order
+// does not apply here); tangent, tangent and perpendicular, tangent at the top with perpendicular after the
+// cache 102 each; velocity read at each use with the perpendicular/tangent rows interleaved i, i, j, k, j, k
+// 200 (frame changes, +0x2); the copy form with that interleave 211. Retail keeps perp.i/j, tangent.k and
+// keep in xmm5/6/7/3 across the placement call (its LTCG callee leaves them) and spills only tangent.i/j and
+// perp.k.
+// Round 40 (lane 11, fast): retail stores the collision record's +0x24 NONE word before the start point's
+// x/z stores; `collision.value.unknown24 = NONE;` ahead of `start.x -= displacement.i;` gives that order
+// 100 (two-point gain, not kept), ahead of the displacement 134. On that order: the velocity read from the
+// particle at each use 197 (frame 0x118), with the position stores after impact.index 197; the position
+// stores after impact.index alone 100 (same code); a `vector3f *velocity = &particle->velocity` pointer
+// (also passed to the placement and used for the final stores) 193 (frame 0x118; the dot's k term and
+// `lea esi` then match retail, but the i product keeps the normal as its destination where retail loads
+// velocity.i, and the perpendicular gets no home).
+// Round 64 (lane 12; one-link LTCG env of this file with its stand-in callers and depth-10 closure, equal to
+// the full listing; env positional/aligned 74/84 for this body): retail loads every velocity component twice (dot,
+// then tangent) and the placement's last argument before the position stores. New: the dot read straight from
+// the particle with a velocity pointer for the tangent 187/108; the velocity copy's three stores in the five
+// other orders 76/88, 73/80, 73/80, 76/88, 76/86 (ikj, jik, jki, kij, kji); the perpendicular's 76/84, 76/82,
+// 76/85, 76/85, 76/82; the tangent's 74/84 each; a non-escaping stand-in for 0x1697c0 (diagnostic) gives a
+// 0x10c frame, so the collision record escapes in retail as in ours and the early argument read is not
+// escape-driven. Re-measured in the env only (listed above): the velocity pointer, with dot3f, with
+// vector3f_scale 183/102 each.
+// Round 36 (lane 13, fast): retail's homes follow its spills (tangent.i/j spilled twice each sit low at +0x38,
+// perp.k once at +0xa4 under the collision); it holds the three position sums in xmm1/xmm4/xmm2 until after
+// impact.index, so only perp.i/j, tangent.k and keep cross the call. On the velocity pointer form (194): dot3f
+// 194; dot3f with the perpendicular through vector3f_scale 194; dot3f(normal, velocity) with it 194 (all the
+// same code: helpers don't move the dot * normal operand order, ours keeps the normal as the destination);
+// tangent written as `velocity - dot * normal` 207 (1547 bytes); on the copy form 242 (1558 bytes).
+// Then 45 random dependency-respecting orders of the reflection block's 15 statements (keep, copy, dot,
+// perpendicular, tangent, position, impact.index) and of the four updates after the call, a third of them on
+// the pointer form, in a one-file LTCG link equal to the full build: none below this body (link positional
+// 74, aligned 84; the next best 76/100 and 91/93, sizes 1543-1555).
+// Round 60 (lane 16, fast): retail reads each velocity component twice from the particle (dot, then tangent)
+// and keeps keep/perp.i/perp.j/tangent.k in xmm3/5/6/7 across the placement call (tangent.i/j and perp.k
+// in memory); ours keeps five values in registers. The velocity pointer form 195 (frame 0x118); with the
+// impact declared and its index stored before the position stores 195; with perpendicular/tangent in retail's
+// computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 196; on the copy form the
+// collision word stored before the start stores plus the impact before the position 100 (two-point gain,
+// not kept); the copy form in retail's computation order 211; keep computed after impact.index 197 (1536 bytes).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -49,6 +49,22 @@ static inline s_type_9df9da *online_task_try_and_get(long task_index)
 	return task;
 }
 
+/* the details a session's qos reply carries (at +0xa4 of a search result): whether
+   they arrived, then the values the reply holds (0x14c bytes) */
+struct s_search_result_details
+{
+	bool valid;
+	byte unknown01[5];
+	short session_kind;
+	byte unknown08[0x18 - 0x8];
+	XNKID session_id;
+	XNKEY session_key;
+	XNADDR session_address;
+	byte unknown54[0x68 - 0x54];
+	long unknown68;
+	byte unknown6c[0x150 - 0x6c];
+};
+
 /* a session a search found (0x204 bytes) */
 struct s_search_result
 {
@@ -67,15 +83,8 @@ struct s_search_result
 	long unknown7c;
 	long unknown80;
 	s_qos_result qos;
-	byte unknowna4[0xaa - 0xa4];
-	short session_kind;
-	byte unknownac[0xbc - 0xac];
-	XNKID session_id;
-	XNKEY session_key;
-	XNADDR session_address;
-	byte unknownf8[0x10c - 0xf8];
-	long field10c;
-	byte unknown110[0x1f8 - 0x110];
+	s_search_result_details details;
+	long unknown1f4;
 	long field1f8;
 	long field1fc;
 	long field200;
@@ -119,23 +128,13 @@ struct s_search_session
 	long value;
 };
 
-long g_4ce394;
-long g_4ce118;
-long g_4ce11c;
-long g_4ce200[10];
-long g_4ce230;
-long g_4ce234;
-long g_4ce238;
-long g_4ce23c[9][9];
-long g_4ce380;
-long g_4ce384;
-double g_4ce388;
-long g_4ce390;
 
 
 
 bool function_07a9b0(void);
 
+#define FLOOR(n, floor) ((n) < (floor) ? (floor) : (n))
+#define CEILING(n, ceiling) ((n) > (ceiling) ? (ceiling) : (n))
 #define SEARCH_LONG(object, offset) (*(long *)((byte *)(object) + (offset)))
 #define SEARCH_FLAG(object, offset) (*(bool *)((byte *)(object) + (offset)))
 
@@ -197,69 +196,23 @@ bool function_90160(long task_index, s_match_result_data *result)
    score to the loosest as the search widens */
 static inline void session_search_set_minimum_score(s_session_search *search)
 {
-	long loose_score = g_network_configuration.value1ec;
 	if (search->unknown1c != NONE && search->unknown20 > 0)
-		search->minimum_score = (long)((real)g_network_configuration.value1e8 + ((real)search->unknown1c / (real)search->unknown20) * ((real)loose_score - (real)g_network_configuration.value1e8));
+		search->minimum_score = (long)((real)g_network_configuration.value1e8 + ((real)search->unknown1c / (real)search->unknown20) * ((real)g_network_configuration.value1ec - (real)g_network_configuration.value1e8));
 	else
-		search->minimum_score = loose_score;
+		search->minimum_score = g_network_configuration.value1ec;
 }
 
 extern "C" void _ReadWriteBarrier(void);
-// score 36 (was 36): Frame 0x20 and request fill agree; current/bound/score register exchange remains.
-// Earlier: Frame/length and the whole request fill agree; the bound and score section is retail's
-// Frame/length and the whole request fill agree; the bound and score section is retail's
-// with EAX and ECX exchanged (current ECX, clamp temporaries/total EAX, score EAX where retail has EDX).
-// Round 87: request filled x, y, count, maximum pair, minimum pair 36 (screen of all 120 orders after x, y:
-// 36..54); with each-use loose read 50; current as field/local, upper first, flags first, ternary clamps on
-// the new order 36/38/36/36.
-// Earlier at 46 (was 50): current/bound carriers and request field scheduling differed.
-// Earlier helper current/total/both inputs 103/51/51; standard lower/upper/both clamps 50;
-// combined inputs/clamps 51; field current 50; shared bound workspace 50; default score first 98;
-// invalid score inputs first 50.
-// current/bound registers and request scheduling differ; native field layout,
-// typed bound/flag/request groups 0..7: 50, 50, 50, 50, 50, 50, 50, 50.
-// frame 0x20 agrees; ECX/EAX allocation and request clear/fill scheduling differ;
-// tried request count before other fields 48; request assignments in observed order 50;
-// request declared at entry 50; minimum score before bound updates 62;
-// bound result homes declared together 50; task result used for store and test 50;
-// explicit clock selection 53; direct zero initialized request 87;
-// current snapshot inside active guard 50; both bounds declared before current 50. Restored.
-// named progress 50; lower/upper/both output clamps 105/104/98; inactive current first 58.
-// Strict/loose/both endpoints 50/46/46; converted strict alone/with loose 50/46;
-// endpoints with total/current/both progress snapshots 46/46/46; count-first/observed fill 50/48.
-// Kept the loose endpoint for interpolation and fallback; plain check 46 at 336/336 bytes.
-// Returned/result/conditional score helper 99/99/99; enabled/disabled/both chained flags 48/48/50; shared
-// result-buffer size 93; request workspace name 46. Current/bound allocation and request scheduling remain.
-// Upper bound first 50; paired bound production 63; flags before bounds 46; flags from current 104;
-// native bound integers 46; strict/loose/both helper endpoint inputs 46/50/50. Opening body and
-// helper restored; current/bound carriers and request scheduling remain.
-// Shared valid progress predicate with live/current/total/both score inputs 105/105/108/108;
-// shared invalid predicate with those inputs 105/105/108/108. Original helper and body restored.
-// Round 229: Existing score helper pointer output with original/current/total/both scalar inputs
-// 36/36/36/36; reference output with those inputs 36/36/36/36. Original helper/body restored.
-// Current/lower/upper/both names 36/36/36/36; const current/endpoint 36/36; force-inline score 36;
-// score guard reordered 36; lower/upper candidate clamp 37/36.
-// Round 378: lower/upper/both shared clamp limits 36/36/36; limits before
-// candidates 37; upper limit before lower publication 36, with lower limit
-// before its candidate 37; early upper limit with shared helper current 36;
-// upper candidate before lower publication with both limits 62. Original
-// helper and body restored; current/bound/score register exchange remains.
 // @retail 0x90b30
 void function_90b30(s_session_search *search)
 {
 	long current = search->unknown1c;
 	if (current != NONE)
 	{
-		long minimum = SEARCH_LONG(search, 0x68) - current;
-		if (minimum < SEARCH_LONG(search, 0x60))
-			minimum = SEARCH_LONG(search, 0x60);
-		SEARCH_LONG(search, 0x30) = minimum;
-		long maximum = SEARCH_LONG(search, 0x50) + current;
-		if (maximum > SEARCH_LONG(search, 0x64))
-			maximum = SEARCH_LONG(search, 0x64);
+		SEARCH_LONG(search, 0x30) = FLOOR(SEARCH_LONG(search, 0x68) - current, SEARCH_LONG(search, 0x60));
 		SEARCH_FLAG(search, 0x2c) = true;
 		SEARCH_FLAG(search, 0x24) = true;
-		SEARCH_LONG(search, 0x28) = maximum;
+		SEARCH_LONG(search, 0x28) = CEILING(SEARCH_LONG(search, 0x50) + current, SEARCH_LONG(search, 0x64));
 	}
 	else
 	{
@@ -636,9 +589,9 @@ bool __stdcall session_search_result_precedes(void const *a, void const *b, void
 		return true;
 	if (first->field1fc < second->field1fc)
 		return false;
-	if (first->field10c > second->field10c)
+	if (first->details.unknown68 > second->details.unknown68)
 		return true;
-	if (first->field10c < second->field10c)
+	if (first->details.unknown68 < second->details.unknown68)
 		return false;
 	return false;
 }
@@ -705,43 +658,6 @@ done:
 	return result;
 }
 
-// score 111 (was 111): the details cursor is entry+0x1f8 (retail entry+0x10c), so every field
-// offset differs, and the kind/count homes differ. Cursor taken from the results before the
-// end pointer gave retail's results reuse after the compare (128 -> 113). Round 52:
-// single-exit compare 128; typed details block 128; separate details cursor 154, with the typed
-// block 154; then on the kept form: distance local 113; typed details block 113; count/value/kind
-// declared in reverse 113; details flag read through the details pointer 182; score reset after
-// the filter 181. Earlier:
-// Initial results snapshot 183; scalar/cursor role names 128; exact end-pointer test 128;
-// repeated-use computed distance 128; shared maximum bonus 128; persistent details cursor 154.
-// frame 0x10 agrees; initial results observation,
-// details/score cursor base and input/score homes remain. Native score fields
-// 213; complete count-clamp arms 213; named interpolation fraction 213; indexed
-// result loop 214; single total-score accumulator 229.
-// Initial snapshot plus persistent details cursor 190; with invalid-entry continue 199;
-// early details-state observation 196; count/value/kind read order 128;
-// ordinary-field defaults before details 173. Original body retained.
-// Equality input orientation 128; kind field at scoring 197; value field at distance 128;
-// individual field-selection results 128; details field at each use 195;
-// ordinary invalid-entry continue 128; changed-results scope 128; ordinary-fields arm first 128.
-// Round 164: native detail inputs 128; full results lifetime 182; native full results 182;
-// entry input scope 128; loop input scope 128; entry scope results 182; native loop scope 128;
-// native entry results 182.
-// Round 167: complete typed details pointer/direct fields 128/213;
-// pointer with signed difference/range step/both 128/128/128;
-// pointer with full results lifetime 182; direct difference/range step 213/213.
-// Original results observation and details/kind/count homes remain.
-// Round 378: retained distance limit, paired detail thresholds, both groups,
-// count limit, distance/count, thresholds/count and all three groups each 113;
-// all groups with the shared maximum distance bonus 113. Frame and initial
-// results reuse still agree; details cursor and kind/count homes remain.
-// Original body restored.
-// Round 54: score/distance/bounded as the struct's named entry fields 204; details pointer
-// declared before the loop 113; details inputs read entry-relative 113; details pointer as
-// the named field's address 113; details pointer as a long array with indices 113.
-// Round 221: Single details induction with byte bounds, detail-relative/named scores 166/173;
-// owner-record bounds 186/170; complete conditional input producers give the same four counts.
-// All restored. Unchanged reduced control 113 versus full baseline 111.
 // @retail 0x91000
 void __stdcall session_search_score_and_sort(s_session_search *search)
 {
@@ -751,21 +667,21 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 	s_search_result *local_0 = entry + MAXIMUM_SEARCH_RESULTS;
 	for (; entry < local_0; entry++)
 	{
-		byte *local_1 = (byte *)entry + 0x10c;
-		(*(long *)(local_1 + 0xec)) = 0;
+		s_search_result_details *details = &entry->details;
+		entry->field1f8 = 0;
 		if (entry->valid && entry->unknown01 && !session_search_result_allowed(search, entry))
 			entry->unknown01 = false;
 		if (entry->valid && entry->unknown01)
 		{
-			bool has_details = SEARCH_FLAG(entry, 0xa4);
+			bool has_details = details->valid;
 			long kind;
 			long value;
 			long count;
 			if (has_details)
 			{
-				kind = (*(long *)local_1);
-				value = (*(long *)(local_1 + 0x14));
-				count = (*(long *)(local_1 + 0x10));
+				value = SEARCH_LONG(details, 0x7c);
+				kind = details->unknown68;
+				count = SEARCH_LONG(details, 0x78);
 			}
 			else
 			{
@@ -773,20 +689,23 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 				value = SEARCH_LONG(entry, 0x5c);
 				count = SEARCH_LONG(entry, 0x6c);
 			}
-			(*(long *)(local_1 + 0xf0)) = abs(value - SEARCH_LONG(search, 0x4c));
-			if ((*(long *)(local_1 + 0xf0)) <= g_4ce230)
-				(*(long *)(local_1 + 0xec)) += g_4ce234 - ((g_4ce234 - g_4ce238) / (g_4ce230 + 1)) * (*(long *)(local_1 + 0xf0));
+			entry->field1fc = abs(value - SEARCH_LONG(search, 0x4c));
+			if (entry->field1fc <= g_network_configuration.value1f0)
+				entry->field1f8 += g_network_configuration.value1f4 - ((g_network_configuration.value1f4 -
+					g_network_configuration.value1f8) / (g_network_configuration.value1f0 + 1)) * entry->field1fc;
 			if (kind == SEARCH_LONG(search, 0x38))
-				(*(long *)(local_1 + 0xec)) += g_4ce380;
-			long bounded = count < 0 ? 0 : (count > g_4ce384 ? g_4ce384 : count);
-			(*(long *)(local_1 + 0xf4)) = bounded;
-			(*(long *)(local_1 + 0xec)) = (long)((*(long *)(local_1 + 0xec)) + bounded * g_4ce388);
+				entry->field1f8 += g_network_configuration.value340;
+			long bounded = count < 0 ? 0 : (count > g_network_configuration.value344 ? g_network_configuration.value344 : count);
+			entry->field200 = bounded;
+			entry->field1f8 = (long)(entry->field1f8 + bounded * g_network_configuration.value348);
 			if (has_details)
 			{
-				if ((SEARCH_LONG(entry, 0xf8) < g_4ce11c || SEARCH_LONG(entry, 0xfc) < g_4ce118) &&
-					SEARCH_LONG(search, 0x58) >= g_4ce11c && SEARCH_LONG(search, 0x5c) >= g_4ce118)
-					(*(long *)(local_1 + 0xec)) += g_4ce390;
-				(*(long *)(local_1 + 0xec)) += g_4ce23c[SEARCH_LONG(search, 0x6c)][SEARCH_LONG(entry, 0xb8)];
+				if ((SEARCH_LONG(details, 0x54) < g_network_configuration.valuedc ||
+					SEARCH_LONG(details, 0x58) < g_network_configuration.valued8) &&
+					SEARCH_LONG(search, 0x58) >= g_network_configuration.valuedc &&
+					SEARCH_LONG(search, 0x5c) >= g_network_configuration.valued8)
+					entry->field1f8 += g_network_configuration.value350;
+				entry->field1f8 += g_network_configuration.value1fc[SEARCH_LONG(search, 0x6c)][SEARCH_LONG(details, 0x14)];
 			}
 			if (entry->unknown74)
 			{
@@ -796,13 +715,13 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 				long score;
 				if (index < 9)
 				{
-					real lower = (real)g_4ce200[index];
-					real upper = (real)g_4ce200[index + 1];
+					real lower = (real)g_network_configuration.value1c0[index];
+					real upper = (real)g_network_configuration.value1c0[index + 1];
 					score = (long)(lower + (value - index) * (upper - lower));
 				}
 				else
-					score = g_4ce200[9];
-				(*(long *)(local_1 + 0xec)) += score;
+					score = g_network_configuration.value1c0[9];
+				entry->field1f8 += score;
 			}
 		}
 	}
@@ -838,16 +757,16 @@ bool session_search_select(s_session_search *search, s_search_session *session)
 			}
 		}
 		bool ready = selected && (ready_count == candidate_count ||
-			(ready_count >= (candidate_count >> 2) && session_search_elapsed(search->start_time) > g_4ce394));
+			(ready_count >= (candidate_count >> 2) && session_search_elapsed(search->start_time) > g_network_configuration.value354));
 		if (ready)
 		{
 			if (session)
 			{
 				memset(session, 0, sizeof(*session));
-				session->kind = selected->session_kind;
-				session->id = selected->session_id;
-				session->key = selected->session_key;
-				session->address = selected->session_address;
+				session->kind = selected->details.session_kind;
+				session->id = selected->details.session_id;
+				session->key = selected->details.session_key;
+				session->address = selected->details.session_address;
 				session->value = selected->qos.rtt_median;
 			}
 			result = true;

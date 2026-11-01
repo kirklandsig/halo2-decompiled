@@ -55,19 +55,7 @@ inline void release_310a70(referenced_2d88a0 *counted)
 	}
 }
 
-// a helper of 0x104 bytes whose destructor resets the object it holds at +0x100
-class helper_3728b0
-{
-public:
-	~helper_3728b0();
-
-	static void operator delete(void *block)
-	{
-		g_memory_2d88a0->release_block(block, 0x104, 0x22);
-	}
-
-	char storage[0x104];
-};
+#include "slot_table_372a40.h"
 
 // the step's settings: a block of its own and itself, both with tag 0x1a
 struct settings_310a70

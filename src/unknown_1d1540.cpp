@@ -3,24 +3,9 @@
 #include "unknown_1cec30.h"
 #include "unknown_1efac0.h"
 #include "havok_reference.h"
+#include "constraint_helpers_314090.h"
 #include <new>
 // @flags /O2 /arch:SSE /Gr
-
-struct s_1d1870
-{
- char field_0;
- s_1d1870() {}
- s_1d1870(bool arg_0) : field_0(arg_0) {}
-};
-
-class c_314710 : public c_a
-{
-public:
-	byte field_8[0x58];
-	c_314710(hkEntity *arg_0);
-	s_1d1870 function_3144b0(void *arg_0);
-	s_1d1870 function_314580(void *arg_0);
-};
 
 class c_1d19d0 : public c_314710
 {
@@ -52,20 +37,6 @@ struct s_47f048_object { void function_30be40(long arg_0); };
 struct s_1d1542 { byte field_0 : 1; byte field_1 : 7; };
 struct s_1d1540 { void function_30be00(void *arg_0); };
 struct s_1d1541 { void *function_30d2b0(void *arg_0); };
-struct s_314320
-{
- long field_0;
- real field_4;
- real field_8;
- real field_c;
- real field_10;
- s_314320();
-};
-struct s_314450
-{
- void function_314450(s_314320 *arg_0);
- void function_314480(s_314320 const *arg_0);
-};
 extern hkWorld *g_51e9a4;
 byte *g_51eca8;
 void __stdcall function_1c39c0(void *arg_0, long arg_1);
@@ -102,12 +73,12 @@ void function_1d1540(s_havok_component *arg_0)
    if (*(real *)(local_7 + 8) != 1.0f || *(real *)(local_7 + 0xc) != 1.0f)
    {
     s_314320 local_8;
-    ((s_314450 *)local_3)->function_314450(&local_8);
+    local_3->export_description(&local_8);
     local_8.field_4 *= *(real *)(local_7 + 8);
     local_8.field_8 *= *(real *)(local_7 + 8);
     local_8.field_c *= *(real *)(local_7 + 0xc);
     local_8.field_10 *= *(real *)(local_7 + 0xc);
-    ((s_314450 *)local_3)->function_314480(&local_8);
+    local_3->import_description(&local_8);
    }
   }
   c_havok_reference_counted *local_9 = (c_havok_reference_counted *)local_3;

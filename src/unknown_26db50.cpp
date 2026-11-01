@@ -459,9 +459,17 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
-// score 90 (was 90): frame 0xd8 agrees; ring conversion (fild where retail converts in SSE) and the
-// frame 0xd8 agrees; x87 ring conversion and rotation component spill/register scheduling remain.
-// rotation schedule (one spilled component) differ; 1085 bytes against 1089.
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
+// Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`
+// as retail, but the point stores still come first); named ring phase 143 (ring conversion as
+// retail: cvtsi2ss, store, fld; frame 0xdc, radius copied through integer registers); the
+// same with a plain radius local 236; distance computed in the spoke loop at its use 243 (ring
+// times radius moves to SSE); rotation through the existing cross3f of (vector, axis) 100.
+// The phase's extra slot pairs with our rotation spill: retail keeps all three components in
+// registers, so the ring conversion needs the rotation fixed first.
 // Round 53: ring phase named in the outer loop before/after the distance 143/143 (SSE ring
 // conversion as retail, but frame 0xdc and the radius copied through integer registers);
 // all three cross terms named, j and k first 90 (forwarded back); a vector3f cross filled j, k, i
@@ -473,7 +481,7 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // orders of the cross/along locals 96-105; 0x2982f0/0x170d70/0x11d3b0 rotation forms 126-139;
 // existing cross3f after/before the dot 134/255; distance inside the spoke loop 254; shared real
 // ring 100; plain radius local 112; collision marker before the point 89; entry first 215.
-// Earlier 195 (was 195): frame 0xdc versus 0xd8 and a rotation spill; shared cross
+// At 195: frame 0xdc versus 0xd8 and a rotation spill; shared cross
 // 244; native component loop 244; cross before dot 257;
 // signed-byte spoke 213; size optimization 395.
 // rotation spill keeps frame 0xdc versus 0xd8; radius copy and sector-test registers differ.
@@ -481,31 +489,31 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // One rotation spill still adds four frame bytes; axis component values 285;
 // symmetric dot inputs 195; two/all cross subtrahends, minuends and projected-axis values 210;
 // cosine-direction values 211; private rotation output last 195.
-// Earlier 184 (was 195): frame 0xd8 now agrees; radius setup, rotation schedule and sector-test registers remain.
+// At 184: frame 0xd8 now agrees; radius setup, rotation schedule and sector-test registers remain.
 // Cosine first 197; shared direction/axis/both scales 210/213/261; cosine-first inputs 195;
 // angle product lifetime 196; per-use ring phase 184 kept, 1087/1089 bytes; angle-result names 195.
 // cosine complement 195; cosine first 197; output scalars 195; direct-input outputs 256;
 // components before dot 195; shared rotation 195/1091; output scalars plus plain radius 209;
 // shared rotation plus plain radius 208/1095. Rotation spill and frame 0xdc remain.
-// Earlier 163 (was 184): Frame 0xd8 agrees; entry/ring conversion, rotation and sector registers
+// At 163: Frame 0xd8 agrees; entry/ring conversion, rotation and sector registers
 // remain. Shared real ring 182; ring plus phase 195; record-first 163 kept; with real ring 161
 // rejected for two extra points; double base with ring/phase 182/195; axis value 317;
 // record/ring/spoke values 163.
-// Earlier 125 (was 163): entry-table/ring conversion and rotation allocation remain.
+// At 125: entry-table/ring conversion and rotation allocation remain.
 // Assigned sector word/short 161/161; default sector word 125 kept, short 128;
 // missing-sector continue, sentinel-between-direction and sentinel-first 163 each;
 // assigned short sector with interleaved publication 162.
 // frame 0xd8 agrees; entry/ring conversion, rotation XMM and sector registers remain.
 // Rotation output/axis/both object references 163/163/163; each with output last 163/163/163;
 // cosine-first output/axis reference contracts 163/163. Original helper and body restored.
-// Earlier 125 (was 125): entry-table/ring conversion and rotation allocation remain.
+// At 125: entry-table/ring conversion and rotation allocation remain.
 // Native direction value with output first/last, sine/cosine first 276/276/276/276;
 // both vector values 328/328; rotated-vector return 281/281. Original rotation contract retained.
-// Earlier 120 (was 125): entry-table load, ring conversion and rotation XMM allocation remain.
+// At 120: entry-table load, ring conversion and rotation XMM allocation remain.
 // Native radius member 125; shared ring with/without native radius 123/123; three-use trace distance 120 plain;
 // shared trace displacement 225; elevation vector 245; collision point setter 125; collision-offset vector 189;
 // trace distance with shared ring 120. Keep the smaller trace-distance form; frame 0xd8, 1090/1089 bytes.
-// Earlier 120 (was 120): frame 0xd8 agrees; entry/ring conversion, rotation and sector publication differ.
+// At 120: frame 0xd8 agrees; entry/ring conversion, rotation and sector publication differ.
 // Named collision marker 120; marker before entry 120; entry before point 236;
 // complete point components 144; promoted sector 120; conditional sector store 154;
 // direct radius with trace scalar 239; sector eligibility result 120.
@@ -530,6 +538,61 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Parallel displacement/elevation/both product parts 215/90/215; collision-offset parts 90;
 // displacement with collision parts 215; elevation with collision parts 90; all parts 215;
 // native point aggregate initializer 90. Original body and rotation helper retained.
+// Round 242: fused add/scale at trace/elevation/collision 90/215/90; trace+elevation,
+// trace+collision, elevation+collision, all three 215/90/215/215; all with ordinary radius 113.
+// Original complete body and rotation helper restored; ring conversion and rotation spill remain.
+// Round 244: existing rotation with distinct source/destination, output last/first,
+// axis-source-output first and scalar inputs first, each with projection before/after original
+// component snapshots, all 90. Original helper, in-place input copies and complete body restored.
+// Round 247: native ring-distance product 90; with ring phase 142; double base 118; base/phase 142; shared ring product 90; shared ring/phase 142; shared ring/base 118; all three 144. SSE ring conversion and rotation spill remain.
+// Round 250: existing staged-cross producer orders projection/components/cross, projection/cross/components,
+// components/projection/cross, components/cross/projection, cross/projection/components and cross/components/projection
+// 219/219/219/225/225/225; uniform projected-axis parts on first/last orders 102/237.
+// Original helper, input snapshots and body restored; ring conversion and rotation spill remain.
+// Round 253: Per-spoke query producer before direction/angle/sine/cosine, default-if versus
+// conditional, 163/247/153/246/281/281/147/241. All exact-only; no match. Original query
+// observation, rotation helper, input copies, inherited local qualifier and complete body restored.
+// Round 255: unsigned-word ring with short/word/byte/char spokes 117/117/246/246; signed-byte ring with short/word/byte/char spokes 130/130/247/247. All restored; x87 ring conversion and rotation spill remain.
+// Round 121: the missing frame slot is retail's SSE ring conversion temp (cvtsi2ss, a store, fld). The
+// rotation helper in the form that took 0x29c860 to 2 (j and k cross terms in a vector first, the i
+// cross term in the i row; in place) gives retail's rotation structure but 100 (frame 0xd4); with the
+// ring phase named before the distance as well 96 (frame 0xd8, SSE ring conversion and rotation core as
+// retail; the radius copy then moves to integer registers and the dot's sum order and integer register
+// names differ); with 0x29c860's operand orders 100/96; on that: angle terms swapped, dot written j/i/k,
+// phase after the distance 96 each; a named (real)ring 100/96 (with the phase); plain radius 222;
+// sector index before the radius 263.
+// Round 200: output-pointer rotation with four formal priorities 90/90/90/90;
+// with native phase before distance 143/143/143/143 (frame 0xdc). Original void helper,
+// input copies and complete body restored; output-result lifetime does not resolve the spill.
+// Round 106: the existing 0x29c860 rotation helper (sin/cos of the angle inside, j/k cross terms in a vector,
+// i in its row) in place 225 (frame 0xd4), on a copied source vector 124 (rotation core as retail up to register
+// names, frame 0xe0); in place with the ring phase named before/after the distance 230/230 (SSE ring conversion,
+// radius copied through integer registers); the ring loop as a plain `for` 266, with the named phase 262, with
+// both 271 (1057-1066 bytes).
+// Round 2 of lane 18, on the 96 form (j/k cross terms first, ring phase named before the distance;
+// there only the direction components' registers, the radius copy and the sector load differ):
+// plain radius 222 (repeats the listed form on this base); radius as a reference into the object 264;
+// components read before the dot from locals 96; dot3f(vector, axis) 96; components before the dot 96.
+// Round 457: shared vector scales and sum with ordinary/staged cross, projection/cosine
+// scale order, original/named ring phase: 244/244/243/243/258/258/257/257.
+// All inputs precede stores; original complete rotation and body restored.
+// Round 104 (lane 8, fast): the named ring phase renamed angle_offset/phase/twist 143/143/143 (names
+// move no slot); the dead pathfinding store dropped 204 (1056 bytes; retail has the store, sharing
+// the sine's slot); the sector index read at the trace call 265; the rotation helper __forceinline
+// 90 (identical); the pathfinding pointer as a ternary 217.
+// Round 26 (m3 lane 2, fast), on the 96 form (0x29c860's rotation in place, ring phase named before the distance;
+// its residuals: the sector index read after `add ebp, ecx` and the radius copied through integer registers, the
+// phase store before the spoke init): the radius read from the object at each use 262; the phase at function scope
+// 96; the radius reference before the sector index 96; the sector index after the ring counters 97; the radius copy
+// and reference after the ring counters 263.
+// Lane 18 r14 (one-link LTCG env, exact for this function: env count 70 = check 90): rotation helper with the j/k
+// cross terms first and the i term in its row, in place as a vector 75, as scalars 75, on component copies as a
+// vector 75, as scalars 70 (same code as now); each with the ring phase named before the distance 78/78/78/125;
+// the current helper with the named phase 125. On the vector form with the phase (rotation core and SSE ring
+// conversion as retail, radius copied through integer registers): plain radius 213, sector index first with a
+// plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
+// helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
+// below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

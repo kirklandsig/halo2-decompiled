@@ -301,44 +301,14 @@ local_0:
 
 PRIVATE __forceinline real function_1aded1(real arg_0, real arg_1)
 {
-    return arg_0 + (arg_1 - arg_0) * AI_RANDOM_REAL();
+    return (real)(arg_0 + (arg_1 - arg_0) * AI_RANDOM_REAL());
 }
 
-// score 61 (was 61): frame and both tick conversions agree; the only difference is the first
-// range's final add: ours fuses it (faddp) where retail keeps the lower bound live and drops it
-// afterwards (fxch/fadd st(1)/fxch/fstp st(0), 6 bytes). Our build fuses whenever the range's
-// result stays on the x87 stack; the second range (stored) already matches.
-// Round 49: helper without the global-optimisation-off pragma 61 (kept: identical code); result
-// local in the helper 61; the existing slot_random_range 68; named random in the helper 77 (SSE
-// range, 285 bytes); ranges written out in place 90.
-// Earlier: native interval fields 61; interval by value/reference/pointer 94/84/84; value with
-// result 94; reference/pointer input copies 64/64; value with named sample 95; shared delay/
-// duration/both range helpers 74/77/68; ordinary/direct/test-derived success 91; state at stores
-// 61; shared ranges ordinary result 91; rounding boundary for delay/duration/both, shared short/
-// real clock, first output before duration, early output with rounding and shared clock with
-// rounding 68, 65, 71, 75, 75, 79, 100, 89; in-place delay/duration/both products 61; operand
-// orders 61; entry failure guard 85; earlier state initialization 61; the existing 0x259d0 with
-// file and line 67 (SSE ranges; round 49 with its object linked: 73 instructions, NULL file or a
-// seed local the same).
-// first range still fuses its x87 add; native interval fields 61;
-// interval by value/reference/pointer 94/84/84; value with result 94; reference/pointer
-// input copies 64/64; value with named sample 95. All interval and helper forms restored.
-// first range add still fuses; shared delay/duration/both range helpers 74/77/68; ordinary/direct/test-derived success 91; state at stores 61; shared ranges ordinary result 91 (round 117).
-// first range FADDP remains fused; frame and tick-conversion tail agree.
-// Existing rounding boundary for delay/duration/both, shared short/real clock, first output before
-// duration, early output with rounding and shared clock with rounding 68, 65, 71, 75, 75, 79, 100, 89.
-// score 61 (was 61): first range still fuses; frame and later tick conversion agree.
-// In-place delay/duration/both products 61/61/61; delay/duration/both operand orders 61/61/61;
-// entry failure guard 85; earlier state initialization 61.
-// score 61 (was 61): first interval still fuses; frame and ret 8 agree.
-// Reversed scalar inputs 64; lower/upper names 61; both 64;
-// shared draw in private producer 68; reversed shared draw 87;
-// reversed product/add operand ownership 64/64; named reversed shared draw 87.
 // @retail 0x1aded0
 bool __stdcall function_1aded0(long actor_index, s_slot *slot)
 {
 	s_slot_3b *state = (s_slot_3b *)slot;
-	volatile bool result = true;
+	bool result = true;
 	s_actor_entry_4ef0 *entry = (s_actor_entry_4ef0 *)function_1e4ef0(actor_index);
 
 	if (entry)
@@ -369,9 +339,10 @@ bool __stdcall function_1aded0(long actor_index, s_slot *slot)
 			state->unknown12 = false;
 			state->timer = (short)rounded;
 		}
-		return result;
 	}
-	return false;
+	else
+		result = false;
+	return result;
 }
 
 // @retail 0x1ae350
@@ -501,34 +472,27 @@ real function_1c9ee0(real arg_0);
 void __stdcall function_26c2d0(long arg_0);
 bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool arg_3);
 
-// score 15 (was 41): only the EBX/EBP pair differs now: retail keeps the -1
-// sentinel and then the game-time pointer in EBP and the 0x1e5380 result in
-// EBX, ours the other way round. Tried on the unit index form: the result as a
-// const pointer 15, the result/ticks/unit index declared elsewhere 15, the
-// enable test nested 15, a game-time pointer local 15 or 91 (the flat form
-// with that pointer 28).
-// was: retail keeps the -1 sentinel in EBP and pushes the arguments in the
-// other order, where ours uses EBX for the sentinel, so the prologue and the
-// calls that follow differ.
-// score 15 (was 15): sentinel/clock and settings still exchange EBX/EBP.
-// Elapsed-seconds ready/arms/wait/nested results 15/15/15/15;
-// each with the weighted probability product separated 65/65/65/65.
-// Sentinel/clock and returned-settings EBX/EBP homes remain swapped.
-// actor reference 15; immutable actor 15; actor/node references 15; settings reference 15;
-// timestamp reference 15; interval reference 15; settings/timestamp references 15;
-// actor/coefficient references 15.
-// saved EBX/EBP pair still reversed; whole eligibility,
-// cooldown, reaction and combined test results 15/15/15/15; immutable cooldown
-// inputs 15; read-only two-use clock 91; complete actor/timestamp record and
-// its read-only receiver 15/15.
-// score 15 (was 15): saved-register pair persists; native const/mutable clock
-// records 91/91; interval accumulators on those records 95/95; named elapsed
-// phase 91/91; elapsed plus interval accumulation 95/95.
-// score 15 (was 15): saved sentinel/clock and settings registers still swap;
-// callback failure returns at actor/prop/unit/settings/cooldown/reaction phases
-// 15/106/106/106/106/106; combined actor-settings/all phases 39/39.
-// getter inline/noinline declarations 15/15; actor-index local 15; entry-scoped clock/timestamp
-// 15/15; prop-index local 113; unit inline declaration 15; result-first 116; direct clock 96.
+// score 15 (was 41): only the EBX/EBP pair differs: retail keeps the -1 sentinel and then the
+// game-time pointer in EBP and the 0x1e5380 result in EBX, ours the other way round (so the
+// prologue pushes and every use of the two registers differ). Tried: the result as a const
+// pointer 15; the result/ticks/unit index declared elsewhere 15; the enable test nested 15; a
+// game-time pointer local 15 or 91 (the flat form with that pointer 28); elapsed-seconds
+// ready/arms/wait/nested results 15/15/15/15, each with the weighted probability product
+// separated 65/65/65/65; actor reference 15; immutable actor 15; actor/node references 15;
+// settings reference 15; timestamp reference 15; interval reference 15; settings/timestamp
+// references 15; actor/coefficient references 15; whole eligibility, cooldown, reaction and
+// combined test results 15/15/15/15; immutable cooldown inputs 15; read-only two-use clock 91;
+// complete actor/timestamp record and its read-only receiver 15/15; native const/mutable clock
+// records 91/91; interval accumulators on those records 95/95; named elapsed phase 91/91;
+// elapsed plus interval accumulation 95/95; callback failure returns at actor/prop/unit/
+// settings/cooldown/reaction phases 15/106/106/106/106/106; combined actor-settings/all phases
+// 39/39; getter inline/noinline declarations 15/15; actor-index local 15; entry-scoped
+// clock/timestamp 15/15; prop-index local 113; unit inline declaration 15; result-first 116;
+// direct clock 96. Round 15: settings field before the factor in either product 15/15; clock
+// read after the first factor 80; timestamp read before the clock 94 (418 bytes); unit index
+// passed directly 41.
+// Round 28: descriptive local names 15; the random compare written `f() < chance` 15; the prop
+// state named at its test 15; the rate first in the elapsed product 15; `!= NULL` result test 15.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

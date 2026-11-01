@@ -87,12 +87,37 @@ void function_1bbc00(long player_index, long vehicle_index)
 
 static __forceinline long real_to_long(real value);
 
-// score 8 (was 8): retail moves the vehicle index into EAX before it forms
+// score 2 (was 2): BLOCKED-BY 0xd0620 (its formal order): only the setup order of 0xd0620's two
+// register arguments differs (retail moves the vehicle index into EAX before it forms the
+// iterator's address in EBX; 0xc9200 differs by the same two lines). With 0xd0620 declared as
+// (iterator, object_index) in its definition, every declaration and every call site, this
+// function, 0xc9200 and 0xdb670 match and nothing is lost, but that needs call-site edits in
+// damage.cpp and unknown_26b230.cpp. The child object is kept in a local, so retail's object
+// pointer stays in EAX and the tick count converts through ECX/DX like retail.
+// Tried: the iterator started from the stored player vehicle 77 (77 again on this base); the
+// actor looked up at each store 45; separate conversion locals in the loop 15; the loop product
+// passed straight to the conversion 8; the block locals in two other orders 8; the player and
+// vehicle parameters swapped 12; the child object in a local with the index read from it 8;
+// existing slot-query long/short 61/8; guarded long/short 70/38; query-first long/short 77/46;
+// shared-query rounding names/separate loop carriers 61/61; the clock local in the player block
+// with the slot local first 8; pointer, type, scope, direct-store and helper forms 8; bounded
+// slot-scan short/word/char/byte induction 84/84/85/85, with first-match termination 97 each;
+// the iterator's address in a local (declared before the call, with the block locals, assigned
+// first) 2; a 300 s permuter run, none below 2; the iterator declared at function scope or first
+// in the player block 2/2; the tick conversion before the player stores 21.
+// only the EAX vehicle and EBX iterator-address setup order differs; frame 0x1c and retail length agree.
+// Earlier: the child object is kept in a local, so retail's object
+// pointer stays in EAX and the tick count is converted through ECX/DX like
+// retail; only the 0xd0620 call setup still differs, ours forms the iterator
+// address in EBX before it moves the vehicle index into EAX.
+// Tried: the iterator started from the stored
 // the iterator address in EBX for the first child call, and in the child loop
 // keeps the object pointer in EAX and converts the tick count through ECX/DX
 // where ours uses ECX and EDX/CX. Tried: the iterator started from the stored
 // player vehicle 77; the actor looked up at each store 45; separate conversion
 // locals in the loop 15; the loop product passed straight to the conversion
+// 8; the block locals in two other orders 8; the player and vehicle parameters
+// swapped 12; the child object in a local with the index read from it 8.
 // 8; the block locals in two other orders 8.
 // Earlier 8 from 44.
 // Existing slot-query long/short 61/8; guarded long/short 70/38;
@@ -103,6 +128,8 @@ static __forceinline long real_to_long(real value);
 // Earlier 44 -> 8 came from clock/player lifetimes.
 // Round 220: Bounded slot-scan short/word/char/byte induction 84/84/85/85;
 // first-match result termination with those widths 97/97/97/97. Original body restored.
+// Round 398: seconds/ticks/both/elapsed conversion-home names; distinct player/child scratch phases crossed with inner/outer iterator and role names
+// 2/2/2/2/2/2/2/2; all restored.
 // @retail 0x1bbcc0
 void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 {
@@ -131,14 +158,14 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 			ticks = real_to_long(time);
 			player->unknown0a = (short)ticks;
 
-			function_d0620(vehicle_index, &iterator);
+			function_d0620(&iterator, vehicle_index);
 			while (function_d0690(&iterator))
 			{
-				long actor_index = object_get(iterator.child_index)->actor_index;
+				s_slot_object_view *child = object_get(iterator.child_index);
 
-				if (actor_index != NONE)
+				if (child->actor_index != NONE)
 				{
-					s_actor_view *actor = actor_get(actor_index);
+					s_actor_view *actor = actor_get(child->actor_index);
 
 					actor->unknown31c = (short)player_slot;
 					time = (real)g_510c54->field_2_3 * 2.0f;
@@ -152,25 +179,11 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 }
 
 
-void function_1e3400(long actor_index, long squad_index);
-real function_204950(long actor_index, long squad_index, short mode);
+void function_1e3400(long actor_index, short squad_index);
+real function_204950(long squad_index, long actor_index, short mode);
 void function_26def0(long actor_index, long owner_index);
 __declspec(noinline) bool function_f5dc0(long object_index);
 
-// score 49 (was 49): the first squad test still reuses its full-width load;
-// the second call reloads the actor where retail uses its saved pointer, and
-// the distance-call argument order differs. Split entry branch 67; first fresh
-// actor 90; second fresh actor 49 (kept); both fresh actors 81; first field
-// pointer 49; second field pointer 67; typed vehicle 67; no final refresh 123.
-// Native tag field 49; squad-first admission 74; squad before entry flag 77;
-// distance-first admission 70; entry declaration lifetime/constant pointer/role names/unsigned tag handle 49.
-// Tag field and all body forms restored; the full/low-word reuse and later schedules remain.
-// Native squad full/low-word fields alone/with timer/with flag/with both 49/49/49/49;
-// the same native field forms with a saved second actor read 67/67/67/67.
-// Round 273: one tick-rate short/long carrier 129/129; multiplier-first
-// products 49; explicit transition/distance call boundaries 49/49;
-// short rate/transition boundary 129; failed-entry-first 49, with short rate 129;
-// actor observed at every field use 199. All restored; full/low-word reuse remains.
 // @retail 0x1bba70
 void function_1bba70(long actor_index, long vehicle_index, long seat_index)
 {
@@ -184,18 +197,18 @@ void function_1bba70(long actor_index, long vehicle_index, long seat_index)
         {
             s_tag_element *entry = function_1e5450(actor_index, tag_index);
             if (entry && (*(byte *)((byte *)entry + 0x10) & 1) && *(long *)((byte *)actor + 0x28) != NONE)
-                function_1e3400(actor_index, *(word *)((byte *)actor + 0x28));
+                function_1e3400(actor_index, (short)*(long *)((byte *)actor + 0x28));
             else
             {
                 real distance = 3.4028234663852886e+38f;
                 if (*(long *)((byte *)actor + 0x28) != NONE)
-                    distance = function_204950(actor_index, *(long *)((byte *)actor + 0x28), 0);
+                    distance = function_204950(*(long *)((byte *)actor + 0x28), actor_index, 0);
                 if (*(long *)((byte *)actor + 0x28) != NONE && distance < 3.0f)
-                    function_1e3400(actor_index, *(word *)((byte *)actor_get(actor_index) + 0x28));
+                    function_1e3400(actor_index, (short)*(long *)((byte *)actor + 0x28));
                 else
                 {
                     long squad_index = *(long *)(vehicle + 0x3a0);
-                    if (squad_index == NONE || !(3.0f > function_204950(actor_index, squad_index, 0)))
+                    if (squad_index == NONE || !(3.0f > function_204950(squad_index, actor_index, 0)))
                     {
                         *((byte *)actor + 0x3c) = true;
                         *(short *)((byte *)actor + 0x2c) = g_510c54->field_2_3 * 10;

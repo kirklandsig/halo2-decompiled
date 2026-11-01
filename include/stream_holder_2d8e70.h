@@ -38,7 +38,9 @@ public:
 
 	referenced_2d88a0 *stream;
 
+	stream_holder_2d8e70(referenced_2d88a0 *object);
 	stream_holder_2d8e70(char *buffer, long size, flag_2d8e70 zero);
+	stream_holder_2d8e70 *append_character(char value);
 	// write a string, or "(null)" for none, or a number, signed (0x2d8f60) or
 	// not (0x2d8fb0); each gives back the stream (a pointer, not a reference,
 	// as the build's stand-ins cannot keep a reference)
