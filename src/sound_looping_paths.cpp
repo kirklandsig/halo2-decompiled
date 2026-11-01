@@ -232,6 +232,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 470: unsigned raw decibel words in choice/target/datum records, all
 // seven subsets 886 each; all with unsigned helper transport 886. Original
 // records, helpers and body restored; entry zero and target/query/count homes remain.
+// Round 494: short persistent target count with native long query/choice and
+// bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
+// recover 3327 bytes but regress; all original counter domains, helpers and body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

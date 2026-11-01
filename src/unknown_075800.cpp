@@ -1174,6 +1174,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // late case returns in both orders 196/196; default/terminal conditional chains
 // 196/196; singleton-first switch/conditional chain 201/202 (fast control 196).
 // Full baseline 153; original native-role graph and matched caller preserved.
+// Round 494: late case-18/case-11 inline boundaries on the native-input graph
+// inline/ordinary, ordinary/inline, inline/inline, noinline/ordinary, ordinary/noinline,
+// noinline/noinline, inline/noinline, noinline/inline: 196/196/196/211/196/211/196/211 fast.
+// Case-18 noinline moves the input roles and loses the matched caller; all declarations restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
