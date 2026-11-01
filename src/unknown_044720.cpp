@@ -245,6 +245,9 @@ void function_44720(void)
 // 136; the flags read through `g_4ba138[(short)index]` at the top 140 (506 bytes, entry folded away).
 // BLOCKED-BY 0x45ce0 / 0x41040: both loop callees are unmatched in other owners' files, and our LTCG
 // hoists g_4e0348 across them where retail reloads it per arm.
+// Round 330: Native entry level/transform/both 107/107/107; complete geometry field
+// views with live level 135; with native level/transform/both 107/107/107; all views
+// with live level 135. Original entry type, selector and body restored; frame and reloads remain.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -422,6 +425,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // provider-filled count and success-local transform homes, subsets 0-7:
 // 219/221/229/233/219/221/229/233. Original center producer, helper boundary, count initialization and
 // matrix lifetime restored; entry/index spill and point/query homes remain.
+// Round 330: Native entry section/instance-ordinal/instance-bit views in seven nonempty
+// subsets all 182; complete views with read-only selector input 182. Actual entry type,
+// helper and complete body restored; entry/index spill and point/query homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
