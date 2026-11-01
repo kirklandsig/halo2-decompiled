@@ -186,6 +186,9 @@ struct c_aggregate : c_child
 // Retail's slot 0x10 holds produced, the dispatch child cursor and the cleanup countdown, slot 0x14 the
 // children base, the inner count and the block pointer; ours groups the temporaries the same way but keeps
 // produced apart. Still BLOCKED by the build flag.
+// Round 31 (m3 lane 2, fast): produced as a dword (passed through a long pointer cast) 31; total as a
+// dword 32; the room argument as `sizeof(blocks) / sizeof(blocks[0]) - total` 31; the collection child
+// declared before loop 1 31; error and total declared before starts 31 (frame 0x8024 in each).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

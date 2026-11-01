@@ -668,6 +668,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // after it 217 (1261 bytes, every product register moves), with cross3f_staged for the second
 // product 223 (1266); either with a forward pointer in the else branch 217/223; the else branch
 // without the cosine local (cos(pitch) at both uses) 238 (1284 bytes).
+// Round 28 (m3 lane 2, fast): the right local renamed to sort first 57 (names do not move the
+// colours); previous_up declared at function scope 57, with cross3f_staged for the second product
+// 217 (1270 bytes: our colours are then retail's with xmm0 and xmm2 exchanged, right.i in xmm0 and
+// previous_up.k/right.k in xmm2); the first product written into the up output, then cross3f_staged
+// in place 252 (1291 bytes, the first product's stores stay); the second product into an up local
+// then copied 253 (as listed); right, both products and the up normalize in a force-inline helper
+// (staged second product) 221 (1272 bytes).
 // Round 42 (lane 11, fast): the side vector built in command->up and crossed in place with
 // cross3f_staged (cross3f/staged first product) 252/243 (1291/1289 bytes: the first product's stores
 // stay and the second reloads them); the staged second product with each product's operands swapped

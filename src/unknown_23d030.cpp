@@ -238,6 +238,23 @@ struct s_free_state_23d260
 // sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
 // k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
 // 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
+// Round 29 (m3 lane 2, fast; none kept): retail's side block is 0x11d090's code (`w.i = v->j; w.j = 0.f - v->i;
+// w.k = 0.f`, length `sqrt(j*j + i*i + k*k)`, `!(0.0001f > fabs(length))` scale, `else length = 0.f`, then `if
+// (length == 0.f)`), with a constant fallback. That side form 119 (x87 squares j first as retail, but the side.i
+// copy is hoisted to the forward.j store; zero XMM3); with cross3f_staged 289; with the existing
+// direction_from_angles for forward 157 (copy placed as retail, angles kept on the x87 stack). `s_view_angles`
+// (globals.h) in both camera states, the file's direction helper taking it (0x23d790 still matching) + that side
+// form 270: the whole forward/side x87 block is then retail's, only the SSE colouring differs (zero XMM3, length
+// XMM4); on it side.k first 259, normalize3d 267, fallback as three stores 259, fallback without side.k 129
+// (1328 B). On the s_view_angles form with normalize_inline and cross3f_staged 264 (1330 B, first diff +0xbd):
+// the SSE side block is then exactly retail's (zero XMM1, length XMM6, inverse XMM0, side XMM2/3/4, divss
+// before lahf, `movaps xmm4, xmm0`) but normalize_inline squares side.i first. Every j-first sum with
+// cross3f_staged swaps zero and the entry temps (zero XMM0): normalize3d 282, the 0x11d090 form 281, local
+// two-return dot-order normalizers 282/282/282/281 (k as `v->k * inv` or `inv * v->k`, early zero return,
+// named length). `real length = normalize3d(&side); if (length == 0.f)` 303 (1342 B): zero XMM1 and every
+// side register as retail, but the short-length path is no longer threaded to the fallback. So the zero's
+// register follows the float temp count (the extra x87 reload in normalize_inline's order gives XMM1).
+// Lead: s_view_angles + j-first normalize + staged cross, plus whatever adds the one temp retail has.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
