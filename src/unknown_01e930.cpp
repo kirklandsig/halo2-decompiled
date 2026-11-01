@@ -344,10 +344,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
 // size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
-// score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // the retry ordinal as a function-scope local 239 (MiniMax E run 12; under the keep bar, restored).
 // Round 231: shared retry helper/native byte block/both/shared audio arrays/helper-arrays/byte-
 // arrays/all/Boolean large-block selection 313/287/313/339/364/339/364/347; separate noinline
@@ -449,6 +449,14 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 49 (lane 11, fast): the first loading query in a `bool loading` local 239 (its test becomes retail's
+// `cmp al, bl`); the same local also holding the second query 238 (both tests retail's; 6 points, under the keep
+// bar); skippable as `!query` 273; on the 238 form: size and movie flags tested on `flags & 0x100` directly 267
+// (retail's and/or/shl size, but the mask lands in EDI where retail spills it to the 0x40 frame's extra dword);
+// `dword large = flags & 0x100` 271 (1102 bytes); the retry counter at function scope 260; the format-field size
+// query 245 (1100 bytes); the allocation result declared after the start time 256 (the last two are the listed
+// scores of those forms alone, so the loading local's gain cancels in them). Lead: the loading local is retail's
+// for both queries, so it may count once the frame's mask slot is found.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

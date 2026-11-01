@@ -221,12 +221,19 @@ static inline void quaternion_transform_vector(
 // Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
 // native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
 // frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
-// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
-// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, scoring
+// 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
 // with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
 // 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
+// Round 49 (lane 11): retail computes the transform scalar s = 2w*w - 1 interleaved with the identity copy's
+// setup (before rep movsd) and 2w in place on w after it; its first row sums cross*2w + v*s + q*dot, the other two
+// v*s + q*dot + cross*2w, and its dot sums i, k, j. Fast: only the first row written cross-first 200 (identical
+// code: VC reassociates); the helper computing s first, then dot and 2w, 257 (1305 bytes; s and 2w both hoisted
+// above the copy); s first and 2w after the cross 277 (1331 bytes). Plain: the three transforms through the
+// existing quaternion_rotate_point on the staged-cross/real-scale construction 258 (1303 bytes). 0x11d000 writing
+// through a named result pointer (still matched) 200: its summary does not keep the quaternion's slots unshared.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

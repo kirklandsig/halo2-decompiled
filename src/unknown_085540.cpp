@@ -1030,7 +1030,7 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// score 72 (was 72): earlier: the case-0 copy of the header value, block- and function-scoped,
 // scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
 // ring cursor stays in esi across the first read and the used count is updated through a register,
 // so the read's offset is still forwarded in edx instead of reloaded and the header size still
@@ -1157,6 +1157,14 @@ bool function_68670(byte *source, long size, void *block);
 // (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
 // live from the test into the cases (reloaded after the payload read); ours coalesces it with the
 // long size in ESI.
+// Round 49 (lane 11, fast): the ring read helper 0x1a19a0 writing through a named byte destination pointer
+// (still matched) changes its whole-program summary: with case 0 sending a block-local copy, the first read
+// then reloads the ring start as retail does (132, 562 bytes), but the header size still loads before the
+// start/used stores and used is updated through a register (retail's header is treated as aliased); on the
+// 72 form that helper form 72 (identical); with the header declared in the loop 118 (553 bytes); with the long
+// payload count declared before its test 106 (553 bytes, start still forwarded through EAX); those two are the
+// listed scores of the same forms without it, so the helper form is inert there; with that count and the case-0
+// copy 123. All restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

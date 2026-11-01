@@ -125,6 +125,15 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
 // initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
 // 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
+// Round 49 (lane 11, fast): retail's clamp reads like `if (size > 0x7ff) size = 0x7ff;` on a size that is never
+// enregistered (load for the compare, select reloading it, store, reload for the index), the way 0x121a40 keeps its
+// out-count in memory; ours caches it in EAX. The zero-initialised `long` size form above with the clamp as an if
+// 122 (same score: the clamp spelling changes nothing; the zero store before the read call is not retail's); the
+// three read outputs declared at the block top 128; declared size/success/done 128 (the reversed outputs again);
+// the tokenizer `inline` without `static` 128; the path copy through a file-local csstrncpy (as 0x1a08d0's file has
+// it) 128; the new-index arm first (`== NONE`) 188 (764 bytes); the token stored after the duplicate search 215 (756
+// bytes). Diagnostic only, not keepable: the done flag `bool volatile` (the wait's parameter type) 128. The
+// compile-only screen does not reproduce this body (the wait helper is not inlined across files there).
 // @retail 0x121fc0
 void function_121fc0(void)
 {

@@ -412,6 +412,12 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
 // (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
 // index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 49 (lane 11, fast), all without the volatile reads: 0x991d0 called directly with `local_10[0]`/`local_10[4]`
+// 207; the notify loop walking the same items cursor variable 220 (520 bytes); the count-one tail reading the
+// handle from the request (diagnostic) 221 (the handle is then not spilled, but the items cursor still takes EDI:
+// retail's choice is the cursor's weight, not the handle conflict); a dword handle 207; the data cursor as
+// `void *const *` over data.v 207. The volatile form's extra `mov edx, eax` (item loaded into EAX) shifts every
+// later line by one, which is most of its 115.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

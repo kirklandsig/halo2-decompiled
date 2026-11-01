@@ -186,6 +186,10 @@ struct c_aggregate : c_child
 // Retail's slot 0x10 holds produced, the dispatch child cursor and the cleanup countdown, slot 0x14 the
 // children base, the inner count and the block pointer; ours groups the temporaries the same way but keeps
 // produced apart. Still BLOCKED by the build flag.
+// Round 49 (lane 11, fast): the get_info output declared first at function scope 31; the final boundary
+// stored inside the dispatch gate (its only reader) 34; the dispatch child read at each call 121 (357 bytes);
+// the get_info fallback as a ternary assignment 31; error and total declared in one statement 31 (the last
+// three the same code). The frame stays 0x8024 in each.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
