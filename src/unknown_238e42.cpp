@@ -993,6 +993,10 @@ bool __stdcall function_2399da(long controller_index)
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
 // for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
+// own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
+// permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an
+// if/else chain 101 (440 bytes; 0x239a3d 0 -> 42, restored).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

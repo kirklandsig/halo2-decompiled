@@ -573,6 +573,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
 // first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
 // before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
+// round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
+// a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21
+// 349-353 (1280 B); only a,b,c,d / a,b,d,c load actor_index at entry, and both then take pathfinding in EDX.
+// b,a,c,d with the result declared first 274.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
