@@ -567,7 +567,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
+// score 115 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
 // Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
 // bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
 // (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
@@ -616,6 +616,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
 // (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
 // block top / first 115/115; bool timer with the loop index at the block top 191.
+// Lane 18 round 16 (fast; unchanged source 114 fast, 115 plain; one-link env with 0x13cb40's file, exact but for the
+// pow calls): the tutorial colour named in a dword local 114; text_bounds declared first 114; left declared before
+// split_screen 114; text_bounds and color renamed to sort first/last (tip #104) 114; the text buffer declared first
+// 114 (all the same code). Env: bounds, field_24 or color renamed, origin/bounds/text_bounds/text in any of three
+// further orders, each alone and on the bool timer: identical code (bool timer: flags -0xe/-0xd/-2, retail
+// -0xf/-0xe/-0xd). Names and declaration order never move these homes; retail places text_bounds (-0x24) above
+// the first colour (-0x34) where ours places it below (-0x38 under -0x2c).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
