@@ -417,6 +417,24 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
 // (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
 // index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
+// 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
+// 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison
+// operands swapped 116; memcmp sized by the request's count (retail's `lea ecx, [edx*4]`) re-measured on
+// this body 178 (520 bytes). 0x991d0's call setup follows its declared order (one register argument,
+// the handle in EDX), so no parameter reorder has retail evidence.
+// Round 147 (m3 lane 4, fast; volatile-read body): the validation counter declared inside the count test's
+// block 203 (524 bytes); both cursors declared at case scope 195; the counter declared before the validity
+// flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
+// switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
+// inverted 109 (544 bytes, branches laid out opposite to retail).
+// Round 42 (m3 lane 13, fast): case 2/4's state test as an `if` of its own around the handle/state test 115 (same
+// code); the chain-length test written `local_9 == info.count` with memcmp sized by info.count 178 (520 bytes); the
+// validity flag declared before the switch 142; the validation loop as a plain `for` over the counter (volatile
+// cursor reads kept) 195; the count-one branch reading `table` at each use (no peers local) 204. Independent
+// tie-breaks left besides the loop: the count after the loop in EAX (retail ECX, so the chain call's register
+// temporaries rotate), case 2/4's index*5 in ECX (retail EAX: state read through the scaled index before the entry
+// address is formed), case 5's table in EDX (retail reloads it into EBX).
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
