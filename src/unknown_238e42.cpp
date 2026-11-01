@@ -982,6 +982,12 @@ bool __stdcall function_2399da(long controller_index)
 // rank-3 dialog, set) 90; one `team_xuid` pointer for both calls 90; own rank read before the identity
 // test 90; early return when there is no friend request 189 (450 bytes); the rank stored first and the
 // rank-3 test reading the stored field 89 (one rank use fewer, a gain of 1).
+// Round 146 (lane 4, fast): the 89 form forwards the stored field back into the rank register (`cmp eax, 3`),
+// so the rank keeps every register use; the post-membership block as a forceinline helper taking the identity
+// first 90 (same code); the rank copied into a local at the function top 90 (same code); the over-rank and
+// no-permission refusals sharing one block through `goto denied` 116 (432 bytes, but the zero and controller
+// registers swap ESI/EDI and the identity stays in ECX). Diagnostic: the identity test without the 64-bit
+// check 105 (the identity is then compared in memory and never loaded).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

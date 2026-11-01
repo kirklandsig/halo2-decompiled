@@ -324,6 +324,12 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // the ranges decoder called directly 175; the decode helper taking bounds and point first 175; a shared
 // inline data + offset accessor in all four cases 175; decoded into a case-local point stored before the
 // node 175. Diagnostics: without format 2's zero store 177, without all three 173 (node on the stack).
+// Round 146 (fast), formats 3 and 4 indexed: format 4's record copied into a local first 197 (640 bytes);
+// a decode helper returning the point by value (`*point = decode(...)`, formats 2 and 4) 173; the range
+// vector built first in each packed case and the ranges decoder called 175; one function-scope `data`
+// local assigned in every case and cast per access 175; a coordinate-array decode helper given
+// `&vertices[index].x` with the node read by index 175. Each still flips (node EBX, switch temp EDI,
+// source on the stack, `ret 8`); retail's constant only appears in this function.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

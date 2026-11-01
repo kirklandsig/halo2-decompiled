@@ -769,6 +769,13 @@ union s_60403
 // Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
 // at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
 // named `dword bit = 1 << i;` in the emission loop 149 (same code).
+// Round 146 (lane 4, fast): typed records (the snapshot layout 0x5cb80 already names, typed member/player
+// update records; definition, declaration and both calls) 149 (identical code); one `previous_count` for the
+// mapping and removal loops 366 (1482 bytes); plain bool flag + map entry read at each use + retained declared
+// after the member loop 362 (1513 bytes, aligned 65 masked: the flag stays in memory, retail spills only its
+// false and carries it in BL); that with the removal loop reading the records directly 362; `new_to_old[i]`
+// read directly for `local_0` 149 (same code). Diagnostic: parameters swapped (definition and calls) 153: current
+// still takes EBX, so the entry choice follows current's weight, not symbol order.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
