@@ -160,6 +160,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes
 // to the stack); on that form the body array first 118, the model first 122, a byte shift in case 0 124, int type
 // 124, result first 124, the rigid body at each use 97 at 260 [122], the rigid body after the kind-7 path 103.
+// Round 32 (m3 lane 2, fast, caller 0x1d5bf0 in brackets): one byte type read with the kind test inverted (main
+// switch first, the kind-7 switch in the else) 89 at 256 bytes [13] (component ECX, index EAX); the header array read
+// first and shared by the type and case 0 124 at 228 [209]; one read with the kind-7 path as an if/else single exit
+// 104 at 240 [13] (sbb select); the two-read body with the kind test inverted 103 at 268; one read for the main switch
+// with the kind-7 switch re-reading the header expression 94 at 256 [13] (CSE'd into the one-read form).
 // Round 33 (lane 15, fast): o,t,r with the kind-7 ternary re-measured 96 at 256 bytes [0] (rigid body computed
 // in place in ECX where retail copies the index to ESI, header data in ESI for retail's EDX, branchless kind 7);
 // on it the kind-7 path as `if (type == 1) return 0xc; return 1;` 96 (folded to the same select), case 0 as

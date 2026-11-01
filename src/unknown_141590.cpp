@@ -234,8 +234,8 @@ static inline void quaternion_transform_vector(
 // Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
 // native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
 // frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
-// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
-// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, score
+// 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
 // with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
@@ -246,6 +246,10 @@ static inline void quaternion_transform_vector(
 // 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
 // 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
 // computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
+// Round 34 (m3 lane 2, fast): plain halves named `w` and `sine_half` 267 (1297 bytes); the struct's members
+// swapped 200 and the struct renamed `halves` 200 (both the same code: these names do not move its slots);
+// `2.f * sine_half * cosine_half` 200 (same); the scale computed before the cross product 252 (1317 bytes,
+// retail's length, stack-masked aligned 259 against 229).
 // Round 278: Complete independent scalar output production in six row orders 333 each; with staged
 // transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
 // but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross

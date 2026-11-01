@@ -575,6 +575,14 @@ done:
 // the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
 // with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
 // named once for the translator and the copy 32; the tag read in the translator call alone 45.
+// Round 32 (m3 lane 2, fast; parse_variant stays matched): the natural one-copy form re-measured 54 at 173 bytes
+// (only the EBX hoist and the selector/tag schedule it moves); on it a caller-side `if (tag_index != NONE)` guard
+// around the translator 61 (178 bytes) and an early `goto done` for a NONE tag 61 (178 bytes); on the kept form the
+// tag read in the translator call with the cases in numeric order 41; the one-copy form with both 45 (171 bytes);
+// the kept form with `if (!globals) goto done;` and the tag read before the variant call 44. Retail references
+// 0x55c6e4 only from these two immediates (no pointer table in its data). Diagnostic, not kept: a speed preference
+// with automatic inlining off pushes the immediate again but LTCG still inlines 0x148350 (224 bytes, 118), so the
+// hoist is the size-preference tie (flags lead only).
 // Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
 // only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180

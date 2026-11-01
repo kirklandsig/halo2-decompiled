@@ -1389,6 +1389,12 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
 // 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
 // block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
+// Round 35 (m3 lane 2, plain; fast gives 211 for the unchanged body): the name count as dword 184 (same code);
+// no `current` with `previous` set before the getter 223 (903 bytes); `previous` set before the getter and used
+// by the else arm's memset too 190 (916 bytes; previous is computed ahead, the zero still in EDX), with no
+// `current` 209 (905 bytes), with a dword name count 190. Our zero constant is register-allocated across the
+// update loop (EDX, `xor edx, edx` at the latch) exactly where retail reloads the name count into ESI; a
+// compile-only build without `current` gives retail's `test edi, edi` and memset-EAX zeros, LTCG does not.
 // Round 273: Complete clear-return/four-element-array/three-element-array
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
@@ -1878,15 +1884,14 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
-// Round 31 (lane D): score 339 (was 339): unchanged this round; the permuter run was stopped by
-// the background time limit before it produced a result. Still differs in retail's conditional move
-// (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
-// the type, membership and member-index homes and the saved registers.
-// score 339 (was 339): unchanged. Retail writes output->state with a conditional move (cmovne at
-// +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
-// lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
-// member-index homes and the saved registers differ.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
+// limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which
+// needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in the type, membership and
+// member-index homes and the saved registers.
+// Earlier (339, was 339): unchanged. Retail writes output->state with a conditional move (cmovne at +0x23c), which needs
+// /arch:SSE; this file has no such flag and the build flags are out of this lane's reach. The frame is
+// 0xa9c against retail's 0xaa8 and the type, membership and member-index homes and the saved registers differ.
 // Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
 // 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
 // current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
@@ -1917,6 +1922,18 @@ struct s_summary_player_sort_entry
 // inline/forceinline declaration here 353/353 (still called); `inline` on 0x5a680's definition 353 (still
 // called here; 0x83220 and the 0x199ebc family lose); member index and the +0x4c pointer written as
 // 0x66050 does 353 (frame 0xaa0: the pointer folds into the session register). All restored.
+// Round 35 (m3 lane 2, fast = plain here): the id/key copy through the existing network_session_get_key
+// (session, &output->id, output->key, NULL, NULL) 393 (1323 bytes; LTCG inlines it in the plain build too and
+// gives retail's per-destination null tests, but the six-instruction prologue gap makes it positional); the
+// manager state as `long state = 0; if (initialized) state = g_527330.state;` 375; the variant through the
+// existing session_get_data_4db0 357 (1291 bytes, retail's length), with the option through
+// session_get_value_5dd0 too 373 (1275 bytes), with the key getter instead 375 (1307 bytes). Diagnostic only
+// (changes behaviour, not a valid form): get_values_4d08's third output initialised to `(byte *)&session->value18`
+// and the type read through it, which forces a &value18 pointer into the frame as retail has one, 373 (frame
+// 0xaa0, EDI pushed early); the membership from 0x5a680 (NULL, &member_index; inlined here, the index stored early
+// at retail's +0x2c) with the key getter 396 (frame 0xaa0), with that diagnostic too 384 (1339 bytes, frame
+// 0xaa0). Retail keeps &session->value18 in its own slot across the get_values call (the outputs go to other
+// slots) and the membership pointer (+0x4c) in another; ours folds both into the session register.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

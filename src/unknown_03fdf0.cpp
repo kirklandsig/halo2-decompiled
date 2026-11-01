@@ -375,6 +375,17 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
 // the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
 // combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
+// Round 34 (m3 lane 2, fast; env link aligned counts against 29-30 for the earlier indexed forms): the six
+// clears written in both arms of the count guard give retail's head colouring (scaled index EDX, count AX,
+// zero ECX; aligned 18), but first stays in EDX across the copy where retail loads it into EDI and spills it,
+// and entries is built in ESI and spilled where retail builds it late in EDX (four instructions short):
+// indexed with the clears in both arms and first read back from current 132 (495 bytes); with a long count
+// at the guard's top and first as a local 132 (495); a long count read before the guard 161 (492); the block
+// form with the clears in both arms and first read back 128; indexed with the clears in both arms, the copy
+// source as the field and entries set after the advance 151 (496: index back in EAX/EBX, mode spilled).
+// Env-only on the aligned-18 form: a for loop 22, n/index before the copy 69, entries or first declared at
+// function scope 18/18, index before n 18, `&g_4ba138[first]` 18, current set to first + count 42; a separate
+// loop cursor copied from entries 55; no first local 49.
 // Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
 // the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
 // current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),

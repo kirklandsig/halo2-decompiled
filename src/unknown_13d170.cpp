@@ -260,6 +260,13 @@ struct s_block_candidate
 // Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
 // bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
 // restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
+// Round 35 (m3 lane 2, fast): lane 14's busy-in-arm form (`if (busy) { head = tail; continue; }` in the block
+// arm) rebuilt 377 at 1213 bytes; on it, the allocation as a single exit (`if (result != NONE) link; else if (type
+// == limit_index) clamp;`, no goto) 377 (same code; 370 on the original, same code), with the clamp arm first
+// (`if (result == NONE)`) 393 (1197 bytes); on the original: the new candidate's fields written through
+// `candidates[tail]` 371, the scan's candidate read through `candidates[i]` 397 (1244 bytes), the loop test as
+// `page_count > offset` 370 (same code). Retail places the zero-trip limit update right after the loop guard
+// (`jg` into the body, the update falling through); every form here keeps it at the end.
 // Round 275: Reused candidate pages/time/both/best fields/pages-best/time-best/all 369/367/367/370/367/367/367; all with immutable successor 367. One/three-point leads rejected.
 // Original executable source restored; frame 0x1050 versus 0x1054, page/ring homes and policy blocks remain.
 // Round 277: Existing private iterator with field/aggregate initialization and candidate
