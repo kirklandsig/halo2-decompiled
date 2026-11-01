@@ -359,6 +359,10 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 11), coordinator review 11-01: MiniMax R put the seat count minus one in a local declared
+// after the seat pointer again (8: the seat count in ESI and the short index in EBP as retail; left
+// are the guard's shape and the home of the loop's zero); a one-use local is kept only with a match,
+// so the loop is back to its earlier form
 // score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
 // back to its earlier form
 // score 8 (was 8): the seat loop's preamble still differs in the guard's shape (a sign test on the
@@ -992,6 +996,8 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 // ESI and the record into EAX; this round's declaration-order trials (the element
 // pointer before or after the actor) move the whole prologue instead, and the body
 // after the call matches
+// MiniMax R (11-01): no new form, no lower score; the record read directly in the call 31 and the
+// element access first 22/30 all move the record's register further from retail's ECX.
 // score 17 (was 17): the element pointer is still formed after the call's argument
 // pushes, so the element pool's data has to survive them and lands in ESI with the
 // record in EAX; retail forms it before the pushes, so the data stays in the
