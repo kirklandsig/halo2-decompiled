@@ -36,6 +36,9 @@ bool function_1946f0(s_bitstream *stream)
 // field before/after the index 2/2; the masked byte as an explicit read-modify-write 2.
 // Round 37: the byte index declared at the function's top, after `saved`, at the discard block's top, at the
 // mode block's top with the count 2/2/2/2; an int index 2; the index computed before the counter store 17.
+// Round 97: masked pointer dereference 2; clear-start index first alone 2; two-use buffer pointer 40;
+// current-byte pointer 46; two-use next-byte index 24; grouped remaining count 2;
+// buffer member only at the mask or only at the clear 2/2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

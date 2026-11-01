@@ -1043,6 +1043,15 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 252: Common successful output across all three success paths: long/dword/word/native point at entry
 // and after working-edge declaration 459/459/456/401/459/459/456/401. Original complete executable source
 // restored; Frame 0x30 versus 0x28, zero/radius ownership, history homes and crossing allocation remain.
+// Round 47 (m3 lane 1, fast; positional count, aligned diff tracked too: baseline 283): the -radius scale
+// before the +radius one, each with its origin add, 353 (1281 bytes, aligned 234: frame 0x28, radius in XMM4
+// and retail's in-place `0 - radius`); both scales first then the adds 351 (aligned 233), with the other
+// offset's y add first 410; the adds as `offset.x += origin->x` 324 (same code); the offsets per coordinate
+// as `normal.x * radius + origin->x` (and `* (0.0f - radius)`) 360 (1268 bytes, aligned 172: the whole
+// normalisation/offset/difference block then matches retail), origin first 360, -radius pair first 368;
+// on that per-coordinate form the crossing as three `crossing = true` sets 347 (1312 bytes, aligned 161) or
+// as `first | second | (first_vertex == NONE)` 347 (1312 bytes, aligned 137). Retail evaluates all three
+// crossing tests into one flag (DL), so the || form keeps it 44 bytes short.
 // Round 121 (m3 lane 5, fast): the offsets per coordinate as the matched 0x2c2910/0x2c2740 write them
 // (`origin->x + normal.x * radius`, `* (0.0f - radius)` for the other side, no negative-radius local)
 // 360 (1268 bytes), but the whole float block is then retail's (frame 0x28, the zero in xmm0 consumed by
@@ -1056,6 +1065,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // spills it to the magnitude slot) and the edge pointer takes EBX (retail ESI). Also: direction renamed
 // segment 324 (same code); edge declared at function scope 324; the portal search as a while with
 // nested ifs and the step at the bottom 379 (1288).
+// Round 123 (lane 6, fast): the offsets as direct products (`origin->x + normal.x * radius`, `* (0.0f - radius)`),
+// as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
+// `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
+// the second offset's vector from the start computed first 349.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

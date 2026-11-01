@@ -464,6 +464,17 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 125 (m3 lane 5, fast): the entry pointer declared before the object lookup 113 (the entry index
 // still arrives in EAX); the entry as `entries + entry_index` 112 (same code); the hand-written cross and
 // dot replaced by the existing cross3f_staged(up, forward, left) and dot3f 112 (same code, kept).
+// Round 60 (m3 lane 9, fast with 0xb7060; real builds of round 40's screened forms): the dot as `dot = k;
+// dot += j; dot += i` 110 (k and j products up-first as retail), with the three axis pointers declared
+// together before the normalize calls 109, with `up->i = up->i - scaled_i` 110; the center through
+// carrier_vector_from_havok with the `+=` dot and the axis pointers 153 (264 instructions as retail, object
+// index in EAX, entry index on the stack); the loop's body pointer declared before the outer loop 112.
+// Retail's call in 0xb7060 sets ECX (entry) before EAX (object), as the declared order implies.
+// Round 63 (lane 12, fast; an LTCG env link with the stand-in callers and 0xb7060 is exact: 915 bytes of code
+// against retail's 925): the failure stores valid-first 112 (same code); `up->i = up->i - scaled_i` on the current
+// body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);
+// `found` declared before the default body 119. The dot written k/j/i up-first, forward-first, all up-first or as
+// i, j, k terms: same code (env). A /Gd compile loads the object index into EAX and the entry index into EBP.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

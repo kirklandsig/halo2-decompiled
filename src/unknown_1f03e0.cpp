@@ -369,7 +369,8 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 122 (was 122): the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
+// score 122 (was 122): frame 0x14 and scan prefix agree; first +0xd5 is a displaced case span; cross coloring and selected-tail sharing remain.
+// Earlier: the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
 // request dies at the base argument as in retail); left: `lowest` is stored after `selected` (retail first),
 // the first cross keeps i/j/k in XMM0/1/2 (retail XMM1/2/0) so the two selected arms are not tail-merged
 // (28 bytes), and the averaging path's copies, sum order and dot order (round 112: dot_average and the
@@ -496,6 +497,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
 // (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
 // (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
+// J218: Existing staged-cross output setter/three-contact output-pointer scaled-add/native scratch values, seven subsets, then scratch value assignment: 122/122/122/199/199/199/199/199. Pointer-result staged cross, forced/ordinary inline, exact-only: 122/122. Original complete body restored.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -903,6 +905,7 @@ struct s_flags_1f0870
 // 625; contact_cross as a function-like macro 621; 0x1f087b or shape_dot as macros 590/590.
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
+// J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1431,7 +1434,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 230 (was 230): Frame 0x28 agrees; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// score 221 (was 230): Frame 0x28 and the 1066-byte length agree; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
 // The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
 // forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
@@ -1486,6 +1489,15 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // passes it in ECX); shape_dot as a macro 230; the five accept assignments written in each of the three arms 361.
 // Round 248: complete native request/result/tuning-field identities, four double-magnitude
 // forms 230 each; four real-magnitude counterparts 233 each. Original body and types restored.
+// Round 62 (lane 12, fast): the velocity pointer declared after the four reset stores 221 (kept, plain
+// 221, retail's length; the second 0x1f1df0 call is still inlined). Airborne as `(flags & 8) || (flags & 0x10)`
+// (a compile-only screen gives retail's `xor al, al / mov al, 1` for it) 312 on the old body, 311 with the
+// `real` length, 308 on the real-length velocity form (the component pointer moves from EBX to ESI); the
+// selected contact's normal through `byte *contact = contacts + (short)selected * 0x48` 241 on the real-length
+// body (retail's separate `add eax, 0x28` appears); on the kept form: the `real` length 224 (the loop's k/j
+// products then match, the i term flips), `selected`/`highest` declared first in the block 220, the same with
+// the `real` length 223, the contact list read at each use 222, the not-supported arms written first 250,
+// the velocity after `flying` 221, and (with the `real` length) the motion pointer read before the reset 294.
 // Round 120 (m3 lane 5): a per-arm `better` result tested once after the arms 240 (same layout: the
 // flag/no-flag arms stay inline and still share one height test); unknown58/selected/highest as one
 // chained NONE store 284; the airborne test as `(flags & 8) || (flags & 0x10)` 312 (that block is then
@@ -1505,11 +1517,11 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
     *(dword *)(out + 4) &= ~1;
     if (!preserve)
     {
-        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         history->normal = *g_4687b0;
         history->material = g_47d8e0;
         history->unknown58 = NONE;
         history->unknown70 = 0.0f;
+        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         bool flying = ((**(dword **)request >> 3) & 1) != 0;
         long selected = NONE;
         long highest = NONE;
