@@ -225,6 +225,10 @@ __forceinline bool function_184448(long arg_0)
 // slot apart); the per-face bounds initialized at the top of the face loop (retail stores them there) 977; both 1024
 // (4538 bytes); the existing normalize3d for both normalizations 1002 (4542 bytes); the two vector copies before
 // the plane-distance dots dropped (the dots on the originals) 1062 (4477 bytes). Original helpers and body restored.
+// Round 49 (lane 10, fast): the surface lookup as one `&&` test with the table pointer declared before it 962
+// (three-point gain, not kept); on it: the per-face bounds initialized at the top of the face loop 974; the plane
+// transform reading the normal into scalars (i, j, k) 975 (4557 bytes, frame 0x11cc as retail), captured k, j, i
+// 996 (4541), j, k, i 975 (4557); scalars plus face-top bounds 1021 (4538). Body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
