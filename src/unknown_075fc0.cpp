@@ -17,25 +17,25 @@ long link_connection_owner_active(s_link_connection *arg_0);
 
 struct s_75fc0
 {
-	byte field_0[0x470];
-	long field_470;
-	byte field_474[4];
-	__int64 field_478;
-	long field_480;
-	real field_484;
-	long field_488;
-	bool field_48c;
-	bool field_48d;
-	bool field_48e;
-	byte field_48f[5];
-	long field_494;
-	long field_498;
-	real field_49c;
-	bool field_4a0;
-	bool field_4a1;
-	bool field_4a2;
-	byte field_4a3[0x4dc - 0x4a3];
-	long field_4dc;
+	byte field_0[0x518];
+	long field_518;
+	byte field_51c[4];
+	__int64 field_520;
+	long field_528;
+	real field_52c;
+	long field_530;
+	bool field_534;
+	bool field_535;
+	bool field_536;
+	byte field_537[5];
+	long field_53c;
+	long field_540;
+	real field_544;
+	bool field_548;
+	bool field_549;
+	bool field_54a;
+	byte field_54b[0x584 - 0x54b];
+	long field_584;
 };
 
 union s_75fc2
@@ -55,13 +55,12 @@ static __forceinline long function_75fc1(real arg_0)
 	return local_0;
 }
 
-static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
+static __forceinline long function_75fc3(s_network_observer_channel *channels, long arg_1)
 {
     long local_0 = NONE;
     for (long local_1 = 0; local_1 < MAXIMUM_OBSERVER_CHANNELS; local_1++)
     {
-        s_network_observer_channel *local_2 = &arg_0->channels[local_1];
-        if (local_2->state && local_2->connection_index == arg_1)
+        if (channels[local_1].state && channels[local_1].connection_index == arg_1)
         {
             local_0 = local_1;
             break;
@@ -70,6 +69,7 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax I (11-01): 374 (was 408): search through the file's own helper, record as observer + index*0x528, has-host and packet flags as words, counter snapshot through the existing union; length 1360 versus retail 1369.
 // score 408 (was 408): frame 0x3c versus 0x34; observer/channel/result and counter homes remain.
 // Earlier: the 388 form below (four call-result and state locals as word, exact
 // 1369-byte length) was not kept: retail keeps these in 32-bit homes with no 16-bit operations,
@@ -138,40 +138,44 @@ bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
 	long *arg_7, long *arg_8, long arg_9, byte *arg_10)
 {
-	s_network_observer *arg_0 = this;
-	long local_0 = function_75fc3(arg_0, arg_1);
+	s_network_observer *observer = this;
+	s_link_connection *local_3;
+	long local_5 = NONE;
+	long local_6 = NONE;
+	long local_0 = function_75fc3(this->channels, arg_1);
 	bool local_2 = false;
 	if (local_0 == NONE)
 		goto done;
-	s_link_connection *local_3 = link_connection_get(arg_1);
-	s_75fc0 *local_4 = (s_75fc0 *)&arg_0->channels[local_0];
-	long local_5 = NONE;
-	long local_6 = NONE;
+	local_3 = link_connection_get(arg_1);
+	s_75fc0 *local_4 = (s_75fc0 *)((byte *)this + local_0 * 0x528);
 	bool local_7 = false;
-	bool local_8 = network_observer_channel_has_host(arg_0, local_0);
-	if (local_8)
+	short local_8 = false;
+	if (network_observer_channel_has_host(this, local_0))
 	{
+		local_8 = true;
 		arg_3 = true;
 		arg_4 = true;
 	}
 	long local_9;
 	bool local_10 = function_76520(local_0, false, &local_9);
 	long local_11 = g_510548 ? g_51054c : GetTickCount();
-	__int64 counter_snapshot = (__int64)(((unsigned __int64)g_4e6398.high << 32) | (dword)g_4e6398.low);
+	s_75fc2 counter_union;
+	counter_union.field_0 = g_4e6398;
+	__int64 counter_snapshot = counter_union.field_8;
 	long local_13 = NONE;
 	bool local_14 = (local_3->callback || local_10) && !local_8;
-	bool local_15 = local_4->field_48c;
-	bool local_16 = false;
+	bool local_15 = local_4->field_534;
+	short local_16 = false;
 	real local_17 = -1.0f;
 	long local_18 = NONE;
 	if (local_15 && !local_8)
 	{
-		if (local_4->field_48d && local_4->field_4dc == 2)
+		if (local_4->field_535 && local_4->field_584 == 2)
 		{
 			local_16 = true;
 			local_14 = true;
 		}
-		else if (local_4->field_48e)
+		else if (local_4->field_536)
 			local_16 = true;
 	}
 	if (!local_8)
@@ -179,9 +183,9 @@ bool s_network_observer::connection_v05(long arg_1,
 		if (local_14)
 		{
 			if (local_15)
-				local_17 = local_4->field_49c;
+				local_17 = local_4->field_544;
 			else if (local_3->callback)
-				local_17 = local_4->field_484;
+				local_17 = local_4->field_52c;
 			else
 				local_17 = g_4cf5d0;
 		}
@@ -193,30 +197,30 @@ bool s_network_observer::connection_v05(long arg_1,
 		long local_19 = (local_3->flags & 8) ? 128 : 0;
 		long local_20 = link_connection_get_reliable_window(local_3);
 		real local_21 = (real)local_20 /
-			((real)local_19 * *(real *)((byte *)arg_0->configuration + 0x90));
+			((real)local_19 * *(real *)((byte *)observer->configuration + 0x90));
 		if (local_21 < 1.0f)
 		{
-			real local_22 = *(real *)((byte *)arg_0->configuration + 0x94) +
-				(1.0f - local_21) * (*(real *)((byte *)arg_0->configuration + 0x98) -
-				*(real *)((byte *)arg_0->configuration + 0x94));
+			real local_22 = *(real *)((byte *)observer->configuration + 0x94) +
+				(1.0f - local_21) * (*(real *)((byte *)observer->configuration + 0x98) -
+				*(real *)((byte *)observer->configuration + 0x94));
 			if (local_17 <= 0.0f || 1.0f / local_22 <= local_17)
 				local_17 = 1.0f / local_22;
 		}
 	}
 	if (local_14)
 	{
-		local_18 = local_15 ? local_4->field_494 : local_4->field_480;
-		local_5 = local_15 ? local_4->field_498 : local_4->field_488;
+		local_18 = local_15 ? local_4->field_53c : local_4->field_528;
+		local_5 = local_15 ? local_4->field_540 : local_4->field_530;
 		arg_4 = true;
 	}
-	long local_23 = g_4e6398.low - (long)local_4->field_478;
+	long local_23 = g_4e6398.low - (long)local_4->field_520;
 	long local_24 = g_485ac0;
 	if (local_24 <= 0)
 		local_24 = 60;
 	if (local_23 < 0)
 	{
-		local_4->field_478 = (__int64)(((unsigned __int64)g_4e6398.high << 32) | (dword)g_4e6398.low);
-		local_4->field_470 = local_11;
+		local_4->field_520 = counter_snapshot;
+		local_4->field_518 = local_11;
 		local_23 = 0;
 	}
 	if (local_17 > 0.0f)
@@ -239,10 +243,10 @@ bool s_network_observer::connection_v05(long arg_1,
 	}
 	if (local_13 >= 0)
 	{
-		local_4->field_470 = local_11;
-		local_4->field_478 += local_13;
-		if (local_4->field_478 + local_13 <= counter_snapshot)
-			local_4->field_478 = counter_snapshot;
+		local_4->field_518 = local_11;
+		local_4->field_520 += local_13;
+		if (local_4->field_520 + local_13 <= counter_snapshot)
+			local_4->field_520 = counter_snapshot;
 	}
 	local_2 = true;
 	if (local_16)
@@ -257,8 +261,8 @@ bool s_network_observer::connection_v05(long arg_1,
 			local_2 = local_29 >= local_27 / local_28 && local_29 - 45 >= 48;
 			if (local_2)
 				local_6 = local_29 - 45;
-			if (local_4->field_48c)
-				local_4->field_4a2 = true;
+			if (local_4->field_534)
+				local_4->field_54a = true;
 			if (!local_2)
 				goto done;
 		}
@@ -270,16 +274,16 @@ bool s_network_observer::connection_v05(long arg_1,
 		if (arg_2)
 		{
 			if (local_3->callback)
-				local_31 = *(real *)((byte *)arg_0->configuration +
+				local_31 = *(real *)((byte *)observer->configuration +
 					(link_connection_owner_active(local_3) ? 0xe4 : 0xe8));
 			else
-				local_31 = *(real *)((byte *)arg_0->configuration + 0xec);
+				local_31 = *(real *)((byte *)observer->configuration + 0xec);
 		}
 		long local_32 = local_6 >= 0 ? function_75fc1((real)local_6 * local_31) : 512;
 		if (local_32 > arg_9)
 			local_32 = arg_9;
-		if (local_4->field_48c && local_32 < local_9)
-			local_4->field_4a1 = true;
+		if (local_4->field_534 && local_32 < local_9)
+			local_4->field_549 = true;
 		local_30 = function_765c0(local_0, local_32, arg_10);
 	}
 	else
