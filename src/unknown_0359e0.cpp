@@ -115,6 +115,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 104 (lane 8, fast): the tail tests without `else` 111 (251 bytes); a named high mask (used
 // twice) 82 (identical); the height logarithm first 100 (0x136140 lost); the y shift folded into each
 // branch's lookup 82 (identical); the branch test on `common_bits <= 6` 82 (identical).
+// Round 468: Second-axis count long/word/byte/signed-byte, each with short/word
+// common count, 91/129, 99/91, 95/118, 95/94. All controls remain matched; original
+// height/common counts and complete body restored; coordinate promotions and count homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
