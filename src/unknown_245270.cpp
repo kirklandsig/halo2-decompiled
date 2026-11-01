@@ -493,6 +493,8 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 260: existing native 3x3 rotation with staged cross/shared dot/unsigned decoded words,
+// 253/254/236/237/253/254/236/237; longer bodies and frame 0x24 remain, all restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

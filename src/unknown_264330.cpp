@@ -541,6 +541,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `iterator.index` at every use 443 (identical to the listed 443); the 0x25d510 step made an extern function and
 // inlined across files 443 (identical; 0x25d510/0x25d580/0x25dac0/0x25b440 still match); the single call with
 // 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
+// Round 260: tail completion bool/byte/short/long at finalization/entry 437 each;
+// exact-only flags restored; frame 0xa4 and stacked actor input remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
