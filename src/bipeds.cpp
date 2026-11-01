@@ -493,6 +493,13 @@ void function_e5930(long unit_index);
 // everything before the 0xe5930 call is then retail's; that plus an inline_depth(0) pragma (diagnostic)
 // 20 at 343 bytes. Retail never inlines 0xe5930 (0xe5980 has no other caller); ours inlines it at the
 // straight-line calls here and in 0xe4bd0, while 0xe24f0, 0xea1f0 and 0xec0d0 call it. Restored.
+// Round 107 (lane 7): the test through the file's field_bit_test with the set/clear as word_flags_set 113 (415 bytes,
+// everything before the 0xe5930 call retail's, as round 108's TEST_FIELD_BIT form; under the gate); `#pragma
+// auto_inline(off)` around this function (diagnostic, not kept) still inlines 0xe5930 (118): LTCG ignores the caller
+// file's inline settings. Our build calls 0xe5930 out of line only from 0xe2d80, 0xe24f0, 0xea1f0 and 0xec0d0.
+// Also: the six NONE stores through `biped` instead of the fresh lookup 110 (396 bytes; retail does re-look the
+// biped up after 0xb9dd0 at 0xde56e, so not kept); the flag set/clear through `current` 120; the definition looked
+// up just before its test 147.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -1073,7 +1080,7 @@ void function_1e67a0(s_character_physics_component *component, s_type_94656b *da
 void function_1e67f0(s_type_94656b *datum,
 	s_character_physics_component *component, long animation_id, point3f *p1, point3f *p2, point3f *p3);
 void function_1e6850(s_type_94656b *datum, byte a, point3f *p1, point3f *p2, real v);
-real function_1e96a0(short column, short row);
+real function_1e9700(short row);
 real function_dfa60(long arg_159e6d);
 real function_d1210(long object_index);
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance);
@@ -1166,7 +1173,7 @@ PRIVATE __forceinline void biped_grab_eye(long arg_159e6d, point3f *eye)
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 635 (was 1497; 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
+// score 612 (was 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
 // conditional material 1566; workspace names 1566; case/setter/boost/names 1552.
@@ -1183,6 +1190,25 @@ PRIVATE __forceinline void biped_grab_eye(long arg_159e6d, point3f *eye)
 // lookups, `default: __assume(0)` (retail's unchecked jump table at 0xdc9ae), `long players` (movsx at 0xdc7cc) and
 // the 0xbc test in a bool local gave 633 (643 with the hoisted lookups); the five call arguments in named locals
 // (retail's stack slots 0xac/0xa4/0xa0) 651. Without the forced inline those forms give 1497-1534.
+// Round 107 (lane 7), kept 635 -> 612: the four definition/flag tests and the byte call arguments through the
+// file's field_bit_test (as 0xdd0d0) with `default: __assume(0)` (retail's dead [esp+0x13] stores and 0xfc frame
+// appear; alone 644); the rigid body's velocity through the typed hkRigidBody and vector3f_assign (retail's movss
+// k/j/i loads; the out-of-line 0x1d09d0 call 693, with a forceinline declaration 693; without this form 647);
+// 0xe5930's sibling 0x1e9700 called for the spread (its body was written out: movsx as retail) with the fraction
+// multiplied first (fmul 1/137 before the spread); value fix: 0x1e67f0's points are (body, position, velocity)
+// by its own bytes. Tried on top: 0x183670 with the biped's component first (retail's call puts biped+0xb4 in EAX,
+// 0x183670's component_a; distance is symmetric) 612, not kept (0x183670 is unmatched); gravity through a new
+// inline getter 614 (same as the local below); `material` declared last same slot; case 1's rate as
+// count * (rate / speed) 612; gravity read into a local before the 0x1e5bb0 call 614 (retail hoists it to [esp+0xac] with the
+// byte temps; the whole argument block then is retail's; a one-use local), control bit 3 through field_bit_test
+// 644 (retail re-reads +0x148 after 0xe4050), the distance as `length > 0 ? length : 0` (retail's x87 temp and
+// select) 629, biped_grab_eye doing its lookups before 0xb9dd0 and reading self->crouch (retail at 0xdcbb0 and
+// 0xdeabb) 620 (0xde9d0 339 -> 359), both 635, 0xcb7e0 for the facing (retail inlines it) same code, material as a
+// ternary same code, the squares as dy*dy + dx*dx same code, `material` renamed same slot. Still differ: stack slot
+// order (material at 0x60 where retail has 0x8c, the case 6 target before position/facing), EDI/EBP swapped for
+// the grab target and its root, 0xe0dc0 inlined (retail calls it), case 1's rate computed last (retail first),
+// case 4/5 reuses `state` (retail re-derives it after 0x1e5bb0) and constructs c_type_709360 (retail does not:
+// 0x1cd510 returns it by value there).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1200,15 +1226,18 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	vector3f facing;
 
 	function_b9dd0(arg_159e6d, &position);
-	if (!(*(byte **)(*(byte **)((byte *)component + 0x70) + 0x40))[0x40])
+	hkRigidBody *rigid_body = havok_component_rigid_body_get(0, component);
+
+	if (!rigid_body->m_fixed)
 	{
-		ground_velocity = *(vector3f *)(*(byte **)((*(byte **)(*(byte **)((byte *)component + 0x70) + 0x40)) + 0x3c) + 0x40);
+		vector3f_assign(&ground_velocity, rigid_body->m_motion->m_linear_velocity(0),
+			rigid_body->m_motion->m_linear_velocity(1), rigid_body->m_motion->m_linear_velocity(2));
 	}
 	else
 	{
 		ground_velocity = *g_4687a4;
 	}
-	if (TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 11) & 1))
+	if (field_bit_test(*(dword *)(definition + 0xbc), 11))
 	{
 		facing = biped->forward;
 	}
@@ -1222,26 +1251,20 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	}
 	else
 	{
-		if (biped->physics_mode == 1 && (TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 2) & 1)) && !airborne)
+		if (biped->physics_mode == 1 && field_bit_test(*(dword *)(definition + 0x264), 2) && !airborne)
 		{
 			byte *globals = *(byte **)((byte *)g_4e034c + 0x134);
 
 			speed_scale = (1.0f - biped->unknown2e4 * *(real *)(globals + 0x78)) * function_dfa60(arg_159e6d);
 		}
-		if ((TEST_FIELD_BIT((*(dword *)(definition + 0x1f0) >> 6) & 1)) && !biped->unknown1bc)
+		if (field_bit_test(*(dword *)(definition + 0x1f0), 6) && !biped->unknown1bc)
 		{
-			short players = 1;
-			real spread;
+			real spread = function_1e9700(8);
 
-			if (*(long *)((byte *)g_4e6948 + 8) == 1)
-			{
-				players = *(short *)((byte *)g_4e6948 + 0x132);
-			}
-			spread = function_1e96a0(players, 8);
-			speed_scale = (dword)arg_159e6d % 0x89 * 0.0072992700f * spread + 1.0f;
+			speed_scale = spread * ((dword)arg_159e6d % 0x89 * 0.0072992700f) + 1.0f;
 		}
 	}
-	if (!(biped->control_flags & 1) && (TEST_FIELD_BIT((biped->flags_134 >> 23) & 1)))
+	if (!(biped->control_flags & 1) && field_bit_test(biped->flags_134, 23))
 	{
 		if (*(long *)(definition + 0x28c))
 		{
@@ -1264,9 +1287,9 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	bool turning = *(long *)(state + 0x7c) == 0x900000e || *(long *)(state + 0x7c) == 0xa00000f;
 
 	function_1e5bb0(output, &biped->physics_mode, state, speed_scale, biped->havok_component_index, arg_159e6d,
-		definition + 0x264, 9, TEST_FIELD_BIT((biped->flags_c0 >> 6) & 1), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
-		TEST_FIELD_BIT((*animation_flags >> 2) & 1), TEST_FIELD_BIT((biped->flags_c0 >> 8) & 1), function_e4050(arg_159e6d),
-		TEST_FIELD_BIT((biped->flags_348 >> 1) & 1), biped->unknown39d != 0, g_51e9c4->unknown0, boost, &biped->control, &position,
+		definition + 0x264, 9, field_bit_test(biped->flags_c0, 6), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
+		field_bit_test(*animation_flags, 2), field_bit_test(biped->flags_c0, 8), function_e4050(arg_159e6d),
+		field_bit_test(biped->flags_348, 1), biped->unknown39d != 0, g_51e9c4->unknown0, boost, &biped->control, &position,
 		&biped->forward, &biped->up, &biped->facing_goal, &facing, &ground_velocity, material);
 	switch (biped->physics_mode)
 	{
@@ -1364,10 +1387,11 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 		havok_component_rigid_body_position_get(0, component, &body);
 		animation_id = *(long *)((s_animation_state *)state)->current_animation_get(&current);
 		function_1e67f0((s_type_94656b *)output,
-			(s_character_physics_component *)&velocity, animation_id, &position, &body, &body);
+			(s_character_physics_component *)&velocity, animation_id, &body, &position, (point3f *)&velocity);
 		break;
 	}
-
+	default:
+		__assume(0);
 	}
 }
 
@@ -3354,6 +3378,10 @@ void function_e4300(long arg_159e6d)
 // declaration beside its definition, which new rules forbid.
 // Logic walk (2026-10-31): 0xe4bd0-0xe4c0c agrees with this source: object read before the calls, 0xe18d0(unit, 1),
 // 0xe5930(unit), then byte +0xc0 bit 6 (flags_c0 bit 6) clear -> 0xb8890(unit); no behaviour difference.
+// Round 107 (lane 7): the test through the file's field_bit_test 98; `#pragma auto_inline(off)` around this function
+// (diagnostic, not kept) 91: 0xe5930 is still inlined, the caller file's inline settings do not reach LTCG.
+// Also: the biped looked up after the two calls 94; the test as `(flags_c0 & 0x40) == 0` 91; the flag read through a
+// fresh lookup at the test 94.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {

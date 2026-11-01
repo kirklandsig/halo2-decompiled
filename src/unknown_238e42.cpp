@@ -978,6 +978,8 @@ bool __stdcall function_2399da(long controller_index)
 // lets the identity take EAX (but the constant is CSE'd with `>= 2`, so it is no clean test). Also:
 // the non-remove arm as one block with over-rank and rank-3 guard returns 90; with the rank store
 // first in that block 91.
+// Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
+// for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

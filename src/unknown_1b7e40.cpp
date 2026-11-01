@@ -68,7 +68,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
-// score 86 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
+// score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
 // retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.
@@ -156,6 +156,22 @@ bool function_25d9b0(long prop_index);
 // priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
 // Round 465: default-first/branch-complete property acquisition result, short/long priority,
 // existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
+// Round 107 (lane 7, plain, with the file and its callees in the image), kept 86 -> 76 -> 65: in the loop the
+// already-held prop tested first (`if (node && target == node->object_index) priority = ...; else { acquisition,
+// decline, new node, its own priority read }` before the existing `goto evaluate`; at review the lane's second
+// `goto evaluate` in the first arm was folded into this if/else, same 49 plain) (retail's scratch registers
+// in the acquisition and participant reads: both tails are cross-jumped into one); then the evaluation as
+// `if (ok) return priority; } return 0;` (now 557 bytes: retail's zero exit is shared by every failure). Tried:
+// the acquisition test inverted with one priority read 86, as `< 4 && != NONE` with the decline last 76, the
+// acquisition result preset to NONE 86, float sqrt 86 (all on the old evaluation); on the found-first loop the
+// round-53 `goto done` tail 76, `priority = 0; return priority;` 65, the negated test returning 0 65 (same code),
+// `return 0` for the loop's exit 142 (it gets its own epilogue), no prop_index local 65, the compare operands
+// swapped 66, `return false` 65. Then kept 65 -> 49: the busy-prop test (0x25d9b0) as its own
+// `if (...) return 0; return priority;` inside the other tests' block: actor EBX/node EBP as retail through the whole
+// body, but the two returns become a select (`neg al; sbb eax, eax; not eax; and eax, esi`) where retail tests
+// (`test al, al; je` to a `return priority` placed last) and falls into the shared `xor eax, eax` exit. On that
+// block: `if (!busy) return priority;` 65 (old registers), `if (busy) priority = 0; return priority;` 82, the whole
+// test as one && with an extra `return 0` 65. Left: the select, the success/zero block order and `xor ax, ax`.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -176,7 +192,11 @@ short __stdcall function_1b7e40(long actor_index)
 		{
 			short invitation_index = iterator.reference.unknown0;
 			s_502424_element *joint = element_502424_get(((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].joint_index);
-			if (!node || joint->target.unknown0 != node->object_index)
+			if (node && joint->target.unknown0 == node->object_index)
+			{
+				priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
+			}
+			else
 			{
 				long new_prop;
 				if (actor->unknown086 >= 4 || (new_prop = function_25d810(joint->target.unknown0, actor_index, false)) == NONE)
@@ -185,8 +205,8 @@ short __stdcall function_1b7e40(long actor_index)
 					continue;
 				}
 				node = prop_node_get(new_prop);
+				priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
 			}
-			priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
 			goto evaluate;
 		}
 		return (short)(long)local_1;
@@ -205,14 +225,15 @@ evaluate:
 		s_prop_view_fields *view = prop_node_view(node);
 		vector3f velocity;
 		function_ba1d0(node->object_index, &velocity, NULL);
-		if (!(node->unknown28 > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
-			view->unknown54 < 0.31 && node->unknown28 <= 15.0f &&
-			!state->unknown64 && !function_25d9b0(actor->prop_index)))
-			priority = 0;
+		if (node->unknown28 > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
+			view->unknown54 < 0.31 && node->unknown28 <= 15.0f && !state->unknown64)
+		{
+			if (function_25d9b0(actor->prop_index))
+				return 0;
+			return priority;
+		}
 	}
-	else
-		priority = 0;
-	return priority;
+	return 0;
 }
 
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
