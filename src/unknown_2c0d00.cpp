@@ -288,6 +288,21 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
 // Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
 // all original constant lifetimes, qualifiers, buffers and complete body restored.
+// Round 57 (m3 lane 1, fast): retail shares the raised point's slot with the sphere-loop center and
+// reuses location's slot for the object count. Location in its own block ending at the query 925,
+// with the count declared first 925; type-0 center/offset at the other-actor block scope 882;
+// object matrix at the loop-body top 882; sphere center at the object-loop scope 882.
+// Round 479: positive index/visibility/self-vehicle admission subsets 1/2/4/3/5/6/7
+// all 931f (control 931); actual returned object transform 940f. Original gates,
+// defaults, matrix consumers and complete body restored.
+// Round 40 (m3 lane 15, plain; fast misleads): other-actor test inverted (NONE branch first) 886; type-1 skip flag as a
+// conditional set (retail's `mov byte [esp+0x12], 1`) 936; enabled declared with the per-object defaults (retail sets
+// it in the settings-test block) 918; unit/definition no-obstacle bits as `(bool)((*(word *)p >> n) & 1)` 917 (retail's
+// byte shift form; aligned 710 -> 699); that with the inverted test 938. Retail also stores straight = 1 again on the
+// actor == NONE path.
+// Round 23 (lane 18, plain; fast misleads here, 931 fast against 882 plain): aligned before straight 882;
+// the 0x26c flag before the dot 883; self unit chosen right after its fetch 881; the range pair before
+// the ignore/block priorities 881; range maximum read before the minimum 882 (one-point moves, not kept).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -926,6 +941,47 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
     s_pathfinding_node const *node = &data->nodes[index];
     return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, data));
 }
+// MiniMax R (11-01, fourth round): no new form, no lower score. The frame stays 0x30 against
+// retail's 0x28, and the edge pointer keeps the 0x1c home where retail keeps 0x18 (the magnitude
+// takes retail's 0x1c home here). This round: writing the two offsets directly (origin->x +
+// normal.x * radius, and origin->x + normal.x * (0.0f - radius) for the other side, the way
+// 0x2c2910 and 0x2c2740 write theirs) drops the frame to retail's 0x28 and removes the
+// direction.x spill, but the edge pointer's home then moves to 0x1c where retail keeps it at
+// 0x18, so the whole body shifts (358, the same with the product first); flipping the operand
+// order of the two origin adds and writing them with += leave the code unchanged (322);
+// declaring the edge pointer at function scope leaves the code unchanged (322) and with the
+// direct offsets gives the same 358; writing the normalisation out in the body, with the
+// magnitude in a local of the body and with the scaling written out as well, compiles to the
+// same code as the helper (322), so the homes are not decided by the helper's shape. A permuter
+// run over the function was started but its full-image baseline build did not finish inside two
+// hours on this shared machine, so it produced no result to apply.
+// MiniMax R (11-01, third round): no new form, no lower score. The crossing test written as three
+// ifs over one flag reproduces retail's accumulator exactly (that block now matches retail's
+// shape), but the function scores 369 with the helper-built offsets and 345 with the per-coordinate
+// ones; the per-coordinate offsets give retail's frame (0x28) and, together with the crossing
+// block, retail's length (1312 bytes), yet the xmm allocation and the place of the surface loop's
+// `if (side)` block still differ. This round: the side branch swapped gives 322 and as a ternary
+// 336; the offsets written straight into the first and second vectors give 419 and the negated
+// form 429. Also this round: retail consumes the zero in `0.0f - radius` (subss xmm0, xmm4) right
+// after the normalisation while ours copies it and keeps it to the comparison, so the negated
+// radius in a local (399), the two offset adds in the other order (415), the other offset first
+// (348) and the normal written as two statements (322, the same code) all leave the zero in xmm7.
+// MiniMax R (11-01, second round): no new form, no lower score. The permuter on this function ran
+// thirty tries from the 322 baseline without a new best. The frame stays 0x30 against retail's
+// 0x28, the zero is still in xmm7 (retail xmm0), the radius still in xmm6 (retail xmm4), the
+// direction still in xmm0/xmm5 (retail xmm7/xmm6) and ours still re-reads vertex1 at the select
+// where retail keeps it in EBX.
+// MiniMax R (11-01): tried, not kept: 322 (was 324), under the 8-point keep bar, so the code keeps
+// the two initialised declarations (324). Declaring the two marker variables without an
+// initialiser and assigning them in the other order puts the two entry stores in retail's order
+// (the marker at [esp+0xc] first); the later rounds' 322 figures above were measured with that
+// form in place. The frame stays 0x30
+// against retail's 0x28, the zero is still in xmm7 (retail xmm0), the radius still in xmm6 (retail
+// xmm4) and ours still re-reads vertex1 at the select where retail keeps it in EBX.
+// MiniMax R (11-01): no new form, no lower score. The vertex pair's declaration order swapped and
+// the from/to choice made where the addresses are built score 325/346/325/342; the frame stays
+// 0x30 against retail's 0x28 and ours still re-reads vertex1 at the select where retail keeps it
+// in EBX.
 // score 324 (was 324): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
 // and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
 // zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still
@@ -1069,6 +1125,19 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
 // `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
 // the second offset's vector from the start computed first 349.
+// Round 40 (m3 lane 15, fast; positional/aligned, base 324/248): offsets per coordinate plus the three-if flag and
+// first_vertex first 345/149 (frame 0x28, prologue retail's); with the flag declared before the normal 361/119 (the
+// whole float block retail's, 1288 bytes), at the loop top 341/161, before the vertex loads 304/148 (1315); on 361/119:
+// select as vertex1 then an if 365/121, side-first compares 361/119, first_edge/count/vertex declared at function
+// scope 361/119 (same code); the ring walk as a forceinline helper with a local edge copy 323/106 (1276: the selected
+// vertex shares EBX with vertex1 as in retail), a ring-local walking edge pointer without a helper 323/106 (same code),
+// through the pointers 361/119; the parameter as the walking edge alone 416/248, with the flag block 430/142, with the
+// 361 block 426/125, plus the ring-local edge 430/111; flag before the vertex loads with the ring-local edge 296/133
+// (flag in the side slot, frame 0x2c). Retail stores the outer edge to 0x18 at each ring step, so the ring copy is not
+// retail's; left: edge EBX against ESI, side kept in EDI (retail spills it to 0x1c), edge/magnitude homes swapped.
+// Round 443: repeated native byte/word/long/dword side-index values at entry
+// 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
+// radius, traversal, predicates and complete body restored.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1286,6 +1355,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
     s_path_location const *location, s_avoidance_trace *trace);
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+// MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
+// scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
+// lowered the 444.
 // score 444 (was 444): frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1457,6 +1529,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // is chosen, no initialiser 469 (1757 bytes); the one-step arm with its own `return` 444 (same code);
 // the copy-last block after the loop through two gotos 444 (same code: its placement is not source
 // order); the next-step pointer only inside the corner branch, the fallback indexing points[next] 478.
+// Round 443: zero-extended word type with short/word/long/dword link results,
+// at typed selection 493/493/492/492; at native emission with common stores
+// 517/520/517/517. Complete record, signed domains and body restored.
+// Round 479: native positioned-point subobject with short/long type-link
+// combinations 477/488/477/476; native position subobject 474/471/473/471
+// (fast control 444). Original complete record snapshot and body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

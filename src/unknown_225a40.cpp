@@ -97,6 +97,32 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// score 16 (was 16): this round: five more shapes of the case-0 entry address (the entries array
+// indexed with a typed pointer, the entry address as an integer local, the entry pointer in a local
+// read through a statement of its own, the same with the scaled offset computed before the tag
+// lookup, and the offset-local-first shape retested) all compile to the same folded bytes at 165
+// bytes; retail's `add eax, [edx + 0x70]` is still out of reach, and the impulse parameter address
+// is still copied through EDX where retail copies it through EAX. The permuter on this function
+// finished with no candidate at all (0 tries), so nothing came from it either.
+// score 16 (was 16): this round: eleven more shapes of the case-0 entry address (the scaled offset
+// in a local computed before the tag lookup, the entry address as an integer local, the index term
+// first, the size term first, the label read through the address of its member, the entry pointer
+// in a local built from the shared helper, the entry pointer in a local built without it, the
+// entry pointer taken with typed pointer arithmetic, the shared helper without the inline
+// keyword, the entry pointer used twice, and the entries address in a local of its own) all
+// compile to the same folded bytes at 165 bytes; the two-use shape shows MSVC keeps the
+// scaled-index addressing even when it has to materialise the pointer, so retail's
+// `add eax, [edx + 0x70]` is not reachable by choosing another source shape here. The parameter
+// address copied through EDX where retail copies it through EAX stays as well, and follows from
+// the same register allocation.
+// MiniMax R (11-01): no new form, no lower score: the case-0 entry address as an integer sum (the
+// dword base, the offset added last, the offset summed with the index), through shared multi-caller
+// helpers, the entry pointer used twice (VC materialises it then, but only as `add eax, ecx`, with
+// an extra load), the entries address as a dword or byte pointer field and the entry reached as an
+// offset into the definition all give the same folded bytes at 165 bytes; the permuter ran to its
+// time limit without a candidate. Still the folded member load against retail's materialised entry
+// address, the tag mask before the index scaling, and the parameter address copied through EDX
+// where retail copies it through EAX.
 // score 16 (was 16): this round: six more shapes of the case-0 entry address (the scaled offset in
 // a local computed before the tag lookup, the definition in a local, the entry pointer in a local
 // taken from the shared helper, the entry address as a byte pointer, the unsigned scaled offset,

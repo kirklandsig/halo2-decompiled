@@ -226,6 +226,16 @@ void function_44720(void)
 // Round 467: Accepted entry level named at its original read in long/short/word/byte,
 // used by admission and cached submission predicate 155/151/151/152; predicate at its
 // submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
+// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
+// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
+// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
+// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
+// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
+// 157 (515).
+// Round 326: material selector at each table use, cached/live level and pointer/indexed geometry
+// inputs 107/135/140/136; the same four with conditional material production 127/140/150/119.
+// Original selector, predicate and complete body restored; frame and geometry reloads remain.
 // Round 52 (lane 1, fast with 0x44720): on the level-at-call form (re-measured 135, 487 bytes) the material
 // index as a long 132; that with the lookup given `&g_4ba138[(short)index]` 130 (510 bytes); with the weight
 // also a long 145; the entry as `g_4ba138 + (short)index` 135. On the current form the material index as a
@@ -242,6 +252,16 @@ void function_44720(void)
 // 136; the flags read through `g_4ba138[(short)index]` at the top 140 (506 bytes, entry folded away).
 // BLOCKED-BY 0x45ce0 / 0x41040: both loop callees are unmatched in other owners' files, and our LTCG
 // hoists g_4e0348 across them where retail reloads it per arm.
+// Round 330: Native entry level/transform/both 107/107/107; complete geometry field
+// views with live level 135; with native level/transform/both 107/107/107; all views
+// with live level 135. Original entry type, selector and body restored; frame and reloads remain.
+// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
+// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
+// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
+// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
+// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
+// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
+// 157 (515).
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -279,7 +299,8 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
         }
     }
 }
-// score 190 (was 190): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
+// score 182 (was 182): Frame 0x1094 agrees; entry/index spill and center/query/bound homes remain.
+// Earlier: Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
 // retail also keeps a separate center point (+0x30) beside the sphere query (+0x20).
 // Round 81 (fast): a `visible_word` pointer for the test and both marks 190 (same code); one marking
 // site after the bound branch with `if (!(r * r >= d)) continue;` 210 (the marks become retail's single
@@ -400,6 +421,13 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 467: Displacement/combined-radius declaration orders ZYXR/ZYRX/ZRYX/RZYX,
 // YZXR/YZRX/YRZX/RYZX, all 190 at 874 bytes. All expression trees, original declaration
 // order, query/position storage and the complete body restored; entry spill remains.
+// Round 324: positive node-count admission with byte-sentinel removal,
+// provider-filled count and read-only node-array subsets 0-7,
+// 190/182/191/192/190/182/191/192. Positive count and removal of the
+// impossible byte sentinel retained; entry/index spill and point/query homes remain.
+// Round 326: whole-traversal tag snapshot before/after geometry or at the small branch 218/218/218;
+// the same inputs with separate center/query 219/219/219; branch count output on the first/third
+// snapshot 218/218. Entry/index spill and point/query homes remain; complete original body restored.
 // Round 113 (lane 8, fast with 0x44720/0x44c90): retail's frame is query +0x20 (shared with the loop's bound
 // position), a function-scope center copy +0x30 that the node transform writes and the distances read, then
 // the bit/visible/entry/word spills +0x3c..+0x48 and the transform +0x4c. That shape (`point3f point = *center`
@@ -408,6 +436,16 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // query); with a long index local 199; `point` declared ahead of the query 198; the copy as the first
 // statement 202 (875 bytes); the query without `__declspec(align(16))` 191 (frame 0x1094 again, but query
 // +0x2c and point +0x3c).
+// Round 328: Small-branch-only initial center, crossed with existing vector difference,
+// provider-filled count and success-local transform homes, subsets 0-7:
+// 219/221/229/233/219/221/229/233. Original center producer, helper boundary, count initialization and
+// matrix lifetime restored; entry/index spill and point/query homes remain.
+// Round 330: Native entry section/instance-ordinal/instance-bit views in seven nonempty
+// subsets all 182; complete views with read-only selector input 182. Actual entry type,
+// helper and complete body restored; entry/index spill and point/query homes remain.
+// Round 332: Masks computed at each use with word cache, filled count and inner matrix scope, subsets
+// 0-7: 215/226/202/217/215/226/202/217.
+// Original executable source restored; no eligible gain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
@@ -460,11 +498,11 @@ void function_45560(short entry_index, point3f const *center, real radius)
                             if (object_index != NONE)
                             {
                                 long node = bound[0x10];
-                                if (node != NONE && node != cached_node)
+                                if (node != cached_node)
                                 {
                                     long count = 0;
                                     transform4x3f *nodes = function_b8c00(object_index, &count);
-                                    if (count)
+                                    if (count > 0)
                                     {
                                         byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                                         function_142a60(&nodes[node], (transform4x3f *)(*(byte **)(tag + 0x4c) + node * 0x60 + 0x28), &transform);

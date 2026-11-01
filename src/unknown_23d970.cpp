@@ -589,7 +589,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// score 45 (was 57): the second product through the existing staged helper of src/unknown_1f03e0.cpp
+// score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
@@ -732,6 +732,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // other plain orders 56-63 (1261-1262), staged in any order 49 (1264); on 45 right declared first,
 // direction declared first, const previous_up 45 each; a forward pointer in the else branch 43 (the
 // else branch is then retail's; one-use pointer, kept only on a match).
+// Round 129 (lane 5, fast; `--fast` keeps the cross-file function_1f087b out of line (1224 B), so these use a
+// same-file copy, which gives the base's 45): the existing direction_from_angles in the else branch 156 (1264 B).
+// Second product as a staged helper, each row one expression (E) or accumulated (`x = p; x -= q;`, A), all six row
+// orders x eight styles: ijk EEE/AEE, jik EEE/EAE, jki EEE/EEA 45; k-first or k-before-j orders with the k row
+// accumulated 55 (1262 B: retail's own k, j, i order no longer recolours to 217, but previous_up.k loads into
+// xmm2 before the distance store and right.i/right.k swap xmm0/xmm2); the rest 217/222. First product as a
+// helper with per-row styles: on the base, direct ijk EEE 45, staged EEE 49, any accumulated row 214-225; jik
+// EEE 59 (1261 B), jik AAE/AAA 61, jki EEE/EEA/EAE 63 (1261 B); on the kji/k-accumulated second product,
+// direct EEE 55, staged EEE 56, the rest 203-221.
 // Round 127 (lane 6, fast): the second product into a local up, then copied before the normalize 253 (1290
 // bytes), normalized in the local and then copied 254 (1292); previous_up through the out-of-line player state
 // getter 367 (1244: retail inlines it here); diagnostic: the distance not stored 218 at retail's 1261 bytes (the
@@ -746,6 +755,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // the direction local with function_1f087b second 229. On the 43 form: right declared first 43, const
 // previous_up 43 (same code each); the second product through scripted_cross_product 217, through cross_11e130
 // 217 (1261 bytes each).
+// Round 24 (lane 17, fast with 0x1f0870's file, which the reduced image needs to inline function_1f087b; it then
+// agrees with the full build at 45): diagnostic dead temps at the top (period 8, in pairs) on this body 45/45/49/49/
+// 219/219/49/49 for 0-7 (219 at 1261 bytes is a shifted allocation that also loses previous_up's load order), on
+// cross3f_staged for the second product 217/217/221/221/223/223/221/221, on the else-branch forward pointer 43/47/
+// 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
+// and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
+// output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

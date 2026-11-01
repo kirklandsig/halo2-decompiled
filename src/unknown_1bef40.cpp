@@ -63,6 +63,17 @@ short *function_e70b0(long unit_index, short *value);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// score 13 (was 13): the slot reference is still loaded late into EDX where retail loads
+// it early into ECX, and the inlined action lookup still scales the index in ECX where
+// retail scales it into EDX and reads the unit table late; reading the reference into a
+// named local before the actor's arithmetic moves the load but spills the actor pointer;
+// moving the barrier down to the reference's second use gives 89 and still loads it late
+// MiniMax D (11-01): the barrier at the top 94, in the else arm 90, dropped 90, the reference copied
+// into a named local 99/100/104 (before the actor's arithmetic, after it, or with a hand-written
+// actor lookup), the actor lookup moved into the else arm 96 or after the barrier 94, the compare's
+// operands swapped 13: all worse or equal. The copy does put the reference load where retail has it
+// (ECX, ahead of the actor's arithmetic) and keeps the global a memory operand, but the table's
+// data then moves to EBX with an extra push, where retail keeps it in EDX.
 // score 13 (was 13): the slot reference still loads into EDX after the actor's index
 // arithmetic, where retail loads it into ECX before it; reading the reference into a named
 // local before the actor's arithmetic (a bool or a copy) moves the load but costs the body.
@@ -142,6 +153,10 @@ short __stdcall function_1bef40(long actor_index)
 
 static __forceinline long real_to_long(real value);
 
+// score 17 (was 17): the draw helper's seed store still precedes the delay's doubling
+// (retail doubles first) and the reset's zero fields are still stored before the NONE
+// fields; the reset's order is fixed in include/slot_handler.h and the draw helper in
+// include/unknown_0259d0.h, both outside this lane's files.
 // score 17 (was 19), coordinator review: the 6 below wrote actor_reset_state's seven stores out here and read the
 // unset reference into a one-use local; both are kept only with a match, so the helper call and the direct store are
 // back. The doubling as sample + sample stays (17, fast). The lane's tried forms:
@@ -197,6 +212,7 @@ static __forceinline long real_to_long(real value);
 // draw inside its expression 46; both draws, wait before delay 53; the reference stored after the
 // tick stores 56. Retail here, in 0x1b3ee0 and in 0x1c0430 keeps 0x4ac/0x504 after the NONE stores; our
 // build sinks the NONE stores past them in all 240 statement orders screened (compile-only, 0x1b3ee0).
+// MiniMax D (11-01): no new form, no lower score.
 // @retail 0x1befd0
 bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 {

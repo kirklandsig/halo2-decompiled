@@ -486,6 +486,23 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
 // declared before the default body 154; the entry before the object 151; the object through a `headers` local
 // (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
+// Round 70 (m3 lane 9, fast with 0xb7060): our head coalesces the object index with the object pointer (ECX), so the
+// entry index takes EAX. A named masked object index 132, a header element pointer 132 (head unchanged both times),
+// the entry by byte offset 112; 0xb7060 stays 2 in each.
+// Round 291: uninitialized entry/component/physics pointer declarations at entry, all
+// subsets then existing center conversion, 112/112/112/112/112/112/112/149. Original body restored.
+// Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
+// 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
+// body and call inputs restored; input register pair and early physics-pointer spill remain.
+// Round 219: canonical search latch as byte/char/short/long, each with original/native center
+// transfer: 112/149/112/149/131/236/238/160. Original Boolean latch, center transfer, helpers and
+// body restored; object/entry convention, physics spill and projection schedule remain.
+// Round 334: frame 0x48 agrees; first +0 reverses object/entry registers,
+// then the physics spill and center/projection schedule differ. Actual body-array
+// byte displacement stepped in the original loop, signed/unsigned and bool/byte
+// found combinations, 140/140/140/140; with existing complete center conversion
+// 130/130/130/130 at 928 bytes, frame 0x44, caller 2 -> 11. Original search,
+// center transfer, helpers, arithmetic and complete body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

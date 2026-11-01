@@ -238,6 +238,37 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
 // with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
 // `changed` bool, dword-cast pointers, the cache stores swapped.
+// Round 32 (m3 lane 2, fast): field_10's value read into a dword local between the fourth and fifth draws and
+// stored after the fifth 144 (876 bytes: the scheduler lifts the integer store above the fstp, so the compare
+// still follows the fstp and splits); the child's flag0 set before the link call 81; the field_08 clear moved
+// to just before the fifth draw 153; the record-list link stores after the flag-bit setup 109; the child
+// reciprocal computed between the parent and owner stores 80. Retail 0x247950 also loads arg_2 twice for the two
+// list addresses at its link call, so that reload is systematic (allocation), not this body's source.
+// Round 39 (m3 lane 15, fast): field_10 first re-measured 133 (876 bytes: the split compare, then a loop-top pad and
+// the child loop's effect-index/vtable registers: retail reuses ECX for the effect index and loads the vtable into
+// EDX before the pushes); the fifth sample as `field_38 = local_9 = ...` 70 (same code), with field_10 first 133;
+// the effect index named in the child loop 73, with field_10 first 134 (878 bytes); `if (local_0 == NONE) return;`
+// for the wrapping if 70 (same code).
+// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
+// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
+// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
+// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
+// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
+// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
+// Round 133 (m3 lane 6, fast with 0x248cc0/0x173ba0/0x249aa0/0x137bd0/0x173fd0/0x175070/0x1751d0 listed): every
+// child-loop difference in the kept form is the scratch rotation from field_10's temporary; retail (and the sibling
+// 0x247950) loads arg_2 twice for the two list addresses. A `parent` local for the link and the parent store 70
+// (same code); field_3c stored right after field_10 72; with the count increment too 208 (860 bytes, 0x248cc0 15);
+// field_10 first with field_3c stored between the fifth sample and the compare 134 (876 bytes: the scheduler lifts
+// the integer store above the fstp, so the compare still splits); field_3c stored right after the record link 184.
+// Round 63 (m3 lane 16, fast): compile-only, field_10 first still splits the compare with the sample in a
+// named local, the compare operands swapped, a `cached` record local read just before it, `!(==)`, the
+// sample as `/ 65535.f`, an empty-then if, a flags-word pointer for the update. Real: field_10 first with
+// the `cached` local 133; the owner's flags read once into a `flags` local for the 0x173ba0 mask and the
+// update 61 (870 bytes: the post-call update lines up, but the flags are then read before the call where
+// retail re-reads them after it, so not kept), the same with field_10 first 126; field_10 first with the
+// update through the existing 0x173c10 method 133, with the compare swapped 133, with a named sample 133;
+// field_10 first with `arg_1->field_02++` and `field_44 = field_44 | 0xf80f` 133.
 // Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
 // forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
 // does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
@@ -541,6 +572,12 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 462: Complete initial scaled-position point-set/vector-scale producers, aggregate/setter
 // publication and original/early age: 393/393/358/363/411/397/376/377. All original geometry,
 // stores, helper graph and includes restored; frame and late EBP save remain.
+// Round 32 (m3 lane 2, fast): the early exit folded into one condition around the allocation (no return before the
+// body) 356 (identical code, EBP still saved late); an inline effect-record getter at both effect sites 356 (folded
+// back into one tree: retail's split `add eax, edx` at both sites stays absent); the motion branch as a switch on the
+// definition short (case 0 / default) 370 (still `cmp word ptr [reg + 0xc], 0`); the final NONE test as an early
+// return inside the body 356 (identical); the definition's bit-4 test as a shifted byte local 359 (still `test byte
+// ptr [reg + 0x16], 0x10`). Retail 0x247fd0 saves EBP late after its one early exit; this one saves it at entry.
 // Round 110 (m3 lane 7, fast): retail 0x247fd0 sinks its EBP push past the allocation test as ours does here, so
 // retail's entry push comes from the effect-flag block. The early exit as `goto done;` 356 (same code, re-measured
 // against round 137's goto form); the allocation failure as an early return with the body unnested 356 (same
