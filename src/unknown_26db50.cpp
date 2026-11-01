@@ -580,6 +580,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // move no slot); the dead pathfinding store dropped 204 (1056 bytes; retail has the store, sharing
 // the sine's slot); the sector index read at the trace call 265; the rotation helper __forceinline
 // 90 (identical); the pathfinding pointer as a ternary 217.
+// Round 26 (m3 lane 2, fast), on the 96 form (0x29c860's rotation in place, ring phase named before the distance;
+// its residuals: the sector index read after `add ebp, ecx` and the radius copied through integer registers, the
+// phase store before the spoke init): the radius read from the object at each use 262; the phase at function scope
+// 96; the radius reference before the sector index 96; the sector index after the ring counters 97; the radius copy
+// and reference after the ring counters 263.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
