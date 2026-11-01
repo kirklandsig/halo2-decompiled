@@ -2972,6 +2972,8 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
+// MiniMax D (11-01): no new form tried, no lower score; the round-41 merge rewrote this body,
+// so its score is now 346 against the 206 the task started from.
 // score 206 (was 206): Frame 0xb4 and extent agree; body base/stride and protected relative-call
 // input registers remain. BLOCKED-BY 0x1d83e0 (contributor code): retail passes the component to it
 // in EAX and loads the component into EAX at entry; ours passes it in ECX, and the EAX/ECX roles

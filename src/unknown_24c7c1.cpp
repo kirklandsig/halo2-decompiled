@@ -621,6 +621,13 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
 // (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
 // block top / first 115/115; bool timer with the loop index at the block top 191.
+// Lane 18 round 16 (fast; unchanged source 114 fast, 115 plain; one-link env with 0x13cb40's file, exact but for the
+// pow calls): the tutorial colour named in a dword local 114; text_bounds declared first 114; left declared before
+// split_screen 114; text_bounds and color renamed to sort first/last (tip #104) 114; the text buffer declared first
+// 114 (all the same code). Env: bounds, field_24 or color renamed, origin/bounds/text_bounds/text in any of three
+// further orders, each alone and on the bool timer: identical code (bool timer: flags -0xe/-0xd/-2, retail
+// -0xf/-0xe/-0xd). Names and declaration order never move these homes; retail places text_bounds (-0x24) above
+// the first colour (-0x34) where ours places it below (-0x38 under -0x2c).
 // Round 142 (lane 4, fast; control 114): with the bool timer (191, 1888 bytes) the flags land at
 // -0xe/-0xd with scripted at -2 beside split_screen (retail -0xf/-0xe/-0xd, -2..-4 unused); there
 // split_screen renamed to sort last 191, scripted renamed to sort first/last 191/191, split_screen declared
