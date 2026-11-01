@@ -282,6 +282,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Round 219: complete parallel products, planar subtotals, running coordinates and native aggregate
 // construction, each with the existing point setter: 152/152/156/158/152/152/138/142. Original
 // four-use helper restored; plane-store base, selector/publication and inverse scheduling remain.
+// Round 449: Captured both corner inputs with origin/basis/late-row receiver subsets 0..7
+// 192/192/203/205/215/215/212/214 (fast control 138, full 138).
+// Original complete executable source restored; opening structural differences remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

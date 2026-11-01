@@ -192,6 +192,9 @@ real normalize2d(point2f *arg_0);
 // Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
 // point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
 // Original scalar expressions, publication and complete body restored; output/vector homes remain.
+// Round 449: Complete projected-interval/nearby-length/far-separation admission results, bool subsets 1..7
+// 211/211/211/211/211/211/211; all with native long results 211 (fast control 211, full 211).
+// Original complete executable source restored; opening structural differences remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

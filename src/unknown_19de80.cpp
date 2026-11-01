@@ -438,6 +438,9 @@ static inline bool teams_enabled_19e1c0()
 // local 691. Re-measured listed forms: long team with `best_score <=` 421, event teams read at each use 394.
 // Retail never gives `token` a register (re-read from its home before every compare, the first one hoisted
 // above `sub esp`), which is what keeps the four name/team tails apart.
+// Round 449: Complete player/team/other token dispatch results, bool subsets 1..7
+// 454/454/454/454/454/454/454; all with ordinary final result 736 (fast control 390, full 390).
+// Original complete executable source restored; opening structural differences remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
