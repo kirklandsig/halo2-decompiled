@@ -1263,6 +1263,11 @@ void c_game_engine_markers::v21(long object_index)
 // object-index CSE) 117 still loads the index into EAX. A compile-only build with 0x101280's body pasted in
 // as an inline reproduces the entry swap and keeps it with the header in a local, the index masked into a
 // local, or without the mode test.
+// Round 24 (lane 17, fast): slot_object_get and ctf_player_get __forceinline 40 (identical; no matched function
+// in the file changes); `#pragma inline_depth(1)` around this body (diagnostic) 40 (identical: the inlining order
+// does not set the swap); slot and unit declared at function scope 40; the type test in a named bool 40; the slot
+// read first and `type == 1 && slot != NONE` joined as the matched v16 does 117 (428 bytes). The team at each call
+// re-measured 119 keeps the same entry swap, so the swap does not come from the middle's register pressure.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

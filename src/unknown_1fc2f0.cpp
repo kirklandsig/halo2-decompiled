@@ -404,6 +404,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // locals, declaration orders, short/inline/early conversion on the scaled_difference3f delta all identical; rate
 // products staged before the conversion with that delta 51+ positional; ~450 random prediction/delta/correction
 // combinations none below the round 46 form.
+// Round 24 (lane 17, fast): diagnostic dead temps 1-7 on this body 32 each (identical code: the temp count that
+// sets SSE operand orders elsewhere does not reach this body). Round 181's 46 form rebuilt (rate stage j, k, i,
+// conversion, k subtraction, i subtract/scale/delta, j subtract/scale, k scale, deltas j, k): 46 at +0x78, and its
+// whole difference is k's tick product (ours multiplies into the dying tick register, retail multiplies v.k in place
+// and copies it to XMM3) plus the correction block (retail: scale in XMM1, j/k scaled in place, all three products
+// before the load-first adds); on it dead temps 0-7 46 each; k's product written `tick_scale * velocity.k` 46
+// (canonicalised); the conversion after k's subtraction 64 (369 bytes); the correction through the existing
+// vector3f_scale + vector3f_add 70.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

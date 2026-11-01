@@ -205,6 +205,12 @@ bool g_47f05b;
 // (137 bytes); `g_479880 = true` alone after the first construction 39 (its store sinks to the join); the
 // pool through a typed local published after 34 (same code); the pool placed at `(byte *)g_479894 + 0x15040`
 // 44 (131 bytes, no reload at all); the pool address computed into `block` first 34 (same code).
+// Round 24 (lane 17, fast with every function of this file and 0x22c3e0): `g_479880 = g_479890 = 1` 34 (same
+// code); g_479884's NONE stored after the two 1s 39; the abstract loop with a short index 54 (0x146b80 and 0x22c3e0
+// lose); the refcount header named in the abstract constructor's initializer list 34 (same code). Diagnostic only:
+// /Ob1 for this file 34 (0x146b30 74), so the inlining mode does not keep the store. Retail's vtables fold (the
+// abstract and fixed vtables share the destructor 0x1470f0), so a polymorphic fixed base with no overrides would also
+// store 0x453760: the kept store may be that base's rather than the abstract's.
 // @retail 0x146a20
 void function_146a20(void)
 {
