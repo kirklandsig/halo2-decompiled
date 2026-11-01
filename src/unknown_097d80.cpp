@@ -233,6 +233,9 @@ struct c_aggregate : c_child
 // Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
 // then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
 // restored.
+// Round 293: Independent callback/information outputs with cleanup item walk and child/boundary/block
+// cursor masks 0-7: 77/79/140/142/77/79/140/142. Original outputs and traversal restored;
+// escaped-output and loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

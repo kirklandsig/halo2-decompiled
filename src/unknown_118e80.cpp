@@ -1123,6 +1123,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // remain; original body restored.
 // Round 291: Positive-count end-pointer scan with short count/pre-query sweep/capture-order masks 0..7
 // 378/377/361/362/378/377/361/362. All enlarge the frame and extent; original indexed scan restored.
+// Round 293: Effect-request location/selected-point/original-center memmove subsets 1/2/4/3/5/6/7:
+// 219/206/203/211/212/219/225; all with selected-output memmove 340. Original body restored;
+// quotient/query and selected geometry homes remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {

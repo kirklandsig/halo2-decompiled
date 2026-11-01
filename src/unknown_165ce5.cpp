@@ -1621,6 +1621,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 294: invariant aiming/look/both spring defaults before admission or user
 // receiver 233/235/239 each; all before unit lookup, abcd/badc order, 236/236
 // (fast control 220, full 218). Original default lifetimes restored; frame 0x28/0x2c remains.
+// Round 293: Complete default/history memcpy or memmove publications, four pairs with
+// original/confined history scopes: 220/417/404/438/220/417/404/438 (fast control 220, full 218).
+// Original body restored; frame, look and unit/mode homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

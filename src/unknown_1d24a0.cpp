@@ -255,6 +255,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 237: native wide-dot/real-dot/planar input values, seven nonempty subsets 1249/1274/1605/1145/1402/1446/1741;
 // all with long scale ordinal 1682
 // Original executable body and helpers restored.
+// Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
+// pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
+// entry/frame and activity/record/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
