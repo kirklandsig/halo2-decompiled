@@ -163,6 +163,18 @@ short __stdcall function_2551c0(long actor_index)
 // and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
 // five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
 // statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
+// Round 106 (lane 7): one component of the rotation helper copied into a named local used at each of
+// its four uses: `real vector_k = vector->k;` 36 (815 bytes, plain and fast; a partial naming, kept
+// only on a match): the whole rotation is retail's but cross_k's v.j * a.i product, still loaded from
+// the axis (`movss xmm7, [axis]` early, where retail copies v.j and folds the axis: the extra byte),
+// and the score dot (still k, i, j); on it the score dot's operands swapped, either cross_k product
+// written axis-first 36 each (same code). Alone: vector_i 126, vector_j 116 (814 bytes), axis_i 151
+// (822), axis_j 164 (828), axis_k 164 (828); with vector_k: axis_i first or second 150 (822),
+// vector_j 70 (819), vector_i 154, axis_k 163 (832), axis_j 173 (835). The existing cross-file helpers
+// in place of this file's (plain build; --fast keeps them out of line): rotate_direction 56 (815),
+// rotate_vector_170d70 109 (814), record_rotate_vector 117 (817), biped_rotate_about 159 (820, fast).
+// With vector_k, the helper statements as projection/cross i, k, j 48, projection/cross k, i, j 48;
+// cross i first, projection then cross j, i, k or j, k, i 36 each (same code).
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

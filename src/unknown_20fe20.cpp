@@ -2837,7 +2837,11 @@ bool function_1df640(short team_a, short team_b);
 // read through the table parameter 6, the bound's terms swapped 6 (VC sorts
 // them), a (long) cast on either or both terms 6; (r169) the parameter-address
 // statements removed 6 (kept); a long index 148; a named request pointer 6;
-// a while loop 6.
+// a while loop 6; (r106) the index read from the group before the count test
+// with `group[0] + group[1]` as the bound 8 (the first word's load moves above
+// the branch, the reload order stays); a named entry pointer 6; the count test
+// in the loop condition 6; the existing object_get/actor_get helpers for both
+// objects 6 (same code); the entries as rows of 0x40 bytes 6.
 // @retail 0x20cbd0
 void function_20cbd0(short group_index, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category,

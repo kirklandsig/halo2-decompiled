@@ -206,6 +206,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
 // 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
 // the element or the copy 49/50/50/49.
+// Round 106 (lane 7, fast): the handle read into a HANDLE local with the element passed to the call
+// and the long result 44; the long result with the branch on success 55 (351 bytes); the result as
+// dword 42; the comparisons written constant-first 42; the file copy assigned after its declaration
+// 42 (same code each).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

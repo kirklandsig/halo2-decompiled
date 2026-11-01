@@ -1323,6 +1323,11 @@ bool function_0bfe60(dword const *flags, long bit);
 // Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
 // outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
 // tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
+// Round 106 (lane 7, fast; every other colour follows the counter's: retail EBP, ours EDI): on round
+// 7's row form (rebuilt 38): the device as `dword volatile **` 38; index and slot declared before the
+// loop 38; the row named before the status test after the k store 38; the frame read from the global
+// at each use 129 (the load sinks into the block); the slot fields read through the table (no slot
+// pointer) 148 (472 bytes). Source permuter, 600 s on the kept body (72 tries): nothing below 52.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
