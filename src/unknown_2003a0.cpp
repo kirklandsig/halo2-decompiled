@@ -874,6 +874,10 @@ done:
 // pair at the scan top and the palette index at the definition block's top (harness, identical).
 // Ours carries next in CX from the entry test into the first pass; retail folds both tests into
 // `cmp word [edx+4]` and reloads at the loop top.
+// Round 475: Consume the cursor before decoding its saved explicit selection pair, with
+// definition-owner/mode/scenario snapshot subsets 0..7: 193/201/235/236/230/242/225/227.
+// Entry still caches next; some forms also change the iterator register. Original cursor
+// phase, observations, frame 8 and complete body restored.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2473,6 +2477,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // overlap written straight into wake 318 [156] (1103 bytes), with the else-if tail [202]; words and
 // overlap declared at the loop body's top 275. The pool stays in EBX across the walk (so the pushes
 // come first) even with the area block, the definition block, the tail or the actor phase cut out.
+// Round 475: Failure-first actor completion, with bitmap pointer scan/short overlap/native
+// offset-vector subsets 0..7: 301/331/320/349/316/346/338/364. All restored; frame
+// 0x48 versus 0x54, early saves, pool/intersection and current-handle homes remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3315,6 +3322,10 @@ void function_2011f0(long arg_0);
 // Round 119 (lane 5): `long difficulty; if/else; switch ((short)difficulty)` 318 (identical); definition pointer
 // by if/else 361; placement index through `placement_entry->placement_index` 322; all three 359; a separate
 // `attempts` local instead of reassigning arg_0 384 (1348).
+// Round 475: Native two-word request payload with every subset of entry first-request,
+// second-request and construction-record declarations, 318 in all eight forms.
+// Original request representation, declaration phases and header restored; frame 0x134 agrees,
+// placement/definition and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
