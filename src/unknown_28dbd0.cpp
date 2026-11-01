@@ -186,6 +186,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
 // 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
 // sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
+// Round 40 (m3 lane 15, fast = plain): the 0x11c/0x118 frame is the helper's cross vector home (local_3 at
+// +0x24..+0x2f, its .j slot never used), where retail spills scalar cross terms (+0x20, +0x28). Cross scaled by the sine
+// in the sums 193 (1225 bytes); cross3f_staged 173 (same code); scaled cross into a second vector 226; vector x axis
+// subtracted 187; the 0x194a10 scalar form (sine, cosine, P, X.j, X.k, X.i inline) 231 (1192), with dot3f 228 (1194):
+// sine/cosine slots retail's but frame 0x114, heading.k's zero kept in a register and heading.j reloaded from its home.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

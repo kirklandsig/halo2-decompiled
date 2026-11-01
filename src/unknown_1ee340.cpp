@@ -301,6 +301,10 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
 // writes with `found = true` last 239 (1045 bytes); a short count local for the call 297. Unused-local
 // probes +1/+2/+3/+4/+8/+12 all 192 (diagnostic: no symbol-numbering effect here).
+// Round 40 (m3 lane 15, fast = plain): retail loads the ray's start and end once each before any store. Start copy
+// first with the direction from it 230; direction as three scalars (diagnostic, helpers written out) 226 (991 bytes);
+// both 225 (991); start copy first with the offset from ray->start 223 (991); start and end copied and the direction
+// from both copies 196 (all six loads before the subtractions, start.z first as in retail; the end copy is one-use).
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

@@ -592,6 +592,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
 // Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
 // queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 40 (m3 lane 15, fast = plain): the component check is the inline sequence of src/unknown_1c25a0.cpp's
+// contact_shape_has_material (matched 0x1c5400/0x1d4880), but retail here loads the data field three times and clamps
+// with the constant in the result register (`mov ecx, 1; cmp ecx, edx; jg`), unlike those siblings. A same-file copy
+// of that helper shape 335 (1258 bytes, retail's setne/test), plus the key test through its pin 335; clamp
+// `1 > v ? 1 : (16 < v ? 16 : v)` 321 (same code); MIN(16, MAX(1, v)) written out 341; result-register if form 329
+// (both comparison spellings); two-step clamp 347.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
