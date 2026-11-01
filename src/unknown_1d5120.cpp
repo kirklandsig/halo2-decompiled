@@ -89,7 +89,7 @@ void function_1d56f0(s_havok_component *component)
 
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
-// score 77 (was 77): every frame home and the body up to the success tail agree; left: the rigid-body
+// Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
 // lookup's address operands (ours `[base+index]`, retail `[index+base]`) and the success tail, BLOCKED-BY
 // 0x1d0cf0 (retail passes it the transform in EAX, the component in EBX and the index in ECX, plain ret;
 // ours pushes index and component), which also moves the release path's scratch registers.
@@ -176,10 +176,14 @@ void function_1d56f0(s_havok_component *component)
 // that tail but the lookup's SIB order. A byte offset local added first, the component through a const
 // reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
 // 77 each (still `[eax + edx + 0x40]`).
-// score 77 (was 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// Round 97 summary (score 77, was 77): no new source form of this body was found: the 19 aligned differences stay in
 // the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
 // cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
 // The body was left as it is.
+// Round 26 (lane 17): 0x1d0cf0 is now machine 3's, but its EBX component parameter still does not come:
+// 0x1d1260/0x1d1540 declared first in its file (call-cycle walk order, plain) 77 (0x1d0cf0 81); that with
+// 0x1d0cf0's 88 body (plain) 73 (0x1d0cf0 88, 0x1d0c20 40, component still loaded from [ebp + 8]); the 88
+// body with flag5 read into a named bool before the body fetch 73, with a member-wise transform copy 73.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
