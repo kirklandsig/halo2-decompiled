@@ -402,6 +402,11 @@ struct s_surface_object_header
 // a const globals pointer in case 5 8; a const bit number in case 1 8; the header flag as a one-bit
 // boolean 8; a byte-width slot 43; result declaration and initialization split 8; result declared
 // after the key fields 102. All restored.
+// Round 69 (lane 16, fast): the header address written index first (`index * size + data`) 8 (same
+// code); the three guards positive with `else result = false;` arms 8 (same code); the choice as
+// `(byte)(surface_index >> 5)` 62 (the key moves to EAX); named region and choice indices beside a
+// `choices` pointer 8 (same code); the object read through the file's header view while the header
+// local serves the flags 8 (same code). A permuter run (codex AC88) found nothing either.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0

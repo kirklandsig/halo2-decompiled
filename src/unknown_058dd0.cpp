@@ -804,6 +804,9 @@ void c_session_client::function_06dbc0()
 // joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
 // explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
 // (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
+// Round 275: existing busy predicate with a separate producer force-inline declaration, bool/byte/
+// short/long results and early/combined admission, eight forms 100 each (84 bytes). Predicate remains
+// out of line; original body and producer declaration restored. This/id register ownership remains.
 // Round 113 (lane 8): separate case 7 and case 8 bodies (0x58d90's own form) re-measured 47 (plain check
 // agrees): retail's direct 7-entry jump table, and the only difference left is `this` in EDX where retail
 // moves it to EBX at entry (mode/index then take ESI for retail's EDX, id EBX for retail's EBP). On that
@@ -811,6 +814,16 @@ void c_session_client::function_06dbc0()
 // a member pointer local 47; a `client` copy of this 47; cases 2/4/6 grouped 47. The file is /O2 /Gr and
 // 0x58d90's own file /O2 /Ob0, which keeps it out of line here where retail inlines it (a flags lead for
 // the user, not tried).
+// Round 131 (lane 5, fast), on separate case 7 and 8 bodies (direct table, re-measured 47): mode, type and
+// id tests in one condition 47; an early return on mode/type 47; an equal-id early return 47; case 7/8 as
+// `if (!flag) break; return;` 65 (148 bytes); the type tested before the mode 49. `mov ecx, 2` is the
+// `repe cmpsd` count reused for the mode compare (ours has it too); retail allocates as if the compare
+// clobbered EDX (this in EBX, id in EBP). Original grouped body restored.
+// Round 25 (lane 17, fast): 0x6d380 as a __stdcall member of c_session_client (definition, declaration and
+// both calls) 43 (same code); the compare and call inside the switch's default with cases 2/4/6 breaking 43;
+// early returns on the mode/type test and on an equal id 43; those early returns with separate case 7 and 8
+// bodies 47; the in-switch compare with separate case 7 and 8 bodies 47. In every form mode and member index
+// take a callee-saved register because this already holds EDX; retail colours mode/index first (EDX).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

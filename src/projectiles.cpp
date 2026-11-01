@@ -979,9 +979,15 @@ real function_30bf0(vector3f *v);
 // optimal time as `sqrt(-root / two_a)` 236 (the SSE reciprocal stays); two_a written out at both divisions
 // with plain pointer reads 247 (ret 0x28, callers lost); C++ references to the two pointer parameters 232
 // (same code); `if (0.0f > gravity) gravity = 0.0f;` ahead of the vertical delta 247.
+// Y488: horizontal admission first/positive gravity alone/both/positive test first
+// 252/251/250/232; all four with consistent per-use gravity products 271/260/269/273.
+// Original body restored; frame, rounded horizontal root and separate divisions remain.
 // Round 189 (m3 lane 3, fast with the three matched callers): two_a from gravity 242 and two_a first with
 // `a = two_a * 0.5f` 230 (both lose every caller's convention); `two_a = a + a` 232 (the SSE reciprocal stays);
 // two_a before the discriminant base 238; delta.k computed with delta.i/j 233.
+// Y492: native real quotient producers optimal/solved/both 232/232/232;
+// double producers 246/273/264, both with entry result/double flight time 267/302.
+// All restored; frame, rounded-root scheduling and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1427,6 +1433,11 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // call and the 0xfd740/0xfd7d0 call sites converted (diagnostic, reverted) this is 29 (0x1883e0 matches, 0xfd740
 // 49 -> 8): BLOCKED-BY 0x1883e0 (its class form is held by src/impacts.cpp and the 0xfd740/0xfd7d0 call sites).
 // What then remains: the raw 16-bit index push, 0xfd740's output order, `jb` bounds, the zero-store order.
+// Round 47 (m3 lane 13, fast): NUMBEROF bounds 115 again (both loops `jb`; the effect loop sits one line off);
+// markers and parameters at function scope 153; the final tag stored into the parameters before its NONE test
+// 116; the sound records cleared before the effect records 121; the attachment stores with the flag last 115.
+// The sound loop's point and velocity copies hold their source pointer in ECX/EAX where retail uses EAX/ECX, so
+// the copy stores come out in the other order; same allocation cause as the BLOCKED-BY 0xfd740 entry.
 // Round 229: one done exit/exclusive arms with a twice-used selected effect result,
 // native unsigned ordinal and aggregate table defaults: 115/177/115/177/121/183/121/183.
 // Original exits, result reads, defaults and whole executable source restored; point/zero/selector homes remain.
@@ -1558,6 +1569,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 // kept and the entry differs at +0xb. Marking 0xfbfd0 `inline` expands it but scores 369.
 // score 315 (was 315): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
 // Speed update is still called instead of expanded; 1226/1261 bytes.
+// first +0 is entry scheduling; frame 0xc versus retail 4.
+// Pool/input and tag receiver allocation still differ.
+// Speed update is still called instead of expanded; 1239/1261 bytes.
 // Native flag tests 380; complete water result 375; both 380; plain velocity-component
 // loop 364 fast, 360 plain (kept); loop/flags 381; loop/water 364; all three 381;
 // chained target initialization with all three 381. Unchanged reduced control 375.
@@ -1602,6 +1616,13 @@ PRIVATE inline long projectile_object_root(long object_index)
 // 315 (same code); the under-water flag through bit_vector_set(&object_flags, 3, under_water) 344 (retail's
 // exact `mov bl, 1; test bl, bl` single-store block, but two fewer instructions ahead of the missing 0xfbfd0
 // expansion); with a definition local at entry 364; with the single assignment 344.
+// Y488: actual attachment result/random bounds/timer bounds subsets
+// 344/328/328/307/328/330/309; all with shared initial speed 362.
+// Keep only the twice-used timer-bound pair, plain/full 307; other forms restored.
+// Y492: complete timer selectors combined/inverted/equality-first/conditional
+// 339/339/305/339; each with completed attachment result 348/348/346/348.
+// The two-point equality-first lead is below retention; all restored.
+// Entry frame/slot/tag homes and speed-update expansion remain.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -1631,12 +1652,15 @@ bool __stdcall function_f8200(long projectile_index, byte const *data, long unus
 
 	real ticks;
 
+	real timer_lower = *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd4);
+	real timer_upper = *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd8);
+
 	if ((PROJECTILE_DEFINITION_GET(projectile->tag_index))->flags & 4)
-		ticks = g_510c54->field_2_3 * *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd4);
-	else if (*(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd4) == *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd8))
-		ticks = g_510c54->field_2_3 * *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd4);
+		ticks = g_510c54->field_2_3 * timer_lower;
+	else if (timer_lower == timer_upper)
+		ticks = g_510c54->field_2_3 * timer_lower;
 	else
-		ticks = projectile_random_range(*(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd4), *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd8)) *
+		ticks = projectile_random_range(timer_lower, timer_upper) *
 			g_510c54->field_2_3;
 	if (ticks >= 1.0f)
 		*(real *)((byte *)projectile + 0x15c) = 1.0f / ticks;
@@ -1825,6 +1849,17 @@ real function_17c900(short function_type, real input);
 // products as `3 * salt` / `7 * salt` 348 (same code); the wander amount as one conditional expression 348
 // (same code). Retail's caller sets the output with `lea ebx, [esp+0xc4]` and pushes only the index, and
 // this body saves only EBP/ESI/EDI: the output arrives in EBX and is never written there.
+// Round 22 (lane 17, fast): the target point local renamed 348 and the direction local renamed 348 (identical
+// code: names do not order this frame's slots); the salt written at both uses re-measured 329 (retail's stack
+// index, the rest offset by retail's 0x18 to_target slot and early xmm4 zero), with either rename 329. Retail
+// scales to_target as `s * i` from memory (copy of s) but j and k in place in xmm2/xmm1, the mixed pattern
+// of i written by name and j/k written through a pointer; ours copies s for all three.
+// Y488: plain lead/turn/drift component loops, seven subsets, 347/358/358/362/362/355/355;
+// all with twice-used drift tick 355. Lead-only reaches 1463 bytes but gains one; restored.
+// Stacked index/output EBX transport and normalization/rotation homes remain.
+// Y492: complete clamped time/lead/turn-amount producers in seven subsets
+// 348/348/348/352/352/352/352; all with clamped drift producer 366.
+// All restored; index/output transport and normalization/rotation homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2705,6 +2740,10 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // 1192 (retail's two loads, plus a `not cl`); as a bitfield assignment 1277 (4900 bytes). 0xfd7d0 is the
 // blocker: with 0x1883e0's class parameters (diagnostic) 0xfd7d0 62 -> 69 and this 1220. Retail's velocity in
 // ESI also lets it tail-merge the two `*velocity = *g_4687a4` copies; ours keeps both.
+// Round 215: complete native offset/perpendicular/reflected aggregate producers,
+// seven nonempty subsets 1190 each; all three readonly completed vectors 1190.
+// Original body, vector operands, arithmetic trees, damage scopes and interfaces restored;
+// frame 0x220/0x218 and velocity/request homes remain.
 // Round 229: full-width potential/settled/created carrier subsets 1213/1197/1222/1187/1216/1206/1229;
 // all three short 1228. Created long gains only three and is rejected; all original Boolean
 // carriers and executable source restored. Frame 0x220/0x218, velocity and request homes remain.

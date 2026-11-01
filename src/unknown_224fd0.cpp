@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "frame_storage.h"
 #include "globals.h"
+#include "vector_products.h"
 #include <xtl.h>
 #include <math.h>
 #include <stddef.h>
@@ -53,13 +54,6 @@ real function_30bf0(vector3f *v);
 vector3f *function_11d000(vector3f const *v, vector3f *out);
 matrix3x3 *function_142eb0(matrix3x3 const *right, matrix3x3 const *left, matrix3x3 *out);
 void function_1cf50();
-
-PRIVATE inline void draw_cross(vector3f const *a, vector3f const *b, vector3f *out)
-{
-	out->i = a->j*b->k-a->k*b->j;
-	out->j = a->k*b->i-a->i*b->k;
-	out->k = a->i*b->j-a->j*b->i;
-}
 
 /* the rotation by an angle (given as its sine and cosine) about a unit axis */
 PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real cosine, matrix3x3 *out)
@@ -151,6 +145,13 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // forward.i 333 (1836 bytes); 40 random dependency-respecting orders 219..456, best (kept) 219; product
 // operand orders and the two locals' names/declaration order 218-219 (same code); scalar sine products
 // with the squared vector 328 (frame 0x64), scalar squares with the sine vector 438 (frame 0x60).
+// Round 149 (lane 4, fast): the file's own cross helper replaced by the shared cross3f (vector_products.h, the
+// same body) 219 (same code, kept); case 0's up copied before the negated forward 221; the rotation's products in
+// retail's second-case order (k^2, s*j, i*s, s*k, i^2) 382 (1812 bytes); j^2 named with the other squares 232
+// (1820); retail's first-case data flow (forward.i right after the sine products, a named complement and a shared
+// k*complement for ik/jk) 238 (1816). Retail's two rotation cases are scheduled differently from each other
+// (case 1 spills k^2 to +0x24, case 2 spills k^2 to +0x30 and s*j to +0x20), so its two inline copies got
+// different homes for the square/sine vectors.
 // J221: On native squared/sine vectors: shared complement 451; complete axis input 589; both 589; staged crosses 219; staged with complement/input/both 451/589/589; shared orientation 495. Original helper bodies, observations and complete function restored.
 // Round 129 (m3 lane 6, fast): case 0's up copied field by field k, j, i 354 (the jump tables then sit at
 // retail's address, but the copy becomes float loads and the cross recolours); the forward negations
@@ -197,20 +198,20 @@ void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache 
 		basis.forward.j=-g_485618.forward.j;
 		basis.forward.k=-g_485618.forward.k;
 		basis.up=g_485618.up;
-		draw_cross(&basis.up,&basis.forward,&basis.left);
+		cross3f(&basis.up,&basis.forward,&basis.left);
 		break;
 	case 1:
 	case 2:
 		basis.up=*direction;
 		function_30bf0(&basis.up);
 		function_11d000(&basis.up,&basis.forward);
-		draw_cross(&basis.up,&basis.forward,&basis.left);
+		cross3f(&basis.up,&basis.forward,&basis.left);
 		break;
 	case 3:
 	case 4:
 		basis.up=*g_4687b0;
-		draw_cross(&basis.up,&g_485618.forward,&basis.left);
-		draw_cross(&basis.left,&basis.up,&basis.forward);
+		cross3f(&basis.up,&g_485618.forward,&basis.left);
+		cross3f(&basis.left,&basis.up,&basis.forward);
 		break;
 	}
 	function_142eb0(&basis,&rotation,&rotation);

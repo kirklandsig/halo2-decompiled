@@ -1238,6 +1238,7 @@ long function_2197f0(real gain);
 // difference keeps XMM2 where retail keeps XMM3 and every use of it differs; a named local for the scaled
 // product, a second local for the scaled-out product, a local for the elapsed-minus-hold difference and a
 // local for the whole product all compile to the same code.
+// Earlier at 137: the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
@@ -1308,6 +1309,12 @@ long function_2197f0(real gain);
 // reciprocal computed before the fade-out tests 187 (656 bytes).
 // N round 257: Native real/aggregate ducking gains and endpoints, real/aggregate returns, expression/accumulator 322/322/322/322/198/198/198/198.
 // Original value types, helper and complete body restored.
+// Round 117 (m3 lane 8, fast): /Op around the function (diagnostic) 191 (643 bytes: the value's `time / fade_in`
+// stays a divss as retail, but the product still takes fade_out before the inverse); the test and the value both as
+// divisions 207 (636); `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 138 (the value is still
+// `inverse * time`); no index local 179 (670); the hold sum through decibels_add 163 (686); the hold branch's
+// ducking gain through a long local read as a real 127 (682 bytes: that branch is then retail's exactly, retail
+// reinterprets a by-value copy of the long gain, but a one-use local is kept only on a match).
 // J221: Elapsed/reciprocal/both/fraction role names 137 each; fade-in/full timing/ambience snapshots 144/179/182; parallel interpolation outputs 137; native table base plus original short lookup input 146 at 672 bytes (entry instructions agree). All original executable code restored.
 // J225: shared ducking-array receiver 164; external ducking-record references 137; array and references
 // 164; native fade-record value 174; fade value and array 181; fade value and references 174; fade value,
@@ -2853,8 +2860,20 @@ static inline short sound_voice_find_available_channel(char type)
 // the not-found exit past a block that sets the driver default, which no form here reproduces.
 // A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
 // Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
-// scores 113/113/113/109/139/139/139/133.
+// giving 113/113/113/109/139/139/139/133.
 // Original executable source restored; no qualifying gain.
+// Round 34 (m3 lane 2, fast): retail shares one `or ebp, -1` between the found channel's `cmp di, bp` and
+// the driver/buffer defaults and keeps the channel in EDI (the loop index). Bool result with `return true`
+// after the commit and `result = false` before the failure calls 139 (415 bytes); with the driver default
+// before the channel test 133 (415); plus the search returning `(short)i` from its loop 122 (432); that
+// with the byte result 133 (430); byte result, success goto, driver default before the test and the
+// returning search 131 (433); bool, `return true`, returning search, driver default in the block 139 (415).
+// Round 117 (m3 lane 8, fast): bool result with `result = true` before the success goto 122 (430 bytes; the head's
+// registers rotate and the failure block follows the search loop); on it the driver default before the channel test
+// 153 (409 bytes: retail's block order, but the search index and the channel stop sharing EDI and the driver goes to
+// the stack), both defaults there 128 (431), that with `~status & DSBSTATUS_PLAYING` 142 (430), the driver default
+// before the search 147 (406), result declared first 146 (409); `else result = true` for the early path 135 (433); the
+// search returning from inside its loop on these 122/136 (416)/135/133; the 122 form with `~status` 121 (430).
 // J222: Long search workspace/return, long workspace with short return, promoted short result and native long
 // direct search exits all 96; long workspace with Boolean body result and long/short helper returns 113/113;
 // explicit committed success 122 (430 bytes); existing byte success declared at entry on the long search graph
@@ -3302,6 +3321,15 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // (78 or 164). Fast: for/continue 78; with the update test inverted (pending arm first) 132; `case 1: case 2:
 // continue;` 17; 0x128020's while + `skip_to_next:` with `case 1: goto skip_to_next;` 214 (592 bytes); index and mode
 // declared at function scope 78.
+// Round 117 (m3 lane 8, fast unless noted): round 40's harness 24 confirmed (fast 24, plain 24): the for loop with
+// `case 1: continue;` and the range computed above the mode (before the first class lookup): every register, the
+// `sub eax, 0` switch and the pool reload are retail's, only the range computation sits above the mode (retail:
+// inside case 0).
+// The range between the mode and the switch 99; in case 0 78 (EBX/EBP swapped from the entry), with a class pointer
+// local 78, nested ifs 78, case 1 first 78; the sound pointer read once at the loop top 167; range, sound_index or
+// voice renamed to sort first or last 78 each (names do not break the tie); case 0's work as an inline helper 251
+// (474 bytes, called), forceinline 228 (604); the mode from an inline getter with two returns 113 (540, called),
+// forceinline 214 (592 bytes: the class lookup inlines with it).
 // J225: native class mode field 49; native class mode and flag fields 49; native fields with two-case for
 // dispatch 78; dispatch with complete role names 78; native fields with range-record reference 49; dispatch
 // with range reference 78; dispatch with shared class index 98; dispatch with range reference and class
@@ -3701,6 +3729,13 @@ struct s_128ca0
 // Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
 // scores 215/255/215/255/286/255/286/255.
 // Original executable source restored; no qualifying gain.
+// Round 34 (m3 lane 2, fast; the baseline is now 222): retail also passes each permutation-gain sum to the pin
+// through memory (real -> long -> parameter copy -> real) and stores the pinned value once at the join from EAX,
+// where ours stores in each arm. Outer decibels_sum over the by-value inner 222 (same code); location seeded as
+// a real and `+=` the inner real sum 306 (1030 bytes); location seeded as a long and `+=` a named by-value inner
+// 222 (same); the real sum written out 306; each pin argument as decibels_add(local_6, converted gain bits) 241
+// (1073), operands the other way 291 (1116); this file's decibels_pin single-exit (as src/unknown_2197f0.cpp's)
+// 237 (1036; 0x12a810 still matches), with the decibels_add pin arguments 231 (1052).
 // J224: Native byte views for pending/completed/both/submitted/pending-submitted/
 // completed-submitted/all state units 238/231/242/234/245/239/254; all with native short
 // pitch bounds 254. Completed-byte/all-byte units with reference inner gain and native
