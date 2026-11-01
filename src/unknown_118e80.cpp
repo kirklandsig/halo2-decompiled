@@ -219,6 +219,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
+// basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
+// src/unknown_11eed0.cpp).
 // score 220 (was 220): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
@@ -956,6 +959,9 @@ void __stdcall function_d6bc0(long arg_0);
 void function_b75a0(long arg_0, point3f const *arg_1, vector3f const *arg_2, vector3f const *arg_3,
     s_location const *arg_4, bool arg_5);
 void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
+// MiniMax E (11-01): no new form, no lower score; left: the quotient spill across the candidate
+// query, the sweep/impact stack homes and the saved identifier widths (the protected owner-call
+// boundary is another file's).
 // score 156 (was 156): retail keeps the quotient in a register and computes the scaled direction
 // before the sweep query; ours spills the quotient, computes it after the query, and the sweep
 // and point homes are swapped. Computing the scaled direction before the query gives 292.

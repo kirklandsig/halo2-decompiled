@@ -1209,6 +1209,8 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
+// player index first), the colour/bounds local homes and the missing bytes.
 // score 680 (was 680): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.

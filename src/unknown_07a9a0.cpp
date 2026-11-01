@@ -212,6 +212,9 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
+// MiniMax E (11-01): no new form, no lower score; retail's second pool register needs the LTCG inline
+// of 0x16bb70/0x16bc00 from src/unknown_16b570.cpp (/Ob1 there), so the 11-point two-pool-local form
+// stays recorded as not kept.
 // score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
 // which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
 // layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
