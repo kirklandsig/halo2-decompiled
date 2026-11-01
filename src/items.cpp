@@ -620,6 +620,10 @@ struct s_item_collision_bsp
 // Round 266: untransformed plane copies dijk/kjid/kijd/jikd/ikjd/jkid/dkij/kdji
 // 211/210/211/211/210/209/211/210. Two-point best gain rejected; original copies and
 // complete body restored. Protected width, plane-join and pending spin homes remain.
+// Round 276: Existing scalar setters at
+// untransformed/transformed/both-output/untransformed-transformed/untransformed-outputs/transformed-outputs/all
+// transfers 210/211/211/210/210/211/210; all with axis copies 269. One-point leads rejected.
+// Original executable source restored; Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1119,6 +1123,10 @@ struct s_item_flags_view_10b850
 // Round 266: library counter/correction/lift bounds, seven nonempty subsets and
 // all with bounded unsigned count, 871/897/912/876/895/923/939/939. Correction/lift recover frame
 // 0x148 but regress. Original bounds, flow operands, helpers and body restored.
+// Round 276: Complete carrier-input/linear/angular/carrier-linear/carrier-angular/linear-angular/all
+// scalar snapshot transfers 863/879/884/896/863/886/916; all with scalar ray construction 908. Initial
+// forms recover frame 0x148 but regress.
+// Original executable source restored; Original frame 0x154 versus 0x12c, Boolean publications and carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

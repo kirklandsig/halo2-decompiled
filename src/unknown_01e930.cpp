@@ -449,6 +449,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 276: Explicit signed timestamp returns, no/zero initialization in low-first and high-first output
+// orders 310/286/310/286; each with a one-use end tick at subtraction 310/286/310/286. No-init/zero-init
+// frames 0x30/0x38 regress.
+// Original executable source restored; Original timestamp helper and complete body restored; frame 0x3c versus 0x40, clock/output homes and instruction policy remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
