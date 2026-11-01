@@ -1137,6 +1137,12 @@ bool function_68670(byte *source, long size, void *block);
 // the loop 146; payload alone in the loop 146; the payload size at function scope 137; header and
 // payload in the loop with per-field memsets 144. Retail treats the header as escaped (start reloaded
 // after the first read, used updated in memory) although its copy keeps &header from the send.
+// Round 44 (lane 10, fast): `long size = header.size;` ahead of the short test, used by the payload
+// read 155 (506 bytes); case 0 sending a function-scope `long value` copy 137 (561 bytes); the switch
+// on `(long)header.kind` 72 (identical); the payload block's used update before the start update 103
+// (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
+// live from the test into the cases (reloaded after the payload read); ours coalesces it with the
+// long size in ESI.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

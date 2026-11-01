@@ -164,6 +164,10 @@ struct s_spawn_scenario_23aea0
 // pointer); with the scenario read first 110; one type loop with the index 252 (not unrolled); `index =
 // type * 3 - 4` 103; the index plus a named source record 121; the index with the table store after
 // the defaults 104.
+// Round 45 (lane 10, fast; compile-only screens agree): 1..31 unused locals at the top keep the pointer induction
+// (not a numbering tie); one type loop through `globals->types[type - 2]` real fields 105 (same code), dword
+// fields 254 (278 bytes, not unrolled); the nested loops through `globals->types[i * 6 + j]` dword fields 105;
+// a `s_spawn_influence_type *weights` element pointer 252 (278), an element reference 252 (278).
 // @retail 0x23aea0
 void function_23aea0()
 {

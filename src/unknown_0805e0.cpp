@@ -1029,6 +1029,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copies the count into ECX for upper); copy loops indexed by the destination (`i = lower; i < upper`, `i = upper;
 // i > lower`, both) on the current body 371/373/373, on the plain-entry form 364/361/361; on the plain-entry form the
 // direction step computed before the copy loops 358, the flag set from `removed < position` 390 (1162 bytes).
+// Round 44 (lane 10, fast): round 111's plain-entry form rebuilt 56 (upper coalesced with the count in EAX; on the
+// current body the `cache_full` sete puts the count in ECX and upper in EAX, retail has count EAX, upper ECX); on it
+// the count path reading the count into a block-local `count` for the test and the bound 56, with lower assigned
+// first and no flag store 355 (1162 bytes); the current body with that block-local count 49 (identical); the current
+// body's three-way test as `position > removed` 50; the plain entry with the bounds and flag declared above the
+// removal block 378.
 // Round 140 (lane 4): on the current body, lower as `removed <= position ? removed : position` 49 (same code);
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the

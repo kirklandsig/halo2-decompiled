@@ -164,7 +164,7 @@ void function_44720(void)
 // score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
 // through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
 // the flags word; this round's variants all scored worse, so the body is unchanged.
-// score 107 (was 107): frame 0x44 versus retail 0x40; entry-offset construction
+// Earlier: frame 0x44 versus retail 0x40; entry-offset construction
 // and the geometry flag reloads differ.
 // Round 125 (one-link LTCG harness with the callers' and callees' files, exact for this function):
 // level != 31 at the call gives retail's frame (harness aligned 70 -> 50) but 135; on it the
@@ -206,6 +206,12 @@ void function_44720(void)
 // Round 453: Ordinary inline query/submission/both contracts 107/107/107;
 // with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
 // Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
+// Round 45 (lane 10; one-link harness exact for this function, fast agreeing): 1..32 unused locals before the
+// loop leave the current form and the level-at-call form unchanged (no numbering ties). On the level-at-call form
+// (135): transform index before the weight 136, after the geometry lookup 150; weight after the material 161;
+// transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
+// re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
+// the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

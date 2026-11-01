@@ -568,6 +568,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // address computation then leads); the offset advanced before the next index 42 (same code); the
 // offset declared first 42 (same code); the offset as `dword` 42; the transform test read once into a
 // bool for both tests 326 (1156 bytes).
+// Round 46 (m3 lane 10, fast): the emitter's next index read right after the emitter lookup 318 (1150
+// bytes), with scale first 318; the 0xf80f particle mask computed right after the emitter mask read 263
+// (1117 bytes), with scale first 261; the emitter mask read from the definition at both uses 239 (1136 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
