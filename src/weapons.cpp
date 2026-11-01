@@ -2027,6 +2027,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // success block 160; the other magazine as `->magazines + magazine_index` 124 (same code); the holder
 // test as `taken < count && unit_index != NONE` 125; the slot take as `unloaded < count - taken ? ...`
 // 126. The pool-global lead stands (0x106030 reaches 0x159dd0 in a file another lane holds this round).
+// Round 52 (lane 1, plain): `long taken = 0;` after the 0x106030 call 126 (585 bytes); the first block's
+// minimum as its own `take` local added to `taken` 178 (589 bytes); `definition` read after the 0x1008f0 call
+// 174; the taken placement without the definition-index local 196 (569 bytes, 0x102b90 5); the taken placement
+// with `return true` in the success block and `return result` at the end 130 (0x102b90 5).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

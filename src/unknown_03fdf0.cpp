@@ -375,6 +375,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
 // the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
 // combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
+// Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
+// the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
+// current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),
+// 60 on the indexed form 125-145; a short count inside the `if` with the loop re-reading the field on the block
+// 143 (164 real), indexed 145; a dword count at the `if` top indexed 126 (140 real, 495 bytes), block 125; real
+// `--fast`: unsigned cache_index 54, current/count/first/entries/copy/selection/advance on the block 66, first/
+// entries/current/copy/selection/advance 66.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

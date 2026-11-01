@@ -524,6 +524,12 @@ long function_243b10(long key_b, bool team_only, long *second)
 // count stays in ECX and the index in EAX where retail keeps the count in EAX and spills the index);
 // sqrtf 173. The table local at the loop top or in the marker block (169, 717 B) hoists the table to
 // EDI and moves the slot to EBP from the stack, so it is not retail's allocation either.
+// Round 126 (m3 lane 6, fast with 0x1e5bb0/0x1e2a90/0x29b00/0x19ec40 in the image; alone it builds 203 at 690 B),
+// all on the accumulated distance (aligned difference 58 -> 53, still 173): the inner index declared in its for 173,
+// at the marker block's top 173; with the y-first copy helper function_2417a1 for the marker position 172, plus the
+// index in the for 172 or at the block top 172; the table local at the loop top with the select's else arm through
+// the global 169 (717 B, caller 0x240160 46). Retail's count stays in EAX and is stored straight to its slot; the
+// spilled inner index and the EBP table remain.
 // Round 186 (fast, with 0x1e5bb0/0x1e2a90/0x29b00 in the image): a loop-invariant marker-entries pointer
 // read before the inner loop 170 (702 bytes; frame 0x44 as retail and the first difference moves to +0x20,
 // but the pointer takes the spilled slot retail gives the inner index, and the index stays in EAX), with the
@@ -1137,6 +1143,7 @@ void c_game_engine_markers::v21(long object_index)
 // returns for the mode, type and slot tests 40; the object fetched before the type test as in the
 // matched v24 119 (the object is then kept, where retail reloads it).
 // Summary of the same two causes: the entry swaps EAX/ECX for the object index and the header; retail computes the
+// Earlier note (40): the entry swaps EAX/ECX for the object index and the header; retail computes the
 // player pointer before the flag test with the players' data load unfolded and reloads the options
 // pointer at the engine-type compare.
 // Round 77: the team at each call again 119 (the options pointer then stays in EDX from entry and the
@@ -1219,6 +1226,10 @@ void c_game_engine_markers::v21(long object_index)
 // against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
 // at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
 // matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
+// Round 126 (m3 lane 6, fast): on the per-arm team (119; the options pointer then held in EDX from entry, so the
+// players' data load folds): the type test's result in a short local 119, the players' data named once and indexed
+// by the absolute index 120, the event block reading the unit's player index at both uses 119, a char team per arm
+// 119; on the kept form the players' data local alone 87.
 // Round 186 (fast): on the team at each call, a second player pointer for the else arm's team 95
 // (431 bytes: retail's unfolded players-data load, player pointer before the flag test and team after
 // the compare, but the options pointer still held in EDX from entry, so the type test takes ESI/EDI),
@@ -1245,6 +1256,13 @@ void c_game_engine_markers::v21(long object_index)
 // only because EDX already holds the options pointer: one cause, not two); a named `valid_slot` bool for both
 // slot range tests 106 (plain; the fast image drops the function); the unit through slot_handler.h's object_get
 // 40 (identical).
+// Round 64 (lane 9, fast): declaration order only: the unit declared before the slot 40, player_index
+// declared at the function's top 40, absolute_index at the type block's top 40 (same code each); on the team
+// at each call: the unit declared first 119, player_index at the top 119; the player getter at each call
+// without a player local 100 (re-measured). Diagnostic: the slot read through the unit index (no shared
+// object-index CSE) 117 still loads the index into EAX. A compile-only build with 0x101280's body pasted in
+// as an inline reproduces the entry swap and keeps it with the header in a local, the index masked into a
+// local, or without the mode test.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

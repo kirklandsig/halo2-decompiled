@@ -576,6 +576,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
 // helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
 // pointer to the candidate for all six queries 67.
+// Round 125 (lane 6, fast with 0x91dd0/0x91860): `reference->count_spread() - candidate.count_spread() > 0`
+// for the first test 72 (516 bytes); the reference picked by `= &current; if (improved) = &best;` on this
+// body 70; nested ifs in place of the two continues on this body 67; the selection through a forceinline
+// optimizer member returning `improved ? &best : &current` 67; party_b's pointer declared before party_a's
+// 67 (the last three identical code). The candidate's count_spread still runs second.
 // Round 25 (m3 lane 2, fast): a placement-new candidate (`*new (storage) s_balance_solution(current)`, as 0x91fc0
 // builds its optimizer) 67 (same code); the candidate default-built and filled by memcpy 204 (560 bytes, the
 // team constructors run; 0x91dd0 9); count_spread declared first in the solution 67; the cost test as
@@ -871,6 +876,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
 // pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
 // into EBX.
+// Round 125 (lane 6, fast with 0x91e30): open slots computed first from the sum written out, total after
+// (real build) 71, with the sum extra first 71 (player count still EDX; next party then in EAX with a
+// cmovle); total and open slots `const` 34; the locals as `int` 34; the excess as `imbalance -=
+// open_slots` in place 34 (all three identical code).
 // Round 25 (m3 lane 2, fast): extra-first sum with the clamp's subtraction written in place 45 (192 bytes); a
 // `short` next_party local 76 (197 bytes); open slots as `team_count * maximum_team_size - player_count -
 // extra_count` 71; the last party index tracked from NONE and the fill writing `last_party + 1` 82 (173 bytes);
@@ -896,6 +905,17 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
 // copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
 // as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// Round 127 (lane 5, fast with 0x91e30): the copy stored before the maximum update 82 (170 bytes);
+// next_party set to 0 just before the copy loop 34; the fill through a block-scoped element pointer 34;
+// the clamp as `if (excess < 0) excess = 0;` 46; the fill through a pointer to next_party 34
+// (propagated); diagnostics: next_party as a memory-resident one-element array 34 (same code, so
+// residency is not what flips the roles), a volatile read at the fill 58 (no rep stosd; reverted).
+// Round 48 (m3 lane 10, fast): retail's only caller passes the player count in EAX, the party list in ECX
+// and the extra count in EDX. `int next_party` 34; one variable serving as next party and then as the
+// call's imbalance output (address-taken, sharing retail's frame-0 slot) 36 (the fill value is still
+// loaded first); the extra-first sum with the clamp's subtraction written in place 45 (192 bytes); the fill
+// bound `i != total` 35; the maximum test as `party_indices[i] + 1 >= next_party` 35. Re-measured
+// (diagnostic, value-changing): `(short)next_party` in the fill 7 with retail's roles.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

@@ -133,6 +133,15 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
 // harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
 // 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
+// Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
+// helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
+// j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k
+// with products j, i, k 108 (screen 55); plain j, i, k sum with products j, i, k 111 (55), with k, i, j 110;
+// named i square with k, i, j 110; the k-first forward plus a k, j, i statement sum in the shared helper 149;
+// forward normalised in a local copy 251 (982 bytes). Screen only: 144 forms (three sum forms x six product
+// orders x every operand spelling) never drop the k preload and the spelling never matters; the dot's argument
+// order and all six projection row orders compile the same; distinct in/out pointers, products through
+// locals and a magnitude helper compile like the control.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

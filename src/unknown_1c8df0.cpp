@@ -177,6 +177,19 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // Round 460: Shared-outcome graph with native normalized direction copies for positive,
 // negative and endpoint consumers, subsets 1-7 and immutable all, 350/337/370/222/364/365/364/364.
 // No exact match; every direction copy and added-result form restored.
+// Round 188 (plain): the five-difference body (short category, bool clear state, one bool probe
+// result) with the centre read through the parameter at every use (no local copy) 20 at 1176 bytes:
+// only the mode-1 x row differs. Compile-only screens show that row (and the mode-2 x row) follow
+// the parameter list, not the body: names, types, offsets and local declarations change nothing,
+// the centre parameter first or last folds it. On that body: quarter as a literal 20; positive rows
+// z, y, x 37; side j before i 26; first direction by component k, j, i 33; parameters in
+// (arg_0 .. arg_9) order everywhere 22 (mode-2 x row then loads first). Orders with the point
+// parameter after arg_8 match this function byte for byte: (arg_2, arg_3, arg_1, arg_5 .. arg_9,
+// arg_4, arg_0), (arg_2, arg_3, arg_1, arg_0, arg_5 .. arg_9, arg_4) and (arg_2, arg_3, arg_1,
+// arg_5, arg_6, arg_7, arg_0, arg_4, arg_8, arg_9) MATCH, but each breaks matched caller 0x1b0400
+// (38; its arg_7 compare is loaded early) and takes 0x25f7b0 4 -> 12; six more such orders screened
+// with the fast check break 0x1b0400 (18-38). Only the current order reproduces every retail call
+// setup. All restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

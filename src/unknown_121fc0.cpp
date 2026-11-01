@@ -99,6 +99,12 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
 // ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
 // restored; early EBP and read-size/count/cursor homes remain.
+// Round 188 (fast): the code inside the token loop is retail's except that every scalar home sits
+// 4 below (EBP pushed just before the loop, popped at its exit; retail pushes it with ESI/EDI at
+// the block start and joins the failed-read and no-token exits before the pops). A single goto from
+// the success test to the block's exit 128 (same code); the clamp and terminator before the token
+// array and counters 129; before the counters only 129; before the token array only 129; clamp,
+// terminator and first token before all three 177.
 // Round 64 (lane 12; one-link LTCG env with the stand-in caller, equal to the full listing; env positional/
 // aligned 120/51 for this body): the clamped size in a new local used as the index 202/53 (763 bytes); the clamp
 // before the token table's initialisation 121/59; both 203/58; the clamp written inside the subscript 202/53;
@@ -131,6 +137,19 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 31 (m3 lane 2, fast): the token walk with one tokenizer call in the while condition (next
+// starting at the buffer) 287 (690 bytes); the done flag declared `bool volatile` as file_read_string
+// 0x121a40 does 128 (same code); that with the size zero-initialised as there 122 (the earlier 6-point
+// form); the walk as a do-while under a first-token test 128 (same code); the new-font arm first
+// (`local_14 == NONE`) 188 (764 bytes). EBP is still saved at the first token's test.
+// Round 64 (lane 9, fast; a compile-only build reproduces the late EBP save and the slot order): the token loop
+// as `if (token) do { ... } while ((token = next token) != NULL);` 128; `if (!local_7) {} else { ... }` 128;
+// the first token taken in the success block with the loop under `if (token)` at block level 130; a block-
+// level `while (local_7 && token)` with a NULL token 215 (781 bytes); `dword size = 0` with the done flag
+// `bool volatile` as 0x121a40 declares it 122 (as the zero alone), with the counters declared before the token
+// array 122. Diagnostic: the token stored to a global after the loop 149. Compile-only: a use of the token
+// after the success block moves `push ebp` to the block's start (retail's place); renaming the size, next,
+// count and unique locals (four orders, prefixes included) never changes their slot order.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
