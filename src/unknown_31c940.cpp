@@ -93,9 +93,11 @@ static __forceinline float const &load_friction_scale(solver_step_31c940 * const
 	return step->friction_scale;
 }
 
-static __forceinline void solve_contact_pair(solver_step_31c940 *step, unsigned char *op,
+// Borrow the dispatcher's pointer homes so the two projections do not
+// require an extra vector spill between their body loads.
+static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, unsigned char *op,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
-	solver_velocity_31c940 *b, float *result)
+	solver_velocity_31c940 *const volatile &b, float *result)
 {
 	// Complete both SIMD projections before the coupled x87 errors.
 	solver_scalar_31c940 projected_a = linear_velocity(row, a, b);
