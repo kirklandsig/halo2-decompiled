@@ -461,6 +461,9 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier 129; data_iterator.h's four-field iterator and data_datum_iterator_next_inlined with the pool local
 // 133; the iterator aggregate-initialised 122 (same code); `animation` declared in the while condition 122
 // (same code).
+// DL213: actual four-field iterator call with original suppression 201; ordinary declaration 180;
+// inline iterator and scan 152; forced iterator with ordinary/inline scan 180/152.
+// Forced iterator and scan together unscored. Original body and declarations restored; two pool homes remain.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
