@@ -610,7 +610,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	g_4fa0c8.external = *buffer != g_4fa0c8.storage;
 }
 
-// score 34 (was 53): the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -707,6 +707,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
 // before its buffer 34 (all identical code: names do not break these register ties); the body case as
 // an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
+// Lane 12 r66 (fast; a /GL- compile-only screen matched the build): a body_size local read once before the
+// switch for the body test, the direct arm and the signature sum (the scratch clamp still reading the
+// fields after the claim) 33: the body arm becomes retail's (`sub ecx, eax` then the shared `mov reg, ecx`),
+// but the entry sums header first, the dispatch loads it before the header case and size/position stay
+// ESI/EDI (a mixed read, not kept); with the clamp on the local too worse (compile-only); renamed or with the
+// total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
+// clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
+// (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

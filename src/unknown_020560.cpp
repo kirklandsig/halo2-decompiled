@@ -1323,6 +1323,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
 // outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
 // tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
+// Lane 12 r66 (fast; a /GL- compile-only screen gives the same colours, loop counter EDI in every form):
+// the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
+// 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
+// 66; status and total declared at function scope 52.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

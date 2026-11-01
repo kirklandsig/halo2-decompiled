@@ -160,6 +160,10 @@ bool g_47f05b;
 // Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
 // buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
 // named const 34 (same code); the pool address named after the first construction 34 (same code).
+// Lane 12 r66 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0; a /GL- compile-only build also drops the store):
+// g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
+// sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
+// construction in a typed local published after the pool construction 38 (154 bytes).
 // @retail 0x146a20
 void function_146a20(void)
 {
