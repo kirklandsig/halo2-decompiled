@@ -1996,46 +1996,8 @@ extern dword g_54d5b8;
 
 /* shows the session's state in a dialog once; a live session leaves it three
    seconds later */
-// score 36 (was 36): the cases' blocks sit in the other order, ours tests the
-// state's value before the call while retail calls first and tests after, and
-// the argument of the call is built in the other registers
-// Our compiler lays the shared call out after the highest case (case blocks go in
-// value order); only a separate call in case 4 puts it after case 4 as retail does,
-// but that copy pushes 0xad and the state register instead of eax and 4: 81 (176
-// bytes). Tried: that copy with the dialog set before the switch, inside the guard,
-// or with a goto to the store 81; case 4 as `if (!g_51ec99) {...; break;} goto
-// shown;` 37; `case 1:` with the default 36.
-// Lane 11 r12: a NONE dialog for the flagged case 4 with `if (dialog != NONE)`
-// before the call (assigned then cleared, a ternary, an if/else) 36/62/37: VC
-// threads the test away and keeps the same layout; case 4 first or the default
-// last 36 (identical code: case blocks are laid out the same whatever their
-// source order).
-// Round 186: dialog result at entry long/int/dword/unsigned-int, native-scope int/dword/unsigned-int
-// 36 each; full unsigned state 36. Original body restored; shared tail placement remains.
-// Round 76: case 4 outside 55; its timestamp copy 48; case 4 after the switch 57; case 4 with case 5
-// or the high cases outside 55/55; early guarded case 4 71; entry dialog with case 4 outside 55;
-// case 4 outside with its timestamp 60. Original body restored.
-// Round 13 (lane 13): all 120 case orders lay out the same (compile-only); the call follows
-// case 4 only when case 4 has its own call that VC tail-merges (compile-only, fastcall), but
-// here case 4's call pushes a constant: 81 with `dialog` or 0xad. Also: the switch only picks
-// the dialog and `state != 4 || !g_51ec99` guards the call 55; a forced-inline dialog helper
-// returning NONE 85; case 4 `if (!g_51ec99) break;` then store and return 48.
-// Round 24 (lane 15): cases 0/2/3 `goto done` to a single exit 36; the outer test inverted (the timer
-// arm first) 58; the dialog declared at function scope 36; case 4 `if (!g_51ec99) break; goto shown;`
-// 36; the call written in every case with the dialog local (case 4 under `if (!g_51ec99)`) 117 (the
-// constants propagate into each call; also costs caller 0x24fd74). A compile-only model reproduces our
-// layout for all of these and for an if/else-if chain (VC builds no compare tree from it): retail's
-// layout looks like case 4 hosting the whole call/store/return with the other cases as stubs that
-// jump back into it.
-// Round 136 (lane 4): case 4 `if (g_51ec99) { store; return; } dialog = 0xad;` 53 (165); its own call under
-// `if (!g_51ec99)` then the store and return 81 (call after case 4 as retail, pushes 0xad and the state register); the
-// flag test before `dialog = 0xad` 37; `dialog = 0xad; if (!g_51ec99) break;` then its own store and return 48 (163);
-// the call under the flag then a jump to the store, with `case 1:` 83 (178).
-// Round 56 (lane 9, fast): every case label with its own body (0, 2, 3 each returning; 6, 14, 19 each
-// 0xae) 58 (159 bytes); only 0/2/3 separate 58; only 6/14/19 separate 36 (merged back, same code); a
-// `show` flag cleared by case 4 guarding the call 64 (171); the call under a label in the default with
-// every case jumping to it 37 (the 0xae block still falls into the call); `dialog = 0xab` as the
-// local's initial value without a default 56 (160). Every layout keeps the 0xae block before the call.
+// The NONE dialog for states 0, 2 and 3 and the flag test on the dialog value (not the state) give
+// retail's layout (case 4's block hosting the call and the store); kept only with this byte match.
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2051,7 +2013,11 @@ void c_session_lobby_screen::show_session_state()
 		case 0:
 		case 2:
 		case 3:
-			return;
+			dialog = NONE;
+			break;
+		case 4:
+			dialog = 0xad;
+			break;
 		case 5:
 			dialog = 0xac;
 			break;
@@ -2063,17 +2029,15 @@ void c_session_lobby_screen::show_session_state()
 		default:
 			dialog = 0xab;
 			break;
-		case 4:
-			dialog = 0xad;
-			if (g_51ec99)
-			{
-				goto shown;
-			}
-			break;
 		}
-		dialog_ok_show(3, dialog, 4, user_flags, 0, 0);
-	shown:
-		state_shown_time = g_54d5b8;
+		if (dialog != NONE)
+		{
+			if (dialog != 0xad || !g_51ec99)
+			{
+				dialog_ok_show(3, dialog, 4, user_flags, 0, 0);
+			}
+			state_shown_time = g_54d5b8;
+		}
 	}
 	else if (function_592f0() && state && g_54d5b8 - shown_time >= 3000)
 	{
@@ -2920,7 +2884,7 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
-// score 48 (was 61): frame 0x754 agrees; with the row text through find_child and the searching flag
+// score 48 (was 48): frame 0x754 agrees; with the row text through find_child and the searching flag
 // computed as one expression, the item loop, sections 1-2 and the animation byte are retail's; left: the
 // row loop's counter/text registers (ours ESI/EDI, retail EDI/ESI), EDI saved at entry (retail after the
 // game test), and the flag materialised at the end in AL (retail sets BL to 1 before the tests, keeps it
@@ -3003,6 +2967,15 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // then short/word with row-scoped text and bitmap receivers: 48/96/116/81/109/50/96/110.
 // Original shared ordinal, direct row queries and direct searching expression restored;
 // EDI save staging, row/text registers and the final result carrier remain.
+// Round 107 (lane 8, fast; aligned = difflib count, baseline 30): `bool searching = true; if (A || B || C)
+// searching = false;` then stored 161 (aligned 21: retail's late `push edi`, BL flag and row-loop EDI/ESI,
+// but section 1's bitmap takes ESI and `this` is reloaded through sections 1-2); declared first or after
+// has_game 161/161; the test as `if (A) searching = false; else if (B || C) searching = false;` 13 at 877
+// bytes (only the row loop's i/text ESI/EDI swap left; not kept: identical branches); on that 13 form a
+// separate row counter 13, row-scoped text and bitmap 15, row-scoped text 13; the store in an if/else
+// 67; `searching = !A; if (searching && (B || C))` 163; false default with `!A` then `!B && !C` 53; A
+// false else `!(B || C)` (uninitialised / true default) 46/46; false/true if/else on `A || B || C` 46;
+// row-scoped text/bitmap on the 161 form 171; the expression as `!A && !B && !C` 48 (same code).
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

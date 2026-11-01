@@ -231,7 +231,9 @@ struct s_simulation_session_player
 	long machine_index;
 	long controller_index;
 	long unknown14;
-	byte unknown18[0x13c - 0x18];
+	byte unknown18[0xa8 - 0x18];
+	dword configuration[0x24];
+	byte unknown138[0x13c - 0x138];
 };
 
 /* whether the watcher's record of a player differs from the session's */
@@ -552,7 +554,7 @@ bool function_84560(s_simulation_world_owner *watcher)
 
 void simulation_player_collection_swap(s_type_c67652 *collection, long player_index, long other_index, s_simulation_player_update *update);
 
-// score 32 (was 32): the address of the record is computed in EDX and the zero kept in EBX;
+// score 28 (was 32): the address of the record is computed in EDX and the zero kept in EBX;
 // retail computes it in ECX and stores it first, so the block order differs.
 // inline/noinline swap declaration 32; apply-update declaration 32; both 32;
 // collection preheader 277; const session 32; const collection 32; array-base key 32;
@@ -680,6 +682,18 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // harness 23 (aligned 18); the initial count read inside the live-session block harness 50 (1063 bytes); the
 // configuration as `const byte *` 32; the member count in a local for the machine copy 32; the swap's
 // update named in its own block 32 (the last three identical code).
+// Round 107 (lane 8, fast; aligned = difflib count): the session player's configuration as a real member
+// read at each use (no `configuration` pointer local; the last record's `source + 0xa8` too) 28 (aligned 11,
+// kept: the preheader cursor now takes ECX and is stored at once as retail); left: `updates` loaded before
+// the swap call's slot push (retail after it, in ECX) and the occupied key (retail (collection + offset) +
+// cursor; ours (offset + cursor) + collection, with `updates`/offset loads in the other registers). On 28:
+// the swap callee as (collection, player, update, other) at its definition and call 32 (aligned 21: the
+// swap call and the occupied loads become retail's, the key sum keeps our grouping, so the key copy and the
+// last record's `updates` load trade ECX/EDX); `collection` defined before the loop 277 (1072 bytes), with
+// that swap order 276. On 32: the memcmp `continue` as an if block 32 (same code); the conflict flag in the
+// scan's loop test 310 (1077 bytes); an early-return session guard 32 (same code). On 28 (after the full
+// check): the swap's update through the `update` local 28 (same code); the occupied key through the loop-top
+// `player` 291.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
@@ -710,18 +724,17 @@ void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_
     continue;
    s_type_c67652 *collection = &watcher->players;
    const s_simulation_session_player *source = (const s_simulation_session_player *)&session->players[i];
-   const void *configuration = (const byte *)source + 0xa8;
    s_simulation_owner_player *player = &watcher->players.players[i];
    s_simulation_player_update *update;
    if ((watcher->players.player_mask & (1 << i)) && !player->flag0c)
    {
-    if (!memcmp(configuration, player->configuration, sizeof(player->configuration)))
+    if (!memcmp(source->configuration, player->configuration, sizeof(player->configuration)))
      continue;
     update = &updates[++*count - 1];
     update->player_index = i;
     update->type = 4;
     memcpy(update->key, source->key, sizeof(update->key));
-    memcpy(update->configuration, configuration, sizeof(update->configuration));
+    memcpy(update->configuration, source->configuration, sizeof(update->configuration));
     simulation_player_collection_apply_update(collection, update);
    }
    else
@@ -766,7 +779,7 @@ void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_
     update->field_2_2 = false;
     update->controller_index = controller_index;
     update->unknown20 = unknown14;
-    memcpy(update->configuration, (const byte *)source + 0xa8, sizeof(update->configuration));
+    memcpy(update->configuration, source->configuration, sizeof(update->configuration));
     simulation_player_collection_apply_update(collection, update);
    }
   }

@@ -337,6 +337,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
 // material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
 // declared first 49 (identical, 54).
+// Round 107 (lane 8, fast; aligned = difflib count, block form 46): indexed form re-measured 144 (index EDX,
+// count CX, zero EAX); with a long count named at the `if` top 140 (index ECX, count AX, zero EDX). On the
+// block form: a long count named at the `if` top for the copy and advance 130 (508 bytes, aligned 41), with
+// the loop on it too 181 (479 bytes); the indexed named count with the loop on it 178 (479); a long count
+// named before the guard and used for it, the copy and the advance 161 (495); the guard as `>= 1` 54 (same
+// code). Retail's `first` lives in EDI (the copy's destination register) and is spilled at once; every form
+// here keeps it in a scratch register across the copy.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
