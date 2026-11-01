@@ -179,6 +179,8 @@ void function_213970(void);
 // test through a named `changed` bool 131; the two requests cleared one memset each 144 (237 bytes); the enable flag
 // stored after the last NONE store 131; the copies cleared before the files 131. Still BLOCKED-BY the block
 // definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
+// DH round 262: language after header payload/first sentinel, with native progress/handle reset
+// subsets 131/175/168/187 and 131/172/165/184. Original resets, getter site and complete body restored.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

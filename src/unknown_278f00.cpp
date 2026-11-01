@@ -186,6 +186,8 @@ bool function_a7670(long object_index);
 // declared ahead of the flag test 186 (966 bytes).
 // Round 259: Deferred-before-immediate membership, ordinary/first-standard/second-standard/both-standard searches, cursor/indexed cleanup
 // 275/270/263/256/266/262/265/270. Original body and producer sites restored.
+// DH round 262: standard-count first/second/both membership 201/213/235; indexed cleanup
+// 213/232/206; both counts with unsigned/immutable result storage 235/235. All exact-only forms restored.
 // @retail 0x278f00
 void function_278f00()
 {

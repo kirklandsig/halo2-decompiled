@@ -144,6 +144,8 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 260: Native i/k/j norm with real-absolute/shared-scale/single-result combinations
 // 792/786/792/786/791/785/791/785 on direct input. Original promoted products, input access, helpers and
 // entire body restored.
+// DH round 262: direct-input normalized setter with branch planar target/input/heading lexical-home
+// subsets, then all with the planar magnitude identity, eight 750 at 3499 bytes. Frame 0x8c; all restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

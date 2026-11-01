@@ -1079,6 +1079,8 @@ bool function_108530(long device_index, long name)
 // division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
 // target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
 // 0x108670 13 -> 34).
+// DH round 262: immediate phase-distance selections 125/121/125; conditional phase derivatives
+// 121/121/121; both producer families 125, with field-owned cruise speed 141 (529 bytes). All restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1550,6 +1552,8 @@ bool function_0b6760(s_index_pair const *pair);
 // on this body the same 303 (1510 bytes); the b3 byte tested `<= 0` 294 (retail's `ja`, same count); the
 // state as one conditional expression 300 (1512 bytes). Retail's result byte never crosses a call on any
 // path, so its stack home is not register pressure from a live range.
+// DH round 262: byte/short/long/dword active-channel counts 320/409/411/411; entry initialization
+// 320/409/411/411. Frame remains 0x1c versus 0x20; original activity result and complete body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
