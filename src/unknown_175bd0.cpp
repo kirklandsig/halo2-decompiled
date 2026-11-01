@@ -1864,6 +1864,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // 101, one `markers` local for both arms 102 (0x178360 1); the parameters as (source, out, marker_index) or
 // (source, marker_index, out), the order retail's esi-before-eax setup suggests, 9/9 (callee unchanged, 0x178360
 // 2 each; with node-first 101/101), so the current order is retail's.
+// Round 260: null-arm point/vector setters, singly/both and node-first/reversed publication,
+// 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
+// Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
+// Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -3135,6 +3139,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Round 493: native unsigned system/effect/successor handle subsets 93/93/93/93/93/93/93;
 // native-int system on the unsigned effect/successor graph 93. Original input and result
 // domains restored; frame 0x4c/0x54 and system/successor/color homes remain.
+// Round 260: coherent separate inline color/location/matrix declarations, seven subsets 93;
+// all three with per-call mode 108, losing the matched caller. Original declarations/body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3430,6 +3436,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 493: native indexed point input/output/both and complete direction access 74/74/74/74;
 // each with default-before-color scale 270/270/270/270. Original helpers and body restored;
 // scale prefix and point Y-copy remain.
+// Round 260: complete native location matrix with original/house scale, original/shared normal
+// kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

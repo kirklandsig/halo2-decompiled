@@ -258,6 +258,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 291: normalizer common component stores, working/distinct output scalars,
 // large/tiny first and x/y or y/x publication, 142/142/142/142/160/160/160/160.
 // These promote the original subtraction to SSE and grow to 635/634 bytes; restored.
+// Round 261: complete source/goal/both point snapshots before normalization 178/177/205;
+// with existing subtraction 197/177/219; full snapshots with shared dot/cross and tiny-case-first
+// normalizer 215/215. All restored; added native input storage grows frame 0xc to 0x10-0x18.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -761,6 +764,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
 // Round 291: conditional/default-high actor-height producers, signed/unsigned flags and
 // long/Boolean success, 727/760/727/760/729/750/729/750. Original complete body restored.
+// Round 261: all six relative lexical schedules of direction/previous-direction/world-start
+// 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
+// 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

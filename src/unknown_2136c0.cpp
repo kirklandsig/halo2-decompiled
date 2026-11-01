@@ -184,6 +184,8 @@ void function_213970(void);
 // compare-and-set helper for both preference updates under the pragma 131 (same code), with a forced-inline
 // redeclaration of the getter 131 (the getter still called); the NONE/flag stores after the language query 131;
 // the dirty flag set before each field store 131; block A's NONE store right after block A's clears 131.
+// Round 259: Language result after string/copy-state/completed/total/session-words/handle/first-file-state/second-file-state resets
+// 126/148/149/149/149/149/149/149. Original body and producer sites restored.
 // Round 69 (lane 12, fast): the progress record cleared by copying a zeroed local record 135 (232 bytes); the language
 // test through a named `changed` bool 131; the two requests cleared one memset each 144 (237 bytes); the enable flag
 // stored after the last NONE store 131; the copies cleared before the files 131. Still BLOCKED-BY the block

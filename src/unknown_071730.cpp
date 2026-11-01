@@ -195,6 +195,8 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
 // Round 217: actual assignment output cursor, long/int/short/word ordinal at phase/entry scope,
 // 441/441/443/443/441/441/443/443. Original indexed producer and complete body restored.
+// Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
+// 439/439/439/439/439/439/439/469. Original body and producer sites restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

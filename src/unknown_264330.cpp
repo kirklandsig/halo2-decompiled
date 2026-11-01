@@ -552,6 +552,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // Round 229: timer/view-first case orders 30421/34021/34201/34210/30241/32401/32104/34102
 // give 437/434/431/461/441/431/433/452. Fast frame 0xa0 recovered, actor input stays stacked;
 // all original cases, qualifiers, call boundaries and executable body restored.
+// Round 260: tail completion bool/byte/short/long at finalization/entry 437 each;
+// exact-only flags restored; frame 0xa4 and stacked actor input remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

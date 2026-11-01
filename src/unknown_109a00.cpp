@@ -491,6 +491,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // the entry by byte offset 112; 0xb7060 stays 2 in each.
 // Round 291: uninitialized entry/component/physics pointer declarations at entry, all
 // subsets then existing center conversion, 112/112/112/112/112/112/112/149. Original body restored.
+// Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
+// 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
+// body and call inputs restored; input register pair and early physics-pointer spill remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

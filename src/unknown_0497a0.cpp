@@ -174,6 +174,8 @@
 // families and combinations 632/694/699/684/702/682/694; all with both wave scalers 768.
 // The primary/depth pair reaches 2622 bytes at 684, frame 0x64; no frame 0x60 recovery.
 // Original producers, shape/basis homes and sixth-product conversion restored.
+// Round 259: Entry uninitialized scaled-product/maxima/wave-scalar storage, seven subsets, then all plus the existing truncation carrier
+// 581/581/581/581/581/581/581/581. Original body and producer sites restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

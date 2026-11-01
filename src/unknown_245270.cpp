@@ -515,6 +515,8 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 493: all three facing projection parts in ijk/ikj/jik/jki/kij/kji order 208/208/208/208/208/208;
 // sequential accumulation with complete parts in kji/ijk order 209/209. Original expression
 // restored; frame 0x24/0x2c, side bytes and delayed matrix load remain.
+// Round 260: existing native 3x3 rotation with staged cross/shared dot/unsigned decoded words,
+// 253/254/236/237/253/254/236/237; longer bodies and frame 0x24 remain, all restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

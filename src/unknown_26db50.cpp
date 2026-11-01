@@ -623,6 +623,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
 // unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
 // ring, word spoke, helper and complete body restored; ring conversion/spill remain.
+// Round 261: complete native rotated-vector publication with scalar/native input snapshots,
+// split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
+// All restored; SSE ring conversion and the unspilled rotation remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
