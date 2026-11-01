@@ -1337,6 +1337,9 @@ struct s_looping_detail_request
 // Round 290: Shared offset/outer selected-player/outer camera workspace subsets 1-7 all 127;
 // complete workspace with native signed count 129. Original declarations and count restored;
 // entry frame/copy agree, detail retention and first-player expansion remain.
+// Round 289: signed-byte selected player, with native count/skip and shared offset
+// workspace subsets: 132/134/148/149/132/134/148/149. Original carriers and complete body
+// restored; detail retention and unwanted first-player expansion remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1671,6 +1674,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 489/489/489 reduced; with independent per-pass counts 492/493/394; active-only tail with
 // complete request storage and both/no count snapshots 394/488. Reduced control 479;
 // active-only tail/counts plain 379 at 1924 bytes (baseline 305/1923), restored.
+// Round 289: positive state work region, process-before-release arm, nested update/handle
+// admission, seven subsets: 305 each; complete graph with native full request 305.
+// Original guards, request, frame and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2271,6 +2277,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // xorps/movss where retail stores eax = 0 as integers, so the clear is not a float store); memset with
 // `4 * sizeof(real)` 611 (identical); `(definition->flags & 0x80) != 0` 611; `created = true` before the creation
 // call 611; re-measured: memset of &listener_gains[0] 611 (listed above as memset on &listener_gains).
+// Round 289: native previous/next transition carriers char/long, short/long, long/char,
+// long/short, char/char, short/short, char/short, short/char: 669/644/626/657/645/651/658/655.
+// Original state graph restored; entry truth ownership and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
