@@ -965,7 +965,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.
-// score 193 (was 193): retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
+// Earlier at 193 (was 193): retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // the address on the stack (loaded into EDI, which 0x94220 takes it in); ours the type in ECX, the
 // address in EAX and the message on the stack, in every declared order. Retail lays the case bodies out
 // in one switch's order 0,2,3,4,8,9,10,12,13,14,22,23,24,18,11,5,6,7; with the unified switch and the
@@ -1177,6 +1177,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // late case returns in both orders 196/196; default/terminal conditional chains
 // 196/196; singleton-first switch/conditional chain 201/202 (fast control 196).
 // Full baseline 153; original native-role graph and matched caller preserved.
+// Round 238: on the consolidated native-input root, common completion for all/direct/connection
+// cases, default-owned late cases, case-local lookup results on those three completion graphs,
+// and common completion with failed-lookup breaks: eight 196 fast, tying control 196.
+// All-case common completion is 153 plain, tying baseline; original complete body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -140,6 +140,9 @@ struct s_visibility_bound_record
 // full check and is rejected. Sixteen-byte storage retains fast 404 and recovers
 // all three callers, but its closing full check hangs. Complete body and storage
 // restored; original frame/list strides and entry/table/plane homes remain.
+// Round 238: copied-plane normal reused in place, with all shared rotation-dot/position-dot/
+// inverse-scale subsets 459/459/478/478/459/459/478/478. Dot regroupings exact-only;
+// original complete plane/normal producers restored; frame agrees, entry/table and plane homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -2608,6 +2608,9 @@ struct s_scenario_scripting_view
 // Round 236: Complete native input/product/both/full-result nodes in the existing squared-length helper,
 // each with original/loop-owned short counter: 80/87/80/87/80/87/80/87.
 // Original complete search and shared helper restored; actor/counter/data homes remain.
+// Round 238: resolved-point branch first, branch/loop output storage and separate/returned
+// resolver output crossed with original/loop short counter: 80/80/84/84/87/87/95/95.
+// Original branch priority, output/counter scopes and complete search restored; wrapper stays exact.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
