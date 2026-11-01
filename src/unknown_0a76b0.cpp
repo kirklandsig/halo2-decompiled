@@ -3366,34 +3366,8 @@ struct s_unit_request_seat_animation
 
 /* plays a seat animation (type 36): the request's, or the one following
    the unit's current animation */
-// score 76 (was 76): Frame and entry carriers agree; one extra byte, provider output role and
-// selector tail blocks remain. All original values retained.
-// Shared dispatch 134; selected-name result 159; Boolean result 144; vector copies 134; live mode
-// 159; scalar reservation 134; vector role names 159; if chains 140; false-result exits 134/134;
-// initial/per-branch context 113/132; common exits 109/122; query-spanning contexts 127/133; common
-// result with precise/initial context 76/125; reverse/third-first case orders 76/76. Keep precise
-// contexts, one dispatch and one real result exit; original case order and selected provider output
-// retained.
-// Round 34: retail switches on 0x10f630's first output (`[esi]`, the state at +0x70), not the
-// second: switching on it is a value fix that gives retail's output slots and registers, 76 (kept).
-// What remains is one merged case block: retail keeps the 0x110001b4 block after the query
-// switch's 0x120001b5 block, ours after the call. All 36 case orders of the two switches 76; the
-// branches in the other order 76 (same code); the query branch setting the mode for one name
-// switch 139; early `return false` exits and a returned call 133.
-// Round 23 (76): `default` first in the mode switch 76, in the query switch 76; the request's mode
-// mapped to the current-action values (1 0x10000229, 2 0x1100022a, 3 0xb0006c4) and one shared
-// action switch 103 (477 bytes: the mode cases thread into the action switch's blocks, as retail
-// does for cases 1 and 2, but case 3's block and the call move to the end and the mode default
-// becomes the dispatch's fallthrough), that with the branches swapped 103 (same code); the request
-// context set after its switch 137.
-// Round 61: a compile-only screen shows the rule: a merged block keeps the copy that falls into the
-// call, else the request switch's copy, so the request-1 block stays in the request branch. On the
-// shared action switch (103): the request default `return false` 124; the query failure and the action
-// default `return false` 82 (473 bytes: retail's layout, the 0xc0006c3 block and the call after the
-// request dispatch and the 0x120001b5/0x110001b4 blocks after the query's, but the false result moves
-// from DL to AL, the unit index from EBX to EBP, and the query failure exits inline), its declarations
-// moved 82/82, the call returned 139; the action default alone `return false` 121, the query failure
-// alone 119.
+// The NONE state for the action switch's default and the test after the switch (instead of a goto from the
+// default) give retail's layout; kept only with this byte match.
 // @retail 0xebb40
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 {
@@ -3450,8 +3424,11 @@ bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 				state_name = 0x120001b5;
 				break;
 			default:
-				goto done;
+				state_name = NONE;
+				break;
 			}
+			if (state_name == NONE)
+				goto done;
 		}
 		result = function_ee090(unit_index, state_name, 6, context, &point, &facing);
 	}
@@ -3461,28 +3438,8 @@ done:
 
 /* plays the return from a seat animation (type 37): the request's, or the
    one following the unit's current animation */
-// score 76 (was 76): Frame and entry carriers agree; one extra byte, provider output role and
-// selector tail blocks remain. All original values retained.
-// Related common result and precise contexts 76; reverse/third-first case orders 76/76; initially
-// selected request context 113; isolated common exit 109; precise contexts without common result
-// 133; shared dispatch 134; selected-name result 159. Keep original case order, one dispatch,
-// genuine contexts and one Boolean completion exit; selected provider output unchanged.
-// Round 34: switching on 0x10f630's first output, as retail does (a value fix, as in 0xebb40),
-// 76 with retail's output slots; the same merged case block (0x10000229) is placed after the call.
-// Round 50: a compile-only screen reproduces the layout: VC sorts each switch's cases by value, so
-// no case order changes it, and the merged mode-1/0x110001b4 block always stays in the request
-// branch (retail: after the query's 0x120001b5 block); swapping the if/else branches gives the same
-// code. The mode mapped to the current-animation name and one shared name switch 103 (477 bytes,
-// the request cases threaded, 0x1100022a duplicated); the query switch as an if/else chain 89;
-// `return result` for the mode default 121; the name switch inside `if (query)` 76; default first
-// 76. A brute-force screen of switch/if dispatch, the three exits as goto/return result/return
-// false and two declaration orders (144 forms) never placed that block in the query branch.
-// Round 29: one mode switch after the if/else (the query maps the animation to a mode) 139
-// (475 bytes, not threaded); the call returned with `return false` at done 145; the query
-// branch first through a named bool 123; the mode default `return false` 121 (487 bytes, the
-// result on the stack); the call in each branch 155 (520 bytes). Compile-only screens: the
-// context assigned after either switch, or the copies after the switch, stop the case blocks
-// merging; the context in every case keeps our placement.
+// The NONE state for the action switch's default and the test after the switch (instead of a goto from the
+// default) give retail's layout; kept only with this byte match.
 // @retail 0xebd30
 bool __stdcall function_ebd30(long unit_index, s_unit_request *request)
 {
@@ -3539,8 +3496,11 @@ bool __stdcall function_ebd30(long unit_index, s_unit_request *request)
 				state_name = 0x1100022a;
 				break;
 			default:
-				goto done;
+				state_name = NONE;
+				break;
 			}
+			if (state_name == NONE)
+				goto done;
 		}
 		result = function_ee090(unit_index, state_name, 7, context, &point, &facing);
 	}
