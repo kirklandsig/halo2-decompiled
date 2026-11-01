@@ -307,8 +307,7 @@ struct s_cached_player_source
 			byte field47;
 		};
 	};
-	dword field48;
-	dword field4c;
+	unsigned __int64 field48;
 	byte unknown50[0x70 - 0x50];
 	long field70;
 	long field74;
@@ -316,11 +315,6 @@ struct s_cached_player_source
 	byte unknown7c[3];
 	byte field7f;
 	byte unknown80[0x10];
-};
-struct s_cache_entry_seed
-{
-	s_cached_player_identity identity;
-	s_cached_player_source source;
 };
 struct s_cached_player_view
 {
@@ -511,10 +505,7 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
-// score 53 (was 67): frame 0x98 versus 0xa0: the three identity words still fold away (retail stores
-// them at +0x10 and reads them back for the copy, with the source record right after at +0x1c); the
-// loop counts down instead of comparing against the array end; the source-field and link-word
-// stores differ in order.
+// score 67 (was 67): frame 0x90 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); packed
 // source-byte carriers and initialization homes differ; signed array-end comparison recovered.
 // Forward entry pointer 133; chained source resets 149; link-word fill 157; signed byte sentinel 149; unsigned entry index 133 (plain).
@@ -614,13 +605,14 @@ void function_1537f0(s_profile_record *record);
 // Round 101 (lane 7), `--fast`: identity `= { 0, 0, 0 }` 95 (282 bytes); a const identity `= { 0 }` 67; assigned from a
 // value-initialized temporary 67; memset of its member array 67; the zero identity copied into the entry first and the
 // entry's own identity passed to 0x7f8b0 97 (284 bytes).
-// MiniMax R (10-31): the record's own tail clear and byte sentinel dropped (the record initializer
-// already leaves field 0x7f at 0xff) 78 (238 bytes); the entries walked with a pointer 53 (255 bytes).
-// MiniMax T (10-31): the link words' -1 is the same constant as the globals' NONE and so stays in EBP; retail
+// MiniMax E (10-31): the record's own tail clear and byte sentinel dropped (the record initializer
+// already leaves field 0x7f at 0xff) 78 (238 bytes, plain); the entries walked with a pointer 53 (255 bytes).
+// MiniMax E (10-31): the link words' -1 is the same constant as the globals' NONE and so stays in EBP; retail
 // keeps it in EAX and gives the record's field 0x40 its own register; 45 (259 bytes).
-// MiniMax S (10-31): the identity kept in memory inside the seed local and the entries walked with a
-// signed index 45 (259 bytes); the record's field 0x40 now shares a register with the field 0x44 word
-// and the NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
+// MiniMax E (10-31): the identity and the record in one two-member local struct (identity, then record) and the
+// entries walked with a signed index 45 (259 bytes, plain); not kept (a made-up struct that sets the stack homes;
+// no existing type pairs them). The record's field 0x40 then shares a register with the field 0x44 word and the
+// NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -631,13 +623,16 @@ void function_7f930(void)
 	g_4cf97c = NONE;
 	g_4cf984 = NONE;
 	g_4cf988 = NONE;
-	s_cache_entry_seed seed;
-	for (long index = 0; index < 350; index++)
+	for (long i = 0; i < 350; i++)
 	{
-		s_player_configuration_cache_entry *entry = &g_4cf98c[index];
-		memset(&seed.identity, 0, sizeof(seed.identity));
-		function_1537f0((s_profile_record *)&seed.source);
-		function_7f8b0((s_cached_player_view *)&entry->player, &seed.identity, &seed.source, NULL);
+		s_cached_player_identity identity;
+		memset(&identity, 0, sizeof(identity));
+		s_cached_player_source source;
+		function_1537f0((s_profile_record *)&source);
+		memset(source.unknown7c, 0, sizeof(source.unknown7c) + sizeof(source.field7f) + sizeof(source.unknown80));
+		source.field7f = 0xff;
+		s_player_configuration_cache_entry *entry = &g_4cf98c[i];
+		function_7f8b0((s_cached_player_view *)&entry->player, &identity, &source, NULL);
 		entry->next = entry->next_other = entry->unknown58 = entry->previous_other = NONE;
 		memset(&entry->flags, 0, sizeof(entry->flags) + sizeof(entry->unknown64));
 	}
