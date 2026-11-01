@@ -52,7 +52,7 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 54 (was 95): the prologue, the position copy and the whole viewer loop agree since the
+// score 54 (was 54): the prologue, the position copy and the whole viewer loop agree since the
 // distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
 // after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
 // the reverse), tests the allocation twice, builds the handle from the element's own salt and the
@@ -275,6 +275,14 @@ public:
 // with the entry locals 115; the pool local declared, then assigned 95; `return` for the break 95. On 54: the inline
 // 0x2483f0 call 298; head and offset in the for-init 53; `head = child_index;` before the break test, testing head
 // 118 or child_index 118 (both make the location an EBX register argument); the link element from `child_index` 54.
+// Round 42 (m3 lane 13, fast, with 0x175270): the handle from the element's salt and the pointer difference in place
+// 176 (frame 0x0c, the location becomes an EBP register argument); 0x2483f0 called with `inline` on its definition
+// 298 (its link body stays a call under that file's inline_depth(1)); the same with that pragma dropped 261 (fully
+// inlined, the location an EBX register argument, 0x175270 100; the inlined salt read is volatile, so the pool's
+// data field is loaded twice where retail loads it once into EBP); a non-volatile copy of the link body (diagnostic)
+// 261 (data loaded once, location still EBX); that copy with the location read once through its address 248
+// (location stacked again, frame 8, but held in EBX; 0x175270 21). Retail's link keeps the pool in EBX, NONE in
+// EDI then EBP and reloads the location into EDX; every inlined-link form here keeps the location in EBX.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
