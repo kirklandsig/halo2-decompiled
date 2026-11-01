@@ -431,6 +431,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
 // with `current = first + count` 176 (477); mode read once through its address on the block / indexed form 54/144
 // (same codes: mode is already on the stack and cache_index's register does not move).
+// Round 498: Native cursor-difference bounds with conditional/branch selection, block/indexed
+// receivers 136/136/141/141; absolute-index-difference bounds 58/58/145/145. Scaled-index
+// entry, first-index spill and copy/count homes remain; original body restored.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

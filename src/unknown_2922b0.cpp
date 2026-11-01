@@ -70,7 +70,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 629 (was 629): Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
+// score 618 (was 629): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// Input/minimum/hit homes, inactive-exit layout and later basis/ray/root/rotation homes differ.
+// Earlier at 629: Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
 // Retail stores true directly in its result byte and returns immediate one on the inactive path.
 // Hit/basis/ray/root/rotation homes follow.
 // Frame 0x108 and the prologue agree (success in retail's stack byte); our
@@ -218,6 +220,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // third part 618 (same code).
 // Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
 // 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 498: Closed origin/query/both regions 618/618/618; branch-owned root outputs alone
+// or with origin/query/both 633 each; all regions with the existing staged basis/projection
+// cross 690. Memory-result/input/minimum/hit ordering and later producer homes remain; original
+// body, helpers, every query and all in-place input/result snapshots restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

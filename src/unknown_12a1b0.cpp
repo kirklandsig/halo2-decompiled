@@ -2271,6 +2271,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // xorps/movss where retail stores eax = 0 as integers, so the clear is not a float store); memset with
 // `4 * sizeof(real)` 611 (identical); `(definition->flags & 0x80) != 0` 611; `created = true` before the creation
 // call 611; re-measured: memset of &listener_gains[0] 611 (listed above as memset on &listener_gains).
+// Round 498: Alternate computed after source update/inside track phase/after acquisition,
+// bool/short per-track carriers 730/744, 786/743, 782/742; direct parameter bits at both
+// consumers 794/736 (exact-only). Reduced control 694, full 597. Frame/register and record/track
+// homes remain; original parameter-derived producer, widths and body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
