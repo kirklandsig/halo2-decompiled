@@ -591,6 +591,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
 // of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
 // for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 74 (m3 lane 12, fast): the radius test inverted with the 0.5 arm first 277; a named upper bound
+// `1.f - margin` 278; the clamp as one nested ternary 278; `fraction < margin` for the lower test 278; the margin
+// compared with 0.5 before the clamp (not equivalent, diagnostic) 367 (1264 bytes). Retail's case 5 passes the
+// entry-loaded actor straight to 0x270400 in EAX (its register parameter); retail's caller 0x270d90 sets ECX, EAX,
+// EDI interleaved with the pushes, so it gives no parameter-order evidence.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

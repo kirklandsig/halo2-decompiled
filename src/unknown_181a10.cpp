@@ -592,6 +592,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
 // Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
 // queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 74 (m3 lane 12, fast): the material read back through 0x1ee410's returned pointer (retail's
+// `mov ax, word ptr [eax]`) 319; the root entity as `root->type == 1 ? root->entity : NULL` then tested 321 (retail
+// loads the type into ECX first; ours still compares memory); both 319; distance computed before the origin
+// reads 322; index/other_index declared before valid 321.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -853,7 +853,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 570 (was 589): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
+// score 570 (was 570): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
@@ -891,6 +891,15 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // original/unsigned selected ordinals/zero-default fraction/both result forms: 608 each (2145/2122
 // bytes). All declarations and original body restored; count/selection/fraction homes and frame
 // remain.
+// Round 74 (m3 lane 12, fast): the existing cross-file distance_sq3f (0x24550) for scan 1 on this body 570 (same
+// code). Retail-shaped index body (scan 1 through distance_sq3f, delta/offset through vector3d_from_points3d, dot3f,
+// length_sq3f, `second` ternary then `fraction = 0; if (second) fraction = ...`) 654 (2033 bytes, aligned 307);
+// one shared index 654; scan 2's distance through distance_sq3f 576 (2094 bytes, aligned 253: retail's y, z, x loads
+// and projection order); with delta assigned k, i, j 608 (2062 bytes, aligned 246: retail's delta loads); either
+// dot3f argument order same code; offset written out 583/831 (frame 0x30, entries re-read per component); offset at
+// block scope 576/608; `nearest` declared before the count == 1 test 575/607. Still missing there: offset's own
+// 12-byte home at +0x14 (retail stores x into it each iteration), delta.k at +0x28, nearest in EDI, and the
+// fraction reloaded around 0x22750 (ours keeps it in xmm2 in every form).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

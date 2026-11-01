@@ -349,6 +349,10 @@ void __stdcall function_1160c0(real dt)
 // before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
 // difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
+// Round 74 (m3 lane 12, fast; 0x73360 kept its match in each): `previous = position` right after the i == 0
+// if/else 200, before the rest-offset copy 194, before the velocity stores 192 (previous stays at +0x40 in all three:
+// the mirrored homes do not follow where previous's live range ends); `previous = node->position` after the
+// publication 179 (same code); `segment->stiffness * definition->stiffness` 179 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
