@@ -145,6 +145,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
 // early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
 // do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
+// Round 127 (lane 6, fast, with 0x1a303b/0x2b393c): `while (!result && index != NONE)` with a successor local and
+// `index = next` at the end 37 again (no hoist in this build; player read from the stack, ret 8, callers 15/27);
+// its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
+// 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
+// entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1064,6 +1069,14 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
 // function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
 // : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
+// Round 127 (lane 6, fast with 0x80490/0x80330): a compile-only /Gd harness scored against retail (a normalized diff,
+// 47 for the build's 49) reproduces upper taking EAX; there six declaration orders of lower/upper/downward, upper as
+// `position < removed ? ...`, lower as `position >= removed ? ...`, upper assigned before lower, the count path
+// lower first, `lower < upper`, upper declared first in the function and one block-scope copy index all leave it
+// in EAX (34-35 on the plain-entry form). Real: round 149's plain entry with the explicit flag arms and the count
+// path upper first 56, with `lower = removed > position ? position : removed` 54 (only the EDX/ESI entry load and
+// upper in EAX left); the plain entry alone 370 (1162 bytes), with the explicit flag arms only 358, with the count
+// path's flag store only 372.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

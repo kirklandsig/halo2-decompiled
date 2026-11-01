@@ -703,6 +703,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // for the second product 221 (1272); the camera basis as a force-inline helper with pointer parameters 296
 // (1267, frame differs); `right` renamed `left` 57 and previous_up/direction renamed up/a_direction 57
 // (identical code: local names do not move these registers).
+// Round 127 (lane 6, fast): the second product into a local up, then copied before the normalize 253 (1290
+// bytes), normalized in the local and then copied 254 (1292); previous_up through the out-of-line player state
+// getter 367 (1244: retail inlines it here); diagnostic: the distance not stored 218 at retail's 1261 bytes (the
+// three bytes go, but the second product keeps our operand order: the store does not set it).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
