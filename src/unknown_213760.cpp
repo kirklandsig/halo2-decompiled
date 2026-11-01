@@ -1302,6 +1302,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
 // the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
 // write handle 120.
+// Round 123 (lane 6, fast): the 7 and 6 forms reproduce. On the 7 form a write handle local alone 114 is one
+// instruction from retail (917 bytes: only the close call's `mov ecx, eax` struct copy is missing, the rest is
+// loop padding); with a `s_file_write_flags flags(0)` local as 0x2151f0 writes it 114; the write handle built by
+// member assignment as 0x213760 builds its handle 114, with the resize/size-query/close handle built that way
+// 6/6/114; the 6 form with the flags local 6. On the write-local form: `written = bytes_written == 0x800;` 107
+// (930 bytes, sete join, still no copy); the close argument through `g_557c90[index]` 114; the close test
+// through the s_file_handle view 114; bytes_written declared before the header 114; nested close tests 114;
+// `written` initialised by assignment 114; a HANDLE local for the close test with a member-built close handle
+// 168, a member-built close handle tested in place 168 (both 946 bytes, frame slots shift). A handle local
+// before the resize moves its handle to EAX; one only at the write lets VC drop the close's copy.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -438,6 +438,12 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x10, high water in ESI and the iterator's pool re-read per pass as retail, but no second pool home: the
 // element is formed from the same EDI pool); without the datum-index initialiser 152 (same code); with the
 // datum index named in the body for the release 162; released through `iterator.data` 153.
+// Round 122 (lane 6, fast with the file and 0xc6de0/0xf0fd0/0xcbf60): the existing four-field
+// data_datum_iterator_next_called (scan out of line) 189 (436 bytes); data_datum_iterator_next_inlined with
+// the barrier 162, without it 152 (as recorded); with a pool local only for the iterator (release through the
+// global) 162; the iterator's datum index initialiser dropped 122 (same code: the store is dead); a four-field
+// step with the snapshot scan (data_find_index, 0x84ad0's form) as a file-local forceinline 162, without the
+// barrier 152 (the same code as the shared step: the scan form is not what differs).
 // @retail 0x1fb510
 void function_1fb510(void)
 {

@@ -982,6 +982,12 @@ bool __stdcall function_2399da(long controller_index)
 // rank-3 dialog, set) 90; one `team_xuid` pointer for both calls 90; own rank read before the identity
 // test 90; early return when there is no friend request 189 (450 bytes); the rank stored first and the
 // rank-3 test reading the stored field 89 (one rank use fewer, a gain of 1).
+// Round 122 (lane 6, fast with 0x2399da, 0xac050, 0xac360): the non-remove arm as one block with the over-rank
+// and rank-3 guard returns 90; the dispatch as `switch (rank)` with a NONE case and a default 95 (437 bytes); the
+// store through a pointer to the member's properties 90; a set-rank inline helper shared with 0x2399da 90; the
+// identity test as a guard return (`if (!xuid || !xuid->qwUserID) { deny; return; }`) 90. One-file LTCG harness
+// (this file + online_teams.cpp): only a rank use fewer (the store from a constant) or one identity use more
+// moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

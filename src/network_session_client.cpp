@@ -743,6 +743,15 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // registers but the session ESI (0x6e500 69, 0x72700 94): NULL-preset pair 46, if/else pair 46, the pair
 // assigned players first 46, a two-out-pointer inline getter 46; on the preset pair the variant named at
 // the top of the state block 46 or just before the player loop 46.
+// Round 122 (lane 6, fast with the inlined callees): the preset stored pair, a plain `for` copy loop and the
+// 0x49c8 value named before the player loop 116 (493 bytes: every instruction retail's, session EBX, but the
+// value takes a stack slot, frame 0xec0); preset pair + `for` copy + players base local 109 (477 bytes, session
+// ESI); if/else stored pair + `for` copy 108; `for` copy + named player pointer 100 (477, the mask read folds);
+// preset pair + `for` copy + named player pointer 108. First-pass harness (this file's body with the inlined
+// callees, /Gd): the preset pair + `for` copy is retail's code up to the player loop with the session in ESI;
+// deleting the whole tail (live test and both setters) gives EBX there, deleting one setter, the live test,
+// the summary or the set_data_4f24 call does not; 176 statement orders of variant/summary/memsets/count/mask
+// store with the `for` copy loop give nothing below the current order.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

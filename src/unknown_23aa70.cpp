@@ -324,6 +324,13 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // the ranges decoder called directly 175; the decode helper taking bounds and point first 175; a shared
 // inline data + offset accessor in all four cases 175; decoded into a case-local point stored before the
 // node 175. Diagnostics: without format 2's zero store 177, without all three 173 (node on the stack).
+// Round 122 (lane 6), formats 3 and 4 indexed through `vertices` locals: the decode returning the point by
+// value 175; an axis loop over the three packed coordinates 184 (632 bytes); bounds as the decode's first
+// parameter 175; a per-axis decode helper (value, lower, upper) 177 (628 bytes); the result as an aggregate
+// initialiser 175. One-file LTCG harness (definition held out of line, reproduces both conventions): format 4
+// indexed with `*node = 0` (nothing live after the decode) still flips, so the late node read is not the
+// cause; a node read through the buffer pointer (buffer live across the decode) keeps retail's convention;
+// build flags do not move the convention.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

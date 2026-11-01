@@ -73,7 +73,7 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
-// score 173 (was 185): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
 // Earlier 185: Frame 0x11c versus retail 0x118; the request is four bytes
@@ -178,6 +178,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // 0x118 and the head as retail, 1198 bytes, aligned 162 against 183); the orders sine/cross/cosine
 // 238, cross/sine/cosine 192, sine/cosine/cross 238, cross/cosine/sine 239, cosine/cross/sine 239;
 // the up-first outer cross negated 260.
+// Round 123 (lane 6, fast): every order of the helper's sine S, cosine C, projection P (after C) and cross X,
+// with the cross as axis x vector added (a) / vector x axis subtracted (s): aSCPX 182, aSCXP 238, aSXCP 238,
+// aCSPX 226, aCSXP 195, aCPSX 183, aCXSP 239, aCXPS 210, aXSCP 192 (cross first with sine first, 1215 bytes),
+// aXCSP 239, aXCPS 210; sSCPX 185, sSCXP 238, sSXCP 238, sCSPX 227, sCSXP 234, sCPSX 187, sCPXS 187, sCXSP 239,
+// sCXPS 210, sXSCP 233, sXCSP 239, sXCPS 210. Only the CXPS/XCPS orders give frame 0x118 (1198 bytes).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

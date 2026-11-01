@@ -1065,6 +1065,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // spills it to the magnitude slot) and the edge pointer takes EBX (retail ESI). Also: direction renamed
 // segment 324 (same code); edge declared at function scope 324; the portal search as a while with
 // nested ifs and the step at the bottom 379 (1288).
+// Round 123 (lane 6, fast): the offsets as direct products (`origin->x + normal.x * radius`, `* (0.0f - radius)`),
+// as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
+// `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
+// the second offset's vector from the start computed first 349.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

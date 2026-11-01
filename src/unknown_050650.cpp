@@ -249,6 +249,9 @@ static inline real actor_looking_normalize2d(point2f *vector)
 // defined after the caller single/named 6/2; single tree with the dot's y term first 6, reference-first 4.
 // Round 91: native fast normalization with horizontal term/operand orders 12/12/12/6/4/6/6;
 // the existing magnitude helper in the private normalizer 6; all restored.
+// Round 121: reference copy made after the aim test (nested ifs) 39; components read into named locals in the
+// private normalizer 6; header normalize2d_fast + dot_product2d on vector2f copies 38 (258 bytes); dot with the y
+// term first 8; one named squared magnitude 6. Compile-only: every 3D dot term/operand order gives identical code.
 // @retail 0x296d60
 PRIVATE bool function_296d60(real cosine, vector3f const *reference, vector3f const *aim, bool three_dimensional)
 {
@@ -1202,6 +1205,9 @@ struct s_actor_looking_structure_view
 // Round 27: fraction as a ternary after the query 144; `1 - cosine` named in the helper 23; cross terms
 // before the projection 158 (931 bytes); the 0.6 clamp as an if statement 141 (927 bytes); the dot in its
 // own local beside the score 33.
+// Round 121: score written forward-first (j,k,i) 23 (same code) / forward-first i,k,j 25; helper with cross i
+// before the projection (0x170d70's order) 23; cross terms in a vector3f local 62; the dot named before the
+// projection 23.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
