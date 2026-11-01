@@ -108,6 +108,9 @@
 // body restored; cleanup tests/preloads recover but entry roles and length regress.
 // Round 476: Distance-before-normal graph, original/eight-byte storage, scalar/shared normal scale and direct/whole-plane output: 463/461/441/442/457/455/457/458.
 // Scalar forms shrink to 1716; shared scale recovers 1742 but regresses. Original zero-scale behavior, whole body and header restored; entry/table and plane/list homes remain.
+// Round 481: Complete scalar-normal initialization schedules i/j/k, j/i/k, j/k/i on
+// native-four storage 421/420/420; all five non-original schedules on eight-byte storage
+// 417/416/416/417/417. Best five-point form rejected; original body and header restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
