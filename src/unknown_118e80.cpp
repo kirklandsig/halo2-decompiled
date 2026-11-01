@@ -728,6 +728,10 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // with xor eax,eax before the load); the same without the local 81. On the 35 form the tail predicate as
 // `||` over two named bools 56, `|` over two named bools 48, `||` inline 56, `else if` with the call
 // duplicated 56, the guard inverted with an early `return false` 76. Original body restored.
+// Round 227: native controller/counters/selector/all field stores 83/83/83/83;
+// allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
+// same result arms with the existing animation helper 130/120. All restored; post-reset
+// table/object/result homes, native size load and saved-key tests remain.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
