@@ -34,6 +34,16 @@ struct s_squad_iterator_1c7bb0
  long squad_index;
 };
 
+/* starts the squad walk; it tests the ai's active flag again, as the walk's step does */
+PRIVATE inline void squad_walk_begin(s_squad_iterator_1c7bb0 *arg_0)
+{
+ if (g_4f55d0->active)
+ {
+  arg_0->records.data = g_51e9d8;
+  arg_0->records.index = NONE;
+ }
+}
+
 PRIVATE __forceinline byte *function_1c7bb1(s_squad_iterator_1c7bb0 *arg_0)
 {
  byte *result = NULL;
@@ -47,121 +57,7 @@ PRIVATE __forceinline byte *function_1c7bb1(s_squad_iterator_1c7bb0 *arg_0)
  arg_0->squad = result;
  return result;
 }
-// score 2 (was 164): retail's frame, homes and both traversals. Left: after the squad's actor
-// walk retail reloads the pool global into EDI before the squad index into EBX; ours the other way.
-// Round 74: the walk sets its result only when the pool step finds a record (the matched
-// 0x1e47d0 walk's form: the not-found path keeps the NULL set before the active test) and
-// returns it to the caller; the second traversal looks the actor up through the loop index
-// before copying and advancing it; the flag as `& 0x80` (retail's jns) 164 -> 2. At 2: index
-// field at each use; index declared at the top / initialized first; walk result declared after
-// the iterator / in the loop; bsp copy after the iterator; iterator declared first; actor
-// iterator at function scope; actor pointer first; begin/test/cleanup through the field;
-// squad getter for the three stores; continue form; condition declaration; named test result;
-// `!= NULL`; index through an out parameter (13). Worse: iterator init swapped 4; index stored
-// before the result 181; index local 148; word index 182; for-loop actor walk 276; else arm
-// first 110; ternary result 181; no first member 12; result kept in the member 24.
-// Earlier forms, all on the previous walk (164 unless given):
-// Round 43: iterator-pool carrier 164; with field-pool cache 198; with state owner 193;
-// typed iterator/carrier 164; const carrier 164; carrier declared first 164; local result
-// with late/early member publication 164/164.
-// Inactive early exit
-// 164; native flag mask 164; successful inner-update continue 164; pointer-result
-// for loop 275; early-exit/mask/continue combination 164.
-// Initialized iterator 164; direct iterator index 164; unsigned squad index
-// 164; wider inner actor-pointer scope 164; timestamp before active clear 165.
-// Native record iterator 222; long partition index 163; full actor view 164; outer actor workspace
-// 164; ineligible-first branch 171.
-// Cached pool 197; role names 164; cached active state 193; nested eligibility 164; inactive
-// continue 164; direct datum 164; unsigned successor 164.
-// Squad/actor/both phase scopes 164/164/164;
-// squad/both scopes with actor for-loop 164/164; squad/both scopes with read-only
-// first acquisition 164/164; both scopes with read-only acquisition and for-loop 164.
-// Actor-next call alone 234; unsigned-word squad index 230; iterator index initialized first 164;
-// active count before timestamp 166; nested source-squad validation 164; per-squad pool observation
-// 231.
-// Ordinary private next 281; private next out of line 281; separate reacquired actor 164;
-// closed initial-actor scope 164; ordinary private next/separate reacquired actor 281.
-// Private step byte/signed-byte/short/long results 164 each; inactive index initialization 164;
-// inactive index with byte/short/long results 164 each.
-// begin expansion 164; actor next expansion 164; actor accessor expansion 164; pool next expansion
-// 164; actor iterator expansion 164; actor next accessor expansion 164; begin pool expansion 164;
-// all shared expansions 164. Separate pool residency, early null publication and successor EBP
-// remain.
-// Iterator before entry guard 164; unsigned partition word 164; native actor iterator
-// initializer 206; active count before both actor stores 166; Boolean completion-first step 165.
-// Round 112: Typed squad result 164; native record-step call 252; shared datum step expanded 267;
-// active-aware shared step 240; native datum initialization 252.
-// Existing iterator member orders datum/index/records, records/datum/index, records/index/datum,
-// index/datum/records and index/records/datum each 164; original layout restored.
-// Private absolute-index ordinal 217; native ordinal member 218; exhaustion result 164;
-// inactive step early return 165; native ordinal/exhaustion result 218.
-// Separate inline/noinline declarations for eligibility, location update, detach, actor test, attach, transfer, partition update and final update each 164. All eight original declarations and both traversals restored.
-// Native step reference 164; unsigned-word completion 164; shared absolute ordinal 250;
-// native record-array view 180; cleanup inline declaration 164; reference/word contract 164.
-// Round 211: Masked squad slot 250; opaque datum 164; unsigned ordinal member 164; slot/full-width
-// partition 252; slot/opaque datum 250. Separate pool/iterator and successor homes remain.
-// Round 116: Successor advanced at tail 190; forced existing inactive setter 166; live-pool aggregate 164; both workspaces at entry 164; source-squad field reads 164. Opening code restored.
-// Round 356: Explicit active input 164; private datum result 164; both contracts 164; iterator-owned table 195; table with active input 195.
-// Round 123: Native force-inline member 164; member pointer result 164; ordinary inline member 281; current-handle for 190; force-inline member with current-handle for 190.
-// Admission-seeded completion/exhaustion 165/202; single datum publication 164; read-only concrete datum 164; each completion/publication with concrete datum 165/202/164; read-only byte publication 164. Frame 0x28, separate pool/iterator homes, early null and successor EBP remain.
-// Round 358: Complete native iterator initializer 164; second-pass scalar scope 164; current-frame row
-// receiver 207; word ordinal with row 233; complete initializer with row 207. Pool/iterator separation, early
-// null and successor EBP remain; opening body and private iterator restored. Repeated standalone word form
-// 218 excluded.
-// Native byte/signed-byte/Boolean high-bit fields with Boolean tests 164/164/164; direct tests 164/164/164; native bit values 164/187. Record size stayed 0x98; original flag byte restored.
-// Round 332: Immutable partition/squad ordinal/current actor scalars, each and
-// every combination, 164; all with immutable source-squad handle 164. All restored.
-// Scalarized iterator datum/record/ordinal member names, their three pairs and all three 164 each;
-// complete member names with outer iterator name 164. Separate pool/iterator and successor homes remain.
-// Round 141: Coordinated provider/caller inline-noinline declarations for eligibility, location update,
-// detach, actor test, attach, transfer, partition update and final update 164 each. Original providers
-// and declarations restored; pool/iterator and successor homes remain.
-// Round 141: Canonical inline-only provider/caller declarations at the same eight boundaries also give
-// 164 each; every provider and original declaration restored.
-// Round 222: split iterator plus datum/index outputs 164; split pointer result 164; returned datum with ordinal output 164; outputs-first contract 164; typed split datum 164; split completion result first 165; split byte completion 164; internal split-step linkage 164.
-// Round 187 twice-used absolute actor slot long/dword/word/outer long with original view
-// 188/188/168/188; same four with full native actor accessor 188/188/168/188 (fast).
-// All restored; separate pool/iterator, early null and successor EBP remain.
-// Current actor-handle ownership: inner long/const/unsigned 164 each; iterator lifetime 164;
-// shared long/unsigned 164 each; both read-only 164; inner with unsigned current 164.
-// Round 215: Actual ordinal-return step, long with retained/returned-only ordinal and
-// conditional/result-first exits 164/198/204/199; unsigned 198/222/205/220.
-// Every returned result tested; original private helper and body restored.
-// Persistent full-function/first-traversal payload tables 190/197; with full-width partition 191/198;
-// the same four table/partition forms with pointer step results 190/197/191/198. Original helper and
-// traversals restored; separate pool/iterator, early null and successor homes remain.
-// Round 147: Coherent inline lookup/activation/squad cleanup/actor removal 234/164/164/164; lookup
-// plus each other boundary 234/234/234; all four 234; separately outlined inline lookup 164 with
-// checked losses.
-// Round 149: Complete iterator result state with value input and long/int/dword/word ordinals
-// 316/316/316/335; const-reference input with genuine state copy gives the same four scores. All
-// copied members initialized; larger frame and extent regress. Original private step, layout and both
-// traversals restored.
-// Round 174: isolated partition/ordinal/both/successor/partition-successor/ordinal-successor/all
-// scalar home names, then all with the second-pass actor receiver, 164 each. Original names restored.
-// Eligibility result bool/const-bool/long/short with conditional or branch publication:
-// 194/200, 194/200, 195/178, 193/193; original body restored.
-// Native iterator constructors with implicit/explicit pool input, partial/full initialization and
-// free/member next contracts in all eight combinations 164 each. Original construction restored.
-// Second-pass combined bool/byte/short/long completion 164 each;
-// second-pass result-first bool/byte/short/long completion 164/164/188/186.
-// Round 248: One pool observation plus inline/noinline/both/force-inline finder
-// contracts with native partition 214/197/197/222; full-width partition
-// 216/165/165/223. Original pool observations, helper and contracts restored.
-// Round 204: Actual state-owner input to the existing step, owner last/first with
-// bool/byte/short/long completion, 164 each. Original helper and both traversals restored;
-// separate pool/iterator homes, early null and successor EBP remain.
-// Round 257: Real shared squad fields at declared offsets, existing getter/direct indexing,
-// each with native iterator datum/second-pass actor/both: all eight 164. Shared header, private
-// iterator and body restored; separate pool/iterator, early null and successor homes remain.
-// Round 206: Actual second-pass source-squad/pending-flag field receivers as pointer/reference,
-// individually and all four pairs, 164 each. Both acquisitions and pre-call successor retained.
-// Round 197: Coherent defining-unit/caller final-phase inline and inline/noinline
-// declarations, each with bool/byte/short/long private completion, 164 each. Original
-// provider declarations, private step and both traversals restored.
-// Round 56: Caller pool plus result-published step 200; const pool 200; negative-or-equal predicate 163;
-// reversed comparison 164; direct datum with that predicate 163; nonnegative continue 164;
-// existing squad accessor in the first traversal 164 and in both traversals 164. Original restored.
+
 // @retail 0x1c7bb0
 void function_1c7bb0()
 {
@@ -170,8 +66,7 @@ void function_1c7bb0()
   short local_0 = g_4686c4;
   s_squad_iterator_1c7bb0 local_1;
   byte *datum;
-  local_1.records.data = g_51e9d8;
-  local_1.records.index = NONE;
+  squad_walk_begin(&local_1);
   while ((datum = function_1c7bb1(&local_1)) != NULL)
   {
    long local_2 = local_1.squad_index;

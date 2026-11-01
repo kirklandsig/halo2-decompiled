@@ -44,7 +44,7 @@ void __stdcall object_get_damage_owner(long arg_0, s_damage_owner *arg_1);
 bool function_1da6d0(long arg_0, long arg_1, real arg_2, real arg_3, real arg_4);
 bool function_1da9e0(long arg_0, point3f const *arg_1, real arg_2, real arg_3,
  real arg_4, bool arg_5, long arg_6);
-void function_184060(long arg_0, byte arg_1, s_type_1e6529 *arg_2, long arg_3);
+void function_184060(long arg_0, long arg_1, s_type_1e6529 *arg_2, long arg_3);
 
 typedef void *(__fastcall *constructor_proc)(void *);
 void __stdcall vector_constructor_iterator(void *arg_0, unsigned arg_1, int arg_2, constructor_proc arg_3);

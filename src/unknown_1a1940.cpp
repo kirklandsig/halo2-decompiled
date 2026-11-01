@@ -85,48 +85,45 @@ long c_page_heap::get_page_size()
 	return 0x1000;
 }
 
-// score 80 (was 80): retail keeps checked as its own counter (inc esi; inc ebp), so this
-// takes ebx, first lives in the frame and page_count is re-read; ours shares page + 1 between
-// the two (lea ecx, [esi + 1]). One scan variable 103; checked++ in the body 103;
-// checked = ++page as the increment 79; page++; checked = page; in a while loop 79; the scan
-// as an inline helper with a next-page out parameter 80
 // @retail 0x1a1a90
 void *c_page_heap::allocate_pages(long alignment_mask, long size, long unused)
 {
 	void *result = NULL;
+	long shift;
 
 	switch (alignment_mask)
 	{
-	case 0xfff: alignment_mask = 0; break;
-	case 0x1fff: alignment_mask = 1; break;
-	case 0x3fff: alignment_mask = 2; break;
-	case 0x7fff: alignment_mask = 3; break;
-	case 0xffff: alignment_mask = 4; break;
+	case 0xfff: shift = 0; break;
+	case 0x1fff: shift = 1; break;
+	case 0x3fff: shift = 2; break;
+	case 0x7fff: shift = 3; break;
+	case 0xffff: shift = 4; break;
 	default: goto local_0;
 	}
 	long pages = (size + 0xfff) / 0x1000;
-	long step_mask = (1 << (alignment_mask + 12)) - 1;
-	long first = (((long)base + step_mask) & ~step_mask) - (long)base;
-	first /= 0x1000;
-	long index = first;
+	long step_mask = (1 << (shift + 12)) - 1;
+	long index = ((((long)base + step_mask) & ~step_mask) - (long)base) / 0x1000;
+	long first = index;
 	long end = index + pages;
 	while (end <= page_count)
 	{
 		bool free_run = true;
-		long page = index;
 		long checked = index;
-		for (; page < end && free_run; page++)
+		long page = index;
+		while (page < end && free_run)
 		{
 			free_run = !(bits[page >> 5] & (1 << (page & 0x1f)));
-			checked = page + 1;
+			page++;
+			checked++;
 		}
 		if (free_run)
 			break;
-		++index;
-		if (index <= checked)
+		if (index + 1 <= checked)
 			index = checked;
-		long align_mask = (1 << alignment_mask) - 1;
-		index = first + ((index - first + align_mask) & ~align_mask);
+		else
+			index++;
+		alignment_mask = (1 << shift) - 1;
+		index = first + ((index - first + alignment_mask) & ~alignment_mask);
 		end = index + pages;
 	}
 	if (index + pages <= page_count)

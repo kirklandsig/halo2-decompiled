@@ -87,7 +87,7 @@ short function_219110(
 }
 
 // @retail 0x219290
-long function_219290(short index, s_permutation_group *group)
+long function_219290(s_permutation_group *group, short index)
 {
 	if (group && index < group->count - 1)
 	{

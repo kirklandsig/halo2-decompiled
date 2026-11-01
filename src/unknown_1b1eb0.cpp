@@ -26,11 +26,11 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 	s_actor_view *local_0 = actor_get(arg_0);
 	*(bool volatile *)&local_0->unknown50c = false;
 	*(long volatile *)&local_0->unknown5ac = NONE;
-	*(short volatile *)&local_0->unknown5b0 = NONE;
-	*(short volatile *)&local_0->unknown5b4 = 0;
+	local_0->unknown5b0 = NONE;
+	local_0->unknown5b4 = 0;
 	*(short volatile *)&local_0->unknown5b6 = 0;
 	local_0->unknown4ac = 0;
-	*(short volatile *)&local_0->unknown504 = 0;
+	local_0->unknown504 = 0;
 }
 
 // score 14 (was 14): ours keeps the scaled actor index in ECX and the actor pointer in EAX,
@@ -39,7 +39,17 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 // before the state 14; helper taking the actor pointer 14; actor_get spelled out,
 // index first, or as an array element (first get, second, or both) 14; the flag read
 // into a local first 14; if/else form 14; the reference in a local first 28; actor_get
-// after the if 25; no actor local 34.
+// after the if 25; no actor local 34. Round 15: the existing 0x1f86a0 inlined at link time 18
+// (same swap); result declared first 14; slot read directly 14; actor_get at one use 25;
+// eight spellings of the helper's address (cast, integer sum, data/pool/offset locals) 14;
+// definition order in the file 14. The swap needs the reset's second actor pointer: with one
+// or two reset stores (folded address) the index takes EAX as in retail.
+// Round 28: the slot block read through slot->unknownc 14; the reset helper plain inline 14; its
+// parameter/local named actor_index/actor 14; a result local 14; (harness: declaration order,
+// const actor 14). Three of the reset's volatile stores (0x5b0, 0x5b4, 0x504) made plain: 14,
+// kept; making any fourth one plain raises the count. Round 64: actor flag in the reset 20;
+// that with a direct reference lookup 33; shared unmasked index local 14; in-place index mask 14;
+// each pair of the remaining qualified stores made plain 18; reset before the actor flag 31.
 // @retail 0x1b1eb0
 bool __stdcall function_1b1eb0(long actor_index, s_slot *slot)
 {
@@ -65,27 +75,6 @@ short __stdcall function_1b1f30(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
-// score 32 (was 32): node-pool/state-two register reuse and four-byte extent excess remain.
-// Paired mode result short/long 62/63; flags before paired state short/long 81/82;
-// guarded mode result short/long 46/45; view rejection first 32; conditional view acceptance 32.
-// node-pool base uses EDI instead of retail ESI, which
-// retail reuses for state two; four-byte extent gap. State/mode destination
-// pointers 32/32; both destinations 32; default flag destinations 33; readonly
-// view 32; readonly view with state/mode/both destinations 32/32/32.
-// +0x29 default target moves with the four-byte length gap;
-// retail reuses ESI for the node base and constant 2, ours uses EDI and immediates.
-// Earlier separate exits 28/233; node reference, paired stores, reversed paths
-// and nested view forms tied; unsigned range 55/231. Ordinary trials: short
-// classification 32; long classification 31/231 (below keep threshold); equality
-// cases 106/183; test-derived state 32; assigned state 32; short classification
-// with shared default stores 49/217; state with common exit 32; primary-state
-// store first with short classification 32. Opening executable body restored.
-// score 32 (was 32): node-base EDI versus retail ESI/shared two still differs; node, actor, view and combined receiver names 32; early node declaration and renamed early node 32; complete native node type 32; native node with open classification bounds 39.
-// node-base/constant register ownership and extent still differ; index/direct pointer lookup 109/32; shared handle 109/42; entry-scope view with index/native lookup 109/32; entry view and shared handle 109/42 (all plain).
-// score 32 (was 32): a compile-only harness hoists 2 into ESI (retail's form) only with a fifth use of short 2; first test `>= 2` gives retail's tail but `cmp si; jl` 33; early-exit default 32; sibling then-arm store order 32; range bounds swapped 33; prop index local 42; 384 store-order/nesting/polarity forms in the harness never hoist it.
-// score 32 (was 32): force-inline node getter/view/both 32/32/32; two-use classification
-// pointer 32; const actor/node/both 32/32/32; const receivers with the classification
-// pointer 32. Node-base/shared-two ownership and the four-byte extent excess remain.
 // @retail 0x1b21f0
 void __stdcall function_1b21f0(long actor_index, s_slot *slot)
 {
@@ -105,10 +94,18 @@ void __stdcall function_1b21f0(long actor_index, s_slot *slot)
 
 		s_prop_view_fields *view = prop_node_view(node);
 
-		if (view && (view->unknown00 >= 5 || view->unknown69 && view->unknown4c))
+		if (view)
 		{
-			actor->unknown41c = 2;
-			actor->unknown420 = 2;
+			if (view->unknown00 >= 5)
+			{
+				actor->unknown41c = 2;
+				actor->unknown420 = 2;
+			}
+			else if (view->unknown69 && view->unknown4c)
+			{
+				actor->unknown41c = 2;
+				actor->unknown420 = 2;
+			}
 		}
 		actor->unknown484 = true;
 		actor->unknown4a1 = true;

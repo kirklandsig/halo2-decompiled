@@ -82,7 +82,8 @@ bool __stdcall function_29f400(s_type_339e8b *controller,
         *remaining_ticks -= event->ticks;
         event = (s_type_4ac09b const *)*cursor;
     }
-    return event->type != 1 || *remaining_ticks != event->ticks;
+    bool result = event->type != 1 || *remaining_ticks != event->ticks;
+    return result;
 }
 
 struct legacy_playback_functions

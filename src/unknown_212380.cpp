@@ -52,6 +52,9 @@ bool function_212ec0(s_game_variant *arg_0, long arg_1);
 // Gains below the retention gate; original switch and shared initializer retained.
 // Round 190: normalize/save/create caller declarations ordinary/forced inline, each and all,
 // 386 each (eight forms). Original provider declarations, switch, copies and payload restored.
+// Round 211: canonical-default/native mutable-output transfer by
+// initialization/assignment/memcpy/memmove, with branch/entry default workspace, scores
+// 408/408/408/420/408/408/408/420. Original executable form restored.
 // @retail 0x212380
 long function_212380(long arg_0, long arg_1, byte *arg_2)
 {

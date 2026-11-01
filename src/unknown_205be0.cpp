@@ -77,7 +77,7 @@ transform4x3f *function_ba160(long arg_0, transform4x3f *arg_1);
 real function_30bf0(vector3f *arg_0);
 void havok_component_transform_set(s_havok_component *arg_0, transform4x3f const *arg_1);
 void function_1cfb90(s_havok_component *arg_0, transform4x3f const *arg_1, void const *arg_2);
-void function_ba690(long object_index, byte **states, long *state_count, long *a, long *b);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 
 /* the vector rotated into the matrix's axes and divided by its scale */
 PRIVATE inline vector3f *transform_vector_into_frame_205be0(transform4x3f const *matrix,
@@ -133,7 +133,7 @@ bool __stdcall function_205be0(s_vehicle_physics_state *arg_0, long arg_1)
         memset(local_6->field_b10, 0, *(long *)(local_2 + 0x44) * sizeof(s_205be0_record2));
         long local_9;
         long local_10;
-        function_ba690(arg_1, NULL, &local_9, NULL, &local_10);
+        function_ba690(arg_1, &local_9, NULL, NULL, &local_10);
         char *local_11 = (char *)local_10;
         s_object_marker local_12;
         for (long local_13 = 0; local_13 < *(long *)(local_2 + 0x3c); local_13++)

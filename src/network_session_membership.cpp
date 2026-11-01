@@ -306,6 +306,8 @@ struct s_session_summary
 	long player_values248[16];
 	long player_values288[16];
 	long player_machines[16];
+
+	bool remove_machine(s_session_id *id);
 };
 
 // @retail 0x63190
@@ -454,35 +456,35 @@ void network_session_enter_state_9(c_class_58d20 *session)
 }
 
 // @retail 0x633c0
-bool session_summary_remove_machine(s_session_summary *summary, s_session_id *id)
+bool s_session_summary::remove_machine(s_session_id *id)
 {
-	long machine_index = function_0632e0(summary, id);
+	long machine_index = function_0632e0(this, id);
 	if (machine_index != NONE)
 	{
-	s_session_summary old = *summary;
-	memset(summary, 0, sizeof(s_session_summary));
-	summary->machine_count = 0;
+	s_session_summary old = *this;
+	memset(this, 0, sizeof(s_session_summary));
+	machine_count = 0;
 	for (long i = 0; i < old.machine_count; i++)
 	{
 		if (i != machine_index)
 		{
-			summary->machine_ids[summary->machine_count] = old.machine_ids[i];
-			summary->machine_times[summary->machine_count] = old.machine_times[i];
-			summary->machine_count++;
+			machine_ids[machine_count] = old.machine_ids[i];
+			machine_times[machine_count] = old.machine_times[i];
+			machine_count++;
 		}
 	}
-	summary->player_count = 0;
+	player_count = 0;
 	for (long j = 0; j < old.player_count; j++)
 	{
 		long machine = old.player_machines[j];
 		if (machine != machine_index)
 		{
 			long new_machine = machine > machine_index ? machine - 1 : machine;
-			summary->player_users[summary->player_count] = old.player_users[j];
-			summary->player_values248[summary->player_count] = old.player_values248[j];
-			summary->player_values288[summary->player_count] = old.player_values288[j];
-			summary->player_machines[summary->player_count] = new_machine;
-			summary->player_count++;
+			player_users[player_count] = old.player_users[j];
+			player_values248[player_count] = old.player_values248[j];
+			player_values288[player_count] = old.player_values288[j];
+			player_machines[player_count] = new_machine;
+			player_count++;
 		}
 	}
 	return true;
@@ -740,6 +742,55 @@ union s_60403
 // before the changed test 149.
 // Round 198: native comparison result conditional/guarded/equal-header 271/276/268, split
 // header and payload results 328; with late mask 265/290/282/392.
+// Round 420: New-to-old map scoped through member emission with late retained mask; union/bool discriminator and
+// pointer/value map receiver 336/343/351/357, repeated with iteration-scope discriminator declarations
+// 336/343/351/357. Original lifetimes and union restored.
+// Round 311: shared current active-player mask with full-count/value-index/bool subsets
+// 394/390/376/273/400/390/381/276; original observations and discriminator restored.
+// Round 95 (lane 8): retail reads old_to_new[old_player->member] inside the retained test after
+// the memcmp and again in the else-if (ours names it first). Written at each use 285 (1513 bytes;
+// the retained loop body becomes retail's, aligned 103 -> 103); with the retained mask declared
+// after the member loop 368, the late mask alone 336; at each use with a plain bool discriminator
+// 278 (1513 bytes, aligned 84: the best aligned form so far; left: the retained update as
+// load/or/store instead of `or [esp + 0x18], eax`, the third loop's head padding, and the
+// previous/current EBX/EBP swap), that with the late mask 362 (aligned 84, the mask then shares
+// the map pointer's slot as in retail).
+// Round 181 (lane 3): the map pointer and discriminator renamed to sort as retail's slots 149
+// (identical code: these are spill slots, names don't order them); the previous-header ternary
+// with the pointer arm first 151; the two maps declared before the header stores 149 (identical);
+// one `previous + 0xc` base pointer for the three member reads 437 (1522 bytes); the third loop's
+// player pointer declared before the old player 152.
+// Round 98 (lane 8; LTCG env link of this file with the ballast, equal to the full listing; env rows
+// positional/aligned, base 141/103): one `bool changed = a != b || memcmp(...)` 268/130 (1513 bytes);
+// plain bool set in the test 159/120; the map entry as a reference 141/103 (identical); retained mask
+// declared after the member loop 327/112, with the plain bool 334/128; header stores previous first
+// 156/110; `previous ? *previous : NONE` 143/111. The entry assignment (current EBX, previous EBP)
+// drives every loop's roles.
+// Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
+// at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
+// named `dword bit = 1 << i;` in the emission loop 149 (same code).
+// Round 23 (m3 lane 2, fast): the current member count named once (`member_count`, the mapping and member loop
+// bounds) 204 (frame 0x98); the previous count named for the mapping and removal loops 366 (1482 bytes); both 342;
+// the previous member address named in the outer mapping loop 149 (same code); the previous header as an if/else
+// store 364; the header through a local set in an if/else (0x609e0's form) 149 (same code). Current stays in EBX.
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, equal to the full listing; env positional/aligned
+// 141/103 for this body): retail reloads previous into EBX at the members loop's latch and sets the retained mask
+// to zero after that loop. Diagnostic: `!previous ||` added to the members loop's NONE test flips the entry to
+// retail's (previous EBX, current EBP, count homes swapped back) but adds code, 311/156 (1529 bytes); that with the
+// mask declared after the members loop 322/159. New natural forms, entry unchanged: the old member pointer computed
+// at the top of every iteration 331/111; the map value read into a long instead of the entry pointer 208/110; the
+// old member indexed by a fresh map read 167/105. Re-measured in the env only (listed above): the late mask
+// 327/112, the header's previous store first 156/110. Retail weighs previous more than ours somewhere; the late
+// mask only helps once that flips.
+// Round 36 (lane 13, fast; a one-file LTCG link equal to the full build screened them first): the header's
+// previous word as an if/else 364 (two instructions short); the mapping loop bounds named once 155; the long
+// header stores ahead of the session copy 154; the header's previous word stored after the map clears 266
+// (1513 bytes); the member loop reading new_to_old[i] at each use in place of the element pointer 149 (same
+// code). In every form ours gives current EBX and previous EBP at entry (retail the reverse), and with them
+// the swapped count homes (retail previous count +0x18, current +0x1c) and the member loop's register roles.
+// Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
+// count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
+// loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

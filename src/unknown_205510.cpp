@@ -24,8 +24,10 @@ struct s_physics_vector_block
 	s_physics_vector_source *data;
 };
 
+/* the definition's physics comes before the buffer: callers set up register arguments last to first, and
+   retail's 0x1d56f0 loads the buffer (ecx) before the physics pointer (edx); the component isn't passed in retail */
 // @retail 0x205510
-bool function_205510(void *buffer, void const *definition_physics, s_havok_component *component)
+bool function_205510(s_havok_component *component, void const *definition_physics, void *buffer)
 {
 	bool result = false;
 	s_physics_vector_block const *block = (s_physics_vector_block const *)definition_physics;

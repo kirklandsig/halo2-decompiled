@@ -328,19 +328,6 @@ bool function_1f8660(long actor_index);
 real function_1f8940(long actor_index);
 real function_1e3920(long actor_index);
 
-// score 46 (was 46): aligned 0x764 frame agrees; actor-index and search-result carriers differ after scratch allocation.
-// Retail reloads the actor index into EBX for the search and keeps the result in EAX until the success
-// branch (then ESI); ours reloads the index into EDX and copies the result to EBX at once.
-// Earlier result-first 53; output/reference and failure-cleanup forms did not close the carrier gap.
-// Per-use actor receiver with nested failure-first and output-home names 117/117; early admission 140/140;
-// success-first 116/116; success-first/early admission 138/138. All forms grow to 368 or 372 bytes.
-// Typed request reference fields 46; complete request Boolean 89; named movement kind 46;
-// typed fields/kind 46; Boolean with fields/kind/both 89/89/89; aggregate zero with fields/Boolean 99.
-// Round 110: selection compared inside the else-if 46; reference declared before the scratch call 46;
-// success branch first 46; flag store before the result 46; out locals swapped 46; the reference
-// compared as a long value 46; the search part as an inline helper 223 (its callee inlined).
-// Separate raw/admitted reference values with immutable raw value and entry request/scratch
-// declarations: 46/46/48/48/46/46/48/48, all 344 bytes. Original lifetimes and body restored.
 // @retail 0x1bcab0
 bool __stdcall function_1bcab0(long actor_index, s_slot *slot)
 {
@@ -370,14 +357,16 @@ bool __stdcall function_1bcab0(long actor_index, s_slot *slot)
 		if (REFERENCE_EQUAL(reference, g_470fa0))
 		{
 			result = false;
-			actor_get(actor_index)->unknown040 = false;
 		}
 		else
 		{
-			s_reference selected = function_2626b0(actor_index, reference, other_index, scratch, unknown, true);
-			if (REFERENCE_EQUAL(selected, g_470fa0))
-				function_262800(actor_index, reference, false);
+			s_reference found = reference;
+			reference = function_2626b0(actor_index, found, other_index, scratch, unknown, true);
+			if (REFERENCE_EQUAL(reference, g_470fa0))
+				function_262800(actor_index, found, false);
 		}
+		if (!result)
+			actor_get(actor_index)->unknown040 = false;
 		ai_scratch_buffer_release(scratch);
 	}
 	return result;
@@ -441,7 +430,20 @@ short function_1b8cc0(long object_index, long *seat_object_index);
 bool function_1b9200(long object_index, long prop_index);
 point3f *function_b9dd0(long object_index, point3f *result);
 
-// score 85 (was 166): entry NONE homes, predicate setup and proximity SSE scheduling differ.
+// score 47 (was 47): NONE is still kept in EBP where retail keeps it in EBX and the special
+// flag still travels in BL where retail uses CL (the special path does `mov cl, 1; jmp
+// tail` and the scan stores 0 at its start); this round's trials in this file found no
+// lower form of that carrier choice
+// Earlier: NONE is still kept in EBP where retail keeps it in EBX and the special
+// flag still travels in BL where retail uses CL; this round's trials in this file found
+// no lower form of that carrier choice
+// Earlier: NONE in EBP (retail EBX) and the special flag in BL (retail CL: the special
+// path does `mov cl, 1; jmp tail`, the scan stores 0 at its start) remain; the tail and the
+// proximity block now match. Round 78: the tail's prop node as a named pointer 85 -> 51 and the
+// deltas x, y, z 51 -> 47 (kept); on that, `&&` flag 200; flag set in if/else arms 200;
+// function-scope false flag with the scan in the else 223; bitwise operands swapped 47 (same
+// code); conditional-expression flag 194; bitwise flag declared first at function scope 47;
+// false flag set to the field on the type-6 path 99 (NONE in EBX, flag memory-only).
 // Earlier: retail keeps the special-vehicle flag in CL at the shared tail (the
 // special path does `mov cl, 1; jmp tail`, the scan's exits reload it from the dead actor
 // argument slot) and lays the tail out after the passenger scan; ours reloads the flag from
@@ -471,6 +473,144 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // canonical bitwise conjunction with long/bool/byte/short special 152/85/85/201.
 // Boolean bitwise conjunction kept, 85/861 plain; the post-scan tail is shared.
 // Entry NONE EBP/EBX, predicate setup and separation SSE homes still differ.
+// Round 83: `&&` flag 200 (aligned 23: flag memory-only, the unknown268 block laid out after the
+// special path); with returns for the scan exits 226; with an inline timer-minimum helper used twice
+// 286; const `&&` flag 200; the player loop as a forceinline helper, `&&`/bitwise flag 235/207.
+// Round 85: `&&` flag with the scan as the then-arm and `special = true` in the else 202; flag set in
+// both arms (`special = false` in the scan arm) 200; `&&` with a return for the proximity exit 226;
+// `&&` with the datum test nesting the loop body 200; `&&` with the proximity minimum as an early
+// `goto done` 200. A compile-only screen shows what moves the `&&` layout: the proximity exit inside
+// the loop (without it, or without the loop, the special path jumps over the scan as in retail).
+// Round 18 (lane 11): `&&` flag, if/else arms, false then if, scan in the else with
+// the flag set there or at its declaration: 189/189/191/189/191 at 872 bytes (NONE in
+// EBX, entry matches, but the flag stays in memory and the tail follows the special
+// path); the tail as a forced-inline helper taking the flag by value 47 (same code),
+// with the `&&` flag 189.
+// Round 39 (m3 lane 12): the bitwise flag is already spilled around the scan to the dead
+// actor-index slot as retail, but its byte def before the branch takes BL (so NONE takes EBP);
+// every branchy def gives NONE in EBX but threads the known-true flag by copying the tail's
+// first block onto the special path (flag memory-only, 872 bytes): `&&` 200, false then if
+// 202, `&& != 0` 200, function-scope `&&` 200; const bitwise flag 47. All restored.
+// Round 433: Complementary ordinary-case predicate, bitwise/logical OR, original/complementary
+// permission, entry/eligible permission scope; fast 48/74/53/75/200/222/201/222.
+// Original body and existing helper restored.
+// Round 44 (lane 16, fast counts; the unchanged control gives 47): `special = type == 6;
+// special &= byte != 0` 47 (same code); `(type == 6) & actor->unknown268` (raw byte) 193;
+// `special = false; if (type == 6) special = actor->unknown268 != 0;` 99 (aligned 11: the entry
+// is retail's, NONE in EBX, the special test branches as retail, but the flag is stored
+// at both defs and read from memory at the tail, so the tail's movsx takes ECX); that with
+// `else special = false` instead of the initializer 187 (877 bytes); that with special
+// declared first in the function 135 (frame 0x30).
+// Round 18 (lane 14): bitwise flag with the bool field unconverted 193; flag built as `== 6` then
+// `&= field != 0` 47 (same code); flag computed without the one-use tag local 47; `&&` flag with a
+// return at the proximity exit only 226 (872 bytes; compile-only screen: the special path still falls
+// into the unknown268 block); bitwise flag held in a long 172.
+// Round 32 (lane 10, fast counts): the tail condition as a named `release` bool 47 (same code), with the `&&`
+// flag 200; `special = type == 6; if (special) special = byte != 0;` 210 (877 bytes); the tail as nested
+// `if (special) if (prop_index != NONE)` 47 (same code), with the `&&` flag 200; the flag declared next to
+// allow_exit and assigned the `&&` value in the block 200; `special = false; if (type == 6 && byte)
+// special = true; else { scan }` in the block 202 (872 bytes: both constants stored, read from memory at
+// the tail), with the false flag at function scope 223.
+// Round 109 (lane 5, fast): the entry tests as one `goto done` 47 (same code). Cause found: NONE
+// loses EBX whenever the special def needs a third byte register (EDX keeps the vehicle index for
+// 0x1b8d40), so the `!= 0` bitwise def takes BL; `(type == 6) & actor->unknown268` (two byte
+// registers) gives NONE in EBX and retail's entry. An explicit `special = false` at the scan's start
+// gives retail's split (0 stored to the argument slot, reloaded at the scan's exit, a scratch
+// register in the tail): bitwise def 68 (flag AL, NONE EBP); raw-bool def 193 (aligned 18: only the
+// setcc def against retail's branchy `mov cl, 1; jmp`, and the tail flag in AL, not CL), operands
+// swapped 193 (same); `&&` def 200 (flag memory-only, tail after the special path); the F11 def 97
+// (memory-only). Every all-constant (branchy) def keeps the flag in memory.
+// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure; positional/aligned, base 42/41 = full
+// 47): `&&` flag 180/43 (special path stores 1 and the tail is laid out after it); `&& != 0` 180/43; `&&` with
+// a return at the proximity exit 210/57; `type == 6 ? byte != 0 : false` 154/20 (876 bytes: NONE in EBX and
+// the body retail's, but the def is `setne al` stored to the argument slot and the tail reads memory);
+// `type != 6 ? false : byte != 0` 148/19 (862 bytes, same two spots); raw-bool conditional 154/20; false
+// initializer with `if (cond) special = true; else { scan }` 184/45; declared bare with `special = false`
+// at the scan start 180/43.
+// Round 131 (lane 4, aligned counts against 39): seat_object = NONE declared at the outer block's
+// top 47 (aligned 40); allow_exit declared after the actor lookup 52 (44); `!!actor->unknown268`
+// in the bitwise def 47 (same code); the iterator declared at the outer block's top 47 (same code);
+// the seat index in a long 196.
+// Round 38 (m3 lane 10, fast): the type-6 false-then-field form (99) is aligned 15: entry, NONE in EBX and
+// the scan as retail; left: the true path stores setne to the argument slot (retail `mov cl, 1; jmp`
+// to the join), no reload into CL at the join, the tail tests the slot, and the >= 3 block's float
+// temporaries move to [esp + 0x18]/[esp + 0x14] because the slot stays live. Compile-only screens
+// thread every branchy def (the join placed after the special path) unless the proximity exit leaves
+// the loop by `break`. Trials: `return g_46fbe4;` for the proximity exit 76; that with the if/else
+// branchy def 226 (872 bytes); with the false-then-field def 133; the negated flag (`scan = true;
+// if (type == 6) scan = !field;`) 100 (aligned 18); the false-then-field flag as a long 210 (877).
+// Round 55 (lane 12, fast): `special = true;` preset, then `if (!(type == 6 && byte)) { special = false; scan }`
+// 187 (aligned 11: the only form found whose special path jumps over the scan to the tail as retail's does, with
+// NONE in EBX; left: the preset stores 1 to the slot before the test, and the flag stays in memory at the tail,
+// retail splits it, CL outside the scan and the slot inside, so retail's 10.0f temp reuses the slot); that with
+// the flag a long 192 (aligned 11), declared at function scope 211; `special = type == 6 ? byte != 0 : false`
+// with `special = false` at the scan's start 97 (aligned 11); `special = byte != 0; if (type != 6) special =
+// false;` with the scan's false 126 (862 bytes). Harness (this file plus its callees' files; same layouts as the
+// build): `&&`, if/else arms, the inverted if/else with `else special = true`, a single-exit inline flag getter
+// all lay the tail's first block after the special path; only a preset-true flag keeps the scan between.
+// Round 135 (lane 4, fast): the type test named (`bool turret = ... == 6;`) 47 (same code); `if (type == 6 &&
+// byte) special = true; else { special = false; scan }` 200 (872 bytes, flag memory-only); the vehicle type read
+// into a short local 47 (same code); `& (actor->unknown268 == true)` 47 (same code); `special = false; if (type
+// == 6 && byte) special = true; else { scan }` 202.
+// Round 117 (fast): `special = false; if (type == 6 && byte) special = true; if (!special) { scan }` 202, with
+// `special = false` at the scan's start 200; the bitwise def with that false 68; `special = byte != 0; if (type
+// != 6) special = false;` with it 126; `special = false; if (type == 6) special = byte != 0;` with it 97 (861
+// bytes, aligned 14: NONE in EBX and the scan as retail; left the setne def stored to the slot on the special
+// path, the tail reading the slot, and the 10.0 temp's homes).
+// Round 31 (lane 13, fast): the special path as the else of `if (type != 6 || !byte) { special = false;
+// scan }` 200 (872 bytes); preset true with that `||` test 187; `if (special == false)` 47 (same code); the
+// bitwise operands field first 47 (same code); `special = false; if (type == 6 && byte) special = true;`
+// then `if (!special) { scan }` 202 (872 bytes). A compile-only build of this file alone puts NONE in EDI
+// (not predictive for this function).
+// Round 185 (lane 3, fast): the if/else flag (`mov cl, 1` arm, false at the scan's start) with a
+// compiled-out `do {} while (false);` at the tail 200 (872 bytes); one inline delay-minimum helper used
+// by both minimum blocks, on the bitwise flag 218 (762 bytes: the copies merge); the bitwise flag as a
+// byte 47; the proximity exit as `break` with a `nearby` flag tested after the loop (diagnostic) 200;
+// the if/else flag with `special = false` at the end of the scan arm 190 (861 bytes: retail's entry,
+// NONE in EBX, `mov cl, 1; jmp` over the scan, the scan laid out next and the flag in CL at the tail;
+// left: retail stores the 0 at the scan's start and reloads it at the exit, and its frame is 0x34 where
+// ours is 0x30, the seat object taking the dead actor slot retail gives the flag); the false after
+// `allow_exit = true` (live across the team test and the loop) 200 (872 bytes).
+// Round 44 (lane 1, fast): if/else arms with `special = actor->unknown268 != 0` in the special arm and `special =
+// false` opening the scan 200 (872 bytes: the field is re-read at the tail, but the arm stores 1 to the slot and
+// the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
+// g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
+// datum-index `continue` as a nested if 47 (same code).
+// Round 141 (lane 4, fast): the special test as a multi-exit inline helper (`return false` twice,
+// `return true`) 200 (872 bytes); `byte special = 0; if (type == 6) special = actor->unknown268;` 99;
+// the proximity exit as `close = true; break;` with the minimum after the loop under `if (close)`:
+// `&&` 200, bitwise 47, false-then-field 99 (each the same as its goto form: the break is threaded
+// back); that with the preset-true `||` form 187; the whole test in an inline helper taking the
+// actor index 268 (813 bytes).
+// Round 60 (m3 lane 9, fast): on the if/else flag with `special = false` closing the scan arm (190, frame
+// 0x30: the unspilled flag leaves the dead actor slot to the seat object), the seat object declared bare
+// at the function top or the outer block top and assigned NONE before the call 190/190 (same code); it
+// declared with its NONE at the function top 209 (it moves to the frame, the seat short then takes the
+// actor slot, frame still 0x30); `special = false` also opening the scan arm (diagnostic) 190 (dead, dropped);
+// the `&&` flag with allow_exit declared after the actor lookup 201 (872 bytes); the if/else flag with
+// `special = false` right after the 0x1b8d40 exit (live across the rest of the scan) 200 (872 bytes).
+// Round 65 (lane 12, fast): round 185's if/else flag (`special = true` arm, `special = false` ending the
+// scan arm) rebuilt 190 (frame 0x30: the flag needs no memory, so the seat object takes the dead actor
+// slot); on it: `long seat_object = NONE;` declared before the actor lookup 209 (the NONE store moves to
+// the entry); seat_object declared bare at the outer block's top and assigned in place 190 (frame still
+// 0x30); the special arm assigning `actor->unknown268 != 0` 190 (folded); the flag as a byte 190; the
+// false moved to just before the iterator loop 200 (872 bytes, memory-only, and unset on the team path).
+// Diagnostic (listed form): false at the scan's start makes the flag memory-only and lays the tail after
+// the special path (872 bytes), while the bitwise base already splits the flag (BL, the actor slot
+// across the scan, BL again) as retail does with CL.
+// Round 58 (lane 16, fast): the if/else flag with `special = false` at the end of the scan arm 190 again
+// (861 bytes; frame 0x30, the seat object in the dead actor slot); that with a second `special = false` at
+// the scan's start (diagnostic) 190 (the start def is dropped as dead); the if/else flag as a byte (1, and
+// 0 at the scan's start) 200 (872 bytes); the false def after the 0x1b8d40 exit test 200 (872), after the
+// seat call before `allow_exit = true` 200 (872). Any false def live across a call copies the tail's first
+// block onto the special path; only the def at the scan's end keeps retail's `mov cl, 1; jmp`. On that
+// end-def form: `long seat_object = NONE` at the outer block's top 192, the iterator there 190 (same code).
+// Round 27 (m3 lane 2, fast): if/else def with `special = false` after the 0x1b8d40 test 200 (872 bytes,
+// memory-only), just before `allow_exit = true` 200; the false at the end of the scan arm 190 (as round 185),
+// with `seat_object` declared and set to NONE at function scope 209 (frame still 0x30), declared there and
+// assigned in place 190 (same code), with a byte flag 190 (same code); the `&&` flag renamed to sort first or
+// last 200/200 (same code); a forceinline tail helper taking the flag and allow_exit by value with the `&&` def
+// 199 (865 bytes), with the if/else def and the false at the scan's start 199.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
@@ -514,10 +654,10 @@ short __stdcall function_1bbf40(long actor_index, s_slot *slot)
                         point3f unit_point;
                         function_b9dd0(actor->unknown26c, &vehicle_point);
                         function_b9dd0(unit_index, &unit_point);
-                        real z = unit_point.z - vehicle_point.z;
-                        real y = unit_point.y - vehicle_point.y;
                         real x = unit_point.x - vehicle_point.x;
-                        if (z * z + y * y + x * x < 6.25f)
+                        real y = unit_point.y - vehicle_point.y;
+                        real z = unit_point.z - vehicle_point.z;
+                        if (x * x + y * y + z * z < 6.25f)
                         {
                             short minimum = (short)real_to_long((real)g_510c54->field_2_3 * 3.0f);
                             if (*(short *)actor->unknown2f4 < minimum)
@@ -540,11 +680,14 @@ short __stdcall function_1bbf40(long actor_index, s_slot *slot)
             else
                 allow_exit = true;
         }
-        if (special && actor->prop_index != NONE && prop_node_get(actor->prop_index)->unknown24 >= 1 &&
-            prop_node_get(actor->prop_index)->unknown24 <= 2 && !function_1b9200(actor->unknown26c, actor->prop_index))
+        if (special && actor->prop_index != NONE)
         {
-            *(short *)actor->unknown2f4 = 0;
-            allow_exit = true;
+            s_prop_node_view *prop = prop_node_get(actor->prop_index);
+            if (prop->unknown24 >= 1 && prop->unknown24 <= 2 && !function_1b9200(actor->unknown26c, actor->prop_index))
+            {
+                *(short *)actor->unknown2f4 = 0;
+                allow_exit = true;
+            }
         }
         if (allow_exit && *(short *)actor->unknown2f4 <= 0)
             function_e68c0(0x1d, actor->unknown018);

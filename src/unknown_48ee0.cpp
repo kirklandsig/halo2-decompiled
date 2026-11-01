@@ -18,8 +18,10 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
-// score 239 (was 239): frame 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
-// frame 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
+// score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
+// every later offset drifts; the mode takes the frame's lowest slot where retail keeps
+// the size, and the size and the aspect stay in registers across the rounding calls.
+// Earlier frame: 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
 // Earlier form: frame 0x20 versus 0x28; input registers and rounding-call scalar reloads differ.
 // Branch-defined extent 321; two-vector copy loop 311; frame pointer 372; size policy 497; inline depth one 311.
 // Global optimization off 1009; expansion depth zero 349; late mode 350;
@@ -136,13 +138,22 @@ extern real g_4c9798[36];
 // Round 191: distance field at every use with saved/lower-live/upper-live/both-live
 // depth observations 330/323/330/324; with entry-owned border zero 267/268/267/268.
 // All regress; original distance/depth snapshots and border restored.
+// Round 280 (lane E, run 14): the overflow fix-up compares the height against the width
+// and the height is rounded first, so the fix-up block matches retail instruction for
+// instruction (cmp esi, edi; cdq; jle; idiv; the & ~63 masks). 230, kept.
+// Round 289: On the retained height-first overflow graph, long-mode/long-height/short-width carrier subsets 1 through 7; positive word counterpart:
+// [231, 250, 250, 274, 280, 268, 265, 274]. All executable source and temporary types restored.
+// Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
+// each with coordinated pixel-size/mode names 230; coordinated names alone and
+// diameter lexical rank 230. Original declarations, names and body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
+    real border = 0.0f;
     real aspect = (real)sqrt(*(real const *)(state + 8));
     real distance = *(real const *)(state + 0x64);
     real offset = 0.0f;
-    if (*(short const *)(tag + 0x8e) == 1)
+    if (*(short const *)(tag + 0x8e) - 1 == 0)
         offset = *(real const *)(state + 0x28);
     real inverse = distance != 0.0f ? 1.0f / distance : -3.4028234663852886e38f;
     g_4c9798[0] = ((vector3f const *)(matrix + 0x28))->i * inverse;
@@ -164,12 +175,12 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
         (maximum - 128.0f) * g_485a34 + 128.0f;
     if (size < 128.0f) size = 128.0f;
     else if (size > maximum) size = maximum;
-    long width = (function_48e70(size / aspect) + 63) & ~63;
     long height = (function_48e70(size * aspect) + 63) & ~63;
+    long width = (function_48e70(size / aspect) + 63) & ~63;
     if (width * height > max_width * max_height)
     {
-        if (width > height) width = (max_width * max_height / height) & ~63;
-        else height = (max_width * max_height / width) & ~63;
+        if (height > width) height = (max_width * max_height / width) & ~63;
+        else width = (max_width * max_height / height) & ~63;
     }
     g_485a47 = (byte)mode;
     g_51f3c8[1][0] = 0;
@@ -196,7 +207,8 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
     g_4c9798[33] = 1.0f;
     g_4c9798[34] = 0.0f;
     g_4c9798[35] = 0.0f;
-    real border = mode > 0 ? (real)width * 0.75f / maximum : 0.0f;
+    if (mode > 0)
+        border = (real)width * 0.75f / maximum;
     g_4c9798[12] = border + 0.5f;
     g_4c9798[13] = 0.5f - border;
     g_4c9798[15] = 0.0f;

@@ -183,7 +183,10 @@ __forceinline s_game_variant *variant_defaults_initialize(s_game_variant *varian
 	result.name[0x1f] = 0;
 	result.field_xcb8724 = engine;
 	result.unknown03 = -1;
-	if (type >= 4 && type <= 6)
+	/* capture the flag, assault and territories default to teams (flags48 bit 0) */
+	bool teams_by_default = type >= 4 && type <= 6;
+
+	if (teams_by_default)
 	{
 		result.flags48 |= 1;
 	}

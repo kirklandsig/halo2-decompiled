@@ -158,7 +158,7 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 			ticks = real_to_long(time);
 			player->unknown0a = (short)ticks;
 
-			function_d0620(vehicle_index, &iterator);
+			function_d0620(&iterator, vehicle_index);
 			while (function_d0690(&iterator))
 			{
 				s_slot_object_view *child = object_get(iterator.child_index);
@@ -179,35 +179,11 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 }
 
 
-void function_1e3400(long actor_index, long squad_index);
-real function_204950(long actor_index, long squad_index, short mode);
+void function_1e3400(long actor_index, short squad_index);
+real function_204950(long squad_index, long actor_index, short mode);
 void function_26def0(long actor_index, long owner_index);
 __declspec(noinline) bool function_f5dc0(long object_index);
 
-// score 49 (was 49): BLOCKED-BY 0x1e3400: retail loads the squad for both
-// 0x1e3400 calls as a 16-bit value (`xor eax, eax; mov ax, [esi + 0x28]` and
-// `xor ecx, ecx; mov cx, ax`, pushed unextended, as in 0x1bb570), so 0x1e3400's
-// squad parameter is a short; ours (long) zero-extends with movzx. One-file
-// harness with that parameter as short and the second call through the saved
-// actor (no second actor lookup): 1 difference, the 0x204950 call's EAX/ECX
-// setup order (0x204950's first two parameters swapped 5; squad local at
-// function scope 1; named squad distance 1). Earlier: the first squad test
-// still reuses its full-width load; the second call reloads the actor where
-// retail uses its saved pointer, and the distance-call argument order differs. Split entry branch 67; first fresh
-// actor 90; second fresh actor 49 (kept); both fresh actors 81; first field
-// pointer 49; second field pointer 67; typed vehicle 67; no final refresh 123.
-// Native tag field 49; squad-first admission 74; squad before entry flag 77;
-// distance-first admission 70; entry declaration lifetime/constant pointer/role names/unsigned tag handle 49.
-// Tag field and all body forms restored; the full/low-word reuse and later schedules remain.
-// Native squad full/low-word fields alone/with timer/with flag/with both 49/49/49/49;
-// the same native field forms with a saved second actor read 67/67/67/67.
-// Round 273: one tick-rate short/long carrier 129/129; multiplier-first
-// products 49; explicit transition/distance call boundaries 49/49;
-// short rate/transition boundary 129; failed-entry-first 49, with short rate 129;
-// actor observed at every field use 199. All restored; full/low-word reuse remains.
-// Round 406: native vehicle/tag-per-use/both 49/49/49; admission decision
-// with native/per-use/both/plain 49/49/49/49; guarded decision with both 49;
-// per-use tag plus native final actor fields, with/without decision 49/49.
 // @retail 0x1bba70
 void function_1bba70(long actor_index, long vehicle_index, long seat_index)
 {
@@ -221,18 +197,18 @@ void function_1bba70(long actor_index, long vehicle_index, long seat_index)
         {
             s_tag_element *entry = function_1e5450(actor_index, tag_index);
             if (entry && (*(byte *)((byte *)entry + 0x10) & 1) && *(long *)((byte *)actor + 0x28) != NONE)
-                function_1e3400(actor_index, *(word *)((byte *)actor + 0x28));
+                function_1e3400(actor_index, (short)*(long *)((byte *)actor + 0x28));
             else
             {
                 real distance = 3.4028234663852886e+38f;
                 if (*(long *)((byte *)actor + 0x28) != NONE)
-                    distance = function_204950(actor_index, *(long *)((byte *)actor + 0x28), 0);
+                    distance = function_204950(*(long *)((byte *)actor + 0x28), actor_index, 0);
                 if (*(long *)((byte *)actor + 0x28) != NONE && distance < 3.0f)
-                    function_1e3400(actor_index, *(word *)((byte *)actor_get(actor_index) + 0x28));
+                    function_1e3400(actor_index, (short)*(long *)((byte *)actor + 0x28));
                 else
                 {
                     long squad_index = *(long *)(vehicle + 0x3a0);
-                    if (squad_index == NONE || !(3.0f > function_204950(actor_index, squad_index, 0)))
+                    if (squad_index == NONE || !(3.0f > function_204950(squad_index, actor_index, 0)))
                     {
                         *((byte *)actor + 0x3c) = true;
                         *(short *)((byte *)actor + 0x2c) = g_510c54->field_2_3 * 10;

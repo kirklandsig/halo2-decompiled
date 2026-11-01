@@ -1834,31 +1834,6 @@ void function_195e90(void);
 void function_68c00(s_simulation_world_owner *owner, void *definitions,
  s_simulation_distribution *distribution, c_class_6a600 *world);
 
-// score 35 (was 35): retail keeps the watcher in edx and the address of its
-// +8 field in eax, tests the flag with test al, al and clears with immediate
-// zeros; ours folds +8 into the stores and keeps zero in edx (55 bytes against
-// 73). Other forms of the link and the watcher, an early return, inline
-// functions, const references, a barrier and volatile stores all stay at
-// score 35; the permutation runs found no semantics-preserving improvement.
-// @retail 0x67f60
-void function_67f60(void)
-{
- if (!g_4ed39c)
- {
-  s_simulation_world_owner *watcher = (s_simulation_world_owner *)g_4cf780;
-  byte **link = (byte **)watcher->unknown08;
-  if (*link)
-  {
-   *(long *)(*link + 0x80) = 0;
-   *link = 0;
-  }
-  watcher->session = 0;
-  watcher->world = 0;
-  function_68e20((c_class_6a600 *)g_4cf77c);
-  function_195e90();
- }
-}
-
 // score 35: retail computes the mode as `xor ebx, ebx; cmp eax, 2; setne bl;
 // lea ebx, [ebx + ebx + 2]` after a dead `mov ecx, eax; sub ecx, 2` (5 bytes, perhaps
 // left by a lowered switch; no switch tried here gives it), and loads its fields in the

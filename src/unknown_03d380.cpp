@@ -314,7 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
-// score 46 (was 46): the address of the record is built here with an imul
+// score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.
 // Retail also falls from the type test into the special-type arm, then the
@@ -322,6 +322,71 @@ void function_125a90(long value);
 // special arm as `type != 0x26 || a` 88; as `type == 0x26 && !a` 88; the kind
 // tests joined with && 46; the type test negated, kind arm first 46; removal
 // first with an if/else special arm 50.
+// Round 411: Existing calling iterator with returned/salted receivers and remove/keep
+// decisions 115/110/168/177; existing fully inlined iterator with the same four forms
+// 115/110/168/177. Original traversal restored; the early policy load, ESI multiply
+// and special/remove/ordinary/keep ordering remain.
+// Lane 14 r9: the join as `if (remove) {removal} else keep` 51 (kind arm, keep, then the special arm and
+// removal after the loop step); every action written in its own arm (no flag) 110; the flag declared
+// before the element 47 (same code); the kind tests joined with && 47, plus the flipped join 51; the
+// special arm as `remove = type == 0x26 ? !a : false` 47.
+// Round 95 (one-file harness with 0x221810 pinned out of line; aligned 23 = 47 here): ours ends
+// the kind arm with a jump into the special arm's `je` (tail merge), so the kind arm is the
+// fall-through; that order survives the special arm cut down to `remove = false`, the arms
+// swapped, removal first and every flag form tried. Real: kind arm `remove = f() != 1` with
+// removal first 88 (417 bytes); arms swapped with removal first 51; kind arm as one `||`
+// value with removal first 46; data pointer local 47; special arm as if/else with removal
+// first 51. Harness only: the file's ELEMENT macro 37 (worse registers); element as
+// `&((T *)data)[i]`, `data + i * sizeof`, `sizeof * i`, `i + (T *)data`, an elements
+// pointer: the ESI multiply in each; `remove = type == 0x26 && !a` threads the sete away.
+// Round 100 (real builds): the file's ELEMENT macro 62 (same early flag load, EBP/EDI swap);
+// `remove` declared first 47; removal written first 51: both arm bodies then end as retail's
+// (special arm `je keep` into the removal, kind arm `jne remove` into keep), but the kind arm
+// stays the type test's fall-through and the special arm with the removal moves after the
+// next-index code; with the type test negated and the kind arm first 51 (identical); with the
+// kind tests joined by && 51.
+// Round 11: `if (0x20) remove = false; else if (0x26) remove = !a; else if (kind)` with removal
+// first 87 (retail's block order, but no re-test of 0x26 for 0x20); the condition named `bool
+// special = 0x20 || 0x26` with removal first gives retail's whole block order in the compile-only
+// harness, but LTCG then inlines 0x221810 (144 at 467 bytes; with the kind test as one `&&` 144,
+// keep first 157 at 471 bytes); removal first alone 51.
+// Round 13 (lane 13): the element written out at each use (`((T *)array->data)[index].field`)
+// gives retail's `imul eax` + `lea esi` but sinks it below the b test 43; with `if (remove)`
+// first as well 47; `if (remove)` first alone 51; ELEMENT(array, T, datum) 62, with index 94;
+// `&((T *)data)[index]` 47; `(T *)(data + index * sizeof(T))` 47.
+// Round 442: Live type observations with bool/byte/short/long removal 91/91/85/90; removal-
+// first completion 91/91/85/90. Original type capture, comparison widths and complete body
+// restored.
+// Later (36, from 47): the special arm now assigns the removal flag itself
+// (`remove = (type == 0x26) && !a`) and the kind arm assigns `remove = (byte != 1)`,
+// so both arms branch to their own blocks instead of merging into the special arm's test;
+// the removal arm is written before the keep arm, which puts retail's blocks in retail's order.
+// Still differs: the b flag is loaded before the element address (retail loads it after) and
+// the type lookup uses EAX where retail uses EDX.
+// Round 109 (lane 5, fast): the special arm as `if (type == 0x26) remove = !a; else remove = false;`
+// on the long type with the kind arm as `if (byte == 1) remove = false;` 51: both arm bodies are
+// then retail's code (`cmp eax, 0x26`, the `sete` of !a, the fused kind arm), but the kind chain is
+// still laid out first; that with keep written first 47 (tail-merged); the condition named `bool
+// special = 0x20 || 0x26` with those arms 144 (retail's block order, but LTCG then inlines 0x221810,
+// 467 bytes), with `if (!special)` and the kind arm first 158 (471 bytes, inlined), with the call's
+// argument as `(short)type` 144. BLOCKED-BY 0x221810: the named-condition layout needs 0x221810 kept
+// out of line (its file is outside this round).
+// Round 44 (lane 16, fast counts; control 36): retail lays out the special arm first, falling
+// into the removal with its `!a` materialized (`sete al; test al, al; je keep`), then the kind
+// arm fused (`jne remove`) falling into keep; ours lays out the kind arm first (materialized
+// `setne al; test al, al`) and fuses the special arm. Tried: the inner test on the long type
+// (`type == 0x26 && !a`, retail's `cmp eax, 0x26`) 46, still kind arm first; that as a ternary
+// `type == 0x26 ? !a : false` 88; the type test negated with the kind arm first and the special
+// arm in the else 46 (same code as the long test); the kind arm as `remove = false` under one
+// `kind && byte == 1` test 88; a two-case switch on the short type 86 (compares in ECX).
+// Round 108 (lane 6): the type byte is the sound definition's class (the existing
+// sound_definition_get(...)->promotion_index): read as a short 87 (`movsx ax`, retail widens to
+// 32 bits), as a long through the getter 36 (same code as the direct read). Retail re-tests
+// `cmp eax, 0x26` after `cmp ax, 0x26`, so its inner test is on the full-width value and is not
+// threaded away (matched 0x18d360 tests the same pair on a short); that inner long test alone
+// 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
+// assigned on every path with no initializer 36 and the negated test with the kind arm first 36
+// both compile to the same code (VC normalises the arm order).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
@@ -351,25 +416,18 @@ void __stdcall function_1264c0(dword flags)
 				long type = *((char *)g_4e3b44[element->object_index & 0xffff].flags + 2);
 
 				if ((short)type == 0x20 || (short)type == 0x26)
-				{
-					remove = false;
-					if (type == 0x26)
-						remove = !a;
-				}
+					remove = ((short)type == 0x26) && !a;
 				else if ((1 << element->kind) & 0x1e)
-				{
-					if (((byte *)function_221810(type))[0x4c] == 1)
-						remove = false;
-				}
+					remove = ((byte *)function_221810(type))[0x4c] != 1;
 			}
 
-			if (!remove)
-				element->unknown8c = NONE;
-			else
+			if (remove)
 			{
 				function_127320(datum, 10);
 				array = g_4e637c;
 			}
+			else
+				element->unknown8c = NONE;
 
 			datum = data_datum_index(array, function_16bc00(array, datum == NONE ? 0 : index + 1));
 		}
@@ -561,108 +619,52 @@ void __stdcall function_1889d0(dword flags)
 	}
 }
 
-// score 62 (was 62): retail loads the flag word whole into bx (ours a masked byte), reloads the
-// value into ecx (ours eax) and picks other scratch registers in the sound-tag loop and the final
-// flag test; without the 0x60 mask the flags and the value swap ebx and the stack slot.
-// Tried: flags/tag names 110; positive/rejection tests 110; direct parameter 160; early flag 42
-// (restored); inline query 110; shifted word/dword/byte 128/129/120; direct masks 154; first/second
-// mask 132/151; multi-use word mask 62; full-width mask 147; active-path mask 173; rejected-path mask
-// 110; query-rejection result 62; shared absolute scan 62; shared next datum 249; signed tag index 62;
-// common final flag publication 72; existing sound table helpers 62; signed short/long masked flags
-// 62/61; final parameter exit 66; final receiver ownership 55 (the global reloaded into a local by
-// hand, not kept); receiver with parameter exit 66; isolated tag scope 62; native iterator
-// initializer 118; direct reset record 62; complementary input 85; native flag copy 62; copy
-// complementary input 85; whole flag copy 110; reset array index 62; reset negative guard 62; late
-// flag positive 72; native entry ordinal 93; masked tag declaration/flag iteration scope 62/62; dword
-// parameter mask 83; scoped tag for-loop 62; paired zero chain/fill 64/123; Boolean parameter mask 62;
-// late global declaration 62; native raw word/signed word/flag object 62/62/62; masked dword 61;
-// const word 62; masked byte 155; parameter bit pair 173; typed word with pair 173. Relink scores
-// with branch targets masked (the current body 55): flag-struct copy or bitfield reads 152; word
-// local without the mask (byte, dword or no-bool shifts) 102-152; short/byte/long flag locals
-// 102/154/124; sound definition and rate-limit helpers (with a definition or index local) 55;
-// merged final flag test 67; /arch:SSE diagnostic 55.
-// Frame 0x1c agrees; raw BX flag load and later scratch receivers remain.
-// Earlier: native BX load, tag table and inactive clear receiver differ.
-// raw flags load and tag/late-global registers still differ;
-// flags/tag names 110; positive/rejection tests 110; direct parameter 160; early flag 42 (restored);
-// inline query 110; shifted word/dword/byte 128/129/120; direct masks 154; first/second mask 132/151;
-// multi-use word mask 62; full-width mask 147.
-// Active-path mask 173; rejected-path mask 110; query-rejection result 62;
-// shared absolute scan 62; shared next datum 249; signed tag index 62;
-// common final flag publication 72; existing sound table helpers 62.
-// Signed short/long masked flags 62/61; final parameter exit 66;
-// final receiver ownership 55 (the global reloaded into a local by hand, not kept); receiver with parameter exit 66;
-// isolated tag scope 62; native iterator initializer 118; direct reset record 62.
-// flags/tag names 110; positive/rejection tests 110; direct parameter 160; early flag 42
-// (restored);
-// inline query 110; shifted word/dword/byte 128/129/120; direct masks 154; first/second mask
-// 132/151;
-// native flags BX load and tag/late-global registers remain.
-// complementary input 85; native flag copy 62; copy complementary input 85; whole flag copy 110;
-// reset array index 62; reset negative guard 62; late flag positive 72; native entry ordinal 93.
-// Raw BX flag load and later receiver allocation remain.
-// frame 0x1c agrees; raw flag-word load, tag and late-global registers differ.
-// Earlier 62 (was 110): raw flags load and tag/late-global registers still differ;
-// Earlier 62 (was 62): native flags BX load and tag/late-global registers remain.
-// Masked tag declaration/flag iteration scope 62/62; dword parameter mask 83;
-// scoped tag for-loop 62; paired zero chain/fill 64/123; Boolean parameter mask 62; late global declaration 62.
-// Zero-or-one parameter byte/short/word/long 62/125/125/141; query/update noinline
-// declarations 62/62; signature-first initializer 64; signed byte table ordinal 62.
-// Native raw word/signed word/flag object 62/62/62; masked dword 61;
-// const word 62; masked byte 155; parameter bit pair 173; typed word with pair 173.
-// Tag/volume/reset/final-callback inline-noinline declarations 62 each; tag iterator/global receiver/both names 62 each; composite release predicate 151.
-// Tag field reads 62; flag word reads 110; both reads 110; native bitfield snapshot 128;
-// direct snapshot bits 154; snapshot plus tag reads 128; per-use bits 110; bits plus tag reads 110.
-// Active-state-first/pool for/release continue/active for 62/62/62/62;
-// whole record input 195; active record input 183;
-// record pool for/release continue 195/195.
+/* releases the deleted looping sounds and the active ones a reset ends (with flags bit 6 the
+   ones whose tag has an effect of type 0x20 or 0x26 stay), clears the tags' entries at +0x4c of
+   g_51ebd4 and the sound globals, and with flags bit 5 updates the listeners once */
 // @retail 0x188ac0
 void __stdcall function_188ac0(dword flags)
 {
 	bool a = (flags >> 6) & 1;
-	s_record_pool *array = g_4ed28c;
-	long datum = data_datum_index(array, function_16bc00(array, 0));
+	long datum = data_datum_index(g_4ed28c, function_16bc00(g_4ed28c, 0));
 	s_tag_iterator iterator;
 	long tag_datum;
 	s_looping_sound_globals *globals;
 
 	while (datum != NONE)
 	{
-		s_element_18 *element = ELEMENT(array, s_element_18, datum);
+		s_element_18 *element = ELEMENT(g_4ed28c, s_element_18, datum);
 
 		if (element->state == 2)
-			record_pool_release(array, datum);
+			record_pool_release(g_4ed28c, datum);
 		else
 		{
-			word flags5 = *(word const *)&element->flags & 0x60;
+			word flags5 = *(word const *)&element->flags;
 			if ((bool)((flags5 >> 5) & 1))
 			{
 				long value = element->value;
 				if (!(function_18d360(value) && a))
 				{
 					if ((bool)((flags5 >> 6) & 1) || (*(byte *)g_4e3b44[value & 0xffff].flags & 2))
-						record_pool_release(array, datum);
+						record_pool_release(g_4ed28c, datum);
 					else
-					{
 						function_18d290(value, datum);
-						array = g_4ed28c;
-					}
 				}
 			}
 		}
 
-		datum = data_datum_index(array, data_find_index(array, datum == NONE ? 0 : (datum & 0xffff) + 1));
+		datum = data_datum_index(g_4ed28c, data_find_index(g_4ed28c, datum == NONE ? 0 : (datum & 0xffff) + 1));
 	}
 
 	iterator.index = 0;
 	iterator.signature = 0x736e6421;
 	while ((tag_datum = function_122c70(&iterator)) != NONE)
 	{
-		byte index = *((byte *)g_4e3b44[tag_datum & 0xffff].flags + 0xc);
+		byte *definition = (byte *)g_4e3b44[tag_datum & 0xffff].flags;
 
-		if (index != 0xff)
+		if (definition[0xc] != 0xff)
 		{
-			long *entry = (long *)(g_51ebd4->entries + (char)index * 0x1c);
+			long *entry = (long *)(g_51ebd4->entries + (char)definition[0xc] * 0x1c);
 
 			if (entry)
 			{
@@ -677,14 +679,9 @@ void __stdcall function_188ac0(dword flags)
 	function_220fd0((s_sound_driver_volumes const *)globals->gains);
 	memset(globals->slots, 0xff, 0x100);
 	function_225ab0();
-	if (flags & 0x20)
-	{
-		if (!g_4ed288->flag241)
-			function_18bb80(3.4028235e38f);
-		g_4ed288->flag241 = 0;
-	}
-	else
-		g_4ed288->flag241 = 0;
+	if ((flags & 0x20) && !g_4ed288->flag241)
+		function_18bb80(3.4028235e38f);
+	g_4ed288->flag241 = 0;
 }
 
 // @retail 0x1c3540

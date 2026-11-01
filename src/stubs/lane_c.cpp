@@ -173,11 +173,7 @@ public:
 
 
 
-class c_contact_rule_fallback
-{
-public:
- hkBool accepts(long a, long b);
-};
+#include "pair_filter_class.h"
 
 
 #include <xmmintrin.h>

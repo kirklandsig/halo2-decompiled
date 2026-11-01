@@ -335,7 +335,21 @@ void function_13ad48(long user_index, byte const *selectors, real *values, byte 
 
 bool function_22acb4(long player_index);
 
+// This round (score 165, was 165): retail's first mask folds the 0x36 == NONE
+// condition into its base value and then tests 0x36 == 0 before 0x36 == 1, while
+// ours folds the 0x36 == 1 condition and tests it first; putting retail's order
+// in the source scores 192, the 0x3c conditions written as set/clear pairs 253,
+// the third mask starting at one and testing the types in order 190, and any
+// combination of them is worse again. Retail keeps the first mask in ebx and
+// spills it to the dead user_index slot, ours keeps it in edi and spills the
+// second mask to a slot of its own, so our frame is one dword deeper than
+// retail's and every later register home shifts.
 // score 165 (was 165): extra second-mask spill and persistent constant homes remain.
+// Retail reads the mode word as NONE, 0, 1 in that order and the type bits as
+// 1, 2, 3; either order alone scores 190-196, both 196, the 0x3c block written
+// as clears 232-234, a dword second mask 288 and an unsigned flags word 192.
+// Retail keeps the first mask in ebx and the second in bx; ours keeps the
+// first in edi and spills the second to a second frame slot.
 // Round 43: arithmetic NONE-seeded first 237; with third type order 123 240;
 // dword/signed-word first 295/295; dword/signed-word second 291/288;
 // OR-seeded first with third orders 123/231 281/280.
@@ -460,6 +474,35 @@ bool function_22acb4(long player_index);
 // Original late snapshot and every mask producer restored; second-mask spill remains.
 // Round 399: Source-flags phase scope, multiplayer phase scope, readonly source values and all
 // combinations, then all result-home names: 165 each. Original restored.
+// Round 38: Complete second-mask computation after first-mask updates 8/2/4/16/32/256/512/1024:
+// 272/168/288/165/278/278/280/280 fast, lengths 883/880/874/880/881/881/881/881. Extra
+// second-mask slot remains; original phase order, observation and complete body restored.
+// Round 424: physical item-selection orders 2143/2413/2431/3142/3412/3421/4132/4213
+// all 165 at 884 bytes. Original order restored; extra second-mask spill and constant homes remain.
+// N227: Set-first total updates in first/second/third/fourth/first-second/second-third/
+// second-fourth/all result families 304/287/281/285/303/285/304/347. Original setter restored.
+// Round 237: Complemented word result families first/second/third/fourth/first-second/second-third/second-fourth/all: On recovered complemented-second frame, first enum/independent second/third 123 subsets 1-7 and all with signed second: 178/244/252/250/242/274/245/289/230/234/271/247/228/230/267/262.
+// Original executable body restored.
+// Round 27 (lane 14): long flags 165 (same code). Retail CSEs the constant 1 into EDI (three cmp ax, di,
+// and ebx, edi, cmp type, edi) so (char)flags & 1 stays movsx ebx, al / and ebx, edi; ours narrows it to
+// and cl, 1 and CSEs 2 (EBX) and 0xffef (EDI) instead. On the retail block order (232, aligned 37): long
+// flags 232, (word)((long)(char)flags & 1) 232, byte flags 233, long second 287 (aligned 19: 1 in EDI as
+// retail, second still in ECX with its own slot, 0xfffd CSEd into EBX for the third/fourth clears).
+// Round 242: Existing shared word-bit setter in first/second/first-second/third/first-third/
+// second-third/all-three/all-four result families 165/299/299/165/165/299/299/299. Original macro,
+// result domains, enum producers, query and aliased stores restored; second-mask spill remains.
+// Round 8 (lane 17), on the retail-order body with a short second (283, aligned 19: VC narrows `(char)flags & 1`
+// to `mov cl, al; and cl, 1` while EBX still holds the first mask, so the second takes ECX and a slot and 0xfffd
+// is hoisted into EBX; retail spills the first, then `movsx ebx, al; and ebx, edi`): the second declared at entry,
+// before/after the first, with the third 283 each; `(char)flags` then `&= 1`, `(word)(char)`, `(short)(char)` 283
+// each; word `(word)(char)` 232; long `(short)(char)` 287; long second 287 (aligned 18, `and ecx, edi` but
+// zero-extended into CL); `*first_out` stored right after the first mask 263 (878 bytes, status in EDI).
+// Round 258: Previously untried complete result-phase schedules 2143/2413/2431/3142/3412/4132/4312/4321
+// 288/268/274/284/283/254/273/290. Original phase/query/output order restored; extra second-mask spill
+// and persistent constant homes remain.
+// Round 264: Whole-word OR expressions for second/third/fourth families, subsets
+// 1/2/4/3/5/6/7, then all four masks 306/271/316/299/348/333/364/387. Original
+// mutable producers, pure query and aliased output order restored; second spill remains.
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)
@@ -1146,15 +1189,17 @@ void function_22b8e2(s_22b8e2 const *arg_0, long arg_1, color4f const *arg_2);
 void function_22aff1(long arg_1, byte const *arg_2, byte const *arg_3, real const *arg_4);
 void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3, real const *arg_4);
 
-// score 1 (was 1): first count still TEST EAX,EAX versus CMP EAX,EBX.
+// score 1 (was 1): first count still TEST EAX,EAX versus CMP EAX,EBX: retail's EBX is the
+// hoisted mask zero, compared by the first guard and then kept as the first offset; ours starts
+// the offset from it before the guard. The sibling form for the first loop (guard, then offset)
+// makes loop 1 exact but keeps the zero live in EBX all function (118) unless a later loop
+// starts its offset before its guard (one later loop in the for form 3, both 6).
 // Offset-compared do/renamed-do 12/12; offset-guard for/nonzero-for/named admission/while 1/1/1/1;
 // offset-plus-one admission 125; split first offset 42; direct-bound first do/for 118/118;
 // direct-bound first with independent later loops 6; later count-first 6; captured later guards 116;
 // independent second 3; captured/split-offset second 118/118; nonzero second admission 76;
 // positive-nonzero/double-positive/combined second admissions 118/118/118.
-// score 1 (was 12): only first count zero-test differs: TEST EAX,EAX versus CMP EAX,EBX; frame 0x28 and retail length agree.
-// only first count zero-test differs: TEST EAX,EAX versus CMP EAX,EBX; frame 0x28 and retail length agree.
-// Earlier: only first count zero-test differs: test EAX,EAX versus CMP EAX,EBX; frame 0x28 and length agree.
+// Earlier at 12: frame 0x28 and retail length agree.
 // Earlier: retail keeps a success byte (set to 1 up front, overwritten with the
 // call's result on failure) and returns that byte directly; ours keeps the failure flag, so the
 // store and the negated return differ and the function is eight bytes longer.
@@ -1184,6 +1229,18 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // Repaired-countdown mask chain 5; offset mask producer 5; late result 1; subject,
 // descriptor, input and mask lexical roles 1/1/1/1; mask chain with native roles 5.
 // Partial mask chains 34/35/36/45/46/56/345/456: 5/4/5/3/4/3/5/3; first zero-test remains.
+// First loop indexed over a captured count/the field 118/106; captured count guarded with the
+// offset inside 42 (count takes EBX); guarded for/while 118/118; index counter with the offset
+// as now 1; sibling form plus later loops captured/indexed/count-first/`> 0` do/guarded for
+// 116/118/118/125/118; draw result as a ternary 158 or stored as the failed result 118 (also alone);
+// one shared offset, with or without a shared count 127/127; offset declared before the mask
+// zeros, before the setup call or first, with the sibling first loop 1/1/1.
+// Round 20: an indexed first loop (`for (long i = 0; i < count; i++)`, element field_24 + i * 0x50) is
+// exact once at most one later loop has a `> 0` guard: with the later loops in the current for form 6
+// (both zero EBX before their guards); later sibling loops guarded `>= 1` 12 (`cmp eax, 1; jl`, the rest
+// of both loops exact); all three indexed 118; chained mask zeroing with the indexed first loop 122;
+// indexed first, sibling second, for-form third 3 (only the third xor-before-guard); indexed first and
+// third with the sibling second 118. Two later zero guards (or indexed zero starts) keep the zero live.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

@@ -36,6 +36,31 @@ static inline vector3f *scale_vector_by_double(vector3f const *input, double sca
 	return output;
 }
 
+/* the vector expressed in the axes of a matrix: forward, left and up scaled
+   by its components; vector and result may be the same */
+static inline void vector3f_rotate_into_axes(matrix3x3 const *matrix, vector3f const *vector, vector3f *result)
+{
+	vector3f copy;
+
+	if (vector == result)
+	{
+		copy = *vector;
+		vector = &copy;
+	}
+	real i = vector->j * matrix->left.i;
+	i += vector->k * matrix->up.i;
+	i += vector->i * matrix->forward.i;
+	result->i = i;
+	real j = vector->i * matrix->forward.j;
+	j += vector->j * matrix->left.j;
+	j += vector->k * matrix->up.j;
+	result->j = j;
+	real k = vector->i * matrix->forward.k;
+	k += vector->j * matrix->left.k;
+	k += vector->k * matrix->up.k;
+	result->k = k;
+}
+
 /* the sum a + b; result may be either input */
 static __forceinline void vector3f_add(vector3f const *a, vector3f const *b, vector3f *result)
 {

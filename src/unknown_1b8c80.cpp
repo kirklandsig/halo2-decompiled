@@ -11,6 +11,8 @@
 #include "unknown_0d0690.h"
 #include <float.h>
 
+static __forceinline long real_to_long(real value);
+
 /* the slot tests 0x5f, 0x60, 0x5e, 0x4d, 0x4e and 0x4f, and slot type 0x4c */
 
 struct s_slot_4c
@@ -217,14 +219,19 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 	{
 		s_actor_view *actor = actor_get(actor_index);
 
-		if (actor->unknown018 != NONE && function_c8200(object_index, seat_index, actor->unknown018))
+		if (actor->unknown018 != NONE && function_c8200(actor->unknown018, object_index, seat_index))
 			result = true;
 	}
 	return result;
 }
 
-// score 3 (was 3): at the 0xc8200 call retail loads the seat index and the object before the
-// unit index (ecx last), ours loads the unit index first. Round 70: one result with `break` for
+// score 3 (was 3): at the 0xc8200 call (now in retail's (unit, object, seat) order, which loads
+// the unit last as retail) ours reloads the seat pointer into ECX and reads the object at once;
+// retail reloads it into EAX and loads the seat index in between. Before the reorder ours loaded
+// the unit index first. Round 23: the other parameter orders 3/4/4/2 (the last, (object, unit,
+// seat), loses 0x11b0c0's match); flag tested through seats[i] 82; actor lookup at the call 135;
+// seat pointer 100; nested 0xc8200 test 3; actor after result 3; named actor team 3; seat array
+// declared first 3; plain bitfield test 69. Round 70: one result with `break` for
 // the two rejections, bool result and the seat count from 0xc8b80 (retail inlines it) gave the
 // shrink-wrapped ebp/esi saves (109 -> 3); 0xc8b80 alone 109, bool alone 117, without 0xc8b80 7
 // (harness), long result 48 (harness); every 0xc8200 parameter order 4-27 (harness); nested
@@ -235,6 +242,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // Round 252: eligibility accumulated with logical OR 43, bitwise OR 31, conditional 3;
 // named eligibility 3; actor at every use 116 (matched caller lost); read-only actor,
 // read-only flags, both 3/3/3. Original complete body restored.
+// Round 42: unit/seat/object/paired field-address locals 3/3/3/3; const actor pointer 3;
+// read-only full definition 3; separate occupied flag 62; read-only count 3. Restored.
+// Round 56 (lane 9, fast): the definition pointer itself kept and its flags read at the test 3; the
+// 0xc8200 test nested under `!function_1b8d80(...)` 3; `result |= function_c8200(...)` there 31; the
+// c8200 arguments read through `(&seats[i])->` 3; a block-scoped seat pointer for the c8200 arguments 73
+// (380 bytes). A one-file LTCG harness is not exact here (349-361 bytes).
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -274,7 +287,7 @@ bool function_1b8f30(long actor_index, long object_index)
 				}
 			}
 			else if (!function_1b8d80(actor_index, seats[i].object_index, seats[i].seat_index, false) &&
-				function_c8200(seats[i].object_index, seats[i].seat_index, actor->unknown018))
+				function_c8200(actor->unknown018, seats[i].object_index, seats[i].seat_index))
 			{
 				result = true;
 			}
@@ -346,6 +359,38 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
+// score 8 (was 8): the seat loop's preamble still differs in the guard's shape (a sign test on the
+// decremented count where retail compares the count against the index register) and in the home of
+// the loop's zero (a constant in EAX where retail stores the index register's own zero); this
+// round's further forms (the index declared before the loop, the comparison written the other way
+// round, the seat pointer after the count, an explicit positive-count guard around the scan) score
+// 8, 9, 108 and 135, so the body is unchanged
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
+// score 8 (was 11): the seat count minus one goes into a local, which puts the count in ESI and
+// the index in EBP as retail does; what is left is the guard's shape (a sign test on the
+// decremented count where retail compares the count against the index) and the loop's zero
+// score 11 (was 6), coordinator review: the `tag->seat_count > 0` guard repeats the loop's own first test, so it is
+// kept only with a match (6 with it); the loop is back to its earlier form
+// score 6 (was 11): the seat scan is now guarded by an explicit
+// `tag->seat_count > 0` test, which puts the seat count in ESI and the short index in
+// EBP as retail does; what is left is the guard's folded compare, which still uses a
+// separate constant zero in EAX (also used for the seat = NULL store) where retail
+// compares the count against the index register and stores that register's zero, so
+// one extra xor and two register choices remain
+// score 11 (was 11): the seat loop's first test still compares the count against a
+// constant zero in EAX (the same zero that stores seat = NULL) while retail compares
+// the count against the index register, whose zero doubles as the NULL store; the
+// index here is zeroed separately, so the loop preamble is laid out differently. This
+// round's four trials in this file (the index initialised in the enclosing block, a
+// count local, a function-scope seat pointer and a plain recompile) gave 14, 14, 67
+// and a byte-identical body, so the body is unchanged
+// score 11 (was 11): the seat loop still keeps the seat count in EBP and the index
+// in ESI here while retail keeps the count in ESI and the index in EBP, so the loop
+// preamble is laid out differently; this round's count-in-a-local trial compiles
+// byte-identically and the rest of the function matches
 // score 11 (was 11): the seat loop keeps the seat count in EBP and the index
 // in ESI here, retail keeps the count in ESI and the index in EBP, so the loop
 // preamble is laid out differently. The rest of the function matches.
@@ -413,7 +458,7 @@ bool function_1b9420(long actor_index)
 
 	s_object_child_iterator iterator;
 
-	function_d0620(actor->unknown26c, &iterator);
+	function_d0620(&iterator, actor->unknown26c);
 	if (function_d0690(&iterator))
 	{
 		do
@@ -568,6 +613,14 @@ extern "C" void _ReadWriteBarrier(void);
 // This round: slot data block 29, without barrier 50, actor-first 31;
 // const actor 6; const state without barrier 44; data block/const actor
 // without barrier 50; const data state 29; actor object reference 6.
+// Round 23: the slot read once through its address before or after the
+// actor lookup 6/6, the same without the barrier 44/44; the barrier before
+// the actor lookup 44, at the head of the NONE block 43, first 44.
+// Round 56 (lane 9, one-file LTCG harness, exact here): actor, barrier, then the state 6; no state local
+// (the slot cast at each use) 6, without the barrier 41; the point copied through a pointer to it 6;
+// the state declared `register` (as 0x1b8070's) 6, without the barrier 41, actor first without it 41.
+// Without the barrier the only causes are the slot load (retail: entry block) and, from it, our register
+// compare of +0x26c where retail compares memory (ECX is busy there).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -684,10 +737,10 @@ s_object *function_badc0(long object_index, dword type_mask);
    enough to it */
 struct s_1b99d0_unit_flags
 {
-	byte bit0 : 1;
-	byte bit1 : 1;
-	byte bit2 : 1;
-	byte remaining : 5;
+	word bit0 : 1;
+	word bit1 : 1;
+	word bit2 : 1;
+	word remaining : 13;
 };
 
 struct s_1b99d0_tag_flags
@@ -705,29 +758,17 @@ long function_1e4a50(long character_index);
 void __stdcall function_26c2d0(long prop_index);
 void function_270590(s_path_source *source, s_type_c3b527 const *point, long node_index);
 
-// score 210 (was 225): frame 0xb4 and a common result exit agree; the signed-word
-// default load, field tests, output scheduling and later register homes still differ.
-// Earlier: the shared default loads as a signed word rather than a dword; frame homes differ.
-// Unsigned-word/dword result 306/225; byte preparation with long/word/dword result 225/306/225;
-// long preparation with long/word/dword result 311/309/311. Default observation and arithmetic restored.
-// Native ownership/type/state producer orders O/S/T, T/O/S, T/S/O, S/O/T, S/T/O
-// 286/287/286/285/284; explicit state fallback at first/middle/last 287/289/289
-// (reduced control 289, full 225). Original producers and arithmetic restored.
-// Round 400: Native 0x4c payload crossed with 0x5d payload, early output addresses and guarded
-// result: 225/225/224/224/210/210/210/210. Original payloads with guarded/positive admission
-// 210/210; plain 210, 1188/1177 bytes. Keep only positive admission and one result exit;
-// temporary payload types restored.
 // @retail 0x1b99d0
 short __stdcall function_1b99d0(long actor_index, s_slot *slot)
 {
 	s_actor_view *actor = actor_get(actor_index);
-	long result = g_46fbe4;
+	short result = g_46fbe4;
 	if (!actor->unknown224 && !actor->unknown225 && actor->unknown040 && actor->unknown858 == NONE &&
 		function_26c120(actor_index) && actor->prop_index != NONE)
 	{
-		s_prop_node_view *base = prop_node_get(actor->prop_index);
 		long selected = NONE;
 		real best_score = 10.0f;
+		s_prop_node_view *base = prop_node_get(actor->prop_index);
 		real range_low;
 		real range_high;
 		byte *properties = (byte *)function_1e4a50(actor->unknown054);
@@ -736,8 +777,8 @@ short __stdcall function_1b99d0(long actor_index, s_slot *slot)
 		function_26c180(actor_index);
 		if (properties && actor->unknown27c.unknown10 != NONE && actor->unknown278[0])
 		{
-			bool prepared = false;
 			byte *buffer = ai_scratch_buffer_get();
+			bool prepared = false;
 			s_prop_node_view *node = (s_prop_node_view *)function_26be30(&iterator);
 			while (node)
 			{
@@ -779,9 +820,10 @@ short __stdcall function_1b99d0(long actor_index, s_slot *slot)
 										source.unknown45 = true;
 										source.unknown48 = 15.0f;
 										source.unknown28[0] = 1;
-										*(point3f *)((byte *)&source + 0x2c) = prop_node_state(base)->position;
-										*(long *)((byte *)&source + 0x38) = base->object_index;
+										s_prop_state_view *base_state = prop_node_state(base);
+										*(point3f *)((byte *)&source + 0x2c) = base_state->position;
 										*(real *)((byte *)&source + 0x3c) = 1.0f;
+										*(long *)((byte *)&source + 0x38) = base->object_index;
 										*(real *)((byte *)&source + 0x40) = 0.0f;
 										source.unknown44 = false;
 										function_1f9240(actor_index, &settings);
@@ -820,8 +862,8 @@ short __stdcall function_1b99d0(long actor_index, s_slot *slot)
 				{
 					s_slot_4c *output = (s_slot_4c *)slot;
 					output->unknown28 = range_low;
-					output->unknown2c = range_high;
 					output->seat_index = NONE;
+					output->unknown2c = range_high;
 					output->unknown1c = selected;
 					output->flags |= 0x29;
 					result = 0x4c;
@@ -830,7 +872,7 @@ short __stdcall function_1b99d0(long actor_index, s_slot *slot)
 			ai_scratch_buffer_release(buffer);
 		}
 	}
-	return (short)result;
+	return result;
 }
 
 
@@ -939,6 +981,20 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 
 /* invites the clump members to the joint, the nearest first, when the
    object has more than one seat to take */
+// score 17 (was 17): the element pointer is still formed after the call's argument
+// pushes, so the element pool's data has to survive them and lands in ESI with the
+// record in EAX; retail forms it before the pushes, so the data stays in the
+// volatile EDX with the record in ECX. This round's trials in this file could not
+// move the two data loads
+// score 17 (was 17): the call to the joint invitation now hands its arguments over
+// in retail's registers (the joint index in EAX and the priority in EDI), so the
+// whole gap is the prologue: retail loads the element pool's data into EDX right
+// after the table pointer and keeps the element record in ECX, ours loads the data
+// late into ESI and keeps the record in EAX
+// score 17 (was 17): the prologue still loads the element pool data late into ESI
+// and the element record into EAX where retail loads the data into EDX right after
+// the table pointer and the record into ECX; the two inline lookups have the same
+// shape, so this round's trials could not change the order of the data loads
 // score 17 (was 17): retail loads the element pool data into EDX before the
 // actor is fetched and keeps the element record in ECX, ours loads the data
 // later into ESI and the record in EAX. Both read the actor pool global
@@ -1044,64 +1100,41 @@ s_slot_handler_2x g_47e9d0 =
 	1, 10, 1.5f, 0x5b
 };
 
-// score 47 (was 47): pool/status carriers and return scheduling differ; conversion homes agree at 216/212 bytes.
-// Prior narrow status 60 at 212 bytes; retail uses wide status loads while only low words are returned.
-// Slot data block: actor-first long/short status with nested or rejection guards 47/47 and 60/60;
-// block-first long 63/63; block-first short 45/45 at 214/212, a two-point gain restored.
-// g_46fbe4 and g_46fbe8 have signed-word loads here versus
-// dword loads in retail; their shared declarations remain short.
-// Single-observation continuation selected by complementary tests, slot-data
-// view with long if/ternary result 86/86 and short result 77/77;
-// whole-slot receiver with the same choices 86/86/77/77.
-// Native pool/status carriers and the shared status load width remain.
-// Round 155, short status: early return at the actor test 73; status assigned in both arms 77; status
-// declared first/after actor/element first 61/61/48; global returned at the actor test with a block status 73;
-// element first with long status 67, with short status before the actor 47.
+/* slot type 0x4c's evaluate: fails when the element or its target is gone or ten seconds
+   have passed; an actor in a vehicle finishes, unless the element has more than one member
+   and the actor's +0x266 flag is set */
 // @retail 0x1ba4e0
 short __stdcall function_1ba4e0(long actor_index, s_slot *slot, bool active)
 {
+	short result = g_46fbe8;
 	s_actor_view *actor = actor_get(actor_index);
 	s_slot_4c *state = (s_slot_4c *)slot;
 	s_4c_element *element = (s_4c_element *)element_502424_get(state->element_index);
-	long result = g_46fbe8;
 
 	state->unknown24++;
-	if (element->object_index != NONE && state->unknown1c != NONE)
+	if (element->object_index == NONE || state->unknown1c == NONE ||
+		state->unknown24 > real_to_long(g_510c54->field_2_3 * 10.0f))
 	{
-		real seconds = g_510c54->field_2_3 * 10.0f;
-		long ticks;
-
-		__asm
+		result = g_46fbe4;
+	}
+	else if (actor->unknown26c != NONE)
+	{
+		result = g_46fbe4;
+		if (element->unknown7c > 1)
 		{
-			fld seconds
-			fistp ticks
-		}
-
-		if (state->unknown24 <= ticks)
-		{
-			if (actor->unknown26c != NONE)
-			{
-				result = g_46fbe4;
-				if (element->unknown7c > 1)
-				{
-					if (actor->unknown266)
-						result = g_46fbe8;
-					if (!element->unknown84)
-						function_1fb7e0(0x39, actor_index, NULL, NONE, NONE);
-				}
-			}
-			return result;
+			if (actor->unknown266)
+				result = g_46fbe8;
+			if (!element->unknown84)
+				function_1fb7e0(0x39, actor_index, NULL, NONE, NONE);
 		}
 	}
-
-	return g_46fbe4;
+	return result;
 }
 
 long __stdcall function_c7160(long unit_index, short seat_index, long marker_position, long vehicle_index, long position);
 bool function_cc750(long unit_index, short seat_index);
 bool function_cc7b0(long unit_index, short seat_index);
 real normalize2d(point2f *vector);
-real distance3d_fast(point3f const *a, point3f const *b); /* unknown_1bbf40.cpp */
 
 /* the distance between two points on the ground plane */
 static inline real distance2d(point2f const *a, point2f const *b)
@@ -1122,29 +1155,8 @@ struct s_seat_approach_result
 	bool approaching;
 };
 
-// score 147 (was 147): the vertical x87 square operands and the final delta pop differ;
-// retail pops before the arm's jump, ours shares that pop at the distance join, shifting
-// the following comparison. Round 70: the existing 3D distance
-// the vertical square operands and x87 cleanup differ. Retail pops
-// the vertical arm's last delta before its jump; ours shares that pop at the distance join.
-// Round 70: the existing 3D distance
-// (0x1bbf40's) for the vertical case, a 2D point distance through the existing vector
-// helpers for the nearest seat point (retail recomputes the nearer distance in two arms), the
-// vehicle tag flag as a bitfield and bonus declared before the direction gave retail's x87
-// code, frame 0x2c and slots (176 -> 143). Harness: the 2D distance with scalar locals 163
-// (frame 0x24), selected-pointer form 148, compare reversed 171, if/else or full ternary or
-// arms swapped 152/152/168, vertical deltas written out or as a vector or 0x3ea30's own body
-// 152; out-of-line 0x3ea30 not inlined, even with __forceinline. Real: one ternary 143,
-// else-if chain 143, distance at function scope 143, arms swapped 178, (actor, point) helper 143.
-// Round 270: eligibility/marker rejection guards and direct success exits, seven
-// subsets 198/189/223/216/216/216/223; full guards with null-output exit 223.
-// Existing helpers and complete floating trees restored.
-// Round 272: actual shared difference/magnitude, difference/length-square/root and
-// squared-distance/root graphs 191/214/243/231/143/237/180/180. Native helper return boundaries
-// do not recover the vertical cleanup; all original geometry and helpers restored.
-// Round 252: inline/forceinline 3D helper declarations 147/147; whole actor point 273;
-// shared planar direction helper 147; branch-owned bonus alone/with direction 194/194;
-// external position reference with both 218; whole point with both 274. All restored.
+/* whether the actor can take the seat, with the seat's entry point, the
+   approach direction and a score for choosing between seats */
 // @retail 0x1baae0
 bool function_1baae0(long actor_index, long object_index, short seat_index, bool ignore_bonus,
 	bool ignore_reserved, bool vertical, s_seat_approach_result *out)
@@ -1166,7 +1178,11 @@ bool function_1baae0(long actor_index, long object_index, short seat_index, bool
 				direction = actor->unknown290;
 			real distance;
 			if (vertical)
-				distance = distance3d_fast(&position, &actor->position);
+			{
+				vector3f offset;
+				vector3d_from_points3d(&actor->position, &position, &offset);
+				distance = sqrtf(length_sq3f(&offset));
+			}
 			else
 			{
 				distance = distance2d((point2f const *)&position, (point2f const *)&actor->position) >
@@ -1270,6 +1286,10 @@ struct s_seat_selection
     short seat_index;
     byte flags;
     byte unknown7;
+    short unknown8;
+    byte unknowna[2];
+    real near_radius;
+    real far_radius;
 };
 
 bool function_2676d0(long actor_index);
@@ -1320,13 +1340,20 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-struct s_1ba091
-{
-    s_slot_memory_entry *field_0;
-    s_slot_entry_iterator field_4;
-};
-
-// score 198 (was 198): frame 0x14 agrees; incoming actor ECX/EDX, early object-header
+// score 134 (was 198): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
+// and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
+// object-header data in the prologue and reads the flags once above the slot-flag test.
+// Before round 62: the frame 0x14 agrees; retail takes the object-header data before scaling
+// the actor (actor index in EDX, ours ECX), keeps the loop entry in EBX (spilled at F+4), spills the
+// 0x20 mask byte to F+3 and re-reads the flags for the 0x40 test; ours keeps the entry in memory
+// (iterator struct member) and the flags or the mask in BL. Earlier headers, merged: the frame 0x14
+// still agrees; the object-header data is still acquired after the actor is scaled where retail
+// takes it before, and the eligibility mask, the entry and the result keep their homes; unchanged
+// that round (198); this round's trials in this file found no lower form of that order (198);
+// frame 0x14 agrees; early object-header acquisition, incoming actor, mask/entry/result carriers
+// and reusable homes remain (198).
+// Earlier: frame 0x14 agrees; incoming actor ECX/EDX, early object-header
 // acquisition, selection-mask storage and iterator/result homes differ.
 // Earlier slot-data form 198; raw-mask and independent iterator variants 202/207;
 // Result-first 190; explicit same-object result 230; cleanup result 258.
@@ -1350,6 +1377,70 @@ struct s_1ba091
 // positive admission, data member and default-owned code 211. Original restored.
 // Round 272: native header getter and parent field with payload/iterator/result
 // lifetime subsets 198/198/202/202/198/198/202/202. Original body and types restored.
+// Round 187: consistent selection-field observations with member payload, result/iterator names
+// and combinations, eight at 249 (frame 0x18, 874 bytes); actual iterator aggregate construction
+// with member payload, ordinary returned-entry for loop, byte bit fields or all three, five at 260
+// (885 bytes). Indexed member-data form tried first on both new graphs; original body/types restored.
+// Round 3 (lane 18): the two radii stored and read through the selection (retail's [ebp+0xc]/[ebp+0x10];
+// 0x1ba5c0 reads them at selection - 0x1c + 0x28) give retail's tail: joint index in EBX, the slot reread
+// from its argument, `mov eax, ebx` at the exit, 861 bytes, but frame 0x10: 239. With a separate entry and
+// byte mask 238, the mask at function scope 238; positive admission (retail's decline-first block order)
+// 240, with a found-entry pointer after the loop 240, entry or mask declared first 240/240; the 0x20 test
+// written at both uses with no local 241 (frame 0x14 and the masked byte spilled to [esp+0x13] as retail,
+// but the flags byte then stays in BL for the 0x40 test), 0x40 as a shifted bit 241, 0x40 through the slot
+// view 229, both 0x20 tests through the slot view 238. Separate entry and byte mask alone 212. Open: the
+// mask spilled while the entry pointer takes EBX (ours keeps the mask or flags in BL and the entry in memory).
+// Round 203: one/two named root results with native/original payload and
+// normalized/raw selection mask 235/235/235/235/234/234/234/234. The indexed
+// payload form was first on each graph; controls survive. All are exact-match-
+// only call-result/assigned-flag forms; original body and layouts restored.
+// Round 22 (lane 13; scores positional, "al" = a difflib-aligned count, baseline al 91): the radii
+// read/stored through the selection (struct grown to +0x14), a plain entry local and the 0x20 test
+// at both uses 237 (861 bytes, al 82, retail's F+3/F+4/F+8 homes); plus the 0x40 test through the
+// slot view 225 (frame 0x10, mask in BL); bit 6 as a bitfield 237; for-loop iterator 237; the
+// fallback lookup in its own local then assigned (0x1bead0's form) 239 (al 75, retail's double NONE
+// test); a bool specified in the found block 246; a byte flags local there 237 (al 73); the 0x29
+// set as bitfield stores 239; the default object index stored through the slot view 239 (al 72:
+// flags re-read after it and hoisted above the slot-flag branch, as retail); positive admission 237
+// (861, al 64: retail's decline-after-0x40 layout); one 0x1fb7e0 call per seat type 240 (al 58: no
+// sbb select, retail's tail-merged call); the 0x29 set after the radii 240 (al 56); a byte mask
+// local 230 (al 77: 0x40 test from memory as retail, but the mask then takes BL); that local before
+// the element 242, an assigned-if `same` 245, the negative decline test 230; element or iterator
+// declared earlier 240/240; the original loop with the new tail 244. The al-56 form (all of the
+// above but the byte local) leaves the loop's entry in memory and the prologue order.
+// Round 37 (lane 1, fast; "al" = difflib-aligned count, 121 for the original on this metric): the
+// selection grown to 0x14 with the radii at +0xc/+0x10, plain iterator and entry locals and the 0x20
+// test at both uses 237 (861 bytes, al 109); plus positive admission 241 (al 95); plus 0x1bead0's
+// fallback local assigned after its test 238 (al 80, retail's double NONE test); plus the default arm's
+// stores in retail's order (radius, seat, radius, flags) 239 (al 74); plus the default object index
+// stored through the slot state 237 (al 68); plus one 0x1fb7e0 call per seat type 240 (865 bytes, al
+// 61); plus a byte mask local 230 (frame 0x10, mask in BL, al 85), with a named element index 230; the
+// sibling's `for` loop 240 (al 61); the 0x40 test as `(flags >> 6) & 1` 240. Open: retail keeps the
+// loop entry in EBX (home F+4) and re-reads the flags for the 0x40 test; ours keeps the flags (or the
+// byte mask) in BL and the entry in memory, entering the loop by a jump past a reload, which shifts
+// every later instruction by two.
+// Round 109 (lane 6, fast): the matched 0x1bead0's loop (a plain slot-entry iterator and a for loop over
+// the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
+// the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus
+// `byte specified = flags & 0x20` (retail's masked byte, spilled to F+3) 238.
+// Round 45 (lane 10, fast): 1..16 unused locals at the top 198 each (no numbering ties); the unit test through
+// `unit->parent_index` 198 (same code), with object_get written in the test and no unit local 198 (same code);
+// the slot/selection pointers after the early return 261 (877 bytes), with the inline test 261; the slot/selection
+// pointers before the actor with the inline test 201. Retail re-reads g_4e0300 at the later lookups, so a named
+// header-table local for all three lookups would differ there; the FORMS-slot-data-block form is the
+// "typed slot payload 198" above (no change).
+// Round 217: Mirrored read-only root equality with member/original payload and bool/byte/word/long
+// comparison-result domains: 198/198/198/198/202/202/201/201. Original equality, payload and carriers restored.
+// Round 62 (fast, confirmed plain): plain iterator and entry locals, a byte mask, 0x1bead0's fallback
+// element local assigned after its test and the radii through the selection (s_seat_selection grown to
+// +0x14, as 0x1ba5c0 also reads them) 156 (kept); one 0x1fb7e0 call per seat type 135 (kept, retail's
+// branchy constants into one call, no sbb); the radii stored in the default arm before/after the flags
+// 135/134 (original order kept). On that: positive admission 135 (aligned 93); default stores in retail's
+// order 133; default object index through the slot state 229; both of the first two 133; no mask local
+// 245 (868 bytes), with positive admission 241 (864 bytes, frame 0x14 but the flags byte in BL); `same`
+// as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
+// `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
+// root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
@@ -1359,32 +1450,34 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
     s_seat_selection *selection = (s_seat_selection *)&state->unknown1c;
     if (*(long *)((byte *)unit + 0x14) != NONE)
         return NONE;
-    s_1ba091 local_0;
-    local_0.field_4.actor_index = actor_index;
-    local_0.field_4.reference.unknown2 = 0x4c;
-    local_0.field_4.reference.unknown0 = NONE;
+    s_slot_entry_iterator iterator;
+    iterator.actor_index = actor_index;
+    iterator.reference.unknown2 = 0x4c;
+    iterator.reference.unknown0 = NONE;
     long joint_index = NONE;
-    while ((local_0.field_0 = function_26f0c0(&local_0.field_4)) != NULL)
+    s_slot_memory_entry *entry;
+    while ((entry = function_26f0c0(&iterator)) != NULL)
     {
-        s_4c_element *element = (s_4c_element *)element_502424_get(local_0.field_0->unknown4);
-        bool specified = (selection->flags & 0x20) != 0;
+        s_4c_element *element = (s_4c_element *)element_502424_get(entry->unknown4);
+        byte specified = selection->flags & 0x20;
         bool same = specified && function_baf40(element->object_index) == function_baf40(selection->object_index);
         if ((element->unknown86 ? !(selection->flags & 0x40) || !same : specified && !same))
-            joint_decline(actor_index, local_0.field_4.reference.unknown0);
-        else if (function_26ecc0(actor_index, local_0.field_4.reference.unknown0, (s_joint_behavior_state *)slot))
+            joint_decline(actor_index, iterator.reference.unknown0);
+        else if (function_26ecc0(actor_index, iterator.reference.unknown0, (s_joint_behavior_state *)slot))
         {
-            joint_index = local_0.field_0->unknown4;
+            joint_index = entry->unknown4;
             break;
         }
     }
     if (joint_index == NONE)
     {
-        joint_index = function_26e940(actor_index);
-        if (joint_index != NONE)
+        long element_index = function_26e940(actor_index);
+        if (element_index != NONE)
         {
             *((bool *)slot + 0xc) = true;
-            state->element_index = joint_index;
+            state->element_index = element_index;
         }
+        joint_index = element_index;
     }
     if (joint_index != NONE)
     {
@@ -1404,11 +1497,11 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
             selection->object_index = element->object_index;
             selection->seat_index = NONE;
             selection->flags |= 0x29;
-            state->unknown28 = 11.0f;
-            state->unknown2c = 14.0f;
+            selection->near_radius = 11.0f;
+            selection->far_radius = 14.0f;
         }
         if (!(selection->flags & 0x20) || selection->object_index == NONE || element->object_index == NONE ||
-            !function_1ba990(actor_index, selection->object_index, ((selection->flags >> 6) & 1) != 0, state->unknown28, state->unknown2c, false))
+            !function_1ba990(actor_index, selection->object_index, ((selection->flags >> 6) & 1) != 0, selection->near_radius, selection->far_radius, false))
             goto failed;
         if (function_2676d0(actor_index) && function_1e2030(actor_index))
         {
@@ -1423,11 +1516,9 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
             s_vehicle_seat_definition *seat = &definition->seats[selection->seat_index];
             if (actor->unknown26c == NONE)
             {
-                short type;
-                if (TEST_FIELD_BIT(seat->flags.bit2)) type = 0x65;
-                else if (TEST_FIELD_BIT(seat->flags.bit3)) type = 0x67;
-                else type = 0x68;
-                function_1fb7e0(type, actor_index, 0, selection->object_index, NONE);
+                if (TEST_FIELD_BIT(seat->flags.bit2)) function_1fb7e0(0x65, actor_index, 0, selection->object_index, NONE);
+                else if (TEST_FIELD_BIT(seat->flags.bit3)) function_1fb7e0(0x67, actor_index, 0, selection->object_index, NONE);
+                else function_1fb7e0(0x68, actor_index, 0, selection->object_index, NONE);
                 function_f5d10(selection->object_index, selection->seat_index, true);
             }
         }
@@ -1452,19 +1543,9 @@ struct s_unit_child_iterator
 };
 struct s_damage_object;
 s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
-void function_1e3400(long actor_index, long squad_index);
+void function_1e3400(long actor_index, short squad_index);
 void function_201ad0(long squad_index, long object_index);
 
-// score 218 (was 218): frame 0x32c and length agree; the driver byte spills
-// where retail retains BL, the squad pointer uses EBX instead of EDI, and the
-// seat walk and conversion homes differ.
-// Current-vehicle/root-index and seat-count/total-seats home names, each with
-// driver or complementary passenger ownership: eight forms, all 218.
-// Native byte/signed-byte driver state, mutable/const 218/218 each;
-// native short/word driver state, mutable/const 318/318 each. Original Boolean restored.
-// Round 400: Consistent per-use vehicle squad field with native count/root-input/seat-array
-// scope in masks 0-7: 256/256/285/285/256/256/285/285. Original field snapshot, roots and seat
-// walk restored.
 // @retail 0x1bb570
 void __stdcall function_1bb570(long vehicle_index, long actor_index)
 {
@@ -1481,14 +1562,15 @@ void __stdcall function_1bb570(long vehicle_index, long actor_index)
         if (g_4e0300->data[(root_index & 0xffff) * 12 + 3] == 1)
             root_vehicle = root_index;
         byte *vehicle = (byte *)object_get(root_vehicle);
-        long squad_index = *(long *)(vehicle + 0x3a0);
-        if (actor->unknown030 != squad_index)
+        if (actor->unknown030 != *(long *)(vehicle + 0x3a0))
         {
             if (!driver && *(long *)(vehicle + 0x248) == NONE)
                 goto event;
-            byte *squad = squad_index == NONE ? 0 : g_51e9d8->data + (squad_index & 0xffff) * 0x98;
-            if (squad && !function_1df560(actor->unknown024, *(signed char *)(squad + 0x76)))
-                function_1e3400(actor_index, (word)squad_index);
+            byte *squad = NULL;
+            if (*(long *)(vehicle + 0x3a0) != NONE)
+                squad = g_51e9d8->data + (*(long *)(vehicle + 0x3a0) & 0xffff) * 0x98;
+            if (squad && !function_1df560(*(signed char *)(squad + 0x76), actor->unknown024))
+                function_1e3400(actor_index, *(word *)(vehicle + 0x3a0));
             else if (driver)
             {
                 if (actor->unknown030 == NONE && *(long *)((byte *)actor + 0x28) != NONE)
@@ -1519,10 +1601,9 @@ void __stdcall function_1bb570(long vehicle_index, long actor_index)
         if (driver)
         {
             s_object_seat seats[0x40];
-            long count = 0;
             long previous = NONE;
-            function_c8a40(root_vehicle, seats, (short *)&count, 0x40);
-            for (short i = 0; i < (short)count; ++i)
+            short seat_count = function_c8b80(root_vehicle, seats, 0x40);
+            for (short i = 0; i < seat_count; ++i)
             {
                 if (seats[i].object_index != previous)
                 {
@@ -1535,14 +1616,13 @@ void __stdcall function_1bb570(long vehicle_index, long actor_index)
                     byte *unit;
                     while ((unit = (byte *)function_d05c0(&iterator)) != NULL)
                     {
-                        long other_index = *(long *)(unit + 0x12c);
-                        if (other_index != NONE && other_index != actor_index && *(short *)(unit + 0x1fc) != NONE)
+                        if (*(long *)(unit + 0x12c) != NONE && *(long *)(unit + 0x12c) != actor_index && *(short *)(unit + 0x1fc) != NONE)
                         {
-                            s_actor_view *other = actor_get(other_index);
-                            if (function_1df560(actor->unknown024, other->unknown024))
+                            s_actor_view *other = actor_get(*(long *)(unit + 0x12c));
+                            if (function_1df560(other->unknown024, actor->unknown024))
                                 function_e68c0(0x1d, iterator.unit_index);
                             else if (other->unknown030 != actor->unknown030)
-                                function_1e3400(other_index, (word)actor->unknown030);
+                                function_1e3400(*(long *)(unit + 0x12c), (word)actor->unknown030);
                         }
                     }
                 }
@@ -1550,11 +1630,11 @@ void __stdcall function_1bb570(long vehicle_index, long actor_index)
         }
 event:
         {
-            short seat_index = object_get(actor->unknown018)->unknown1fc;
-            if (seat_index != NONE)
+            s_slot_object_view *unit = object_get(actor->unknown018);
+            if (unit->unknown1fc != NONE)
             {
                 s_vehicle_tag_view *definition = (s_vehicle_tag_view *)g_4e3b44[*(long *)vehicle & 0xffff].bytes;
-                if (!TEST_FIELD_BIT(definition->seats[seat_index].flags.bit11))
+                if (!TEST_FIELD_BIT(definition->seats[unit->unknown1fc].flags.bit11))
                     function_1fb7e0(0x66, actor_index, 0, root_vehicle, NONE);
             }
         }
@@ -1563,14 +1643,7 @@ done:
         actor->unknown2ec = NONE;
         *(short *)actor->unknown2ee = NONE;
         actor->unknown2f0 = false;
-        real ticks = (real)g_510c54->field_2_3 * 10.0f;
-        long rounded_ticks;
-        __asm
-        {
-            fld ticks
-            fistp rounded_ticks
-        }
-        *(short *)((byte *)actor + 0x2f4) = (short)rounded_ticks;
+        *(short *)((byte *)actor + 0x2f4) = (short)real_to_long((real)g_510c54->field_2_3 * 10.0f);
         actor = actor_get(actor_index);
         *((bool *)actor + 0x5d4) = false;
         *(dword *)((byte *)actor + 0x810) &= ~1;

@@ -240,6 +240,18 @@ static inline real actor_looking_normalize2d(point2f *vector)
 // named dot 68, named factors 47, pointers to the locals 38; none better than the plain single exit.
 // Round 398: paired real squares, uniform scalar inputs, both, squares plus sum; each with original/conditional reference-projection lifetime
 // 8/38/122/128/122/128/8/38; all restored.
+// Round 113: unnamed helper square 6; helper with an else-zero single exit 2 (same code); sqrtf 2;
+// brace-initialised reference copy 23; `>=` epsilon test 34; permuter (48 variants) none below 2.
+// Lane 13 r20: the leaf order follows the first source mention of each field (only the final dot names them);
+// a split x term gives x first but faddp first, a single tree gives the store first but the dot's order; retail
+// needs reference x then aim y first, which one dot cannot spell. Both through normalize2d 122 (inline declaration
+// 122; kept out of line even from a non-/Ob1 file 122); single tree with aim member copies y,x 10 / x,y 12; helper
+// defined after the caller single/named 6/2; single tree with the dot's y term first 6, reference-first 4.
+// Round 91: native fast normalization with horizontal term/operand orders 12/12/12/6/4/6/6;
+// the existing magnitude helper in the private normalizer 6; all restored.
+// Round 121: reference copy made after the aim test (nested ifs) 39; components read into named locals in the
+// private normalizer 6; header normalize2d_fast + dot_product2d on vector2f copies 38 (258 bytes); dot with the y
+// term first 8; one named squared magnitude 6. Compile-only: every 3D dot term/operand order gives identical code.
 // @retail 0x296d60
 PRIVATE bool function_296d60(real cosine, vector3f const *reference, vector3f const *aim, bool three_dimensional)
 {
@@ -512,14 +524,13 @@ static inline real actor_looking_normalize3d(vector3f *vector)
 
 static inline void actor_looking_rotate_in_place(vector3f *vector, vector3f const *axis, real sine, real cosine)
 {
-	real parallel = (axis->i * vector->i + axis->j * vector->j + axis->k * vector->k) * (1.f - cosine);
-	vector3f cross;
-	cross.i = vector->j * axis->k - vector->k * axis->j;
-	cross.j = vector->k * axis->i - vector->i * axis->k;
-	cross.k = vector->i * axis->j - vector->j * axis->i;
-	vector->i = vector->i * cosine + axis->i * parallel - cross.i * sine;
-	vector->j = vector->j * cosine + axis->j * parallel - cross.j * sine;
-	vector->k = vector->k * cosine + axis->k * parallel - cross.k * sine;
+	real projection = (vector->i * axis->i + vector->j * axis->j + vector->k * axis->k) * (1.f - cosine);
+	real cross_i = vector->j * axis->k - vector->k * axis->j;
+	real cross_j = vector->k * axis->i - vector->i * axis->k;
+	real cross_k = vector->i * axis->j - vector->j * axis->i;
+	vector->i = vector->i * cosine + projection * axis->i - cross_i * sine;
+	vector->j = vector->j * cosine + projection * axis->j - cross_j * sine;
+	vector->k = vector->k * cosine + projection * axis->k - cross_k * sine;
 }
 
 static __forceinline void actor_looking_rotate(vector3f *vector, vector3f const *axis, real angle);
@@ -531,7 +542,7 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 	actor_looking_rotate_in_place(vector, axis, sine, cosine);
 }
 
-// score 320 (was 320): the frame remains 0x9c versus 0xa8; axis, random/trig and vector schedules differ.
+// score 333 (was 333): the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // Tried: direct collision Boolean 355; initial best vector before normalization 356; result declared first 354;
 // long sample counter 355; axis/sample/range names 355; shared normalizer 330 (sum order changed, restored);
 // shared random-range helper 360; one result return 377; paired span names 355; names plus one return 377;
@@ -562,6 +573,39 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // later best 355/354; later input and best 355/354. Frame remains 0x9c.
 // Forward parameter at each other source position, definition and sole caller together: seven 320s.
 // Original input reads, signature and caller restored; frame and stack-input transport remain.
+// Round 95: the shared rotation helper in projection-first scalar form (for 0x297d30) 318; both ranges
+// after the axis normalization as retail computes them 343 (kept: the only caller 0x297660 then passes
+// the yaw bounds on the stack, 52 -> 19), one range only 313/313.
+// Round 97: one exit with `result = true` for the best-direction tail 333 (kept: the collision flag now
+// stays on the stack as in retail, which matched 0x297660); with `clear` set first in each pass as a bool 349.
+// Round 433: Single-exit success stored as byte/char/short/long 370/370/382/383;
+// without the dead entry collision-state value 370/370/382/383. All restored;
+// native success widths do not recover the 0xa8 frame or initial CL zero store.
+// Round 43: retail has two epilogues (`mov al, 1` after the best-direction tail, `mov al, dl` for the
+// result): `return true;` in that tail 343 and with a bool clear 335 (aligned 323, retail's late ebx
+// push), but both pass the collision flag in BL instead of on the stack, so 0x297660 stops matching;
+// bool clear alone 346; long attempt counter 332; with bool clear 345.
+// Lane 7 r99: draws as calls to the existing 0x259d0 333 (kept: LTCG inlines it with retail's x87 order
+// x*C*range+lower and hoists both ranges); `lower + range * unit random` 333; `clear` set first in each pass,
+// long 327 / bool 349 (bool gives retail's prologue, `mov al, 1` and DL result); long form plus `return true`
+// after the best tail 336 at 1423 B (0x297660 4); `clear = true` between the draws 335. The frame gap is the
+// collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
+// 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
+// but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Round 26 (m3 lane 2, fast): bool clear set at the top of each pass with `return true` after the best tail
+// 327 (0x297660 4: the collision flag then passes in BL); that with one `return result` 349 at 1435 B (retail's
+// late EBX push, EBX scratch, EBP/EDI best i/j, AL clear and DL result, the tail is retail's code, but the loop
+// body is 16 bytes longer and the x87 temp sits above the pitch axis, retail's at the frame bottom); on it the
+// candidate at function scope 349, the pitch axis member by member 349, the helper's cross terms j, k, i 349,
+// the ray through the existing vector3f_scale 347 (frame 0xa0). Diagnostic, reverted: that form with the header's
+// collision type at 0x5c 344 (retail's 0xa8 frame, first difference +0xa; the rotation stays 16 bytes longer).
+// Lane 18 r14 (one-link LTCG env with the callee-closure objects, exact for this function: env count 326 = check
+// 333): collision type at 0x5c 324; with byte clear 328; byte clear 330; byte clear set first in each pass 334;
+// that with 0x5c 329 (late EBX push, byte clear in AL); yaw-axis pointer local before the loop 334, with 0x5c 333;
+// rotation helper with the j/k cross terms first and i in its row: vector 328, scalars 326 (same code), 0x29c860
+// spelling 328, k before j 329 (0x297d30 22/22/22/38, control 22); candidate copy before the draws 327, between
+// them 343; fraction as `((real *)&collision)[1]` 326; best_fraction declared before result 326 (same code).
+// Retail also holds g_4687b0 in ECX across the loop and keeps best.k in a stack slot.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -569,16 +613,14 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	vector3f best_direction = *g_4687a8;
 	bool result = false;
 	real best_fraction = 0.f;
-	real yaw_range = yaw_upper - yaw_lower;
-	real arg_58ecd0 = pitch_upper - pitch_lower;
 	long clear = true;
 	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
 	for (short attempt = 0; attempt < 10; ++attempt)
 	{
-		real yaw = (real)random_next(&g_4e7408->unknown0) * (1.f / 65535.f) * yaw_range + yaw_lower;
-		real pitch = (real)random_next(&g_4e7408->unknown0) * (1.f / 65535.f) * arg_58ecd0 + pitch_lower;
+		real yaw = function_259d0(&g_4e7408->unknown0, NULL, 0, yaw_lower, yaw_upper);
+		real pitch = function_259d0(&g_4e7408->unknown0, NULL, 0, pitch_lower, pitch_upper);
 		vector3f candidate = *forward;
 		actor_looking_rotate(&candidate, &pitch_axis, pitch);
 		actor_looking_rotate(&candidate, g_4687b0, yaw);
@@ -608,7 +650,7 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 	{
 		actor_looking_normalize3d(&best_direction);
 		*direction = best_direction;
-		return true;
+		result = true;
 	}
 	/* Retail still draws ten samples when collision testing is disabled,
 	   then returns false without writing the output vector. */
@@ -647,7 +689,20 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// score 290 (was 290): frame 0x8c agrees; Boolean homes, point/case-tail transport and aiming workspace remain.
+// score 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
+// Earlier at 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
+// against retail's 1444); retail keeps the shared direction/normalise/output chain between case 2 and case 1 and holds
+// two copies of the remembered-prop code (case 1's copy cross-jumps into case 2's) where ours shares one block.
+// Retail copies the marker position and the case 3 and 5 points as three dwords where ours copies three floats, and
+// retail calls 0x1ffe00 with both arguments on the stack where our build passes the first in EAX (that callee is
+// declared in src/unknown_1ff010.cpp, not this lane's file).
+// Tried: struct-assignment point copies 360 (1388 bytes); duplicated remembered blocks with a separate fail exit 361;
+// the shared chain moved inside the switch between cases 2 and 1 322 (byte-identical: the layout follows the flow
+// graph, not the text); the chain written inside case 2 333; the marker position as a struct assignment 333 (the
+// same addresses, the copied dwords in another register order); case 1's own remembered copy jumping into case 2's
+// 1e3b00 call 379 (the prologue's register choice flips); the Boolean homes made retail's (point_valid set once at
+// the aim-at-point label, `point_valid = result = false`) 321, restored because the gain is under 8.
+// Earlier at 276 (was 276): frame 0x8c agrees; Boolean homes, point/case-tail transport and aiming workspace remain.
 // Earlier: frame 0x8c and movement-record addressing agree; Boolean role homes and point/case-tail transport differ.
 // frame 0x8c and movement-record addressing agree; Boolean role homes and point/case-tail transport differ.
 // Boolean role homes and case-specific point/reference transport differ.
@@ -687,6 +742,59 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // Round 248: Common actor/weapon origin workspace with native/setter producer
 // 322/314; with early point 322/314, early origin 322/314, both 322/314.
 // All restored; fast control 301, plain baseline 290. Boolean roles and point/case transport remain.
+// DH round 257: Shared case handle/receiver/both 301/301/301; byte result on each 310/310/310; both with
+// short/long result 330/322. All restored; reduced control 301, full baseline 290.
+// Round 424: selected-type-derived point presence in short/word/long/dword at entry
+// 384/384/387/387; consumed directly at successful normalization 392/392/394/394.
+// All restored; native result/point-valid homes and case-specific point transport remain.
+// Round 436 (fast control 301, full 290): point-presence assigned after each successful
+// point producer, bool/byte/word/long 310/310/368/364; assigned at the two
+// geometry consumers 372/372/393/393. All nonexact presence-lifetime forms restored.
+// Round 43: retail copies every point as dwords (struct assignment), not through float setters:
+// all five as `point = ...;` plain 306 (aligned 248 -> 131, but 1388 bytes: the copies tail-merge and the
+// remembered-prop/actor-direction tail moves after the last case), the state+0x30 copy alone 296, each other
+// one alone 375-379 (fast); point_valid given a longer name 290 (homes unchanged).
+// Round 29 (lane 11, plain checks; --fast reads 301): both state points as struct assignments 276 (kept;
+// retail's `add edi, 0x10/0x30` copies); the state+0x30 one alone 296; on 276 the marker position as well 277
+// (1416 bytes), case 3's point 289, case 5's point 293; point_valid renamed to sort after result 290 (on the
+// old base, homes unchanged); the two bool declarations reversed 276, `point_valid = result = false` 278 (homes
+// unchanged). Left: retail keeps result at the lower byte (0xa) and point_valid at 0xb, and writes the
+// remembered-prop code once per case (case 1's copy re-tests state < 1 and cross-jumps into case 2's at the
+// 0x1e3b00 call), where ours shares one label after the switch.
+// Lane 14 r22 (plain checks): case 1 with its own remembered-prop copy (`state >= 1 && state <= 2`
+// arm, then `state < 1 || unknown00 == NONE` to done) 309 (1496 B, no cross-jump); both cases with
+// their own copy and no shared label 309; `bool result = false; bool point_valid = false;` 278;
+// point_valid set once at the aim-at-point label instead of in cases 3/5/6 281 (1424 B; the Boolean
+// homes become retail's: retail stores it at 0x296c67, where cases 3/5/6 jump and case 6 falls in,
+// and cases 1/2 enter after the store); with that, `point_valid = result = false` 279 (the entry
+// then agrees through both flag stores). Left: retail lays the remembered-prop, actor-direction,
+// normalize, output and return code right after case 2 (case 1 cross-jumps into it, case 0 and 4
+// into its normalize step) and the aim/weapon code after case 6; its failure exit stores
+// result = false before returning.
+// Lane 7 r99 (plain checks): remembered-prop code written in each of cases 1 and 2 (case 1 `state < 1 ||`),
+// no shared label 288; the direction/normalize/output labels placed in the text after case 2 288 (identical:
+// label order never matters, the layout follows the flow graph); plus the aim section as
+// `if (aiming) { weapon; if (weapon != NONE) {...} }` 302 (weapon body falls through as in retail, but the
+// direction chain moves to the end behind case 2's 0xcafc0 block); in-case direction copies plus
+// `goto normalize_direction` 288 (merged back); remembered `if (!aiming) 0x1e3b00(); goto aim_at_point;` 302;
+// case 2's non-aiming paths to the aim test 302 (VC threads `aiming`). VC picks one jump predecessor to fall
+// into the direction chain and cross-jumps the others' identical tails into it afterwards; retail's pick is
+// case 2's remembered 0x1e3b00 block (case 1's copy cross-jumps into it; the 0xcafc0 blocks stay apart).
+// N round 257: Actual marker output at function/case/valid-reference/aiming lifetime, original/two-use marker-key observations 322/322/322/322/322/322/322/322.
+// Original marker lifetime, key reads and complete body restored; fast control 322, full 276.
+// Round 26 (m3 lane 2, plain): the marker position member by member 276 (same code); marker, case 3 and case 5
+// points as struct assignments together 306 (1388 B); that with point_valid set once at the aim label 370 (0x297660
+// 1); the remembered-prop test as `result = state->unknown00 != NONE; if (!result) goto done;` 375 (retail's
+// failure exit, shared by the normalize failures, both remembered NONE tests and case 1's state < 1, stores
+// result = false); point_valid renamed to sort after result 276 (homes unchanged).
+// Lane 18 r14 (one-link LTCG env with 333 objects, exact for this function: env count 233 = check 276; the
+// 0x1ffe00 call now pushes both arguments as in retail): the first difference is point_valid's byte (ours below
+// result, retail above); eleven renames of either flag (a_, zz_, valid_point, has_point, success, found ...)
+// leave the homes unchanged; `bool result = false; bool point_valid = false;` 235, point first 233, `point_valid =
+// result = false` 235, flags before the actor lookup 235 / point first 233. Case 2 with its own remembered-prop
+// copy (retail keeps two) 228 at 1484 B: retail's order up to its 0x1e3b00 call, but case 1's copy does not
+// cross-jump into it, so the direction/output tail still follows the shared copy; the tail written inside case 2
+// is byte-identical (228).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -742,10 +850,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 						(marker.matrix.position).y,
 						(marker.matrix.position).z);
 				else
-					real_point3d_set(&point,
-						(*(point3f *)((byte *)state + 0x10)).x,
-						(*(point3f *)((byte *)state + 0x10)).y,
-						(*(point3f *)((byte *)state + 0x10)).z);
+					point = *(point3f *)((byte *)state + 0x10);
 				goto aim_at_point;
 			}
 			long object_index = reference->object_index;
@@ -753,10 +858,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 			if (((1 << object->type) & 3) && object->player_index != NONE)
 				function_cafc0(object_index, &point);
 			else
-				real_point3d_set(&point,
-					(*(point3f *)((byte *)state + 0x30)).x,
-					(*(point3f *)((byte *)state + 0x30)).y,
-					(*(point3f *)((byte *)state + 0x30)).z);
+				point = *(point3f *)((byte *)state + 0x30);
 			goto direction_from_actor;
 		}
 		goto remembered_prop;
@@ -878,6 +980,21 @@ done:
 	return result;
 }
 
+// score 9 (was 9): this round: eight more forms of the shared getter (a data base and a masked
+// slot local in either order, the base added with `+=`, a byte-pointer product with sizeof, a
+// pool local, the slot masked in its own local) all compile to the same code (9); an
+// `unsigned short` slot local gives 38 (`movzx esi, cx`) and was reverted. The prologue's
+// register choice (the offset in EAX and `lea esi, [eax + edx]` against our offset in ESI and
+// `add esi, edx`) is not steerable from the source.
+// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX and forms the
+// actor with `lea esi, [eax + edx]`, ours builds it in ESI and adds the base. This round: the
+// shared getter rewritten as a byte-pointer product (`(byte *)data + (index & 0xffff) * sizeof(...)`)
+// compiles byte-identically in all seventeen functions of the file, so MSVC canonicalizes it.
+// score 9 (was 9): Round 30 (lane C): the prologue still builds the actor offset in ESI and folds
+// the table base into it (`add esi, edx`); retail computes the offset in EAX and forms the actor
+// with `lea esi, [eax + edx]`. New forms: a data-base local with a masked slot local, a byte
+// offset local and the `&array[index]` subscript form (9 each); an `unsigned short` slot local
+// gives 38 (`movzx esi, cx`) and was reverted.
 // score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX
 // (`mov eax, ecx`) and moves the actor to ESI with `lea esi, [eax + edx]`; ours builds it in ESI.
 // Tried: a specification pointer local 9; an if/else chain without the early return 9; the valid
@@ -951,49 +1068,13 @@ real g_55e5bc = 0.17453292f;
 real g_55e5c8 = 0.17453292f;
 real g_55e5cc = 0.08726646f;
 
-// score 54 (was 54): scaled-pitch schedule, later yaw homes and helper transport differ.
-// frame 0x38 and entry homes agree; scaled-pitch schedule, later yaw homes and helper transport differ.
-// the 0x38 frame and initial bound homes agree; scaled-pitch scheduling and call registers differ.
-// Tried: shared pitch bound 204; upper if/else 205; both if/else 205; shared bound plus if/else 204;
-// both scaled angles named before the bound stores 55 (kept); upper limit first 205; both limits first 197;
-// limit-first clamps with dot3f 201; shared bound before/between the scaled angles 57/57; lower yaw store first 55;
-// both random spans read once 212; the direct Boolean in the sampler changes this caller from 55 to 96.
-// Round 212: yaw names/result-first/both 96; chained zero initialization and
-// its name/result/declaration combinations 98; lower-first character stores 96.
-// Upper-first yaw initialization 94; plus later scaled pitch/shared pitch limit/both
-// 202/94/202. Two-point form rejected; yaw homes, pitch scheduling and call registers remain.
-// Bounds before lookup, alone/with scale 98/99; direct horizontal/aiming/both
-// projections 173/159/170; shared dot 62; projections plus dot/upper-first 170/168.
-// Shared dot with upper-first/later pitch 60/58; reverse dot alone/upper-first/later
-// pitch 58/56/54 (kept). Addition grouping and all marked call arguments are unchanged.
-// Round 236: scale-first products / scaled-angle names / branch-defined scale / products+branch /
-// products+names / names+branch / native copies / copies+branch 54/54/253/253/54/253/54/253; all
-// restored.
-// Round 162: final-local pitch clamps 207; paired raw angle carriers 56, with clamps 207;
-// existing paired-angle view 54, with clamps 207; byte result 51 (three-point gain, restored);
-// branch-produced result 249, with clamps 253. Scaled pitch and sampler registers still differ.
-// Round 224: Native yaw/pitch bound records and full-width result, seven subsets
-// 56/70/209/70/72/86/219; both records in pitch/yaw order 210. No exact match; original scalar
-// homes and body restored.
-// Round 177: Full vector setters 279, with byte result 282; common output publication
-// 265, with byte result 272; both 322, with byte result 327; fallback setter 63;
-// actor-copy setters 274. Original frame, publication, copies, result and calls restored.
-// Round 244: upper-first aiming/relative/both yaw publications 58/56/60;
-// two-use pitch cap before scaled bounds 54, with those publications 58/56/60;
-// cap at original first observation 54. All restored; pitch-cap schedule and helper transport remain.
-// Round 246: Earlier aiming projection/angle selector/read-only dot producer, seven combinations: 165/85/165/149/168/178/168/168.
-// Eighth form adds read-only actor/property/angle inputs to the complete producer form.
-// All trial forms restored; no candidate qualifies.
-// Round 248: Base workspace shared with fallback, native/setter 54/97;
-// base first 54/97; byte result 51/101; base first and byte result 51/101.
-// The three-point forms are restored; pitch-cap/scaled-bound and sampler transport remain.
 // @retail 0x297660
 PRIVATE bool function_297660(long actor_index, bool use_aiming_direction, bool use_character_bounds,
 	s_type_952051 *specification)
 {
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
 	bool result = false;
-	real yaw_upper = 0.f, yaw_lower = 0.f, pitch_lower = 0.f, pitch_upper = 0.f;
+	real yaw_lower = 0.f, yaw_upper = 0.f, pitch_lower = 0.f, pitch_upper = 0.f;
 	real scale = 1.f;
 	s_actor_looking_properties *properties = function_1e5160(actor->character_definition_index);
 	if (properties)
@@ -1010,8 +1091,8 @@ PRIVATE bool function_297660(long actor_index, bool use_aiming_direction, bool u
 			real yaw = properties->aiming_yaw * scale;
 			yaw_upper = yaw;
 			yaw_lower = 0.f - yaw;
-			real pitch = properties->aiming_pitch * scale;
 			real minimum = 0.f - g_55e5bc;
+			real pitch = properties->aiming_pitch * scale;
 			real lower = 0.f - pitch;
 			pitch_lower = minimum > lower ? minimum : lower;
 			pitch_upper = g_55e5bc > pitch ? pitch : g_55e5bc;
@@ -1041,7 +1122,7 @@ PRIVATE bool function_297660(long actor_index, bool use_aiming_direction, bool u
 					}
 					else
 					{
-						real yaw = function_11cc90((vector2f *)&horizontal, (vector2f *)&aiming_horizontal);
+						real yaw = function_11cc90((vector2f *)&aiming_horizontal, (vector2f *)&horizontal);
 						real cosine = dot3f(&horizontal, &base);
 						cosine = cosine < -1.f ? -1.f : (cosine > 1.f ? 1.f : cosine);
 						real pitch = function_50650(cosine);
@@ -1091,7 +1172,9 @@ struct s_actor_looking_structure_view
 };
 
 /* Name inferred from the path traces and the idle-direction caller. */
-// score 68 (was 80): counter homes, candidate cursor and expanded rotation scheduling differ.
+// score 23 (was 23): only rank-driven operand orders remain: the rotation dot (retail j,i,k with axis j
+// loaded before the copy), the axis-j-first cross product and the score sum (retail i,k,j).
+// counter homes, candidate cursor and expanded rotation scheduling differ.
 // entry result order now agrees; loop homes, rotation scalar scheduling and return tail remain.
 // Result first 139; existing angular wrapper 468; vector producer 261; both 466;
 // native header/body induction with those producers 137/468/266/466.
@@ -1116,6 +1199,30 @@ struct s_actor_looking_structure_view
 // Round 246: Actual candidate workspace/staged candidate dot/staged selected dot, seven combinations: 211/68/215/84/215/150/211/226.
 // Eighth form adds native byte success storage to the complete candidate/score form.
 // Kept t02, plain 68; original helper bodies and logical call inputs retained.
+// Round 95: projection-first helper with scalar cross terms 51 (kept); score via dot3f 59
+// (cursor +0x70 as retail); pointer/index mixes per use 28-141; single short counter with the
+// pointer kept 139 (928 bytes); all uses indexed + single counter 33, with the score written out
+// i,k,j/i,j,k/k,i,j 25 and j,i,k/j,k,i/k,j,i 23 (kept j,k,i, as the test below), statements 143,
+// i+(k+j) 126; named sine/cosine = wrapper; helper parameter order, written operand orders and
+// dot term order 23 each; dot3f in the helper 144; cross3f 58.
+// Round 204: Rotation projection/cross producers: shared cross/staged cross 156/156; shared projection
+// alone/with cross/with staged cross 142/149/149; same-order staged projection alone/with cross/with staged
+// cross 139/82/82. Counter/cursor homes and scalar schedule remain; original helper, include set and body
+// restored.
+// Round 97: helper products written axis-j-first in the dot and cross k as retail computes them 23 (identical
+// code); one extra float tuple at entry/at the loop top 48/48 (only the selected-direction sum rotates);
+// the axis read once through a local before the loop 70; fraction default before the copy 23; horizontal
+// forward as an initializer 199; forceinline in-place helper 23.
+// Round 100: score as dot3f(&forward, &directions[i]) 33 (moves the rotation's axis loads ahead of the
+// copy, as retail, but flips other product operands); the existing cross-file rotation helpers with
+// sine/cosine arguments (cross-first scalars / dot3f with a cross vector) 146/140; the candidate array
+// declared before forward 23; forward copied member-wise 199.
+// Round 27: fraction as a ternary after the query 144; `1 - cosine` named in the helper 23; cross terms
+// before the projection 158 (931 bytes); the 0.6 clamp as an if statement 141 (927 bytes); the dot in its
+// own local beside the score 33.
+// Round 121: score written forward-first (j,k,i) 23 (same code) / forward-first i,k,j 25; helper with cross i
+// before the projection (0x170d70's order) 23; cross terms in a vector3f local 62; the dot named before the
+// projection 23.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1144,27 +1251,22 @@ PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 					vector3f directions[8];
 					short best_index = NONE;
 					real best_score = 0.f;
-					long rotation_index = 0;
 					for (short i = 0; i < 8; ++i)
 					{
-						vector3f *direction = &directions[i];
-						*direction = actor->forward;
+						directions[i] = actor->forward;
 						real fraction = 1.f;
-						actor_looking_rotate(direction, g_4687b0, (real)rotation_index * 0.785398185f);
+						actor_looking_rotate(&directions[i], g_4687b0, (real)i * 0.785398185f);
 						function_26c590(actor->location.unknown10, NULL, &trace, pathfinding,
-							&actor->location.point.point, NONE, direction, 5.f, 0);
+							&actor->location.point.point, NONE, &directions[i], 5.f, 0);
 						if (*(byte *)&trace.unknown00)
 							fraction = trace.distance * 0.2f;
-						real score = direction->i * forward.i;
-						score += direction->k * forward.k;
-						score += direction->j * forward.j;
+						real score = directions[i].j * forward.j + directions[i].k * forward.k + directions[i].i * forward.i;
 						score = (0.6f > score ? 0.6f : score) * fraction;
 						if (score > best_score)
 						{
 							best_score = score;
 							best_index = i;
 						}
-						++rotation_index;
 					}
 					if (best_index != NONE)
 					{
@@ -1248,7 +1350,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
-// score 506 (was 506): frame 0xd0 versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
+// score 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
 // Tried the out-of-line predicate declaration 546 fast; horizontal aggregate copies 562 fast; initial native setters 546 fast;
 // explicit looking success/fallback stores 532 fast, 527 plain (three-point gain, restored); target point or selected vector
 // renamed 546 fast each; validity at function scope 546 fast; aggregate inputs plus explicit stores 549 fast;
@@ -1278,13 +1380,38 @@ struct s_actor_looking_turn_request
 // DH round 239: Native marker/movement/turn-request record-name subsets 506 each;
 // all three with the uninitialized marker workspace at entry also 506. Original
 // names, workspace scope and whole body restored; frame 0xd0/0xc8 remains.
+// DH round 252: One sequential aiming/looking validity result, native long/short/byte/bool
+// with long idle, then each with short idle
+// 506/549/522/522/540/547/524/524. Original complete executable body restored.
+// Y423: High aiming case block first 536; looking case 2 first 525; both 536;
+// those orders with sequential validity 536/525/536; high aiming with outer
+// validity scope, alone/with looking order 536/536 fast (control 525). Restored.
+// Existing validity defaults produced by marker/combat/aiming decoder success tests,
+// subsets 1-7, 530/528/530/535/551/535/551; all plus looking decoder tests 526
+// (fast control 525, full 506). All reserve 0xcc versus retail 0xc8; exact-match-only
+// forms restored, preserving original result storage, scopes, queries and complete body.
+// Round 45: late-query/horizontal/turn scalar home names, seven subsets,
+// and all with uninitialized query outputs at entry, 525 each (fast control 525,
+// full 506). Original names, scopes and complete body restored; frame remains 0xd0.
+// Lane 7 r99 (plain): our build inlines 0x1fdd90 (its file has no /Ob1; retail calls it), which keeps the actor
+// table in EBX so valid cannot use BL; a one-off /Ob1 on that file gave 569 at 1976 B and, with bool valid and
+// idle, retail's 0xc8 frame at 583 (flags restored). Kept: horizontal vectors as aggregate copies 490 (from 506;
+// retail copies dwords); the current side named before the test that uses it 446; bool idle 442 (frame 0xcc).
+// Then: the two copies swapped 446; bool looking result 523 (on 446), 527 (on 442); bool valid 535 (on 446),
+// 543 (on 442); first/second before the unit index 442; turn request declared with them 442; override
+// result as `if (0x2967b0(...)) { valid = true; forced = true; }` 535. Retail also packs first/second into the
+// two vectors' slots (as if they lived in an inlined helper's scope).
+// Lane 18 r14 (one-link LTCG env with 351 objects, exact for this function: env count 411 = check 442; a plain
+// noinline declaration of 0x1fdd90 here changes nothing): the side test as `if (first == A || first == B)
+// { bool current_side = first == A; ...` 464 (retail's threaded side stores); bool valid 519; that with the side
+// test 517; bool looking_valid 513; both bool 516; both with the side test 515.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
 	s_actor_looking_view *actor = actor_looking_get(actor_index);
 	s_actor_looking_object *unit = actor_looking_object_get(actor->unit_index);
 	short animation_state = ((s_actor_looking_animation *)((byte *)unit + unit->animation_offset))->state;
-	long idle = false;
+	bool idle = false;
 	bool allow_turn = false;
 	bool has_target_point = false;
 	point3f arg_0e6828;
@@ -1435,23 +1562,26 @@ void function_298370(long actor_index)
 	{
 		long unit_index = actor->unit_index;
 		long first, second;
-		if (function_10f630(unit_index, &first, &second) && (first == 0xf000545 || first == 0x10000546))
+		if (function_10f630(unit_index, &first, &second))
 		{
 			bool current_side = first == 0xf000545;
-			point2f aiming = { actor->field_xe66477.i, actor->field_xe66477.j };
-			point2f forward = { actor->forward.i, actor->forward.j };
-			if (normalize2d(&aiming) > 0.f && normalize2d(&forward) > 0.f)
+			if (current_side || first == 0x10000546)
 			{
-				real yaw = function_11cc90((vector2f *)&aiming, (vector2f *)&forward);
-				bool desired_side = yaw > 0.f;
-				if (desired_side != current_side && fabs(yaw) > 0.34906584f)
+				point2f aiming = *(point2f const *)&actor->field_xe66477;
+				point2f forward = *(point2f const *)&actor->forward;
+				if (normalize2d(&aiming) > 0.f && normalize2d(&forward) > 0.f)
 				{
-					s_actor_looking_turn_request request;
-					request.type = 0x2d;
-					request.side = !desired_side;
-					function_b9dd0(unit_index, &request.position);
-					request.forward = actor->forward;
-					function_e6900(unit_index, (s_unit_request *)&request);
+					real yaw = function_11cc90((vector2f *)&aiming, (vector2f *)&forward);
+					bool desired_side = yaw > 0.f;
+					if (desired_side != current_side && fabs(yaw) > 0.34906584f)
+					{
+						s_actor_looking_turn_request request;
+						request.type = 0x2d;
+						request.side = !desired_side;
+						function_b9dd0(unit_index, &request.position);
+						request.forward = actor->forward;
+						function_e6900(unit_index, (s_unit_request *)&request);
+					}
 				}
 			}
 		}

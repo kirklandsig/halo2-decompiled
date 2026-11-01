@@ -453,11 +453,13 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 	return 0;
 }
 
+/* the direction comes before the center: callers set up register arguments last to first, and retail's
+   0x1a8c30 loads the center before the direction */
 // @retail 0x11e6f0
 real function_11e6f0(
 	point3f const *origin,
-	point3f const *center,
 	vector3f const *direction,
+	point3f const *center,
 	real radius)
 {
 	vector3f delta;

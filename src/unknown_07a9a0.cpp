@@ -212,22 +212,157 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
-// score 58 (was 58): retail keeps the pool in two registers (ebx for the
-// bitmap scan, ebp for the datum address) and aligns the scan loop; ours uses
-// one register and no loop padding (the 11 missing bytes).
+// score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
+// which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
+// layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
+// through the iterator's own pool field and reads the datum through a copy of it gives the same 58
+// (the copy folds into the iterator's field), the same when the step is left for LTCG to inline, and
+// 64 when the iterator's pool is kept live across the loop; the plain form with two pool locals
+// spills the copy to the stack (65).
+// Not kept (MiniMax H, 10-31): 11 with the pool read out of the global into two locals (a second,
+// one-use `scan` copy for the search; 60 without it) and the index only assigned when a record is found:
+// a one-use duplicate local steering the second pool register, so kept only with a match. Its notes:
+// the pool is read out of the global into two locals, the index is only
+// assigned when a record is found and the datum's index is taken from the other local; retail's
+// two pool registers, the found path after the exit, the immediate tail stores and the scan
+// loop's padding now match byte for byte. Still differs inside the found block: retail keeps the
+// record size in ecx and the record data in esi and leaves a dead `add ecx, esi` behind the
+// load, ours keeps the size in edx and the data in ecx and pads the block with two int3 bytes.
+// The scan uses the pool's own index search and datum index, so it keeps
+// Earlier: the scan uses the pool's own index search and datum index, so it keeps
+// retail's do-while shape and the hoisted count and bitmap; retail keeps the pool in two registers
+// (ebx for the scan, a hoisted `mov ebp, ebx` copy for the datum), lays the found path out after
+// the exit and pads the scan loop; ours holds the pool in ebp only and lays the found path first.
+// (ebx for the high-water/bitmap scan, ebp, copied from ebx before the loop, for the datum's size
+// and data), lays the found path out after the exit with a dead datum `add`, stores immediate zeros
+// at the end and pads the scan loop; ours holds the pool in ebp only, NONE in edx and lays the found
+// path first. The iterator form (data_iterator_next_inlined, as ai.cpp's player walk) gives 58 at
+// 120 bytes: retail's block layout, found-path compare, dead datum add and immediate final stores
+// exactly; only the second pool register (push ebx, mov ebp, ebx) and the loop padding are missing.
+// retail keeps the pool in two registers (ebx for the high-water/bitmap scan, a
+// `mov ebp, ebx` copy made after the index init for the datum's size and data), puts the found path
+// after the exit with a dead datum `add`, stores immediate zeros at the end and pads the scan loop;
+// ours holds the pool in ebp only, keeps NONE in edx and lays the found path first. The iterator
+// form (s_record_pool_iterator + data_iterator_next_inlined, as ai.cpp's player walk) gives all of
+// retail's code except the second pool register (11 bytes short: push/pop ebx, the copy and the
+// 7-byte pad that the copy brings), 58 positional.
+// Tried: earlier iterator form 58. Round 415: direct scan/identifier/both forced declarations
+// 39/39/39; outlined declarations 74/44/91; live pool 45, captured tail 42. Kimi lane 2 round 37:
+// absolute-index scan with the salted-index helper 39; direct expression 39; copied/independent/
+// const scan pools 39/64/39; counted for scan 121; refreshed pool 39; absolute-datum getter 71;
+// split pools 39. Round 17 / lane 11: the iterator form 58; without the datum_index init 58; the
+// pool through a local 58; data_iterator_next_calling 94 (0x16bc00 stays a call);
+// data_next_absolute_index_inlined scan 39. Lane 14 round 10: data_datum_iterator_next_inlined 58;
+// the scan reading the global with the datum from the local 64, the reverse 65; the iterator's own
+// fields with data_find_index/data_datum_index 60. Round 20 (iterator form): the datum through
+// data_datum_index on the iterator's pool 57, on the global 69 (both pool registers and the pad
+// appear, the datum pointer spills), on a pool local 57; index set before the pool 58; this form
+// with the scan on the global 64. Lane 13 round 18: the iterator form moved into the /Ob1 QoS file
+// beside 0x7b4c0 58 (same code), this body there 39 (same code); the out-of-line 0x16bb70 step 86
+// (stays a call); one pool local for the iterator and the final store 64 (copies coalesce); the
+// out-of-line 0x16bb50 datum index 44 (stays a call); diagnostics: a step copy reading the pool
+// separately for the scan and the datum 58, the index stored before that second read 59 (one pool
+// register each time).
+// split pools 39.
+// Round 17: s_record_pool_iterator with data_iterator_next_inlined (as ai.cpp's player walk) 58:
+// 120 bytes, retail's block layout, found-path compare, dead datum add and immediate final
+// stores exactly; only the second pool register (push ebx, mov ebp, ebx) and the loop padding
+// are missing; without the datum_index init 58; the pool through a local 58;
+// data_iterator_next_calling 94 (0x16bc00 stays a call); data_next_absolute_index_inlined scan 39.
+// Round 20 (iterator form unless noted): the datum through data_datum_index on the iterator's
+// pool 57, on the global 69 (both pool registers and the pad appear, the datum pointer spills),
+// on a pool local 57; index set before the pool 58; this form with the scan on the global 64.
+// retail holds the pool in two registers (ebx for the high-water/bitmap scan, ebp, copied
+// from ebx before the loop, for the datum's size and data), puts the found path after the exit with a dead
+// datum `add`, stores immediate zeros at the end and pads the scan loop; ours keeps one pool register, NONE in
+// edx and the found path first. Earlier iterator form 58. Round 415: direct scan/identifier/both forced
+// declarations 39/39/39; outlined declarations 74/44/91; live pool 45, captured tail 42. Kimi lane 2 round 37
+// also reached 39 by scanning by absolute index with the salted-index helper (pool in EBP rather than EBX/EBP).
+// Its other forms: direct expression 39; copied/independent/const scan pools 39/64/39; counted for scan 121;
+// refreshed pool 39; absolute-datum getter 71; split pools 39. Lane 11 r17: data_iterator_next_inlined 58
+// (retail's structure, aligned 9, 11 bytes short: one pool register, no loop padding), without the datum_index
+// init 58, data_iterator_next_calling 94, pool local assigned to the iterator 58, absolute-index scan 39. Round
+// 10 (lane 14): data_datum_iterator_next_inlined 58 (aligned 9); the scan reading the global with the datum from
+// the local 64, the reverse 65; the iterator's own fields with data_find_index/data_datum_index 60; the
+// iterator without the datum_index init 58. Original helper declarations, pool snapshot, loop and final global
+// stores restored.
+// Round 20 (iterator form unless noted): the datum through data_datum_index on the iterator's
+// pool 57, on the global 69 (both pool registers and the pad appear, the datum pointer spills),
+// on a pool local 57; index set before the pool 58; this form with the scan on the global 64.
+// split pools 39. Round 17 / lane 11 r17 (iterator form): without the datum_index init 58; the pool
+// through a local 58; data_iterator_next_calling 94 (0x16bc00 stays a call); pool local assigned to
+// the iterator 58; data_next_absolute_index_inlined scan 39. Round 20 (iterator form): the datum
+// through data_datum_index on the iterator's pool 57, on the global 69 (both pool registers and the
+// pad appear, the global is reloaded after the call and the datum pointer spills), on a pool local
+// 57; index set before the pool 58; the scan on the global 64. Lane 14 r10: data_datum_iterator_
+// next_inlined 58; the scan reading the global with the datum from the local 64, the reverse 65; the
+// iterator's own fields with data_find_index/data_datum_index 60. Lane 13 r18: iterator form in
+// network_qos.cpp 58, kept body there 39 (file flags change nothing); out-of-line 0x16bb70 86 and
+// 0x16bb50 44 (stay calls); one pool local also for the final store 64. Lane 18 r1 (iterator form):
+// a step reading the iterator's pool at each use 58, scan on the iterator's field with the datum on
+// the step's local copy 58, the loop in a forceinline helper taking the pool as a parameter 58 (all
+// three: the copies coalesce into one pool register); iterator at function scope with the pool
+// stored last 58; the step called before the loop and at its end 53 (135 bytes; the first step
+// becomes a constant-start scan). The copy looks like an uncoalesced parameter copy from LTCG
+// inlining the real step/scan (0x16bb70/0x16bc00), which /Ob1 on unknown_16b570.cpp keeps out of
+// line here.
+// Round 198: Native unsigned absolute cursor, with immutable receiver and/or chained terminal
+// zero stores, 54 each; signed long/int cursor with chained zero stores 39. Original body restored.
+// Round 45 (lane 9): iterator form re-measured 58 (aligned 9); iterator set up through an inline (iterator, pool)
+// helper 58; datum index through data_datum_index on a pool local 57; iterator at function scope 58; a `for` over the
+// step's returned datum 53 (135 bytes); scan on the global with the datum from a pool local 64 (the local spills).
+// Lane 14 r19 (fast `0x7b430 0x7b650` reproduces 39): index declared before the pool 39; a `for` loop
+// from data_find_index(pool, 0) 125 (188 bytes); the final valid store through the pool local 42;
+// iterator fields stored index first with the global read into the data field 58; iterator
+// initialised from the global 58 (both: retail's code but one pool register). The matched 0x18c060's
+// EBX/EBP pair is the hoisted global plus the iterator copy; this global is aliasable (reloaded at the
+// end in retail too), so retail's EBX here is a local copy.
+// Round 24 (m3 lane 2): the uncoalesced-copy lead tested: with `inline` on the real step and scan
+// definitions (0x16bb70, 0x16bc00; diagnostic) LTCG inlines both into the iterator form here, still
+// one pool register (EBP) and no pad, 58 (120 bytes; 0x16bb70, 0x16bc00 and 0x2b2327 still match);
+// with the index set before the pool 58; data_iterator_next_calling with the scan inline 58; this
+// body through the real 0x16bc00 and 0x16bb50 (both inline) 39 (same code as the header copies); a
+// short index 58 (147 bytes). So LTCG's own inlining of the step does not make the copy either.
+// MiniMax H's two-local form (not kept: a one-use duplicate local) re-measured 13; with the scan
+// local declared first, or the index first, 11 (131 bytes: the copy now follows the index init as
+// retail; left only the found block, where retail materialises the datum pointer, `add ecx, esi`, and
+// holds the data in ESI: the step's shape, which a separate scan local cannot have); the index
+// updated after the call 55 (116).
+// Round 12 (lane 18), the two-local form (one-use `scan` copy for the search, `found` assigned to the index): 13
+// at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
+// declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
+// left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 107 (lane 8, fast with 0x7b650): `if (!g_4cf8d4) return;` guard 39 (same code); the datum index named
+// before the call 39 (same code); the iterator form re-measured 58 (120 bytes); the existing out-of-line
+// record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
+// its end 125 (188 bytes). Lead unchanged: retail's second pool register is the LTCG inline of the real
+// 0x16bb70/0x16bc00, which their file's /Ob1 keeps out of line here (a flags decision).
+// Lane 14 r36 (fast): the second pool register is a second read of the global, not a copy: `scan = g_4cf8d8`
+// and `pool = g_4cf8d8` read separately give retail's `mov ebx, [g]` ... `mov ebp, ebx` and loop pad, 11 at
+// 131 bytes (a copy of the first local instead, 60, coalesces); with the iterator's pool for the datum and the
+// separate read for the scan 13; the iterator form's scan with a second read for data_datum_index 70 (147
+// bytes); the iterator form aggregate-initialised 58, with the datum named in the while condition 58, with an
+// early return 58. Retail's form needs the iterator step's dead datum `add` together with the two reads,
+// which only the step inlined at link time from its own file gives (unknown_16b570.cpp is /Ob1).
+// Round 124 (lane 5, fast): record_pool_next_used over datum indices 105 (73 bytes, stays a call); the
+// absolute-index scan with index_to_datum_index 44; the datum index named before the call 39 (same code);
+// the iterator form with index_to_datum_index on a pool local 47; MiniMax H's two pool locals with the index
+// stored after the datum index (retail's order) 11 at 131 bytes (only the found block's size/data registers
+// and the dead datum `add` left; one-use duplicate local, not kept). Compile-only diagnostic: file-local
+// non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
+// retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
+// file's /Ob1 keeps them out of line here: a flags decision).
 // @retail 0x7b430
 void function_07b430(void)
 {
 	if (g_4cf8d4)
 	{
-		s_record_pool_iterator iterator;
+		s_record_pool *pool = g_4cf8d8;
+		long index = NONE;
 
-		iterator.data = g_4cf8d8;
-		iterator.datum_index = NONE;
-		iterator.index = NONE;
-		while (data_iterator_next_inlined(&iterator))
+		while ((index = data_find_index(pool, index + 1)) != NONE)
 		{
-			qos_release(iterator.datum_index);
+			qos_release(data_datum_index(pool, index));
 		}
 		g_4cf8d8->valid = 0;
 		g_4cf8d4 = false;
@@ -1050,7 +1185,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 766 (was 766): retail's frame is 0xb4 and it takes the session in EAX and the output pointer
+// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
+// score 766 (was 766): Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
+// Earlier: retail's frame is 0xb4 and it takes the session in EAX and the output pointer
 // on the stack, while ours has a 0xd4 frame and takes both on the stack; retail also calls the matched
 // 0x192e60 out of line, ours inlines it.
 // frame 0xd4 versus 0xb4, opening session home and lookup expansion remain; tried byte
@@ -1121,6 +1260,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Original counter names and declaration lifetimes restored; frame/session/lookup remain.
 // Round 261: explicit initial histogram memset with word/short/long/dword cells
 // 820/820/844/844; each with byte balance argument 871/871/870/870. Original clear and cells restored.
+// Round 414: type-four-first conditional minimum/maximum/spread selectors, each pair
+// and all three 766 each; all with type-five-first limited predicate 803 at 2832/2828.
+// Original selectors, predicates and complete body restored.
+// Y423: Balance-call-first logical result with independent all/eligible word/dword
+// histograms 768/824/821/831; bitwise result 766/829/826/844 fast (control 766).
+// Native dword workspaces recover frame 0xb4 but regress; original body restored.
+// DL196: input group/rating/machine-user base subsets
+// 853/855/907/856/850/855/856; all bases with admitted member-rating observation 856.
+// Original executable body and all supporting contracts restored.
+// T47: Uniform session-state observations / membership maximum selection / flattened
+// complete type dispatch subsets 766/766/766/888/888/888/888; all with dword histogram
+// 931. Original body, selectors and all protected declarations restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

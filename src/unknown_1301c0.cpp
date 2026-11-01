@@ -85,81 +85,69 @@ void function_130bb0(s_fog_state *fog)
 	}
 }
 
-// score 57 (was 57): default-result and classification-block placement differ; copy/reset tail agrees; tried
-// short result 101; byte result 118; pending distance 100; first intensity 114; second intensity 114; wide
-// distance 133; color value 57; transition distance 96.
-// block layout. Retail falls through from the pending test
-// into the pending checks (jbe to the no-pending block), sets result 3 only after
-// that test, and places the no-pending block after the max's jmp, before its
-// height arm; ours places the no-pending block first. Tried: if (pending > 0)
-// with the no-pending block as its else, the rest inside (81) or after the
-// if/else (81), with returns (89), with result = 3 at the top of the if (75: the
-// mov edx, 3 moves as in retail but the no-pending block goes to the end);
-// returns in this shape (99); a goto to the no-pending block at the end (99);
-// nested ifs (107); the max as an if/else (57, 81) or an inline helper (71-91).
-// the classification block still sits inline right after the
-// pending intensity test, where retail runs the value10c and value118 tests
-// first; those two comparisons are ucomiss with an unordered test in retail.
-// Earlier: the classification as the else arm, with result = 3 set inside the pending
-// arm and the copies written per test (no gotos), gives retail's whole pending path and its late
-// mov edx, 3, but puts the classification after the shared tail instead of between the max's
-// arms 75; result = 3 after the classification block 57; a saved pending bool 70; the max as
-// distance = a; if (distance <= b) distance = b; 61; a goto into the pending path 75. The
-// classification's lexical position (labels anywhere in the pending path) never moves it.
-// Native classification enum / positive readiness / conditional classification 57/57/57;
-// enum with empty default 104; positive pending arm with these four joins 81/81/81/79.
+/* the fog layers' state: 0 none shows, 1 the first or second shows, 2 only the
+   third, 3 a pending layer waits; a waiting layer (when value10c is 1 and
+   value118 is 0) moves into an empty first or second layer, or at full
+   intensity into the first of them reaching at least as far (4: the first,
+   5: the second) */
 // @retail 0x130de0
 long function_130de0(s_fog_state *fog)
 {
-	long result = 3;
-	real distance;
+	long result;
 
-	if (!(fog->pending.intensity > 0.0f))
-	{
-		if (fog->layers[0].intensity > 0.0f || fog->layers[1].intensity > 0.0f)
-			result = 1;
-		else if (fog->layers[2].intensity > 0.0f)
-			result = 2;
-		else
-			result = 0;
-		goto finished;
-	}
-	if (fog->value10c != 1.0f || fog->value118 != 0.0f)
-		goto finished;
-	if (fog->layers[0].intensity == 0.0f)
-		goto use_layer0;
-	if (fog->layers[1].intensity == 0.0f)
-		goto use_layer1;
-	if (fog->pending.intensity != 1.0f)
-		goto finished;
-	distance = fog->pending.distance > fog->pending.height ? fog->pending.distance : fog->pending.height;
-	if (fog->layers[0].distance >= distance)
-	{
-use_layer0:
-		result = 4;
-		fog->layers[0].color = fog->pending.color;
-		fog->layers[0].intensity = fog->pending.intensity;
-		fog->layers[0].distance = fog->value110;
-		fog->layers[0].height = fog->pending.distance;
-	}
-	else if (fog->layers[1].distance >= distance)
-	{
-use_layer1:
-		result = 5;
-		fog->layers[1].color = fog->pending.color;
-		fog->layers[1].intensity = fog->pending.intensity;
-		fog->layers[1].distance = fog->value110;
-		fog->layers[1].height = fog->pending.distance;
-	}
+	if (fog->pending.intensity > 0.0f)
+		result = 3;
+	else if (fog->layers[0].intensity > 0.0f || fog->layers[1].intensity > 0.0f)
+		result = 1;
+	else if (fog->layers[2].intensity > 0.0f)
+		result = 2;
 	else
+		result = 0;
+	if (result == 3 && fog->value10c == 1.0f && fog->value118 == 0.0f)
 	{
-		goto finished;
+		if (fog->layers[0].intensity == 0.0f)
+		{
+			result = 4;
+			fog->layers[0].color = fog->pending.color;
+			fog->layers[0].intensity = fog->pending.intensity;
+			fog->layers[0].distance = fog->value110;
+			fog->layers[0].height = fog->pending.distance;
+		}
+		else if (fog->layers[1].intensity == 0.0f)
+		{
+			result = 5;
+			fog->layers[1].color = fog->pending.color;
+			fog->layers[1].intensity = fog->pending.intensity;
+			fog->layers[1].distance = fog->value110;
+			fog->layers[1].height = fog->pending.distance;
+		}
+		else if (fog->pending.intensity == 1.0f)
+		{
+			real distance = fog->pending.distance > fog->pending.height ? fog->pending.distance : fog->pending.height;
+			if (fog->layers[0].distance >= distance)
+			{
+				result = 4;
+				fog->layers[0].color = fog->pending.color;
+				fog->layers[0].intensity = fog->pending.intensity;
+				fog->layers[0].distance = fog->value110;
+				fog->layers[0].height = fog->pending.distance;
+			}
+			else if (fog->layers[1].distance >= distance)
+			{
+				result = 5;
+				fog->layers[1].color = fog->pending.color;
+				fog->layers[1].intensity = fog->pending.intensity;
+				fog->layers[1].distance = fog->value110;
+				fog->layers[1].height = fog->pending.distance;
+			}
+		}
+		if (result != 3)
+		{
+			fog->pending.intensity = 0.0f;
+			fog->value10c = 0.0f;
+			fog->value118 = 1.0f;
+		}
 	}
-	fog->pending.intensity = 0.0f;
-	fog->value10c = 0.0f;
-	fog->value118 = 1.0f;
-
-finished:
 	return result;
 }
 

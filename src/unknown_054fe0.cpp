@@ -776,66 +776,49 @@ bool network_session_get_membership(c_class_58d20 *session, long *value4c, long 
 }
 
 
-struct s_64310
-{
-	long field_0;
-	long field_4;
-	dword field_8;
-	s_session_member *field_c;
-	s_network_session_player *field_10;
-};
-
-// score 43 (was 43), as 0x643f0: retail keeps the player mask in ebp and the
-// address of the players array in edi (lea edi, [eax + 0x1120]), then reads a
-// player's member index through it; ours folds the array into the load
-// ([ecx + eax + 0x112c]), needs no ebp and is 6 bytes shorter. Plain locals,
-// the struct's fields in another order or layout, const references to the
-// players or members pointer, an inline function filling the struct and a
-// player pointer score 43 to 53; the 600 s permutation run found no match.
+/* passes the member record of a player's machine to 0x5aba0, when the
+   session's current member is its value50 member */
 // @retail 0x64310
 bool network_session_interface_kick_player(long player_index)
 {
-	volatile bool result = false;
-	c_class_58d20 *session = network_session_get_live();
-	if (session)
+	bool result = false;
+	c_class_58d20 *session;
+	long host_member_index;
+	long value50;
+	s_session_member *members;
+	dword player_mask;
+	s_network_session_player *players;
+	if (network_session_get_current_if_valid(&session) &&
+		network_session_get_membership(session, NULL, &host_member_index, NULL, &value50, NULL, &members, NULL, &player_mask, &players) &&
+		host_member_index == value50 && (player_mask & (1 << player_index)))
 	{
-		s_64310 local_0;
-		local_0.field_0 = session->current_member;
-		local_0.field_4 = session->value50;
-		local_0.field_8 = session->player_mask;
-		local_0.field_c = session->members;
-		local_0.field_10 = session->players;
-		if (local_0.field_0 == local_0.field_4 && (local_0.field_8 & (1 << player_index)))
-		{
-			long member_index = local_0.field_10[player_index].member_index;
-			if (member_index != local_0.field_0 && network_session_delegate_leader(session, (const s_session_member_identity *)local_0.field_c[member_index].words))
-				result = true;
-		}
+		s_network_session_player const &player = players[player_index];
+		if (player.member_index != host_member_index &&
+			network_session_delegate_leader(session, (const s_session_member_identity *)members[player.member_index].words))
+			result = true;
 	}
 	return result;
 }
 
-// score 43 (was 43): the same as 0x64310 above, which differs only in the
-// function it calls.
+/* the same, through 0x5acc0 */
 // @retail 0x643f0
 bool network_session_interface_ban_player(long player_index)
 {
-	volatile bool result = false;
-	c_class_58d20 *session = network_session_get_live();
-	if (session)
+	bool result = false;
+	c_class_58d20 *session;
+	long host_member_index;
+	long value50;
+	s_session_member *members;
+	dword player_mask;
+	s_network_session_player *players;
+	if (network_session_get_current_if_valid(&session) &&
+		network_session_get_membership(session, NULL, &host_member_index, NULL, &value50, NULL, &members, NULL, &player_mask, &players) &&
+		host_member_index == value50 && (player_mask & (1 << player_index)))
 	{
-		s_64310 local_0;
-		local_0.field_0 = session->current_member;
-		local_0.field_4 = session->value50;
-		local_0.field_8 = session->player_mask;
-		local_0.field_c = session->members;
-		local_0.field_10 = session->players;
-		if (local_0.field_0 == local_0.field_4 && (local_0.field_8 & (1 << player_index)))
-		{
-			long member_index = local_0.field_10[player_index].member_index;
-			if (member_index != local_0.field_0 && network_session_boot_machine(session, (const s_session_member_identity *)local_0.field_c[member_index].words))
-				result = true;
-		}
+		s_network_session_player const &player = players[player_index];
+		if (player.member_index != host_member_index &&
+			network_session_boot_machine(session, (const s_session_member_identity *)members[player.member_index].words))
+			result = true;
 	}
 	return result;
 }
@@ -1133,19 +1116,12 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 	return result;
 }
 
-// score 67 (was 67): the frame is four bytes smaller than retail's and the locals
-// (the count, the minimum and the maximum) are set up in another order.
-// Retail gives latency ebp and spills the member cursor; ours the reverse. The
-// mask update written in both arms gives latency ebp but moves session off ebx
-// (two stack arguments): 112, host arm first 112, with continue 112; the same
-// with host read after the observer 109/109. Retail also re-reads member_count
-// in the member check where ours reuses the loop's load.
-// Round 198: guarded-result graphs at the existing channel/observer/member QoS helpers, seven
-// combinations 67 each; all three with late host read 86.
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
+
 // @retail 0x64480
-void network_session_get_member_latency(s_session_member_latency *latency, c_class_58d20 *session)
+void network_session_get_member_latency(c_class_58d20 *session, s_session_member_latency *latency)
 {
-	long host = session->current_member;
 	s_network_observer *observer = 0;
 	long count = 0;
 	long maximum = 0x80000000;
@@ -1153,12 +1129,15 @@ void network_session_get_member_latency(s_session_member_latency *latency, c_cla
 	long times[16];
 	if (g_527330.initialized)
 		observer = (s_network_observer *)g_527330.unknown48;
+	long host = session->current_member;
 	memset(latency, 0, sizeof(*latency));
 	for (long i = 0; i < session->member_count; i++)
 	{
 		if (i != host)
 		{
 			s_qos_result qos;
+			/* the member count is read again for the member check */
+			_ReadWriteBarrier();
 			if (!session_member_get_qos(observer, session, i, &qos))
 				continue;
 			long time = qos.rtt_median;
@@ -1219,7 +1198,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 		properties.unknown68 = 0;
 		properties.unknown6c = 0;
 		properties.unknown70 = 0;
-		network_session_get_member_latency((s_session_member_latency *)properties.unknown74, session);
+		network_session_get_member_latency(session, (s_session_member_latency *)properties.unknown74);
 		if (g_4cd868.unknown62)
 		{
 			properties.unknown68 = g_4cd868.unknown78;
@@ -1239,29 +1218,27 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 	}
 }
 
-/* a player's properties (0x90 bytes) */
-struct s_player_properties
-{
-	wchar_t name[32];
-	long unknown40[4];
-	byte unknown50[32];
-	long unknown70[3];
-	char team;
-	byte unknown7d;
-	byte unknown7e;
-	byte unknown7f;
-	byte unknown80;
-	byte unknown81;
-	byte unknown82[2];
-	long unknown84;
-	short unknown88;
-	short unknown8a;
-	long unknown8c;
-};
-
 /* the host gives the players their properties: unique names, and teams when
    the game has teams */
-// score 184 (was 184): frame 0xe4 agrees; owner/count/zero allocation and requested cursor remain.
+// Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
+// differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
+// measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
+// in the requested cursor.
+// score 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// than 8, takes the memset path) and reads the parameters through the 0x4db0 member rather than
+// through the session_get_data_4db0 call; adding both was measured at 211 and 222, because MSVC
+// still compares the parameters with `xor edx,edx` where retail uses `test edi,edi`, reloads the
+// owner from the stack where retail keeps it in EDX, and computes the requested cursor with
+// `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
+// Still differs in the owner, the name count and the zero's allocation and the requested cursor.
+// score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Earlier: the frame 0xe4 still agrees; the owner, the name count, the
+// zero's allocation and the requested cursor are unchanged, and this round's trials
+// in this file found no lower form of them
+// Earlier: the frame 0xe4 agrees; the owner, the name count and the
+// zero's allocation and the requested cursor remain, and this round's trials in
+// this file found no lower form of them
+// Earlier: frame 0xe4 agrees; owner/count/zero allocation and requested cursor remain.
 // Round 75: our zero stays in edx from the parameters test (cmp edi, edx) through both loops, so the
 // name count is spilled and the owner leaves edx. Count increment as its own statement 184; long mask
 // 184; inverted parameters test (clear first) 217; count declared after the index 184; `== 0` memcmp
@@ -1372,6 +1349,18 @@ struct s_player_properties
 // copy alone/with collection/update/both 180/180/180/180, bounded short count 226. On that cache
 // graph, promoted team/direct current/direct cache observation subsets 183/237/240/180/183/216/220,
 // all with short count 220. Four-point form rejected; original full body restored at 184.
+// Round 219: Finite membership exhaustion with long/dword/short/word count, right shifts
+// 249/249/240/240 and ordinal-bit removal 262/262/245/245. All restored; owner/count/zero
+// allocation and requested-record induction remain.
+// Round 46: Cache-change result bool/byte/long 184 each; completed-property result 184; both results bool/byte/long 184 each; both plus complete name-selection predicate 184. Original body restored.
+// Round 35 (fast gives 184 here too): team clamp through a PIN macro 184 (identical code); team in a long
+// local 191 (sign-extends at the load; retail extends only for the > 7 compare); `team >= 8` 184 (still a
+// byte compare); team read from the field at each use 206 (917 bytes); the no-current form again 198 (owner
+// edx, `test`, cursor +0x1138 as retail; the zero takes esi in the second loop and the name count stays in
+// memory), with the PIN clamp 198.
+// Round 256: Scalar cache test first crossed with bounded byte count, uniform current-field reads
+// and copy-first completion: 222/223/211/226/213/248/238/234. Original cache guard, count,
+// receivers, publication and body restored; owner/count/zero homes remain.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {
@@ -1651,101 +1640,6 @@ void __stdcall function_65530(long user_index)
    (const s_cached_player_source *)g_4cd868.users[user_index].properties, true, false);
 }
 
-bool game_loop_running(void);
-long map_location_progress_get(char const *map_name);
-real __stdcall function_122dd0(byte *map_name, long mode, long type);
-bool __stdcall function_163890(char const *map_name, long mode);
-
-static __forceinline bool function_65341(c_class_58d20 **out)
-{
- bool result = false;
- long state = g_527330.initialized ? g_527330.state : 0;
- switch (state)
- {
- case 1: case 2: case 3: case 4:
-  if (g_527330.initialized)
-  {
-   c_class_58d20 *current = (c_class_58d20 *)g_527330.session_a;
-   if (current->state) { *out = current; result = true; }
-  }
-  break;
- case 6: case 7: case 8: case 9:
-  if (g_527330.initialized)
-  {
-   c_class_58d20 *current = (c_class_58d20 *)g_527330.session_b;
-   if (current->state) { *out = current; result = true; }
-  }
-  break;
- default: break;
- }
- return result;
-}
-
-// score 114 (was 120): retail picks the observer pointer with a conditional move
-// after the flag test; ours computes the same value with a negation and a test.
-// score 118 (was 118): retail builds this body with SSE (cmovne, movss, cvttss2si), which this
-// file lacks, and inlines the session-a/b getters there (their static inline bodies live in
-// unknown_058ee0.cpp). In a new /arch:SSE file: as written 136; if-form state with the variant
-// getter 142 at retail's length; existing getters with forceinline declarations 162 (kept out of
-// line); per-case getter copies 155 and switch in the body 155 (the session then goes through a
-// stack slot); existing getters without /Ob1 173; per-case result assignments 149.
-// Round 71: with scalar SSE, early status/variant plus a post-call variant reset 146;
-// the reset alone 136; early variant plus reset 138; nested success guards 146;
-// zero-then-assign state 145; ordinary inline selector 238 (398 bytes); state/result
-// declarations swapped 145; pointer-terminated user loop 145. Original restored.
-// @retail 0x65340
-void function_065340(void)
-{
-	real progress = 0.0f;
-	c_class_58d20 *session = 0;
-	bool found = function_65341(&session);
-	long status = 0;
-	long variant_index = NONE;
-	if (found && session && SESSION_STATE_IS_LIVE(session->state))
-	{
-		long first_id;
-		long second_id;
-		byte *name;
-		if (session->get_values_4d08(&first_id, &second_id, &name) &&
-			second_id != NONE && name[0])
-		{
-			if (game_loop_running() && g_4e6948->position_a == first_id &&
-				g_4e6948->position_b == second_id &&
-				!strncmp((char const *)name, g_4e6948->name, 0x104))
-			{
-				status = 4;
-				progress = 1.0f;
-			}
-			else
-			{
-				long location = map_location_progress_get((char const *)name);
-				progress = function_122dd0(name, 0, first_id == NONE);
-				switch (location)
-				{
-				case 1: status = 2; break;
-				case 2: status = 3; break;
-				case 3: status = 1; break;
-				default:
-					function_163890((char const *)name, 1);
-					break;
-				}
-			}
-		}
-		if (SESSION_STATE_IS_LIVE(session->state))
-			variant_index = session->value49c8;
-	}
-	g_4cd868.unknown90 = status;
-	g_4cd868.unknown94 = (long)(progress * 100.0f);
-	g_4cd868.unknown98 = variant_index;
-	s_session_interface_user *user = g_4cd868.users;
-	for (long i = 0; i < 4; i++)
-	{
-		if (user->valid)
-			function_65530(i);
-		user++;
-	}
-}
-
 struct s_message_identities;
 struct s_message_identity;
 bool function_7ed20(const s_message_identities *message, s_message_identity *common, bool *missing, bool *different);
@@ -1952,6 +1846,45 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// Round 31 (lane D): score 339 (was 339): unchanged this round; the permuter run was stopped by
+// the background time limit before it produced a result. Still differs in retail's conditional move
+// (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
+// the type, membership and member-index homes and the saved registers.
+// score 339 (was 339): unchanged. Retail writes output->state with a conditional move (cmovne at
+// +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
+// lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
+// member-index homes and the saved registers differ.
+// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
+// 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
+// current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
+// three extra homes match 0x5a680 inlined with (NULL, &index) and its membership result kept; round 5
+// found the full build calls it from this /Ob1 file and a local inline copy would be a twin, so the function
+// stays BLOCKED-BY 0x5a680 as well as by the cmovne (/arch:SSE) noted below.
+// Earlier: Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers differ.
+// Round 216: complete state-field observations 378; with native membership/player/selected-member
+// references 378/378/377; membership-player/membership-member/player-member 378/377/377;
+// all three 377. Frame remains 0xa9c. Original complete body and external type declarations restored.
+// Round 434: scalar type snapshot 353; with existing variant getter/statistics producer 371/381.
+// Scalar type with member-index capture 393; with existing membership provider 353; provider/index
+// 393; provider/index with statistics/getter 380/369. Frames 0xaa0/0xaa4 still miss 0xaa8; all restored.
+// Round 46: Complete admission predicate returning bool/byte/short/long 505/576/576/576; nested state/type then range-result producers 380/442/442/441. Frames 0xa9c/0xaa0/0xaa4; original body and cursor restored.
+// Round 35: retail sets output->state with a conditional move (cmovne at +0x23c), so this body needs
+// /arch:SSE, which this file lacks (lead only; no flag change). The listing is positional and ours is about
+// six instructions short in the prologue, so retail-shaped local fixes raise the count until the three homes
+// exist: id/key through the file's session_get_id made inline 390 (stays a call), __forceinline 393 (1323
+// bytes; retail's per-destination null tests); full-session arm as `long used` plus a switch on the mode
+// with `case 1: case 2:` 355 (1291 bytes; retail's movsx and single player_count load); both 380; the file's
+// live-state getters for variant/mode/option 390 (1259 bytes).
+// Round 5 (lane 18): the 12-byte frame gap is three stack values ours lacks: &session->value18 (read
+// back for the type), the membership at +0x4c and the member index read before the flags are cleared;
+// name, identity, counts, mask and players all go through the membership pointer, as an inlined
+// membership query would give (retail's other /O2 callers 0x71480 and 0x83220 call 0x5a680). The id/key
+// copy is null-checked per destination, as network_session_get_key's body is (not yet tried).
+// Membership from 0x5a680 with both outputs 353 (called: this /Ob1 file keeps it out of line); with an
+// inline/forceinline declaration here 353/353 (still called); `inline` on 0x5a680's definition 353 (still
+// called here; 0x83220 and the 0x199ebc family lose); member index and the +0x4c pointer written as
+// 0x66050 does 353 (frame 0xaa0: the pointer folds into the session register). All restored.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

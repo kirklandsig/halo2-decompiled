@@ -159,9 +159,6 @@ bool function_0c7070(long object_index);
 long function_10f5f0(long object_index);
 
 // @retail 0x155810
-// score 78 (was 78): retail pushes esi and edi at the top and keeps a zero in esi for the
-// mode, and it pushes ebp only around the call that fills it; ours pushes ebp in the
-// prologue, which shifts every stack offset, and retail returns the 1-results in eax
 short function_155810(long unit_index, short *mode)
 {
 	short result = 0;
@@ -185,20 +182,28 @@ short function_155810(long unit_index, short *mode)
 			}
 			if (flag6)
 			{
+				bool mode_selected = false;
+
 				if (function_0c7070(unit_index))
 				{
 					*mode = 1;
-					return 1;
+					mode_selected = true;
 				}
-				if (label == 0x400004a)
+				else if (label == 0x400004a)
 				{
 					*mode = 3;
-					return 1;
+					mode_selected = true;
+				}
+				if (mode_selected)
+				{
+					result = 1;
+					goto done;
 				}
 			}
 		}
 		*mode = 2;
 	}
+done:
 	return result;
 }
 

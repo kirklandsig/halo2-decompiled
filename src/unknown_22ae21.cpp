@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 #include "globals.h"
+#include "bitmap_sequences.h"
 
 long function_13a690(long mode);
 bool function_22acb4(long local_player_index);
@@ -15,41 +16,6 @@ struct s_bitmap_widget_22ae21
 	byte unknown28[4];
 	long unknown2c;
 	char sequences[3];
-};
-
-struct s_bitmap_sprite_22ae21
-{
-	short bitmap_index;
-	byte unknown02[6];
-	box2f bounds;
-	byte unknown18[8];
-};
-
-struct s_bitmap_sequence_22ae21
-{
-	byte unknown00[0x20];
-	short first_bitmap;
-	short bitmap_count;
-	byte unknown24[0x10];
-	long sprite_count;
-	s_bitmap_sprite_22ae21 *sprites;
-};
-
-struct s_bitmap_dimensions_22ae21
-{
-	byte unknown00[4];
-	short width;
-	short height;
-	byte unknown08[0x74 - 8];
-};
-
-struct s_bitmap_tag_22ae21
-{
-	byte unknown00[0x3c];
-	long sequence_count;
-	s_bitmap_sequence_22ae21 *sequences;
-	long bitmap_count;
-	s_bitmap_dimensions_22ae21 *bitmaps;
 };
 
 // @retail 0x22ae21

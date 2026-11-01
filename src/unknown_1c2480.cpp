@@ -34,7 +34,7 @@ public:
 	virtual ~c_1c2520() {}
 };
 
-// @retail 0x1c2520 deleting c_1c2520
+// The marked interface destructors are emitted from unknown_1c2520.cpp.
 
 class c_1c2540
 {
@@ -42,8 +42,6 @@ public:
 	virtual void function_1c2540() = 0;
 	virtual ~c_1c2540() {}
 };
-
-// @retail 0x1c2540 deleting c_1c2540
 
 struct s_1c3450 : c_a
 {
@@ -57,7 +55,8 @@ public:
 	virtual void function_1c2540() = 0;
 };
 
-// @retail 0x1c3450
+// Keep the existing external helpers for their public callers. Their
+// complete-destructor retail identities are marked in unknown_1c2520.cpp.
 void function_1c3450(c_1c3450 *arg_0)
 {
 	static_cast<c_1c2540 *>(arg_0)->c_1c2540::~c_1c2540();
@@ -65,7 +64,6 @@ void function_1c3450(c_1c3450 *arg_0)
 	static_cast<c_a *>(arg_0)->c_a::~c_a();
 }
 
-// @retail 0x1c3440
 void function_1c3440(c_1c3450 *arg_0)
 {
 	function_1c3450(arg_0);

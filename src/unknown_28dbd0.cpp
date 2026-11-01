@@ -44,17 +44,17 @@ void swarm_creature_reset_position(long arg_0, s_object_ai_data *arg_1);
 
 __forceinline void function_28dbd2(real arg_0, vector3f *arg_1, vector3f *arg_2)
 {
-	real local_0 = (real)sin(arg_0);
 	real local_1 = (real)cos(arg_0);
 	real local_2 = dot3f(arg_1, arg_2) * (1.0f - local_1);
 	vector3f local_3;
-	cross3f(arg_2, arg_1, &local_3);
+	cross3f(arg_1, arg_2, &local_3);
+	real local_0 = (real)sin(arg_0);
 	vector3f_scale(arg_1, local_2, arg_1);
 	vector3f_scale(&local_3, local_0, &local_3);
 	vector3f_scale(arg_2, local_1, arg_2);
-	arg_2->i = arg_2->i + arg_1->i - local_3.i;
-	arg_2->j = arg_2->j + arg_1->j - local_3.j;
-	arg_2->k = arg_2->k + arg_1->k - local_3.k;
+	arg_2->i = arg_2->i + arg_1->i + local_3.i;
+	arg_2->j = arg_2->j + arg_1->j + local_3.j;
+	arg_2->k = arg_2->k + arg_1->k + local_3.k;
 }
 
 __forceinline void function_28dbd4(s_type_c3b527 const *arg_0, point3f *arg_1)
@@ -73,8 +73,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
-// score 185 (was 185): frame 0x11c against retail's 0x118; the request home is four bytes late and the
-// rotation's cross-term homes differ (retail spills two scalar cross terms, sine and cosine). Forms tried:
+// score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
+// where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
+// first, stored after the dot) and colours the cross terms differently.
+// Earlier 185: Frame 0x11c versus retail 0x118; the request is four bytes
+// late, and cross-term/sine/cosine homes differ. Earlier delayed-sine forms 180/209
+// recover the frame/frame plus request homes but do not meet the keep gate.
 // Round 43: mixed two-scalar cross pairs k/j/i-first 241/232/232; request-forward launch copy 246;
 // distinct forward input/local output 235; velocity output with shared/scalar speed scaling 209/209;
 // mixed cross with velocity output 240.
@@ -152,6 +156,36 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 238: Nested forced dot/scale/dot+scale/dot+cross/scale+cross/all expansion 185 each; all
 // with inline/automatic rotation 185/185. Original helper and declarations restored; frame
 // 0x11c/0x118 remains.
+// Round 250: existing staged outer/rotation/both crosses 226/185/226;
+// with sine after axis scale 222/187/222; both staged crosses before projection 233,
+// with delayed sine 205 (frame 0x118, first +0xa9). Original helper and body restored; frame 0x11c/0x118 remains.
+// Round 424: fused moving/fixed offsets, moving-offset/velocity, fixed-offset/velocity,
+// all three component loops 188/188/193/193; with delayed sine 182/182/184/184.
+// Three-point best rejected: frame 0x118, request twelve bytes early; original body/helper restored.
+// Round 29 (fast): the first difference past the slots is the heading's zero k (ours xmm5 for both cross
+// products; retail xmm3 for the first and a memory 0.0 in the rotation). Rotation-helper locals named
+// sine/cosine and with projection/cross too, the request declared first, the heading declared before
+// its angle draw, the axis declared before the field copy, and the zero k stored again before the
+// rotation: identical code (185); the zero k stored in each branch instead of once 241.
+// Round 457: initial heading draw in double storage, scalar/aggregate heading,
+// original/delayed sine and scalar/shared velocity scale: 185/185/187/187/185/185/187/187.
+// Frame remains 0x11c; original heading, helper, shared scales and complete body restored.
+// Round 120 (lane 6, fast = plain): the rotation helper's cross dot product reversed 185 (same code);
+// the cross taken as axis x vector and added (`cross3f(arg_1, arg_2, ...)`, `+ local_3`) 182; that
+// with the axis term first in the sums 182; with the sine computed after the cross 173 (kept: cosine,
+// projection, cross, sine); on it the dot reversed 173, the axis term first 173 (same code), the sine
+// before the cross 183, the three scales vector first 245 (1231 bytes), the cross first 210 (frame
+// 0x118 and the head as retail, 1198 bytes, aligned 162 against 183); the orders sine/cross/cosine
+// 238, cross/sine/cosine 192, sine/cosine/cross 238, cross/cosine/sine 239, cosine/cross/sine 239;
+// the up-first outer cross negated 260.
+// Round 123 (lane 6, fast): every order of the helper's sine S, cosine C, projection P (after C) and cross X,
+// with the cross as axis x vector added (a) / vector x axis subtracted (s): aSCPX 182, aSCXP 238, aSXCP 238,
+// aCSPX 226, aCSXP 195, aCPSX 183, aCXSP 239, aCXPS 210, aXSCP 192 (cross first with sine first, 1215 bytes),
+// aXCSP 239, aXCPS 210; sSCPX 185, sSCXP 238, sSXCP 238, sCSPX 227, sCSXP 234, sCPSX 187, sCPXS 187, sCXSP 239,
+// sCXPS 210, sXSCP 233, sXCSP 239, sXCPS 210. Only the CXPS/XCPS orders give frame 0x118 (1198 bytes).
+// Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
+// 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
+// sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

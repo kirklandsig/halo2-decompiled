@@ -452,6 +452,17 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
+// image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
+// call convention in src/unknown_01cf50.cpp.
+// this round: no new form. Retail's argument values for the call to 0x144f0
+// are (tag, 0, 0, 1, bitmap, 0.0f) and naming them that way leaves the score at 100, so the call
+// site was left as it was: the six arguments are still pushed on the stack where retail passes the
+// first three in EAX/ECX/EBX, because 0x144f0's definition (src/unknown_01cf50.cpp) carries no /Gr
+// flag; the colour/draw schedule after the call still differs.
+// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
+// it with tag/stage/fallback in EAX/ECX/EBX and three stack arguments, our tree uses the standard
+// six-argument convention, so the call site and the colour/draw schedule after it differ.
 // score 100 (was 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
 // Earlier: the record index is scaled by 0x40 in retail and by 0x4 here, and the table retail reads is not the one this tree reads
 // Current stride agrees; the hoisted zero, callee convention and color/draw
@@ -462,6 +473,18 @@ void function_1cf50(void);
 // Tag read at every use with all cache-store orders 99; store-order forms without that change
 // 100; bitmap read at every use 98. One- and two-point gains rejected. All original cache
 // stores and field observations restored.
+// Round 414: No frame; loop-wide zero, provider convention and SDK color/draw scheduling remain.
+// Material/color/draw workspace scope masks 1-7 scored 100 each; all scopes with native bitmap 98.
+// Two-count gain rejected; original scopes and bitmap restored.
+// Round 122 (fast; retail reads colour bytes 2/3 from the global, 0/1 from al/ah): manager read at each use 100;
+// colour global as a dword/byte union read after the store 98, with the manager change 98 (union with anonymous
+// bytes / byte array 98/98); shifts of the global after the store 100; `& 0xff` channels of the global/local 98/100;
+// union colour local copied to the global, channels from either 98/98 (unions get a stack copy, `sub esp, 8`).
+// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
+// retail calls it with the tag, stage and index in EAX/ECX/EBX and three stack arguments, our tree
+// uses the standard six-argument convention, so the call site and the colour/draw schedule after it
+// differ. (The fast score reads 100 or 101 depending on the size of the reduced image; that is a
+// layout artefact of the reduced build, not a source change.)
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
@@ -925,53 +948,7 @@ void __stdcall function_2cbc0(bool enabled)
 	function_133720(current, enabled);
 }
 
-// score 95 (was 95): frame 0x1c0 and camera/query registers agree; x87 offset,
-// dropped identifier and scan jump/padding remain. Earlier: frame four bytes larger,
-// camera home displaced, subtraction x87. Existing camera/effect/visibility noinline
-// boundaries, all seven subsets 95; cursor-result scan 76/297, but normalized
-// instruction edits worsen 9 to 33; restore the Boolean scan and all declarations.
-// @retail 0x3f2c0
-void function_3f2c0(s_planar_camera_source const *source, byte const *view, long object_index, long identifier)
-{
-	byte camera[0x1bc]; // a whole s_planar_camera: function_441b0 fills 0x1bc bytes
-	real offset = 0.0f;
-	function_441b0(source, (s_planar_camera *)camera, view);
-	byte *effect = (byte *)function_01fd20(0);
-	bool enabled = effect && effect[0x3c];
-	if (enabled)
-	{
-		offset = *(real *)(effect + 0x40) - *(real *)(camera + 0x70);
-	}
-	function_3d600();
-	s_bit_vector_pool *data = function_1320f0(0, 1, enabled, 0, camera,
-		camera + 0x60, 1024.0f, NULL, offset, g_4b9ee4);
-	if (object_index != NONE)
-	{
-		struct s_entry_list_view
-		{
-			long maximum;
-			word count;
-			short *shorts_b;
-			long *longs_a;
-			long *longs_c;
-			short *shorts_d;
-		};
-		s_entry_list_view *list = (s_entry_list_view *)data->lists[2];
-		bool found = false;
-		for (long i = 0; i < (short)list->count && !found; ++i)
-			found = list->longs_a[(short)i] == object_index;
-		if (!found && list->count < list->maximum - 1)
-		{
-			list->longs_a[list->count] = object_index;
-			list->shorts_b[list->count] = 0;
-			list->longs_c[list->count] = 0;
-			list->shorts_d[list->count] = NONE;
-			++list->count;
-		}
-	}
-	function_2cbc0(true);
-	function_44720();
-}
+void function_3f2c0(s_planar_camera_source const *source, byte const *view, long object_index, long identifier);
 
 extern byte g_4ba025;
 void __stdcall function_3f830(byte const *tree, point3f const *center);
@@ -1244,7 +1221,17 @@ static inline long render_memory_allocate(long bytes)
 // score 1 (was 1): the permutation pointer arrives in eax, retail passes it in ecx; the register is fixed by the caller function_4c690, which is not retail's yet
 // frame pointer 27; alias analysis off 1; global expressions off 62; inline depths one/zero 1/89; native result/count 1/1; input role names 1;
 // the permutations last or first (old order kept for the caller by a forwarding overload) 1/1; a const member of a 16-byte permutation type 1;
-// extra_bytes read once through its address 1; (void)&node_count 1.
+// extra_bytes read once through its address 1; (void)&node_count 1; the node-count callee's parameters
+// reordered (permutations first, both callers) 1; the count read back through node_count 1; the output
+// pointer as a conditional argument 27; the byte count as a conditional expression 54; bytes declared
+// before the count call 15. Every parameter position, __stdcall/__cdecl and flag set keeps eax.
+// Round 10: model index and lod address-taken 1; node count and extra bytes address-taken 1; the count read
+// back through node_count 1; the output pointer as a conditional expression 27; bytes assigned in an else 54.
+// One-file LTCG probe (this file + 0x137650/0x137800's files): an entry calling this function directly
+// also gets eax, so the caller does not fix it; unused extra parameters are dropped and every position of
+// the permutations still gets eax.
+// Round 63: const count 1; const result 1; permutation-array and node-array declarators 1/1;
+// sizeof(transform4x3f) in the size product 10; const extra_bytes 1; inline/forceinline target 1/1.
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)
@@ -1304,33 +1291,10 @@ long function_4c450(long object_index, real distance, real const *definition, re
 short function_4bcc0(byte *output, long object_index, real distance, long override,
     bool *cached, bool force, signed char *level);
 
-// score 43 (was 43): count/current take edi and wanted esi (retail esi and edi, with wanted
-// computed in ecx and copied); the early level read adds a byte. Direct level read 83 at 281
-// bytes (one instruction more aligned); wanted from current/wanted first/non-const wanted 43
-// each; random mixes of declaration orders, compound division, defaults-first branch, early
-// level read and result at the top 43-110; pointers defaulting to the zero buffer 54/53;
-// local and parameter renames 43 each.
-// count/current EDI and wanted ESI replace retail ESI/EDI;
-// default count and selector scheduling remain. Native definition/library clear/both 43/43/43;
-// defaults first 99; default pointers 54; native level/result 83/100; typed default pointers 54.
-// Cache/selector inline, outline and combined call contracts: six further trials at 43.
-// Entry inline/stdcall/cdecl 43/43/44; byte return 43; final false/true exits 64;
-// fallback failure exit 100; both failure exits 119; inline final exits 64.
-// early EDI save, count/current EDI and wanted ESI remain.
-// Pointer order/role name, entry result, count first/library clear, signed workspace all 43;
-// direct level 83; unused formal addresses 43; count/variant names 43/43;
-// twice-used source count 43; source count with direct level 83.
-// Native word buffer 43; default tag scope with byte/word data 98/98; native word clear 43;
-// actual object fields with byte/word data 43/43; initial-selection result alone/with fields 43/43.
-// DL179: Inline clobber contract on the existing outlined cache setter, crossed with
-// eight ordinary/inline/noinline getter and selector pairs, 43 each. Original complete
-// target and all provider declarations restored; count/current/wanted allocation remains.
 // @retail 0x4c190
 bool function_4c190(long *count, long object_index, bool defaults, long tag,
     short *level, signed char fallback_level, signed char *sections, bool *fallback)
 {
-    (void)&object_index; (void)&defaults; (void)&tag;
-    (void)&level; (void)&fallback_level; (void)&sections; (void)&fallback;
     byte *definition = g_4e3b44[tag & 0xffff].bytes;
     byte zero[16];
     byte const *wanted;
@@ -1339,22 +1303,19 @@ bool function_4c190(long *count, long object_index, bool defaults, long tag,
     {
         byte *object = (byte *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
         *count = *(short *)(object + 0x118);
-        wanted = object + *(short *)(object + 0x11a);
+        byte const *object_wanted = object + *(short *)(object + 0x11a);
         *count = *count / 10;
+        wanted = object_wanted;
         current = function_3d430(object_index);
     }
     else
     {
-        *(long *)(zero + 0) = 0;
-        *(long *)(zero + 4) = 0;
-        *(long *)(zero + 8) = 0;
-        *(long *)(zero + 12) = 0;
+        memset(zero, 0, sizeof(zero));
         *count = *(long *)(definition + 0x1c);
         current = (signed char *)zero;
         wanted = zero;
     }
-    short requested_level = *level;
-    bool result = function_4c2b0(tag, wanted, current, requested_level, true, sections, fallback);
+    bool result = function_4c2b0(tag, wanted, current, *level, true, sections, fallback);
     if (!result && fallback_level != -1)
     {
         result = function_4c2b0(tag, wanted, current, fallback_level, false, sections, fallback);
@@ -1392,6 +1353,15 @@ struct s_batch_cache_4b5d0
 struct s_133f70;
 
 // score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
+// (add eax, ecx; lea ebx, [eax + 0xbc]/[eax + 0x44]) are reachable in the source but our compiler folds the
+// field offset into the load or into one lea, so the instruction count and the encoded sizes change and the
+// tail is compared out of step (byte home 319, split record 318); the 0x23690 call keeps its order in a
+// register (another file's callee), so the tail stays one instruction out of step as well. The parameter
+// frame matches retail slot for slot (object_index entry+4, distance entry+8, record entry+0x10, read
+// from retail's own call site at 0x1339f1), so the prologue differs only in the register and the position
+// of the distance load (retail EAX before the force push, ours ECX after it) and in the dead lea retail
+// keeps in the 0x4ed284 test.
 // Round 15: split entry-count declaration 213; cache levels base with 0xbc at the index 197; native entry
 // arithmetic 197; full second-cache record 325; two-step second cache 197; Boolean builder with wide previous 177;
 // signed-byte previous 319; direct cache publication 348. Levels offset and Boolean builder with wide previous kept.
@@ -1521,6 +1491,12 @@ struct s_133f70;
 // Round 410: Complete published memory-handle scalar with object/tag/both query captures
 // 291/363/352/338; those four with native previous-level byte 294/328/311/342. Original
 // handle observations, query inputs, previous level and complete executable body restored.
+// Round 193: separate rendering input/shared allocated buffer/direct layout read 241/311/297;
+// input+buffer/input+layout/buffer+layout/all 324/298/317/327;
+// all with readonly rendering input 327. Complete original body restored.
+// Round 122 (plain; fast scores 353 and misleads): type stored through one ternary 175 (aligned 80); named
+// flag-byte pointer 175; header before the count store 176; entry-table test nested 175; one shared cache-index
+// local for both 0x3ddd0 lookups 175.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

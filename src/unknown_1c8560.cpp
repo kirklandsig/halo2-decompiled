@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "data_array.h"
+#include "data_iterator.h"
 // @flags /O2 /Ob1 /arch:SSE /Gr
 
 struct s_1c8560
@@ -19,82 +20,56 @@ void __stdcall function_b83b0(long object_index, bool unused);
 void __stdcall function_b8460(long object_index, bool detach);
 void __stdcall swarm_delete(long arg_0);
 
-struct s_1c8560_iterator
+/* walks the swarms of g_5044c8, only while the ai is active */
+struct s_swarm_datum_walk
 {
-	byte *datum;
-	s_record_pool_iterator records;
-	long object_index;
+	s_data_datum_iterator iterator;
+	long walk_datum;
 };
 
-/* steps the iterator while g_4f55d0 is active (an inline copy of the
-   record pool step, with the found datum kept apart until the end) */
-PRIVATE __forceinline byte *function_1c8561(s_1c8560_iterator *arg_0)
+static inline void swarm_datum_walk_new(s_swarm_datum_walk *walk)
 {
-    byte *datum = NULL;
-    s_record_pool *data;
-    long index;
-
-    if (!g_4f55d0->active)
-        return NULL;
-    data = arg_0->records.data;
-    index = data_next_absolute_index_inlined(data, arg_0->records.index + 1);
-    if (index != NONE)
-    {
-        byte *result = data->data + data->size * index;
-        arg_0->records.index = index;
-        arg_0->records.datum_index = (*(short *)result << 16) | index;
-        datum = result;
-    }
-    else
-    {
-        arg_0->records.index = data->maximum_count;
-        arg_0->records.datum_index = NONE;
-    }
-    return datum;
+	if (g_4f55d0->active)
+	{
+		walk->iterator.data = g_5044c8;
+		walk->iterator.index = NONE;
+		walk->iterator.datum_index = NONE;
+	}
 }
 
-// score 67 (was 84): the iterator step returns the datum and the loop tests the pointer, as in
-// retail, but the block that computes the found datum is laid out after the exit test here and
-// before it in retail, which moves the two exits of the loop.
-// Earlier: actor arm first 64 at 364 bytes; with the step's arms swapped too 88 at 369
-// The control flow is the same in both builds (the scan's failure branches and its exhaustion
-// reach the not-found block, the scan's jne reaches the found block, and the found block re-tests
-// the index and jumps back to the not-found block); only the place of the found block differs:
-// retail puts it between the not-found block and the shared test (0x1c85d7 falling into
-// 0x1c85f4), ours puts it after the loop body.
-// Tried: actor arm first 64 at 364 bytes; with the step's arms swapped too 88 at 369
-// score 67 (was 67): actor arm first 64 at 364 bytes; with the step's arms swapped too 88 at 369
-// (found block where retail has it, but the not-found block is copied after the test where
-// retail jumps back to it); store orders, early return, inline, data_find_index,
-// data_iterator_next_inlined, a bool step: none better.
-// Round 406: shared datum-index producer, ordinary/direct pool observations,
-// original/common inactive exit, simple/actor arm first 68/63/132/132/68/63/132/132.
-// Best 63 at 363/361 is below the eight-point gate; all restored.
+/* the next swarm while the ai is active, or NULL */
+PRIVATE __forceinline s_1c8560 *swarm_datum_walk_next(s_swarm_datum_walk *walk, bool active)
+{
+	s_1c8560 *swarm = NULL;
+
+	if (active)
+	{
+		if (data_datum_iterator_next_inlined(&walk->iterator))
+			swarm = (s_1c8560 *)walk->iterator.datum;
+		walk->walk_datum = walk->iterator.datum_index;
+	}
+	return swarm;
+}
+
 // @retail 0x1c8560
 long __stdcall function_1c8560(long arg_0, void *arg_1, long arg_2, bool *arg_3, void *arg_4, long arg_5)
 {
-	s_1c8560 *local_2;
-	s_1c8560_iterator local_1;
 	long local_0 = 0;
-	if (g_4f55d0->active)
+	s_swarm_datum_walk swarms;
+	s_1c8560 *swarm;
+
+	swarm_datum_walk_new(&swarms);
+	while ((swarm = swarm_datum_walk_next(&swarms, g_4f55d0->active)) != NULL)
 	{
-		local_1.records.data = g_5044c8;
-		local_1.records.index = NONE;
-	}
-	while ((local_1.datum = function_1c8561(&local_1)) != NULL)
-	{
-		local_2 = (s_1c8560 *)local_1.datum;
-		long local_7 = local_2->field_4;
+		long local_7 = swarm->field_4;
 		if (local_7 != NONE)
 		{
 			s_actor_view *actor = actor_get(local_7);
 			if (actor->unknown009 || *(long *)((byte *)actor + 0x10) == NONE)
 				continue;
 		}
-		local_0 += local_2->field_14;
-		if (local_7 == NONE)
-			swarm_delete(local_1.records.datum_index);
-		else
+		local_0 += swarm->field_14;
+		if (local_7 != NONE)
 		{
 			s_actor_view *local_4 = actor_get(local_7);
 			long local_5 = local_4->unknown018;
@@ -108,6 +83,8 @@ long __stdcall function_1c8560(long arg_0, void *arg_1, long arg_2, bool *arg_3,
 			else if (local_6 != NONE)
 				swarm_delete(local_6);
 		}
+		else
+			swarm_delete(swarms.walk_datum);
 	}
 	*arg_3 = false;
 	return local_0;

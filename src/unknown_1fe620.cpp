@@ -3,6 +3,7 @@
 #include "slot_handler.h"
 #include "unknown_0259d0.h"
 #include "unknown_20fe20.h"
+#include "normalize3d.h"
 #include <math.h>
 // @flags /O2 /arch:SSE /Gr
 
@@ -11,14 +12,29 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
-// score 378: frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// Round 28 lead (not kept: needs one-use locals): retail reads the third draw's bounds (+0x14/+0x18) before the
+// first draw and keeps them on the x87 stack; with them read into locals ahead of the draws, all three draws through
+// local_10 (the random-state local: one seed store after the third draw, as retail) and the lower bounds written as
+// call arguments, the third input moves to ESI and the random state to ECX and the frame becomes 0x48 (367, 1843
+// bytes, first difference +0x1ab); with +0x3c read at each use and the resolver as an if/else with two copies (as
+// 0x210850, which retail inlines here) 342 at 1861 bytes. Without the early bound reads 436 (1870); +0x38 as a local
+// changes nothing. Alone on the original body: +0x3c per use 447 (1846), if/else resolver 466 (1889), lower bounds
+// as arguments 389, both of the first two 450; early bounds only 424, with +0x38 420, +0x38 only 375; early bounds
+// with slot_random_range for draws 1/3, 1, 3: 438/418/441; draws through local_10 without early bounds 438 (1856),
+// draws 1/3 only with early bounds 441; the 0x210850 call (not inlined by our LTCG, also with an inline or
+// __forceinline declaration here) 455/470.
+// Retail runs the three range draws on a seed held in EAX with one store at the end; ours reloads and stores it
+// per draw. Round 26: the hand-written normalization replaced by normalize3d 373 (kept); the up-vector cross
+// product through cross3f with a const {0, 0, 1} 378, with normalize3d 378; magnitude3d for the displacement
+// length 385, with normalize3d 388; the timed scale through vector3f_scale 373.
 // Round 74 (baseline 378 after the round-73 real cast in 0x259d0): the timer draw scaled in its own
 // statement (`timer_value *= ticks`) 373 again, the output copy block back in step (under the keep bar of 8; restored). At 373 or worse:
 // resolver as an if/else with two copies (retail's inlined 0x210850 shape) 466; sign draw through the
 // global at each access 417; both 461; random state named once at the top 417; final sums with the
 // operands swapped 373, through the vector field 373, from the vector local 429; timer conversion
 // as an initialized declaration 373; second draw's sum swapped 373.
-// score 378 (was 378): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// Earlier: frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // frame 0x4c versus 0x48; third input and random-state register lifetimes differ.
 // point resolver 445; scale snapshot 430; spread snapshot 437; later second trig pair 379; doubled bound 431; local output sums 429; force-inline resolver 466.
 // frame 0x4c versus 0x48 and early settings/seed register allocation remain; native
@@ -81,6 +97,44 @@ static __forceinline long real_to_long(real value);
 // terms 378; both 373; complete cosine products and unscaled terms in all six rows 381;
 // squares/final-point helper, terms/helper and both/helper 384/384/384; complete cosine
 // products with squares/helper 387. Five-count best fails the retention threshold; restored.
+// Round 292: Staged cross and complete first/second output-scale boundaries, all seven subsets
+// 378/455/451/428/424/441/437; complete graph with timed scaling 437. Original arithmetic and vector
+// operations restored.
+// Round 414: Frame 0x4c and third-input/random-state homes remain. Existing vector assignment at
+// side/first-output/second-output construction masks 1-7 scored 373/378/373/404/397/404/397; all
+// constructions with in-place sign assignment 397. Five-count best is below the eight-count retention
+// threshold; original vector stores restored.
+// DL190: Side/motion/both native real roots 378/378/378; native absolute magnitude 378; both roots plus absolute magnitude 373 (five-point gain rejected). Both complete double squared-length identities alone/absolute/root APIs 378/378/378. Frame and early input/state ownership remain; all restored.
+// DL192: Genuine magnitude/reciprocal/displacement workspace reuse, subsets 1-7: 378/404/404/390/390/408/408;
+// complete reuse with fallback point setter 466. Frame and early input/state ownership remain; all restored.
+// Round 314: Adjustment distance snapshot with bool/byte/short/long outcomes, without/with motion-
+// scale snapshot: 437/433/437/433/448/444/452/448. Short and long recover frame 0x48 but retain wrong
+// third-input ownership and regress. Original frame 0x4c body restored at 378.
+// Round 121 (m3 lane 5, fast): +0x38 as a named local read with the other limits (used twice) 375
+// (xmm7 loaded before the draws as retail); with all three draws through the random-state local 434;
+// draws 1/3 through it only 423; the 0x70e test nested 373; the prop flag set by an if 415. Probe on
+// round 28's lead (early +0x14/+0x18 locals, lower bounds as arguments, +0x3c per use, the resolver as
+// 0x210850's if/else) with the +0x38 local: 342 at 1861; there the sign test as
+// `(local_11 & 0x80000000) > 0` gives retail's `test eax, 0x80000000 ... jbe` (341; `!= 0`, `>> 31`,
+// `(long) < 0`, `>= 0x80000000` 342/342/347/341). Left on the probe: the cross product's inputs
+// colour xmm3/xmm2/xmm1 where retail has xmm1/xmm4/xmm3 (one extra movaps in retail).
+// Round 253: Retail-backed blend/actor/entry order with early third-range bounds, coherent angular seed
+// owner and per-use cap subsets; scores 373/424/438/350/447/449/449/384.
+// Original executable source restored; no qualifying gain.
+// The 350 form uses one-use early range captures and did not match; restored under the exact-match gate.
+// Round 123 (lane 6, fast): the displacement magnitude stored before the side vector 373; the +0x7c0 zero stored
+// before the +0x7bc copy 416 (1852 bytes); the +0x714 copy before the time store 372; the sign test as
+// `(long)seed < 0` 417; the magnitude's terms in i/j/k order 373.
+// Round 63 (lane 12, fast; an LTCG env link with this file's stand-in caller and the 0x259d0/0x210850/0x1fdce0 files
+// is exact): the third draw's bounds read into locals with the limits before the draws, all three draws through
+// function_259d0(&local_10->unknown0, ...) with the lower bounds as `0.0f - limit` arguments, and the resolver in
+// 0x210850's if/else shape with two copies 266 (1873 bytes, first difference +0x1ad: retail's prologue, ESI third
+// input, ECX random state and single seed store all appear; the copy after the failed 0x2104b0 call is load-load-load
+// then stores in retail, and the up-cross block's XMM numbering differs). Not kept: the bound locals are one-use and
+// the resolver is the helper's body. That form without the resolver change 340 (1844); with the sign test as
+// `(local_11 & 0x80000000) > 0` 269 (1876, retail's `test eax, 0x80000000; jbe`); with +0x38 named once for its two
+// uses 299; with a function_210850 call (stays out of line) 453 (1799). Env: every order of the cross components 181
+// or worse (aligned, 186 base); k * 0 named 192.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
@@ -125,14 +179,7 @@ void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
     local_6.i = local_5.j - local_5.k * 0.0f;
     local_6.j = local_5.k * 0.0f - local_5.i;
     local_6.k = local_5.i * 0.0f - local_5.j * 0.0f;
-    real local_7 = (real)sqrt(local_6.k * local_6.k + local_6.j * local_6.j + local_6.i * local_6.i);
-    if (!(fabs(local_7) < 0.0001f))
-    {
-        real local_8 = 1.0f / local_7;
-        local_6.i *= local_8;
-        local_6.j *= local_8;
-        local_6.k *= local_8;
-    }
+    normalize3d(&local_6);
     real local_9 = (real)sqrt(local_5.i * local_5.i + local_5.k * local_5.k + local_5.j * local_5.j);
     *(real *)(local_1 + 0x71c) = local_9;
     s_random_globals *local_10 = g_4e7408;

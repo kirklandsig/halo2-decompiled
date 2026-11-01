@@ -40,26 +40,17 @@ long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c
 
 /* finds the location of the object's root: a unit's (0), a vehicle's (1),
    otherwise the pathfinding location under its center */
-// score 89 (94 with a volatile read of location, dropped in review): query homes, case-tail and point-copy scheduling still differ.
-// case-tail and point-copy scheduling differ; nine excess bytes remain.
-// Query index captured after the location guard: kind zero/one/both 150/158/155;
-// null-output-first counterparts 167/158/155; result assigned per dispatch arm 140/140.
-// The first eight query forms were restored; the inherited parameter-slot read is unchanged.
-// Dispatch-assigned result alone 140; separate case query outputs, late/after-guard/early result 127/94/94.
-// Separate case query outputs and a dispatch-assigned result kept: plain 94 at 383/374;
-// retail opening allocation agrees through +0x45. Case tail/copy schedule and 9 bytes remain.
-// Round 246: Actual result output/shared point/chained defaults, seven combinations: 117/94/117/94/117/94/117/94.
-// Eighth form uses distinct first/second query scalar names.
-// Common scalar outputs before/after root lookup; after lookup with shared point/whole center: 143/140/140/114.
-// All trial forms restored; no candidate qualifies.
-// Round 248: Shared index/object/both/marker/index-marker/object-marker query outputs
-// 100/101/130/101/130/130; early shared index-object/index-marker 136/136.
-// Original body restored; pre-dispatch initialization, output homes and case tails remain.
+// The query outputs (the index the query returns, the object and the marker it reports) and the
+// point it finds are shared by both query cases and cleared just before the switch, so each case
+// writes into the same homes; the pathfinding case copies the center as a whole point.
 // @retail 0x26bfa0
 void function_26bfa0(long object_index, long *location_index, s_location_view *location)
 {
 	long result;
 	long root = NONE;
+	long query_object;
+	long query_marker;
+	point3f query_point;
 
 	while (object_index != NONE)
 	{
@@ -69,16 +60,15 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 
 	s_location_object *object = LOCATION_OBJECT(root);
 
+	result = NONE;
+	query_object = NONE;
+	query_marker = NONE;
+
 	switch (object->type)
 	{
 	case 0:
 	{
-		long query_index = NONE;
-		long query_object = NONE;
-		long query_marker = NONE;
-		point3f query_point;
-		function_dfdb0(root, 0, &query_index, &query_point, &query_object, &query_marker);
-		result = query_index;
+		function_dfdb0(root, 0, &result, &query_point, &query_object, &query_marker);
 		if (location)
 		{
 			if (result != NONE)
@@ -95,12 +85,7 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 	}
 	case 1:
 	{
-		long query_index = NONE;
-		long query_object = NONE;
-		long query_marker = NONE;
-		point3f query_point;
-		function_f1070(root, 0, &query_index, &query_point, &query_object, &query_marker);
-		result = query_index;
+		function_f1070(root, 0, &result, &query_point, &query_object, &query_marker);
 		if (location)
 		{
 			if (result != NONE)
@@ -117,7 +102,6 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 	}
 	default:
 		{
-			result = NONE;
 			point3f query_point;
 			s_location_structure_view *structure = (s_location_structure_view *)g_4e0348;
 
@@ -125,9 +109,7 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 			{
 				struct { s_collision_result_1697c0 collision; long field_4c, field_50, field_54, field_58; } contact;
 
-				query_point.x = object->center.x;
-				query_point.y = object->center.y;
-				query_point.z = object->center.z;
+				query_point = object->center;
 				contact.collision.unknown24 = NONE;
 				result = function_26d100(g_4687b0, (long *)location, &contact.collision, &query_point);
 			}

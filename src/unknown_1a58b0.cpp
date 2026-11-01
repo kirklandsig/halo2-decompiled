@@ -6,8 +6,10 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1a58b0.h"
+#include "unknown_1cec30.h"
 #include "object_markers.h"
 #include "vector_products.h"
+#include "squads.h"
 
 /* ---- views of the data used below ---- */
 
@@ -57,6 +59,14 @@ struct s_definition_view
 	byte unknown8c[0xd4 - 0x8c];
 };
 
+/* the tag that holds a set of 0x83 slot types (the definition's tag_index88,
+   a tag element's tag_index, a character's +0x20) */
+struct s_type_mask_definition
+{
+	byte unknown00[0x38];
+	dword enabled_types[5];
+};
+
 struct s_sort_element
 {
 	long identifier;
@@ -76,7 +86,7 @@ struct s_sort_element
 
 /* ---- callees ---- */
 
-void bit_vector_intersect(long bit_count, dword *a, dword *b, dword *result);
+void bit_vector_intersect(dword *result, dword *a, dword *b, long bit_count);
 
 /* ---- globals ---- */
 
@@ -118,23 +128,20 @@ bool function_1a58b0(long object_index)
 void __stdcall function_df6c0(point3f *bottom, vector3f *axis, long object_index, real *radius);
 void function_1a6340(vector3f const *b, vector3f const *a, point3f *out, point3f const *c, point3f const *p, real radius);
 
-// score 32 (was 32): the arguments are pushed in a different order and one of the values is passed
-// in a register here and on the stack in retail.
-// Object-second/third interfaces 32/32; unsigned object index 32; original interface restored.
-// score 35 (was 42): early Boolean with a separate success exit 33/91 kept; early result
-// with one exit 36/95; result on both exits 33; bottom/axis/both output pointers 33/33/33;
-// radius pointer/value 33/33. Saved-register setup and the false-in-BL result still differ.
+/* the point of the object's capsule axis nearest the line from origin along
+   direction, into out; false when the capsule has no radius */
 // @retail 0x1a62e0
 bool function_1a62e0(long object_index, point3f const *origin, vector3f const *direction, point3f *out)
 {
-	struct s_1a62e1 { real field_0; point3f field_4; vector3f field_10; };
-	s_1a62e1 local_0;
+	point3f bottom;
+	vector3f axis;
+	real radius;
 	bool result = false;
-	function_df6c0(&local_0.field_4, &local_0.field_10, object_index, &local_0.field_0);
-	if (local_0.field_0 > 0.0001f)
+	function_df6c0(&bottom, &axis, object_index, &radius);
+	if (radius > 0.0001f)
 	{
-		function_1a6340(&local_0.field_10, direction, out, origin, &local_0.field_4, local_0.field_0);
-		return true;
+		function_1a6340(&axis, direction, out, origin, &bottom, radius);
+		result = true;
 	}
 	return result;
 }
@@ -637,6 +644,11 @@ void function_1a6d80(void)
 // const node-list pointer/handler local 6/6.
 // Count at each use 53; table value snapshot 27; validity from a false-default test 52;
 // success/failure output arms 15/15; native group snapshot 26; word count 6; true-default test 79.
+// Round 88: call result local with the count stored first 6 (retail's ECX/EDX pointer registers,
+// but the count store comes first); count stored before the call 12; handler index read in the
+// call 26; output pointer locals 6; forceinline output setter 6.
+// Round 55: table entry pointer local 28 (104 bytes); call result local stored in order 6; short
+// handler index 7; handler index read after the table reads 20; count read before the node list 6.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
@@ -738,39 +750,23 @@ dword function_1a7ad0(long owner_index)
 	return (1 << owner->unknown086_byte) | ((1 << (byte)shift) << 10);
 }
 
-// score 96 (was 96): owner/output register ranks, fallback base and first intersection setup still differ.
-// Earlier: Owner/output register ranks, fallback base and intersection schedule still differ;
-// aggregate selection 119; initial/default bitset values 190/167; shared intersection 109;
-// aggregate plus shared intersection 144; common return, fallback handle, phased table 96 each.
-// owner/output register ranks, fallback-base LEA and intersection setup differ.
-// Nullable definition 81 (adds a null branch); typed fallback 96; both 81;
-// const owner, definition, source, tags and object/element views 96 each;
-// ordinary shared source copy 143; shared copy with owner tag 143.
-// BLOCKED-BY 0x1c2330 (its parameter order sets the first intersect call's set-up);
-// the two tail-merged copies swap the owner/result registers and the squad element is one lea.
-// Owner definition read once 94 (390 bytes); squad arm and default arm swapped 101; copies without
-// the source local 153; nullable definition pointer tested 123; source/definition declarations
-// swapped 96; both declared before the owner 96.
-// Every-use tag table with indexed/direct definition, native/library copy and primary/fallback-first region: eight combinations 96 each.
 // @retail 0x1a7b30
-void function_1a7b30(s_flag_bits *result, long owner_index)
+void function_1a7b30(long owner_index, s_flag_bits *result)
 {
 	s_actor_view *owner = actor_get(owner_index);
 	s_tag_instance *tags = g_4e3b44;
-	s_flag_bits *source;
 	s_definition_view *definition;
 	long index = owner->unknown858;
 
 	if (index != NONE && (definition = (s_definition_view *)(g_502408->data + (index & 0xffff) * sizeof(s_definition_view)))->unknown86)
 	{
-
-		source = (s_flag_bits *)(tags[definition->tag_index88 & 0xffff].bytes + 0x38);
-		*result = *source;
+		s_type_mask_definition *mask = (s_type_mask_definition *)tags[definition->tag_index88 & 0xffff].bytes;
+		memcpy(result, mask->enabled_types, sizeof(*result));
 	}
 	else if (owner->unknown030 != NONE)
 	{
-		source = (s_flag_bits *)(g_51e9d8->data + (owner->unknown030 & 0xffff) * 0x98 + 0x84);
-		*result = *source;
+		s_squad_datum *squad = squad_get(owner->unknown030);
+		memcpy(result, squad->enabled_types, sizeof(*result));
 	}
 	else
 	{
@@ -784,57 +780,159 @@ void function_1a7b30(s_flag_bits *result, long owner_index)
 
 		if (element && element->tag_index != NONE)
 		{
-			bit_vector_intersect(0x83, (dword *)(tags[element->tag_index & 0xffff].bytes + 0x38), result->d, result->d);
+			bit_vector_intersect(result->d, ((s_type_mask_definition *)tags[element->tag_index & 0xffff].bytes)->enabled_types, result->d, 0x83);
 			return;
 		}
 	}
 
-	long other = *(long *)(tags[owner->unknown054 & 0xffff].bytes + 0x20);
+	byte *owner_definition = tags[owner->unknown054 & 0xffff].bytes;
 
-	if (other != NONE)
+	if (*(long *)(owner_definition + 0x20) != NONE)
 	{
-		bit_vector_intersect(0x83, result->d, (dword *)(tags[other & 0xffff].bytes + 0x38), result->d);
+		bit_vector_intersect(result->d, result->d, ((s_type_mask_definition *)tags[*(long *)(owner_definition + 0x20) & 0xffff].bytes)->enabled_types, 0x83);
 	}
 }
 
-short actor_behavior_get_insert_level(short type, short slot, s_slot_owner_entry *entry);
+short actor_behavior_get_insert_level(short type, s_slot_owner_entry *entry, short slot);
 bool function_1a80e0(long index, short type, s_slot *data, short slot);
 void function_25aba0(long actor_index);
 
 
 
-// score 69 (was 69): frame 0x4c agrees; actor/result ESI/EDI, state-one decrement and zero-fill remain.
-// Earlier: frame 0x4c agrees; ESI/EDI, state-one decrement and zero-fill differ.
-// Native workspace initializer 69; owner lifetime 266; level lifetime 320;
-// entry pointer walk 261; full-width choice 150; full-width type 338.
-// Two-word initializer 68; full member initializer 287; retained ordinal 244;
-// shared final exit 69; frame pointer on native initializer 334.
-// Round 280: outer workspace 143; short copy counter 69; long level 173; retained handler reads 69; ordinary dispatch first 131.
-// Empty native initializer 143; value/assigned-value initialization 249 each; empty initializer with early state pop 146;
-// owner/handler records 69 each; current-level snapshot 69; level snapshot with empty initializer 143.
-// Actor/result ESI/EDI, state-one decrement, zero-fill and insertion setup still differ.
-// Native initializer with early state pop 140; candidate index snapshot 252;
-// candidate receiver 69; choice before workspace 69; callback/insertion names 69;
-// completion/eligibility/insertion results 69/163/69; existing mask helper inline 69.
-// with 0x1a7b30's sources sharing one copy (NULL-preset source there), both callees'
-// parameters reordered and the workspace memset, only the state-one pop differs (retail keeps level in
-// a register around the handler store): NULL-preset source 62; plus 0x1a7b30 order 60; plus memset
-// 134 (aligned 4); pop before the store 137; plus 0x1a8080 order 134 (aligned 2); without memset 58;
-// the two orders alone 67. Original body kept (the NULL preset is a tested sentinel; 0x1a7b30 rises to 100).
-// Enclosing enabled/state-one/choice dispatch arms in seven combinations 69 each; all three with current-slot at enabled use 69.
+// score 29 (was 29): the kind-2 failure pop is `dec [mem]` where retail loads, decrements and stores
+// around the stamp, and the choice-failure pop is split where retail uses `dec [mem]` (aligned 8).
+// Round 96: kind-2 dispatch first 147; the kind test reversed 126; the current-slot ternary inverted
+// 29 (identical); current-slot assigned in an if 242; the default type assigned in an if 166; the
+// next-type test inverted 36; positive next-handler validation 29 and positive enabled dispatch 29
+// (both identical). Original dispatch and failure arms restored.
+// The choice arm's pop before its stamp is not retail's order there: it is kept only because its 5
+// extra bytes balance the kind-2 pop's 5 missing ones, so put the stamp first again once the kind-2
+// pop splits. Before this round only the state-one pop and the `= {0}` workspace remained (aligned 7); earlier: actor/result ESI/EDI (0x1a7b30's result arrives in ESI,
+// retail EDI), the state-one level pop (ours `dec [mem]`, retail load/dec/store around the handler
+// store), the `= {0}` workspace (retail clears it as a memset, rep stosd x16) and 0x1a8080's argument
+// set-up order differ. memset plus 0x1a8080 as (type, owner, level) leave only the entry registers and
+// the state-one pop (957/957 bytes, aligned 21 from 24, positional 143).
+// Round 78: the entry loop as `for (short i = 0; i < 3; i++)` in place of the hand-inverted do/while
+// 69 (identical code, kept; a long counter unrolls it: 1292 bytes, 651); next-handler test through
+// ACTION_HANDLER_ENABLED 87; state-one pop before the stamp 140 (957 bytes, the kind-2 pop takes
+// `dec [mem]`); `if (level < 0) break;` for the head flag 215 (rotated).
+// Tried: native workspace initializer 69; owner lifetime 266; level lifetime 320; entry pointer walk
+// 261; full-width choice 150; full-width type 338; two-word initializer 68; full member initializer
+// 287; retained ordinal 244; shared final exit 69; frame pointer on native initializer 334; outer
+// workspace 143; short copy counter 69; long level 173; retained handler reads 69; ordinary dispatch
+// first 131; empty native initializer 143; value/assigned-value initialization 249 each; empty
+// initializer with early state pop 146; owner/handler records 69 each; current-level snapshot 69;
+// level snapshot with empty initializer 143; native initializer with early state pop 140; candidate
+// index snapshot 252; candidate receiver 69; choice before workspace 69; callback/insertion names 69;
+// completion/eligibility/insertion results 69/163/69; existing mask helper inline 69; with
+// 0x1a7b30's sources sharing one copy (NULL-preset source there), both callees' parameters reordered
+// and the memset workspace, only the state-one pop differs (retail keeps level in a register around
+// the handler store): NULL-preset source 62, plus 0x1a7b30 order 60, plus memset 134 (aligned 4), pop
+// before the store 137, plus 0x1a8080 order 134 (aligned 2), without memset 58, the two orders alone
+// 67; original body kept (the NULL preset is a tested sentinel; 0x1a7b30 rises to 100). Enclosing
+// enabled/state-one/choice dispatch arms in seven combinations 69 each, all three with current-slot at
+// enabled use 69; memset 143; 0x1a8080 (type, owner, level) 67; both 143; on both: state-one
+// `level -= 1` 143, pop before the store 146, `else if` after the enabled test 143, enabled and
+// state-one tests in one arm 219.
+// Round 93, on the NULL-preset + both reorders + memset base (957 bytes, only the state-one pop left):
+// `level -= 1` 134; pop first 137; state-one, kind-2 and choice arms as one if/else chain without
+// `continue` 119 (state-one pop now as retail, but the kind-2 failure pop becomes `dec [mem]`); chain with
+// `continue` in the kind-2 arm only 134, in the state-one arm only 119; kind-2 failure statements
+// reordered (state first 119; pop before the state store or first 134: the state-one pop goes back to
+// `dec [mem]`); `while (level >= 0)` 215 (rotated). Exactly one of the state-one and kind-2 failure pops
+// takes the `dec [mem]` form in every arrangement.
+// Round 100 (on the kept body): state-one pop as `--level` or `level = level - 1` 69/69; kind-2 failure
+// state store before the stamp 69; state-one / kind-2 / choice as one if-else chain 69 (identical code
+// on this base: only the state-one pop is fused); slot selection after the enabled test 177.
+// Round 10 (lane 13), with 0x1a7b30 unchanged (its result pointer arrives in ESI, retail EDI): memset
+// alone 143 (957/957, aligned 12 from 16: entry registers, the state-one pop and 0x1a8080's argument
+// set-up); plus 0x1a8080 as (type, owner, level) 143 (aligned 10, 0x1a8080 still matches); plus the
+// state-one pop first 146; plus the state-one and kind-2 arms as an if/else chain 128 (aligned 10:
+// state-one split as retail, kind-2 fused); on the chain the kind-2 pop first or between its stores
+// 143 each (kind-2 split, state-one fused again); the kind-2 success leaving by `break` 128.
+// Diagnostics: a different state-one decrement leaves kind-2 fused on the chain, and a different
+// kind-2 decrement leaves state-one fused on the continue form, so the two pops aren't merged; the
+// choice looks like the allocator's (a temporary register or a memory operand for the decrement).
+// Round 99 (lane 6), on the kept body: the first enabled test through the handler local, as the
+// next-handler test is written, 69 (identical); kind-2 failure with the state store first 69 (aligned
+// 18: only that arm's store order moves, the state-one pop stays `dec [mem]`); the state-one stamp
+// through the table 69; `current` from `&owner->slots[level]` 69; `current` declared before the
+// handler 159 (966 bytes). The entry registers follow 0x1a7b30's own ESI/EDI colouring (its result
+// pointer arrives in ESI, retail EDI).
+// Round 88: 0x1a7b30 now matches with retail's owner ESI / result EDI, and the entry follows it
+// (69 -> 62); 0x1a7b30 as (owner_index, result) and 0x1a8080 as (type, owner, level), each consistent,
+// give retail's set-up order at both calls (58). With the memset workspace on top: 957/957, aligned 8,
+// only the state-one pop left (positional 134). On that base, the pop-or-stamp-first order of the
+// state-one, kind-2 failure, choice failure and next-handler failure arms (16 combinations tried, 9
+// measured): the state-one arm splits as retail only when another arm fuses or a choice-failure pop
+// splits too (43-137); stamping through the handler table in each arm 81-314; `--level`, `level = level - 1`,
+// kind-2 state store first and the else-if chain 134 each.
+// Round 17 (memset workspace, 957/957): only the state-one pop differs (aligned diff 3); the lower
+// level computed before the stamp and assigned after 134; the state-one stamp through the table 134;
+// state-one/kind-2/choice as an if/else chain with the kind-2 test inverted (failure arm first) 119
+// (state-one now as retail, kind-2 failure fused); on that, the workspace declared at the loop top 119.
+// DL199: Shared parent-level short/int/long/dword gives 321/285/285/285; with the library
+// workspace clear 330/292/292/292. The common value changes loop and frame allocation; original
+// 0x4c frame, six pops and aggregate workspace restored. State-one split decrement and zero-fill
+// remain.
+// Lane 14 r20: the workspace cleared by memset alone 134 (957/957, aligned 8: only the state-one
+// pop); with the state-one pop first 137, the kind-2 pop first 134, the choice pop first 46 (aligned
+// 8); a grid of 31 stamp/pop orders over the state-one, kind-2, choice and next-handler arms 43-137
+// (state-one, kind-2 and choice pops first 43, all four 45); the state-one / kind-2 / rest as an
+// if/else chain 119 with retail's stamp-first choice arm (only the kind-2 pop differs), 29 with the
+// choice pop first (kept); on the chain the six kind-2 statement orders 29-46/119-134, the
+// next-handler pop first 31, the not-enabled arm chained too 29, only the kind-2 arm chained 29, the
+// kind-2 check inverted 29/119, `continue` kept in the kind-2 arm (with or without the state-one
+// one) 46; `while (level >= 0)` 206 (rotated). Of the state-one and kind-2 pops exactly one fuses:
+// the arm that falls through to the loop end fuses, and when both `continue` the state-one one
+// does; retail splits both.
+// Round 127 (lane 4), on the kept body (every pop but the state-one arm's already as retail: the
+// shared enabled-failure and choice==stamp arms `dec [mem]`, kind-2, level++ and next-handler arms
+// load/dec/store): `level` declared before the owner lookup 60; `level` set to zero just before
+// the slot loop 308 (held in a register); memset workspace alone 134 (957/957, the pop's offset
+// runs to the end); `level = (short)(level - 1)` in the state-one arm 58 (same code); its stamp
+// through g_46eeb8[type] 58 (same code).
+// Round 46 (lane 9): with the memset workspace (957/957, 134) only the state-one arm differs. Ours cross-jumps
+// the three enabled-test failures into that arm's own `dec [mem]` (the arm is `mov [esi+8], edx` then the
+// shared pop), where retail sends them to the fallback-failure pop (0x1a7e63) and keeps a separate state-one
+// arm whose load is scheduled above the stamp store. On memset: state-one pop first 137 (both arms fused, the
+// enabled failures then share kind-2's pop), plus kind-2 pop first 131 (state-one fused, kind-2's level store
+// before its state store); a `usable` flag for the fallback call tested with the enabled test 223 (not
+// threaded: the handler/slot lines sit between), 209 without memset; tested alone right after the join 134
+// (threaded, identical code); tested with the enabled test before the handler/slot lines 169 (the fallback
+// failure then also jumps into the state-one arm, and the slot select moves after the test). With both arms
+// pop first (131) the enabled failures do jump to the fallback-failure pop as in retail; kind-2 fused only
+// when it became the host (the host is chosen first, its `level--` then fuses). State-one / kind-2 / choice as
+// an if/else chain on memset 119 (state-one split as retail, kind-2 hosts and fuses); the enabled arm in the
+// chain too 119 (identical).
+// Lane 16 r48 (fast; aligned difflib counts in brackets): the full grid of pop/stamp orders on the
+// kept chain body (state-one 2 x kind-2 failure 6 x choice 2 x next-handler 2, 48 forms) 29-137, none
+// below the kept 29 [8]: the kind-2 pop splits as retail only with `level--` before its stores, and then
+// the state-one pop fuses (best 43 [10], kind-2 store order then stamp/level/state for retail's
+// stamp/state/level); one shared `level--` after the state-one/kind-2 chain 29 (same code);
+// `level = level - 1` and `level = (short)(level - 1)` in the kind-2 arm 29/29.
+// Round 52 (harness exact once 0x1a7ad0 has several callers): the kind-2 failure `level--` fuses in all six
+// statement orders with either choice-failure order (aligned 3-10); real: stamp, state, pop with retail's
+// stamp-first choice arm 119 (only the kind-2 pop differs, 2 bytes short); pop, stamp, state 46; the
+// kind-2 test inverted with the failure statements inside it 29 (identical); success leaving by `break`
+// 29 (identical); the check result in a `started` bool 29 (identical). `level = level - 1` there and a
+// `continue` after the failure statements: identical / 42 positional.
+// Lane 16 r50 (fast): source permuter, 66 tries in 600 s, best 29; the choice==g_46fbe4 arm as an if/else
+// without `continue` (the rest of the handler code in its else), stamp first 119 (the choice pop fuses as
+// retail, but the enabled failures cross-jump into a fused state-one pop again), pop first 29 (same code);
+// on the stamp-first form the kind-2 failure orders stamp/pop/state 134, state/stamp/pop 119,
+// state/pop/stamp 133, pop/stamp/state 134, pop/state/stamp 133.
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {
 	s_actor_view *owner = actor_get(actor_index);
 	short level = 0;
-	long i;
 
 	g_46f348++;
-	function_1a7b30((s_flag_bits *)g_557c40, actor_index);
+	function_1a7b30(actor_index, (s_flag_bits *)g_557c40);
 	g_4ee4ec = function_1a7ad0(actor_index);
 	memset(g_4f0a4c, 0, sizeof(g_4f0a4c));
-	i = 0;
-	do
+	for (short i = 0; i < 3; i++)
 	{
 		s_slot_entry *entry = &((s_slot_owner_entry *)owner)->entries[i];
 
@@ -855,9 +953,7 @@ void __stdcall function_1a7cc0(long actor_index)
 			candidate->node.next = NULL;
 			g_4f09c8[entry->field4]++;
 		}
-		i++;
 	}
-	while (i < 3);
 	if (owner->unknown222)
 		g_46eeb8[0x38]->unknown8 = g_46f348;
 
@@ -893,9 +989,8 @@ void __stdcall function_1a7cc0(long actor_index)
 		{
 			handler->unknown8 = g_46f348;
 			level--;
-			continue;
 		}
-		if (handler->kind == 2)
+		else if (handler->kind == 2)
 		{
 			t_slot_start check = (t_slot_start)((s_slot_handler_2 *)handler)->update40;
 
@@ -908,54 +1003,56 @@ void __stdcall function_1a7cc0(long actor_index)
 			handler->unknown8 = g_46f348;
 			current->state = 2;
 			level--;
-			continue;
-		}
-
-		s_slot data = {0};
-		short choice = ((short (__stdcall *)(long, short, s_slot *))((s_slot_handler_1 *)handler)->choose)(actor_index, level, &data);
-
-		if (choice == g_46fbe4)
-		{
-			handler->unknown8 = g_46f348;
-			level--;
-			continue;
-		}
-
-		short next_type;
-		s_slot_handler *next_handler;
-
-		if (choice == g_46fbe8)
-		{
-			next_type = owner->slots[level + 1].type;
-			next_handler = g_46eeb8[next_type];
 		}
 		else
 		{
-			next_type = choice;
-			next_handler = g_46eeb8[choice];
-		}
-		if (next_handler->unknown8 == g_46f348 || (next_handler->mask & g_4ee4ec) != g_4ee4ec ||
-			!(g_557c40[next_type >> 5] & (1 << (next_type & 0x1f))))
-		{
-			handler->unknown8 = g_46f348;
-			level--;
-			continue;
-		}
-		if (choice == g_46fbe8)
-		{
-			level++;
-			continue;
-		}
+			s_slot data;
+			memset(&data, 0, sizeof(data));
+			short choice = ((short (__stdcall *)(long, short, s_slot *))((s_slot_handler_1 *)handler)->choose)(actor_index, level, &data);
 
-		short local_0 = actor_behavior_get_insert_level(choice, level, (s_slot_owner_entry *)owner);
+			if (choice == g_46fbe4)
+			{
+				level--;
+				handler->unknown8 = g_46f348;
+				continue;
+			}
 
-		if (local_0 != NONE && function_1a80e0(actor_index, choice, &data, local_0))
-		{
-			level = local_0;
-			continue;
+			short next_type;
+			s_slot_handler *next_handler;
+
+			if (choice == g_46fbe8)
+			{
+				next_type = owner->slots[level + 1].type;
+				next_handler = g_46eeb8[next_type];
+			}
+			else
+			{
+				next_type = choice;
+				next_handler = g_46eeb8[choice];
+			}
+			if (next_handler->unknown8 == g_46f348 || (next_handler->mask & g_4ee4ec) != g_4ee4ec ||
+				!(g_557c40[next_type >> 5] & (1 << (next_type & 0x1f))))
+			{
+				handler->unknown8 = g_46f348;
+				level--;
+				continue;
+			}
+			if (choice == g_46fbe8)
+			{
+				level++;
+				continue;
+			}
+
+			short local_0 = actor_behavior_get_insert_level(choice, (s_slot_owner_entry *)owner, level);
+
+			if (local_0 != NONE && function_1a80e0(actor_index, choice, &data, local_0))
+			{
+				level = local_0;
+				continue;
+			}
+			next_handler->unknown8 = g_46f348;
+			(local_0 < 4 ? &owner->slots[local_0] : NULL)->state = 2;
 		}
-		next_handler->unknown8 = g_46f348;
-		(local_0 < 4 ? &owner->slots[local_0] : NULL)->state = 2;
 	}
 }
 
@@ -1160,15 +1257,7 @@ struct s_surface_support_view
 	long component_index;
 };
 
-struct s_surface_component_view
-{
-	byte unknown00[0x74];
-	long body_count;
-	byte unknown78[0xa0 - 0x78];
-};
-
 struct s_object;
-struct s_havok_component;
 s_object *function_badc0(long object_index, dword type_mask);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
@@ -1183,7 +1272,7 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
     arg_2->k = arg_0->k * arg_1;
 }
 
-// score 2 (was 18): the returned point is copied from EAX before the body load;
+// score 2 (was 2): the returned point is copied from EAX before the body load;
 // retail loads the body and then copies the point from ESI. The frame and projection agree.
 // Sampling name 18; vector names 18; vectors declared first 18; const unit 18;
 // saved body count 124; workspace memcpy 18; indexed output 23; const component 18.
@@ -1201,9 +1290,17 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // Round 127: validated query index 99; sampled-point result 128; both 136;
 // enclosing point lifetime 128; branch-local last body 2; last body with query index 99;
 // named validation 2; validation with query index 99.
-// score 2 (was 2): returned EAX/body-load order remains; const point 18; returned reference 128;
+// Later: const point 18; returned reference 128;
 // address of returned point/direct body 2/2; clamped body 99; early normal 2; workspace fields 5;
 // samples name 2; early normal with const point/direct body 18/18.
+// Round 88: BLOCKED-BY 0x1d0a20 (its parameter order: with velocity before point, retail's
+// `mov ecx, esi` follows; its file is held this round). Statement point query with the
+// address 18; point pointer local 18; body re-read at the call 2; statement query plus body
+// re-read 18; velocity pointer local 2.
+// Round 103: the existing component getter and rigid-body count in place of the hand-written lookup 2 (kept,
+// same code); the clamp compare operands swapped 3; the object handle read through its own address for the
+// point query 2; the clamp as matched 0x182020's if/else 2; a named component index 2. Still BLOCKED-BY
+// 0x1d0a20 (its definition file and the held src/impacts.cpp calls).
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {
@@ -1222,12 +1319,12 @@ void function_1a68a0(long object_index, vector3f *velocity)
 				s_surface_support_view *support = (s_surface_support_view *)function_badc0(unit->support_index, NONE);
 				if (support && support->component_index != NONE)
 				{
-					s_surface_component_view *component = &((s_surface_component_view *)g_51e9b8->data)[support->component_index & 0xffff];
+					s_havok_component *component = havok_component_get(support->component_index);
 					long body_index = unit->body_index;
-					long clamped = body_index < 0 ? 0 : body_index > component->body_count - 1 ? component->body_count - 1 : body_index;
+					long clamped = body_index < 0 ? 0 : body_index > component->rigid_bodies.size - 1 ? component->rigid_bodies.size - 1 : body_index;
 					if (clamped == body_index)
 					{
-						havok_component_rigid_body_point_velocity_get(body_index, (s_havok_component *)component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
+						havok_component_rigid_body_point_velocity_get(body_index, component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
 					}
 				}
 			}
@@ -1828,57 +1925,6 @@ PRIVATE __forceinline s_target_link_definition *function_1a5c01(long object_inde
 	return (s_target_link_definition *)g_4e3b44[object->definition_index & 0xffff].bytes;
 }
 
-// score 85 (was 85): frame 0xf0 and prefix through +0x102 agree; query carriers, optional transform and exits differ.
-// Earlier: frame 0xf0 agrees; the marker loop's query carriers and the optional second
-// matrix (retail: a nullable marker selected before the capacity test, then null-tested) differ.
-// With a selector local (allowed only with a match) 13, plus a marker list local 11 at 565 bytes;
-// left: the marker address (retail [base+offset] load, then an in-place add) and count loaded into
-// ecx before the selector. Earlier: the first candidate named inside the count test kept (98 -> 85
-// with candidate indexed by accepted count); positive-count guard around the loop 93 (not kept).
-// Direct count increment 121; native short query 129; shared exit 131; direct optional transform
-// 115; positive marker count 129; combined increment/transform 113; combined short query 114;
-// direct count cleanup 113; two-phase candidate cursor 125; marker/table/both records 113 each;
-// cursor with marker record 125; cursor with native query 129; cursor with positive table 126;
-// separate count result 169; initial candidate lifetime 98; marker presence 113; weighting value
-// 120; optional matrix value 173; readonly tag/capacity value/scalar names 113 each; initialized
-// marker output 209; initial candidate plus weighting 109; post-query candidate 85; native query
-// there 86; existing tag helper 161; first candidate record 98; post-query marker
-// record/workspace 85 each; tag helper plus post-query candidate 161; selector branches/before
-// presence 80/80; native query count 73; index name/shared marker buffer 13/13; weight result 67;
-// combined eligibility 80; accepted-count snapshot after/before query 13/13; query name first/with
-// count 12/12; native marker value before/after query 100/110; library copies 100/110; native
-// query width 126/128; shared descriptor 100; late copy with shared outputs 110; name local before
-// the marker 12; marker after the query 11; marker by pointer arithmetic 85 (with selector 13: the
-// in-place add appears, offset/name in ecx/edx); if-assigned selector 80; matrix local 85;
-// capacity tested before the selector 85; named candidate before/after the selector 13/13.
-// call argument setup, marker-loop homes and terminal epilogues still differ.
-// Kept: the first candidate named inside the count test (98); with a repeated positive-count guard
-// around the marker loop 93 (not kept: a test the loop already makes).
-// Direct count increment 121; native short query 129; shared exit 131; direct optional transform 115.
-// Positive marker count 129; combined increment/transform 113; combined short query 114; direct count cleanup 113.
-// Two-phase candidate cursor 125; marker/table/both records 113 each; cursor with marker record 125;
-// cursor with native query 129; cursor with positive table 126; separate count result 169.
-// Existing helper argument setup, marker-loop homes and terminal exits still differ.
-// Initial candidate lifetime 98; marker presence 113; weighting value 120; optional matrix value 173;
-// readonly tag/capacity value/scalar names 113 each; initialized marker output 209.
-// Initial candidate plus positive table 93 kept; initial candidate plus weighting 109.
-// Initial helper setup now agrees through +0x102; marker call setup and exits still differ.
-// marker setup, optional transform and exits still differ after +0x102.
-// Candidate indexed by accepted count 85 plain kept; post-query candidate 85; native query there 86;
-// existing tag helper 161; first candidate record 98; post-query marker record/workspace 85 each;
-// tag helper plus post-query candidate 161.
-// Round 277: nullable second-marker base 13 at retail length; branches/before presence 80/80;
-// native query count 73; index name/shared marker buffer 13/13; weight result 67; combined eligibility 80.
-// Accepted-count snapshot after/before query 13/13; query name first/with count 12/12; selectors require a match.
-// frame 0xf0 agrees; query carriers and optional matrix conversion remain;
-// native marker value before/after query 100/110; library copies 100/110; native query width
-// 126/128; shared descriptor 100; late copy with shared outputs 110.
-// query base/offset and accepted-count/selector registers remain.
-// Complete query inline 85; nullable-record query inline/outlined, geometry/weight/both/all/outlined contracts 13 each;
-// loop/iteration list 165/11; shared candidate 13; iteration/loop list with candidate 11/165; const/native query list 11/11; native query candidate 13;
-// list accepted count after/before 11/11; list next count 127; post-query marker advance 11, with accepted counts 11/11;
-// marker advance with next count/candidate-next 123/127. Loop-wide lists lose the matched caller; every nullable selector remains exact-only and is rejected.
-// Actual descriptor cursor with nullable record: native/short query [165, 168]; shared output [165, 168]; metadata bound [169, 171]; both [169, 171]. All exact-only forms restored.
 // @retail 0x1a5c00
 long function_1a5c00(s_sort_weight_view const *weights, long object_index, bool alternate,
 	point3f const *origin, vector3f const *direction, long count, s_sort_candidate_view *candidates)
@@ -1903,12 +1949,14 @@ long function_1a5c00(s_sort_weight_view const *weights, long object_index, bool 
 		for (long marker_index = 0; marker_index < table->count; marker_index++)
 		{
 			s_target_marker *marker = &table->markers[marker_index];
+			long name = marker->name;
 			s_object_marker markers[2];
-			long marker_count = function_b8d30(object_index, marker->name, markers, 2, false);
+			long marker_count = function_b8d30(object_index, name, markers, 2, false);
 			if (marker_count != 0)
 			{
+				s_object_marker *second = marker_count == 2 ? &markers[1] : NULL;
 				if (count < 64 && function_1a5e40(object_index, alternate, marker_index, marker,
-					&markers[0].matrix, marker_count == 2 ? &markers[1].matrix : NULL,
+					&markers[0].matrix, second ? &second->matrix : NULL,
 					origin, direction, &candidates[count]) &&
 					function_1a60f0(&candidates[count], weights, marker->field_10 * scale))
 				{
@@ -2058,8 +2106,9 @@ PRIVATE inline long function_1a67f1(long arg_0)
 	return local_0;
 }
 
+/* the target's radius is passed but not used */
 // @retail 0x1a67f0
-byte function_1a67f0(point3f const *arg_0, point3f const *arg_1, long arg_2, long arg_3)
+byte function_1a67f0(real radius, point3f const *arg_0, point3f const *arg_1, long arg_2, long arg_3)
 {
 	s_1a67f0 local_0;
 	local_0.field_24 = NONE;
@@ -2086,17 +2135,10 @@ struct s_1a5370
 	s_1a5371 *field_30;
 };
 
-// score 10 (was 10): the local record sits at a different stack address and its fields are read
-// from different offsets.
-// Retail bases the induction cursor at candidate+0x14, not +0; after-sort and full-lifetime aliases 10;
-// radius-origin parent, pointer arithmetic, indexed/const/array views, index/count lifetimes and output
-// indexing 10 each.
 // @retail 0x1a5370
 bool __stdcall function_1a5370(s_sort_weight_view const *arg_0, point3f const *arg_1,
 	vector3f const *arg_2, long arg_3, short arg_4, s_sort_candidate_view *arg_5)
 {
-	/* the weights stay in their stack slot, as in retail */
-	s_sort_weight_view const *const *local_9 = &arg_0;
 	bool local_0 = false;
 	s_sort_candidate_view local_1[0x40];
 	long local_2 = function_14a280(g_4e033c, 0, (point3f *)arg_1);
@@ -2105,7 +2147,7 @@ bool __stdcall function_1a5370(s_sort_weight_view const *arg_0, point3f const *a
 		short local_3 = ((s_1a5370 *)g_4e0348)->field_30[local_2].field_0;
 		if (local_3 != NONE)
 		{
-			long local_4 = function_1a54a0(*local_9, local_3, arg_1, arg_2, arg_3, arg_4, local_1);
+			long local_4 = function_1a54a0(arg_0, local_3, arg_1, arg_2, arg_3, arg_4, local_1);
 			if (local_4 > 0)
 			{
 				g_51e99c = (s_sort_globals *)arg_0;
@@ -2113,7 +2155,7 @@ bool __stdcall function_1a5370(s_sort_weight_view const *arg_0, point3f const *a
 				for (long local_5 = 0; local_5 < local_4; local_5++)
 				{
 					s_sort_candidate_view *local_8 = &local_1[local_5];
-					if (function_1a67f0(arg_1, &local_8->point, arg_3, local_8->object_index))
+					if (function_1a67f0(local_8->radius, arg_1, &local_8->point, arg_3, local_8->object_index))
 					{
 						*arg_5 = local_1[local_5];
 						local_0 = true;
@@ -2164,7 +2206,7 @@ bool function_1a6a80(s_object_marker_target const *target, point3f const *origin
 						candidate->secondary_score = 0.0f;
 					}
 					candidate->scaled_score = 0.0f;
-					if (function_1a67f0(origin, &candidate->point, excluded_index, candidate->object_index))
+					if (function_1a67f0(candidate->radius, origin, &candidate->point, excluded_index, candidate->object_index))
 						result = true;
 				}
 			}

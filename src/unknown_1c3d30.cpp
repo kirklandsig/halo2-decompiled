@@ -73,16 +73,50 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
-// score 7 (was 7): four differing instructions are in the loop over the groups
-// (retail loads the seat table into ECX and the index into EDX, ours into EAX and
-// ECX) and three in the release loop (retail keeps the index in EAX, ours in EDX).
-// groups: retail loads the seat table into ECX and the index into EDX, ours
-// loads the table into EAX and the index into ECX.
+// score 7 (was 7): this round: five more shapes of the group loop's call (the entity list in a
+// named local, the element read through pointer arithmetic, the index read into a local before the
+// select, both of those together, and the element pointer in a local) all compile to the same 507
+// bytes and leave the same seven differences; four more shapes of the release loop's condition
+// (the limit compared the other way round, the limit minus one, and a negated form) give 10, 12
+// and 65. Still the element select loads the list into EAX and the index into ECX where retail
+// uses ECX and EDX, and the release loop's entry test uses EDX and EAX where retail uses EAX and
+// ECX.
+// score 7 (was 7): this round: the listings were re-read only; no new shape of the two register
+// pairs was found. The group loop still loads the entity list into EAX and the index into ECX
+// where retail uses ECX and EDX, and the release loop's entry test uses EDX and EAX where retail
+// uses EAX and ECX. The permuter (this round and the previous one) produced no candidate.
+// score 7 (was 7): this round: seven more shapes for the group loop and the release loop: the
+// field pointer, the index, the entity and the group index in named locals, the selected group
+// list in a named local, the limit and the counter in named locals, and the release loop written
+// as a for statement. The named-local forms all compile to the same 507 bytes and the same seven
+// differences; the selected-list form gives 63 and the limit and counter locals 137. Still the
+// element select loads the field into EAX and the index into ECX where retail uses ECX and EDX,
+// and the release loop's entry test uses EDX and EAX where retail uses EAX and ECX.
+// score 7 (was 7): this round's two more shapes: the entity list read as a pointer sum into the
+// group entry, and the release loop written as a guarded do-while; both compile to the same 507
+// bytes with the same seven differences. Still the entity list and the index of the group loop
+// take EAX and ECX where retail uses ECX and EDX, and the release loop's entry test uses EDX and
+// EAX where retail uses EAX and ECX.
+// score 7 (was 7): the entity list and the index of the group loop and the two registers of
+// the release loop's entry test still differ from retail's (ECX and EDX, EAX and ECX) in every
+// shape tried: the list and the index as named locals, the index read before the select, the
+// entity as a named local, the select reversed, the group entry as a pointer sum, the release
+// condition reversed, `1 + field_14`, a for loop and `field_14 < field_c - 1`. All of them
+// compile to the same bytes and leave the same seven differences.
+// score 7 (was 7): the group loop still loads the entity list into EAX and the index
+// into ECX where retail uses ECX and EDX, and the release loop's entry test still uses
+// EDX and EAX where retail uses EAX and ECX; selecting the table and indexing it after
+// gives retail's tail and entry test but breaks the select block (63), so the element
+// select is kept.
+// score 7 (was 7): in the loop over the groups the entity list and the index take
+// different registers (retail ECX and EDX, ours EAX and ECX), and the release loop's
+// entry test uses EAX and ECX where ours uses EDX and EAX.
 // Shared/separate/entry control words 7/7/7; early step record 64; aggregate
 // and scoped step records 7/7; early record with shared control 64; control bit updates 7.
 // Iterator pointer 7; groups local 78; setup scope 7; iterator name 7;
 // release for 7; world declaration at entry 7; group-entry scope 7;
 // release-index pointer 10.
+// group-table ternary reversed 11; entity list local 7; index local 7; both locals 7.
 // @retail 0x1c3d30
 void function_1c3d30()
 {

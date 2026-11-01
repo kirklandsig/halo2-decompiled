@@ -98,7 +98,7 @@ s_slot_handler_2 g_47e080 ={
 	(t_slot_proc)function_1b2770, 0, function_1b2bb0
 };
 
-short __stdcall function_1c8df0(short team, short type, point3f const *point, long object_index,
+short __stdcall function_1c8df0(short type, short team, point3f const *point, long object_index,
 	void const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
 void function_1e3b00(long object_index, long mode, point3f const *reference, void const *unknown0,
 	void const *unknown1, point3f *position);
@@ -111,50 +111,16 @@ bool function_1f4460(long actor_index, s_type_c3b527 const *point, long target_i
 /* slot type 0x24's update: moves the actor to its prop (to the point the
    prop names, or along its direction) and flags the slot when it is there
    or cannot get there (always returns true) */
-// score 144 (was 144): frame 0x48 and retail length agree; entry pool/view carriers, category width and movement/failure placement remain.
-// Earlier score 146 (was 146): frame 0x48 and length 1077 agree; the entry registers (actor offset in
-// EBP, ours, against EAX plus lea), the actor index kept in ESI (retail reloads it from its
-// stack slot), the prop type tested as long (retail 16-bit), and the block layout: retail puts
-// the type 1 arm and the unsupported-type return after the result check (type 0 falls into it,
-// type 1 jumps back); ours puts them between the type 0 arm and the result check.
-// Tried: short type 192 (aligned 109 against 101: the 16-bit tests agree but the target point
-// stores reschedule); the result check copied into both arms 408 (no tail merge); a switch on
-// the type 249 (sub eax,0/dec eax); state declared first 144; scalars first 146; state before
-// view 146; the result check inside a type 0 or 1 block 211 (aligned 99, same layout); type 0
-// as the else of a nonzero-type block 226. Earlier (611-232 on older bodies): native type width
-// 611; common success exit 595; lookups after actor guards 616; tracked type first 619; bounded
-// trace distance 620; visibility result 620; single exit native category 584; successful move
-// guard 584; supported category guard 588; near target arm first 586; structured actor gates
-// 584; native supported category guard 621; native near target first 617; structured
-// supported categories 588; caller noinline declaration 620; callee noinline declaration 236;
-// shared magnitude/point 236/236; destination name 236; long result 233; category short
-// outlined query 338; completion early return 232; category short completion 236; movement
-// result first 232; movement workspace scope 232; probe frame names 232; existing point setter
-// 232; far failure arm first 232; movement success return 232; outer trace lifetime 232; direct
-// native categories 236; plain coordinate loop 232; cluster result arms 232; probe declarations
-// reversed 232; inactive actor return 232; source target/output point pointers 208/232; source
-// point/record values 237/247; outlined visibility result 238; shared trace origin 238;
-// geometry-only origin 153 (kept); geometry setter/native category 153/195; direction before
-// query 146 (kept); full result 150; direct slot/entry trace with direction 146/146; native slot
-// formal, readonly direction, native record copies, native yz distance part and native
-// direction field 146; native direction field at use 211; probe target address 314; directed
-// target address 146; unsigned native category 192; addresses/category 324; shared squared
-// length/dot 146/146; trace fallback first 146; receiver names 146; signed native category and
-// late producer 192/192; reused actor-position address 152; native category with actor-position
-// address 198; completion receiver/result/trace names 146; geometry origin before trace 241;
-// early origin with trace name 241; full category at producer 146; result producer scope 146;
-// early origin with native category 237; complete squared direction, scaled target products and
-// target coordinates 146 each (399 with consistent actor getter observations).
-// Shared index-based view producer 317; initial handle shared by both getters 318; with read-only trace state/native category 318/318; read-only trace state alone 144; word movement result 151; unsigned long category 144; shared getter plus word result 315. Restored.
+/* Retail looks the prop up through a second actor lookup and tests type 0 on the field itself. */
 // @retail 0x1b2770
 bool __stdcall function_1b2770(long actor_index, s_slot *slot)
 {
-	s_actor_view *actor = actor_get(actor_index);
-	s_prop_node_view *node = prop_node_get(actor->prop_index);
-	s_prop_view_fields *view = prop_node_view(node);
 	s_slot_24_data *state = (s_slot_24_data *)slot->unknownc;
+	s_actor_view *actor = actor_get(actor_index);
+	s_prop_node_view *node = prop_node_get(actor_get(actor_index)->prop_index);
+	s_prop_view_fields *view = prop_node_view(node);
 	s_type_c3b527 target;
-	long type;
+	short type;
 	bool result;
 
 	if (actor->unknown504 == 2)
@@ -171,24 +137,25 @@ bool __stdcall function_1b2770(long actor_index, s_slot *slot)
 			{
 				state->unknown00 = false;
 			}
-			else if (function_1f86f0(actor_index))
-			{
-				state->unknown00 = true;
-				function_1f4280(actor_index);
-				return true;
-			}
 			else
 			{
-				point3f point;
-				point3f position;
-				short cluster;
+				if (function_1f86f0(actor_index))
+				{
+					state->unknown00 = true;
+				}
+				else
+				{
+					point3f point;
+					point3f position;
+					short cluster;
 
-				function_210850(&view->unknown78, &point);
-				function_1e3b00(actor->unknown018, 1, &point, NULL, NULL, &position);
-				cluster = view->unknown78.output_index == NONE ?
-					*(short *)((byte *)view + 0x72) : function_272af0(g_4e0348, &point);
-				state->unknown00 = function_1c8df0(cluster, *(short *)((byte *)actor + 0x254), &position, NONE,
-					(byte *)actor + 0x22c, 0, false, actor->unknown26c != NONE, true, NULL) == 0;
+					function_210850(&view->unknown78, &point);
+					function_1e3b00(actor->unknown018, 1, &point, NULL, NULL, &position);
+					cluster = view->unknown78.output_index == NONE ?
+						*(short *)((byte *)view + 0x72) : function_272af0(g_4e0348, &point);
+					state->unknown00 = function_1c8df0(*(short *)((byte *)actor + 0x254), cluster, &position, NONE,
+						(byte *)actor + 0x22c, 0, false, actor->unknown26c != NONE, true, NULL) == 0;
+				}
 				if (state->unknown00)
 				{
 					function_1f4280(actor_index);
@@ -197,7 +164,7 @@ bool __stdcall function_1b2770(long actor_index, s_slot *slot)
 			}
 		}
 		type = view->unknown70;
-		if (type == 0)
+		if (view->unknown70 == 0)
 		{
 			vector3f *direction = (vector3f *)((byte *)view + 0x94);
 			s_prop_state_view *prop_entry = prop_node_state(node);
@@ -236,7 +203,7 @@ bool __stdcall function_1b2770(long actor_index, s_slot *slot)
 		else
 		{
 			function_1f4280(actor_index);
-			return true;
+			result = true;
 		}
 		if (!result)
 		{

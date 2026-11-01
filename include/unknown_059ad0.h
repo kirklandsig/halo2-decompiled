@@ -83,7 +83,7 @@ struct s_session_parameters
 	long unknown6c;
 	long unknown70;
 	byte unknown74[16];
-	byte unknown84[0x40];
+	long unknown84[16];
 	long unknownc4;
 };
 
@@ -153,6 +153,26 @@ struct s_unknown_108
 struct s_unknown_3648
 {
 	long data[0x390];
+};
+
+/* a player's properties (0x90 bytes) */
+struct s_player_properties
+{
+	wchar_t name[32];
+	long unknown40[4];
+	byte unknown50[32];
+	long unknown70[3];
+	char team;
+	byte unknown7d;
+	byte unknown7e;
+	byte unknown7f;
+	byte unknown80;
+	byte unknown81;
+	byte unknown82[2];
+	long unknown84;
+	short unknown88;
+	short unknown8a;
+	long unknown8c;
 };
 
 #pragma pack(push, 1)

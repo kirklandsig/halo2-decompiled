@@ -1420,18 +1420,11 @@ done:
 	g_main_menu_campaign_chosen = false;
 }
 
-extern bool g_54d5a0;
 extern char g_54d5a8;
 extern real g_54d5ac, g_54d5b0, g_54d5b4;
-extern bool g_54e7cc;
 extern dword g_54e7fc;
 void player_slots_initialize();
 
-// score 19 (was 19): the globals are cleared in the other order, ours writes
-// the byte flags after the blocks it fills while retail writes them before.
-// Peer value-init 119; first-member peer clear 19; indexed/derived tail clear 19;
-// noinline player-slot call 19; inline depth zero 19; global optimization off 247;
-// manager-byte clear 23.
 // @retail 0x1476c7
 void function_1476c7()
 {
@@ -1440,7 +1433,7 @@ void function_1476c7()
     g_54d598.unknown05[0] = false;
     g_54d598.unknown05[1] = false;
     g_54d598.unknown05[2] = false;
-    g_54d5a0 = false;
+    g_54d598.value08 = false;
     g_54d598.pending_join_type = 0;
     g_54d5a8 = (char)0xff;
     g_54d5ac = 0.f;
@@ -1473,18 +1466,18 @@ void function_1476c7()
     memset(&g_54d598.team_member_details, 0, sizeof(g_54d598.team_member_details));
     memset(g_54d598.unknowne88, 0, sizeof(g_54d598.unknowne88));
     g_54d598.m1220 = false;
-    g_54e7cc = false;
-    g_54e7fc = 0;
+    g_54d598.m1234 = false;
+    g_54d598.m1264 = 0;
     memset(&g_4ee4c4, 0, sizeof(g_4ee4c4));
-    g_54d5a0 = false;
-    g_54e49c = NONE;
-    g_54e5d0.player = NONE;
-    g_54e5d0.profile_index = NONE;
+    g_54d598.value08 = false;
+    g_54d598.mf04 = NONE;
+    g_54d598.profile_edit.player = NONE;
+    g_54d598.profile_edit.profile_index = NONE;
     g_54d598.m1224 = NONE;
     g_54d598.m1228 = NONE;
     g_54d598.m122c = NONE;
     g_54d598.m1230 = NONE;
-    memset(g_54d598.unknown1234 + 2, 0, 0x10);
+    memset(g_54d598.m1236, 0, sizeof(g_54d598.m1236));
 }
 
 

@@ -439,7 +439,7 @@ void __stdcall function_174180(long particle_system_index);
 void particle_system_unlink(s_particle_system_datum *particle_system, long *first_index, long *last_index);
 void particle_system_link(s_particle_system_datum *particle_system, long *first_index, long *last_index);
 long function_173fd0(struct s_effect_particle_system_definition *definition, long effect_index, long tag_index, short definition_index, long event_index);
-void function_175a80(bool tinted, dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied);
+void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted);
 void function_175270(s_particle_system_datum *particle_system, s_particle_system_spawn *spawn, transform4x3f const *matrix, bool field_b4);
 
 /* effects (src/unknown_175bd0.cpp) */
