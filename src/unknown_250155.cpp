@@ -3080,6 +3080,16 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // for-scoped `player_index` with row-scoped widgets 15, i declared first 13, i/bitmap/text after has_game 13,
 // row_text/row_bitmap 15, the row bitmap as `squad && i < squad->player_count` 36, the row text's arms
 // swapped (`!squad || i >= count` first) 13; a 600 s permuter run on it found nothing under 13 (49 tries).
+// Round 40 (lane 13, fast): the bitmap flag as `squad && i < count` 51. The tail as `bool searching =
+// true; if (A) searching = false; if (searching && (B || C)) searching = false;` 13 at 877 bytes (the
+// else-if tail without identical branches; a flag tested afterwards, so not kept unmatched). On that 13
+// form: item-loop counter / row-loop counter in their own `for` 13/13; `dword i` 16; the bitmap flag as
+// `squad && i < count` 36 or `squad ? i < count : false` 40 (both give retail's row registers, i EDI and
+// text ESI, but store one materialised bool where retail stores in each arm); the bitmap if/else inverted
+// 25; the text test inverted 13; row-scoped text and bitmap 15; `count > i` in both blocks / the bitmap
+// block 15/14; `4 + i`, `5 + i` 13; `? true : false` in the bitmap arm 13; `if (bitmap && squad) ... else
+// if (bitmap)` 13; declarations i/bitmap/text 13; i/text/bitmap ahead of squad 13; the bitmap arm's
+// comparison named `visible` 13; `if (!bitmap) continue;` ahead of the bitmap if/else 13.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

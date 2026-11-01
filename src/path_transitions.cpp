@@ -587,6 +587,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
 // `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
 // `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

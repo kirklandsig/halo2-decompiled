@@ -1445,6 +1445,13 @@ void function_1f86a0(long actor_index);
 // the element 240 (862 bytes); `const byte` mask 134; first entry fetched before the loop with the step at its bottom
 // 134; diagnostic `long` mask 248 (873 bytes: the mask leaves BL but the CSE'd flags byte takes it; the entry stays in
 // memory). The entry loses EBX to every byte candidate.
+// Round 39 (m3 lane 14, fast): the FORMS-slot-data-block form (the state read through `slot->unknownc` as a data
+// struct with offsets 0xc lower, its bool and the +0x24 short through it) 134 (same code), declared between the
+// actor and the unit 134; the iterator declared at the top 134; joint_index and entry declared at the top 134; the
+// decline test as an if/else-assigned bool 134 (same code); the fallback assigned straight to joint_index (no
+// element local) 233. In retail EDI keeps the actor through the loop
+// untouched and EBX takes the entry (spilled at F+4, briefly the first 0xbaf40 result); ours gives BL the mask and
+// uses EDI for that result, reloading the actor.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
