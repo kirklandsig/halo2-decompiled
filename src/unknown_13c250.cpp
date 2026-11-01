@@ -141,6 +141,10 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // read as the declared bitfield 188; the fallback's second field in its own local 144 (identical).
 // Retail's count (memory-resident, yet the first append stores 1) fits an append helper taking the
 // count's address that only LTCG inlines; no such existing helper was found.
+// Round 265: indexed ranking with default first/after rank two/after rank one, each
+// with ordinary/reversed rank-two labels, then default last with reversed rank-two
+// or rank-three labels: 326 each. Opening-switch indexed control also 326 (971 bytes).
+// Original pointer ranking and body restored; receiver/count observations and handoff remain.
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {
