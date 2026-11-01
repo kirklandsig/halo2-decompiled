@@ -226,6 +226,13 @@ void function_44720(void)
 // Round 467: Accepted entry level named at its original read in long/short/word/byte,
 // used by admission and cached submission predicate 155/151/151/152; predicate at its
 // submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
+// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
+// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
+// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
+// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
+// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
+// 157 (515).
 // Round 326: material selector at each table use, cached/live level and pointer/indexed geometry
 // inputs 107/135/140/136; the same four with conditional material production 127/140/150/119.
 // Original selector, predicate and complete body restored; frame and geometry reloads remain.

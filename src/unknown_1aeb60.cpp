@@ -413,6 +413,17 @@ short *function_e70b0(long unit_index, short *value);
 // Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
 // lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
 // mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
+// Round 55 (fast): `now` declared at function scope 49; `long const now` with a named `real const elapsed`
+// and `10.0f < elapsed` 49; the final mode read through the entry actor pointer 132 (423 bytes);
+// `state->ticks -= 1;` 49; the unit index through a `long const &` 49.
+// Round 132 (lane 6, fast with 0xe70b0 in the image): the actor pointer renamed to sort after the
+// index 49; the timer read once into a short local and stored back 49; the final guard named as a
+// bool 49; the slot view and that timer local read before the actor lookup 123 (index still ECX); a
+// plain `inline` declaration of 0xe70b0 here 49. In every block retail's scratch registers sit one
+// allocation on from ours, as if one more temporary came first.
+// Round 287: Parameter-index/slot/both, inline-output/index-output/slot-output/all lexical
+// identities 49/49/49/49/49/49/49; all three alternate identities 49. Original names and body
+// restored; actor/index ECX/EDX and final setup remain.
 // Round 334: four-byte frame and 443-byte extent agree; first +2 exchanges
 // actor/index ECX and EDX and changes final setup. One complete clock receiver,
 // original/native slot data block, entry/timed-block declaration and mutable/const
