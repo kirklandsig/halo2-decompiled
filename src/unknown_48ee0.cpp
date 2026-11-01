@@ -18,6 +18,7 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax lane E (11-01): no new form, no lower score.
 // score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
@@ -146,6 +147,9 @@ extern real g_4c9798[36];
 // Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
 // each with coordinated pixel-size/mode names 230; coordinated names alone and
 // diameter lexical rank 230. Original declarations, names and body restored.
+// Round 279: Complete immediate scalar results for projection/near/far row families,
+// seven nonempty subsets and all with both plane-distance results, 230 each. Original
+// compound updates and entire body restored; mode/size homes and rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

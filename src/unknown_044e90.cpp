@@ -110,6 +110,24 @@
 // 406 reduced; with const query 406; live flags 442/442; branch-owned query data
 // 448/447, with const query 448/447. Ordinary judgment unavailable; original
 // storage, observations and complete body restored. Frame/list and pointer homes remain.
+// Round 476: Distance-before-normal graph, original/eight-byte storage, scalar/shared normal scale and direct/whole-plane output: 463/461/441/442/457/455/457/458.
+// Scalar forms shrink to 1716; shared scale recovers 1742 but regresses. Original zero-scale behavior, whole body and header restored; entry/table and plane/list homes remain.
+// Round 481: Complete scalar-normal initialization schedules i/j/k, j/i/k, j/k/i on
+// native-four storage 421/420/420; all five non-original schedules on eight-byte storage
+// 417/416/416/417/417. Best five-point form rejected; original body and header restored.
+// Round 483: native-eight storage with complete descriptor publication orders
+// second/first/third/fourth 416; second/first/fourth/third 417; second/third/first/fourth
+// and second/third/fourth/first 418/418; third/second/first/fourth and
+// third/first/second/fourth 417/417; fourth/third/second/first and
+// first/third/second/fourth 418/418. Five-point lead below gate; body/header restored.
+// Round 485: Native-eight storage with second/first descriptor publication and
+// j/i/k or j/k/i normal creation, original/reversed final pair 415/416/415/416;
+// coherent tag table 454/455/454/455. On the first graph, short frustum/early
+// containment/both/short view/view with containment/both ordinals/all three
+// 425/404/427/427/416/421/410. Eight-byte 404 loses three caller matches in the
+// full check and is rejected. Sixteen-byte storage retains fast 404 and recovers
+// all three callers, but its closing full check hangs. Complete body and storage
+// restored; original frame/list strides and entry/table/plane homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -142,7 +142,10 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 // vector3d_from_points3d with dot3f loads it first (i, k, j order) 69; a plain cross vector
 // moves the result to XMM1 (also in the compile-only screen): with case 13 returning its
 // fraction directly 152, cases 12 and 13 both 162, the fraction's `+ 1` returned early 210,
-// the fraction as a ternary 210.
+// the fraction as a ternary 210. Round 69: case 12 dot3f in either argument order 70/70;
+// cross3f_staged plain 212, with the inherited qualified vector 31, plain with a named projection
+// 212; ordinary inline on the private implementation 1074 (17 bytes); case 13 dot3f in either
+// argument order 31/31.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {

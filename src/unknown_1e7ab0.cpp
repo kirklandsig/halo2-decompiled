@@ -290,6 +290,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // seat/parent test order 657/620/782/657/759/782/759/759. Magazine producer clears the complete output
 // first. Call admissions, widths and values are preserved; no state/player allocation gain; original guard
 // orders and complete body restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

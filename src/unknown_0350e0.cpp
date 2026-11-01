@@ -593,6 +593,10 @@ extern long g_4858b8;
 // declared parameter order (index, use_depth, element); that callee has 89 call sites, not tried.
 // Tried: swapping function_4c690's parameters (no change), locals for the index/tag read before
 // the first call (40), dropping the (short) cast or using word (17), testing function_3ebd0's result (24).
+// Round 104: callee entries confirm the current signatures; retail's caller temporaries are offset EDX,
+// output ECX and target EAX against our ECX/EAX/EDX. Matrix pointer at the calls/function scope 17/17;
+// direct element-zero address at both/first/last calls 17/17/17; const count 17; late tag/target snapshots
+// 17/17; offset snapshot 17. Original restored.
 // @retail 0x3ede0
 void function_3ede0(void)
 {
@@ -1167,6 +1171,9 @@ real g_4c19b0, g_4c19b4;
 // (all 89: still the jump into case 16's compare). Also tried: a struct overlay for the two colours with the sums as
 // one expression, as three reals or as a field-wise copy (146 to 147: the
 // sums come out in the wrong order and the clamp still shares case 16's compare).
+// Round 280: plain add/copy/both channel loops 89/88/89; library copy with add loop 278;
+// complete selector result with original/add/both/library-copy producers 182/183/183/287.
+// Original body restored; memory adds and upper-clamp sharing remain.
 // @retail 0x336f0
 real function_336f0(long selector)
 {
@@ -2129,6 +2136,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Tried: explicit `if (count > 0)` guard around the loop (257), count read once before the loop (116),
 // double length without the float copy (172/106), assignment of the length inside the fabs (178),
 // `(real)fabs(length)` (106), samples as doubles with a float constant (does not change the fsub).
+// Round 280: loop-local/random-at-every-use 57/57; plain while 57; repeated count
+// receiver alone/with loop random/while/both 57 each; outer empty-state exit with
+// loop random and count receiver 300. Exact-only receiver forms restored with the
+// full original body; lazy saves and the post-fstp memory compare remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -3546,6 +3557,8 @@ long __stdcall function_3ddd0(long object_index);
 // late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
 // base/index order; original loads and arithmetic restored.
 // A 480-second annealed search: 45 attempts, none below 1.
+// Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
+// one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -4088,6 +4101,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // file because it moves matched 0x14ac0's frame). Also tried: `enabled &= extra_enabled` 191,
 // `!(g_485898 >= 4 && g_485898 <= 7) && normal_cull` 138, 0x44370's `>= 4 && <= 7 ? 0 : cull`
 // 138 (cull arms reversed), `if (enabled && extra_enabled != 1)` 167.
+// Round 280: existing configured provider for culled/gated/both/unculled/culled plus
+// unculled/gated plus unculled/all five modes 482/280/540/340/636/435/722;
+// plain loop over the actual mode sequence 795. Provider stays out of line;
+// original whole body and call roles restored. Flag stores and stub convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
