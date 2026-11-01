@@ -1859,6 +1859,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // zero store and loop entry; a 3-point gain, not kept); with a shared iterator-start helper for the
 // file's three prop walks 259 (the walks still match); with the long second counter 260; visibility
 // as one expression or an if/else 450/450 (2841 B).
+// Round 45 (lane 11; fast image 199 at 2880 bytes for this body, 0x25d810 builds differently there): the
+// established/visible flags renamed so their names sort the other way 199/199/199 (identical code: the
+// byte slots do not follow names here); the slot search with a long counter (retail's pointer-walking
+// loop, as the first search) 199 fast, 263 plain (2848 bytes); the player cleared before the first search
+// with it 375, alone 384 (the not-found exit then threads past the index test, which retail keeps). The
+// existing ai_player_get/ai_player_index_get calls: ai_player_get stays out of line (its file is /Ob1;
+// retail inlines it here) 867, with a forceinline declaration 877; ai_player_index_get for both searches
+// (the second search is then CSE'd away) 822/797/818 for a long index with the player cleared first, a
+// short index, and a short index with the player cleared first.
 // Round 36 (lane 13; plain checks, and a one-file LTCG link of this file with its callee closure and the
 // ballast, equal to the full build; --fast is wrong here, its reduced image builds 0x25d810 differently):
 // the view through the existing 0x25d740 262 (same code); the walk through the existing 0x26be00/0x26be30
@@ -1880,6 +1889,16 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 266; plus established/visible renamed 260 (same code: spill slots). The length gap is the scoring block:
 // retail loads direction j/k before the relative test and i in both arms, keeps them for the facing dot,
 // stores visible = false straight to its byte and threads the established test into the not-visible path.
+// Round 30 (lane 2, plain): sequence-aligned counts (the check scores positionally) are 116 for this body.
+// The search in ai_player_get's shape (player NULL first, long copy of the short index for its NONE test, long
+// second counter) 408 (aligned 112); with best_level/strongest declared before the memset 405 (aligned 110:
+// everything up to the players loop then equals retail; the only shift is the iterator's table pointer, loaded
+// into ECX (6-byte load) where retail uses EAX (5 bytes) and reuses it for NONE, so our loop-top pad becomes
+// jmp + lea ecx,[ecx] for retail's single lea ebx,[ebx] and every later instruction is one off). On that form
+// the iterator's NONE fields chained 405, assigned before the table pointer 407 (the load stays in ECX), the
+// iterator declared at the function's top 405. The same three iterator statements give retail's EAX form in
+// the matched 0x138fa0 and 0x192b20, so the ECX choice comes from this loop's register colouring (ours uses
+// ECX/EDX where retail uses EAX/ECX through the whole players loop).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -3134,6 +3134,9 @@ struct s_voice_route_choice
 // Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
 // masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
 // original observations, bitwise radio and full body restored; entry/cursor allocation remains.
+// Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
+// radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
+// three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3362,6 +3365,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // before the stride 139; consumed, size, stride order 158 (476 bytes); `*(word *)&packet[1]` with
 // `== 0` 139; the plain arm through the out-of-line talker test 181 (450 bytes, not inlined); one
 // shared kind test before the relay branch 180 (467 bytes).
+// Round 188 (fast, matched caller 0x564c0 checked each time): packet cursor beside the count 164
+// (member index in EBP, channel reloaded, no separate zero-trip exit); the shared clamp helper
+// with a long count 156 (0x564c0 64), with a single result 138 (0x564c0 87), with short parameters
+// 156 (0x564c0 139); each of those with the cursor 163/163/166. All restored.
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
 // Round 36 (lane 15, fast): the packet cursor beside the count re-measured 164 (478 bytes; the member
@@ -3369,6 +3376,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // scope and set per iteration 139 (same code); on the cursor form, the member bit cleared before the
 // delivery calls 161 (469 bytes); the route zeroed as `= { 0 }` 139 and as a chained assignment 139
 // (same code).
+// Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
+// 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
+// the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
+// member bit cleared before the talker test 161 (469 bytes).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

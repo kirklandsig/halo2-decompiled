@@ -345,6 +345,8 @@ struct s_word_bit_iterator
 
 bool function_44690(s_word_bit_iterator *iterator, long *out);
 
+/* fills output with the clusters visible from a cluster: its own bits, widened through every
+   flagged portal until nothing changes */
 // score 111 (was 111): Frame 0xf0 agrees; padded-count/byte-count lifetime, scalar homes and memcmp carriers remain.
 // Earlier 125 (was 142): retail keeps count + 31 in EBX (word count shifted from it after the copies),
 // frame 0xf0 agrees; padded-count retention and iterator/portal homes differ.
@@ -461,7 +463,8 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {
-	long bytes = ((table->count + 31) & ~31) >> 3;
+	long count = table->count;
+	long bytes = ((table->count + 31) >> 5) * 4;
 	dword const *base = table->bits + index * ((table->count + 31) >> 5);
 	if (table->clusters[index].flags & 2)
 	{
@@ -471,12 +474,11 @@ void function_16de20(short index, s_16e150_bits const *table, dword *output)
 		memcpy(output, function_16e150(table, index), bytes);
 		memcpy(expanded, output, bytes);
 		memset(visited, 0, ((table->portal_count + 31) >> 5) * sizeof(dword));
-		long word_count = bytes / sizeof(dword);
-		bool changed;
-		do
+		long word_count = (count + 31) >> 5;
+		for (;;)
 		{
 			s_word_bit_iterator iterator;
-			iterator.count = (short)word_count;
+			iterator.count = (short)((count + 31) >> 5);
 			iterator.index = 0;
 			iterator.remaining = *output;
 			iterator.words = output;
@@ -507,10 +509,10 @@ void function_16de20(short index, s_16e150_bits const *table, dword *output)
 					}
 				}
 			}
-			changed = memcmp(expanded, output, bytes) != 0;
-			if (changed)
-				memcpy(output, expanded, bytes);
-		} while (changed);
+			if (memcmp(expanded, output, bytes) == 0)
+				break;
+			memcpy(output, expanded, bytes);
+		}
 	}
 	else
 		memcpy(output, base, bytes);

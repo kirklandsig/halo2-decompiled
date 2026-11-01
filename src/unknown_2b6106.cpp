@@ -793,6 +793,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // where ours reuses ESI. Non-mix subsets: text buffers + name arms + state at each use 506; with short
 // count 512; buffers + short count 511; with the timer form 518; with session/bit-7 order 513; with long
 // loops 592; with the score pointers 577, plus the timer form 530. Original body kept.
+// Round 41 (lane 14): one show after the 2/3 arm's campaign/totals if-else 607 (1977 B); `text[row]` then
+// `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
+// (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
+// and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

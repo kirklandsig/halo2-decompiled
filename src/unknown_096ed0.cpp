@@ -253,6 +253,12 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // active-loop forms, none below 14 and no plain indexed active loop with type split (best 156); an owner
 // local, `this->table`, a handle local or a mask local at either chain call 14 each (same code: the loop
 // heads keep their load order).
+// Round 146 (lane 4, fast with 0x89d20): retail loads `this->table` into EAX at both chain-loop heads (ours EDX
+// in the active loop; ECX after an early handle load in the pending loop, also in the plain-for form 170). On
+// the kept form: both chain tests as `(bool)((peer->flags >> 3) & 1)` (0x991d0's form) 14; the pending
+// handles read through a `long const *chain = handles` pointer 14; the pending entry index named 14; the
+// pending item locals declared size first 14; one function-scope `blocked` for both chains 14 (all the same code); the pending
+// size sum before the priority test 168; the pending arms inverted (`item_priority <= 0.0f` first) 177.
 // @retail 0x98150
 long c_handle_table_450cd0::v1(long a1, long max_count, void *output)
 {
