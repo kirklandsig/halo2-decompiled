@@ -35,6 +35,10 @@ long function_26b230(long clump_index, long prop_index);
 extern s_record_pool *g_502420;
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 3 (was 3): Round 108 fast trials: swapped post-call tests 147; nested field-first tests 3;
+// complemented disjunction 3; two-use actor-index snapshot 3; lookup result declared early
+// uninitialized/initialized 3/3; const lookup result 3; actor/target pointer declarations before
+// the condition 3. Original restored; lookup-result store still precedes retail's field reload/compare.
 // score 3 (was 62): what is left is that retail stores the lookup's result
 // to its stack home after it reloads the object's field and compares it, ours
 // before (the barrier keeps the store above the reload). Retail's LTCG treats
