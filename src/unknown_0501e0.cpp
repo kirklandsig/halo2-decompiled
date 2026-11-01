@@ -235,6 +235,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // spills nothing in the second view, ours keeps the second offset's i in xmm7 and spills a second-view partial
 // sum at [esp+8]. Segment vector declared at function scope after the offsets 221, before them 221, after the
 // views 221, at the top of the projection block 221; view vectors declared with the offsets 221 (same code).
+// Round 499: First/second/both source-coordinate cursors with long/dword ordinals
+// 222/222/223/222/222/223; both source-end !=/< forms 276/582. Original input walks and body
+// restored; extra frame word and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

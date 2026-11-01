@@ -446,6 +446,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 332: Masks computed at each use with word cache, filled count and inner matrix scope, subsets
 // 0-7: 215/226/202/217/215/226/202/217.
 // Original executable source restored; no eligible gain.
+// Round 499: All three squared-displacement products named, with completed distance/radius and
+// reversed ordered comparison subsets: 182/184/182/184/182/184/182/184. Original products, frame
+// and body restored; entry spill and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

@@ -131,6 +131,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
 // original/earlier magnitude 233/237/239/245/85/183/199/210
 // Original executable body and helpers restored.
+// Round 499: Complete squared-magnitude products in ijk/ikj/jik/jki/kij/kji order
+// 91/85/91/101/95/95; native inner-pair/completed-sum values 91/91. Original root producer and
+// body restored; half/reciprocal/projection scheduling remains.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

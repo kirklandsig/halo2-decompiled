@@ -2201,6 +2201,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // admission/alignment/search workspace names in seven subsets and all with
 // planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
 // First point/prefix recover but later homes regress; original complete body restored.
+// Round 499: One candidate handle for query and publication, crossed with candidate/point scopes
+// and both distance-comparison orientations: 490 each (fast control 485; full 469). Original
+// observations, scopes, case order and body restored; actor/state and point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
