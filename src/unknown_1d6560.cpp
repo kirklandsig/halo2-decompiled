@@ -141,6 +141,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
 // both switches 125 (284 bytes, caller 194).
+// Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
+// a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
+// 98 (caller 13, movzx); the kind-7 test as `switch (kind) { case 7: ... }` 89 (caller 13); the current body with
+// case 0 through the object_index local 91 (caller 146); the type read straight from component, long 105 (caller 9,
+// index arrives in EDX). An env link with 0x1d5940/0x1d5bf0 (exact for the current body): the type through a
+// forceinline getter in both branches, or straight from component in both, never hoists the two reads (268/264
+// bytes); every order of the object_index/rigid-body/type/result declarations with byte or long type keeps the flip.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

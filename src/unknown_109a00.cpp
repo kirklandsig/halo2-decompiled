@@ -453,6 +453,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // products up-first as retail); dot3f in either order, the first two terms parenthesised, the terms i, j, k
 // 101 each; cross3f_staged(up, forward, left) 101, cross3f 113; with the `+=` dot: the scaled terms as one
 // vector3f 124 (918 bytes), updated in place 122, `up->i = up->i - scaled_i` 99.
+// Round 63 (lane 12, fast; an LTCG env link with the stand-in callers and 0xb7060 is exact: 915 bytes of code
+// against retail's 925): the failure stores valid-first 112 (same code); `up->i = up->i - scaled_i` on the current
+// body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);
+// `found` declared before the default body 119. The dot written k/j/i up-first, forward-first, all up-first or as
+// i, j, k terms: same code (env). A /Gd compile loads the object index into EAX and the entry index into EBP.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
