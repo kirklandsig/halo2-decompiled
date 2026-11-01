@@ -178,6 +178,9 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
 // per failed test 2; the eligibility as a named bool 2. Harness: an early-return next-or-first helper at both 12
 // (retail's tail, entry coalesced into ESI); next_wrapped entry with that step 37 (98 bytes).
+// Round 62: condition assignment/declaration 2/2; candidate-updated declaration 28 (96 bytes); for assignment 2;
+// implicit/reversed assignment 2/2; assignment with shared focus exit 39 (100); declaration with shared focus exit
+// 49 (102). Opening body restored.
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {

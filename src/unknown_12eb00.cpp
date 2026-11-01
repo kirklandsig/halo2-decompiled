@@ -112,6 +112,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // Round 464: absolute byte-span induction in accumulation/blend/both 172/80/142;
 // named span ends 172/80/142; both exact-end tests 142; accumulation destination
 // span cursor 534. Original inner displacement lifetimes restored.
+// Round 59 (fast): the offset table as an {offset, size} struct array 11 (same code); the weights
+// zeroed by an initializer 221; the entry lookup as a ternary 29; blend terms entry-first 11;
+// the blend accumulator zeroed by `= {0}` 216 (1256 bytes). 1-8 unused locals at the top (diagnostic) 11 each:
+// the slot tie does not follow the symbol count.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

@@ -513,7 +513,7 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
-// score 348 (was 399): frame (12) and both query temporaries' homes agree since the request expansion became the
+// score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
 // the graph in EBX and graph+0x34 in EBP; the inheritance loop then keeps the graph in EBP (ours reloads it per use) and
@@ -608,6 +608,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // tie); the request given a fresh graph_get() 633 (callers lose); the request declaration marked __forceinline 348;
 // `return success != false;` 351 (re-measured); success declared before the graph 348; `if (success != false)` 348;
 // a block-local copy of the graph passed to the request 348; the found names passed as indexed fields 348.
+// Round 123 (lane 6, fast): the request as a call of the existing 0x1ddd00 (our LTCG keeps it out of line, also
+// with a __forceinline declaration in this file or with bool success) 1896/1896/1902 (469 bytes; 0x1cccd0 then
+// differs too); the primary lookup's test inverted (fallback arm first, success in the else) 567 (1766 bytes);
+// the found set stored after success 350.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -854,6 +858,12 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
+// transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
+// with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives
+// retail's slots but leaves its constructor at the entry (353); re-initialising it in the block adds the
+// block-entry stores but the entry constructor stays (353); no C++ scoping gives both. Blend-query lifetime
+// (retail keeps the blend byte in memory across 0xe6800) and the result/loop byte homes also differ.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
 // Round 15: inline channel query 210; early success with separate name comparisons 256; separate comparisons
 // with late success 265; bitwise separate comparisons 256; inline transition-find 210 (callee still matched);
@@ -984,6 +994,9 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // Round 459: Unsigned state/channel/both flag domains 210/210/210; uniform phase mask with
 // original/state/channel/both domains 337/337/337/337; all with retained phase predicate 315. All
 // executable trial forms restored.
+// Round 262: Existing library lower/upper selection at fraction only 318/318;
+// phase only 323/323; all four phase/fraction order combinations 337 each.
+// Original conditional clamps, identifier scopes, byte result and all query contracts restored.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

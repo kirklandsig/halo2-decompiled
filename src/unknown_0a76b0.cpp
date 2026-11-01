@@ -1220,21 +1220,6 @@ void function_e8460(long unit_index, bool primary)
 
 /* starts putting away the weapon in a unit's hand: its put away animation,
    or at once */
-// score 81 (was 81): retail sinks the EDI save past the weapon test and returns that path's
-// true from AL (mov al, 1 before the branch, shared with the store); ours saves EDI at entry and
-// reloads the result there. Result first 117; common bool exit 107; nested/positive admission
-// 107/107; long common result 94; byte nested result 81; entry name 107; explicit name 107.
-// Round 31: result after the lookup (retail's store between the lookup and its test keeps the
-// NONE default, and the unit then arrives on the stack as retail) with nested ifs 108; with
-// `result = !animation || immediate` 89, with the ternary on the animation call 81 at 263/263
-// (kept: 0xe8b20 matches); the if/else form 81; `immediate || !animation` 89; early NONE return
-// of result/true 80 (EDI save sunk as retail, `mov al, 1` stays in the exit); result after the
-// early return 96; char result 92, with the early return 84.
-// Round 29: unnested with `if (weapon_index == NONE) return true;` (or `return result`) after the
-// result 80 (265 bytes; the EDI save sinks, but the NONE exit is inline with its own `mov al, 1`
-// and the store stays an immediate); result first with that return 98; `return result` inside
-// the weapon block and `return true` (or `return result`) after it 86 (269 bytes, the NONE exit
-// at the end, not merged with the common tail); `goto done` for NONE 81 (same code).
 // @retail 0xe8510
 bool function_e8510(long unit_index, bool immediate, bool silent, bool primary)
 {
@@ -1246,8 +1231,14 @@ bool function_e8510(long unit_index, bool immediate, bool silent, bool primary)
 		long name = primary ? 0x8000025 : 0xd000539;
 
 		if (function_114040(unit_index, name) && !immediate)
-			return false;
-		if (!(silent && immediate) && function_100130(weapon_index, immediate))
+		{
+			result = false;
+		}
+		else if (silent && immediate)
+		{
+			result = true;
+		}
+		else if (function_100130(weapon_index, immediate))
 		{
 			function_c86e0(unit_index, 0);
 			if (!silent)
@@ -1533,6 +1524,14 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // 138, retail inlines that function), with a long value 143 (retail's movsx/cmp tail); a single
 // false result with either 174/171; mode and flag declared first 138 (same code); the other hand
 // as `!hand` 141, as `primary != false` 136.
+// Round 58: the weapon getter before the slot read 173 (520 bytes); `if (primary) { mode = cd660 ? 2 : 0;
+// flag = ...; } else { mode = 3; flag = primary; }` 168 (506 bytes; the weapon then takes the dead unit_index
+// home and mode a local as retail, but mode becomes neg/sbb/and with one store), the same with an if/else
+// for the mode 168, the original arm order with the cd660 test nested and one flag store 169 (505 bytes):
+// the homes follow the reference counts, and with retail's three mode stores ours keeps the weapon in a
+// register first (retail stores NONE and the getter's value straight to memory); one unit pointer for the
+// slot and the first getter 167 (515 bytes). An unused pool data read at the top changes nothing here
+// (harness), unlike 0xe9190.
 // Round 187: a pool local for the hand getter's lookup (function top, after the hand, after the slot
 // read) 167 each (517 bytes: ours then shares one lookup and keeps the request in EBP); for the slot
 // read's lookup instead 167.
@@ -1605,10 +1604,10 @@ struct s_unit_request_pickup_weapon
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 void __stdcall function_191fab(long definition_index, long value);
-void __stdcall function_1ca260(long actor_index, long player_index, long weapon_index, long other_weapon_index);
+void __stdcall function_1ca260(long actor_index, long weapon_index, long player_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 72 (was 68): request/weapon EBX/EBP homes and getter expansion differ.
+// score 72 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
@@ -1623,6 +1622,11 @@ void __stdcall function_1ca260(long actor_index, long player_index, long weapon_
 // weapon_index local ~133, the definition read at the top ~137, the value ternary inverted ~72 (as the body), no weapon
 // local (lookups at each use) ~149; an unused header at the top changes nothing (locate-only). The first
 // unit_get_player_index call still inlines (retail calls 0x14de90 twice) and the request/weapon EBX/EBP homes stay swapped.
+// Round 58 (72): the value as 0x191fab's argument 72 (same code); `bool modes[4]` scoped inside the weapon test
+// 72; `allowed` initialised false with no default 72; the weapon pointer before the request alias 72; the
+// admission as an early `return result` 130 (412 bytes). Retail inlines 0x14de90 at both calls in 0xe8de0 and
+// 0xee7f0, the first in 0xccba0, none here or in 0xe7fb0 (and none in /O1 and /Ob1 callers), so the caller's
+// size alone does not decide it.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -1681,9 +1685,20 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 
 /* gives a unit's weapon to a player's unit, taking the player's weapon
    in exchange (type 21) */
-// score 100 (was 127): frame 0x24 versus 0x20; unit/weapon allocation and transfer-call convention differ.
+// score 97 (was 107): frame 0x24 versus 0x20 (given in a stack byte, retail BL); unit/weapon allocation and
+// the inline unknown13c exit differ (retail hoists `xor al, al` and jumps into the epilogue tail).
+// Earlier: score 100 (was 127): frame 0x24 versus 0x20; unit/weapon allocation and transfer-call convention differ.
 // Both ordinal-hand reads 122; result first 118; entry drop workspace/live request/single receiver 122 each;
 // long results 127; early admission return 100 (plain, kept); failed-give arm first 145.
+// Round 58 (107 at the start): 0x1ca260 takes the weapon second and the player index third (EDX, its third
+// parameter, from its body and retail's call): a value fix, 97 (kept). On it: the nested admission 122 (314
+// bytes; aligned it is retail's code except that the unit pointer takes EBP, retail unit_index, and the first
+// getter reuses it where retail reloads the pool data); one 0x1ca260 call with a `taken` ternary 131; `taken`
+// as one `&&` 114; `return false` with given declared in the block 110; the drop request at the top 97 (same
+// code). Harness: 128 nested forms (declaration orders, a player index local, drop at the top, getter order,
+// `taken` as one expression, an actor local), a pool pointer local and the header read for the unit or the
+// getter keep the unit in EBP. Locate-only: an unused read of g_4e0300->data at the top gives retail's reload
+// and unit_index in EBP (harness signature-aligned 22 against 64), as 0xe5040's unused header does.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -1715,9 +1730,9 @@ bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 				if (unit->unknown12c != NONE)
 				{
 					if (taken)
-						function_1ca260(unit->unknown12c, *(long *)((byte *)request + 4), weapon_index, other_weapon_index);
+						function_1ca260(unit->unknown12c, weapon_index, *(long *)((byte *)request + 4), other_weapon_index);
 					else
-						function_1ca260(unit->unknown12c, *(long *)((byte *)request + 4), weapon_index, NONE);
+						function_1ca260(unit->unknown12c, weapon_index, *(long *)((byte *)request + 4), NONE);
 				}
 			}
 			else
@@ -1766,11 +1781,10 @@ PRIVATE inline bool unit_action_channel_valid(c_animation_channel const *channel
    it, or holds or releases its channels */
 PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *request, long name)
 {
-	bool result = false;
+	bool result = function_e92e0(unit_index, name);
 
-	if (function_e92e0(unit_index, name))
+	if (result)
 	{
-		result = true;
 		if (*((byte *)request + 4) == 1)
 		{
 			s_animation_state *state = unit_action_state_get(unit_index);
@@ -1816,10 +1830,10 @@ PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *re
 	return result;
 }
 
-// 0xe9370 and 0xe9500 (score 139 each) are 17 bytes short through unit_action_pause, which
+// 0xe9370 and 0xe9500 (score 139 each; round 58: 127 and 129, both 389 bytes) were 17 bytes short through unit_action_pause, which
 // reaches function_e7020 (that one matches since its overlay lookup stays out of line).
 /* pauses a unit's animation (type 23) */
-// score 127 (was 139): saved EBX/result BL still replace retail scratch ECX/stack byte;
+// score 127 (was 127): saved EBX/result BL still replace retail scratch ECX/stack byte;
 // sentinel, channel flags and completion homes differ. False-first bool/byte/short/long
 // completions 135/129/142/139; true-first 127/133/153/149. True-first bool kept;
 // existing shared helper and its other caller unchanged.
@@ -1830,6 +1844,12 @@ PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *re
 // 139 (372 bytes); the helper's arms swapped 143 (412 bytes; 0xe9500 128 at 389 bytes, else arm
 // first); swapped arms with `return unit_action_pause(...)` here as in 0xe9500 128 (both 389
 // bytes at 128, the same code; not kept, a rise here).
+// Round 58: the helper's `result = true` after both arms 127 (0xe9500 135, 381 bytes); a `bool *` out-parameter
+// 139 (372 bytes; the address-taken local is promoted after inlining); the helper's result as the 0xe92e0 call
+// 127 (kept: 0xe9500 139 -> 129 at 389 bytes; the result is now in memory as retail, but the constant 1 takes
+// EBX where retail has NONE in EBX and 1 in DL); on it the child loop as a `while` 127, `return
+// unit_action_pause(...)` here 129 (aligned 111 -> 61), `bool result = false; if (...) result = true;` 135 (381
+// bytes; NONE then in EBX as retail, but the result is constant-propagated).
 // @retail 0xe9370
 bool __stdcall function_e9370(long unit_index, s_unit_request *request)
 {
@@ -1840,6 +1860,10 @@ bool __stdcall function_e9370(long unit_index, s_unit_request *request)
 }
 
 /* pauses a unit's animation (type 24) */
+// score 129 (was 139): retail's code except the colouring: the constant 1 takes EBX (retail NONE in EBX and 1 in
+// DL) and the result uses the unit_index home (retail its own slot, stored false before the 0xe92e0 call).
+// Round 58: the helper's result as the 0xe92e0 call 129 (kept; 389 bytes); the helper's `result = true` after
+// both arms 135 (381 bytes); a `bool *` out-parameter 139 (372 bytes).
 // @retail 0xe9500
 bool __stdcall function_e9500(long unit_index, s_unit_request *request)
 {
@@ -3377,34 +3401,8 @@ struct s_unit_request_seat_animation
 
 /* plays a seat animation (type 36): the request's, or the one following
    the unit's current animation */
-// score 76 (was 76): Frame and entry carriers agree; one extra byte, provider output role and
-// selector tail blocks remain. All original values retained.
-// Shared dispatch 134; selected-name result 159; Boolean result 144; vector copies 134; live mode
-// 159; scalar reservation 134; vector role names 159; if chains 140; false-result exits 134/134;
-// initial/per-branch context 113/132; common exits 109/122; query-spanning contexts 127/133; common
-// result with precise/initial context 76/125; reverse/third-first case orders 76/76. Keep precise
-// contexts, one dispatch and one real result exit; original case order and selected provider output
-// retained.
-// Round 34: retail switches on 0x10f630's first output (`[esi]`, the state at +0x70), not the
-// second: switching on it is a value fix that gives retail's output slots and registers, 76 (kept).
-// What remains is one merged case block: retail keeps the 0x110001b4 block after the query
-// switch's 0x120001b5 block, ours after the call. All 36 case orders of the two switches 76; the
-// branches in the other order 76 (same code); the query branch setting the mode for one name
-// switch 139; early `return false` exits and a returned call 133.
-// Round 23 (76): `default` first in the mode switch 76, in the query switch 76; the request's mode
-// mapped to the current-action values (1 0x10000229, 2 0x1100022a, 3 0xb0006c4) and one shared
-// action switch 103 (477 bytes: the mode cases thread into the action switch's blocks, as retail
-// does for cases 1 and 2, but case 3's block and the call move to the end and the mode default
-// becomes the dispatch's fallthrough), that with the branches swapped 103 (same code); the request
-// context set after its switch 137.
-// Round 61: a compile-only screen shows the rule: a merged block keeps the copy that falls into the
-// call, else the request switch's copy, so the request-1 block stays in the request branch. On the
-// shared action switch (103): the request default `return false` 124; the query failure and the action
-// default `return false` 82 (473 bytes: retail's layout, the 0xc0006c3 block and the call after the
-// request dispatch and the 0x120001b5/0x110001b4 blocks after the query's, but the false result moves
-// from DL to AL, the unit index from EBX to EBP, and the query failure exits inline), its declarations
-// moved 82/82, the call returned 139; the action default alone `return false` 121, the query failure
-// alone 119.
+// The NONE state for the action switch's default and the test after the switch (instead of a goto from the
+// default) give retail's layout; kept only with this byte match.
 // @retail 0xebb40
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 {
@@ -3461,8 +3459,11 @@ bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 				state_name = 0x120001b5;
 				break;
 			default:
-				goto done;
+				state_name = NONE;
+				break;
 			}
+			if (state_name == NONE)
+				goto done;
 		}
 		result = function_ee090(unit_index, state_name, 6, context, &point, &facing);
 	}
@@ -3472,6 +3473,8 @@ done:
 
 /* plays the return from a seat animation (type 37): the request's, or the
    one following the unit's current animation */
+// The NONE state for the action switch's default and the test after the switch (instead of a goto from the
+// default) give retail's layout; kept only with this byte match.
 // score 76 (was 76): Frame and entry carriers agree; one extra byte, provider output role and
 // selector tail blocks remain. All original values retained.
 // Related common result and precise contexts 76; reverse/third-first case orders 76/76; initially
@@ -3494,6 +3497,10 @@ done:
 // result on the stack); the call in each branch 155 (520 bytes). Compile-only screens: the
 // context assigned after either switch, or the copies after the switch, stop the case blocks
 // merging; the context in every case keeps our placement.
+// Round 58: no `mode` local 76; the request context before the copies 83; the query context after the
+// 0x10f630 test 83; the query outputs declared before the b9dd0/facing calls 76; no unit local (the lookup
+// at each use) 137 (494 bytes). Harness: all 36 orders of the two branches' copy/context statements keep
+// our layout.
 // @retail 0xebd30
 bool __stdcall function_ebd30(long unit_index, s_unit_request *request)
 {
@@ -3550,8 +3557,11 @@ bool __stdcall function_ebd30(long unit_index, s_unit_request *request)
 				state_name = 0x1100022a;
 				break;
 			default:
-				goto done;
+				state_name = NONE;
+				break;
 			}
+			if (state_name == NONE)
+				goto done;
 		}
 		result = function_ee090(unit_index, state_name, 7, context, &point, &facing);
 	}

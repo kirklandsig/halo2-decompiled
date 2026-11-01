@@ -765,6 +765,11 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // Round 464: activity/team conditional label results, original/branch-complete/default-first
 // non-original pairs 512/578/512/512/578/520/520/584. Original conditional arguments
 // and score-pointer graph restored; unbiased EBP and early flag/clock homes remain.
+// Round 144 (lane 4, fast): retail tests the session flag with `cmp byte, 1; jne`, keeps the campaign result
+// in a byte (the high byte of the session argument's slot) and the friend flags in ESI until bit 7 is taken; a
+// compile-only build gives retail's 0x85c frame and slot layout but no EBP bias either. `in_session == true` 510
+// (two-point gain rejected); bit 7 taken before the clock read 515; bool campaign 540; both first forms 513;
+// a long row 512 (same code).
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

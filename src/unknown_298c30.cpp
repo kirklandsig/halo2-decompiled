@@ -173,6 +173,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // candidate/endpoint short-byte, word-byte, long-byte, byte-short, byte-word,
 // byte-long, short-short and word-word counts 443/443/442/409/409/415/438/438.
 // Byte/short gives 1736 bytes and 0x1c cleanup but frame 0x78. Original helper and body restored.
+// Round 260: Double endpoint differences with byte-byte/short-byte/word-byte/long-byte/byte-short/byte-
+// word/short-short/word-word carriers 437/513/513/510/451/451/515/515. Original distance, counters,
+// helpers and body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -443,6 +446,19 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // crossed with separate transformed-forward output and separate phase cosines,
 // 763/763/763/763/769/769/769/769. Original output ownership and helpers restored;
 // frame 0x124/0x114, eager radius and trace/pivot homes remain.
+// Round 144 (lane 4, fast; counts are positional, with the mnemonic-aligned count in brackets, base 719 [244]):
+// retail computes the reverse endpoint with one `0 - distance` value used for both products (ours folds each
+// `i * -d + x` into `x - i * d`), and rotates the obstacle direction in x87 from an unrounded angle (`fld; fchs`
+// or `fadd dword [pi]`, then `fld st0; fsin; fxch; fcos`, products consuming cosine and sine in place, each
+// component stored as a float and reread by SSE). A named negated reverse distance 739 [244] (3387 bytes);
+// a double angle with double sine/cosine for the obstacle rotation 850 [232] (3281 bytes, frame 0x118: the
+// offset math then stays in x87), with the sweep cosine moved into its loop 850 [232], with the rotation
+// stored field by field 850 [232], written into local_18 844 [232]; plus the existing 2-D point helper for
+// the circle point and a difference vector 826 [218] (3313 bytes, frame 0x118, offset math in SSE as retail;
+// sine/cosine still popped at the end instead of consumed), the difference subtracted in place 826 [218],
+// rotation operands swapped 826 [218] (same code). Next: retail shares slots between sweep and obstacle
+// locals (+0x14 angle/best index, +0x28 sine/best ratio, +0x44 reverse offset/rotation, +0x18 direction/
+// obstacle difference), so its sweep locals end before the obstacle block.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
