@@ -261,6 +261,13 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // stored j, k, i 72 (stored directly 81). Tried: an explicit time pointer with the current pointer
 // declared before the value pointer (the whole loop then matches, but the code after it changes:
 // 124); declaration orders around it 120-140; a cross product helper for both products 122-140.
+// Second logic walk (c2B, every block, retail 0x170630-0x170ba2): the six groups' tables, the time compare
+// (> 0 / flags & 1 copy path), the t^5..t^1 polynomial and the 0 - velocity * step path, the < 5 add vs the
+// 0x170d70 call, the 1.0 / 0.001 / 0.001 tests and both normalizes agree with retail, no behaviour difference.
+// Also tried (all worse): explicit time pointer with the pointers declared in retail's lea order (target,
+// fifth..first, velocity, constant, time, current, value): the loop is then identical, the prologue's lea order
+// and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
+// product in a local (180) or the tests split into bool locals (123).
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1078,29 +1085,38 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
 
+// score 69 (was 126): logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
+// of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
+// of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
+// (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
+// `mov edi, [polygon+0x1c]` (count) and the origin pointer (retail addresses [eax+0x60] directly, we form
+// eax+0x60) still differ. Tried: long positive = cond ? 1L : 0L with an `axes` pointer (126, 129 direct), bool positive
+// (127 / 130), bool positive with `positive != 0` or byte/char positive (60 but the compiler then passes both
+// parameters on the stack, `ret 8`: not usable), long positive with `!= 0` (77), short positive (69, this form),
+// all 48 operand/sum orders of the origin dot product (135 each: the order does not change the code), origin
+// as a local pointer vs context->origin->position.x directly (126 vs 135).
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
-	long axis = function_120850(&plane->n);
-	long positive = ((real const *)plane)[axis] > 0.0f ? 1L : 0L;
+	short axis = function_120850(&plane->n);
+	short positive = plane->n.n[axis] > 0.0f ? 1 : 0;
 	point3f const *origin = &context->origin->position;
 	real distance = 0.0f - plane_distance_to_point(plane, origin);
 	point3f projected;
 	projected.x = plane->n.i * distance + origin->x;
 	projected.y = distance * plane->n.j + origin->y;
 	projected.z = plane->n.k * distance + origin->z;
-	short const *axes = g_440b94[axis * 2 + positive];
 	point2f point;
-	point.x = ((real const *)&projected)[axes[0]];
-	point.y = ((real const *)&projected)[axes[1]];
+	point.x = projected.n[g_440b94[axis * 2 + (positive != 0)][0]];
+	point.y = projected.n[g_440b94[axis * 2 + (positive != 0)][1]];
 	for (long i = 0; i < polygon->count; ++i)
 	{
 		point2f *destination = &points[i];
 		point3f const *vertex = &polygon->points[i];
-		destination->x = vertex->n[axes[0]];
-		destination->y = vertex->n[axes[1]];
+		destination->x = vertex->n[g_440b94[axis * 2 + (positive != 0)][0]];
+		destination->y = vertex->n[g_440b94[axis * 2 + (positive != 0)][1]];
 	}
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
@@ -1182,6 +1198,19 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
+// score 96 (was 123): logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
+// 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
+// copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
+// minimum, the state 3 inside clamp (0.015625 as a double) and the memcpy of the view's points, the four 1/256 inflate
+// steps and the corner order, the view[0x84] cull and the pool recount agree; no behaviour difference found. What
+// still differs: retail stores pool->count and tests result->state before it stores result->points, the count and
+// field_0 (ours stores points first); `mov [esp+0x1c], ecx` (step * 8) comes after the `lea edx` in ours; the clamp
+// (retail: fld const, fld distance, compare, pop both, reload the winner; ours keeps a copy: one extra fld), which
+// shifts everything after it by one line; the inflate (retail adds/subs the constant in xmm0 one box field at a time,
+// ours interleaves them) and the register of the final count recompute. Tried: `++pointer` before `index += step`
+// (123 -> 96, kept); every order of the four stores points/pool count/count/field_0 (124-131); points through a
+// local pointer after the pool count store (128); `distance <= c ? distance : c` (124), `c < distance` (same code),
+// if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1233,8 +1262,8 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.y1 = point->y;
 					real distance = 0.0f - local_cb4759->z;
 					result->distance = result->distance > distance ? distance : result->distance;
-					index += step;
 					++local_cb4759;
+					index += step;
 				}
 				if (result->state == 3)
 				{
@@ -1478,6 +1507,16 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 // (tried 4 orders). Tried: `long narrow` (14: test esi,esi, 130 bytes, but retail's callers load dl),
 // byte/char (19), short (21), `narrow ? a : b` (42), `flags &= ~2` (19), flags/direction statement order (19),
 // early `return true/false` instead of result (41), result set last (41).
+// Why (c2B): the bool is not forced onto the stack; it needs a byte register at entry. With `long narrow` it
+// takes esi (end stays in edx), and without the `result` byte (early returns) it takes bl and end takes ecx.
+// With `result` in bl, start in eax, end in edx and the flags in ecx there is no byte register left, so
+// narrow stays on the stack. Retail has end in esi, so edx is free for narrow and for the `lea edx` that it
+// schedules between the direction components; ours cannot (it holds end in edx until the last component).
+// Parameter position (narrow second, 'long' or bool) did not move any register. Also tried, same score
+// or worse: direction via vector3d_from_points3d (19), k j i order (21), locals for the three differences
+// (19), a pointer local for the result or the direction (19), flags after or inside the direction (23, 29),
+// `flags = narrow ? .. : ..` (42), if/else for flags (31), char result (24). Callers follow this function's
+// convention: `long narrow` raises 0x171830 266 -> 288 and 0x16ebf0 120 -> 169.
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
@@ -1522,6 +1561,11 @@ struct s_camera_reference_171830
 // on the stack. The declared order of the five parameters changes nothing (6 orders tried, same score), and the
 // old `(void)&point` lines were dead code (removed, same bytes). The 0x171d00 call is also set up differently
 // until that function takes narrow in dl and end in esi.
+// c2B: no body trigger found for the convention. Retail keeps position on the stack and copies it into ebp
+// in the prologue (long-lived: loops and calls), and keeps forward and up, which die before the sample
+// loop, in registers; ours keeps position in ebx and copies forward into ebp. The chain through 0x171d00
+// matters (its convention changes this function's score: `long narrow` there gives 288), so this function
+// is probably not fixable before 0x171d00 matches.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
