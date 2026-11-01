@@ -1178,6 +1178,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // diagnostic) 823 (candidate, request pointer, index and offset homes then retail's; result sits below
 // the record); candidate declared beside the outputs and reset each pass 932 (frame 0x30); result as
 // `named ? named->animation_id : c_type_709360()` 978.
+// Round 68: the found_mode slot goes to iterator_mode (the found-class slot when found_mode is unused, 987);
+// retail gives it to the per-pass candidate, as a grouped mode/class/type record does (823, grouping form).
+// Renamed candidate/mode/result (four forms) 828 each. While loop with break on result/candidate/guarded
+// copy 998/998/999 (iterate call duplicated at the bottom); one result write per pass 993 (2825 bytes);
+// candidate declared after the lookup 996; candidate before the iterate call 967 (as listed).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1317,6 +1322,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // bytes); the sibling 0x1dc8c0's iterator store order (graph, step, entries, keys) 828 (stores
 // reorder only); the body inside `if (weapon_class != NONE)` 1040; the iterator declared after its
 // outputs 828 (same code).
+// Round 68: class test as an enclosing `if (weapon_class != NONE)` block 1040 (2857 bytes: retail's three
+// exit blocks and result kept in ECX to the 0x1dd9d0 push, exact LCS 113 unmatched against 136, but the
+// first request's loop heads take the alignment retail gives their joins); with a while/break loop 1049
+// (LCS 106); with the candidate after the lookup 1031; outputs declared after the iterator setup 826, with
+// the enclosing if 1038; entry pointer declared in the loop body 828.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -653,6 +653,12 @@ real function_267370(long object_index);
 // 352; typed byte fields for 0x265/0x267 98 (same code); the zone result in a named bool 100; `left` declared
 // before the up copy 98; type read before the parent 129. Re-measured: without `(void)&actor_index` 98 (same
 // code, removed: it only took the parameter's address); the parent ternary with the found arm first 102.
+// Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
+// alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
+// shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
+// clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
+// chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
+// the zone helper's compares 98 (same code: the constant is shared either way).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1728,6 +1734,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // callees in that span are leaves, so it is not a callee summary). `inline` on 0x1e53e0 265 (0x2758b0
 // 21 -> 113); the pool read into a local before 0x1e5240's test 263 (same code); NONE-first weapon query
 // results 275; the lookups through a plain static getter taking the pool 263 (same code).
+// Round 42 (m3 lane 13, fast): retail loads the pool global between the inlined 0x1e5240's NONE compare and its
+// branch and holds it in EDI to the end (actor ESI, options EBP, the random state EBX from its first draw); ours
+// never carries the global across 0x1e5280 (it reloads it at each lookup, so the actor takes EDI, the options ESI
+// and the random state EBP). Diagnostics with the lookups indexed by hand through a pool local (not keepable):
+// the local at the top 283 (1237 bytes; pool held in ESI but spilled, options EBP as retail), after the actor 283,
+// after the 0x1e5240 call 278 (loaded after 0x1e5280, spilled). A pool local before the NONE test inside 0x1e5240
+// (0x1e5240 still MATCH) 251 (same code here: the caller's lookups stay separate loads). The unit-index test split
+// from the actor state tests 251 (same code).
 // Round 38 (m3 lane 14, fast): retail re-fetches the unit after 0x1e53e0 (the two equipment queries' lookups)
 // where ours keeps it in EBX, i.e. retail's LTCG treats 0x1e53e0 as possibly writing memory and ours as pure.
 // Diagnostic (reverted at once): a function-static store in 0x1e53e0 gives this body retail's shape (actor in ESI,
