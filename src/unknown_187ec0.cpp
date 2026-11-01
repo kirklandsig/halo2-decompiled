@@ -662,6 +662,8 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax R (11-01): no new form, no lower score; retail's point/forward register split still comes
+// from the call sites in other files, so the frame and the two scans stay as they are.
 // score 77 (was 77): retail's own clone takes the point in EAX and the forward vector in ECX and
 // pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
 // from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
