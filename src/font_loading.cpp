@@ -599,6 +599,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 296: Consumed spans short/word/byte/signed-char with long/dword counts, then byte/signed-
 // char/short/word spans with the long pixel-helper result. Scores
 // 101/101/91/91/101/101/91/91/98/98/99/99. Original complete body restored.
+// Round 302: native word store owned by existing pixel helper, pointer/reference output and inline/force-inline:
+// byte parity 107/107/107/107; full parity 208/208/208/208. Original helper and decoder restored;
+// alpha widening, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

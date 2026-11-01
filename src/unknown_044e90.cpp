@@ -151,6 +151,10 @@ struct s_visibility_bound_record
 // Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
 // view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
 // 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
+// Round 302: frame remains 0x74a4; input-plane/query homes are eight bytes low and entry register
+// lifetimes differ.
+// Complete point helper with local/direct input, output at use/part entry and ordinary/inline declaration 626/648;
+// all eight regroup the float expressions and miss, so restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
