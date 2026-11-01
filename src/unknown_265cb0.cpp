@@ -518,6 +518,8 @@ real function_30bf0(vector3f *vector);
 // Round 263: Library projection/paired-maxima/plane-copy masks 1/2/4/3/5/6/7 score
 // 307/203/152/316/307/203/316; complete graph with ordinary result 316. Original selectors, plane copy and
 // inherited result restored; result/range/amount homes and inverse SIMD groups remain.
+// Round 74 (m3 lane 12, fast): the posture switch as if/else-if 188; distance squared through the existing
+// length_sq3f 152, the motion test through it 152, both 152 (same code); `use_facing && !actor->unknown007` 154.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1736,7 +1738,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 262 (was 502): frame 0x80 and the forward/relative blocks now agree; the established and
+// score 194 (was 262): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
 // Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
@@ -1905,6 +1907,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // iterator declared at the function's top 405. The same three iterator statements give retail's EAX form in
 // the matched 0x138fa0 and 0x192b20, so the ECX choice comes from this loop's register colouring (ours uses
 // ECX/EDX where retail uses EAX/ECX through the whole players loop).
+// Round 74 (m3 lane 12; --fast listed with 0x25d810 equals plain): `score > 0` first in the positive expression 260;
+// `if (established || ...) positive = score > 0.0f;` 258; `far_and_slow` named 251 (2880 bytes); positive
+// assigned at the end of the established block with the rest as its else 194 (kept, plain; the difflib-aligned
+// count rises 112 -> 142, the gain is positional); on that: the else as `else if (...) positive = ...` 257, with
+// `far_and_slow` named 249, `else if (visible)` 194, score tested before the distance pair 195, the pair negated
+// into `<=`/`>=` 257, best_level/strongest before the memset 191, a long second search counter 194, both 191.
+// Compile-only (no LTCG) keeps direction i/j/k in xmm3/xmm2/xmm1 across the relative and facing dots as retail
+// (visible in BL there); our LTCG build keeps visible in AL and folds every direction read. Calling 0x30bf0
+// through a function pointer for the relative vector (diagnostic) did not change that (487).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
@@ -2089,8 +2100,9 @@ void function_266640(long actor_index)
 							score += 1.0f - decrease;
 						}
 						if (approach > 0.5f) score += 1.0f;
+						positive = score > 0.0f;
 					}
-					positive = (established || visible && !(distance > 3.5f && approach < 0.5f)) && score > 0.0f;
+					else positive = visible && !(distance > 3.5f && approach < 0.5f) && score > 0.0f;
 				}
 				if (positive)
 				{
