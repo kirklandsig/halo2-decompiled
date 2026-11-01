@@ -812,6 +812,8 @@ static __forceinline long real_to_long(real value);
 // Round 262: Returned admission predicate with entry declarations of query speed/time/direction,
 // their three pairs/all, and all plus actual request: 517 each (1926/1904, frame 0x54).
 // Original result, scopes, input/output query aliases, arithmetic and complete body restored.
+// Round 288: Prop handle before/after metadata, then before with actor/target/both position receivers and after with actor/target/both receivers,
+// 458/473/500/494/477/457/494/483 (fast). Original complete body, observations, helpers and call roles restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

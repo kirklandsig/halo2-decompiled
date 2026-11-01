@@ -202,6 +202,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Round 259: all six cross-product parts named before subtraction, paired axis schedules
 // ijk/ikj/jik/jki/kij/kji and positive/negative arm schedules, 636 each. Original
 // helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
+// Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
+// 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

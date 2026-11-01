@@ -917,6 +917,8 @@ struct s_flags_1f0870
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
+// Round 288: Continued magnitude/input squared sum/both/history squared sum/magnitude+history/input+history/all/all with entry magnitude,
+// 593/590/593/590/593/590/593/593 (fast). Original complete body, observations, helpers and call roles restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
