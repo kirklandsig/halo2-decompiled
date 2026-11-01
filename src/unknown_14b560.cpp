@@ -2878,13 +2878,11 @@ struct s_unit_flags_14d8b0
 	word bit8 : 1;
 };
 
-// score 9 (was 9): the nine differing lines have one root cause: the last g_4e6948->mode test
-// keeps the options pointer in EDX where retail keeps it in ECX, and that single allocation
-// cascades into the game-engine block (EAX and ECX where retail has EDX and EAX) and into the
-// root walk's global load (EDX where retail has ECX); the callee 0x1521d0 splits its own
-// globals and data registers the other way round as well. A half-hour permuter run over the
-// function (59 variants) left the score at 9, so the choice is not reachable from its statements.
-// score 9 (was 9): late mode, reset-slot and root-pool scratch registers remain.
+// score 9 (was 9): the late mode receiver is EDX rather than ECX; reset-slot
+// scratch registers are EAX/ECX rather than EDX/EAX, and the root pool uses EDX rather
+// than ECX. Frame 0xc8 and 1287-byte extent agree; first difference is +0x304.
+// The timer callee 0x1521d0 now matches. Earlier: 59 statement variants stayed at 9.
+// Earlier: late mode, reset-slot and root-pool scratch registers remain.
 // Earlier: frame 0xc8 and retail length agree; tick/rate scheduling, the damage-tag
 // pointer load and scratch registers in the later mode, slot and root blocks remain.
 // Earlier isolated damage-byte store order 19 was below the keep threshold.
@@ -2950,8 +2948,12 @@ struct s_unit_flags_14d8b0
 // restored.
 // Round 98: mode and reset countdown as one condition 9; reset countdown through a short reference 9;
 // the two byte countdowns through a signed char pointer 9; short slot index local in both slot
-// blocks 9; flag bytes through the player's flags word 9. Retail also splits the global/data
-// registers in the callee 0x1521d0 (ecx/edx where ours reuses one).
+// blocks 9; flag bytes through the player's flags word 9. At that stage, 0x1521d0 also split
+// global/data registers ECX/EDX where ours reused one; that callee now matches.
+// Round 219: engine-global snapshots, native byte countdown members and both 9,9,9;
+// timer inline alone/with snapshots/with byte members/with both 9,9,9,9;
+// expiry result alone/with snapshots 9,9; native reset member/all native
+// countdown members/inline with reset member 9,9,9. Original body retained.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
