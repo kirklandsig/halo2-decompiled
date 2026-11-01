@@ -1226,12 +1226,15 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
 // in the requested cursor.
 // Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// Round 31 (lane D): 184 (was 184): unchanged this round, and no new form was tried; still
+// Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // than 8, takes the memset path) and reads the parameters through the 0x4db0 member rather than
 // through the session_get_data_4db0 call; adding both was measured at 211 and 222, because MSVC
 // still compares the parameters with `xor edx,edx` where retail uses `test edi,edi`, reloads the
 // owner from the stack where retail keeps it in EDX, and computes the requested cursor with
 // `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
 // Still differs in the owner, the name count and the zero's allocation and the requested cursor.
+// Earlier 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier: the frame 0xe4 still agrees; the owner, the name count, the
 // zero's allocation and the requested cursor are unchanged, and this round's trials
 // in this file found no lower form of them
@@ -1364,6 +1367,10 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
 // 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
 // block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
+// Round 273: Complete clear-return/four-element-array/three-element-array
+// receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
+// 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
+// Original body restored; owner/count/zero and requested-record induction remain.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

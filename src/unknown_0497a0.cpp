@@ -656,6 +656,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // on that, half_width computed just before the switch 276, `second, first` declared 269 (same code), case
 // 4's edge points y first 275, case 1/2's 373 (2604 bytes). Retail's tail colours second x/y/z XMM0-2,
 // first.z XMM3, half_width XMM4, first.y XMM5 (spilled at +0xb4 in case 0), first.x XMM6.
+// Round 280: complete per-channel interpolation results in initial/next/transition
+// loops, all seven subsets, then all with the complete width interpolation result,
+// 276 each. Original entire body and helpers restored; frame 0xa0, native homes
+// and first-edge Y spill remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

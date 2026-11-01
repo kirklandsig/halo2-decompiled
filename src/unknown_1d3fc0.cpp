@@ -142,6 +142,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
 // harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
 // 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
+// Round 279: Complete independent orthogonalized scalar results before stores in all six
+// producer row orders 188 each; with all three removed products named 188, existing staged
+// cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

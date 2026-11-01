@@ -1082,6 +1082,11 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 265: library response lower bound / negative-normal setter / response-velocity setter,
 // their pairs and all: 200/157/156/200/200/157/200; all with the existing sweep setter 200.
 // Original full body restored; quotient/query, selected homes and zero allocation remain.
+// Round 275: Existing scalar setters at selected point/normal/both/event-points/point-events/normal-events/all transfers 180/181/192/210/235/236/248; all with sweep setter 248.
+// Original executable source restored; quotient/query, selected homes, word loads and zero allocation remain.
+// Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs
+// and all 156 each; all with selected point/normal/location library copies 156. Original
+// expressions and body restored; quotient/query, selected homes and word loads remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {

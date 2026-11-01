@@ -948,6 +948,9 @@ real normalize2d(point2f *v);
 // store goes, DL caching and the shared exit do not appear); one exit with `bool result = valid;`
 // plus the request return 219; chosen speed declared after the first call 160; result declared first
 // in the valid block 135 (same code).
+// N271: complete actor/unit/speed-table receiver observations at use, seven subsets
+// 308/135/135/324/308/135/324; all with existing request point setter 336.
+// Original receivers and body restored; DL success retention and movement/request exits remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1596,6 +1599,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // 0x26ccb0 argument order and the zero exit remain); on the first: result declared after the radius
 // 239, `return 0.0f` at the type exit 239, result declared before the entry lookup 262. The volatile
 // origin read removed 255 (0x29cbb0 300 -> 319). All restored.
+// N271: existing normalizer single-result entry-default/exhaustive/reused-magnitude/acceptance
+// graphs, then caller assigned-sign completion: 273/255/275/254; 255/260/265/259.
+// All ordinary-origin forms restored with the original helper; zero/radius and vector homes remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
