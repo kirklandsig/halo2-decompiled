@@ -1302,6 +1302,12 @@ struct s_looping_detail_request
 // a call (124 with the extra compare), so the cause is still the call site's static frequency.
 // Round 254: Reduced common finalization with unavailable-player/completed-request exit and
 // bool/byte/char/long result carriers 139/168/168/185/139/168/168/185. All restored.
+// Round 128 (m3 lane 6, plain): retail calls 0x14dde0 from seven sites (0x1132f0, 0x125b40, 0x1391ed, 0x1df3e0,
+// 0x219ed0, 0x240820 and this one) and inlines it at four (0x11b350, 0x13c250, 0x15c150, 0x225730); only this
+// site differs. 0x14dde0's body as `return local_player_next_inline(NONE);` (same bytes, larger before folding)
+// 127, every caller unchanged; the count test as `>= 1` 128, as `!= 0` (diagnostic) 127, the query still
+// inlined; the definition index named once for the lookup and the audible arm's call 159; the camera position
+// as one pointer local for the add and 0x11bed0 125 (two points, not kept).
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1585,6 +1591,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 439: entry declarations of detail reason, selected range and current ring result, all
 // seven subsets, 479 reduced each; all three plus the replacement result 479 reduced.
 // Original producers, observations, loops and entire body restored (reduced control 479, full 305).
+// Round 128 (m3 lane 6, plain): retail's frame is 16 scalar slots, the two arrays and a 0xa0-byte request with
+// nothing shared (0x40 + 0x48 + 0xa0 = 0x128); ours has 17 slots (playback and `active` spilled, no count) and the
+// 0x90 request. Retail's count slot lets playback die before the second pitch-range loop, so `active` takes EDI
+// there and NONE sits in EBX. Tried: `gains` declared before `sounds` 305 (identical code); one count local read
+// before each loop 460 (1939 bytes, frame 0x128, playback in EDI as retail, but the iterator counter spills and
+// &sounds[i] takes EDI); that with the gain through the existing decibels_add 481 (1955 bytes, frame 0x12c);
+// the 0xa0 request with decibels_add 432 (1939 bytes); all three 481 (1955 bytes, frame 0x13c).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
