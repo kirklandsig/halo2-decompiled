@@ -515,6 +515,9 @@ real function_30bf0(vector3f *vector);
 // Round 246: native actor basis fields in all seven nonempty subsets, then all
 // with the native occupant basis, 152 each. Original padding, receiver expressions
 // and complete body restored; result/range/projection homes remain.
+// Round 263: Library projection/paired-maxima/plane-copy masks 1/2/4/3/5/6/7 score
+// 307/203/152/316/307/203/316; complete graph with ordinary result 316. Original selectors, plane copy and
+// inherited result restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

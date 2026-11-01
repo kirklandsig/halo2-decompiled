@@ -221,6 +221,9 @@ static inline void quaternion_transform_vector(
 // Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
 // native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
 // frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
+// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -771,7 +774,7 @@ void function_143250(
 	}
 }
 
-// score 1766 (was 1781): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// score 1766 (was 1766): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
 // Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
 // Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
@@ -848,6 +851,9 @@ void function_143250(
 // Round 255: producer-ready retained columns 1/5, 2/5, 3/5, 4/5, 5/6, 1/4/5, 2/4/5,
 // 4/5/6 score 1772/1768/1768/1772/1771/1802/1801/1783. Original publication graph restored;
 // frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// Round 263: Immutable first-assignment intermediates in all seven band subsets tie 1766 at 10773 bytes;
+// complete immutable graph without the mixed workspace 2229 at 10304 bytes. Original scalar declarations
+// and inherited workspace restored; frame, input admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
