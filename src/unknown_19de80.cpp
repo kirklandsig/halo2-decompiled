@@ -410,6 +410,8 @@ static inline bool teams_enabled_19e1c0()
 // `result <= remaining ? result : remaining` 661.
 // Diagnostic (a volatile token read at every compare, reverted): 468, with retail's token_length EDI and per-test
 // token reloads, but a hoisted zero then takes EBX (event to EBP) and `remaining` still stays on the stack.
+// MiniMax I (11-01): no new form, no lower score; the plain result still merges the four name/team copy tails (691)
+// and a permuter run over it (27 tries in 301 s) produced only mechanical shuffles, none below the baseline.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
