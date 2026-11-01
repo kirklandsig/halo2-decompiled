@@ -2837,6 +2837,12 @@ static inline short sound_voice_find_available_channel(char type)
 // Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
 // scores 113/113/113/109/139/139/139/133.
 // Original executable source restored; no qualifying gain.
+// Round 34 (m3 lane 2, fast): retail shares one `or ebp, -1` between the found channel's `cmp di, bp` and
+// the driver/buffer defaults and keeps the channel in EDI (the loop index). Bool result with `return true`
+// after the commit and `result = false` before the failure calls 139 (415 bytes); with the driver default
+// before the channel test 133 (415); plus the search returning `(short)i` from its loop 122 (432); that
+// with the byte result 133 (430); byte result, success goto, driver default before the test and the
+// returning search 131 (433); bool, `return true`, returning search, driver default in the block 139 (415).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3594,7 +3600,7 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 215 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
+// score 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
 // long next-chunk candidate 254; completed-chunk early exit 241.
@@ -3670,6 +3676,13 @@ struct s_128ca0
 // Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
 // scores 215/255/215/255/286/255/286/255.
 // Original executable source restored; no qualifying gain.
+// Round 34 (m3 lane 2, fast; the baseline is now 222): retail also passes each permutation-gain sum to the pin
+// through memory (real -> long -> parameter copy -> real) and stores the pinned value once at the join from EAX,
+// where ours stores in each arm. Outer decibels_sum over the by-value inner 222 (same code); location seeded as
+// a real and `+=` the inner real sum 306 (1030 bytes); location seeded as a long and `+=` a named by-value inner
+// 222 (same); the real sum written out 306; each pin argument as decibels_add(local_6, converted gain bits) 241
+// (1073), operands the other way 291 (1116); this file's decibels_pin single-exit (as src/unknown_2197f0.cpp's)
+// 237 (1036; 0x12a810 still matches), with the decibels_add pin arguments 231 (1052).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

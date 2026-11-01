@@ -1306,7 +1306,7 @@ static inline s_players_globals *players_globals_14f2e0()
 // but the constant stays a mov in every form tried (a struct of the two outputs, one and two
 // declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
 // keep threshold and the original body is restored.
-// score 46 (was 46): NONE materialization and the zero/flag store schedule differ; success BL agrees.
+// Earlier: NONE materialization and the zero/flag store schedule differ; success BL agrees.
 // Round 39: joint/dependent output initialization 75/75; chained word/flag clears 75/75;
 // result before/after the final reset 60/75; after field_198/before the user tests 46/46;
 // early result with chained NONE 48; with chained words/flags or flags first 46/46/46;
@@ -1343,6 +1343,11 @@ static inline s_players_globals *players_globals_14f2e0()
 // swapped operands, mode local, `result == false`, unit/result declaration order, unit NONE,
 // options pointer local, kept index cleared after its test, hidden-bit local, result set before
 // 0x14cad0; bitfield/unsigned/char mode fields in a small model.
+// Round 34 (m3 lane 2, fast with 0x14cdd0 and its callees in the image): timers cleared by memset 43; with
+// the two NONE outputs in one declaration 43; outputs declared the other way round 45; `if (result) goto
+// done;` before a separate mode test 192 (1041 bytes); `!(mode == 4)` 43. Compile-only: the mode read as a
+// masked word or dword, or as an unsigned byte against `(byte)4`, still narrows to the byte compare and mov.
+// 0xb8540 is still an empty stub here (its retail body makes calls).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2699,7 +2704,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
 // retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
 // has ESI, so the two roles are swapped.
-// score 103 (was 103): the store through the named `globals` local was tried again and scored
+// Earlier: the store through the named `globals` local was tried again and scored
 // 180 in the full build against the 103 baseline, so it was reverted; the globals pointer stays
 // live in EDI through both iterator loops and retail keeps it in ESI, reloading it only at the
 // two stores; target/point homes still differ.
@@ -2750,6 +2755,13 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // carriers 193/193/193/193/193/193/198/190 (fast control 193, 592 bytes);
 // paired long saves only three and is dropped. Existing-sibling control remains
 // 193; full baseline 103. Original predicate domains and body restored.
+// Round 34 (m3 lane 2; `--fast` with 0x14f2e0, 0x14e970, 0x6b380, 0x16bc00, 0xcc170, 0x1ca670, 0xbadc0 and
+// 0xe4050 in the image builds this function as the full build, 103; alone it is 193 at 592 bytes): with an
+// opaque call after the status block (diagnostic, not kept) the prologue is retail's, but loop 1 still swaps
+// the player pointer and the unit (ours ESI/EDI, retail EDI/ESI). The unit index read straight from the
+// iterator's datum (no player local) 103 (same code); the root walk as a while loop 103 (same); `last_unit =
+// unit` 141 (596 bytes); last_position copied before last_unit is set 101 (two, not kept); the root walk
+// starting from the unit's parent 159 (625 bytes).
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
