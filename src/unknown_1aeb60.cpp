@@ -413,6 +413,11 @@ short *function_e70b0(long unit_index, short *value);
 // Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
 // lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
 // mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
+// Round 132 (lane 6, fast with 0xe70b0 in the image): the actor pointer renamed to sort after the
+// index 49; the timer read once into a short local and stored back 49; the final guard named as a
+// bool 49; the slot view and that timer local read before the actor lookup 123 (index still ECX); a
+// plain `inline` declaration of 0xe70b0 here 49. In every block retail's scratch registers sit one
+// allocation on from ours, as if one more temporary came first.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

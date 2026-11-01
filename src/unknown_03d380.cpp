@@ -387,6 +387,15 @@ void function_125a90(long value);
 // 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
 // assigned on every path with no initializer 36 and the negated test with the kind arm first 36
 // both compile to the same code (VC normalises the arm order).
+// Round 132 (lane 6, fast): the condition named as a bool 157 (471 bytes; LTCG still inlines
+// 0x221810); the whole decision as one ternary 88 (both arms threaded, kind arm first); the file's
+// ELEMENT macro with `(datum & 0xffff) + 1` and no index local 51; the special arm as `if (type ==
+// 0x26) remove = !a; else remove = false;` on the long type 88 (aligned 31 against 35: the special arm
+// is then materialised and falls into the join as in retail, but the kind arm is laid out first and
+// jumps into the join with `setne`); that with the kind arm as one `kind && x == 1` test setting
+// `remove = false` 51: both arm bodies are then retail's, but the kind arm stays the class test's
+// fall-through and VC moves the special arm and the removal into the gap after the next-index
+// ternary's `jmp`, where retail puts the kind arm in the gap after the removal's `jmp`.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
