@@ -755,6 +755,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
 // conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
 // declared with buffer/size and assigned later: 34 each (same code). All restored.
+// Round 69 (lane 16, fast; 0x2adb10 in brackets, 129 at the start): getter statement orders owner, buffer, flag,
+// size 34 [138]; buffer, flag, size, owner 36 [131]; buffer, flag, owner, size 36 [139]; buffer, size, owner, flag
+// 34 [129]; owner, size, buffer, flag 34 [129]. Getter restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -905,7 +908,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 129 (was 134): with the address-taken scratch record and the two-pointer getter (see
+// score 129 (was 129): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -980,6 +983,10 @@ struct s_signed_file_write_parameters
 // 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
 // `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the
 // extend offset clamped from a named unclamped excess 129 (same code).
+// Round 69 (lane 16, fast; 0x2ad7c0 in brackets, 34 at the start): the getter's statements reordered so the flag
+// is computed before the size is read: owner, buffer, flag, size 138 [34]; buffer, flag, size, owner 131 [36];
+// buffer, flag, owner, size 139 [36]; also buffer, size, owner, flag 129 [34] and owner, size, buffer, flag
+// 129 [34]. Our scheduler hoists the size load into EBX at the header site in every order.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

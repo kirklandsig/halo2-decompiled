@@ -100,6 +100,10 @@ struct s_9cca0
 // without its set_location call, or with a non-recursive stand-in for it, the test moves above
 // the k store as in retail but the vector copies then store i early (12), so the escape comes
 // through the recursive set_location and is not the whole difference.
+// Round 69 (lane 16, fast): the two vector copies in the other order 13; the call's test as nested
+// ifs 9 (same code); the two long fields copied after the vectors 29; the input pointer declared before
+// the event 9 (same code); the marker stored right after the zeroing 10. 0x184440's file is on another
+// lane's list this round.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

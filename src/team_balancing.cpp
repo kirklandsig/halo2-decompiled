@@ -600,6 +600,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
 // ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
 // `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
+// Round 69 (lane 16, fast): the candidate as a reference bound to a copied temporary 123 (535 bytes); a
+// `__forceinline` free `operator<` on two solution references, `candidate < *reference`, 67 (same code), with the
+// cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
+// reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
+// count_spread (the newer, higher stack copy) still runs before the candidate's.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
