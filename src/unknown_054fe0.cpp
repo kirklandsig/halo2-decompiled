@@ -1437,6 +1437,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // the name count in memory. Name count declared before the names table 184; the loop index first 184; the mask
 // first 184; the name pointer taken as `->name` of the record 184; the previous-record pointer declared after
 // the names (memcmp on the table entry) 184 (all the same code).
+// M288: Existing membership helper in collection/update/both 232/216/247; name-copy
+// return used for its terminator 183 (one-point gain, rejected); with collection/update/both
+// 231/215/246, all with count initialized beside the mask 246. Original body and includes restored.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

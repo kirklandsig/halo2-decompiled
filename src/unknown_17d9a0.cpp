@@ -638,7 +638,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
-// score 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// score 552 (was 552): Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
+// Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
 // Earlier: frame 0x21dc and retail length agree; definition spill +0xac versus +0x94, count/plane homes and rotation spills remain.
 // Plane/count homes, initial face-call scheduling and rotation spills remain.
@@ -774,6 +775,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // subsets 589/552/564/603/589/594/559; all with short component ordinals 1157.
 // Keep only the axis scaling loop, confirmed by plain check at 552; other producers restored.
 // On the retained axis loop: staged cross / face count first / both 552 each; all restored.
+// M288: Long/short edge side on long axis induction 677/637; dword induction
+// 677/637; short induction 664/668; byte induction 664/668. All on the retained
+// exact-frame axis-loop graph; original predicate, induction and complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
