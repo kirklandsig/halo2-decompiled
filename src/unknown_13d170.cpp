@@ -260,12 +260,30 @@ struct s_block_candidate
 // Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
 // bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
 // restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
+// Round 35 (m3 lane 2, fast): lane 14's busy-in-arm form (`if (busy) { head = tail; continue; }` in the block
+// arm) rebuilt 377 at 1213 bytes; on it, the allocation as a single exit (`if (result != NONE) link; else if (type
+// == limit_index) clamp;`, no goto) 377 (same code; 370 on the original, same code), with the clamp arm first
+// (`if (result == NONE)`) 393 (1197 bytes); on the original: the new candidate's fields written through
+// `candidates[tail]` 371, the scan's candidate read through `candidates[i]` 397 (1244 bytes), the loop test as
+// `page_count > offset` 370 (same code). Retail places the zero-trip limit update right after the loop guard
+// (`jg` into the body, the update falling through); every form here keeps it at the end.
+// Round 111 (lane 7, fast; the one-file harness does not reproduce this function: 1162 bytes): round 27's
+// busy-continue form 377 (1213 bytes); with the none/gap arms storing the zero time first 377; with the
+// success path returning directly (no goto) 381; with the outer test as an early `return result` 391 (1228).
+// On the original: zero time first 370 (same code); success returning directly 376; early return 398 (1232).
+// Retail lays the no-candidate tail (limit update, result reload, `pop edi`) and the shared epilogue right
+// after the loop guard (`jg loop`, falling into the tail); allocation failure and the post-loop !have_best
+// test jump back to it. Ours places the tail last and enters the loop through `jle tail; jmp body`.
 // Round 275: Reused candidate pages/time/both/best fields/pages-best/time-best/all 369/367/367/370/367/367/367; all with immutable successor 367. One/three-point leads rejected.
 // Original executable source restored; frame 0x1050 versus 0x1054, page/ring homes and policy blocks remain.
 // Round 277: Existing private iterator with field/aggregate initialization and candidate
 // assignment/memcpy 370 each; each with native successful-datum lookup 367 at 1213 bytes
 // (three-point gains rejected). Original helper use, iterator, lookups and body restored;
 // frame/page-tail homes and policy blocks remain.
+// Round 131 (m3 lane 6, fast): `long offset = 0;` as the first statement 373 (push/pop order and the pages
+// register become retail's, the zero moves to EDI, frame still 0x1050); offset declared after the result,
+// before the clamp 400 (1231 bytes); the clamp as an if/else-if chain 370 (same code); both 373; offset
+// first with the candidate stored previous/offset/time/pages 372.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

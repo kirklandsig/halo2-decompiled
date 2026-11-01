@@ -122,6 +122,10 @@ struct s_visibility_bound_record
 // Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
 // view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
 // 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
+// Round 437: Native sixteen-byte storage with the per-part containment output
+// 406 reduced; with const query 406; live flags 442/442; branch-owned query data
+// 448/447, with const query 448/447. Ordinary judgment unavailable; original
+// storage, observations and complete body restored. Frame/list and pointer homes remain.
 // Round 476: Distance-before-normal graph, original/eight-byte storage, scalar/shared normal scale and direct/whole-plane output: 463/461/441/442/457/455/457/458.
 // Scalar forms shrink to 1716; shared scale recovers 1742 but regresses. Original zero-scale behavior, whole body and header restored; entry/table and plane/list homes remain.
 // Round 481: Complete scalar-normal initialization schedules i/j/k, j/i/k, j/k/i on
@@ -143,6 +147,13 @@ struct s_visibility_bound_record
 // Round 238: copied-plane normal reused in place, with all shared rotation-dot/position-dot/
 // inverse-scale subsets 459/459/478/478/459/459/478/478. Dot regroupings exact-only;
 // original complete plane/normal producers restored; frame agrees, entry/table and plane homes remain.
+// Round 230: Native bound record and sixteen-byte storage with point/vector copy/component
+// construction/direct shared scale 417/417/450/424; per-part containment output on those
+// graphs 406/406/449/421. Native point form kept at 406 after full validation; all call values
+// and float grouping retained. Storage has its own type identity.
+// Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
+// view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
+// 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -1414,6 +1414,15 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
 // FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
 // flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
+// Round 491: native distance/actor/busy, busy/actor/distance, busy/distance/actor, actor/busy/distance,
+// distance/busy/actor publications 56/253/253/254/253/253/253/253 (last three use a two-consumer actor
+// index). Original publication and requests restored.
+// Round 280: actor identifier used twice with scalar geometry/actor publication orders
+// 55/56/55/253; collection-owned count counterparts 76/77/76/255. Original executable
+// body restored; iterator scaling, request registers and seat loads across clearing remain.
+// Round 282: complete actor-position values mutable/const 229/229; vehicle-position values
+// 271/271; paired mutable/immutable/mixed values 307/307/307/307. All exact-only captures restored;
+// original candidate/request body, frame 0x6ac and matched comparator retained.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2611,6 +2620,14 @@ struct s_scenario_scripting_view
 // Round 238: resolved-point branch first, branch/loop output storage and separate/returned
 // resolver output crossed with original/loop short counter: 80/80/84/84/87/87/95/95.
 // Original branch priority, output/counter scopes and complete search restored; wrapper stays exact.
+// Round 491: native resolved/displacement/both initialized outputs 96/80/96; reused loop outputs 106; with
+// loop-owned short counter 83/87/84/95. Original outputs and complete search restored.
+// Round 280: paired conditional distance/index results, positive/complementary predicate,
+// either publication order and original/loop-owned short counter 80/87/80/87/80/87/80/87.
+// Original search restored; actor/set/counter homes and early data read remain.
+// Round 282: actual winning native point at selection/pre-actor/entry/outer scope
+// 121/122/124/120; with the original short counter owned by the loop 126/121/123/121.
+// Original ordinal, signed dynamic search and frame restored; exact wrapper survives all eight.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -614,6 +614,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // cosine product, so the turned components colour XMM4/XMM7/XMM5 as k/j/i where retail has
 // XMM4/XMM6/XMM5 as i/j/k; retail's test zero is XMM0 after the scale products, and it multiplies x
 // as `movaps xmm1, scale; mulss xmm1, [x]`.
+// Round 69 (m3 lane 9, fast with 0x1ecf50 and 0x2b400): the magnitude and facing tests nested 77 (same code);
+// the facing vector as a named const 2D pointer for both tests 148 (857 bytes); the turned pair written
+// straight into direction on success (no k or fallback copy) 167 (790 bytes); integer-zero literals in both
+// tests 77; the rotation's cosine through a named zero local 77 (diagnostic only). The first difference is
+// still the magnitude compare and its XMM6 zero scheduled above the divide.
 // Round 234: Eager geometric admission, direct/length-first/facing-first/separate predicates
 // 180/177/190/174; with native planar component input 199/196/198/193. Original short-circuit admission
 // and library copy restored.

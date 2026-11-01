@@ -410,14 +410,27 @@ static inline bool teams_enabled_19e1c0()
 // `result <= remaining ? result : remaining` 661.
 // Diagnostic (a volatile token read at every compare, reverted): 468, with retail's token_length EDI and per-test
 // token reloads, but a hoisted zero then takes EBX (event to EBP) and `remaining` still stays on the stack.
+// Round 54 (m3 lane 1, fast): a named length with retail's clamp shape `result = remaining <= length ? remaining :
+// length` (cmp remaining, length; cmovle) in the four name/team cases: plain result 692, volatile result 412 (1444
+// bytes); with the fallback clamp in the same shape, plain 694; every format failure as `return remaining;`
+// (as the switch-side-time case): plain 696 (1167 bytes), volatile 439 (1416 bytes). With the plain result our
+// allocator gives `token` EDI and leaves `remaining` on the stack (retail: remaining EBP, token reloaded per
+// compare), so the name/team tails merge whatever the clamp's form.
 // Round 66 (lane 9, fast): every vsnprintf failure as `return remaining;` with the volatile/plain result 439/696;
 // each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
 // token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
 // failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
+// Round 46 (lane 14, fast): retail's per-compare `token` reloads take a scratch register each, so the case
+// bodies' EAX/ECX/EDX rotation differs and only the copy and format calls are shared (0x19e74c, 0x19e3b8).
+// Plain result 691 (control); with a `length` local and `length > remaining ? remaining : length` in the four
+// name/team cases 692, as `remaining < length ? remaining : length` 692; the length local with the volatile
+// result 412 (1444 bytes); plain result with the token fallback clamp as a ternary 693, with both 694.
 // Round 231: case-owned copy/formatter/replacement results and their paired families
 // 573/416/461/516/631/588; complete case results with original/remaining-first
 // native copy clamps 540/540. Formatter-only gives retail length at 416; original
 // result ownership, all cases, text buffer, loop and full body restored.
+// MiniMax I (11-01): no new form, no lower score; the plain result still merges the four name/team copy tails (691)
+// and a permuter run over it (27 tries in 301 s) produced only mechanical shuffles, none below the baseline.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

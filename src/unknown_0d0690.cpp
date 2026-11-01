@@ -216,6 +216,14 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // all pairs and all three 162/162/179/162/180/180/180; original real-narrowed terms
 // in double scalar carriers 186. Original contribution and color ownership restored.
 // Round 183: shared vector add, either input owner, and unit add-scaled in place 93/93/93/93; separate native sum output, plain/scaled and either owner, 188/188/188/188. Original accumulation restored.
+// Round 68 (lane 9, fast): colour first alone is retail's code everywhere except the post-call add (ours
+// reloads the power, adds the strength to it and copies back: 3 instructions, +7 bytes) and the ecx/edi
+// pair; an opaque call (volatile function-pointer diagnostic, reverted) after 0x131c20 or `&color` escaping
+// before the loop does not change that add. Trials:
+// a power value read once with the entry pointer (strength = power in the first-light arm; test, divide
+// and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
+// `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
+// strength declared inside the lights branch 139.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1328,6 +1336,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
+// and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // Round 36 (lane 1, fast, with matched 0x3db00; aligned/shape = difflib counts over the listing, base 527/271):
 // `record` stays a stack argument only while our allocator gives it EBP; when it gets ESI this function
@@ -1444,6 +1454,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 235: uniform published-length field consumers with combined admission/entry-base/
 // late-result subsets 0-7: 577/562/569/564/571/571/577/570. All regress both caller
 // levels; original local length, selection, helper graph and complete body restored.
+// Round 273: Repeated primary/secondary/ambient output-field pointers in single/pair/all
+// subsets 535/529/530/532/533/537/533; all with primary direction 532. Original fields,
+// native workspaces, helper contracts and body restored; frame 0x2c versus 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2093,6 +2106,13 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
 // with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
 // restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
+// Round 329: Three-entry sample-offset table, long/dword entries with initializer,
+// ascending assignments, descending assignments and plain indexed loop,
+// 603/603/555/575 each. No exact match; independent offset locals and full body restored.
+// Round 273: Complete encoded decoder input value/reference-copy/library-copy/native
+// five-short array copy 687 each; weights-first value/pointer-copy/reference-copy/library-copy
+// 699 each. Original decoder, separate samples, shared offsets and complete body restored.
+// Frame 0x90 agrees; status +0x30 versus +0x24 and mesh +0x2c versus +0x20 remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
