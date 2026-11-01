@@ -639,10 +639,23 @@ real function_267370(long object_index);
 // argument 107; the held bit as one bool expression 194; a named location pointer for the zone test
 // 100. Diagnostic (fast only, unfaithful here): `(short)NONE` in the shared zone helper leaves the
 // `or edi, -1` / `cmp ax, di` sharing unchanged.
+// Round 147 (m3 lane 4, plain checks; --fast differs only at the 0x28f8d0 call, an aligned diff shows 28 real
+// instructions left): a compile-only build of this file without /GL gives retail's immediate zone compares and
+// `or ecx, -1` at the resets, so the NONE sharing comes from the LTCG allocation, not the spelling. The shared
+// zone helper reading the cluster index at each use 96 (the sharing stays; three cross products flip to retail's
+// operand order and three away, so those orders follow internal numbering); the parent pointer set by an `if`
+// 352; typed byte fields for 0x265/0x267 98 (same code); the zone result in a named bool 100; `left` declared
+// before the up copy 98; type read before the parent 129. Re-measured: without `(void)&actor_index` 98 (same
+// code, removed: it only took the parameter's address); the parent ternary with the found arm first 102.
+// Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
+// alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
+// shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
+// clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
+// chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
+// the zone helper's compares 98 (same code: the constant is shared either way).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
-	(void)&actor_index;
 	s_actor_moving *actor = actor_moving_get(actor_index);
 	byte *actor_bytes = (byte *)actor;
 	if (actor->unknown007)
@@ -1723,6 +1736,15 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // after the 0x1e5240 call 278 (loaded after 0x1e5280, spilled). A pool local before the NONE test inside 0x1e5240
 // (0x1e5240 still MATCH) 251 (same code here: the caller's lookups stay separate loads). The unit-index test split
 // from the actor state tests 251 (same code).
+// Round 38 (m3 lane 14, fast): retail re-fetches the unit after 0x1e53e0 (the two equipment queries' lookups)
+// where ours keeps it in EBX, i.e. retail's LTCG treats 0x1e53e0 as possibly writing memory and ours as pure.
+// Diagnostic (reverted at once): a function-static store in 0x1e53e0 gives this body retail's shape (actor in ESI,
+// the pool global loaded once and held, the unit re-read after the call; aligned 183 -> 167) but 265 at 1247
+// bytes, the pool in EBP and the options in EDI (retail EDI/EBP) and the grenade test laid out longer; its other
+// callers keep their scores (0x1e04a0, 0x1e5380 match, 0x2758b0 21). Lead: a 0x1e53e0 form with the same bytes
+// that LTCG cannot prove pure. Removing the 0x1e1a00, 0xc6f80 or weapon calls (diagnostics) does not make ours
+// hold the pool. Forms: ticks as a short 251; a named group index for the counter 251; the grenade test by De
+// Morgan 251; the weapon pair declared before the unit 251; `fraction = fraction * 0.5f` 251 (all same code).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

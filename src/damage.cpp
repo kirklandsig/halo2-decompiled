@@ -1938,7 +1938,7 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
-// score 40 (was 218): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
+// score 5 (was 40): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
 // result to a stack byte and pushes the dword, and sign-extends the team into esi/ecx); what is left is scheduling (the
 // `mov eax, [edi]` before the `info` test, which register the object pointer and the 1 << type shift use) and the
 // `lea ebx, [ecx + 8]` before the last call's first push.
@@ -1949,6 +1949,14 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // nested guard 40, eager null comparisons 238, nullable ordinal 40, definition flag first 58, upper range
 // first 44; three-use owner address after/before initial damage 180/185. All restored; pointer-load
 // scheduling, object/shift registers and final owner-address schedule remain.
+// Round 40 (lane 14): the 0xb58c0 notify written as 0xd6790 has it (an object pointer read once for the
+// test and the argument) took 40 -> 5: every register now agrees. Left: retail loads `mov eax, [edi]` above
+// the info `je`, addresses the region flags as [eax + edx + 4] (ours [edx + eax + 4]) and does the `lea ebx`
+// before the effect call's `push eax` (0xd9110 has the same swap). On that graph: the effect call straight
+// to the owner-first 0x176780 40 (same code, on the old graph); region entry local before the guard 226
+// (accumulator in EAX, old graph); region element pointer 5; one combined guard reading the entry at each
+// use 201 (880 bytes); short region index 201; `!= NULL` guard 5; player test joined into the region test 5;
+// a 600 s permuter run, 12 tries, none below 5.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -1990,8 +1998,9 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 			if (0.0001f > object->body_vitality)
 				object->body_vitality = 0.0001f;
 		}
-		if (DAMAGE_OBJECT(object_index)->unknownd4 != NONE)
-			function_b58c0(DAMAGE_OBJECT(object_index)->unknownd4, 0x40);
+		s_damage_object *damaged = DAMAGE_OBJECT(object_index);
+		if (damaged->unknownd4 != NONE)
+			function_b58c0(damaged->unknownd4, 0x40);
 		accumulator->unknown28 = body_damage;
 	}
 
@@ -2073,6 +2082,16 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // @coldspear's permuter (#104, 2026-10-30): 66 -> 52 needs a volatile local pointer; its reorders alone gain nothing.
 // Round 268: entry output declarations / attached-path early return / persistent selected
 // marker, all seven subsets 69; native output role names 69. Original body restored.
+// Round 128 (m3 lane 5): the cause is the object/effect call cycle (0xd9d60 -> 0x176870 -> 0x175fa0 -> ... ->
+// 0xd6c80 -> 0xd7b80 -> 0xd6800 -> 0xdae60 -> 0xd9d60): ours keeps plain /Gr fastcall (ECX, EDX, rest on the
+// stack), as LTCG gives a function its walk reaches through a back edge, and so does 0xda110; the disabled
+// 0xb8540, 0xb7430, 0xb7b40 and 0x2902b0 (stubs cut their cycle edges) change the walk. Diagnostic, reverted:
+// with those four bodies enabled this function takes retail's AL/ECX/EDX convention, 8 at 260 bytes (0xdae60
+// 57, 0xda110 513, but matched 0xd6bc0 63 and 0x11a320 10 lost); there, the marker and object parameters
+// swapped (definition, declaration and the four calls) 6 (registers as retail), with `markers[2].name` stored
+// before the position and forward copies as well 4: only the 0x176ad0 register-argument setup is left
+// (retail ECX, EDX, EDI, ESI; its only caller, so 0x176ad0's own parameter order). In the real build: both
+// forms 70 (0xdae60 75, 0xdaaa0 231), the name first alone 69. BLOCKED-BY 0xb8540.
 // @retail 0xd9d60
 void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
 	s_damage_owner const *owner)
@@ -3394,16 +3413,6 @@ void function_d87e0(long list_index, bool can_take_damage)
 
 /* how many of the model markers of a name an object and its attached
    children are missing */
-// score 46 (was 46): the walk and the first marker test match. What differs is the marker loop head: retail loads
-// the marker array (+0x6c), then marker_name (a separate `mov ecx,[esp+0x94]`), then `add eax,esi; mov eax,[eax]; cmp eax,ecx`;
-// ours folds both into `mov eax,[esi+ecx]; cmp eax,[esp+0x94]`, so every instruction of the loop after that shifts.
-// Tried (all still 46): operand order of the name test, passing marker_name instead of name to 0xb8d30, the array
-// address in a separate local, i*0x1c written before the base, marker_name copied to a local, a struct-array
-// view of the markers.
-// @coldspear's permuter (#104, 2026-10-30): 46 -> 31 only by changing an offset and swapping 0xb8d30's arguments at one
-// call (not kept).
-// Round 268: marker output at function/object/model/marker-loop scope, short or long missing
-// counter, all eight 46 at 332 bytes. Original scope and counter restored.
 // @retail 0xd88f0
 short __stdcall function_d88f0(long object_index, long marker_name)
 {
@@ -3428,13 +3437,13 @@ short __stdcall function_d88f0(long object_index, long marker_name)
 
 					for (long i = 0; i < marker_count; i++)
 					{
-						string_handle name = *(string_handle *)(*(byte **)(model + 0x6c) + i * 0x1c);
+						byte *entry = *(byte **)(model + 0x6c) + i * 0x1c;
 
-						if (name == marker_name)
+						if (*(string_handle *)entry == marker_name)
 						{
 							s_object_marker marker;
 
-							if (!function_b8d30(index, name, &marker, 1, false))
+							if (!function_b8d30(index, *(string_handle *)entry, &marker, 1, false))
 								missing_count++;
 						}
 					}

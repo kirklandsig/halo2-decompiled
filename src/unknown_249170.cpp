@@ -160,6 +160,10 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // All source forms restored; case 1 fsin/xorps scheduling remains.
 // Round 58: reverse zero-field dependency 4; velocity/position/both zero components through the unions 2/2/2;
 // all velocity/all output components 2/2; entry-wide tail velocity pointer 512; const case radius 2. Body restored.
+// Round 190: case 1 azimuth as one returned product (never address-taken) 510; drawn into a separate fraction
+// then scaled into azimuth 2 (same code); assigned from the draw then `*=` 16 (the tail's first scale row
+// turns into movaps/mulss-from-memory, the swap stays); sine and radius declared at the top of case 1, either
+// order, 2/2 (same code). Body restored.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

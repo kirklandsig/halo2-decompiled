@@ -451,30 +451,9 @@ real function_30bf0(vector3f *v);
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate,
     vector3f *velocity, real const *limits, real max_speed, real acceleration);
 
-// score 2 (was 4): the dot product's last term still loads the facing component into
-// the register where retail loads the forward one. Before round 117 the call to 0xc7840 also set up its
-// null frame argument before the address of the desired vector where retail does it after;
-// the call-setup order followed the unmatched callee 0xc7840 (fixed by its parameter order). The dot
-// term flips because the then-arm's struct copy of the forward vector counts as a later
-// read of its first component (compile-only: copying another vector there removes the flip,
-// reading forward.k there moves it to the k term); copying from a re-fetched object fixes the term but
-// copies through a lea (169, aligned 25).
-// Tried: the last-term operand swap, a const facing parameter, a desired-address pointer local,
-// a named alignment local, a named idle bool and a mutable settings pointer all compile
-// to the same bytes; the != branch swap 28; the nested-if duplicated else 317/996;
-// the forward const reference 202; the settings/object declaration swap 6; desired default 84;
-// forward/facing values 255/232; facing plus default 227; forward plus default 253;
-// const limits 4; control value 237; control plus default 240; terms in i, j, k order 4;
-// cross product with plain up/forward reads 8/6/10 (both).
-// Round 117: 0xc7840's parameters as (frame, current, desired, ...), the order retail's setup at all four
-// calls implies, 4 -> 2 (kept). Then: a forward pointer before the if for the copy 203, for the dot and the
-// copy 203; the dot through dot3f 4; `!(dot <= threshold)` 175; settings declared before the object 4.
-// Compile-only diagnostics: every dot and copy spelling keeps the flip; it follows whichever forward
-// component the then-arm reads, and goes away only with `facing` declared after `threshold` (no retail
-// evidence for that order).
 // @retail 0x1faf80
-bool function_1faf80(vector3f *facing, long object_index, void const *settings_pointer,
-    vector3f const *control, real threshold, real *turn)
+bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
+    real threshold, vector3f *facing, real *turn)
 {
     s_slot_object_view *object = object_get(object_index);
     real const *settings = (real const *)settings_pointer;

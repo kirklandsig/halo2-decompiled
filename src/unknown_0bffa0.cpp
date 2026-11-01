@@ -797,7 +797,12 @@ void function_42850(long object_index, long tag_index, point3f const *position,
     vector3f const *third);
 byte g_55e708;
 
-// score 128 (was 109): 0x2dba0 now takes the tag in ECX and the direction in EDI as in retail; the marker loop
+// score 128 (was 128): BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
+// index, marker_index, position, direction, color, alpha, amount, scale) at its definition and every call (0x2dba0 and
+// its other callers unchanged) the marker loop anchors on the position pointer as retail (the cursor anchors on the
+// address evaluated last) and this is 45 at retail's 607 bytes, 38 with the opacity through the PIN macro; the
+// direction after the colour 38, last 153 (0x2dba0 56), tag after alternate/position/direction 141 each.
+// Earlier (was 109): 0x2dba0 now takes the tag in ECX and the direction in EDI as in retail; the marker loop
 // walks the forward pointer in EDI (position = edi + 0x24, index in EBX) where retail walks the position pointer
 // in EBX, derives the forward with `lea edi, [ebx - 0x24]` and keeps the index and count in memory (frame 0xf0
 // against 0xec); the opacity clamp stores the product first. Earlier: BLOCKED-BY 0x2dba0: it took the position in
@@ -822,6 +827,15 @@ byte g_55e708;
 // 99 -> 96); short count and index 145 (582 bytes). Compile-only (it reproduces the forward-pointer IV): a matrix
 // pointer, both address locals and a marker pointer in the for loop all keep it; a walked position pointer
 // gives two pointer IVs, not retail's one.
+// Round 47 (lane 10; fast with 0x31520 and 0x3e9c0 listed agrees with the plain check): the opacity through the
+// PIN macro 128 (plain; aligned 99 -> 96); the clamp as if/else-if 128; an indexed for loop 128; object_index for
+// every object read in the marker arm 152; the first-person count as a ternary initialiser 128. Compile-only: a
+// forward/position/matrix pointer local, both locals in either order, the 0x3e9c0 result as a local, a do-while,
+// a for over both cursors keep the forward anchor; mixing `markers[i]` with the walked pointer gives two cursors.
+// Round 50 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the marker array and count declared before the object
+// and marker-name reads 128; the object_index local also as the loop's 0x3e9c0 argument 148 (587 bytes); the
+// fallback count as a ternary 128; the first-person test as nested ifs 128; the cursor advanced before the
+// index 128. Still BLOCKED-BY 0x2dba0's parameter order.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -990,7 +1004,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 482 (was 482): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 315 (was 482): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1037,6 +1051,14 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // three divides 599. Diagnostic: dead initialised locals change it by count alone (+1..+12:
 // 479/479/539/315/483/480/480/480/479/479/483/483, any position); +4 gives 2826 bytes and fixes most of
 // the projection rows, so a natural form with that many more symbols is the lead.
+// Round 68 (lane 12): the cone arm's four bounds values as named locals, each used for the bounds and two
+// corners, 315 (2826 bytes; kept): the first cross now loads up/reference as retail, leaving register
+// permutations, normalize3d's j, i, k sum and the projection rows' term order. On 315: the bounds in
+// x0, y0, x1, y1 order (retail's store order) or after the corners 315/315; plane written through a plane
+// pointer 543 (with corner order 543); normalize_inline 567; cross3f for the left cross 526, with
+// normalize_inline 541; depth from the radius local 556; reference selected before the negate 498;
+// unused-local probes +1/+2/+3/+4/+8/+12 483/480/480/480/483/467 (diagnostic). Before the named values:
+// bounds in corner order alone 482.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1105,14 +1127,18 @@ void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab co
             real scale = 1.0f / shape->origin_offset;
             real half_width = shape->cone_render.width * scale * 0.5f;
             real half_height = shape->cone_render.height * scale * 0.5f;
-            bounds.x0 = center.x - half_width;
-            bounds.x1 = center.x + half_width;
-            bounds.y0 = center.y - half_height;
-            bounds.y1 = center.y + half_height;
-            entry->points[0].x = bounds.x0; entry->points[0].y = bounds.y0;
-            entry->points[1].x = bounds.x1; entry->points[1].y = bounds.y0;
-            entry->points[2].x = bounds.x1; entry->points[2].y = bounds.y1;
-            entry->points[3].x = bounds.x0; entry->points[3].y = bounds.y1;
+            real x0 = center.x - half_width;
+            real x1 = center.x + half_width;
+            real y0 = center.y - half_height;
+            real y1 = center.y + half_height;
+            bounds.x0 = x0;
+            bounds.x1 = x1;
+            bounds.y0 = y0;
+            bounds.y1 = y1;
+            entry->points[0].x = x0; entry->points[0].y = y0;
+            entry->points[1].x = x1; entry->points[1].y = y0;
+            entry->points[2].x = x1; entry->points[2].y = y1;
+            entry->points[3].x = x0; entry->points[3].y = y1;
             entry->point_count = 4;
         }
         entry->flag8c = true;
@@ -1418,8 +1444,8 @@ void function_c09c0(long mode)
 bool __stdcall function_bab40(long object_index, long name, real *value);
 bool function_bad50(long object_index, long index, point3f *out);
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
-color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t,
-    color3f *result, color3f const *tint);
+color3f *function_131d60(color4f const *a, color4f const *b, dword flags, color3f *result,
+    color3f const *tint, real t);
 long function_baf80(long object_index);
 bool object_or_parent_hidden(long object_index);
 bool function_b9d20(long object_index);
@@ -1428,96 +1454,6 @@ extern s_object_list *g_4de2f4;
 
 #define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-// score 49 (was 49): four bytes over retail's length; only the colour-copy block differs: retail
-// hoists each next definition load above the previous copy's last store, loads 1.0f before the tint
-// stores and stores the last pair-colour dword after the pushes, so `&light->fraction` takes EBX and
-// is read back as `[ebx]` after the calls (ours stores each copy's last dword first, takes EAX and
-// reloads the field). Round 95: the end tests and `|= 2` on the word field 184 (aligned 46 -> 43);
-// with the definition test as `!(bytes[0] & 0x80)` (gives retail's `js`) 184 (aligned 42); fade
-// products written `scale * field` for the last two or all three pair channels 184/184; vector3f_scale
-// in place on both colours 298; the fade as a named local used twice 184. Round 141: the grouped
-// colour struct and the parameter alias replaced by plain locals (LTCG then inlined 0x131d60: 607 at
-// 1789 bytes) with 0x131d60 kept out of line by a noinline declaration in its file 147 (kept as the
-// steering removal); on that base `!(bytes[0] & 0x80)` 151, the word-field end tests 183, both 185,
-// the pair colour through vector3f_scale 281, `scale * field` for the pair 147, the colour through
-// vector3f_scale 161. Round 143: every clamp through a PIN macro that re-reads its field (the channel
-// clamps stored in order) 85 at retail's length; with the word-field end tests 51; with the `js` test
-// and the clamped fade named 50; the alphas after the rgb copies in declaration order 49 (kept). On
-// that: alphas before each copy / after in source order / first 50/50/49; tint copied last 66; memcpy
-// copies 49; per-field float copies 414; `&light->fraction` passed directly 214; the fraction pointer
-// declared at the block top 88; every fade product `*= 1.0f - light->fade` 50. Round 81 (aligned
-// count 8: the 4 bytes are `[ebx]` against our `[ebp + 0xd0]`, which shifts every later call): RA
-// gives the pointer eax (then rematerialised) because our scheduler stores the last pair-colour dword
-// before the pushes; the colour struct given an rgb member (shared header, restored) 49 (same code);
-// the pointer declared at the function top 93 (it then takes edi and the late store moves as
-// retail's); the pointer also for the second call and/or the blend 49/49/49 (same code);
-// `&light->fraction` passed with no pointer 214. Round 14 (lane 10): a typed definition struct for
-// every offset 49 (identical code); alphas after each copy 50; pair copies after the second/first alphas
-// 49; second/first alphas between the copies 49; the fraction pointer before the alphas / after the tint
-// / between the alphas 49/75/49 (retail keeps it in EBX across both calls; ours rematerialises it).
-// Round 62: a point3f tint 49; alpha-only aggregate initializers 438; the last pair colour copied as
-// a whole color4f 365; a reused input pointer 357; a reused output pointer, chained alphas, a const
-// fraction handle, separate declarations, function-scope colours and const copy sources 49 each.
-// Round 16 (lane 10): the function-driven colour block as a forceinline helper of the light and
-// definition 49 (identical code); with `&light->fraction` as its pointer parameter 88, and every
-// fraction read through it 88; the fraction as a reference 49; the tint initialised at its
-// declaration 49.
-// Round 77: `real &fraction` 49 (same code); the tint copied after the first call 75; the colour copies
-// after the second call 82; the pointer for the first call only (`light->fraction` after it) 214; the
-// pointer declared with the colours 88. Round 80: the four alpha stores chained in one assignment 51
-// (in reverse order 49); a const fraction pointer 49; the tint declared after the colours 49; the
-// definition's function flags named for both calls 377.
-// pointer declared with the colours 88. Round 10 (lane 14): the tint read through a `color3f const *`
-// local 49; the four definition colours (0x40, 0x4c, 0x58, 0x64) as one `color3f *` array for the copies
-// 417, and in every arm 370; `real *const fraction` 49; the function flags as a named local for both
-// calls 399. Round 12 (lane 14): the fraction pointer at the function top 93 (computed at entry in EDI),
-// also for the arm's later reads 93; at the arm's top with every read through it 88; every arm read through
-// it 49 (same code); the four alpha stores before the copies 49 (same code).
-// Lane 18 r1 (statement orders of the block, the rest unchanged): alphas between the tint and the copies
-// 49; pair copies first with the tint after them 65; tint after the four copies 65; copies 2, 1, 4, 3 with
-// alphas likewise 58; copies 1, 3, 2, 4 55; the fraction pointer before the copies 75; alphas reversed 51.
-// it 49 (same code); the four alpha stores before the copies 49 (same code). Lane 13 round 18:
-// the whole count is the fraction pointer (`[ebx]` against our `[ebp + 0xd0]`, 4 bytes, shifting
-// every later call) and the copy-store schedule that frees EAX for it; a compile-only build does
-// not reproduce this block (it gives EBX), so it is an LTCG effect. Pointer as a byte offset from
-// the light 49, as an element of the radius block 49 (same code); re-derived from the pool global
-// 282; `&light->fraction` passed to 0xbab40 with the pointer kept for the later read 49, the
-// pointer declared between the two calls 49 (same code).
-// Lane 14 r19 (fast with the callees listed reproduces 49; 0xbab40 gets retail's three pushes and
-// nothing scratch lives across it, so it is not the blocker): the fraction pointer defined between
-// copies 3 and 4 / 2 and 3 / 1 and 2 / the tint and copy 1 62/75/76/75 (still EAX, rematerialised);
-// the light's name read into a local before the 0xbab40 call 49 (same code).
-// Round 91 (lane 7; harness counts, where the unchanged source gives 50): the colour copies after
-// the 0xbab40 call 79; the copied view point typed point3f 50; the first blend's fraction named
-// after 0xbad50 50; `object` declared before `object_index` 52; the object through `object_get`
-// 50; the alphas chained 52; a trivial 0xbab40 body (diagnostic) 393.
-// Round 32 (lane 10, fast counts; aligned 8: the colour-copy schedule and `[ebx]` only): the fraction
-// pointer renamed (value / blend_value / zfraction / a_fraction) 49 each; the else arm's colour copy as
-// a plain struct assignment 49 (same code); the pointer declared at function scope and assigned in the
-// arm 49; the light as an `s_light_dynamic *const` 49; the first arm's blend read from the field at each
-// use 324 (aligned 16); `&light->fraction` passed directly again 214 (1616 bytes, aligned 13: also
-// turns the pair fade products).
-// Round 175: the four colours as aggregate initialisers (alpha first) 414 (plain); the name read into
-// a local before 0xbab40 50; the object index chosen by one ternary 428; the function arm's blend read
-// from the field at each use 325; the pair colours copied before the other two (tint first) 58
-// (harness, where the unchanged source gives 50). Diagnostics on the
-// callee (harness): 0xbab40 returning true straight from its 1.0 case or without its recursive call
-// leaves this at 50; only a body small enough to inline moves it (393).
-// Round 111 (lane 6, fast): the fraction pointer from a second view of the light record (re-indexed from the pool)
-// 310 (1607 B; the light index moves to the stack and the later read is still folded to [ebp + 0xd0]); the first
-// blend's fraction read through that view 283; the colours declared before the tint 49; colours declared first,
-// second, pair_first, pair_second 49; pair_second, pair_first, second, first 49. 0xbab40 saves EBX/ESI/EDI/EBP as
-// retail does, so its body is not what keeps EBX from the pointer.
-// Round 30 (lane 13, fast): the tint copied with memcpy 49 (same code); rgb copies in the order
-// first, second, pair_second, pair_first 52; second, first, pair_first, pair_second 54; the tint copied
-// between the second and third copies 59 (1612 bytes), after the first copy 55 (1612 bytes).
-// Round 51 (lane 16, fast with 0xbab40/0xbad50/0x131d60/0xc0b00): the pointer read at the second 0x131d60
-// call and `light->fraction` at the first 49. 0xbab40 (ours, 28) with the 1.0 case's own `return enabled`
-// 117, with a named early result too 115 (this function stays 49 with either).
-// Round 45 (lane 10, fast): 1..28 unused locals at the top or in the arm 49 each (the copy schedule is not a
-// numbering tie; 1..4 extra live stores keep it too and only turn the pair fade products); the colours as
-// `color4f colours[2], pair_colours[2]` 49, as one `color4f colours[4]` 49; a const definition 49; the tint
-// copy-constructed 49; the tint as a `point3f view_point = *g_468710` 49 (all the same code).
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
 {
@@ -1561,19 +1497,19 @@ void __stdcall function_c0c80(long light_index)
         tint = *(color3f *)g_468710;
         *(color3f *)&first.red = *(color3f *)(definition + 0x58);
         *(color3f *)&second.red = *(color3f *)(definition + 0x64);
-        *(color3f *)&pair_first.red = *(color3f *)(definition + 0x40);
-        *(color3f *)&pair_second.red = *(color3f *)(definition + 0x4c);
         second.alpha = 1.0f;
         first.alpha = 1.0f;
+        *(color3f *)&pair_first.red = *(color3f *)(definition + 0x40);
+        *(color3f *)&pair_second.red = *(color3f *)(definition + 0x4c);
         pair_second.alpha = 1.0f;
         pair_first.alpha = 1.0f;
         real *fraction = &light->fraction;
         function_bab40(object_index, light->name, fraction);
         function_bad50(object_index, light->colour_index, (point3f *)&tint);
         function_131d60(&first, &second, *(dword *)(definition + 0x34),
-            *fraction, &light->colour, &tint);
+            &light->colour, &tint, *fraction);
         function_131d60(&pair_first, &pair_second, *(dword *)(definition + 0x34),
-            light->fraction, &light->pair_colour, &tint);
+            &light->pair_colour, &tint, light->fraction);
         real blend = light->fraction;
         light->intensity = (1.0f - blend) *
             *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * blend;
