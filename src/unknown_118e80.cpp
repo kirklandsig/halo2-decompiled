@@ -723,6 +723,11 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // is then hoisted into EBX and the index left in its stack home (frame 8) 120; with the early false
 // return 119; with the success path inside `if (!= NONE)` 123. That success-path form alone 88 with
 // `||` on the two bools 95. The goto to the single exit replaced by an `if (!= NONE)` block 83 (kept).
+// Round I (MiniMax lane I, fast): the guard as `if (... != NONE) { ...; return local_4; } return false;`
+// with the +0xb6 word read into a one-use word local 35 (match-only form: retail zero-extends the word
+// with xor eax,eax before the load); the same without the local 81. On the 35 form the tail predicate as
+// `||` over two named bools 56, `|` over two named bools 48, `||` inline 56, `else if` with the call
+// duplicated 56, the guard inverted with an early `return false` 76. Original body restored.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
@@ -1275,6 +1280,9 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // shifted by the retail-shaped stack-byte push), with length_sq3f on the 0x138 vector through a
 // pointer 44, through a vector3f field of the output (--fast) 42; on the long form the 0x138 squared
 // length through dot3f 94; the found flag held in a long local (--fast) 95.
+// Round I (MiniMax lane I, fast): its 42 came from dropping the function_119bc0 call and passing the flag
+// uninitialised (a behaviour change, not kept); with the call kept and the squared length summed as three
+// statements 92, as one expression 94. Original body restored.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
