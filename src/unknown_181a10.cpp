@@ -592,6 +592,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
 // Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
 // queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 284: existing shared axis-rotation producer, separate/in-place plane output,
+// without/with all four named distance products: 419/419/448/448; shared row-rotation
+// producer 321/321/352/353. Grouping changes were exact-only; all helpers, includes,
+// normal/plane expressions and complete body restored. Frame 0x48 versus 0x44 remains.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
