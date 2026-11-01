@@ -299,6 +299,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
 // break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
 // declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
+// Round 328: Complete playback case orders 021/120/201/210 across all four
+// switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
+// case order restored; direction/frame/flags and interpolation carriers remain.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

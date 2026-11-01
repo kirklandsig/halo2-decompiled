@@ -648,6 +648,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
 // (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
 // count` 197 (1883 bytes).
+// Round 328: Carried message pointer with short/long/unsigned-long/word/byte row counters
+// 453/420/420/420/417; ordinary end-pointer for/while and direct active-range traversal
+// 322/322/322. Original indexed traversal restored; scalar, predicate and point homes remain.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

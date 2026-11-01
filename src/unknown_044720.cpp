@@ -418,6 +418,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // query); with a long index local 199; `point` declared ahead of the query 198; the copy as the first
 // statement 202 (875 bytes); the query without `__declspec(align(16))` 191 (frame 0x1094 again, but query
 // +0x2c and point +0x3c).
+// Round 328: Small-branch-only initial center, crossed with existing vector difference,
+// provider-filled count and success-local transform homes, subsets 0-7:
+// 219/221/229/233/219/221/229/233. Original center producer, helper boundary, count initialization and
+// matrix lifetime restored; entry/index spill and point/query homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

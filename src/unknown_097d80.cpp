@@ -203,6 +203,10 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// Round 328: Shared collection/information output with an actual cleanup-item pointer;
+// collection-child, dispatch-boundary and cleanup-block cursor subsets 0-7:
+// 81/83/145/146/121/123/167/168. Original outputs and signed traversals restored; frame and lowest
+// two loop/output homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

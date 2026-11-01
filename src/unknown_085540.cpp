@@ -1030,7 +1030,8 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// score 72 (was 72): frame 0x14454 agrees; header/sequence homes, short-size register and cursor reload remain.
+// Earlier: the case-0 copy of the header value, block- and function-scoped,
 // scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
 // ring cursor stays in esi across the first read and the used count is updated through a register,
 // so the read's offset is still forwarded in edx instead of reloaded and the header size still
@@ -1173,6 +1174,9 @@ bool function_68670(byte *source, long size, void *block);
 // and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
 // first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
 // header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
+// Round 328: Separate sequence output with complete case orders 021d/102d/120d/201d/210d/
+// d012/d201/1d02, all 137 at 561/553 bytes. Exact-only copy forms restored; original header,
+// dispatch, ring observations and body retained. Header/sequence homes and size register remain.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
