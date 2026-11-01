@@ -770,6 +770,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // subsets 589/552/564/603/589/594/559; all with short component ordinals 1157.
 // Keep only the axis scaling loop, confirmed by plain check at 552; other producers restored.
 // On the retained axis loop: staged cross / face count first / both 552 each; all restored.
+// Round 239: Both accepted endpoint copies before the disjoint selected-plane output, with endpoint
+// order, distance-store priority and pre-emission total decrement combinations, 683/683/683/683/785/785/786/786.
+// Original endpoint/plane/total order and whole body restored; tag/count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -423,6 +423,9 @@ struct s_physics_component_walk : s_havok_component
 // next;` declared first 177. On 172: the `next != NONE` branch first 192 (901 bytes); the file's section-test
 // helper for both db540 calls 178 (933 bytes); the ternary's arms swapped 172, `first_body` as a ternary 172,
 // `long next;` declared before the selection 172, the entry test as `!(a || b)` 172 (all the same code).
+// Round 239: On the retained output/early-continue graph, native selected neighbor, terminal scan-index
+// completion and explicit empty-recursion continuation, seven subsets, 184/340/185/172/184/340/185;
+// native overwrite selection 189. Original method restored; frame 0x18 agrees, exit placement and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

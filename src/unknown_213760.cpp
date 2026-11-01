@@ -1154,8 +1154,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 85 (was 104): retail hands the file handle to the read call by value, which the declaration
-// in include/async.h and the callers outside this file cannot give; frame 0x1144 and the extent agree.
+// score 85 (was 104): frame 0x1144 and the entry prefix agree; size/count homes, write setup,
+// checksum register and write/header validity joins remain.
+// Earlier: the read-handle declaration/caller contract differed; frame and extent agreed.
 // frame 0x1144 and extent agree; file displacement, request-copy
 // scheduling, the first read handle copy and write-success join still differ.
 // Earlier: frame 0x1144 and extent agree; file displacement, request-copy, the first read
@@ -1393,6 +1394,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
 // *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
 // the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
+// Round 239: On the indexed-handle/direct write-count graph, native by-value query/resize/write
+// copies in seven subsets, then all four I/O copies, 84/84/89/82/89/89/89/84. All exact-only forms
+// restored; frame and entry prefix agree, size/count homes and write/checksum/result scheduling remain.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -707,6 +707,9 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // front/rear level locals 315; memcpy with explicit sends 412 (941 B). Without the zeroing our LTCG
 // reuses the first set's (-64, 0, -64) conversion in sets 2 and 3 across the SetMixBins/SetVolume
 // calls (2 and 1 calls there, retail 5 and 5): it treats 0x12aff0 as pure, retail as opaque.
+// Round 239: On explicit third sends, single static table and first/second phase-owned descriptors,
+// seven subsets 315/289/333/300/336/358/383 fast; all plus both reused levels 432.
+// First phase alone 289 fast (control 297), 312 plain versus 281; frame 0xfc/0x94, original whole initializer restored.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
