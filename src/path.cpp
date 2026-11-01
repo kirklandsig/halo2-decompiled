@@ -436,6 +436,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // frame 0xe4); with the node pointer declared at the top and reused in the loop 368 (same code, the
 // address still folds); with `special` false then set by an if 368; on the long count: link count
 // incremented after the copy 359; count defined after the initialization loop 354.
+// Round 106 (fast): both builds return with ret 0x24. The step point renamed to sort after start 315 (same
+// slots); `point3f end, start;` 315; special declared at function scope before complete 315; the distance
+// test through length_sq3f 315; special false then set by an if on the long count 331 (1373 bytes).
 // Round 30 (lane 14, fast): a `s_type_c3b527 const *origin = &input->start;` for the delta block 334: the
 // delta block and the edge-geometry loop then are retail's code (`lea esi, [ebx + 0x14]`, `push esi`, the
 // step index in ESI), but the extra frame word shifts every slot by 4 and the post-loop gains a `jmp` into
@@ -450,6 +453,19 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // code), the node type named once (`short type = node->unknown10;` for every test and store) 349
 // (1388 bytes, frame 0xe4; the special test then threads straight into the first arm); the named
 // type on the original long-count body 354 (1395 bytes). Original body restored.
+// Round 60 (m3 lane 9, fast with 0x270930; the convention already agrees, ret 0x24): on the short link
+// count, the type named once 349 (1388 bytes, frame 0xe4) and the one flag shared by the link test and the
+// special test 362 (1371; aligned 189, the best structure seen), both together 349 (366 instructions and
+// 1388 bytes as retail, aligned 246), with that flag declared in the loop 349 (same code); the named type
+// and shared flag on the long count 369 (1405); `origin = &input->start` for the delta block declared after
+// the margin 400 (1418, caller 0x270930 lost at 260); that on the short count with the type and flag 361
+// (1374, aligned 175), with the type alone 387 (0x270930 lost). Retail also reads the start depth through
+// a `lea` node address, keeps previous in EDI and stores the start/end conversion copies in swapped homes.
+// Round 37 (m3 lane 14, fast, positional/aligned against 315/273): the short link count with the node
+// type named once 360/411 (1395 bytes); that with `special` false then set by an if 351/266 (1388), on the
+// long count 365/272 (1406); `special` declared false at the else arm's start on those 351/266 and 365/272;
+// the short count with only that early `special` 368/216 (1368: retail's special sequence, best aligned);
+// that with the link count incremented after the copy 369/214.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -836,6 +852,17 @@ bool function_2715a0(byte *buffer)
 // links/native masks 515; long remaining count and mutable links 502; long remaining count with
 // native masks 516; long remaining count and readonly links 502; long remaining count with
 // readonly links/native masks 516.
+// Round 106 (fast): retail also takes the link length's root before the 0x210be0 call (stored, divided
+// in SSE after it; ours sinks it past the call into an x87 divide) and tests `(short)link->type != NONE`
+// before the penalty switch. Both link points through a point-along-vector helper 486; sqrtf root 486;
+// margin computed before the call 487; both link flag tests as masks 522 (2052 bytes); the NONE type test
+// before the penalty switch 579 (2128 bytes).
+// Round 35 (lane 13): pop-or-NONE outer loop with the break before/after the node pointer 508/510 (gives
+// retail's top-tested loop and entry pushes; state stays EBX); point-along-vector helper for the midpoint and
+// projection 486 (same code); links declared before result 486; per-case `child->depth = node->depth + N`
+// stores 481 (cases 1/5/6 and default take retail's shape; five points, not kept); case 2 as if/else stores
+// 566 (2136 bytes; node moves to EBX, state to ESI), with the child's stored index 566, its ternary 481;
+// per-case stores with the pop-or-NONE loop 502; per-case stores with native flag masks 512 (2060 bytes).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

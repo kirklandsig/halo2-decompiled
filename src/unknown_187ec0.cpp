@@ -297,6 +297,12 @@ struct s_seat_animations
 // (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
 // with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
 // `i` declared at function scope 52 (same code).
+// Round 65 (lane 12, fast with 0x188130/0x188640/0x188690), all on round 118's 52 form (rebuilt: 52,
+// animation/count/element in EBX/EBP/EAX for retail's EBP/EAX/EBX): the count selected by if/else 52;
+// the entry returned from the inner loop with a final `return NULL` 91 (143 bytes); `!result &&` in the
+// outer loop's condition instead of the break 52; the entry pointer declared at function scope 52; the
+// element_index parameter as the walking index 52. Retail's own 0x188690 forms the element with
+// `add ecx, eax; mov eax, ecx`, so the lea/test in this body follows element's register, not the getter.
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {
@@ -559,6 +565,9 @@ bool function_172750(long mode, point3f const *point, real radius);
 // element looked up after the first index 165; `index == 13 || index == 14` 121; unbraced fallback lookups 118.
 // The material-class parameters stay BLOCKED-BY the declarations in src/impacts.cpp and src/projectiles.cpp.
 // Round 108: 0x1882d0's two material parameters as the material class (no parameter reference) 118 here.
+// Round 474: Complete first/second/both conditional variant results 165/168/170;
+// whole first/second/both entry values 178/167/205; second/both payload pairs
+// before variants 131/159. Original body restored; tag/index and output homes remain.
 // @retail 0x1883e0
 void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)

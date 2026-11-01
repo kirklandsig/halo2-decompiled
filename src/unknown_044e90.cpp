@@ -96,6 +96,16 @@
 // in each branch (retail once into ESI before the tag test) and register rotations.
 // Round 456: Persistent global entry reference; flags/table input graphs on native/default storage alignment:
 // 421/457/433/454/417/455/432/452. Original executable body and supporting declarations restored.
+// Round 467: Full-width input ordinals entry/section/both, then both with live
+// selection fields, original storage 438/421/438/466; native eight-byte storage
+// 435/417/435/465. Four-point aligned lead rejected; original header and body restored.
+// Round 471: Native workspace list construction on eight-byte storage, original/reverse
+// object order and six field-group orders 573 each (1620 bytes). Constructor and native
+// alignment removed; original branch-local descriptor publication and full header restored.
+// Round 474: Unsigned capacity/sign-mask on native four/eight storage 456/454;
+// external-storage bit view 456/454; native allocation-count view 456/454;
+// aligned whole-plane publication with bit/count or mask 480/480. Header and
+// body restored; cleanup tests/preloads recover but entry roles and length regress.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
