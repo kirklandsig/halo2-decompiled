@@ -490,6 +490,9 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // (same code); the state parameter renamed to sort before the tag table's name 37 (back-edge reloads
 // unchanged, so names do not order them); that per-arm break with the mask test 42; the graph and
 // iterator setup shared ahead of an if/else call 167.
+// Round 44 (lane 10, fast): bit_vector_test with `found` declared before the loop 42; the unvisited
+// test repeated after the second lookup (diagnostic) 74; the memset size as `sizeof(dword) * (...)`
+// 37, with bit_vector_test 42; visited declared before the markers with bit_vector_test 42.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

@@ -1373,18 +1373,14 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
 }
 
 #include <math.h>
+#include "vector_angles.h"
+#include "vector_products.h"
 
 extern transform4x3f *g_4687d0;
 void function_146de0(void);
 void function_146b80(void);
 int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, transform4x3f *result);
 
-// score 96 (was 116): what still differs is the x87 start (retail loads the heading once and
-// keeps it on the stack; here the reference is re-read) and the loop base register (retail
-// ebp = out + 0x30, here + 0x2c). The three axis vectors are one matrix3x3, as retail copies
-// them with one rep movsd. Indexed loop keeps the stack convention (pointer loop: 145, register
-// convention). Tried: heading as double (148, pushes esi/edi/ebp at entry), as real (147),
-// pitch as a double local (161), the old volatile copy loop (116).
 // @retail 0x3ebd0
 bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matrices, transform4x3f *out, long count)
 {
@@ -1401,11 +1397,8 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         byte *definition = NULL;
         if (index != NONE)
             definition = g_4e3b44[index & 0xffff].bytes;
-        real const &heading = *(real *)(definition + 0x80);
         vector3f forward;
-        forward.i = (real)(cos(heading) * cos(0.0));
-        forward.j = (real)(sin(heading) * cos(0.0));
-        forward.k = (real)sin(0.0);
+        direction_from_angles(&forward, *(real *)(definition + 0x80), 0.0f);
         matrix3x3 axes;
         axes.forward = forward;
         axes.left.i = forward.k * g_4687b0->j - forward.j * g_4687b0->k;
@@ -1420,12 +1413,9 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         transform.position.z = *(real *)(definition + 0x18) * g_4b9da0.z;
         for (long i = 0; i < count; ++i)
         {
-            transform4x3f *destination = &out[i];
-            *destination = matrices[i];
-            destination->position.x += offset->i;
-            destination->position.y += offset->j;
-            destination->position.z += offset->k;
-            function_142a60(&transform, destination, destination);
+            memcpy(&out[i], &matrices[i], sizeof(transform4x3f));
+            vector3f_add((vector3f const *)&out[i].position, offset, (vector3f *)&out[i].position);
+            function_142a60(&transform, &out[i], &out[i]);
         }
         result = true;
     }
