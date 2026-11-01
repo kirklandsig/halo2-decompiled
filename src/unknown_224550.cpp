@@ -254,6 +254,11 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // Round 262: Library copies of definition/selected-frame bounds/both 381/381/381;
 // geometry-array copy alone/with definition/with selected/with both/with encoded UV copy 478 each.
 // The original arrays and all input-before-store UV captures are restored; frame/cache homes remain.
+// Round 45 (lane 13, fast): retail reloads both the cache (EBX, which also holds the idiv frame count) and
+// the context (ESI) from their stack slots; ours enregisters the cache in EBP and the context in EBX.
+// Re-read frame count in its own local 381 (same code); cache's last use read through its own address 381;
+// tint code in the body with the in-place clamp loop 476 (2012 bytes, frame 0x60, cache still EBP); the
+// four clamps as explicit statements 476; with a short clamp counter 483.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

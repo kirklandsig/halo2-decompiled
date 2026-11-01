@@ -1424,6 +1424,11 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // call and the 0xfd740/0xfd7d0 call sites converted (diagnostic, reverted) this is 29 (0x1883e0 matches, 0xfd740
 // 49 -> 8): BLOCKED-BY 0x1883e0 (its class form is held by src/impacts.cpp and the 0xfd740/0xfd7d0 call sites).
 // What then remains: the raw 16-bit index push, 0xfd740's output order, `jb` bounds, the zero-store order.
+// Round 47 (m3 lane 13, fast): NUMBEROF bounds 115 again (both loops `jb`; the effect loop sits one line off);
+// markers and parameters at function scope 153; the final tag stored into the parameters before its NONE test
+// 116; the sound records cleared before the effect records 121; the attachment stores with the flag last 115.
+// The sound loop's point and velocity copies hold their source pointer in ECX/EAX where retail uses EAX/ECX, so
+// the copy stores come out in the other order; same allocation cause as the BLOCKED-BY 0xfd740 entry.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,

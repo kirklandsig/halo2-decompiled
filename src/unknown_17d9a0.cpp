@@ -241,6 +241,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
 // locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
 // retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
+// Round 45 (lane 13, fast, 0x120810 listed), on 0x120810 per corner with axis/side by value, edges through
+// vector2d_from_points2d and an if/else inverse: a short axis local for the store and normal index 183 (974
+// bytes; corner 0 then reuses the extended ECX axis); bounds by value 197; bound values named at the helper's
+// top 198; side parameter typed byte 180 (same code as bool); side bound before axis 180.
 // Round 29 (m3 lane 2, fast): the plane's d written k, j, i on the copied normal 158; the side computed into a
 // `bool positive` local then stored 150; four named bound pointers (x0, x1, y0, y1) passed to the corners 156;
 // the corner lookup without the axis locals 188 (957 bytes); the corner point as a `real point[3]` 138 (same code).

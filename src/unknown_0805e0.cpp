@@ -152,6 +152,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
 // early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
 // do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
+// Round 44 (lane 13, fast): `for (long index = *iterator; index != NONE; index = *iterator)` with
+// `*iterator = entry->next;` in the body 51 (index and successor still share one register); `while (!result &&
+// index != NONE)` without break, stepping by `index = *iterator` 42 (AL mask hoisted, but the iterator takes a
+// register and the player goes to the stack: 0x1a303b and 0x2b393c stop matching), stepping by `index =
+// entry->next` 49 (player in EBX, result kept in AL and tested each pass; callers lose their matches), that with
+// `*player = entry->player` 49; no index local, `*iterator` read at each use 71 (109 B). All restored.
 // Round 127 (lane 6, fast, with 0x1a303b/0x2b393c): `while (!result && index != NONE)` with a successor local and
 // `index = next` at the end 37 again (no hoist in this build; player read from the stack, ret 8, callers 15/27);
 // its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`

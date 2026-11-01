@@ -376,6 +376,10 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
 // 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
 // existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
+// Round 44 (lane 13, fast with the file's other functions): the scale helper's k product written scale-first
+// 57 (same code: products are canonicalised); the radius test as `distance_squared < r * r` on the current sum
+// 57; a named `radius_squared` 57; the epsilon test as `g_45dbd8 < distance` 57 (all same code); the outer
+// function single-exit with a found flag 131 (672 B).
 // Round 49 (lane 10, fast): the depth test folded into the shape tests as `(...) && best_depth < depth` 57 (same
 // code); one difference component copied into a named scalar for the sum (0x2461a0's lever): j or k in the
 // j,k,i sum 57, i 61, j or k in an i,j,k or i,k,j sum 59; the sphere test as `distance_squared < r * r` with

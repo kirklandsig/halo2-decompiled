@@ -764,6 +764,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 44 (lane 13, --fast): the total folded into its conversion (no total local) 88; the buffer arms swapped
+// (`if (!parameters->body)` first) 41; the file position computed before the buffer arms 224; a body-case
+// `remaining` set in each arm (direct arm `size = remaining;`, scratch arm `if (size > remaining) size =
+// remaining;`) 161 (689 B, entry sum header first and no dispatch hoist); that with `body_size > body_offset`
+// and the signature position summed body first 35 (687 B, the hoist returns in ESI). All restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

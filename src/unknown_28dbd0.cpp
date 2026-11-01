@@ -190,6 +190,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // (retail's fsin placement, frame 0x120); that with `cross3f(axis, v)` added 225, with cross3f_staged 226, with
 // direct per-component sums 226; the kept order with only the dot named before the cosine 226. Retail keeps the
 // heading's zero k in a register only through the dot (then a memory 0.0 and an `xorps`); ours keeps it throughout.
+// Round 45 (lane 13, fast): sine/cosine passed to a (vector, axis, sine, cosine) helper with scalar
+// vector-x-axis cross terms subtracted 229 (frame 0x114, no cross spills); cross order j/k/i with
+// the axis term first 229 (same code); cross through cross3f into a local 226 (frame 0x120); separate
+// output vector 251; sine/cosine named in the caller 240. Original helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -1335,6 +1335,14 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // getter functions 198; header->unit at every use 218; a data-pointer local for the slot lookup 198/188.
 // Retail's `mov ecx, edx` copy of the data register before the second unit load is in no other retail
 // function (byte search).
+// Round 46 (lane 13): the 0xcbd50 argument through a header-array local 148, through the `unit` local 148,
+// `long has_other = function_cbd50(...) != NONE` 148, the slot read through a fresh lookup 148 (all the same
+// code: locals are copy-propagated and every lookup shares one load); is_vehicle before has_other 189 (608 B,
+// loop padding). The hand straight to 0xd0870 (203) is retail's code at that call, but the body is then 585 B
+// and the positional score rises; the entry's second unit load is the structural cause (a compile-only
+// harness also merges it for inline getters taking the pool, the data pointer or the index);
+// `function_ee8a0(unit_index, primary)` 197 (591 B); the state name as a ternary 188 (604 B, but a branch
+// and jump where retail stores the 0x288 field and then overwrites it).
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1567,6 +1575,11 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // Round 187: a pool local for the hand getter's lookup (function top, after the hand, after the slot
 // read) 167 each (517 bytes: ours then shares one lookup and keeps the request in EBP); for the slot
 // read's lookup instead 167.
+// Round 46 (lane 13): the hand weapon through the existing 0xcbd50 with the slot read as its argument 157
+// (527 B); weapon_index renamed to sort before mode 138 (same code: the homes do not follow names here);
+// `result = false;` right after the getter with one `return result` 171 (517 B: the NONE path is no longer
+// jump-threaded, as in retail, but the weapon takes EBP and the pool is not kept); `if (weapon_index == NONE)
+// return false;` 142 (524 B); a typed request struct for the byte at +4 138 (same code).
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2145,7 +2158,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// score 235. Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
+// score 235 (was 235): Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
 // shared actions receiver 328; single exit with hand/bit 315; per-use speed with hand/bit 302.
@@ -2163,6 +2176,14 @@ __forceinline char unit_action_round(real value)
 // first-person name through EBP/EDI/EBX (ours EDI/EBX/EBP, then type EBP vs EBX), the is_biped/result
 // stack bytes swap (0x13/0x12), `current` in ESI vs EAX, the frame-count products' order and the
 // lunge-speed division from memory.
+// Round 46 (lane 13): `real seconds = frame_count * 0.033333335f;` then `seconds * (real)field_2_3` 234 (retail's
+// product order; in one expression VC reassociates to field*frames*k); with the lunge speed read at each use too
+// 234 (both blocks are then retail's code, one line off for retail's result byte store); with first_person_name
+// = NONE declared first and the short-slot hand getter 314 (1195 B; the entry is retail's except pool/offset/NONE
+// in EDI/EBX/EBP where retail has EBP/EDI/EBX); with a function-top pool local as well 314; is_biped renamed to
+// sort after result 235 (same code: ours keeps result in a register, retail in the stack byte at 0x12).
+// On the seconds and per-use speed form: the two animation exits merged into one `goto done` 277 (1213 B);
+// TEST_FIELD_BIT on the 0x1b test 249 (1193 B).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
