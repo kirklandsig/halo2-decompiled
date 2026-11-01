@@ -497,7 +497,18 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
 // (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
 // (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
+// Round 108 (m3 lane 7, fast): the selected normal copied by value 189 (997 bytes; compile-only it gives
+// retail's XMM1/2/0 first cross but adds the copy); `break` after the selected == 0 arm 122 (same code); the
+// two dots inside the compare 122 (same code); the averaging arm first (`selected == NONE`) 187 (980 bytes);
+// `selected != 0` arm first ending in `break` 164 (975 bytes). Ours already stores i/j/k from the same
+// registers in both selected arms, yet VC does not cross-jump them (compile-only too); retail's merged tail
+// starts at the g_4687b0 reload after the i store.
 // J218: Existing staged-cross output setter/three-contact output-pointer scaled-add/native scratch values, seven subsets, then scratch value assignment: 122/122/122/199/199/199/199/199. Pointer-result staged cross, forced/ordinary inline, exact-only: 122/122. Original complete body restored.
+// Round 50 (lane 10, fast with 0x1201a0 and 0x1f2e60 listed): the averaging result as one `*out = dot_a < dot_average
+// ? *a : average;` copy (no `support`) 201 (996 bytes); `a`/`b` declared in each branch 306 (1027 bytes); the first
+// cross through 0x1f087b 122 (same code); the `selected != 0` arm first 164 (975 bytes, as before); the compare
+// written `dot_average > dot_a` 122 (same code); dot_average computed before dot_a 122 (same code). Ours hoists the
+// g_4687b0 reload into each selected arm (each computes j, k, i), so the arms' j/k store tails are not shared.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1434,7 +1445,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 221 (was 230): Frame 0x28 and the 1066-byte length agree; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// score 221 (was 221): Frame 0x28 and the 1066-byte length agree; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
 // The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
 // forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
@@ -1506,6 +1517,18 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // locals still store after the count test); the flying test's planar dot i-first or with each
 // product's operands swapped 230/230 (same code: the speed dot still computes j before k).
 // Diagnostic, not kept: 0x1f1df0 out of line at both calls 301 (1005 bytes). Original body restored.
+// Round 111 (lane 8, fast; one-file LTCG harness with the ballast object, unknown_11fc80.cpp and
+// unknown_1cec30.cpp exact at 221): `selected`/`highest` declared right after the unknown58 store 221
+// (their NONE stores join it as retail, aligned 99 -> 96); that with the contact list read from the
+// component at each use 219 (its load follows the count test as retail); that with the `real` length 218
+// (first difference +0x8b: retail loads the motion pointer first and copies the reset normal through
+// EAX/EDX where ours uses ECX/EAX); the flag arm's two tests nested 221; the supported arm's three skips
+// as one `||` test 221; harness: the no-flag arm's height test first 239; shape_dot's arguments swapped
+// in either dot 218-221; velocity (or the motion pointer) read before the reset 274-295 (1076-1080
+// bytes: NONE becomes `mov eax, -1` and the loop entry loses its jmp); flying read first 280; the reset
+// NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
+// accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
+// second call).
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
