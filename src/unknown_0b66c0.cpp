@@ -254,6 +254,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
 // or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
 // colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
+// Round 127 (lane 5, fast with 0xb5f10/0xb61d0): the count clamp as a ternary 40; `length >= start +
+// count` 40; the copy helper written out (diagnostic) 40; the scan given a cast of the string 40 (these
+// four same code); start added before the count increment 36 (0xb5f10 6).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -504,6 +504,9 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,
 // mask-first load/OR/store again); visited and both markers as one record cleared by its own member
 // (diagnostic for lane 1's escaped aggregate) 42: the frame stays 0x104, but the set is load/OR/store.
+// Round 127 (lane 5, fast with 0x113ba0/0x113c60): bit_vector_test re-measured 42; the render-model
+// index named before the 0x1d90e0 call 37 (same code); both markers declared in the pair block 37 (same
+// code), with bit_vector_test 42; the unit lookup folded into the definition read 37 (same code).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
