@@ -547,6 +547,10 @@ done:
 // before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
 // the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
 // its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 126 (m3 lane 6, fast; parse_variant stays matched): the shared getter as a ternary on the 32 form 48 (the
+// select copies the variant into ECX, the tag still loads after the range compare), with the tag read before the
+// variant call 44; on the one-copy form (default skipping the translator) the ternary getter 54 (173 bytes; buffer
+// address still hoisted into EBX), with the tag read first 57 (171 bytes), with a NONE-defaulted name and a guard 54.
 // Round 108 (lane 8; a one-file LTCG harness with the callee files and the ballast object gives this code
 // exactly): the variant getter's fallback written as a ternary 48 (178 bytes; parse_variant stays matched); one
 // shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;

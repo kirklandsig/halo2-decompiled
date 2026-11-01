@@ -484,6 +484,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
 // stays shared and EBP caches the last argument); the second virtual call on the local index 81;
 // `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
+// Round 127 (lane 6, fast), all with a bool result declared first and set after the attach (retail's BL: false
+// before the first call, the attach argument in EBX, true after it): flagged arm first 75 (160 bytes: f cached in
+// EBP, header address shared, the flagged store laid out inline), unflagged arm first 77, the value copy declared
+// before the result 75, `result = true` between the field store and the attach 72 (176 bytes, result spilled);
+// the clear under `index != NONE && flagged` then `else if (index != NONE)` 75 (the repeated test is threaded
+// before CSE, as round 65 found for the predicate form).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
