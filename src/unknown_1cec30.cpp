@@ -2882,6 +2882,9 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // the head kind code in a named local 7; a rigid-body local for the head test 8; the velocity pair
 // declared with the change vector 7; the 0xbba20 call before the change vector 22; the index named
 // rigid_body_index as in the siblings 7.
+// Round 66: reversed subscript at all five reads 10; data+index and index+data pointer reads 10 each;
+// direct data reads at the first two 7, the late three 10, the late kind/fixed pair 7; explicit array
+// operator calls 10; one shared element reference 156 (680 bytes). Opening body restored.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {
