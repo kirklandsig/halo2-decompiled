@@ -271,6 +271,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Original default, helpers and complete body restored; palette/record and SSE carriers remain.
 // Round 275: Byte admission with reused long/short promoted index 756/757; each with immutable provider result, earlier record default, and both 756/757 each.
 // Original executable source restored; palette/selected-record and zero/SIMD accumulator carriers remain.
+// Round 277: Object-owned library clear/unit-default pairs,
+// fog/weighted/color/fog-weighted/fog-color/weighted-color 616/621/622/616/618/622; all is the same
+// fog-weighted form. All with byte palette 705; all zero-prefix clears 724. Original initialization
+// and body restored; palette/record and SIMD accumulator carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
