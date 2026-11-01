@@ -632,6 +632,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
 // tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
 // where retail starts a new group after origin (-0xd).
+// Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
+// (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
+// count` 197 (1883 bytes).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

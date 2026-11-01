@@ -132,6 +132,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
 // 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
 // coordinate promotion, height/common homes and minimum selection remain.
+// Round 40 (lane 13, fast): retail's 0x136140 call sets ECX, then EDX, then EAX (the declared order). x and y
+// used directly with log2_floor 119 (y colours to EBP and becomes a stack argument; 0x136140 28); that with
+// `common_bits = width_bits; if (height_bits < width_bits) common_bits = height_bits;` 119 (still cmov); that
+// with y looked up before x in both arms 125 (302 bytes, 0x136140 kept); `long const` copies 82 (same
+// code); y_bits declared before x_bits 82 (same code).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

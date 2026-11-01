@@ -277,6 +277,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
 // next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
 // 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
+// Round 40 (lane 13, fast): fraction first + `animation.target` cast at each use + both loop restart tests
+// true-only (diagnostic) 197 at 645 bytes (every register and the [ebp-0xc] next time are retail's; only
+// the two `mov byte ptr [ebp-1], 0` stores are missing); on fraction first + target at each use with the
+// restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
+// break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
+// declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
