@@ -323,6 +323,9 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 219: common reset exit with native recipient, shared probe/bounds and real relocation/destination
+// buffers, masks 0..7: 222/228/233/229/222/228/233/229. Original exit, buffers and both scans
+// restored; frame, point/recipient sharing and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

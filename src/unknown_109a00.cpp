@@ -481,6 +481,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
 // declared before the default body 154; the entry before the object 151; the object through a `headers` local
 // (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
+// Round 219: canonical search latch as byte/char/short/long, each with original/native center
+// transfer: 112/149/112/149/131/236/238/160. Original Boolean latch, center transfer, helpers and
+// body restored; object/entry convention, physics spill and projection schedule remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

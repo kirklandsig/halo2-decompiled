@@ -279,6 +279,9 @@ struct s_free_state_23d260
 // forward/up pointers declared before the side vector and used for the side and up cross too 289
 // (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
 // pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
+// Round 219: native roll/movement input with alternate normalization, staged up cross and repeated
+// double movement trig results, masks 0..7: 257/274/256/289/264/274/258/157. Original input layout,
+// normalizer and complete body restored; zero/side and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
