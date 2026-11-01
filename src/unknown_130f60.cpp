@@ -266,6 +266,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Round 435: whole source/sample/tag values 535/475/564; source+sample/source+tag/sample+tag
 // 526/587/504; all three 559, complete CRT transfers 559 (fast control 336, full 324).
 // All restored; entry ESI save, unit-constant ownership and accumulation scheduling remain.
+// Round 279: Complete six weighted terms immediate/staged 324/484 fast; each with named
+// retained factor 341/502; each with angular offset/span 419/425; immediate with both 405;
+// reverse-staged with both 448 (control 336). Immediate form 338 plain at 1877/1892;
+// original helper and complete body restored. Entry ESI and constant/scale schedules remain.
 // Round 190 (plain; fast still reports "builds differently"): opposite.k cleared before i/j 358; the third
 // remaining weight read before the first/second product 325; the zero-direction test inverted with its arms
 // swapped 324 (same count); the accumulate helper taking the colour by reference 324; its weight sum as the

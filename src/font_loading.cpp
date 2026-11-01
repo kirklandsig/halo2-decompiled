@@ -585,6 +585,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Original alpha type, helper, fill values and complete decoder restored.
 // Round 216: Plain packed-alpha triplet loop, long/short shift counter with word/long helper result and byte/full parity:
 // 164/218/172/222/238/222/183/230. Original executable source restored.
+// Round 285: short fill counters switch/ordinary/both 181/172/191; word counterparts
+// 181/172/191; both byte/signed-byte 178/178. Original helper, decoder and counters restored;
+// alpha extension, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

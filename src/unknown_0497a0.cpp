@@ -167,6 +167,9 @@
 // Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
 // 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
 // shape/basis homes and thirteen excess bytes remain.
+// Round 286: Native library maximum boundaries in first/second/final producer
+// masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
+// component-maximum production 771. Original maxima, includes and body restored.
 // Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
 // then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
 // original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
@@ -665,6 +668,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // case 1/2 z pair first or between 564 (2588), first-first z pair last 266. Case 0's first set z, y, x and z, x, y
 // give identical code (z, x, y kept). The difflib-aligned count rose 178 -> 200 with the kept form (case 4 and the
 // vertex stores worse; cases 0-2 and the second point's XMM0-2 better), so the next round should start there.
+// Round 280: complete per-channel interpolation results in initial/next/transition
+// loops, all seven subsets, then all with the complete width interpolation result,
+// 276 each. Original entire body and helpers restored; frame 0xa0, native homes
+// and first-edge Y spill remain.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.

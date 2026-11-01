@@ -195,6 +195,9 @@ bool function_a7670(long object_index);
 // standard deferred search and shared membership result: 312/321/382/319/324/385/360/382. Original counts and body restored.
 // Round 259: Deferred-before-immediate membership, ordinary/first-standard/second-standard/both-standard searches, cursor/indexed cleanup
 // 275/270/263/256/266/262/265/270. Original body and producer sites restored.
+// Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
+// all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
+// selector/list/count homes, BL admission and indexed cleanup remain.
 // @retail 0x278f00
 void function_278f00()
 {

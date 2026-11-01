@@ -294,6 +294,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 326: complete sampled input at its projection producer, working/separate values and
 // branch/conditional zero fallback 685/706/689/689; those graphs with early second/third factors
 // 651/663/678/678. Original observations, expression trees and body restored; direction/sample homes remain.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
 // Round 66 (lane 9, fast, caller 0x1eb6f0 matched in each): d read through `vector3f *const *` at every use 673
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter
@@ -301,6 +304,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 277: standard minimum/maximum/alignment-pin families, subsets 1..7,
 // 718/752/751/829/868/895/880; all with failure constant first 880. Alignment-pin
 // graphs also lose the exact caller; original body, helpers and 0x24 frame restored.
+// Round N284: Ramp-admission orders settled-ticks-distance/distance-settled-ticks/
+// distance-ticks-settled/ticks-settled-distance/ticks-distance-settled 642/696/696/695/696;
+// nested settled/distance/ticks gates 642/696/695. Original sample, comparisons,
+// counter result and complete body restored; exact caller preserved throughout.
 // Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
 // producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
 // Original sample observations, output math, inherited counter qualification and body restored.

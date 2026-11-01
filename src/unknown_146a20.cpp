@@ -199,6 +199,9 @@ bool g_47f05b;
 // whole-function lifetime 89/89; guarded production 88/88;
 // lifetime ending before the pool 89/89; outer producer with guarded
 // placement 89/89. All restored: a 0x30 frame and an out-of-line copy call.
+// Round N281: complete fixed/pool construction result locals, derived/base type
+// pairs at production 38/38/38/38; entry declarations with the derived fixed
+// result and derived/base pool result 38/38. Original complete body restored.
 // Round 52 (lane 1, fast with 0x146b80/0x146e30/0x22c3e0/0x22c330): the size-only constructor (buffer at
 // `this + 1`) declared in the header and defined out of line in unknown_22c0a0.cpp, placed at g_479888, 35
 // (140 bytes); the size-only constructor on the fixed base, out of line, placed through `block` 35; that with

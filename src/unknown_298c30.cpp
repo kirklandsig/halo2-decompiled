@@ -473,6 +473,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // result; } return true;` 778 [445] (retail's end-placed `mov al, 1` epilogue); result-first pathfinding getter 775
 // [443]; both 782 [436]; the trace results declared first 719 (identical). Retail reloads arg_6 after 0x2108a0 and
 // 0x210770 where ours keeps it in XMM5, and stores/reloads the result byte at each exit where ours folds it.
+// Round 282: complete sweep scope, separate forward output, separate phase cosines and both
+// 719/719/716/710; corresponding per-use clearance forms 784/784/802/801. Unscoped output/cosine
+// pair 710 plain, restored as a new unused one-use output workspace; existing reverse/side direction
+// workspaces with separate cosines 767/717. Three- and two-point forms restored; original frame and body retained.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

@@ -281,6 +281,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 262: Entry declaration scopes for status/child iterator/metadata result, all
 // seven nonempty subsets 620 each; complete workspaces with ordinary player pointer 786 (2124/2308).
 // Original scopes, cases, helper contracts and inherited local qualifications restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
 // Round 53 (m3 lane 1; kept: the `(void)&local_index;` line dropped, byte-identical 620: the index
 // stays a stack argument without it): the existing function_14de70 for the player index 623 (retail's
 // or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the

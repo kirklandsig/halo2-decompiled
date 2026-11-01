@@ -350,6 +350,9 @@ static __forceinline bool structure_bsp_collision_available()
 // requery returning `result` at once 108; the tail as `if (!found) return result; return lightmap(...)` 129 (257
 // bytes); if/else exclusion arms (flag set true, or false with the model query returning 0x14a8e0) and `if (excluded)
 // return result;` 62 (threaded).
+// Round 286: Complete collision object-handle observations with cached/direct header,
+// cached/per-use source and bool/byte found, eight forms 53 each. Original field
+// snapshots and complete executable body restored; exclusion/source-slot join remains.
 // Round 63 (m3 lane 16, fast): compile-only, the join test also threads as a switch on the flag, behind an
 // `excluded || !0xbf9a0` guard, as a counter, as a parameter, and as `!!`, `== true`, `!= false`, `(char)`,
 // `(long)`, `? true : false`, `| false`, `^ false`, `& 0xff`; the C front end and a constructed/destructed
@@ -990,6 +993,9 @@ done:
 // 119 at 470 bytes (the caller's `bool` declaration no longer resolves, 0xd2a50 96; result still in BL: an artefact);
 // a shared force-inline exclusion helper (object lookup + 0x10a0b0) for this and 0x14b120 125 (0x14b120 106); the
 // requery's result as `result = query && lightmap(...)` 174 (505 bytes).
+// Round 286: Native collision storage 125; unsigned flags 125; bounded short/byte attempts
+// 124/129; native handle observations 125; separate flags/all scalar workspace 157/157
+// (caller lost); direct triangle 158 (caller lost). Original storage and executable body restored.
 // Round 63 (m3 lane 16, fast): a bit-and join test (`else if (!(excluded & 1))`, diagnostic) keeps the flag
 // unthreaded and gives retail's allocation (flag in BL with `mov bl, 1; jmp` and `xor bl, bl` before 0xbf9a0,
 // the direction reloaded into ESI, NONE in EBX with `or ebx, -1` at the back edge, the result in its

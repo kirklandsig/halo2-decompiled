@@ -249,6 +249,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // entry/frame, second activity byte and lower vector/scalar homes remain.
 // Round 259: Shared scale for radial/planar/axial/angular/radial-planar/radial-angular/planar-angular/radial-planar-angular phases
 // 1009/1014/912/939/1136/1090/1074/1206. Original body and producer sites restored.
+// Round 283: reverse scale short/long/signed-byte 902/929/902; reverse short scale with reverse
+// add/subtract/both 1086/1060/1158; with forward add/subtract loops 1157; all reverse long 1239.
+// Original producers, accepted angular consumers and full body restored; frame and entry homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

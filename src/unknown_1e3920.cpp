@@ -653,6 +653,9 @@ real function_267370(long object_index);
 // 352; typed byte fields for 0x265/0x267 98 (same code); the zone result in a named bool 100; `left` declared
 // before the up copy 98; type read before the parent 129. Re-measured: without `(void)&actor_index` 98 (same
 // code, removed: it only took the parameter's address); the parent ternary with the found arm first 102.
+// Round 282: native up values mutable/const 195/195; normalized left value 193;
+// up plus left mutable/const 237/237; native axis alone/with up/with both 175/235/264
+// (calibrated fast). Original frame 0x90, early NONE sharing and cross operands retained.
 // Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
 // alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
 // shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word

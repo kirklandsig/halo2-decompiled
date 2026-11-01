@@ -162,6 +162,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 435: up-first split receiver declarations on the returned-receiver/direct-left graph,
 // crossed with early uninitialized projection/reciprocal and loop-entry receiver lifetimes,
 // eight contexts 110 each. Actual input reads and assignments stay in place; all forms restored.
+// Round 279: Complete independent orthogonalized scalar results before stores in all six
+// producer row orders 188 each; with all three removed products named 188, existing staged
+// cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
 // Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
 // helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
 // j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k

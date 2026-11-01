@@ -253,6 +253,10 @@ static inline void quaternion_transform_vector(
 // ordinary/shared dot and ordinary/staged cross, cross-first/direct-first:
 // 305/349/309/336/295/338/321/330. Frame and quaternion/cross spill overlap remain; complete helper and
 // body restored.
+// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
+// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
+// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
+// spill overlap remain.
 // Round 30 (lane 2, fast): retail computes the transform's scalar (w*w*2 - 1) before the identity copy and the
 // doubled w after the first dot, and gives the cross terms slots of their own (ours spill them into the dead
 // quaternion). Transform dot in i/k/j text order 200 (same code); scalar cross terms 265 (1300 bytes, frame

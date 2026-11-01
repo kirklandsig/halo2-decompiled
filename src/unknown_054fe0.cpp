@@ -1221,7 +1221,13 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 /* the host gives the players their properties: unique names, and teams when
    the game has teams */
 // score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Round 31 (lane D): 184 (was 184): unchanged this round, and no new form was tried; still
+// differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
+// measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
+// in the requested cursor.
+// Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
+// Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // this round: retail's record defaults differ from ours in three places - it
 // zeroes the team and the three bytes after it as one dword at 0x7c, it zeroes only two of the three
 // longs at 0x70, and it sets the two bytes at 0x82 to 0xff (our source leaves them at the memset's
@@ -1411,6 +1417,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
 // Original body restored; owner/count/zero and requested-record induction remain.
+// Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
+// 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
+// block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

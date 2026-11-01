@@ -200,6 +200,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // epsilon test as `fabs(local_0) >= 0.0001f` 392 (0x29b990 42); the clamp helper as one conditional
 // expression 277 (1727 bytes). Compile-only screens (calls opaque, inlined angle helper copy) do not track
 // the real build here (the reciprocal form scored better there).
+// Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
+// with complete role names 255/255/255/255/255/255/255/255.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 30 (lane 2, fast): retail packs the sqrt/acos temporaries with the yaw in [esp+0xc] and gives local_11
 // [esp+0x10] alone; ours packs the temporaries with local_11 in [esp+0x10] and the yaw alone in [esp+0xc]
 // (the inlined acos result then needs its own slot). The yaw renamed to sort before local_11 255; local_11

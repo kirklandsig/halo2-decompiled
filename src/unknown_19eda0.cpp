@@ -385,6 +385,7 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// score 316 (was 316): the distance to the centre is now computed and compared in double, so the
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
 // score 316 (was 379): the distance to the centre is now computed and compared in double, so the
@@ -456,6 +457,10 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 214: mixed-precision real result before tests 421; zero-first result 395;
 // separate distance/factor 316, with zero-first 395; upper-first result 316;
 // factor expression 316; explicit distance arms then factor 316; scalar role names 316.
+// Earlier selected count 316 from 379.
+// Round 287: Native homogeneous-position/RGBA/both/UV/position-UV/RGBA-UV/all emitted records
+// 426/319/426/316/426/319/426; all with top declared first 426. All record forms require an exact match;
+// complete original output storage, cursor, parameter home and body restored.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

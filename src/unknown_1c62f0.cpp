@@ -763,6 +763,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // third, the animation spilled at the variant join); that with a volatile third read of the pair's callback 130 (539
 // bytes); `&user` taken instead of `&callback` with the callback read plainly 128 (callback in EAX, callers lost); the
 // plain pointer read first and volatile reads at the second and third dispatches 93; volatile reads at all three 93.
+// Round 286: Native identity comparison with channel receiver at call-boundary
+// guard masks 1/2/3/4/5/6/7/15 gives 96/93/96/93/96/93/96/96. Original receivers,
+// callback observations and complete executable body restored; second reload remains.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

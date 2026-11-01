@@ -192,6 +192,9 @@ void function_213970(void);
 // definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
 // Round 217: standard whole-array path/request/storage-record initializers, seven subsets,
 // then all endpoint initializers: 166/178/184/206/226/232/239/243. Original library clears and complete body restored.
+// Round 283: previous language/version/both at their comparisons, mutable/immutable, all six 131; both
+// immutable before query 141; both with per-use requested language 139. Exact-only captures restored;
+// protected two-block allocation and original body retained.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

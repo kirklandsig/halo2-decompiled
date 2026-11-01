@@ -651,6 +651,9 @@ bool sound_driver_voice_create_buffer(
 // Round 331: Complete final-value descriptor initializers first/spatial/both 176/157/211;
 // spatial-first counterparts 200/197/211; both with count before construction 211, also spatial-first
 // 211. Original memset boundaries and executable body restored; Boolean and zero/input homes remain.
+// Round 285: bounded short/word/byte/signed-byte first-pair loops, then both
+// pair arrays with the real spatial-bin table 234/234/234/234/234/234/234/234. Original
+// complete body restored; spatial/play split and zero/input scheduling remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

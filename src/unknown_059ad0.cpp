@@ -4553,6 +4553,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
 // `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
 // an `owner` local 374 (scratch copy; loaded at the top).
+// Round 287: Shared timeout identity publication with conditional reason and original/newer/
+// equal/both selection predicates 322/331/324/330; explicit reason arms with those same four forms
+// 322/331/324/330. Original timeout publication, selection producers and body restored.
 // Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
 // acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
 // state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical

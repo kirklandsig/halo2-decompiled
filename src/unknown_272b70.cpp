@@ -1416,6 +1416,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 280: actor identifier used twice with scalar geometry/actor publication orders
 // 55/56/55/253; collection-owned count counterparts 76/77/76/255. Original executable
 // body restored; iterator scaling, request registers and seat loads across clearing remain.
+// Round 282: complete actor-position values mutable/const 229/229; vehicle-position values
+// 271/271; paired mutable/immutable/mixed values 307/307/307/307. All exact-only captures restored;
+// original candidate/request body, frame 0x6ac and matched comparator retained.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2612,6 +2615,9 @@ struct s_scenario_scripting_view
 // Round 280: paired conditional distance/index results, positive/complementary predicate,
 // either publication order and original/loop-owned short counter 80/87/80/87/80/87/80/87.
 // Original search restored; actor/set/counter homes and early data read remain.
+// Round 282: actual winning native point at selection/pre-actor/entry/outer scope
+// 121/122/124/120; with the original short counter owned by the loop 126/121/123/121.
+// Original ordinal, signed dynamic search and frame restored; exact wrapper survives all eight.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

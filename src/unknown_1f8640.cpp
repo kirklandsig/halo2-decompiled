@@ -495,6 +495,9 @@ struct s_1f8a70_actor
 // its bool in BL). On 270: returned unit-mode test 333 (route_mode then takes EDI, NONE EBX); first
 // exit by goto to a shared final `return result;` 437 (still folded, EDI pushed early); actor fetched
 // once before the first test 277; short route_mode with the returned test 432. Original body kept.
+// Round N284: Missing-destination conjunction orders route-node-radius/radius-route-node/
+// radius-node-route/node-route-radius/node-radius-route 228/377/254/307/308; nested
+// route/radius/node admission 228/377/307. Original gates, values and complete body restored.
 // Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
 // Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
 // @retail 0x1f8a70

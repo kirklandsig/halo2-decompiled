@@ -408,6 +408,9 @@ void function_125a90(long value);
 // `remove = type == 0x26 && !a` and `!= 1` 157 (471), with the kind arm as one `&&` test 144 (467); the element
 // pointer formed from `datum & 0xffff` before index 51. Still BLOCKED-BY 0x221810 (inlined whenever the layout is
 // retail's).
+// Round 287: Paired unsigned/signed-byte policies, each isolated byte policy, and paired byte
+// mask-predicate producers 36 each; paired unsigned/signed-byte policies with the native long
+// inner type test 46 each. Original policy storage, producers and body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

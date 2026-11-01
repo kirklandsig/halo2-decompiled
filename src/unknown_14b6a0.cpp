@@ -307,6 +307,9 @@ void function_14bac0()
 // after/before/with destination and alternate) 262/262/262 (frame 0x48, homes reshuffled); with the centre,
 // height and radius in their own block 259 (same code). Retail also re-reads the visit counter at each test
 // where ours keeps the incremented value in ESI and reloads it after 0xb75a0.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
 // Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
 // points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
 // (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte

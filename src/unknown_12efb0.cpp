@@ -295,6 +295,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // fog/weighted/color/fog-weighted/fog-color/weighted-color 616/621/622/616/618/622; all is the same
 // fog-weighted form. All with byte palette 705; all zero-prefix clears 724. Original initialization
 // and body restored; palette/record and SIMD accumulator carriers remain.
+// Round 286: Existing unit-interval producer lower/upper early returns 661/660;
+// lower/upper separate result 615/621; lower/upper conditional result 661/660;
+// lower/upper default guarded result 646/711. Original helper and body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

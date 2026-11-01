@@ -421,6 +421,9 @@ short *function_e70b0(long unit_index, short *value);
 // bool 49; the slot view and that timer local read before the actor lookup 123 (index still ECX); a
 // plain `inline` declaration of 0xe70b0 here 49. In every block retail's scratch registers sit one
 // allocation on from ours, as if one more temporary came first.
+// Round 287: Parameter-index/slot/both, inline-output/index-output/slot-output/all lexical
+// identities 49/49/49/49/49/49/49; all three alternate identities 49. Original names and body
+// restored; actor/index ECX/EDX and final setup remain.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

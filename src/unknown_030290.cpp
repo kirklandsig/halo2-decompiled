@@ -333,6 +333,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
 // with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
 // frame 0x30 versus 0x2c and the second transform spill remain.
+// Round N284: Native real absolute-value APIs at the three epsilon consumers,
+// masks 1..7 195/195/195/195/195/195/195; all with displaced-factor admission first 219.
+// Original absolute tests, inverse defaults, alias-safe helper and complete body restored.
 // Round 477: Native translation at entry/post-scale with no/right/up/forward axis capture 261/690/690/690/260/690/690/690.
 // Translation alone recovers frame 0x2c but changes the scale carrier; paired captures outline. Original alias-safe helper and complete body restored.
 // Round 483: independent reverse-displacement admission with entry/perspective
