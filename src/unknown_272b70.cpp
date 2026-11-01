@@ -1404,6 +1404,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 252: Positive load decision byte/short/word/long at admission and selection 41/56/56/52/41/56/56/52.
 // Original complete executable source restored; Iterator/candidate scaling, leave-request registers and seat
 // loads across clearing remain.
+// Round 267: Seeded while/for, condition-declared actor, for-declared actor: 41/274/41/274;
+// the same four with collection-only iterator scope 41/274/41/274. Original traversal and iterator
+// lifetime restored; handle/candidate scaling and late request/seat scheduling remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
