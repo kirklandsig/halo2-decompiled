@@ -197,6 +197,8 @@ void function_213970(void);
 // Round 283: previous language/version/both at their comparisons, mutable/immutable, all six 131; both
 // immutable before query 141; both with per-use requested language 139. Exact-only captures restored;
 // protected two-block allocation and original body retained.
+// DH round 265: string-boundary query with native progress/handle/NONE-chain subsets 1..7, then all with dirty-first:
+// 172/165/184/126/172/165/184/184. Original complete body restored.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

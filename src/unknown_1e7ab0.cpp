@@ -307,6 +307,8 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
 // 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
 // through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
+// DH round 265: selective completed-result returns for reset/inventory/remaining-test subsets 1..7, then all with ordinary player:
+// 630/646/646/684/684/701/872/783. Original complete body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
