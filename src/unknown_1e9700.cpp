@@ -202,6 +202,29 @@ void function_1ea880(long first_player, long player_index, s_object_values *tabl
 // with a twice-used amount 460/483/459; native record cursor
 // without/with amount 473/473. Original result types and body restored;
 // frame, victim/selection/count homes and rounding expansion remain.
+// Round 120 (lane 6, fast = plain): forceinline real_to_long declaration 444 (retail's inline fld/fistp);
+// with the victim through unit_get_player_index 472; with both assist arrays [5] 469 (frame 0x50); with
+// the game time through function_146650 472 (game_time read before the asm as retail); with retail's
+// statement order (NONE defaults first, consider_team cleared after the test, short selected and
+// reported_slot, hostile/threshold/counts after the selection, `if (killer == NONE) ... else if (killer
+// == reported_player)`, friendly through function_15eaf0) 501; with the record fields read as
+// `*(long *)(history + i * 0x10 + 0xc)` 501 (same code); with the history as a typed damage-record
+// array 376; the assist stores and the related player re-reading the field 387 (assist loop alone 418:
+// frame 0x4c); dedupe as `j >= i` 378; dedupe compare as `assists[i] != assists[j]` 376 (same count);
+// as a for loop with break 376; killer read from the record at each use 344 (kept); `if (killer !=
+// NONE) {...} else if (datum...)` 354, with the fallback's stores swapped 354; object as a typed view
+// with history/damage_codes members 344 (cursor still +4); damage read once under a nested time test
+// 440; the killer-team call argument read from the player byte again 362 (retail's movsx si, al), with
+// the != NONE arm order 345; consider_team as one expression 353; friendly as one expression 344
+// (aligned 176 against 169); a walked record pointer in the selection loop 346 (still rebased +4);
+// named victim/killer index locals for the two 0x196dd0 calls 344 (killer first gives retail's
+// EBP/ESI roles there, same count). Kept with consider_team and friendly as single expressions 353:
+// consider_team set true and cleared inside the reported-team test gives retail's store pair and 344,
+// but it is a flag set inside a test (left for a matching round); `reported_player == NONE ||
+// !function_1df560(...)` 353.
+// With all of it 353 (cursor biased +4, killer/victim_team/damage_code in rotated slots, killer kept in
+// EBP, the assist player index in EBX), but only with a file-local __forceinline redeclaration of the
+// header's plain-inline real_to_long (483 without it): an inline twin, kept only with a match; body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
