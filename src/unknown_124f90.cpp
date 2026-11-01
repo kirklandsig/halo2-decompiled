@@ -2138,7 +2138,7 @@ void sound_update_locations(void)
 /* moves the sound system's two environments toward the two requested:
    each request takes the slot already holding it or a faded-out one and
    fades it in over its transition time; slots no request takes fade out */
-// score 13 (was 14): retail adds the clamped unknown14 step in place and the fade-in step through a
+// score 13 (was 13): retail adds the clamped unknown14 step in place and the fade-in step through a
 // copy register; ours does the opposite, so the two sites trade xmm1 and xmm2.
 // At 14 (was 17): retail adds the clamped unknown18 step through a copy
 // register and adds the clamped unknown14 step in place; ours does the
@@ -2171,6 +2171,8 @@ void sound_update_locations(void)
 // delta (every caller passed `0 - x, x`; 0x1269f0 matched with it). With the round-34 mix 29; all 64
 // helper/`+=` choices for the six adds screened (LTCG probe): all six through the helper 13 (kept, plain),
 // helper except the second loop's fade 13, unknown10/fade-in/fade-out as `+=` 14; none of the other 60 below 14.
+// J223: one receiver 176; elapsed read once 198; both 198; scalar bitmap 243;
+// bitmap with receiver/elapsed/both 245/228/228 (fast previews).
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
