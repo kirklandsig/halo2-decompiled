@@ -910,7 +910,9 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
-// score 248 (was 248): 1355 bytes and frame 0x60 as retail (round 27 form, below). Before it (292,
+// score 184 (was 248): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
+// normalized-j residence and color/tag homes remain. Earlier 248: 1355 bytes and frame
+// 0x60 as retail (round 27 form, below). Before it (292,
 // 1372 bytes against 1355): our entry stored a `result`
 // slot (retail has none and returns `xor eax, eax` / `mov eax, 1` from the bool expression);
 // ours merges the flag-9 word update with the flag-8 clear (retail stores the word, clears flag 8
@@ -1034,6 +1036,9 @@ public:
 // typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
 // the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
 // returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
+// Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
+// 189/248/240/184/237; coordinate names 248; reversed independent comparisons
+// with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1092,9 +1097,9 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 			{
 				vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
 				normalize3d(&matrix.forward);
+				real z = (real)fabs(matrix.forward.k);
 				real x = (real)fabs(matrix.forward.i);
 				real y = (real)fabs(matrix.forward.j);
-				real z = (real)fabs(matrix.forward.k);
 				if (y >= x && z >= x)
 				{
 					matrix.up.i = 0.0f;

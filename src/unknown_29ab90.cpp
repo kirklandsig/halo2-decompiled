@@ -217,6 +217,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Round 292: on the retained history graph, native working/query copies and coordinate history
 // in seven subsets 413/372/401/365/399/371/396; shared constant-vector observation 410.
 // Original aggregate/native producers and all helpers restored; frame and magnitude homes remain.
+// Round 294: isolated planar scalar products, ij/ji producer and ij/ji publication
+// schedules, 354 each; four complete compound-product boundaries 354 each.
+// Original three-use normalizer and complete body restored; frame 0x58/0x64 remains.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
