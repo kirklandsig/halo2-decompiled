@@ -52,6 +52,9 @@ __int64 timing_counter_resume(timing_counter *c)
 // Round 16: a non-volatile tick local 50 (stores dropped in all four); an inline clamped
 // elapsed-ticks helper shared with peek 4; a forceinline reader 4; an early return when
 // already stopped 4; the reader with external linkage 4.
+// Round 61: timestamp then subtract 29; negated start then timestamp 43; LARGE_INTEGER delta 4;
+// standalone clamp ternary 4; delta named t 4; stopped snapshot 4; inner delta/total scope 4;
+// zero-initialized delta 4. Original body restored.
 // @retail 0x223b60
 __int64 timing_counter_stop(timing_counter *c)
 {

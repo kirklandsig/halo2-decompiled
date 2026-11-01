@@ -684,6 +684,8 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
+// score 384 (was 384): this round: no new form; the frame and the length agree, and the early false exit's
+// place, the object/magnitude homes and the query scalar homes still differ.
 // score 384 (was 384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
 // `goto local_7` jump; ours puts it last. `bool local_2 = !f13 && !f14 && !f2d; if (local_2) {...} return

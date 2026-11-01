@@ -118,7 +118,9 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
-// score 237 (was 237): Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
+// score 200 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
+// Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
 // lands in the matrix parameter's home slot [esp+0x38], so the halves are two separate locals and not a struct.
 // Tried: the halves as plain locals 290 and with the clamp in place 290 (the sine half does take the parameter
