@@ -224,6 +224,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 249: Complete sound/portal/default table snapshots, masks 1..7,
 // 970/937/973/948/982/924/987; all with query metadata before its producer 988.
 // Original observations and complete body restored; exact-length 924 has the wrong frame.
+// Round 47 (lane 10, fast): the four query arrays sit in other slots (retail gains +0xec, indices +0x1f0, portals
+// +0x2f0, clusters +0x3f0; ours portals +0xf0, indices +0x1f0, clusters +0x2f0, gains +0x3f0) although retail reads
+// them in our order (indices, clusters, gains, portals). The arrays renamed three ways 886 each; declared one per
+// line in four orders 886 each; declared at function scope 886; the count declared before them 886 (all the same
+// code: neither names, declaration order nor scope moves the slots).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

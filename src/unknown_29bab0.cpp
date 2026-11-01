@@ -130,6 +130,11 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 246: initial heading library copy with paired defaults, normalized input
 // and final output transfers in all eight combinations 803/803/803/803/803/803/803/810,
 // all on direct input. Original copies, parameter observation and whole body restored.
+// Round 47 (lane 10, fast with 0x1f9e70 and 0x110ab0 listed; retail keeps arg_1 in EDI and the +0x290 pointer in
+// EBX from the prologue, ours the other way): the +0x290 pointer defined right after the actor 833, before the
+// arg_8 test 833, before the 0x26c test 833; local_5 copied from the field with the pointer defined after it 741
+// (positional only: aligned 590 -> 614), the pointer after local_7/local_8/local_10 741 each; local_7 before
+// local_6 753; local_3 declared after the 0x26c test 746; local_8 and its 0xb9dd0 call before the pointer 816.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

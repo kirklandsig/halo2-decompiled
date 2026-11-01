@@ -212,6 +212,11 @@ void function_44720(void)
 // transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
 // re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
 // the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
+// Round 47 (lane 10, fast with 0x45560 listed): on the level-at-call form (135, 487 bytes) the structure global
+// read in each lookup branch 135 (0x45560 190 -> 246); the transform index written at the 0x45ce0 call 163; the
+// material as a ternary 140; the selected material written at the 0x41040 call 135. On the current form: the
+// structure global in each branch 107 (same code; 0x45560 246); the material as a ternary 127. Retail's 0x45560
+// reads the structure global and the flags above the instance test, its 0x44c90 inside each branch.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

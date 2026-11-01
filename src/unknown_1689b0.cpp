@@ -1560,7 +1560,8 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
 // the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
 // not retail's form. Original body kept.
-// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
+// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain; the prism cursor is
+// anchored at point_count (retail at plane.j, prism + 0x14: every prism displacement differs by 0x14).
 // Retail keeps the zero in ESI (pushed first, reused as the prism pointer, based at plane.j where
 // ours bases it at the point count) and counts the accepted shapes in 32-bit counters (test/jle,
 // cvtsi2ss). Round 152: separate face/edge sum points 594; long counters 572 (2890 bytes); plane
@@ -1617,6 +1618,13 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Original cap, accepted word counts, prism view and complete geometry restored.
 // Ray-result-owned positive/negative endpoints and shared ray, seven subsets, then original endpoints with one
 // query result: 613/600/638/571/634/619/661/581. Original complete executable source restored.
+// Round 47 (lane 10, fast with 0x120790 listed): long counters each declared beside its radius (edge then face)
+// 572, face then edge 571; word counters beside their radii 552 (same code); the count clamped by `if (count > 8)`
+// 605; the distance through the existing plane_distance_to_point 620; both 614, and a plane pointer local for the
+// distance with the `if` clamp 614: these two give retail's plane.j cursor anchor (compile-only agrees: neither
+// alone does, and no spelling or term order of the distance moves it) but drop the frame to 0xb958 and keep the
+// dot product summed (x*i + z*k) + y*j (all 48 term orders compile the same) where retail has (x*i + y*j) + k*z;
+// retail also keeps the ternary clamp's select (`mov ecx, 8; jg; mov ecx, eax`).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
