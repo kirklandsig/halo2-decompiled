@@ -877,6 +877,11 @@ real function_18cac0(long arg_0);
 // Round 245: plain door-cluster/gain/final-entry cursors in seven subsets
 // 236/203/211/154/236/203/211; all with native real table 211. Final-entry cursor
 // saves one point and is rejected. Original indexed body and both library clears restored.
+// Round 110 (lane 8, fast; base aligned 53): the small mask as `= {0}` 204; the maximum through a pointer to
+// the table element 246 (781 bytes); `if (gain < table_value)` in place of the negated `>` 161; the
+// maximum stored only when smaller 541 (493 bytes); the side as a default-1 local with nested tests 233
+// (812 bytes, retail's length, but aligned 104). Retail's extra 15 bytes are its direct `[esp + i*4 + 0xbc]`
+// table accesses, which our build only emits with the frame realignment (a flags lead, recorded above).
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {

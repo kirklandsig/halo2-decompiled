@@ -278,7 +278,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 209 (was 203): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
 // home and the side bytes still differ.
@@ -485,6 +485,11 @@ void function_245400(s_source_245400 const *source, long index,
 // pointer 209/209/209 (source in ECX, 0x245aa0 MATCH each; the block-top read kept); just before the edge
 // vector 203 (EDX, 0x245aa0 3). (index, matrix, source, ...) with the entry read 209 (0x245aa0 16, the
 // element loaded through EDX); the old order with the entry read 209 (0x245aa0 16).
+// Round 110 (lane 8, fast; the reduced image holds 2 sources): the facing test with the side test
+// inverted (`!=` arm first) 209; sides as `(code & 0x8000) != 0` 209; the two sides in a two-element
+// array 207; sides computed inside the plane-index test 209; a named `same_side` comparison 209 (all
+// compile alike: our build sinks both side bits into one xor, retail computes them eagerly into a
+// stack byte and BL and compares bytes).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

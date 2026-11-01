@@ -1302,6 +1302,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
 // the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
 // write handle 120.
+// Round 110 (lane 8, fast): round 53's 7 form and round 56's 6 form reproduce (7/6). Upstream of the
+// resize block, on the 7 / 6 forms: `remove_later = false;` before the delete call 9/8; the size test
+// written `expected_size != size` 8/7; `dword size` declared at the loop top 7/6; `long expected_size`
+// 7/6. On the 7 form the resize and close match retail; only the write call (the flags zero takes EAX, so
+// the handle load cannot move ahead of it as retail's does) and the checksum register differ.
 // @retail 0x213970
 void function_213970(void)
 {
