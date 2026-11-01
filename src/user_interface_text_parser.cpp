@@ -565,6 +565,10 @@ done:
 // the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
 // with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
 // named once for the translator and the copy 32; the tag read in the translator call alone 45.
+// Round 39 (m3 lane 15, fast; parse_variant stays matched): the selector read into a `dword` local on the natural
+// one-copy form 54 (173 bytes, same as that form), on the current form 32 (same code); with the tag read before
+// the variant call 57 (171 bytes) and 44 (178 bytes); the natural form with the `dword` selector in numeric case
+// order 49 (173 bytes).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

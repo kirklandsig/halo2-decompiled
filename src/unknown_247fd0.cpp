@@ -230,6 +230,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
 // with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
 // `changed` bool, dword-cast pointers, the cache stores swapped.
+// Round 39 (m3 lane 15, fast): field_10 first re-measured 133 (876 bytes: the split compare, then a loop-top pad and
+// the child loop's effect-index/vtable registers: retail reuses ECX for the effect index and loads the vtable into
+// EDX before the pushes); the fifth sample as `field_38 = local_9 = ...` 70 (same code), with field_10 first 133;
+// the effect index named in the child loop 73, with field_10 first 134 (878 bytes); `if (local_0 == NONE) return;`
+// for the wrapping if 70 (same code).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
