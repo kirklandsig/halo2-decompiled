@@ -1007,6 +1007,11 @@ bool __stdcall function_2399da(long controller_index)
 // tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
 // (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
 // reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
+// Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
+// with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
+// test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
+// identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
+// rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
