@@ -92,6 +92,8 @@ c_2d8ab0 *g_47f044;
 // differences; the selected-list form gives 63 and the limit and counter locals 137. Still the
 // element select loads the field into EAX and the index into ECX where retail uses ECX and EDX,
 // and the release loop's entry test uses EDX and EAX where retail uses EAX and ECX.
+// MiniMax D (11-01): removing the global's address cast scores 12 and was reverted; no new form,
+// no lower score.
 // score 7 (was 7): this round's two more shapes: the entity list read as a pointer sum into the
 // group entry, and the release loop written as a guarded do-while; both compile to the same 507
 // bytes with the same seven differences. Still the entity list and the index of the group loop
