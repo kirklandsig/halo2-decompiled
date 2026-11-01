@@ -164,6 +164,14 @@ static inline void transform_offset_point(transform4x3f const *frame, real scale
 // first test's product order flips with the 0x11c5b0 call, random_index or
 // reading target_index directly; only a pointer local to the direction gives
 // retail's order in both the first test and the pitch.
+// Round 118: one exit (the failure call in an if, the success body in its else) 17
+// (the final result load stays after the detach test). On the 0x11c5b0 trigger test
+// (20 now; with one exit 20): the first test written i first 20 or as `<= 0.0f` 22,
+// the target root read from the parameter 20, the placement radius by if 452, the
+// target store after the first test 464, the target header read at its use 174.
+// Round 64: direct target reads with 0x11c5b0 20; separate workspaces with it 20;
+// a result snapshot 20; placement radius after the direction copy 123; named horizontal
+// squared magnitude 20; split radius declaration 123; goto done 20; mixed target reads 20.
 // @retail 0x14e200
 bool __stdcall function_14e200(long player_index, long target_index, point3f const *position, bool detach)
 {

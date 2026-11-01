@@ -221,6 +221,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 238: reused active flag/active gain/inactive gain field lvalues, seven
 // subsets 886 each; all with flag binding at its first update 886. Original
 // field accesses, helpers, scans and complete body restored.
+// Round 249: Complete sound/portal/default table snapshots, masks 1..7,
+// 970/937/973/948/982/924/987; all with query metadata before its producer 988.
+// Original observations and complete body restored; exact-length 924 has the wrong frame.
+// Round 470: unsigned raw decibel words in choice/target/datum records, all
+// seven subsets 886 each; all with unsigned helper transport 886. Original
+// records, helpers and body restored; entry zero and target/query/count homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -404,6 +410,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 }
 
 #include "local_cameras.h"
+#include "local_players.h"
 #include "sound_sources.h"
 #include <float.h>
 #include <string.h>
@@ -448,10 +455,10 @@ struct s_listener_environment_bsp
 
 PRIVATE inline long sound_first_listener()
 {
-	long i = 0;
-	for (; i < 4; ++i)
-		if (g_4e8c20->entries[i] != NONE) break;
-	return i < 4 ? i : NONE;
+	long first = NONE;
+	for (long i = 0; i < 4; ++i)
+		if (g_4e8c20->entries[i] != NONE) { first = i; break; }
+	return first;
 }
 
 PRIVATE __forceinline void sound_environment_play_cue(long tag)
@@ -471,7 +478,17 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 	function_189fe0(&request, tag);
 }
 
-// score 223 (was 223): Frame 0x14c versus 0x148; BSP/camera/query homes and duration spill remain.
+// score 159 (was 159): frame 0x148 agrees; BSP/count homes +0x10/+0x14
+// are exchanged, camera/query and request publication scheduling remain.
+// Earlier 154 (was 223): the transition definition read through the local bsp and the missing-query fill
+// order; the entry test and scan match retail's, but the position copy (retail loads x, the cluster, y and
+// z before it stores), the BSP/count home slots, the cue request tail order and the 0x18ab70 convention remain.
+// Earlier 156 (was 223): the transition definition read through the local bsp; the entry test and
+// first-listener scan match retail's, but the BSP spill slot, the position copy and the cue requests remain.
+// Earlier 159 (was 223): Frame 0x14c versus 0x148; BSP/camera/query homes and duration spill remain.
+// MiniMax A (10-31): local_player_exists entry test, the first-listener test before the camera is formed, the
+// fill loop storing indices/portals/clusters in that order, tag and transition as plain ifs and the definition
+// read through `bsp` 154 with the first listener in a one-use local (not kept); the same as a nested if 159.
 // Lane 8 r64 (fast; two callees build differently in the reduced image): existing 0x14ddc0 listener
 // test 295 (aligned 150 against 159: retail's `cmp iv, -0x48; setne`); existing first-local-player
 // helper alone 235; default-first transition re-read from the definition alone 267; all three 277;
@@ -564,6 +581,21 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 445: Separate producer/processing count long/short/word/byte 261/263/263/279;
 // the same four with independent native short request initialization 261/263/263/279.
 // All increase frame or extent; original complete body and helpers restored.
+// Round 35 (lane 11, fast): the entry test as the existing local_player_exists(listener) with the camera
+// taken inside it and no NULL test 295 (retail's `cmp edi, -0x48` / `setne al; test al, al` tests, aligned
+// 159 -> 150); plus the existing local_player_exists-style scan local_player_first_index() 293 (retail's
+// scan); plus that index in a local before the camera 292 (scan and camera formation now retail's, aligned
+// 137: left are the BSP spilled to [esp+0x14] in place of ESI, a zero kept in ESI and frame 0x14c); plus
+// the definition read through `bsp` 262 (BSP in EBX, listener EDI, stride ESI: retail ESI/EBX/EDI;
+// aligned 181); plus listener declared before bsp 262 (same code).
+// Round 466: Seven BSP/query-count/camera role-name subsets and all roles with the query
+// count declared at active scope: 159 each. Seven position/environment/angle output
+// workspace entry subsets and all three at active-camera scope: 159 each.
+// All original identities, workspaces and producers restored; BSP/count homes remain.
+// Round 26 (m3 lane 2, fast): the request stores in retail's order (transition, index, fade) 158 (retail walks the
+// requests from `.index`, the init loop's base; aligned 61 -> 53: the lead for the next round); on it the
+// transition definition through the global 278 (BSP takes retail's +0x14 home but loses ESI), the camera fetched
+// before the first-listener test 201, `count` at function scope 158, the position copy before the cluster 229.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
@@ -572,64 +604,67 @@ void __stdcall function_18bb80(real elapsed)
 	s_portal_path_bsp *bsp = (s_portal_path_bsp *)g_4e0348;
 	for (long listener = 0; listener < 4; ++listener)
 	{
-		s_local_camera *camera = local_camera_get(listener);
-		if (camera && g_4e8c20->entries[listener] != NONE)
+		if (local_player_exists(listener))
 		{
-			if (listener == sound_first_listener() && camera->active && camera->index != NONE)
+			if (listener == sound_first_listener())
 			{
-				long cluster = camera->index;
-				point3f position = camera->position;
-				function_18ae80(bsp, listener, &position, cluster, NONE, elapsed);
-				long count;
-				long indices[2], portals[2], clusters[2];
-				if (cluster != NONE)
+				s_local_camera *camera = local_camera_get(listener);
+				if (camera->active && camera->index != NONE)
 				{
-					function_18dc90(bsp, cluster, &position, FLT_MAX, indices, NULL, portals, clusters, &count);
-					if (count <= 1)
+					long cluster = camera->index;
+					point3f position = camera->position;
+					function_18ae80(bsp, listener, &position, cluster, NONE, elapsed);
+					long count;
+					long indices[2], portals[2], clusters[2];
+					if (cluster != NONE)
 					{
-						for (long j = count; j < 2; ++j)
+						function_18dc90(bsp, cluster, &position, FLT_MAX, indices, NULL, portals, clusters, &count);
+						if (count <= 1)
 						{
-							clusters[j] = NONE;
-							portals[j] = NONE;
-							indices[j] = NONE;
+							for (long j = count; j < 2; ++j)
+							{
+								indices[j] = NONE;
+								portals[j] = NONE;
+								clusters[j] = NONE;
+							}
+							count = 2;
 						}
-						count = 2;
+						if (portals[0] == NONE) portals[0] = portals[1];
 					}
-					if (portals[0] == NONE) portals[0] = portals[1];
-				}
-				s_sound_environment requests[2];
-				long i = 0;
-				do { requests[i].index = NONE; ++i; } while (i < 2);
-				for (i = 0; i < count; ++i)
-				{
-					long index = indices[i];
-					long tag = index != NONE ? ((s_listener_environment_bsp *)bsp)->environments[index].tag : NONE;
-					real transition;
-					if (index != NONE)
+					s_sound_environment requests[2];
+					long i = 0;
+					do { requests[i].index = NONE; ++i; } while (i < 2);
+					for (i = 0; i < count; ++i)
 					{
-						s_listener_environment_definition *definition = &((s_listener_environment_bsp *)g_4e0348)->environments[index];
-						transition = definition->transition_time;
-						if (fabs(transition) < 0.0001f) transition = 2.0f;
+						long index = indices[i];
+						long tag = NONE;
+						if (index != NONE)
+							tag = ((s_listener_environment_bsp *)bsp)->environments[index].tag;
+						real transition = 2.0f;
+						if (index != NONE)
+						{
+							s_listener_environment_definition *definition = &((s_listener_environment_bsp *)bsp)->environments[index];
+							if (!(fabs(definition->transition_time) < 0.0001f))
+								transition = definition->transition_time;
+						}
+						requests[i].transition_time = transition;
+						requests[i].fade = 1.0f;
+						requests[i].index = tag;
+						s_sound_portal_angles angles;
+						if (index != NONE)
+							function_18ab70((s_sound_portal_bsp *)bsp, portals[i], (s_sound_listener_rotation *)camera,
+								cluster == clusters[i], &position, ((s_listener_environment_bsp *)bsp)->environments[index].radius, &angles);
+						else
+						{
+							angles.lower = 0.0f;
+							angles.upper = 6.2831855f;
+							angles.horizontal_scale = tag != NONE ? 1.0f : 0.0f;
+							angles.vertical_scale = 0.0f;
+						}
+						requests[i].angles = angles;
 					}
-					else
-						transition = 2.0f;
-					requests[i].transition_time = transition;
-					requests[i].fade = 1.0f;
-					requests[i].index = tag;
-					s_sound_portal_angles angles;
-					if (index != NONE)
-						function_18ab70((s_sound_portal_bsp *)bsp, portals[i], (s_sound_listener_rotation *)camera,
-							cluster == clusters[i], &position, ((s_listener_environment_bsp *)bsp)->environments[index].radius, &angles);
-					else
-					{
-						angles.lower = 0.0f;
-						angles.upper = 6.2831855f;
-						angles.horizontal_scale = tag != NONE ? 1.0f : 0.0f;
-						angles.vertical_scale = 0.0f;
-					}
-					requests[i].angles = angles;
+					sound_environments_update(requests);
 				}
-				sound_environments_update(requests);
 			}
 			long tag = tags[listener];
 			long *current = &g_4ed288->indices[listener * 2 + 1];

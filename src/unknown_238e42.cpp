@@ -520,12 +520,6 @@ struct s_online_game_invite;
 void online_game_invite_answer(DWORD controller_index, const s_online_game_invite *invite, long answer);
 
 /* joins the game a message invites the selected player to */
-// score 2 (was 2): retail stores the type before the second half of the
-// FILETIME copy, ours stores it after, so the two stores trade places.
-// Tried: the type set inside the answer call's argument 2; the time copied
-// high half first 5; the high half loaded into a local before the type store
-// 3 (it takes ebx); the message cleared at the case's start 24, after the
-// answer call or at the case's end 57; the invite pointer set at the top 39.
 // @retail 0x238f3f
 void __stdcall function_238f3f(long controller_index, void *message, unsigned __int64 session_id)
 {
@@ -550,8 +544,8 @@ void __stdcall function_238f3f(long controller_index, void *message, unsigned __
 		selection.friend_ = friend_;
 		*(unsigned __int64 *)&selection.friend_.sessionID = session_id;
 		selection.friend_.dwTitleID = invite->title_id;
-		selection.friend_.gameinviteTime = invite->time;
 		selection.type = 2;
+		selection.friend_.gameinviteTime = invite->time;
 		message = NULL;
 		online_game_invite_answer(controller_index, (s_online_game_invite *)&selection.friend_, 0);
 		selection.friend_.dwFriendState = 1;
@@ -894,7 +888,15 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
+// score 90 (was 90): this round: the difference is purely the register colouring of the two
+// values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
+// eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
+// ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
+// later jump). Copying the identity into a local, reading the own rank before the identity
+// test, copying the requested rank into a local before that test, a has-identity flag and
+// four local declaration orders all score 90, so the colouring is fixed by the callee's
+// convention and the body stands.
+// Earlier (90, was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.
 // identity/rank registers and the extra move before removal remain; selection guard,
@@ -957,6 +959,40 @@ bool __stdcall function_2399da(long controller_index)
 // Round 2 of lane 18: validity test through an inline helper (as 0x24b5bc's file has it) 90; flat
 // dispatch (remove, deny, rank 3, set) 90; set-rank first with deny and rank-3 returns 95; removal
 // re-deriving the identity from the selection 147; one shared controller-mask local 176.
+// Round 17 (m3 lane 2, fast): rank read through a pointer to the parameter 90; the permission test
+// as a named bool 90; task index declared at the top 90; `own_rank >= rank` 90; the over-rank
+// denial first (`rank != NONE && rank > own_rank`) then remove/rank-3/set 95 (437 bytes); 1-8 unused
+// initialised locals at the top (diagnostic: symbol numbering) 90 each, so the EAX/ECX choice is not
+// a numbering tie; a 600 s permuter run, best 82 only by duplicating the whole rank dispatch into
+// both permission arms with a short cast (not applied).
+// Round 9 (lane 17, fast): the EAX/ECX swap is a tie between the requested rank and the identity at the
+// rank dispatch: once the rank is not in a register there, the identity takes EAX as in retail. Diagnostics
+// (volatile parameter reads, reverted at once): at the NONE test 32 (433 bytes; aligned 12 -> 8: identity
+// EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
+// (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
+// 90. Plain: own rank read from the membership field at each use 90.
+// Round 57 (lane 16, fast with 0xac050/0xac360): the identity test inverted (0x5c denial in the if arm) 90; as an
+// early exit 90; `if (rank != 3) { store; set } else { dialog; return; }` 92; `if (task_index == NONE) return;`
+// before the 0x1487c3 call 90; the identity initialised to NULL where declared 90 (same code where 90).
+// Round 43 (lane 10): one result path (task index preset to NONE, the deny and rank-3 dialogs fall
+// through to the task test) 90; the progress call written in both the remove and set arms 90; dispatch
+// remove / over-rank deny / `rank != 3` set / rank-3 dialog 90; task index declared before the slot
+// read 90; `membership` declared before `member` 90. Diagnostic: the rank store replaced by a constant
+// lets the identity take EAX (but the constant is CSE'd with `>= 2`, so it is no clean test). Also:
+// the non-remove arm as one block with over-rank and rank-3 guard returns 90; with the rank store
+// first in that block 91.
+// Round 143 (lane 4, fast with 0xac050/0xac360/0x18ffc3, faithful 90): flat dispatch (remove, over-rank deny,
+// rank-3 dialog, set) 90; one `team_xuid` pointer for both calls 90; own rank read before the identity
+// test 90; early return when there is no friend request 189 (450 bytes); the rank stored first and the
+// rank-3 test reading the stored field 89 (one rank use fewer, a gain of 1).
+// Round 122 (lane 6, fast with 0x2399da, 0xac050, 0xac360): the non-remove arm as one block with the over-rank
+// and rank-3 guard returns 90; the dispatch as `switch (rank)` with a NONE case and a default 95 (437 bytes); the
+// store through a pointer to the member's properties 90; a set-rank inline helper shared with 0x2399da 90; the
+// identity test as a guard return (`if (!xuid || !xuid->qwUserID) { deny; return; }`) 90. One-file LTCG harness
+// (this file + online_teams.cpp): only a rank use fewer (the store from a constant) or one identity use more
+// moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
+// Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
+// for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

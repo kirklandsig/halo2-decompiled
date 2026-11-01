@@ -152,6 +152,10 @@ void player_action_initialize(s_player_action *arg_0);
 #pragma inline_depth(0)
 // score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
 // byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
+// MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
+// for the cycle loop and the field-first selection comparison, both calls inlined only with this function at
+// inline_depth(255) and player_action_initialize behind a forceinline wrapper at inline_depth(0) (as 0x825e0);
+// that wrapper is kept only with a byte match. The same calls with the pragma as here stay out of line: 457.
 // Round 30 (fast; "aligned" = differing lines after a sequence alignment, base 57): retail's
 // first grenade-count test is the existing function_cdff0 inlined (the NONE check, then a short
 // count: `movsx ax`, `test ax, ax`), but calling it there leaves both calls out of line 403;
@@ -235,6 +239,29 @@ void player_action_initialize(s_player_action *arg_0);
 // through the float overloads; pragma removed 569 (0x14d040 inlined); copy orders 9/11/11/5, struct
 // block copy 8; SIB call-site forms (result local, unit index local) 1; permuter 600 s, 21 tries, none
 // below 1. Non-flag latch spellings (else first, named pressed bool, store first) all keep the arm inline.
+// Round 53 (lane 9, fast with every callee listed; the reduced image then scores it as the full build):
+// lane 11's round-27 form reproduced at 1 (1515 bytes); still only the inlined 0xcbec0 count read [edx + edi]
+// against retail's [edi + edx]. On it: the +0x28/+0x214 four-byte copy as a real short/char/char struct
+// member instead of the long cast, with the output copy as a long cast/a struct copy 1/1 (identical code);
+// the cycle loop written out with the unit looked up inside it 316. Diagnostics (all reverted): new-field
+// stores to the control record, the player record or the unit, dropped or duplicated selection stores and dead
+// temporaries before the call or at entry never flip the order. Compile-only probe with an inlinable copy of
+// 0xcbec0's body reproduces [edx + edi]; only a unit read inside the loop gives base first, but then the
+// lookup is scheduled after the NONE normalization (retail has it first), and that body out of line no
+// longer gives retail's 0xcbec0. The score-1 source is saved as build/r53/186ab0.s1.cpp in the m3-lane9 tree.
+// Round 243: Native persistent toggle/pulse/hold byte fields, subsets 1..7
+// 134/134/134/134/134/134/134; all signed byte 134. Original Boolean fields,
+// latch graph and complete body restored; comparison/count and cold output scheduling remain.
+// Round 116 (lane 6, fast): the round 27 lane 11 form still scores 1 on this tree (only the inlined 0xcbec0 count
+// read `[edx + edi + 0x23e]` against retail's `[edi + edx + 0x23e]`, same registers). Retail calls 0xcbec0 out of
+// line only from 0xc5ae3, and that copy reads `[edx + edi]` (type as base) like ours, so the order comes from the
+// inlined instance. On that form: the first count test written out instead of the 0xcdff0 call 29; one unit-index
+// local for the whole selection block 355; a unit-index local for the second count test and the cycle call 1.
+// Compile-only probes of the inlined cycle (result/unit-index/grenade locals, constant or variable direction,
+// nested inlining, a caller-side unit lookup just before the call, callee local renames) all give type as base;
+// only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
+// below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
+// found: the inlined order needs a cause outside this body.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

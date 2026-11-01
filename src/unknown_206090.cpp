@@ -141,7 +141,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1364 (was 1364): frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1363 (was 1363): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;
@@ -255,6 +255,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Actual point-state/point-definition/contact-definition byte offsets, subsets 1-7: 1383/1381/1400/1400/1369/1404/1390; all with typed contact offset 1456.
 // Reduced control 1363/6238 with frame 0x5cc differs from full 1364/6243 with frame 0x5d0; every offset form regresses against its control.
 // Full original signed loops, live counts/bases, input captures, helpers, math groups and body restored.
+// Round 452: native vector memcpy at magnitude/default/dynamic copy boundaries,
+// subsets 1-7, 1364/1366/1366/1364/1364/1366/1366; complete memmove graph 1477.
+// The caller/callee control reproduces full 1364/6243 without a target caveat.
+// Original native copies, magnitude capture, helpers and complete body restored.
+// Round 251: Native vector returns in scale/add/scale-add/cross/scale-cross/add-cross/all
+// 1885/1941/2425/1674/2156/2117/2599; all with direct magnitude input 2277. Complete original helpers, magnitude
+// snapshot, cross captures and body restored; frame 0x5cc versus 0x58c remains.
+// Round 265: existing staged cross at point velocity/point torque/contact velocity/contact torque
+// 1418/1417/1422/1384; paired points/paired contacts/private sites/all 1455/1360/1400/1445.
+// Three-point contact-pair lead rejected; original body/captures restored, frame remains 0x5cc.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

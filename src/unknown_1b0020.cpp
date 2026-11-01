@@ -146,6 +146,9 @@ void function_26c180(long actor_index);
 // by if/else (49), the first reference through a local (29); flag8 as a ternary 27
 // (sete), as a result local set by an if 27, with the bool tested first 31, flag3
 // cleared before flag8 51, scratch acquired after the output declarations 29.
+// Round 44 (lane 10, fast): flag8 as `!(equal || unknown)` 29; the 0x2605d0 result in a reference
+// local passed on to 0x2626b0 29; plain `long other_index; bool flag;` locals 31; the entry declared
+// before the request 29; flag8 as `equal ? false : !unknown` 27 (sete, still reloaded).
 // BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
 // @retail 0x1b0540
 void function_1b0540(long actor_index, s_follow_search_state *state)
@@ -233,15 +236,9 @@ short __stdcall function_272af0(s_match_globals *arg_0, point3f const *arg_1);
 void function_1e3b00(long arg_0, long arg_1, point3f const *arg_2,
     void const *arg_3, void const *arg_4, point3f *arg_5);
 long function_baf40(long arg_0);
-short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, long arg_0,
+short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
     void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
-// score 7 (was 20): at the 0x1c8df0 call retail reloads the prop state into
-// eax for the cluster before it reloads the entry into edx for the second
-// cluster; ours reloads the entry into eax first and the state into ecx.
-// Tried: the cluster as *(short *)((byte *)state + 0x2c) 7; the entry's
-// cluster in a local first 39; entry declared before state 7; the point
-// as the state's unknown30 field 7.
 // @retail 0x1b0400
 bool function_1b0400(long arg_0, s_follow_search_state *arg_1)
 {
@@ -267,7 +264,7 @@ bool function_1b0400(long arg_0, s_follow_search_state *arg_1)
             if (!local_8[0xaa] && *(long *)(local_8 + 0x14) != NONE)
                 local_7 = *(long *)(local_8 + 0x14);
             local_7 = function_baf40(local_7);
-            short local_9 = function_1c8df0(state->location.cluster_index, entry->cluster_index,
+            short local_9 = function_1c8df0(entry->cluster_index, state->location.cluster_index,
                 (point3f const *)((byte *)state + 0x30), local_7, &local_6, 1, false,
                 local_0->unknown26c != NONE, false, NULL);
             if (local_3->unknown24 >= 1)

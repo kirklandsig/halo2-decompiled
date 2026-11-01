@@ -141,7 +141,8 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
             &local_0->forward, arg_1);
 }
 
-// score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
+// score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
+// Earlier score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
 // step (retail's head-tested loop) and 0x118fe0 stays out of line as in retail. Left: retail keeps the
 // walk's position at 0x20 sharing its slot with the post-walk vector (ours shares the offset vector,
 // position at 0x94), and pushes ESI only after the early return (ours uses ESI for the definition-table
@@ -156,6 +157,10 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
 // the scaled forward through vector3f_scale 742 (fast), with noinline 726; the walk as a for loop 1022;
 // names for the walk's two vectors 734 (fast, no change); the drop term or the dot helper's i term
 // with its operands swapped 581 each.
+// Round 448: Complete point/vector home roles and early uninitialized steering workspace,
+// all seven nonempty combinations, then alternate complete home ranking 521/521/521/521/521/521/521/521.
+// Reduced preview is 521/3707 versus full 523/3706; every trial ties that preview.
+// Original body and helpers restored; Frame 0xdc agrees; early ESI ownership and neighbor/steering homes remain.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

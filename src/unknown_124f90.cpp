@@ -109,11 +109,15 @@ static inline s_sound_class *function_xaa8231(short class_index)
 	return &((s_sound_globals_classes_view *)g_51ebd4)->classes[class_index];
 }
 
-static inline long decibels_interpolate(long a, long b, real t)
+/* a gain in decibels, copied as a whole */
+struct s_decibels_view
 {
-	real result = (*(real *)&b - *(real *)&a) * t + *(real *)&a;
+	real value;
+};
 
-	return *(long *)&result;
+static inline real decibels_interpolate(long a, long b, real t)
+{
+	return (*(real *)&b - *(real *)&a) * t + *(real *)&a;
 }
 
 static inline real real_decompress_angle(long value)
@@ -624,6 +628,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Round 39: every store through the array element 3; voice reference 3; the first two stores
 // through the array element ahead of the pointer 3 (they then precede `inc edi` too, which keeps
 // `inc esi` beside it); index advanced after the first two stores 3, or at the end 3/3.
+// Round 33 (lane 13; closure LTCG harness, base 3 = 3): definition type stored before the sound index
+// 2 (the stores follow source order, `inc esi` stays after `inc edi`; not kept); `g_4e6378 + index++`
+// 3; the inner counter declared before the for 3; a per-type count local used for the sum and the
+// bound 49 (the bound then sits in a register); `(char)type` 3; `++i` 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -872,7 +880,7 @@ void sound_playback_acquire_reference(s_sound_playback *sound)
 }
 
 // @retail 0x1286b0
-void sound_playback_set_chunk(long sound_index, long definition_index, char pitch_range_index, char permutation_index, short chunk_index)
+void sound_playback_set_chunk(long sound_index, long definition_index, short pitch_range_index, short permutation_index, short chunk_index)
 {
 	s_sound_playback *sound = (s_sound_playback *)g_4e637c->data + (sound_index & 0xffff);
 
@@ -1207,7 +1215,7 @@ bool sound_playback_update_location(long sound_index)
 struct s_sound_class_fade
 {
 	dword target;
-	dword current;
+	s_decibels_view current;
 	real time;
 	byte flags;
 	byte unknownd[3];
@@ -1222,9 +1230,22 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 149 (was 149): retail keeps the entry gain in a stack home that the gain helpers read in place; the
+// score 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
+// Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// this round: the entry still loads the class table into EDI where retail loads it into
+// EDX, and the fade product is still multiplied by the fade-out time before the inverse, so the elapsed
+// difference keeps XMM2 where retail keeps XMM3 and every use of it differs; a named local for the scaled
+// product, a second local for the scaled-out product, a local for the elapsed-minus-hold difference and a
+// local for the whole product all compile to the same code.
+// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
+// retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
+// the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then
+// `ambience_fade - elapsed` plus it), the clamps' register (retail starts from 1.0 and replaces it), and the
+// hold branch's copy of the ducking gain through a stack temporary.
+// Earlier at 149: retail keeps the entry gain in a stack home that the gain helpers read in place; the
 // helper's signature is in include/unknown_218ac0.h, so this file can only hand the gain over by copy.
-// score 149 (was 149): Frame 0xc agrees; early table load, gain home, delayed ESI save and fade scheduling differ.
+// Earlier at 149: Frame 0xc agrees; early table load, gain home, delayed ESI save and fade scheduling differ.
 // Retail keeps gain in a stack home from entry (stored before the flag test, EDI keeps a copy for the
 // plain returns), the helpers read it there with no copy, and each sum is stored in that home.
 // Round 72: decibels_add's second parameter a const reference 168 (retail's home store and EDI copy
@@ -1266,12 +1287,32 @@ long function_2197f0(real gain);
 // (`(elapsed - hold) / fade_in * fade_out`, `1.0f > time / fade_in ? time / fade_in : 1.0f`) with a
 // fade_out local 160 (retail's reciprocal-first order, multiply compare and divss result); plus
 // `t = 1.0f; if (time < 1.0f) t = time;` clamps 160/180 (the two tails cross-jump); if/else-if pin 160.
+// Round 94: gain as `s_decibels_view` (one real; fade->current declared with that type here) copied from
+// fade->current, sums stored into gain.value,
+// decibels_interpolate returning real from its long-bit operands, `return *(long *)&gain` 137 (kept; 678
+// bytes); on it, the lookup passed the raw class index 179 (670 bytes), and without the index local 179;
+// the first branch written with divisions 207 (636 bytes); clamps as `t = time; if (t > 1.0f) t = 1.0f;`
+// 136, as `t = 1.0f; if (time < 1.0f) t = time;` 190 (642 bytes). Compile-only: clamp ternary spellings
+// and dot/product term orders are canonicalised (no change).
+// Round 133 (one-file LTCG harness, exact here: 137): no index local, class index passed raw 179 (670 bytes:
+// retail's `movsx eax, cx` and raw `push ecx`, but the table load folds into the add); the raw index for the
+// call only 179; the hold sum through `decibels_interpolate(0, gain, 1.0f)` 184 (704 bytes), through the
+// existing decibels_add on the gain's bits 163 (686 bytes; retail's long copy of the ducking gain appears);
+// the first branch with divisions 207 (636 bytes), plus a fade_out local 207; a fade_out local with the
+// inverse 141 (670 bytes); the time sum product-first 137 (identical). Left: the else branch and the first
+// branch are retail's code with XMM2/XMM3 (and the 1.0 constant's register) swapped.
+// Round 40 (one-file LTCG harness, exact: 137): the ambience test inverted with the branches swapped 137 (elapsed
+// stays XMM2, retail XMM3); a fade_out local for the tests and the product 141 (670 bytes); the time sum product-first
+// 137, `inverse * (elapsed - hold) * fade_out` 137 (same code); `(elapsed - hold) * (inverse * fade_out)` 172; the
+// reciprocal computed before the fade-out tests 187 (656 bytes).
+// N round 257: Native real/aggregate ducking gains and endpoints, real/aggregate returns, expression/accumulator 322/322/322/322/198/198/198/198.
+// Original value types, helper and complete body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
 	long index = class_index;
 	s_sound_class_fade *fade = &g_502118[index];
-	long gain = fade->current;
+	s_decibels_view gain = fade->current;
 
 	if ((byte)~fade->flags & 1)
 	{
@@ -1296,20 +1337,20 @@ long function_127010(short class_index)
 						real time = sound_system->ambience_fade - elapsed + (elapsed - ducking->hold_time) * inverse * ducking->fade_out_time;
 						real t = 1.0f > time * inverse ? time / ducking->fade_in_time : 1.0f;
 
-						return decibels_add(gain, decibels_interpolate(0, ducking->gain, t));
+						gain.value = gain.value + decibels_interpolate(0, ducking->gain, t);
 					}
 					else
 					{
 						real time = (sound_system->ambience_fade - elapsed) / ducking->fade_in_time;
 						real t = 1.0f > time ? time : 1.0f;
 
-						return decibels_add(decibels_interpolate(0, ducking->gain, t), gain);
+						gain.value = decibels_interpolate(0, ducking->gain, t) + gain.value;
 					}
 				}
 			}
 			else
 			{
-				return decibels_add(ducking->gain, gain);
+				gain.value = *(real const *)&ducking->gain + gain.value;
 			}
 		}
 		else
@@ -1323,7 +1364,7 @@ long function_127010(short class_index)
 					real time = sound_system->previous_ambience_fade - ducking->hold_time / ducking->fade_out_time;
 					real t = 0.0f > time ? 0.0f : (time > 1.0f ? 1.0f : time);
 
-					gain = decibels_add(decibels_interpolate(ducking->gain, 0, t), gain);
+					gain.value = decibels_interpolate(ducking->gain, 0, t) + gain.value;
 				}
 			}
 			if (sound_system->ambience_index != NONE)
@@ -1335,12 +1376,12 @@ long function_127010(short class_index)
 					real time = sound_system->ambience_fade / ducking->fade_in_time;
 					real t = 1.0f > time ? time : 1.0f;
 
-					return decibels_add(decibels_interpolate(0, ducking->gain, t), gain);
+					gain.value = decibels_interpolate(0, ducking->gain, t) + gain.value;
 				}
 			}
 		}
 	}
-	return gain;
+	return *(long *)&gain;
 }
 
 /* decibels_add on the values in place: retail reads both operands where they are */
@@ -1369,6 +1410,11 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // swapped 16. Screened (compile-only), all folding the converted gain: by-value outer sum, the
 // add in place on it, real locals read before or after the class gain call, by-value real or
 // reference helper parameters, and (one diagnostic) `/Op`.
+// Round 121 (plain/fast): the outer sum in an s_decibels_view result 15; the result seeded from the converted
+// gain before the class gain call, then `+=` the inner sum 16; decibels_sum(inner, converted) 15; the converted
+// gain copied into an s_decibels_view and added in place 16; the add in place on the converted gain's long 16.
+// One-file LTCG probe (exact here): a struct-returning converter, by-value struct operands and a float-
+// consistency pragma (diagnostic) all keep the fold or move the conversions below the class gain call.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -1504,6 +1550,9 @@ void looping_sound_controller_release(long index);
 // pool release in both arms 33; controller test outside the unknown03 test 40; byte cast before the
 // mask 5. Without the depth pragma the release inlines (122); with either test removed the pool
 // still takes EBP, so the byte store's register is what moves it.
+// Round 33 (lane 13; LTCG harness, base 5 = 5; the decrement already uses DL as in retail): the whole
+// decrement cast to byte 5; an early-return form for no effect 33; the controller pool global typed as a
+// record pool (no cast) 5; a `(word)` controller index 31; `(count + 0xff) & 0x7f` 5.
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -1978,69 +2027,50 @@ short sound_voice_acquire(long sound_index, long *reason)
 }
 
 bool function_12be90(void);
-static inline void approach_126660(real *value, real delta, real lower, real upper);
 
 /* advances the sound system's clock and the ambience fades, and fades the
    master gain out while the game asks for it (after its delay) and back in
    once nothing is busy */
-// score 30 (was 30): retail reloads elapsed_time after function_12be90 (ours keeps it in xmm0;
-// BLOCKED-BY 0x12be90, whose file another lane holds), so the fade-in clamp and every jump
-// after it differ; the fade-out clamp's two subtractions sit in swapped registers. Tried:
-// elapsed_time stored before seconds 28 (top then exact); the products' * and / swapped 30;
-// fade-out through PIN_126660 74, as PIN_126660 + fade 68, fade + PIN_126660 68, via SOUND_SYSTEM
-// 68; a change local before the step 77; fade-in without the elapsed local 44. Every value-first
-// fade-out merges retail's two return tails.
-// conversion and clamp registers, elapsed reload differ; shared quotient 30;
-// shared elapsed 79; both time values 79; shared change 74; quotient/change 74; shared lower bound
-// 74; quotient/lower bound 74; all clamp values 74.
-// Round 32 (fast): elapsed_time stored first 28 (conversion copy then retail's); with it: the fade-out
-// through approach_126660 72; `fade = fade + PIN(...)` 28; value-first clamp (value < lower) 68 (retail's
-// copy/zero registers, but the two return tails merge and the add reloads the fade into XMM1); the same
-// with lower-first branch arms 72, written result + fade 68, named clamp result 68; a fade local read
-// once 65 (tails kept, fade held in XMM3); fade local for the clamp only 71. The whole function alone
-// in a /GL- file 111 (retail keeps EDX across 0x12be90, so its register use is known there).
 // @retail 0x1269f0
 void sound_system_update_time(void)
 {
 	dword now = GetTickCount();
-	s_sound_system_view *sound_system = SOUND_SYSTEM;
-	long elapsed = now - sound_system->field_14_2;
+	long elapsed = now - SOUND_SYSTEM->field_14_2;
 
-	sound_system->field_14_2 = now;
+	SOUND_SYSTEM->field_14_2 = now;
+	SOUND_SYSTEM->elapsed_time = (real)elapsed / 1000.0f;
 	real seconds = (real)elapsed * 0.001f;
-	sound_system->time += elapsed;
-	sound_system->ambience_fade += seconds;
-	sound_system->elapsed_time = (real)elapsed / 1000.0f;
-	sound_system->previous_ambience_fade += seconds;
+	SOUND_SYSTEM->time += elapsed;
+	SOUND_SYSTEM->ambience_fade += seconds;
+	SOUND_SYSTEM->previous_ambience_fade += seconds;
 	if (g_4e6948 && g_4e6948->flag1120 && g_4e6948->state == 1)
 	{
 		if (g_4e6948->flag1121)
 		{
-			if (sound_system->master_fade_delay == NONE)
-				sound_system->master_fade_delay = (long)(sound_system->master_fade_times.i * 1000.0f);
-			if (sound_system->master_fade_delay > 0)
+			if (SOUND_SYSTEM->master_fade_delay == NONE)
+				SOUND_SYSTEM->master_fade_delay = (long)(SOUND_SYSTEM->master_fade_times.i * 1000.0f);
+			if (SOUND_SYSTEM->master_fade_delay > 0)
 			{
-				sound_system->master_fade_delay = sound_system->master_fade_delay - elapsed > 0 ? sound_system->master_fade_delay - elapsed : 0;
+				SOUND_SYSTEM->master_fade_delay = SOUND_SYSTEM->master_fade_delay - elapsed > 0 ? SOUND_SYSTEM->master_fade_delay - elapsed : 0;
 			}
-			if (sound_system->master_fade_delay == 0)
+			if (SOUND_SYSTEM->master_fade_delay == 0)
 			{
-				real step = sound_system->elapsed_time / (0.001f > sound_system->master_fade_times.j ? 0.001f : sound_system->master_fade_times.j);
+				real step = SOUND_SYSTEM->elapsed_time / (0.001f > SOUND_SYSTEM->master_fade_times.j ? 0.001f : SOUND_SYSTEM->master_fade_times.j);
 
-				sound_system->master_fade += PIN(0.0f - sound_system->master_fade, 0.0f - step, step);
+				approach_126660(&SOUND_SYSTEM->master_fade, 0.0f - SOUND_SYSTEM->master_fade, step);
 			}
 		}
 		else if (!function_12be90())
 		{
-			real fade_seconds = sound_system->elapsed_time;
-			real step = fade_seconds / (0.001f > sound_system->master_fade_times.k ? 0.001f : sound_system->master_fade_times.k);
+			real step = SOUND_SYSTEM->elapsed_time / (0.001f > SOUND_SYSTEM->master_fade_times.k ? 0.001f : SOUND_SYSTEM->master_fade_times.k);
 
-			approach_126660(&sound_system->master_fade, 1.0f - sound_system->master_fade, 0.0f - step, step);
-			sound_system->master_fade_delay = NONE;
+			approach_126660(&SOUND_SYSTEM->master_fade, 1.0f - SOUND_SYSTEM->master_fade, step);
+			SOUND_SYSTEM->master_fade_delay = NONE;
 		}
 	}
 	else
 	{
-		sound_system->master_fade = 1.0f;
+		SOUND_SYSTEM->master_fade = 1.0f;
 	}
 }
 
@@ -2103,19 +2133,12 @@ void sound_update_locations(void)
 	}
 }
 
-/* clamps value to [lower, upper], testing the lower bound first */
-#define PIN_126660(value, lower, upper) ((value) < (lower) ? (lower) : (value) > (upper) ? (upper) : (value))
-
-/* adds delta to value, kept within [lower, upper] */
-static inline void approach_126660(real *value, real delta, real lower, real upper)
-{
-	*value += PIN_126660(delta, lower, upper);
-}
-
 /* moves the sound system's two environments toward the two requested:
    each request takes the slot already holding it or a faded-out one and
    fades it in over its transition time; slots no request takes fade out */
-// score 17 (was 17): retail adds the clamped unknown18 step through a copy
+// score 13 (was 14): retail adds the clamped unknown14 step in place and the fade-in step through a
+// copy register; ours does the opposite, so the two sites trade xmm1 and xmm2.
+// At 14 (was 17): retail adds the clamped unknown18 step through a copy
 // register and adds the clamped unknown14 step in place; ours does the
 // opposite, so the two sites trade xmm1 and xmm2.
 // Round 29: target-first helper on the first three/four clamps 33/33; forceinline 33;
@@ -2128,6 +2151,24 @@ static inline void approach_126660(real *value, real delta, real lower, real upp
 // `0 - step` bound 140/119, with a named `0 - maximum` 152; a target-taking helper (delta inside)
 // at the third 126/87, also on the first two 134; all 27 helper/`+=`/target combinations of the
 // third, fourth and fade 34-136.
+// Round 33 (lane 13; LTCG harness, base 17 = 17): the add forms follow the whole function's IL, not the
+// line: the first loop's step without its transition-time local 75 (third add now a copy as retail,
+// fourth still a copy, 188 instructions), the same in the fade-out loop alone 75 or both 75; on it the
+// fourth through the helper 94, as `PIN + x` / `x + PIN` 75/75, the third as `+=` 29, the fade through
+// the helper 94, third and fourth swapped 16. Fade test inverted (`fade > 0.001f` first) 138; the
+// environment pointer declared first 106; a const environment pointer 17; `used` initialised in its
+// declaration 17; the slot declared at function scope 75; the fade-out loop as a for 112-117. All 255
+// combinations of helper or `+=` on each of the six adds with or without each loop's transition-time
+// local: best 14 (first loop's step without the local, third as `+=`, fourth through the helper: third
+// in place, fourth a copy); retail's third/fourth forms appear only with the first two adds or the
+// fade-out add flipped and the 1.0 no longer hoisted (122).
+// Round 34 (lane 13, real check): kept the round-33 screen's best: the first loop's step without its
+// transition-time local, the unknown18 add as `+=` and the unknown14 add through the helper, 17 -> 14
+// (left: the unknown18 add is in place and the unknown14 add goes through a copy, retail the reverse).
+// Lane 18 round 14: approach_126660 takes (value, delta, maximum) and forms the lower bound after the
+// delta (every caller passed `0 - x, x`; 0x1269f0 matched with it). With the round-34 mix 29; all 64
+// helper/`+=` choices for the six adds screened (LTCG probe): all six through the helper 13 (kept, plain),
+// helper except the second loop's fade 13, unknown10/fade-in/fade-out as `+=` 14; none of the other 60 below 14.
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
@@ -2158,8 +2199,8 @@ void sound_environments_update(s_sound_environment const *requests)
 			}
 			if (slot != NONE)
 			{
-				real transition_time = request->transition_time > 0.001f ? request->transition_time : 0.001f;
-				real step = SOUND_SYSTEM->elapsed_time / transition_time;
+				real step = SOUND_SYSTEM->elapsed_time /
+					(request->transition_time > 0.001f ? request->transition_time : 0.001f);
 				s_sound_environment *environment = &SOUND_SYSTEM->environments[slot];
 
 				if (0.001f >= environment->fade)
@@ -2171,12 +2212,12 @@ void sound_environments_update(s_sound_environment const *requests)
 				{
 					real maximum = step * k_pi;
 
-					approach_126660(&environment->unknown0c, request->unknown0c - environment->unknown0c, 0.0f - maximum, maximum);
-					approach_126660(&environment->unknown10, request->unknown10 - environment->unknown10, 0.0f - maximum, maximum);
+					approach_126660(&environment->unknown0c, request->unknown0c - environment->unknown0c, maximum);
+					approach_126660(&environment->unknown10, request->unknown10 - environment->unknown10, maximum);
 				}
-				approach_126660(&environment->unknown18, request->unknown18 - environment->unknown18, 0.0f - step, step);
-				environment->unknown14 += PIN_126660(request->unknown14 - environment->unknown14, 0.0f - step, step);
-				environment->fade += PIN_126660(1.0f - environment->fade, 0.0f - step, step);
+				approach_126660(&environment->unknown18, request->unknown18 - environment->unknown18, step);
+				approach_126660(&environment->unknown14, request->unknown14 - environment->unknown14, step);
+				approach_126660(&environment->fade, 1.0f - environment->fade, step);
 				environment->transition_time = request->transition_time;
 				environment->index = request->index;
 				used[slot >> 5] |= 1 << (slot & 31);
@@ -2194,7 +2235,7 @@ void sound_environments_update(s_sound_environment const *requests)
 			real transition_time = environment->transition_time > 0.001f ? environment->transition_time : 0.001f;
 			real step = sound_system->elapsed_time / transition_time;
 
-			environment->fade += PIN_126660(0.0f - environment->fade, 0.0f - step, step);
+			approach_126660(&environment->fade, 0.0f - environment->fade, step);
 		}
 	} while (++i < 2);
 }
@@ -2334,6 +2375,11 @@ real g_547f14;
 // combined `||` condition with a loudness local 42. Screened (compile-only, which reproduces our
 // tail exactly): the gain or the base summed in place, decibels_add into the gain, a flags word
 // local.
+// Round 121 (plain): loudness through the existing decibels_sum/decibels_add on the class gain base 63
+// (428 bytes) / decibels_add for both sums 54; the inner sum as a decibels_add long, loudness a real sum 63
+// (428 bytes); a by-value real sum helper 35; a pointer to the class gain base 35. Compile-only: every form
+// that sums before the flag tests folds the base load; only a float-consistency pragma (diagnostic, not kept;
+// it worsens 0x1251e0's x87 interpolation in the LTCG probe) gives retail's unfolded add before the tests.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {
@@ -2389,7 +2435,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
-// score 23 (was 23): the two set-chunk calls narrow their indices to char
+// score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
+// 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
+// delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
 // (byte loads, a sign-extended range index) where retail passes words, and
 // the delayed start sets flag0 before storing the start time. BLOCKED-BY
 // 0x1286b0 (its two index parameters are short in retail: 0x128ca0 widens
@@ -2401,6 +2449,12 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // order, `delay + time`, `+=` all hoist it); the pitch range local short 59; the named short
 // with the flags pointer 17 (left: the byte variant loads and the 0x219070 movsx); one time
 // local for both start-time stores 83 (825 bytes, the tails merge).
+// Round 121: 0x1286b0's two index parameters made short (retail's callers 0x128ca0 and
+// 0x21c400 sign-extend char fields to 16 bits for them), every call updated: 23 -> 17 (kept).
+// Then (plain-equivalent `--fast` with the set-chunk callers): the 0x219070 result in a named
+// short 15 (BLOCKED-BY 0x219070: only its movsx and the flag0 order are left); that with a short
+// range-index local 53; a short range-index local alone 53; the flags pointer (diagnostic) 13;
+// a short chunk index 17; literal zero chunk index and fade times 17, as one chained store 19.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -2464,7 +2518,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 			chunk_index = 0;
 			if (state->flags & 0x400)
 			{
-				sound_playback_set_chunk(result, tag_index, (char)state->variant0, (char)state->variant1, (short)chunk_index);
+				sound_playback_set_chunk(result, tag_index, state->variant0, state->variant1, (short)chunk_index);
 			}
 			else
 			{
@@ -2481,7 +2535,7 @@ long function_126000(long tag_index, long listener_index, s_sound_play_state *st
 
 					arg_58ecd0 = function_218f50((s_looping_playback_definition *)definition, NONE, ((real)pitch_bounds[1] - lower) * state->location.scale + sound->pitch + lower);
 				}
-				sound_playback_set_chunk(result, tag_index, (char)arg_58ecd0, (char)function_219070(arg_58ecd0, definition), (short)chunk_index);
+				sound_playback_set_chunk(result, tag_index, (short)arg_58ecd0, function_219070(arg_58ecd0, definition), (short)chunk_index);
 			}
 			sound->value_a0 = (char)rate_limit_stage;
 			sound->fade_end_time = chunk_index;
@@ -2762,6 +2816,27 @@ static inline short sound_voice_find_available_channel(char type)
 // Round 235: chained driver/buffer defaults inside/before test/before search 91/147/171;
 // with canonical success assignment 129/130/144; complemented status before test/inside
 // 122/127. The 91 form is below the minimum gain; original byte-result body restored.
+// Round 94: search helper taking `long type` (retail's direct movsx of the type byte) 128; success flag
+// declared after/before the search with `if (!success)` failure block and early `return true` 138/143;
+// result false after the search, true on success, `if (!result)` failure 132; bool result with the search
+// index re-tested after a break loop 104 (retail's found-path-after-loop layout: VC places a loop's break
+// target after the function's other blocks). Original byte-result body restored.
+// Lane 16 r50 (fast): bool result with an `assigned` flag tested before the failure calls 123 (flag in a
+// stack byte); the defaults before `if (channel != NONE) { buffer selection }` and then a failure-first
+// `if (channel == NONE || (buffer_index == NONE && (priority & 2 || requested != NONE))) { failure } else
+// { commit }`: byte result 151, bool result 126 (435 B: retail's block order and `xor bl, bl ... mov al, bl`
+// failure, but NONE hoisted into EBP at entry and the not-found exit unthreaded), with `return true` after
+// the commit 123; the defaults assigned inside the channel block 113 (threaded, failure back after the
+// loop), with `return true` 139; only the driver default before the channel test 107 (430 B, retail's
+// layout, `or ebp, -1` shared with the channel compare, but the not-found exit unthreaded and the channel
+// spilled); that with the driver default before the search 135; the search returning from its loop on
+// those 141/113; the kept form with the driver default before the channel test 132; the failure calls
+// written in both the not-found else and the buffer arm 168/168 (455 B, not cross-jumped). Retail threads
+// the not-found exit past a block that sets the driver default, which no form here reproduces.
+// A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
+// Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
+// scores 113/113/113/109/139/139/139/133.
+// Original executable source restored; no qualifying gain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3125,10 +3200,14 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 86 (was 86): retail holds the playback base in ecx, builds the pointer with `lea esi,[eax+ecx]` and folds
-// the sound-system time into the compare; ours hoists the time into edx and holds the base in edi. The mode switch
-// still needs a second non-empty case.
-// score 86 (was 86): Frame 8 agrees; playback base, clock scheduling and promoted mode remain.
+// score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
+// compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
+// sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
+// ternary. Earlier (86): retail holds the playback base in ecx, builds the pointer with `lea esi,[eax+ecx]` and
+// folds the sound-system time into the compare; ours hoists the time into edx and holds the base in edi. The
+// mode switch still needs a second non-empty case.
+// Frame 8 agrees; playback base, clock scheduling and promoted mode remain.
 // Retained clock receiver 163; voice record reference 86; combined receivers 163; role names 86;
 // native update/mode/both flag words 86/86/86; receiver plus native flags 163.
 // playback base/clock scheduling and promoted mode remain; acquisition/free/load
@@ -3156,6 +3235,51 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // readonly class with short/long plus callback 105/171. All restored.
 // Round 164: pool global at each use 86 (identical); for loop with `case 1: continue;` 153/167 (gives
 // retail's `movsx eax, ax; sub eax, 0; jne` but swaps the pool/index EBP/EBX); for loop alone 86.
+// Round 209: Initial/successor pool epochs, immutable playback/voice pointers and readonly sound
+// tag 86/86/86; conditional native sound-tag value 204; pool/value and receiver/value 204/204;
+// pool/readonly 86; all 204. Native tag capture expands frame eight to 24 and length 558 to 588;
+// original clock, iterator, mode and call inputs restored.
+// Round 133 (one-file LTCG harness, exact: 86): matched 0x128020's loop-top `sounds = g_4e637c;` with its
+// `(s_sound_playback *)sounds->data + index` pointer 86, the pointer form alone 104; the time in a local 86;
+// `!(start > time)` 86; the getter-read test with the pointer inside it 49 (kept); on it, the pool global at each
+// use 49; a for loop 49, with `case 1: continue;` 78 (retail's `sub eax, 0` switch, but pool/index swap
+// EBP/EBX), `case 1: goto next;` in the do-while 78, case 1 first 78, case 0 ending in continue 78, long mode 89,
+// the switch on the ternary 89, an if/else mode 78, `default: continue;` 49 (dropped); empty case 1 with or
+// without `default: __assume(0)`, case 1 first, cases 1 and 2: 49 (empty cases are dropped).
+// Round 18 (m3 lane 2, one-file LTCG harness, exact 49): on the for loop with `case 1: continue;` (78, retail's
+// `sub eax, 0` with the index in EBP and the pool/voice/range pointers in EBX): range index operands swapped 78;
+// range as pointer arithmetic 78; `NONE == (short)...` 78; mode as if/else 78, inverted ternary 84; `(short)`
+// permutation argument 78; `NONE ==`/`NONE !=` tests 78/78; a do-while whose condition advances (continue goes
+// to the advance) 78, with the pool global 78; pool local in the for init 78; the sibling 0x128020's loop-top pool
+// read 78, its sound pointer at the loop top 167; bool-returning 0x125e60 78. One-target forms (`default:
+// continue;`, `case 0` ending in continue, `case 1: continue; default: continue;`) 49 (`test ax, ax`).
+// Round 40 (one-file LTCG harness, exact: 49; the for/continue and two-label forms confirmed with --fast): a for
+// loop with `case 1: continue;` 78 (retail's `sub eax, 0` and pool reload after the next-index ternary; only the
+// sound index and the pool/voice/range pointers swap EBX/EBP); on it, the range pointer written at both calls 31
+// (registers right, address computed after the class-flag call), computed before the mode 24, the class-flag test
+// without `(bool)` 72 and flag4 without TEST_FIELD_BIT 98 (registers right, the tests fold to `test byte`), both 97;
+// `case 1: case 2: continue;` 17, cases 1, 2 and 3 17, `case 3: continue;` 17 (registers right, `test eax, eax`
+// for `sub eax, 0`), `case 2: continue;` 78, `case 1:` then `case 2:` each continuing 113; case 1 as an empty inline
+// or out-of-line call 78/78; default placed first or last 78; mode as if/else 78, switch on the ternary 89;
+// early-continue start test 78, plus the value_ac test 78; reason, voice index, voice, definition or range declared
+// at the top 78 each; voice arms swapped 108; the existing for-form find helper 49 (same code), with the for loop 78;
+// the 0x218ac0 pitch-range getter 49/78; definition by table read 78; a while loop with goto 214 (592 bytes).
+// Without the switch, dropping either `(bool)` swaps the registers too (120/136). 0x125e60 returning bool (callers
+// without `(byte)`) 78 with the for form (0x125e60 itself unchanged).
+// Round 9 (m3 lane 18, fast): 0x128020's loop-top `sounds = g_4e637c;` added to this body 49 (identical, the
+// load is CSE'd); a plain while loop with that loop-top reload 268 (636 bytes, not rotated); a for loop reading
+// the pool global in the init and increment with `case 1: continue;` 78 (retail's `sub eax, 0` and the pool
+// reload after the next-index ternary; only the index/pool EBX/EBP swap and the prologue load before `push
+// ebp`), with the entry pool through the named `sounds` local 78; `case 1: continue;` skipping a bottom
+// `sounds = g_4e637c;` 183 (572 bytes).
+// Round 102 (m3 lane 8; one-link LTCG harness, exact for 49 and 78): a dead store in a `case 1:` of the do-while gives
+// exactly the for/`case 1: continue;` code (78), so the EBX/EBP swap comes from the two-case compare chain itself, not
+// the continue edge. A 192-form grid of the for/continue loop (pool local or global in the init, both next-index
+// ternary orders, case 1 before/after case 0 or with `default: break;`, mode as ternary or if/else, both range index
+// orders, `&g_4e6378[i]` or `g_4e6378 + i`, start test through the macro or a loop-top pointer) never moves the swap
+// (78 or 164). Fast: for/continue 78; with the update test inverted (pending arm first) 132; `case 1: case 2:
+// continue;` 17; 0x128020's while + `skip_to_next:` with `case 1: goto skip_to_next;` 214 (592 bytes); index and mode
+// declared at function scope 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3165,9 +3289,9 @@ void function_1282d0(void)
 	{
 		do
 		{
-			s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
-			if (sound->start_time <= SOUND_SYSTEM->time)
+			if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
 			{
+				s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
 				if ((byte)function_125e60((s_looping_track_sound *)sound))
 				{
 					long reason;
@@ -3543,6 +3667,9 @@ struct s_128ca0
 // Round 235: native real incoming gain with direct/inner-part/location-value/both forms
 // 306/306/306/306; each with shared scale 295. Frame 0x494 recovered, gain and clamp
 // loads still differ; original signature, caller argument and executable body restored.
+// Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
+// scores 215/255/215/255/286/255/286/255.
+// Original executable source restored; no qualifying gain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -3923,30 +4050,30 @@ void function_21b0e0(bool arg_0);
 long players_first_active_local_player(void);
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1);
 
-// score 55 (was 55): statement clears give retail's 0x40-first, copy-free clears but force MSVC's 8-byte frame
-// realignment; the argument form keeps retail's frame but clears the 0x80 array first, with copies of memset's results.
-// Earlier: plain 0x1744 frame now; the clears run channels-first with `mov edx, edi` copies of
-// memset's results (retail buffers-first, no copies), short restart cursor and loop padding remain.
-// Promoted voice limit 108; entry system
-// 108; direct elapsed 108; pending byte 108; frame input 108; short player cursor 122; short
-// next-player result 115; both player values 122; const element arrays 108; `= {}` arrays 121;
-// `!= 0` flag argument 128; flag argument through local_0 108; long restart cursor 134 (gives
-// retail's movsx/inc/cmp loop; only the loop padding jump moves with the longer prologue).
-// Fixed stack allocation of first/second/both buffers 131/145/149; batch 139; batch with first/second/both
-// 162/162/164; all with long restart 161.
-// Entry allocation first/second/both/all 174/176/174/164; all with long restart 163. All restored.
-// Actual first/second/both memset-return receivers, used by collection and submission, 143/129/125;
-// declarations at entry 143/129/125; both with long restart, normal/entry declarations, 108/108. Original
-// body restored.
-// Round 161: any memset of a local of 128 bytes or more realigns the frame unless EBP is wanted as a
-// general register (every other retail function clearing a large local without realigning uses EBP) or
-// memset's result is used. Existing next-player helper 107; player for loop 107; results as two one-use
-// locals 55; with long restart 75; results as the call's arguments with long/short restart 76/55 (kept).
-// Round 164: word restart cursor 114; statement clears realign in every form tried (compile-only:
-// split statement/argument clears, callee-owned arrays, short/char clear loops, pointer-local targets,
-// no system local, arrays at entry, player for loop).
-// Round 235: persistent buffer/channel clear return with the other clear still a call argument
-// 104/72; with long restart 60/86; entry declarations repeat 104/72/60/86. Original body restored.
+/* the per-voice and per-channel value pointers of one spatialization pass, cleared before use
+   (a plain memset of a local this large makes VC realign the frame with `and esp, -8`; retail's
+   clears don't, and a clearing member function is the only form found that avoids it; a clearing
+   constructor does too but changes 0x1c4590's registers through link-time code generation) */
+struct s_voice_value_table
+{
+	vector3f *values[0x40];
+
+	void clear()
+	{
+		memset(values, 0, sizeof(values));
+	}
+};
+
+struct s_channel_value_table
+{
+	vector3f *values[0x80];
+
+	void clear()
+	{
+		memset(values, 0, sizeof(values));
+	}
+};
+
 // @retail 0x125b40
 void function_125b40(void)
 {
@@ -3961,7 +4088,7 @@ void function_125b40(void)
 			{
 				local_0->changing_pause = true;
 				local_0->unknown7b = false;
-				for (short local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
+				for (long local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
 					sound_voice_restart_stream((short)local_1);
 				looping_sound_controllers_synchronize(true);
 				function_21f5a0();
@@ -3983,18 +4110,20 @@ void function_125b40(void)
 			sound_voices_update_chunks();
 			function_128020();
 			function_1282d0();
-			vector3f *local_3[0x40];
-			vector3f *local_4[0x80];
 			s_voice_position_batch local_5;
 			local_5.count = 0;
-			function_129100(&local_5, (vector3f **)memset(local_3, 0, sizeof(local_3)), (vector3f **)memset(local_4, 0, sizeof(local_4)));
+			s_voice_value_table local_3;
+			s_channel_value_table local_4;
+			local_3.clear();
+			local_4.clear();
+			function_129100(&local_5, local_3.values, local_4.values);
 			long local_6 = players_first_active_local_player();
 			while (local_6 != NONE)
 			{
 				function_221a70(local_6, &local_5);
 				local_6 = local_player_next_inline(local_6);
 			}
-			function_129380((vector3f const *const *)local_3, (vector3f const *const *)local_4);
+			function_129380(local_3.values, local_4.values);
 			function_1293f0();
 			if (SOUND_SYSTEM->unknown7e[0])
 				SOUND_SYSTEM->unknown7e[1]++;

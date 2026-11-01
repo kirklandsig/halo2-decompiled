@@ -81,7 +81,8 @@ struct s_direction_rotation_input
 
 PRIVATE __forceinline void rotate_direction(vector3f *vector, const vector3f *axis, real sine, real cosine)
 {
-	real projected = dot3f(vector, axis) * (1.0f - cosine);
+	real dot = dot3f(vector, axis);
+	real projected = dot * (1.0f - cosine);
 	real cross_i = vector->j * axis->k - vector->k * axis->j;
 	real cross_j = vector->k * axis->i - vector->i * axis->k;
 	real cross_k = vector->i * axis->j - vector->j * axis->i;
@@ -90,36 +91,6 @@ PRIVATE __forceinline void rotate_direction(vector3f *vector, const vector3f *ax
 	vector->k = vector->k * cosine + projected * axis->k - cross_k * sine;
 }
 
-// score 2 (was 120): only the first dot product's i term differs (ours loads direction.i, retail
-// up.i). Round 125: the rotation as 0x2551c0's matched helper (written-out projection first, three
-// scalar cross terms), the axis through cross3f and the normalize result tested directly took
-// 120 -> 2 (cross3f with the length local 116). On it (one-link harness, exact here): dot3f or the
-// written-out dot with either argument order or term order 2/4; the clamp as if/else, MIN/MAX or one
-// statement 2/27/132; input pointer locals 8-12; early returns 2/89; copy/normalize orders 19/65;
-// the helper's cross statement orders 2-39. Earlier at 120: frame 0x18 agreed; rotation axis
-// products and cosine/projection homes differed.
-// Round 263: aggregate/sequential/setter/partial-sum publication with projection first
-// 209/209/120/149; with cross first 218/218/138/125. All helper and caller source restored.
-// Round 194: complete normalized-axis input/native-library/original-entry storage 184/184/184/184;
-// those four with the shared cross constructor 188/188/188/188. Input copies add 0xc
-// to the frame and do not recover axis loads or cosine reuse; original axis, helper and body restored.
-// Round 256: Staged axis construction original/angle/entry storage with named/direct normalization
-// 141/170/141/170/141/170; native aggregate axis with named/direct normalization 120/160. All
-// restored.
-// Round 35 (0x11d3b0's matched rotate form): k-j-i projection sum plus scalar cross terms 148 (991 bytes,
-// aligned 156 -> 103: the products follow retail, but the frame grows to 0x1c because the cosine gets
-// its own home beside the x87 transfer slot, and the sum still runs i,k,j); scalar cross terms alone
-// 148 (same frame); k-j-i sum alone 149 (1005 bytes); axis by value 177; the rotation written out in
-// the body with named sine/cosine 189; named sine/cosine with the scalar cross terms 189.
-// Coordinator review (r125): the dot product written out by hand in rotate_direction gave 2
-// (fast and full; 0x1ff360 130 at retail's 850 bytes) but copies dot3f's body, so it is not kept
-// without a match; with dot3f kept and the named cross terms 93 (fast; 0x1ff360 134 fast at 854
-// bytes); HEAD's helper with only cross3f in 0x1ecf50 170 (fast). The hand-written dot product
-// is kept only if it reaches a byte match.
-// Round 83: angle-taking helper 120; that boundary with scalar cross/k-j-i projection 148;
-// complement before/after projection on the scalar-cross graph 148/148; vector/axis formal swap
-// there 148; axis component snapshots 120; staged shared cross 120; separate input/output helper
-// with an input copy 313. Original helper and body restored.
 // @retail 0x1ecf50
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input)
 {
@@ -129,7 +100,8 @@ void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input
 		dot = PIN(dot, -1.0f, 1.0f);
 		if (!(fabs(dot - 1.0f) < 0.0001f))
 		{
-			real angle = (real)acos(PIN(dot, -1.0f, 1.0f));
+			real cosine = PIN(dot, -1.0f, 1.0f);
+			real angle = (real)acos(cosine);
 			if (angle != 0.0f)
 			{
 				vector3f axis;
@@ -211,7 +183,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 642 (was 642): Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
+// MiniMax E run 26: score 642 (was 642): retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// score 642 (was 642): frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// Earlier: Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
 // Frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // Frame 0x24 and clock EDI agree; direction/sample homes and scalar schedules remain.
 // Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
@@ -295,6 +269,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Complete supplied-direction native/const/setter/CRT observations 731/731/743/731,
 // frame 0x2c and caller loss in each. Original 0x24 frame, inputs, qualifiers and caller restored;
 // direction/sample residence and coefficient schedules remain.
+// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
+// scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
+// all with the activation workspace declared at entry 642. Original initializers and complete body restored.
+// Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
+// then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
+// inherited counter qualification, body and exact caller restored; direction/sample homes remain.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

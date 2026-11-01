@@ -74,6 +74,8 @@ PRIVATE __forceinline long texture_floor(real value)
 // bias assigned in the arm without its zero default 65; ignored call result named 4; bitmap
 // narrowed to short at the floor 16. Harness: the second floor's asm decides it (an asm copy
 // that clobbers EDX in place of ECX gives EAX here).
+// Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
+// clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -851,7 +853,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 604 (was 627): Frame 0x18/0x2c, input/selection homes, override layout and fraction retention differ.
+// score 589 (was 589): Frame 0x18/0x2c, input/selection homes, override layout and fraction retention differ.
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
 // The one-point nearest gains are ineligible; original scalar producers and arithmetic restored.
@@ -863,6 +865,15 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // actual pointer-end traversal alone/both 696/629/798; nearest ordinal/opposite pointer
 // 604 (kept, plain; 2138/2122 bytes), inverse 618. Frame shrinks to 0x18; the position
 // input arrives in EAX rather than EDX; search/fraction homes remain.
+// Round 450: one sample-table observation on cursor/end traversal 594; complete query
+// value 729; both 727; live count 604, with table/query/both 594/729/727; entry delta 604.
+// Singleton/multi-record shared table scope 589 (kept, plain; 2127/2122 bytes).
+// Round 248: pointer-end scans with direct ordinals, pointer/ordinal exclusions and shared
+// table ends 736/723/713/737/679/693/735/850; all original traversals restored.
+// Round 261: Coherent interpolation inline declaration, alone/with fraction-provider inline, each with
+// original/unsigned selected ordinals/zero-default fraction/both result forms: 608 each (2145/2122
+// bytes). All declarations and original body restored; count/selection/fraction homes and frame
+// remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -877,14 +888,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
             memcpy(blue, g_4b8988, sizeof(g_4b8988));
             return;
         }
+        s_light_sample const *samples = source->entries;
         if (count == 1)
         {
-            copy_light_sample(source->entries, order, red, green, blue, direction);
+            copy_light_sample(samples, order, red, green, blue, direction);
             return;
         }
         long nearest = 0;
         real closest_distance = 1048576.0f;
-        s_light_sample const *nearest_sample = source->entries;
+        s_light_sample const *nearest_sample = samples;
         for (long i = 0; i < count; ++i)
         {
             real x = position->x - nearest_sample->position.x;
@@ -898,15 +910,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
             }
             ++nearest_sample;
         }
-        s_light_sample const *first = source->entries + nearest;
+        s_light_sample const *first = samples + nearest;
         vector3f delta;
         delta.i = position->x - first->position.x;
         delta.j = position->y - first->position.y;
         delta.k = position->z - first->position.z;
         long opposite = NONE;
         real other_distance = 1048576.0f;
-        for (s_light_sample const *opposite_sample = source->entries;
-             opposite_sample < source->entries + count; ++opposite_sample)
+        for (s_light_sample const *opposite_sample = samples;
+             opposite_sample < samples + count; ++opposite_sample)
         {
             if (opposite_sample != first)
             {
@@ -920,18 +932,18 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
                     if (distance < other_distance)
                     {
                         other_distance = distance;
-                        opposite = opposite_sample - source->entries;
+                        opposite = opposite_sample - samples;
                     }
                 }
             }
         }
         real fraction = opposite != NONE
-            ? function_022c30(&first->position, position, &source->entries[opposite].position) : 0.0f;
+            ? function_022c30(&first->position, position, &samples[opposite].position) : 0.0f;
         if (fraction <= 0.0f || opposite == NONE)
             copy_light_sample(first, order, red, green, blue, direction);
         else
         {
-            s_light_sample const *second = source->entries + opposite;
+            s_light_sample const *second = samples + opposite;
             if (fraction >= 1.0f)
                 copy_light_sample(second, order, red, green, blue, direction);
             else
@@ -1281,6 +1293,53 @@ bool function_0bfe60(dword const *flags, long bit);
 // before the loop 52; the push pointer read as `*(dword volatile **)device` 52; the test index written
 // at both calls 142 (as lane 13); status declared before the test index 53; `slot->b == player` 52;
 // `player == g_5234c4` 53.
+// Round 108 (lane 6), on round 7's 38 form (the row passed straight to 0xbfe60, named at the store;
+// only the colours left: counter/total EDI where retail has EBP, test index and player EBP/EBP
+// where retail has EDI/EBX, the device EDI where retail reuses status's EBX): the loop counter
+// declared before the loop 38; `slot->b == player` 38; the index set to the counter and then
+// overwritten from the list 41; the test index computed before the query branch 49; the push
+// pointer without volatile 42; a count local (`indices ? count : g_51f40c.count`) in place of
+// reassigning the parameter 47. Retail inlines
+// the SDK's begin-visibility-test body here, which our link keeps out of line.
+// Round 31 (lane 10): on the round-7 row form (38) the rest is one register permutation (retail
+// counter/total EBP, player EBX, slot fields and test index EDI, device EBX; ours EDI, EBP, EBX,
+// EDI). The total as short or word 125/125 (the clamp re-extends); the row named at the loop top 85;
+// round-7 form with a short total 135; with the mask tested before the player 135; with the slot
+// tests as a `continue` filter 38. A one-file harness with the D3D objects linked is not exact (60:
+// it cannot reproduce MakeRequestedSpace's register argument).
+// Round 28 (lane 14), `--fast`: round 7's row form rebuilt 38 (aligned 39; the pure permutation: counter/total EDI,
+// test index and player EBP, slot-field temps EBX, device EDI where retail has EBP, EDI, EBX/EDI and EBX); on it:
+// the test index as dword 38, the visibility-result outputs declared at the query block top 38, a const device
+// pointer 38, the test index, status, total, test+status, status+test and all three declared (uninitialized) at
+// function scope 38 each (symbol order does not move the colours), the test index declared after status 39, the
+// total declared at the query block top 155 (437 bytes), the store through a (word) cast 38. On the kept form: a
+// const row pointer 52 (same code). The XDK's D3DDevice_BeginVisibilityTest is a library function (no header
+// inline); no other file writes the 0x817c8 push. The draw result in its own `drawn` local clamped into the total
+// 96 (463 bytes), on the row form 136, with status declared first 136.
+// Round 56 (lane 12): the SDK's begin-test call in the plain full build 158 (still out of line;
+// retail holds the push header only here); the global test as an early-return guard 52; the count
+// reassigned before the set 66; a pointer local to the whole visibility table for count, slots and
+// row 52; the frame counter read at each use 125.
+// Round 185 (lane 3, fast): on round 7's row form (38, only the colours left): `test`/`total` named
+// `test_index`/`drawn` 38; `long const set` 38; the push expansion in a forced-inline helper 38; the
+// three slot tests as nested ifs 38 (all the same code: the counter EDI, test index EBP, device EDI
+// where retail has EBP, EDI, EBX). Round 7's form restored to the baseline body (a mixed read).
+// Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
+// outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
+// tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
+// Round 141 (lane 4): retail holds the begin-test push header only here (the SDK function inlined
+// by its link; the push constant appears once in the whole image). The set computed in the query
+// block 108; status = S_OK at the loop body top 138; the device declared before the status test 52;
+// the segment size read at both MakeRequestedSpace arguments 52; `!indices ? i : indices[i]` 118.
+// Round 106 (lane 7, fast; every other colour follows the counter's: retail EBP, ours EDI): on round
+// 7's row form (rebuilt 38): the device as `dword volatile **` 38; index and slot declared before the
+// loop 38; the row named before the status test after the k store 38; the frame read from the global
+// at each use 129 (the load sinks into the block); the slot fields read through the table (no slot
+// pointer) 148 (472 bytes). Source permuter, 600 s on the kept body (72 tries): nothing below 52.
+// Lane 12 r66 (fast; a /GL- compile-only screen gives the same colours, loop counter EDI in every form):
+// the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
+// 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
+// 66; status and total declared at function scope 52.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
@@ -1379,6 +1438,11 @@ long __stdcall function_3bf20(s_slot *slot, byte *data);
 // Round 88: availability before validity, direct/shared bit test 77/77; blocked polarity
 // and row pointer 68/68; availability before the slot 90; full counter there 90;
 // inline target 6; const slot 6. Early dependencies move the divide and bit work; restored.
+// Round 16: the counter's low dword read through its address at the global block top 6 (still
+// moves to its use); the counter read first with the amount and availability defaults stored
+// before the slot test 84 (it still moves); the counter read first with the slot test inverted 6;
+// the counter read right after the lookup call 6; the global and slot tests joined by `&&` with
+// one else 22 (the slot pointer is then computed before the global test).
 // @retail 0x3c270
 bool __stdcall function_3c270(dword value)
 {

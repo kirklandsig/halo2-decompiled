@@ -304,8 +304,8 @@ s_object_gc_entry_ab g_440570[6] =
     {0, false, 0, 0}
 };
 
-// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 and the prologue pushes
-// EBP where retail pushes EBX.
+// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 (ours spills the level)
+// and the prologue pushes EBP where retail pushes EBX.
 // our loop is rotated (the action test copied to the bottom); retail's stays
 // top-tested, re-reads the state at its top and duplicates the loop setup into each level path.
 // Only nested loops (outer per entry, inner `do ... while (again)`) stay top-tested here: 171, with
@@ -335,6 +335,46 @@ s_object_gc_entry_ab g_440570[6] =
 // Round 315: Early gather commitment with direct terminal state/query-produced critical/reused action
 // ownership masks 0..7: 115/125/138/125/113/134/132/136. Direct-state forms recover the frame but
 // shorten to 374 and regress. Original state, query, callbacks, buffers and loop restored at 110.
+// Round r4 (lane 17): index walk + advance flag with one final clear (break on the query) 176 (333 bytes); with early
+// returns for NONE and the query, global at each use 119 (379, aligned 35: our while is inverted and its first action
+// test peeled at the constant first entry, and the NONE exit falls through where retail branches to it); the same
+// with the exit test inside for (;;) 119 (same code); NONE as an enclosing if with one final clear and the query
+// returning 153 (361); the query in the while condition 176 (333).
+// Round 56 (lane 12, fast): the level from an inline pressure-level helper with early returns 270
+// (251 bytes); level first, `if (level != NONE)` around `while (entry->action)` with a break on the
+// query and one final clear 181 (328 bytes: retail's frame 0x2a04, level in EBP, globals in ESI, but
+// VC inverts the loop, testing the first entry's action at its constant address); that with an
+// `advance = !again` flag 181, with the query in the while condition 181; the index walk with
+// `advance = !again` on this body 131 (400 bytes).
+// Round 186 (fast): `if (level != NONE)` around `while (entry->action && function_bf1c0(...))` with
+// an `advance = !again` flag and one final clear 176 (333 bytes; the frame 0x2a04, prologue, level in
+// EBP, state in ESI and the whole loop body are retail's, but the loop is inverted with its first
+// action test peeled and the three exits share one clear); the query as a break inside 176; both
+// tests in one break 176; this body's loop with the advance flag and an early NONE return 122 (393
+// bytes, the gathered flag spills); the state re-read at the loop end with the clear after the loop
+// through it and the query exit breaking 156 (361 bytes).
+// Round 61: no retail code or data takes the address of g_4de2f4 or g_4de2ec, so the failure exit's
+// reload is the allocator's: the loop-top state lives in ESI, which the 0xbf1c0 call takes for its
+// output argument, and the level keeps EBP; ours keeps the state value in EBP and spills the level
+// (the frame's extra dword). The action-null exit as a break to the final clear 179 (330 bytes); the
+// level computed through g_4de2f4 at each use 110; the query failure clearing and returning in place
+// 110; the level declared before the buffers 110; the action-null exit clearing through g_4de2f4 125.
+// Round 108 (lane 8; a one-file LTCG harness with the build's ballast object gives 110 exactly): with no state
+// local in the loop (the action-null exit clearing through g_4de2f4, or a state local inside that exit block)
+// the prologue is retail's through +0x19 (frame 0x2a04, EBX/EBP/ESI pushes, g_4de2f4 in ESI, the level in EBP,
+// EDI pushed late), but the loop is rotated and the NONE exit sits inline: 125, 374 bytes (real); with `again`
+// uninitialised 124 (real). The level as a short 117 at 393 bytes (real), with `bool next = !again` 117 (real).
+// Harness: no globals local 110; state declared before the loop with the action-null exit breaking to a clear
+// through it 110; a diagnostic passing a global pointer as the query's output (the call may then write anything)
+// still keeps the state in EBP and spills the level (146), so the query's side effects are not the cause.
+// Round 59 (fast): round 44's index walk + `advance = !again` rebuilt 122 (393 bytes: frame 0x2a04, level in EBP,
+// +8 entry pointer and sete as retail; the state stays in EBX across the 0xbf1c0 call, so gathered spills, and the
+// loop is rotated). On it: the query failure clearing and returning in place 122 (same code); `while (action)`
+// with the query in the condition 176 (333 bytes); the loop inside `if (level != NONE)` with the NONE path and the
+// query failure sharing the final clear 149 (371 bytes; the shared clear still uses the EBX state); `again`
+// declared at the action 122; a named eligibility bool 122. Diagnostics: 0xbf1c0 also storing an unrelated global
+// (its convention then changes) still keeps g_4de2f4 across the call; `critical` in one array with `again` (escaping to
+// the action) changes nothing (114). 0xbf1c0 has this single retail caller.
 // @retail 0xbf380
 void function_bf380()
 {
@@ -755,12 +795,19 @@ void __stdcall function_bc300(long object_index)
 	record_pool_release(g_4e0300, object_index);
 }
 
+// score 5 (was 5): this round: with a `long` parameter MSVC widens every 16-bit read of it, so
+// the narrow load needs the parameter type changed, which changes the mangled name and breaks the
+// four other declarations (src/unknown_0b7b40.cpp, src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp,
+// src/unit_object_type.cpp) and still raises 0x118510: BLOCKED-BY 0x118510.
 // score 5 (was 5): the only difference left is the size parameter's load: retail reads it with a
 // 16-bit load (a short parameter), ours with a 32-bit one, which shifts every later byte by one.
 // With `short size` in the definition and in every declaration (src/unknown_0b7b40.cpp,
 // src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp, src/unit_object_type.cpp) the function matches
 // byte for byte, but 0x118510 rises 83 -> 102 (its call site then loads the size into ECX where
 // retail uses EAX): BLOCKED-BY 0x118510.
+// Round 30 (lane C): declaring the third parameter `short` alone makes the reduced image match
+// byte for byte, but the full tree then fails to link (LNK2001: ?function_bc380@@YI_NJJJJ@Z is
+// still referenced by declarations in four other files), so the parameter stays `long`.
 // Forms (score 42 then): a shared absolute index 42; the header reused for the refreshed lookup
 // 68; a function-scope block pointer 42; allocator noinline 42; old size read before allocation
 // 81; size optimization 107; global optimization off 151; shared index, block scope and allocator

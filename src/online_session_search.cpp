@@ -128,18 +128,6 @@ struct s_search_session
 	long value;
 };
 
-long g_4ce394;
-long g_4ce118;
-long g_4ce11c;
-long g_4ce200[10];
-long g_4ce230;
-long g_4ce234;
-long g_4ce238;
-long g_4ce23c[9][9];
-long g_4ce380;
-long g_4ce384;
-double g_4ce388;
-long g_4ce390;
 
 
 
@@ -670,81 +658,6 @@ done:
 	return result;
 }
 
-// score 91 (was 113): the second cursor is now retail's entry+0x10c; what remains is allocation:
-// retail spills kind to the stack at its definition and keeps search in EDI through the scoring
-// block (the maximum and both detail thresholds CSEd), ours keeps kind in EBP and count in EDI.
-// Round 8 (one-file harness, exact here): VC keeps a cursor IV only for a pointer local with enough
-// loads, and rebases it onto the most-loaded offset, or with single loads onto the second load in
-// source order that is not at the pointer's own offset; the score fields read through the entry and
-// the details read through a pointer to the flag-and-values block at +0xa4 (value read first) give
-// entry+0x10c and retail's flag save (113 -> 91; a pointer to +0x74 with kind first 90, to +0x4 90).
-// On that form, all 33 harness differences: kind/value/count declaration order and scope, names,
-// three ternaries, kind compare reversed, distance/bonus/step/range/limit/maximum locals, FLOOR/
-// CEILING or if/else clamp, byte flag, a search copy at the join/block/loop, the middle of the
-// scoring as an inlined helper, ordinary or qos reads through the entry, 60 random combinations.
-// Earlier at 113: the details cursor was entry+0x1f8, so every field
-// offset differed, and the kind/count homes differ. Cursor taken from the results before the
-// a typed details block over the entry's own data leaves the cursor re-based on
-// the score field (entry+0x1f8) instead of retail's entry+0x10c, and the valid load is still not
-// hoisted above the score store; the kind/count homes and the search pointer in EDI still differ.
-// score 113 (was 111): the details cursor is entry+0x1f8 (retail entry+0x10c), so every field
-// offset differs, and the kind/count homes differ. Cursor taken from the results before the
-// end pointer gave retail's results reuse after the compare (128 -> 113). Round 52:
-// single-exit compare 128; typed details block 128; separate details cursor 154, with the typed
-// block 154; then on the kept form: distance local 113; typed details block 113; count/value/kind
-// declared in reverse 113; details flag read through the details pointer 182; score reset after
-// the filter 181. Earlier:
-// Initial results snapshot 183; scalar/cursor role names 128; exact end-pointer test 128;
-// repeated-use computed distance 128; shared maximum bonus 128; persistent details cursor 154.
-// frame 0x10 agrees; initial results observation,
-// details/score cursor base and input/score homes remain. Native score fields
-// 213; complete count-clamp arms 213; named interpolation fraction 213; indexed
-// result loop 214; single total-score accumulator 229.
-// Initial snapshot plus persistent details cursor 190; with invalid-entry continue 199;
-// early details-state observation 196; count/value/kind read order 128;
-// ordinary-field defaults before details 173. Original body retained.
-// Equality input orientation 128; kind field at scoring 197; value field at distance 128;
-// individual field-selection results 128; details field at each use 195;
-// ordinary invalid-entry continue 128; changed-results scope 128; ordinary-fields arm first 128.
-// Round 164: native detail inputs 128; full results lifetime 182; native full results 182;
-// entry input scope 128; loop input scope 128; entry scope results 182; native loop scope 128;
-// native entry results 182.
-// Round 167: complete typed details pointer/direct fields 128/213;
-// pointer with signed difference/range step/both 128/128/128;
-// pointer with full results lifetime 182; direct difference/range step 213/213.
-// Original results observation and details/kind/count homes remain.
-// Round 378: retained distance limit, paired detail thresholds, both groups,
-// count limit, distance/count, thresholds/count and all three groups each 113;
-// all groups with the shared maximum distance bonus 113. Frame and initial
-// results reuse still agree; details cursor and kind/count homes remain.
-// Original body restored.
-// Round 54: score/distance/bounded as the struct's named entry fields 204; details pointer
-// declared before the loop 113; details inputs read entry-relative 113; details pointer as
-// the named field's address 113; details pointer as a long array with indices 113.
-// Round 71 (one-file harness, exact for this function): VC re-bases the second cursor on the
-// most-used cursor offset (the score), whatever is first or used as a value; with the score
-// fields entry-relative there is no second cursor at all (161 instructions). Score reset through
-// the entry 111; score/distance/bounded entry-relative 2nd cursor lost; all fields entry-relative
-// the same; typed details pointer 111; kind/value/count as three ternaries 111; kind compare
-// reversed 111. Retail also keeps the search pointer in EDI through the scoring block (both
-// detail-threshold globals CSEd), which needs count in EBP and kind on the stack.
-// Round 221: Single details induction with byte bounds, detail-relative/named scores 166/173;
-// owner-record bounds 186/170; complete conditional input producers give the same four counts.
-// All restored. Unchanged reduced control 113 versus full baseline 111.
-// Per-use selected count with ternary/result-first clamp: retained kind/value [168, 170];
-// direct value [168, 170]; direct kind [180, 182]; both direct [180, 182].
-// Original inputs restored; details cursor and kind/count/search homes remain.
-// Round 208: uniform twice-used validity before score reset, bool/byte/short/long
-// 169/169/166/168; with native score/distance/count fields 209/209/206/208.
-// All restored; details cursor and kind/count/search homes remain.
-// Round 102 (fast): the score updates through a `long *` to the score field 184 (the second cursor
-// goes); every entry field except valid read relative to the details cursor 171 (cursor base entry+1),
-// the same with unknown01 on the entry 164 (base entry+0x120); a screen of the 31 combinations of
-// header/ordinary/details-input/qos/score field groups moved between entry and cursor gives bases 0x1f8
-// (113 at best), 0x1, 0x11c or no cursor, never retail's 0x10c.
-// Round 233: native search target/threshold/both/row/target-row/threshold-row/all fields
-// and all fields with explicit score additions: 113/113/113/113/113/113/113/113. Original search schema
-// and body restored; details cursor, kind/count homes and search residency remain.
 // @retail 0x91000
 void __stdcall session_search_score_and_sort(s_session_search *search)
 {
@@ -777,19 +690,22 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 				count = SEARCH_LONG(entry, 0x6c);
 			}
 			entry->field1fc = abs(value - SEARCH_LONG(search, 0x4c));
-			if (entry->field1fc <= g_4ce230)
-				entry->field1f8 += g_4ce234 - ((g_4ce234 - g_4ce238) / (g_4ce230 + 1)) * entry->field1fc;
+			if (entry->field1fc <= g_network_configuration.value1f0)
+				entry->field1f8 += g_network_configuration.value1f4 - ((g_network_configuration.value1f4 -
+					g_network_configuration.value1f8) / (g_network_configuration.value1f0 + 1)) * entry->field1fc;
 			if (kind == SEARCH_LONG(search, 0x38))
-				entry->field1f8 += g_4ce380;
-			long bounded = count < 0 ? 0 : (count > g_4ce384 ? g_4ce384 : count);
+				entry->field1f8 += g_network_configuration.value340;
+			long bounded = count < 0 ? 0 : (count > g_network_configuration.value344 ? g_network_configuration.value344 : count);
 			entry->field200 = bounded;
-			entry->field1f8 = (long)(entry->field1f8 + bounded * g_4ce388);
+			entry->field1f8 = (long)(entry->field1f8 + bounded * g_network_configuration.value348);
 			if (has_details)
 			{
-				if ((SEARCH_LONG(details, 0x54) < g_4ce11c || SEARCH_LONG(details, 0x58) < g_4ce118) &&
-					SEARCH_LONG(search, 0x58) >= g_4ce11c && SEARCH_LONG(search, 0x5c) >= g_4ce118)
-					entry->field1f8 += g_4ce390;
-				entry->field1f8 += g_4ce23c[SEARCH_LONG(search, 0x6c)][SEARCH_LONG(details, 0x14)];
+				if ((SEARCH_LONG(details, 0x54) < g_network_configuration.valuedc ||
+					SEARCH_LONG(details, 0x58) < g_network_configuration.valued8) &&
+					SEARCH_LONG(search, 0x58) >= g_network_configuration.valuedc &&
+					SEARCH_LONG(search, 0x5c) >= g_network_configuration.valued8)
+					entry->field1f8 += g_network_configuration.value350;
+				entry->field1f8 += g_network_configuration.value1fc[SEARCH_LONG(search, 0x6c)][SEARCH_LONG(details, 0x14)];
 			}
 			if (entry->unknown74)
 			{
@@ -799,12 +715,12 @@ void __stdcall session_search_score_and_sort(s_session_search *search)
 				long score;
 				if (index < 9)
 				{
-					real lower = (real)g_4ce200[index];
-					real upper = (real)g_4ce200[index + 1];
+					real lower = (real)g_network_configuration.value1c0[index];
+					real upper = (real)g_network_configuration.value1c0[index + 1];
 					score = (long)(lower + (value - index) * (upper - lower));
 				}
 				else
-					score = g_4ce200[9];
+					score = g_network_configuration.value1c0[9];
 				entry->field1f8 += score;
 			}
 		}
@@ -841,7 +757,7 @@ bool session_search_select(s_session_search *search, s_search_session *session)
 			}
 		}
 		bool ready = selected && (ready_count == candidate_count ||
-			(ready_count >= (candidate_count >> 2) && session_search_elapsed(search->start_time) > g_4ce394));
+			(ready_count >= (candidate_count >> 2) && session_search_elapsed(search->start_time) > g_network_configuration.value354));
 		if (ready)
 		{
 			if (session)

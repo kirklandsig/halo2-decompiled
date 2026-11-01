@@ -194,8 +194,10 @@ bool function_32ac0(void)
         D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
         g_4b82f4 = 0;
         D3DDevice_SetRenderState(D3DRS_SRCBLEND, 0);
-        function_0222d0(D3DRS_DESTBLEND, 0x303);
-        function_0222d0(D3DRS_BLENDOP, 0x8006);
+        dword destblend_state = D3DRS_DESTBLEND;
+        dword blendop_state = D3DRS_BLENDOP;
+        function_0222d0(*(D3DRENDERSTATETYPE const *)&destblend_state, 0x303);
+        function_0222d0(*(D3DRENDERSTATETYPE const *)&blendop_state, 0x8006);
         function_1cc30(23);
         result = true;
     }
@@ -364,6 +366,9 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
 
+// score 72 (was 68): the texture pointer is taken from a local again and the flags are read
+// in the test itself: the four points the bitmap's own address won are under the keep bar,
+// so the body of the earlier round is restored.
 // Tried (MiniMax S run 10): the mipmap limit at bitmap + 0x14 read into a local before the
 // texture pointer is cleared scores 70 against 72; under the keep bar.
 // @retail 0x1d000
@@ -2442,6 +2447,9 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
+// score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
+// inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
+// that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
 // @retail 0x4d830
 void function_4d830(s_render_transform_record const *record)
 {
@@ -2511,6 +2519,9 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
+// Coordinator review (MiniMax C): the lane's 16 needed a #pragma optimize("p") pair around
+// the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
+// divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -2978,10 +2989,17 @@ s_runtime_device_configuration g_runtime_device_configuration;
 long g_467008, g_46700c;
 bool g_5093bc;
 
-// score 70. Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
+// MiniMax G (10-31): 55 (was 68): the settings are copied into the global field by field and the
+// depth format is assigned first; the two flag bytes still come from a register instead of memory.
+// MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
+// casts the global's own address, so it is not kept without a match.
+// score 55 (fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // format after the back buffer width and clearing the result before the device pointer gives 68;
 // reading the two flag bytes back through a byte pointer to g_runtime_device_configuration as
 // well gives 49. That cast of the global's address is not kept without a match.
+// MiniMax G (run 12): the depth format assigned right after the memset 55 (kept); with the settings'
+// first four bytes copied as one dword into .packed and the switch on (short)(.packed >> 16) instead
+// of g_485aca 52 (both read through the wrong type: not kept without a match).
 // @retail 0x128c0
 bool function_128c0(s_128c0_settings const *settings)
 {
@@ -2989,10 +3007,10 @@ bool function_128c0(s_128c0_settings const *settings)
     bool result = true;
     D3DPRESENT_PARAMETERS parameters;
     memset(&parameters, 0, sizeof(parameters));
+    parameters.AutoDepthStencilFormat = (D3DFORMAT)(D3DFMT_D24S8 + ((byte)g_485ac8 != 0));
     parameters.Windowed = false;
     parameters.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
     parameters.EnableAutoDepthStencil = true;
-    parameters.AutoDepthStencilFormat = (D3DFORMAT)(D3DFMT_D24S8 + ((byte)g_485ac8 != 0));
     parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
     parameters.BackBufferWidth = g_485a8a.a.v3 - g_485a8a.a.v1;
     parameters.BackBufferHeight = g_485a8a.a.v2 - g_485a8a.a.v0;
@@ -3039,6 +3057,11 @@ bool function_128c0(s_128c0_settings const *settings)
 }
 
 
+// score 62 (was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
+// so the surface pointer and the LockRect arguments are stored at other offsets; we hold pBits in a
+// register and set the flag there, where retail sets it in memory and keeps the pointer in the frame;
+// our loop hoists the left edge and counts the destination pointer up, where retail loads the left
+// edge from the global in every row and adds the pitch to the destination pointer.
 // @retail 0x13d80
 void function_13d80()
 {
@@ -3294,6 +3317,9 @@ bool function_14600()
     return result;
 }
 
+// score 40 (was 73): retail loads the width pair first and only then the
+// height pair, ours loads the height pair first; the conversions of the two
+// differences into EDX and EAX now agree
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -3304,14 +3330,14 @@ void function_1eb00()
     function_0222d0(D3DRS_ZBIAS, 0);
     function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x6c), 0);
     function_1c710(g_51f0f0);
-    real x = 1.0f / (short)(g_48564e - g_48564a);
     real constants[20];
+    real y = 1.0f / (short)(g_48564c - g_485648);
+    real x = 1.0f / (short)(g_48564e - g_48564a);
     constants[0] = x * 2.0f;
     constants[1] = 0.0f;
     constants[2] = 0.0f;
     constants[3] = -1.0f - x;
     constants[4] = 0.0f;
-    real y = 1.0f / (short)(g_48564c - g_485648);
     constants[5] = y * -2.0f;
     constants[6] = 0.0f;
     constants[7] = y + 1.0f;
@@ -3798,6 +3824,8 @@ void function_12fa0(byte const *camera, real const *projection, bool scaled, lon
 real *table_entry_data(long handle);
 long function_184000(long index, long bit);
 
+// score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
+// transform lookup and the outlined helper's argument order still differ from retail's.
 // @retail 0x45ce0
 bool function_45ce0(short index, byte *out, short part, short transform_index)
 {
@@ -4982,6 +5010,8 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
+// score 544 (was 544): our body is 90 bytes shorter than retail's (2316 against 2406) and the
+// setup of the draw calls still differs in the order of the operands and the stores.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -5473,6 +5503,9 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
+// flag drives the table test, as retail does; left is our ebx zero register against retail's
+// edi, the loop counter in edi against retail's esi, and the permutations in eax at 0x3e380.
 // score 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
 // higher (the context buffer at [esp+0x44] against retail's [esp+0x3c], the indices at [esp+0x38]
 // against [esp+0x30]), so every reference in the body is at another offset.
@@ -5492,11 +5525,12 @@ void function_4c690(long tag, transform4x3f const *nodes)
     if (function_3e320(tag, (byte const *)indices))
     {
         long handle = function_3e380(tag, 4, nodes, (byte const *)indices, &node_count, 0);
+        *(long *)(context + 8) = handle;
         bool available = handle != NONE;
         if (available)
         {
             s_shader_transform_table *table = 0;
-            if (handle != NONE && handle >= 0)
+            if (available && handle >= 0)
                 table = (s_shader_transform_table *)(g_487b18.data + (handle & 0x0fffffff));
             g_485a5c = table;
             function_1bd50(context);
@@ -5563,8 +5597,6 @@ void function_4c690(long tag, transform4x3f const *nodes)
 class c_1fa50
 {
 public:
-    void function_1fa50(short_rectangle2d const *bounds, void const *clip, void const *position,
-        long line_gap, real scale, long color, void const *shadow) const;
     void function_1fb10(short_rectangle2d const *bounds, real scale) const;
 };
 
@@ -5594,11 +5626,11 @@ PRIVATE __forceinline void convert_1fa50_text(word const *text, dword *out)
 }
 
 // @retail 0x1fa50
-void c_1fa50::function_1fa50(short_rectangle2d const *bounds, void const *clip,
-    void const *position, long line_gap, real scale, long color, void const *shadow) const
+void function_1fa50(short_rectangle2d const *bounds, word const *string, void const *clip,
+    void const *position, long line_gap, real scale, long color, void const *shadow)
 {
     dword text[2048];
-    convert_1fa50_text((word const *)this, text);
+    convert_1fa50_text(string, text);
     function_1f070(bounds, (short_rectangle2d const *)clip, (short *)position,
         line_gap, text, scale, (void const *)color, shadow, false);
 }
@@ -5606,7 +5638,7 @@ void c_1fa50::function_1fa50(short_rectangle2d const *bounds, void const *clip,
 // @retail 0x1fa30
 void function_1fa30(word const *text, short_rectangle2d *bounds)
 {
-    ((c_1fa50 const *)text)->function_1fa50(bounds, 0, 0, 0, 1.0f, 0, 0);
+    function_1fa50(bounds, text, 0, 0, 0, 1.0f, 0, 0);
 }
 
 // @retail 0x1fb10
@@ -5636,6 +5668,10 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// Tried (MiniMax C run): the defaults stored only when the current depth is not zero, then
+// the override carried in two locals and the pair stored again at the end: 182 against 202,
+// but the first stores are always overwritten (a no-op form), so not kept without a match.
+// The locals alone score 218 (fast). Retail does compare the current depth with zero here.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -5719,6 +5755,8 @@ PRIVATE __forceinline void draw_filter_quad(real left, real right, real top, rea
     D3DDevice_SetVertexData4f(0, left, bottom, 16777215.0f, 16777215.0f);
 }
 
+// score 694 (was 694): our body is 121 bytes longer than retail's (2628 against 2507); the
+// triangle-fan primitive constants are retail's, but the instruction sequence still differs.
 // @retail 0x46ea0
 void function_46ea0(long tag, point3f const *position)
 {
@@ -6063,6 +6101,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     bool center, bool shift, bool clip, bool skip_state, real *depth_out);
 void function_47ea0(short stage, byte flags);
 
+// score 406 (was 406): retail takes the tag in ecx and the eight arguments on the stack
+// (ret 0x20), ours takes the points in ecx and the tag in edx with seven stack arguments
+// (ret 0x1c), so every stack offset differs; retail also calls 0x14560 with the stage in
+// ecx, and holds 1.0f in the vertex-shader constants at indices 0, 5, 8, 13, 16, 21, 24
+// and 29 where ours holds it at 0, 5, 10, 15, 16, 21, 26 and 31.
 // @retail 0x4f7e0
 bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short bitmap,
     real cosine, real sine, bool segments, bool perspective, bool filtered)
@@ -7222,6 +7265,8 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
 
+// score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
+// clipped fill still writes the rows in another order than retail's.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
@@ -7433,7 +7478,7 @@ void __stdcall function_1f490(long unused, long font, long character, long color
 extern dword g_5093b4;
 dword g_5093b8;
 dword __cdecl pack_color3f(color3f const *color);
-void function_25a10(vector3f const *direction, point3f const *position, byte const *state);
+void function_25a10(byte const *state, point3f const *position, vector3f const *direction);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 
 // @retail 0x132d0
@@ -7470,7 +7515,7 @@ void __stdcall function_132d0(s_frame_view_2c560 const *frame)
     if (((byte const *)frame)[0x26c])
     {
         memcpy(&g_48574c, ((byte const *)frame) + 0x14c, 0x120);
-        function_25a10(&g_4b9dac, &g_4b9da0, (byte const *)&g_48574c);
+        function_25a10((byte const *)&g_48574c, &g_4b9da0, &g_4b9dac);
     }
 }
 
@@ -7997,6 +8042,10 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// Tried (MiniMax C run): the two offsets passed in the other order (0x20/0x18 and 0x30/0x24
+// as the second and third arguments), the device result tested directly with the failure
+// path writing the flag, and the palette result in a local of its own: 167 against 171;
+// under the keep bar, body restored.
 // @retail 0x12560
 void function_12560()
 {

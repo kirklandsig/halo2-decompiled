@@ -3,6 +3,7 @@
 #include "slot_handler.h"
 #include "unknown_26e370.h"
 #include "unknown_11cc90.h"
+#include "vector2f_products.h"
 #include "unknown_272b70.h"
 
 /* slot type 0x7e: the actors of a group take the positions of a formation
@@ -78,11 +79,6 @@ static inline real distance2d(point2f const *a, point2f const *b)
 
 	distance += dy * dy;
 	return (real)sqrt(distance);
-}
-
-static inline real dot_product2d(vector2f const *a, vector2f const *b)
-{
-	return a->i * b->i + a->j * b->j;
 }
 
 short __stdcall function_1b0cd0(long actor_index);
@@ -421,6 +417,17 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // with the mode local after it 19; short index with a result local set in both
 // arms 48. The 0x1b0e40 setup order is unchanged by an origin local, a const
 // origin cast, a mode or index local at the call.
+// Round 53: slot data view scoped to the active branch 12; current index with the mode in
+// the valid block 26; whole-slot state scoped to the active branch 12; facing address before
+// the dot test 18; facing address before the active branch 155; leader declaration split 12;
+// basis declarations before the leader 12; state declaration split from its cast 12.
+// Opening body restored.
+// Round 41 (lane 10): the existing 0x1f86f0 test for the mode-2 check 208 (711 bytes); current
+// index with the mode read at the call 54; short index with the mode at the call as a ternary
+// 37; that form with `short index` declared at the top 66, with the point declared at the
+// top of the active branch 66. With a short index and the mode at the call the >= 7 block is
+// retail's except that the list is read from the stack (no EBX reload at the join) and the two
+// closing flag stores share `mov al, 1`.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

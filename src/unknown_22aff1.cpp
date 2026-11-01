@@ -70,7 +70,8 @@ PRIVATE __forceinline real function_22aff5(real arg_0)
 }
 
 #pragma intrinsic(memcpy)
-// score 3 (was 7): Repeated-translation scalar/vertex input-load order remains; frame homes, rounded offsets and spacing XMM roles agree.
+// score 3 (was 3): Spacing-scalar-before-vertex loading remains; frame 0x88 and every home agree.
+// Earlier: Repeated-translation scalar/vertex input-load order remains; frame homes, rounded offsets and spacing XMM roles agree.
 // Earlier: repeated-draw spacing XMM roles and vertex-translation
 // input-load scheduling remain; frame homes and rounded-offset memory operands agree.
 // Earlier at 121: frame homes differ: retail keeps vertical_scale at +0x08
@@ -118,6 +119,8 @@ PRIVATE __forceinline real function_22aff5(real arg_0)
 // Producer-local real/integer repeat-count parts 3/7, isolated producer scopes 3/7; real part retained after width conversion.
 // Half-spacing and repeated-add input commutations 7; early real-span variants 3, restored. Coordinate pointer/completed sum/fixed do loop 3 each; array cursor 74.
 // Keep only the real repeat-count part at its original product; every arithmetic group, helper and marked call input remains original.
+// Round 46: Two-stage spacing/vertex accumulation 3/3; repeated-translation unsigned-long/short/word/byte ordinals 4/74/74/74; immutable spacing/spacing role name 3/3. Original body restored.
+// draws a bitmap widget: its quad from the anchored bounds, then the mode's palette, repeated or mirrored passes
 // @retail 0x22aff1
 void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real const *arg_3)
 {
@@ -165,7 +168,6 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 			}
 			g_4e6950.color = *(color4f const *)arg_3;
 			function_22bcaf((s_widget_transform_block const *)(arg_2 + 0x58), &origin, &horizontal_axis, &vertical_axis);
-			long local_44 = width;
 			real vertical_scale = (real)height;
 			long local_13 = 0;
 			real horizontal_scale = (real)width;
@@ -268,9 +270,8 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 				long local_29 = *(long const *)(arg_1 + 0x22c);
 				if (local_29 > 0)
 				{
-					real local_30 = (real)(local_44 + 1);
 					real repeat_span = (real)(local_29 - 1);
-					real local_31 = repeat_span * (local_30 * 0.5f);
+					real local_31 = repeat_span * ((real)(width + 1) * 0.5f);
 					for (long local_32 = 0; local_32 < 4; ++local_32)
 						vertices[local_32].x -= local_31;
 					g_4e6950.field_4c = *(color3f const *)g_468718;
@@ -281,7 +282,7 @@ void function_22aff1(long arg_0, byte const *arg_1, byte const *arg_2, real cons
 						function_22a664((s_widget_quad_2b11 const *)vertices, (s_float_rect const *)&coordinates,
 							*(long const *)(arg_2 + 0x24), bitmap_index, *(long const *)(arg_2 + 0x2c));
 						for (long local_34 = 0; local_34 < 4; ++local_34)
-							vertices[local_34].x += local_30;
+							vertices[local_34].x += (real)(width + 1);
 					}
 				}
 				break;

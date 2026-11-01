@@ -18,10 +18,13 @@
 // flags on the stack); retail holds the secondary shape in EDI, the primary shape at [esp+0x14]
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
 // [esp+0x14], and our frame is eight bytes short of retail's.
-// score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 agrees) and the body is
+// MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
+// score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
 // thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
 // secondary shape at [esp+0x10].
+// Behaviour difference kept for score: `long tmp2 = scale * d.k` truncates the sixth input
+// product through an integer; retail (0x49f19) is a plain mulss. Coordinator decision.
 // Round 134: retail reads the wave's sine arguments from the global point: that form 701 (frame 0x60,
 // s1 sinks to its use), s1 before the first cross 701, s0's only 602; both shape pointers
 // NULL-initialized then set by an if/else (retail's entry, retail length 2622) 599, with s0's
@@ -140,6 +143,30 @@
 // Round 317: Existing shared scalar clamp for six parallel rows in mode-family masks 1-7,
 // then all with force-inline declaration, 702/702/702/581/702/702/702/702. Scaled
 // families grow frame to 0x64; original declarations, inputs and body restored.
+// Round 93: truncation removed 648; plus both shape pointers set at entry 620; plus the sine
+// arguments from the camera point 600; plus the first wave through vector3f_add_scaled 575
+// (2622 bytes, frame 0x60; not kept: the sines read the global while the waves use its local
+// copy). On that 575 form: first sine before the cross product 575; second wave through the
+// helper 642; second cross product right after the first 679; first sine first with the
+// helper 642; `w` declared before v3 or at the top 575/575; renamed locals 575 (identical:
+// names and declaration order do not move these slots). Left: slot order (shape0 0x18, v2
+// 0x28, v4 0x4c, a wave-shift home at 0x64 against retail's 0x14/0x40/0x64 and no home), the
+// x87 sine order (retail rounds both sines to float before the SSE scaling).
+// Round 49: the type switch as `if (type == 0) ... else if (type != 1) ...` 580 (retail's layout:
+// case 0 inline first); with the sine arguments from the global point 701; with both shape pointers
+// NULL then one if/else at entry 638 (entry exact but frame 0x58), plus global sine arguments 593
+// (frame 0x60), plus the trig factors as named doubles 591; with the plain sixth product 638.
+// Round 26: s1 from the global point with the 8.2x phase, sin x and both cosines as named `real`
+// locals 701, as `double` locals 694 (forward-substituted, no factor stack); the same reading the
+// local copy v1: `real` 581 (identical), `double` 651; both shape pointers NULL then one if/else 622
+// (2622 bytes), plus the sines from the global point 604 (frame 0x60). Retail rounds s0 to float before
+// an SSE `* 0.03`; ours folds `* 0.5 * 0.03` in x87.
+// Round 40: `if (shape0) inv = ... else inv = ...` in the first mode switch 707 (2663 bytes); input copies d then c
+// 580 (one point); the maxima as one expression 760; camera shifts read before the old20/old30 copies 581 (same
+// code); md before mc 666.
+// Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
+// 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
+// shape/basis homes and thirteen excess bytes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -468,7 +495,15 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 615 (was 615): the frame 0xac and the body length 2596 agree; retail stages
+// score 276 (was 284): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
+// ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
+// differ (state width +0x54 against +0x4c, tint +0x7c against +0x78). The state clamp is now retail's
+// (index in the state's register, jle) with the if/else clamp, and cases 1/2 compute dy first.
+// Earlier (512): frame 0x9c against retail's 0xac (retail has a second home for the blended
+// width, a spill of the first edge point's y and the width at +0x4c where ours rotates it to +0x2c),
+// the pool global reloaded per use, the zero colour stored as integers and the 0x80 flag test.
+// earlier: the frame 0xac and the body length 2596 agree; retail stages
 // the definition in EBX and the output vertices in EDI, ours stages the definition
 // in EDI, and retail places the endpoint handling after the loop where ours places
 // it before.
@@ -530,14 +565,85 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 433: Independent transition endpoints/shared camera displacement/both 615 each;
 // definition observed at every use alone/with either/with both 626 each, all plus source
 // observations 634. All restored; native phase receivers do not recover the early carriers.
+// Round 93 (kept, 579): the callback's buffer cast to a local vertex cursor, a pointer to the
+// second vertex, per-component position stores, the next state's colour staged in its own
+// array with the transition read once, the edge points built in each case from the point and
+// case 0's normal set in its arms give retail's layout (endpoint block after the loop, second
+// cursor at +0x28, definition in EBX). Left: frame 0x9c against 0xac (retail keeps a home for
+// the first edge point and a width temporary), EDI holds the point pool where retail keeps the
+// second cursor there and reloads the pool, the state-index clamp registers and the zero colour.
+// Tried: buffer cursor alone 664; second-vertex pointer alone 666, with component stores 617;
+// buffer + pointer + component stores 606, with u/v in vertex order 606, with flipped colour
+// chains 610, with per-case points 634, with case-0 normal fields 606/632, definition first
+// 606, cursor declared late 609, scale `1.0f` then if 605, transition local 629, staged colour
+// 640; then per-case points 595 (frame 0xa4); with the case-0 normal arms 579 (kept); on that,
+// scale if 593, object index local 596, flag bitfields 594, both 582, clamp if/else 579 (same
+// code) and zero-default 592, zero stores in order 579, renamed locals 579 (no slot change).
+// The buffer is untyped at the interface: 0x43740 queues this callback through 0x1e5e0 as
+// the fill function 0x35b00 passes to 0x4b220, typed `void (__stdcall *)(void *, long, void *)`
+// in unknown_01cf50.cpp.
 // Round 443: Existing alpha/tint/pixel ordinary-inline producer boundaries, seven subsets and
 // all with definition before source, 615 each. All original declarations, pixel qualifier and
 // body restored; output/definition carriers, endpoint layout and color/vector homes remain.
+// Lane 7 round 93's 579 form was not kept (coordinator review, round 94): it typed the first
+// parameter `void *buffer` with a typed cursor local, a signature form with no call evidence
+// (0x42cf0 is only passed as a (long) callback). With `s_ribbon_vertex *vertices` restored, the
+// rest of that round's body (transition read once, next colour in its own array then blended,
+// edge points set per case, field-wise stores through the second-vertex pointer) scored 622
+// against 615 for this body (both --fast), so the body is back to its earlier form.
+// Round 49: the round-93 body with the typed parameter and a local output cursor 579 (retail keeps
+// the advancing pointer in its own frame slot and never touches the parameter's home); on it, each
+// case reads `previous` directly and looks up the next point only in its no-previous arm 512 (kept).
+// On 579: memset zero colour 612, with scale if 608; pool read through an address cast (diagnostic)
+// 591; clamp `state <= max ? state : max` 579 (same code). On 512: case 0 dx/dy locals 522; memset
+// 584, with scale if 584; object index local 566; memset + scale if + object index 577; length sums
+// written i,j,k / i,j / dy,dx (VC reverses them into retail's fst-k-first x87 order) 573, with case 0
+// dx/dy 593; memset + scale if + object index + those sums 582 (best aligned: retail's loop head and
+// pool reloads; the score is positional); with the clamp as if/else on a state-initialised index 596;
+// width declared first or renamed 582 (same code). Every `flags00 & 0x80` spelling gives cmp/js.
+// Round 26 (kept, 284): endpoint fades through a `faded` local stored own-first 480 (chained own-first
+// 578: the own store narrows to a byte store); on that, memset zero colour 592, plus scale `1.0f` then
+// if 588, plus `state_width` with `width = state_width` 480 (after the colour 531), plus the state
+// record indexed by `point->state` 461, plus an `object_index` local 458 (gives the `test byte, 0x80`),
+// plus u/v stores in vertex order 458, plus the tint as a three-component loop 282 (retail length).
+// Each part removed alone (on 282, with the pixel stored to vertex 0 first): 320/588/518/562/301/308/
+// 290/458; the pixel order itself 284 (-2, not kept); u/v chained again on the kept 284 form 292.
+// Other forms: interpolation inline for the colour/width blends 679 (on 512); clamp as an if/else chain
+// 604 and with `<` 588 (on the 588 form), `<=`/PIN identical (on 461). On 282: case 0 points as struct
+// copies 535, second point first 466, chained copy 535; dy assigned first in cases 1/2 279, plus the
+// points declared `second, first` or after the normal 279; `real dy, dx` 282; length sums i,j / i,j,k
+// side / i,j,k normal / dy,dx 282/400/282/282. On 284: second point assigned first in every case 479,
+// with the stores second-first 479; u/v setup with v first 304.
+// Lead: second point assigned first in cases 1/2 and 4 only 386 (frame 0xa8, retail's y spill and blend
+// registers appear; edge point/half-width XMM permutation and the u/v slot order left); in all cases 479,
+// with second-first stores 479; cases 0+1/2 567, 0+4 474, 4 365, 1/2 398. Renamed pixel locals or
+// `v_width` do not move slots (284/386).
+// Clamp as `if (state < 0) index = 0; else { index = state; if (index > max) index = max; }` 279 (the
+// clamp is then retail's exactly; -5), with dy first in cases 1/2 276; zero-default clamp 579, ternary
+// then if 584; the exact clamp with second point first in 1/2 and 4 381 (with dy first 381).
+// Round 40 (case 0 edge points): first as `first = point->position; first.z += half_width;` and second likewise
+// 535 (2668 bytes), second first 561; first as a struct copy only 468, second only 505; `half_width +
+// point->position.z` 284 (same code). The one-file LTCG harness gives 290 here, so it was not used.
+// Round 101 (lane 8; kept 276, fast and plain): round 26's listed form (the clamp as `if (state < 0)
+// 0; else { state; if (> max) max; }`, retail's own clamp, with dy assigned before dx in both arms of
+// cases 1/2), re-measured from the kept 284 and kept for its gain of 8. Exact LTCG harness (stand-in TU,
+// through 0x42b20; 265 there for the full 284): the clamp alone 260, dy first alone 262, both 257. On
+// 276: case 0's edge points y before x 274 (fast). Harness on that: case 0's normal.i before normal.j
+// in the previous arm 250, in the neighbour arm 251, in both arms 407 (6 bytes shorter; aligned 171
+// against 185: case 0 is then retail's but for retail's spill of a y copy at +0xb4); case 1/2 edge
+// points y before x 347; `real dy, dx` 257, `dy * dy + dx * dx` 257, `dy *= inverse` first 258 (on
+// 276's graph); on the both-arms graph case 0 edge points as struct copies then `z +=`/`-=` 455 (2668
+// bytes), second.z first 549, both z last 407, `half_width + z` 407; second point first in case 0
+// alone 450.
+// Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
+// native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
+// only forms all restored; frame and geometry/color homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
     // Retail keeps all three callback arguments on the stack.
     (void)&unknown;
+    s_ribbon_vertex *vertex = vertices;
     s_ribbon_source *source = input->source;
     s_ribbon_definition *definition = input->definition;
     real u = source->u;
@@ -555,21 +661,32 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
     while (index != NONE)
     {
         s_ribbon_point *point = (s_ribbon_point *)(g_4ea940->data + (index & 0xffff) * 0x38);
-        long state_index = point->state < 0 ? 0 : ((long)point->state > definition->state_count - 1 ? definition->state_count - 1 : (long)point->state);
+        long state_index;
+        if (point->state < 0)
+            state_index = 0;
+        else
+        {
+            state_index = point->state;
+            if (state_index > definition->state_count - 1)
+                state_index = definition->state_count - 1;
+        }
         color4f color;
         real width;
         if (state_index != point->state)
         {
             width = 0.0f;
-            color.alpha = color.red = color.green = color.blue = 0.0f;
+            memset(&color, 0, sizeof(color));
         }
         else
         {
-            s_ribbon_state *state = &definition->states[state_index];
-            real scale = (state->flags & 0x20) ? point->scale : 1.0f;
-            width = state->width;
+            s_ribbon_state *state = &definition->states[point->state];
+            real scale = 1.0f;
+            if (state->flags & 0x20)
+                scale = point->scale;
+            real state_width = state->width;
             if (state->flags & 0x10)
-                width *= point->scale;
+                state_width *= point->scale;
+            width = state_width;
             real *lower = (real *)&state->lower;
             real *upper = (real *)&state->upper;
             real *out = (real *)&color;
@@ -578,56 +695,59 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
             if (point->flags & 2)
             {
                 s_ribbon_state *next = &definition->states[point->state + 1];
+                real transition = point->transition;
                 real next_width = next->width;
                 if (next->flags & 0x10)
                     next_width *= point->scale;
-                width += (next_width - width) * point->transition;
+                real next_color[4];
                 lower = (real *)&next->lower;
                 upper = (real *)&next->upper;
                 for (long j = 0; j < 4; ++j)
-                    out[j] += ((upper[j] - lower[j]) * scale + lower[j] - out[j]) * point->transition;
+                    next_color[j] = (upper[j] - lower[j]) * scale + lower[j];
+                width = (next_width - state_width) * transition + state_width;
+                for (long k = 0; k < 4; ++k)
+                    out[k] += (next_color[k] - out[k]) * transition;
             }
         }
-        if (source->object_index != NONE && !(definition->flags00 & 0x80))
+        long object_index = source->object_index;
+        if (object_index != NONE && !(definition->flags00 & 0x80))
         {
             point3f tint = *g_468710;
-            byte *object = *(byte **)(g_4e0300->data + (source->object_index & 0xffff) * 12 + 8);
+            byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
             byte *object_tag = g_4e3b44[(*(long *)object) & 0xffff].bytes;
             byte *markers = *(byte **)(object_tag + 0x98);
-            function_bad50(source->object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
-            color.red *= tint.x;
-            color.green *= tint.y;
-            color.blue *= tint.z;
+            function_bad50(object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
+            for (long c = 0; c < 3; ++c)
+                (&color.red)[c] *= (&tint.x)[c];
         }
         real half_width = width * 0.5f;
-        vertices[0].u = vertices[1].u = u;
-        vertices[0].v = v;
-        vertices[1].v = v_width;
+        s_ribbon_vertex *outer = &vertex[1];
+        vertex[0].u = u;
+        vertex[0].v = v;
+        outer->u = u;
+        outer->v = v_width;
         point3f first, second;
-        first.x = point->position.x; first.y = point->position.y; first.z = point->position.z;
-        second.x = point->position.x; second.y = point->position.y; second.z = point->position.z;
         vector3f normal;
         switch (definition->mode)
         {
         case 0:
-            first.z += half_width;
-            second.z -= half_width;
+            first.x = point->position.x; first.y = point->position.y; first.z = point->position.z + half_width;
+            second.x = point->position.x; second.y = point->position.y; second.z = point->position.z - half_width;
             if (input->normal)
             {
-                s_ribbon_point *neighbor = previous ? previous : (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
-                real dx, dy;
                 if (previous)
                 {
-                    dx = point->position.x - neighbor->position.x;
-                    dy = neighbor->position.y - point->position.y;
+                    normal.j = point->position.x - previous->position.x;
+                    normal.i = previous->position.y - point->position.y;
                 }
                 else
                 {
-                    dx = neighbor->position.x - point->position.x;
-                    dy = point->position.y - neighbor->position.y;
+                    s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
+                    normal.j = neighbor->position.x - point->position.x;
+                    normal.i = point->position.y - neighbor->position.y;
                 }
-                normal.i = dy; normal.j = dx; normal.k = 0.0f;
-                real length = (real)sqrt(dx * dx + dy * dy);
+                normal.k = 0.0f;
+                real length = (real)sqrt(normal.j * normal.j + normal.i * normal.i);
                 if (!(fabs(length) < 0.0001f))
                 {
                     real inverse = 1.0f / length;
@@ -638,17 +758,17 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         case 1:
         case 2:
             {
-                s_ribbon_point *neighbor = previous ? previous : (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
                 real dx, dy;
                 if (previous)
                 {
-                    dx = point->position.x - neighbor->position.x;
-                    dy = neighbor->position.y - point->position.y;
+                    dy = previous->position.y - point->position.y;
+                    dx = point->position.x - previous->position.x;
                 }
                 else
                 {
-                    dx = neighbor->position.x - point->position.x;
+                    s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
                     dy = point->position.y - neighbor->position.y;
+                    dx = neighbor->position.x - point->position.x;
                 }
                 real length = (real)sqrt(dx * dx + dy * dy);
                 if (!(fabs(length) < 0.0001f))
@@ -656,20 +776,29 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     real inverse = 1.0f / length;
                     dx *= inverse; dy *= inverse;
                 }
-                first.x += dy * half_width; second.x -= dy * half_width;
-                first.y += dx * half_width; second.y -= dx * half_width;
+                first.x = point->position.x + dy * half_width; first.y = point->position.y + dx * half_width; first.z = point->position.z;
+                second.x = point->position.x - dy * half_width; second.y = point->position.y - dx * half_width; second.z = point->position.z;
                 if (input->normal) normal = *g_4687b0;
             }
             break;
         case 4:
             {
-                s_ribbon_point *neighbor = previous ? previous : (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
-                point3f const *origin = previous ? &neighbor->position : &point->position;
                 vector3f view, direction, side;
-                view.i = g_4b9da0.x - origin->x; view.j = g_4b9da0.y - origin->y; view.k = g_4b9da0.z - origin->z;
-                direction.i = previous ? point->position.x - neighbor->position.x : neighbor->position.x - point->position.x;
-                direction.j = previous ? point->position.y - neighbor->position.y : neighbor->position.y - point->position.y;
-                direction.k = previous ? point->position.z - neighbor->position.z : neighbor->position.z - point->position.z;
+                if (previous)
+                {
+                    view.i = g_4b9da0.x - previous->position.x; view.j = g_4b9da0.y - previous->position.y; view.k = g_4b9da0.z - previous->position.z;
+                    direction.i = point->position.x - previous->position.x;
+                    direction.j = point->position.y - previous->position.y;
+                    direction.k = point->position.z - previous->position.z;
+                }
+                else
+                {
+                    view.i = g_4b9da0.x - point->position.x; view.j = g_4b9da0.y - point->position.y; view.k = g_4b9da0.z - point->position.z;
+                    s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
+                    direction.i = neighbor->position.x - point->position.x;
+                    direction.j = neighbor->position.y - point->position.y;
+                    direction.k = neighbor->position.z - point->position.z;
+                }
                 cross3f(&view, &direction, &side);
                 real length = (real)sqrt(side.k * side.k + side.j * side.j + side.i * side.i);
                 if (!(fabs(length) < 0.0001f))
@@ -677,9 +806,8 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     real inverse = 1.0f / length;
                     side.i *= inverse; side.j *= inverse; side.k *= inverse;
                 }
-                first.x += side.i * half_width; second.x -= side.i * half_width;
-                first.y += side.j * half_width; second.y -= side.j * half_width;
-                first.z += side.k * half_width; second.z -= side.k * half_width;
+                first.x = point->position.x + side.i * half_width; first.y = point->position.y + side.j * half_width; first.z = point->position.z + side.k * half_width;
+                second.x = point->position.x - side.i * half_width; second.y = point->position.y - side.j * half_width; second.z = point->position.z - side.k * half_width;
                 if (input->normal)
                 {
                     cross3f(&direction, &side, &normal);
@@ -695,21 +823,33 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         default:
             return false;
         }
-        vertices[0].position = first;
-        vertices[1].position = second;
+        vertex[0].position.x = first.x;
+        vertex[0].position.y = first.y;
+        vertex[0].position.z = first.z;
+        outer->position.x = second.x;
+        outer->position.y = second.y;
+        outer->position.z = second.z;
         color.alpha *= function_42c50(&point->position, &normal, *(short *)(input->shader + 0x2c), (byte *)definition);
         color.alpha = PIN(color.alpha, 0.0f, 1.0f);
-        vertices[0].color = vertices[1].color = ribbon_pixel(&color);
-        vertices += 2;
+        vertex[0].color = outer->color = ribbon_pixel(&color);
+        vertex += 2;
         u += u_step;
         previous = point;
         index = point->next;
     }
-    vertices -= input->vertex_count;
+    vertex -= input->vertex_count;
     if (!(definition->flags00 & 1) && source->point_count[input->slot] > 2)
-        vertices[0].color = vertices[1].color = vertices[0].color & 0xffffff;
+    {
+        dword faded = vertex[0].color & 0xffffff;
+        vertex[0].color = faded;
+        vertex[1].color = faded;
+    }
     if (!(definition->flags00 & 2))
-        vertices[input->vertex_count - 1].color = vertices[input->vertex_count - 2].color = vertices[input->vertex_count - 1].color & 0xffffff;
+    {
+        dword faded = vertex[input->vertex_count - 1].color & 0xffffff;
+        vertex[input->vertex_count - 1].color = faded;
+        vertex[input->vertex_count - 2].color = faded;
+    }
     return true;
 }
 
@@ -765,6 +905,51 @@ void __stdcall function_43720(s_43740_input *input)
 // Round 443: Ordinary-inline declarations at lookup/texture/submission boundaries, seven
 // subsets 62 each; all plus shader-relative normal 67 and matched caller 62. All declarations
 // and original body restored; early tag/EBP and signed-slot homes remain.
+// Round 49: normal flag through the stored shader member with (definition, source, slot) at the
+// definition and call 67; tag field read at each use 62 (identical); shader pointer local 67, with
+// the lookup rereading the field 67, with every tag use read from the field 67 (each still folds the
+// read to [definition + 0x68] but makes the definition a stack argument held in EBP).
+// Round 26: retail's EAX test / EBP copy head needs the tag's test read and the body's reads to be
+// separate values: field test with the group lookup (field) before the index call (field) 68, or a
+// tag local read before the call for the lookup only 68 (both split like retail but the tag outranks
+// a parameter: ret 8, 0x42b20 60); either with the record's tag from the local 40 (head through the
+// index call identical; the tag then lives across the texture call where retail re-reads the field,
+// and it mixes local and field reads of one value); 36-form grid of those splits x normal read x slot
+// local x fill order 68-70; early-return guard 68; recomputed count argument 68; tag local used
+// everywhere 63, masked in place 62. The normal read through the stored shader (member, local,
+// accessor inline) still folds to +0x68 under LTCG (compile-only harness gives [ecx+0x2c]) 67/70.
+// Round 18 (m3 lane 2, fast; 0x42b20 and 0x43720 matched in each): the position through the sibling's
+// `&((s_ribbon_point *)...)->position` 62; the bitmap address written `bitmap * 0x74 + base` 62; `long const tag`
+// 62; the group lookup before the index call 62 (LTCG still loads it after the call); the record filled in retail's
+// store order (shader, slot, normal, tag, source, definition, count, bitmap) 62.
+// Round 40: record filled slot, shader, normal, count, tag, bitmap, then source and definition 64; with the normal
+// read through the stored shader 67 (213 bytes, 0x42b20 62); filled count, shader, normal, slot, tag, source,
+// definition, bitmap 63; arrays indexed through the stored slot 62 (same code); texture test as an early return 62.
+// Round 101 (lane 8; exact LTCG harness through 0x42b20 with the generated stand-in TU, 58 = 62):
+// beyond the head, retail keeps the slot index in EBP after the texture test, reads the normal flag as
+// shader + 0x2c and computes the position before the pushes. The position computed before the record
+// is declared 62; input.tag read through the definition parameter 62; the vertex count as `2 * count`
+// 62; `NONE != tag` 62 (identical code each time; 0x42b20 still matches).
+// Round 12 (lane 17, fast): the normal flag read through the stored input.vertices.shader 67 (213 bytes:
+// still folded to +0x68, the definition moves to the stack, 0x42b20 62); the slot taken once into a long
+// local before the texture call for both arrays 69 (215 bytes, 0x42b20 66); the position computed after
+// the normal and before the tag, bitmap and count 62; that with the count right after the slot 63; the
+// mid-fill position with both arrays indexed through the stored slot 62 (0x42b20 matched in the last three).
+// Round 34 (lane 13, LTCG harness through 0x42b20, base 58 aligned 32 = 62; 0x42b20 0 in each): the
+// definition given a typed sub-record at +0x3c with the normal flag at its +0x2c, shader and normal read
+// through it 62; with the tag as a typed field 62; the typed tag alone 62; a second index local copied
+// from the tag for the call and lookup 62; an early return on the field with the tag local after it 62;
+// the tag as a dword 62 (all identical code); the lookup through `(word)tag` harness 60, aligned 53 (204 bytes).
+// Round 42 (lane 11, fast): the field test with the tag local inside the block and the normal flag read
+// back through the stored `input.vertices.shader + 0x2c` 67 (213 bytes; it still folds to the definition's
+// +0x68, the definition becomes a stack argument in EBP, the tag takes EBX and 0x42b20 drops to 62); that
+// with the record filled in retail's store order 67 (0x42b20 62); the field test with the tag local
+// inside and the normal read from the definition 62, plus retail's fill order 62, plus the record declared
+// at the top 62 (0x42b20 matched in each).
+// Round 124 (fast, 0x42b20 checked each time): the image pointer written into the texture call 62; the
+// group pointer written into the image expression 62; the call's count argument recomputed from the
+// point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored
+// last 64 (211 bytes, and 0x42b20 stops matching).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

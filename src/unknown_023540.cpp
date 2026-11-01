@@ -1190,7 +1190,14 @@ void __cdecl function_24970(s_histogram_state *state)
 // the globals 66; a shared bounds point helper for cases 1 and 4 17. In a
 // compile-only build every form that merges the two subtractions gets
 // retail's pair, and every two-subtraction form (~190: mixes, declaration
-// orders, compare sides, scopes) gets ours unless begin stays live to out[2]
+// orders, compare sides, scopes) gets ours unless begin stays live to out[2].
+// Round 55: case 1's out[3] stored before out[2] 18; case 4's out[2] stored first 33; both
+// subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
+// place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
+// LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
+// none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
+// in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
+// subtraction readback plus final memset 35; a named post-store zero used twice 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1913,6 +1920,12 @@ struct s_filter_rows
 // Round 40: same-file forceinline/inline helper taking the slot pointer 17/17,
 // with only the 0x1c590 call 17; `__forceinline` declaration of 0x1cc30 at file
 // or block scope with function_1cc30(12) 28/28 (not inlined).
+// Round 35 (fast): a slot pointer read for 0x1c590 and again for an ignored 0x1cb70 call 25 (the call
+// stays; the first read still folds to +0x64 and the add is built apart); the same with 0x1cb70's result
+// in an unused local 17 (the call is dropped at link time, the read still folds); `function_1cc30(12)`
+// here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
+// an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
+// inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2025,13 +2038,6 @@ static __forceinline void *surface_texture_get(long index)
     return result;
 }
 
-// score 2 (was 2): the loop's head reloads the two bounds from the stack in
-// the other order, ours reloads the low bound first and retail the high bound.
-// The order follows the code after the curve loop: without the fill loops (or
-// without the swizzle call in them) a compile-only build gives retail's order.
-// Tried: the lock as the method 2, as the compatibility wrapper 3 (one, low,
-// high), with an unlock 3, the method with an unlock 2, a dword bits local 2;
-// mode as the first parameter 2 (with the method 2, the wrapper 2, an unlock 3)
 // @retail 0x24ee0
 void function_24ee0(s_24ee0_state const *state, short mode)
 {
@@ -2083,8 +2089,7 @@ void function_24ee0(s_24ee0_state const *state, short mode)
             byte component = curve[y * 4];
             for (long x = 0; x < 64; ++x)
             {
-                dword color = D3DCOLOR_XRGB(component, curve[x * 4], component);
-                ((dword *)rectangle.pBits)[function_024e50((word)y, (word)x)] = color;
+                ((dword *)rectangle.pBits)[function_024e50((word)y, (word)x)] = D3DCOLOR_XRGB(component, curve[x * 4], component);
             }
         }
         real bounds[4];
@@ -2994,6 +2999,19 @@ struct s_2a2f0_record
 // Round 234: Every count use reads its field, with current-group observation, nested lookup and complete
 // dimension-selection subsets 0..7: 262/262/262/262/262/262/262/262. Every trial removes pooled-memory
 // qualifier and parameter-slot aliases; original body restored; count-copy boundary remains.
+// Round 451: Current metadata/time/both/fallback-tag/metadata+fallback/time+fallback/all outside the
+// five-draw loop, then all with readonly strip: 325/280/369/268/390/338/333/333. Independent
+// dimensions and ordinary counts in every trial; original body restored.
+// Round 460: Complete native strip value at loop entry/dimensions/texture/draw,
+// mutable/immutable pairs 304/304/304/304/289/289/288/288. Independent dimensions and ordinary counts;
+// original table, pointer and complete body restored; bounded count copy remains.
+// Round 468: Signed-byte/byte remainders with long, signed-byte, dword and word ordinals
+// 169/178, 272/265, 169/178, 272/265. All with independent dimensions and ordinary
+// counts; original complete body restored; bounded-count register copy remains.
+// Round 474: Independent dimensions and ordinary counts with float-result
+// clamps/whole bounds/both 166 each; shared alpha clamp alone/with dimensions/
+// bounds/both 275/274/275/274; all with shared half-height 274. Original body
+// restored; bounded-count register copy and dimension homes remain.
 // @retail 0x2a2f0
 void __stdcall function_2a2f0(long tag, real alpha)
 {
@@ -3184,7 +3202,7 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
     D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
 }
 
-// score 1083 (was 1109): frame 0x2c agrees; small permission now has retail byte tests,
+// score 949 (was 972): frame 0x2c agrees; small permission now has retail byte tests,
 // but mode-bound/save roles, state expansion and scalar homes differ.
 // Earlier: Frame 0x2c agrees; capability/save roles and state expansion remain.
 // frame 0x2c agrees; saved registers, mode flags and state-call expansion differ.
@@ -3264,6 +3282,24 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 234: Packed fraction byte/word, RGB byte/word/dword, alpha word/dword and combined native
 // channels on the long/bool capability graph: 903/852/1112/853/853/1101/1107/1111. All restored;
 // capability/save roles and state expansion remain.
+// Round 449: cutoff floor before state setup, fixed-only/full decomposition,
+// with ordinary/scoped normalization reciprocal: 1197/1197/1127/1127; each
+// with exponent computed before setup 1121/1121/1151/1151. Original scalar
+// lifetimes restored; mode-bound register and state expansion remain.
+// Round 451: Byte/signed-byte success crossed with bool/byte/signed-byte/word/long rescale storage:
+// 1194/1194/1194/1194/1202/1202/1187/1187. Original status carriers restored.
+// Round 468: Late descriptor arms 1023/2013/3012/0213/0312/1230/2301/3210
+// 972/1112/1106/1085/1081/1117/1086/1119. Order 1023 kept plain at 4848/4828 bytes;
+// order 0312 reaches retail length but gains only two. Initial capability switch unchanged.
+// Round 474: Complete encoded mode-three pair 949 (plain, 4828/4828 bytes);
+// mode-zero RGB 972; pair/RGB 949; final word 1100; pair/final 1074;
+// RGB/final 1100; all 1074; all/full alpha 1083; first/second word alone
+// 954/967. Pair kept; mode-bound/save roles and state expansion remain.
+// Round 217: Complete span/scaled-endpoint/center-term expression boundaries, seven subsets,
+// then all with immutable normalization reciprocal: 1083/1083/1083/1083/1083/1083/1083/1083. Original arithmetic-expression spellings restored.
+// Selector 3 and full-word alpha, exact-only sampler/upper-default/live-field subsets: 1085/1092/997/1102/1122/1147/1124/1170. No nonmatching selector-3 form retained.
+// Clean upper-default clamp with original/full-word alpha: 1099/1100.
+// All clean forms restored too; no eligible gain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3372,7 +3408,45 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     long exponent = 0;
     if (inverse_span > 1.0f)
         do { ++exponent; } while (inverse_span > (real)(1 << exponent));
-    if (mode == 0)
+    if (mode == 1)
+    {
+        color4f first, second;
+        real alpha = *(real const *)(configuration + 0x28);
+        first.alpha = clamp_filter_unit(alpha);
+        first.red = clamp_filter_unit(*(real const *)(configuration + 0x1c) * alpha);
+        first.green = clamp_filter_unit(*(real const *)(configuration + 0x20) * alpha);
+        first.blue = clamp_filter_unit(*(real const *)(configuration + 0x24) * alpha);
+        second.alpha = clamp_filter_unit(*(real const *)(configuration + 0x68));
+        second.red = clamp_filter_unit(*(real const *)(configuration + 0x5c));
+        second.green = clamp_filter_unit(*(real const *)(configuration + 0x60));
+        second.blue = clamp_filter_unit(*(real const *)(configuration + 0x64));
+        if (!skip_state) set_filter_blending(false);
+        g_484f68.PSAlphaInputs[0] = 0x8200000;
+        g_484f68.PSAlphaOutputs[0] = 0x40;
+        g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
+        g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
+        real gain = 1.0f / (exponent > 5 ? 4.0f : exponent > 4 ? 2.0f : 1.0f);
+        gain /= exponent > 0 ? 2.0f : 1.0f;
+        gain /= inverse_span / (real)(1 << exponent);
+        g_484f68.PSConstant1[5] = function_131fc0(clamp_filter_unit(gain * offset));
+        g_484f68.PSAlphaInputs[5] = 0x1d201220;
+        g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
+        g_484f68.PSConstant0[6] = pack_color4f(&first);
+        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
+        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
+        g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
+        g_484f68.PSRGBInputs[6] = 0x1341134;
+        g_484f68.PSRGBOutputs[6] = 0x45;
+        g_484f68.PSAlphaInputs[6] = 0x1d120c02;
+        g_484f68.PSAlphaOutputs[6] = filter_output_first_shift(exponent);
+        g_484f68.PSConstant0[7] = pack_color4f(&second);
+        g_484f68.PSAlphaInputs[7] = 0x11141d05;
+        g_484f68.PSAlphaOutputs[7] = 0xc00;
+        g_484f68.PSFinalCombinerConstant0 = pack_color4f(&second);
+        g_484f68.PSFinalCombinerInputsABCD = 0x114000f;
+        g_484f68.PSFinalCombinerInputsEFG = 0x1d041c00;
+    }
+    else if (mode == 0)
     {
         bool extra_texture = configuration == (byte const *)NONE;
         if (extra_texture)
@@ -3410,44 +3484,6 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSFinalCombinerConstant0 = function_131fc0(offset);
         g_484f68.PSFinalCombinerInputsABCD = 0x41d1105;
         g_484f68.PSFinalCombinerInputsEFG = (extra_texture ? 25 : 32) << 8;
-    }
-    else if (mode == 1)
-    {
-        color4f first, second;
-        real alpha = *(real const *)(configuration + 0x28);
-        first.alpha = clamp_filter_unit(alpha);
-        first.red = clamp_filter_unit(*(real const *)(configuration + 0x1c) * alpha);
-        first.green = clamp_filter_unit(*(real const *)(configuration + 0x20) * alpha);
-        first.blue = clamp_filter_unit(*(real const *)(configuration + 0x24) * alpha);
-        second.alpha = clamp_filter_unit(*(real const *)(configuration + 0x68));
-        second.red = clamp_filter_unit(*(real const *)(configuration + 0x5c));
-        second.green = clamp_filter_unit(*(real const *)(configuration + 0x60));
-        second.blue = clamp_filter_unit(*(real const *)(configuration + 0x64));
-        if (!skip_state) set_filter_blending(false);
-        g_484f68.PSAlphaInputs[0] = 0x8200000;
-        g_484f68.PSAlphaOutputs[0] = 0x40;
-        g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
-        g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
-        real gain = 1.0f / (exponent > 5 ? 4.0f : exponent > 4 ? 2.0f : 1.0f);
-        gain /= exponent > 0 ? 2.0f : 1.0f;
-        gain /= inverse_span / (real)(1 << exponent);
-        g_484f68.PSConstant1[5] = function_131fc0(clamp_filter_unit(gain * offset));
-        g_484f68.PSAlphaInputs[5] = 0x1d201220;
-        g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
-        g_484f68.PSConstant0[6] = pack_color4f(&first);
-        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
-        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
-        g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
-        g_484f68.PSRGBInputs[6] = 0x1341134;
-        g_484f68.PSRGBOutputs[6] = 0x45;
-        g_484f68.PSAlphaInputs[6] = 0x1d120c02;
-        g_484f68.PSAlphaOutputs[6] = filter_output_first_shift(exponent);
-        g_484f68.PSConstant0[7] = pack_color4f(&second);
-        g_484f68.PSAlphaInputs[7] = 0x11141d05;
-        g_484f68.PSAlphaOutputs[7] = 0xc00;
-        g_484f68.PSFinalCombinerConstant0 = pack_color4f(&second);
-        g_484f68.PSFinalCombinerInputsABCD = 0x114000f;
-        g_484f68.PSFinalCombinerInputsEFG = 0x1d041c00;
     }
     else if (mode == 2)
     {
@@ -3495,12 +3531,12 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSTextureModes = 0x8421;
         g_484f68.PSConstant0[4] = pack_color3f((color3f const *)(configuration + 4));
         g_484f68.PSConstant1[4] = pack_color3f((color3f const *)(configuration + 0x10));
-        g_484f68.PSRGBInputs[4] = (((((configuration[0] ? 0x10 : 0) + 9) << 16) | ((configuration[0] ? 0x10 : 0) + 10)) << 8) | 0x10002;
+        g_484f68.PSRGBInputs[4] = configuration[0] ? 0x19011a02 : 0x09010a02;
         g_484f68.PSRGBOutputs[4] = 0x3045;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
         g_484f68.PSConstant0[5] = pack_color3f((color3f const *)(configuration + 0x1c));
-        g_484f68.PSRGBInputs[5] = (((configuration[0] ? 0x10 : 0) + 11) << 8) | 0x24250001;
+        g_484f68.PSRGBInputs[5] = configuration[0] ? 0x24251b01 : 0x24250b01;
         g_484f68.PSRGBOutputs[5] = 0x1045;
         g_484f68.PSAlphaInputs[5] = 0x1d201d00 | (exponent > 6 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
@@ -3536,40 +3572,16 @@ failure:
 
 dword g_4b8424;
 void function_27aa0();
-// score 5 (was 5): retail adds the dot product's terms z, y, x, loading the position's component
-// first in each; here x, y, z, and the x term loads the direction's first in every order.
-// Tried: the terms z, y, x 16 (the k products then copy the scale); y, x, z 7; x, z, y 20;
-// y, z, x 20; z, x, y 18; one expression in any order, dot3f either way round or partial sums
-// 105-106; n[] subscripts 16; scale first in the products 16; vector3f_scale for the rows
-// 101-105; position as the first parameter (with the caller) gives retail's dot with z, y, x but
-// the j products then load the component first, 14 (654 bytes). Z/y/x with all/first/third k
-// copy-then-multiply 101/101/101; buffer after projection 16; input view after projection 16;
-// early buffer with late input view 16; early dot declaration 16; first k-i-j row 23; multi-use
-// first-scale local 101; zero-initialized buffer 160; cleared buffer 160; cleared trailing triple
-// 105; first/third/second row component loops 242/242/242; coefficient loop 242; first
-// reciprocal divided in place 104; last projection term after reciprocal one/two/three
-// 38/151/149; y and z after first reciprocal 51; split projection 59; fourth reciprocal at use
-// 140; third reciprocal at use 136; fade clamped in its output slot 63; six-by-four buffer 5;
-// branched reciprocal 72; full buffer initializer 155; direction/scalar/tail/third-row ordering
-// 100/148/143/75; shared span carrier 144.
-// Round 14 (exact LTCG harness, aligned counts, 4 = this body): a product's operand order in
-// the dot never follows the text; each k/j row product copies the scale when its dot term is
-// not the last one. Every term order as statements 4-18; z/y/x with the sum's local renamed
-// 8; separate spans 60-64; buffer/settings declarations moved 4-18 (no effect); no settings
-// local 60-64; [6][4] buffer, same; mixed statement/expression sums 6-66; the three
-// plane-offset sums with either operand first, no effect.
 // @retail 0x25a10
-void function_25a10(vector3f const *direction, point3f const *position, byte const *state)
+void function_25a10(byte const *state, point3f const *position, vector3f const *direction)
 {
     real constants[24];
     real const *settings = (real const *)state;
-    real dot = position->x * direction->i;
-    dot += position->y * direction->j;
-    dot += position->z * direction->k;
-    real span = settings[12] - settings[11];
-    real first = 1.0f / (0.0001f > span ? 0.0001f : span);
-    span = settings[18] - settings[17];
-    real second = 1.0f / (0.0001f > span ? 0.0001f : span);
+    real dot = dot3f((vector3f const *)position, direction);
+    real first_span = settings[12] - settings[11];
+    real first = 1.0f / (0.0001f > first_span ? 0.0001f : first_span);
+    real second_span = settings[18] - settings[17];
+    real second = 1.0f / (0.0001f > second_span ? 0.0001f : second_span);
     real third = 1.0f / (0.0001f > settings[44] ? 0.0001f : settings[44]);
     real fourth = 1.0f / (0.0001f > settings[45] ? 0.0001f : settings[45]);
     constants[0] = direction->i * first;
@@ -3886,8 +3898,8 @@ void function_147af1(long first, long second, c_render_window *window);
 struct s_2f800_view;
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 
-// score 34 (was 34): two store orders and the tail differ. The counter g_4ba038 is stored
-// after the kind byte, and the g_4ba010 clear sinks past the camera copy; both land where
+// score 8 (was 34): two store orders differ (the tail and 0x13680's call now agree). The counter
+// g_4ba038 is stored after the kind byte, and the g_4ba010 clear sinks past the camera copy; both land where
 // retail puts them once g_4ba038 and g_4ba010 are address-taken (diagnostic only, 26), so
 // retail keeps them in an address-taken struct (0x4ba074 is the only immediate retail takes
 // in 0x4ba000-0x4ba07f) whose members are defined in other lanes' files. The tail pushes the
@@ -3946,6 +3958,11 @@ void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 // named source local 153; the flag passed from the frame's copy 34; native mode-word/auxiliary-
 // word/final-byte parameter widths 34 (auxiliary-word forms lose caller 0x2b790); the whole camera
 // struct as the copy destination 34; the frame-records field as the first copy's destination 34.
+// Round 26 (lane 14, fast; g_4ba010 sits right after g_view_context_storage and both are defined
+// in src/unknown_02c560.cpp, so the address-taken block can't be declared here: BLOCKED-BY the
+// storage definitions there): the camera default moved down to the frame copy 113 (loses 0x2b790);
+// counter as `g_4ba038 = g_4ba038 + 1` 8; the first copy into frame_records with its sizeof 8; flag
+// clear after the three render calls 23; the view copy before the scalar stores 80 (loses 0x2b790).
 // @retail 0x2ba10
 void function_2ba10(s_2f970_view const *view, long cluster, long player,
     byte const *camera, bool enabled, long leaf, bool invalid, vector3f const *sky_color,

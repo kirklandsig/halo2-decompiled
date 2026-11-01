@@ -97,6 +97,15 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // Round 40: helper storing a local point once 316; end from a by-value point producer 226;
 // end/delta/start/origin renamed 23 each (frame unchanged); ticks and call as an inline/forceinline
 // helper 267/335.
+// Round 91: a position pointer for origin/trace/final, origin/final, trace/final and origin/trace
+// 23/23/131/23; its early declaration 52; height/origin/final and height/trace/final 24/24;
+// reversed rounded-count productions 30; all restored.
+// Round 61: the cause is 0x26d100's `&point` read: it makes the end point escape, so its stores are ordered
+// against the up-vector loads and get a later frame slot. 0x26d100 reading `point` directly 4 (its callers'
+// setup then moves point into ECX); 0x26d100's parameters as (up, point, output, collision), the order its
+// own bytes give (point the only stack argument), with start computed before direction and result first:
+// this function and 0x26d100 match (fast) with every matched caller kept. BLOCKED-BY 0x270400 (two of
+// the call lines are in contributor code); without the reorder start/result first 37 on 0x26d100.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {

@@ -85,33 +85,46 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 {
 	real local_0 = (real)sin(arg_0);
 	real local_1 = (real)cos(arg_0);
+	real vector_i = arg_2->i;
+	real vector_j = arg_2->j;
+	real vector_k = arg_2->k;
 	real local_2 = dot3f(arg_1, arg_2) * (1.0f - local_1);
-	real local_3 = arg_1->k * arg_2->j - arg_2->k * arg_1->j;
-	real local_4 = arg_2->k * arg_1->i - arg_1->k * arg_2->i;
-	real local_5 = arg_2->i * arg_1->j - arg_1->i * arg_2->j;
-	real cosine_term_i = arg_2->i * local_1;
+	real local_3 = arg_1->k * vector_j - vector_k * arg_1->j;
+	real local_4 = vector_k * arg_1->i - arg_1->k * vector_i;
+	real local_5 = vector_i * arg_1->j - arg_1->i * vector_j;
+	real cosine_term_i = vector_i * local_1;
 	real axis_term_i = arg_1->i * local_2;
 	real cross_term_i = local_3 * local_0;
 	real projected_term_i = cosine_term_i + axis_term_i;
 	arg_2->i = projected_term_i - cross_term_i;
-	real cosine_term_j = arg_2->j * local_1;
+	real cosine_term_j = vector_j * local_1;
 	real axis_term_j = arg_1->j * local_2;
 	real cross_term_j = local_4 * local_0;
 	real projected_term_j = cosine_term_j + axis_term_j;
 	arg_2->j = projected_term_j - cross_term_j;
-	real cosine_term_k = arg_2->k * local_1;
+	real cosine_term_k = vector_k * local_1;
 	real axis_term_k = arg_1->k * local_2;
 	real cross_term_k = local_5 * local_0;
 	real projected_term_k = cosine_term_k + axis_term_k;
 	arg_2->k = projected_term_k - cross_term_k;
 }
 
-// score 43 (was 43): this round's sentinel store orders (the +0x18 word before the bytes, after the
+// score 30 (was 30): frame 0xd4, length and range adds agree; the rotation's dot sums the j and k
+// products before i (retail i and k, then j) with v.j/v.k in each other's registers, and the +0x18
+// sentinel store with the argument reload is scheduled early.
+// Round 96: shared in-place cosine scaling 144; a shared-scale projection vector 168; separate const
+// input/output helper parameters 30 (identical); one flock-index local for lookup and linking 57;
+// the member vector copied with the library 60 or the existing point setter 101; the rotation input
+// through the existing vector setter 146; split input/output parameters swapped 30 (identical).
+// Original helper, copies and argument reads restored.
+// Earlier at 43: frame 0xd4, length and all range adds agree; rotation dot/register ranks and final sentinel scheduling remain.
+// This round's sentinel store orders (the +0x18 word before the bytes, after the
 // +0x1a word, the bytes swapped, the bytes written as numbers, the words cast to short) all compile
 // to the same 43, so the store order is the compiler's scheduling, not the source's.
-// Permuter round 43 (was 43): the source permuter over the body; the rotation's xmm ranking
+// This round ran the source permuter over the body; the rotation's xmm ranking
 // (retail's xmm1..xmm5 cycle against ours) and the final sentinel store order still differ.
-// Earlier 43 (was 43): frame 0xd4, length and all range adds agree; rotation dot/register ranks and final sentinel scheduling remain.
+// Permuter round at 43 (from 43): the source permuter over the body; the rotation's xmm ranking
+// Earlier at 43 (from 43): frame 0xd4, length and all range adds agree; rotation dot/register ranks and final sentinel scheduling remain.
 // Earlier: y/z range-add order, rotation registers and final sentinel
 // three causes remain. The y/z point draws add the point component before the range
 // start (x is right); the rotation's xmm registers are retail's shifted by one (xmm1..xmm5 cycle) with
@@ -204,12 +217,54 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // bytes; still k, j, i); +0x18 sentinel stored after +0x1a 43; the four flag/zero stores before
 // the NONE stores 43; the angle read after the vector copy 54; PRIVATE helper 43 (same code);
 // permuter 49 tries, best 43.
+// Round 31 (lane 10): the only structural rotation difference is the dot's sum order (retail
+// (a.i*v.i + a.k*v.k) + v.j*a.j, ours (a.k*v.k + a.j*v.j) + a.i*v.i); the xmm numbering follows from
+// it. Every dot spelling (12 term/operand orders, both dot3f orders, (1 - cos) first) and all 120
+// sine/cosine/projection/cross statement orders keep it (one-file LTCG harness and compile-only both
+// reproduce our block). It is a whole-function effect: compile-only, deleting the y and z draws,
+// the selection loops or the tail flips it (x draw alone gives retail's order), while declaration
+// orders, in-for indices, ++/+= forms, if/ternary/continue rewrites and draw spellings (point first,
+// named radius, copy then +=, inverted or ternary z) do not. Real trials: 0x194a10's helper body with
+// the copy between sine and cosine 53 (1409 bytes); v.i and v.j named in the helper 30 (only two of
+// three components: not keepable); all three named 43; a.i and v.j named 87; a.i and a.k named 149
+// (both give retail's dot order but keep a.i in a register); cross-file rotation helpers
+// (0x170d70's, rotate_direction, biped_rotate_about, 0x26db50's) keep our order (harness).
+// Compile-only, 300 random sets of 28 code-identical respellings (++/+=, a + i, != 0, -1 for NONE,
+// reversed compares, chained stores, g[0]) and seven tail forms (init order, random count inline,
+// else first) all keep it.
 // Round 10 (m3 lane 2): register-masked aligned difference 8: the dot's (i + k) + j schedule and
 // the +0x18 sentinel store with the argument reload, which ours schedules right after the last
 // NONE store where retail keeps source order. Member vector copied before the sentinels 91; the
 // true flag stored before the two false ones 42 (the +0x18 store then lands after the two false
 // ones, still ahead of the rest); the two false flags as one chained assignment 43; grouped dot
 // with the vector copied first 90; grouped dot with the true flag first 41 (masked difference 5).
+// Round 33 (lane 10): the rotated vector's three components named once in the helper (vector_i/j/k,
+// used by the cross and cosine terms; dot3f unchanged) 30 (kept) in the orders i,j,k / j,i,k /
+// j,k,i, 111 with k named before j (i,k,j / k,i,j / k,j,i). On the 30 form: dot3f(vector, axis) 30;
+// (1 - cos) first 30; the names declared before the sine 30, after the dot 111; cosine before
+// sine 50; the axis components named too 169 (1424 bytes). Caveat for review: the helper overwrites
+// the vector row by row, so the names snapshot its input, but dot3f still reads the same fields
+// through the pointer (writing dot3f out by hand is not allowed; a whole-vector copy scored 193).
+// Round 108 (lane 6): the helper's shape is the classic rotate-about-axis (dot(axis, vector) times
+// 1 - cos, the same three cross terms, rows cos*v + k*axis - sin*cross), so only colouring is left.
+// The cross terms before the dot 66 (dot then sums j, k, i); the dot grouped (i + k) + j 42 (retail's
+// sum order, but ours makes the k product the accumulator: v.k in XMM4 where retail has XMM1); on
+// it: the rows as one expression each 42 (same code), the helper returning the vector 42, a vector
+// pointer local in the caller for the copy and the call 118, (vector, axis, sine, cosine) parameters
+// with sine and cosine named in the caller 42, the grouped dot named before the product 42.
+// Lane 16 r50 (fast): the +0x18 NONE store written after the +0x14 one 30 (same code); the member
+// mask read once into a short for the gate and the three selection loops 406 (1368 B); the two
+// creation-record stores swapped 32; `random_fraction * total_weight` 30 (same code); the angle
+// passed straight after the vector copy 41. Permuter skipped (full-image build over 15 minutes).
+// Round 33 (m3 lane 11), fast: the rotation rows written k, j, i 52 and j, i, k 54; the cross
+// components computed 5, 4, 3 41 and 4, 5, 3 30 (same code); the cross components written inside
+// the rows (no local_3/4/5) 92 (1407 bytes). All restored.
+// Round 7 (m3 lane 18, fast, on the 30 form): the dot's first pair follows the vector names' order
+// (j before k: k, j; k before j: j, k) but the i product stays last in every naming order. cross3f(vector,
+// axis) for the three cross terms 67 (1409 bytes); rows written j, k, i 52; the dot named before the
+// projection factor 113; the angle field passed straight 41; memcpy for the vector copy 30 (same
+// code). Diagnostic only: the copy written field by field j, k, i 133 (SSE copies; the dot then sums
+// i first, i, j, k).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

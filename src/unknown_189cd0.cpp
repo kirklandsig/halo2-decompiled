@@ -71,6 +71,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // Post-playback notification object 118f; two-phase object 118f; full source-result join 118f;
 // result with notification object 118f; positioned-source-first admission 118f; admission with
 // notification 118f; admission with result 118f; all source/object lifetimes 118f (control 118f).
+// Round 55 plain: const spatialization data 21; const slot 21; const class 21; const tag data 21;
+// const class/spatialization 21; const slot/spatialization 21; const slot/class 21; all four 21.
+// Round 118: plain reads throughout 114f/116p; the started test and dispatch through the
+// early object local 149f/103p; the call too 114f/116p; the object local read in the
+// positioned branch only 160f/147p; the call and started dispatch in a by-value inline
+// helper 127f/57p (521 bytes; the playback label call then runs before the variant push).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

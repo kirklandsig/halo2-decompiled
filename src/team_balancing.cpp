@@ -495,11 +495,106 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // Round 230: solution selection at every query, alone, with A/B/both team observations,
 // outer-party lifetime, both candidate-team roots, shared candidate spread and equality-first
 // acceptance: 112/179/150/186/112/182/107/115. Original selection, named post-swap counts and body restored.
+// Lane 14 r20: the first test as `!(candidate >= reference)` 67; the reference pointer declared
+// `const` 67; the condition rewritten as `<= && (!= || cost)` 100 (512 bytes but reference spread
+// still first and the frame 0x268c); the reference selected right after the candidate copy, before
+// the swaps, 151 (521 bytes; 0x91dd0 9); the cost test written candidate first 67.
 // Round 127 (lane 4): the reference selected right after the candidate copy 151 (0x91dd0 9; the
 // reference is still queried first); the reference on the left of both comparisons 65 (reference
 // still first); the comparison as an in-class solution method called on the candidate 188 (not
 // inlined under /Ob1, 420 bytes); the improvement as an if / else-if pair 150 (0x91dd0 8); the
 // reference pointer declared `const` 67 (same code).
+// Round 46 (lane 9): the cost compare written candidate first (`candidate.cost() < reference->cost()`) 67, with
+// both spread compares reference first 65 (the cost compare is then retail's; only the four count_spread calls
+// differ: ours reference first in every operand order, retail candidate first), with only the first spread
+// compare reference first 66; `candidate - reference spread < 0` for the first test 67; the selection written
+// at each use as `(improved ? &best : &current)->` 112 (not CSE'd; still reference first);
+// `!(candidate.count_spread() >= reference->count_spread())` 67; the selection written `!improved ? &current :
+// &best` 70; the selection moved after the candidate copy (before the swaps) 151; `best = candidate;` before
+// `improved = true;` 71. No other function calls count_spread, total_spread or rank_spread out of line.
+// Round 14 (lane 2): aligned the only cause is the count_spread order (and the `mov ebx, esi` it
+// adds); a compile-only screen reproduces it even with count_spread's body defined after this
+// function, so it is not purity: VC queries the stack-local candidate (`lea ebx, [esp+0x38]`) after
+// any pointer or member solution, in every operand order (probes against `best` and `current`
+// directly do the same). Real builds, 67 each (same code): the comparison as a forceinline
+// `better_than` method on the candidate, as a forceinline `worse_than` method on the reference, as a
+// forceinline free function of both pointers, the selection as an if/else, the reference declared at
+// the top of the inner loop and assigned after the swaps. Compile-only, same order: `this->` inside
+// the method, the selection passed as the call's argument, `(&candidate)->`, a reference variable,
+// the selection written at each use, `!(reference <= candidate)`.
+// Lane 16 r46: the reference declared at the top 67; count_spread as a free function on a pointer 67; the
+// test in a forceinline (candidate, reference) helper 67; renamed trial/baseline 67; `candidate(current)`
+// 67. Compile-only (no /GL, extern methods): the call on the stack copy runs after the call through the
+// pointer in every operator, operand order, helper, free/__stdcall and naming form; with two stack copies
+// the right operand of `<`/`==` runs first. So retail's candidate-first order is not a reorder that only
+// LTCG's readonly knowledge makes.
+// Round 135 (lane 4): a compile-only screen shows the order of two count_spread calls ranks their `this`
+// expressions, not the operands: `&best` (this + 0x2668) before the reference variable before `this` (current)
+// before the stack candidate, in both operand orders; a pointer local to the candidate (declared before or after
+// the reference), a storage-array candidate, a cast to const and forceinline helpers taking (reference,
+// candidate) or (candidate, reference) still query the candidate last (its address is propagated first). Real
+// builds: the reference pointer non-const 67; that with `candidate.cost() < reference->cost()` 67; with both
+// spread tests reference-left 65; count_spread non-const 67; the selection as a reference variable 67.
+// Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
+// (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
+// written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
+// the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
+// Round 38 (m3 lane 10): compile-only micro tests: VC calls a method on a stack local after the same
+// call through a register pointer, a member, a global or a pointer parameter, whatever the operand
+// order; between two stack locals the right operand runs first; named one-use results keep their
+// statement order only while the callee's body is unseen (an extern declaration), not with it
+// defined in the file, and not at LTCG with it defined anywhere. Real builds (fast): the three
+// spread definitions moved below this function 67 (same code), with both spreads named 67;
+// `continue` on `candidate > reference` and on equal spreads with `candidate cost >= reference
+// cost` 100 (512 bytes; first difference +0x7), the same with the reference on the left 100; the
+// candidate spread named and used in both tests (three queries) 80 (512 bytes).
+// Round 55 (lane 12; a one-file LTCG harness of this file reproduces the build exactly): the test in a
+// forceinline (candidate, reference) helper written `b > a || (b == a && cost)` 65, `a < b || (b == a && cost)`
+// 66; the qualified call `candidate.s_balance_solution::count_spread()` 67; `a - b < 0 || (a - b == 0 &&
+// cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
+// last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
+// first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
+// Round 138 (lane 4; a one-file LTCG harness of this file reproduces the build): `continue` on `candidate >
+// reference` and on equal spreads with `candidate cost >= reference cost` 100 (512 bytes, again); the first test
+// as `!(candidate < reference)` with the rest nested under it and a `continue` 67 (same code); a `bool better`
+// set from the first test and refined by the equal-spread cost test 82 (524 bytes); the two first spreads named
+// in one declaration (`long candidate_spread = ..., reference_spread = ...;`) 67 (same code: LTCG still queries
+// the reference first across the comma); the count difference named once (two queries instead of four) 81
+// (496 bytes). Harness only: the spread queries through an inline forwarding member 9 aligned (unchanged order),
+// an inline (candidate, reference) value comparison helper unchanged, a volatile address of the reference or of a
+// candidate pointer (diagnostic) still reference first: no form evaluated the candidate's count_spread first.
+// Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
+// 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
+// condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
+// clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
+// Round 23 (m3 lane 2, fast): an inline `operator<` on the solution (`candidate < *reference`) 188 (420 bytes, not
+// inlined under /Ob1), as a free inline operator 185 (422 bytes); the equality named first as a bool 67; the candidate
+// through a `s_balance_solution const *trial = &candidate;` pointer 67; the test as a forceinline optimizer member taking
+// the candidate (reference selected inside) 67. The candidate's count_spread still runs last.
+// Round 32 (m3 lane 14, fast): not purity: count_spread made to look writing (a store through a copy
+// of `this`, diagnostic, 0x91860 then 38) still queries the reference first, 97 (it takes EDX then);
+// that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
+// helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
+// pointer to the candidate for all six queries 67.
+// Round 25 (m3 lane 2, fast): a placement-new candidate (`*new (storage) s_balance_solution(current)`, as 0x91fc0
+// builds its optimizer) 67 (same code); the candidate default-built and filled by memcpy 204 (560 bytes, the
+// team constructors run; 0x91dd0 9); count_spread declared first in the solution 67; the cost test as
+// `reference->cost() - candidate.cost() > 0` 36, not kept (VC distributes it into 7 * (t - t') + 3 * (r - r'),
+// unlike retail's two-cost compare, and the code is 510 bytes plus two int3: only the tail realigns; the count
+// pairs still run reference first); as `candidate.cost() - reference->cost() < 0` 67 (508 bytes); the first
+// test as `reference->count_spread() - candidate.count_spread() > 0` 72 (516 bytes, reference still first).
+// Round 61 (m3 lane 9, fast): the first test as `reference->count_spread() - candidate.count_spread() > 0`
+// 72 (516 bytes); nested `if (candidate <= reference) { if (candidate < reference || cost) ... }` in the
+// real build 100 (512 bytes); the equality spelled `!(candidate > reference)` 67 and `candidate <=
+// reference` 67 (same code); the reference selected once before the loops and set to `&best` after an
+// improvement 125 (spilled to the stack, still queried first).
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top, before the reference and before the
+// candidate (24 probes) 67 each, same code (not a numbering tie); the candidate in raw `long` storage bound by a
+// reference (balance_teams' pool idiom) 67; the cost test as `candidate.cost() < reference->cost()` 67 (same
+// code); the copy, swaps and test in a forceinline helper (candidate an inlinee local) 67, with a forceinline
+// comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
+// ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
+// `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -737,6 +832,61 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // Separate maximum reduction and guarded memcpy, copy before/after scan, indexed/advancing
 // source and if/conditional maximum 93/93/83/83/79/79/88/88. Count register exchange and clamp
 // homes remain; original body restored.
+// Round 14 (lane 2; fast with 0x91e30): imbalance declared with the other locals at the top and set
+// to NONE before the call 34; declared there with its NONE initializer 65 (190 bytes); open slots
+// computed just before the call 87 (170 bytes), with imbalance at the top too 87; next_party declared
+// after the array and index 34.
+// Round 38 (m3 lane 10, fast): the player count arrives in EDX in every form, whatever its parameter
+// position; an all-stack compile-only build loads extra count into EAX and player count into EBX.
+// Trials: parameters (extra, parties, player) with the caller updated 35 (player count still EDX); the
+// fill continuing the copy loop's index 70 (now: player count in ECX, party indices on the stack,
+// 0x7e210 781), with that parameter order 70; `result = false;` with the call as the test 82 (204
+// bytes); `player_count > i` 34; open slots computed after next_party 34; pre-increment in both
+// loops 34.
+// Round 55 (lane 12; the one-file LTCG harness of this file reproduces the build exactly): total and open slots
+// computed after the copy loop 96 (162 bytes), with the sum written extra first 96; total after the copy loop and
+// open slots just before the call 87 (172 bytes); open slots after the fill 87 (170 bytes); `open_slots =
+// team_count * maximum_team_size;` then `open_slots -= total;` 34 (same code). In the compile-only all-stack
+// first pass player count always takes a callee-saved register (EBX, or EDX/EBP when the sums move) and extra
+// count EAX or ECX, never EDX, so LTCG gives player count the leftover EDX.
+// Round 135 (lane 4, fast with 0x91e30): `bool result = false; if (balance_teams_by_count(...)) {...}` 82
+// (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
+// named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
+// written at the open slots, the fill and the call) 74.
+// Round 23 (m3 lane 2, fast): the function moved ahead of 0x91e30 34; the maximum updated through a
+// forceinline `long *` helper 34 (the address is promoted); `unsigned long` total 35 (`jae`); the fill value
+// copied into its own local 34 (propagated); the fill as a pointer walk 63 (199 bytes, no rep stosd);
+// `(dword)` on the fill value 34. A permuter run (42 tries) reached 8 only with a value-changing
+// `(short)next_party` fill and swapped call arguments. Diagnostic, not keepable: `(short)next_party` in the
+// fill alone gives 7 with retail's roles (player count EAX, extra count EDX, every loop register as
+// retail); adding the clamp written as `(imbalance - open_slots < 0 ? 0 : imbalance - open_slots)` gives 5
+// (left: `lea ebx, [eax + edx]` against `[edx + eax]`, the movsx and its byte). So the roles follow whether
+// the rep stosd value is the maximum variable itself (ours) or a separate value loaded at the fill (retail).
+// Round 32 (m3 lane 14, fast): the clamp as `if (excess < 0) excess = 0;` 46; `0 > excess ? 0 : excess` 34;
+// the next party value named in the copy loop 34; the party value named, stored first, then the maximum
+// 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
+// pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
+// into EBX.
+// Round 25 (m3 lane 2, fast): extra-first sum with the clamp's subtraction written in place 45 (192 bytes); a
+// `short` next_party local 76 (197 bytes); open slots as `team_count * maximum_team_size - player_count -
+// extra_count` 71; the last party index tracked from NONE and the fill writing `last_party + 1` 82 (173 bytes);
+// the clamp compare as `maximum_imbalance >= (excess < 0 ? 0 : excess)` 35.
+// Round 61 (m3 lane 9, fast; the caller's file was on another lane's list, so no parameter orders): the
+// clamp as `excess = imbalance > open_slots ? imbalance - open_slots : 0;` then `result = excess <=
+// maximum_imbalance;` 65 (205 bytes); the copy bound `i != player_count` 35; open slots as `team_count *
+// maximum_team_size - player_count - extra_count` 71; `long i = 0;` with `for (; i < player_count; i++)` 34
+// (same code); next_party first, then the total, then `open_slots = team_count * maximum_team_size;
+// open_slots -= total;` 34 (same code).
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top and 1/2/3/5 before the imbalance 34 each
+// (same code: the count register exchange is no numbering tie); the fill through a walking `long *slot` 63 (199
+// bytes); the clamp named `clamped` 34; the call given `player_count + extra_count` 34; the imbalance declared
+// bare and set to NONE before the call 34; the party index read once into `party` 73 (frame 0x40, cmovle).
+// Lane 12 r66 (fast, with 0x91e30 matched): the result as `excess < 0 || excess <= maximum_imbalance` 48
+// (193 bytes); the maximum as one ternary assignment per party 34 (same code); the fill as
+// `while (extra_count-- > 0) parties[i++] = next_party;` 70 (the party list moves to the stack); the
+// excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
+// 35. Re-measured: copy before the maximum 82, open
+// slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

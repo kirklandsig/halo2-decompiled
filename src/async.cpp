@@ -12,7 +12,6 @@
 void function_125d60(void);
 
 s_async_globals async_globals;
-s_thread_stack g_5020c8;
 s_job_node *g_510810;
 
 // @retail 0x1208b0
@@ -129,9 +128,9 @@ void function_120a90(void)
 	async_globals.free_list_mutex = CreateMutexA(NULL, FALSE, NULL);
 	async_globals.work_list_mutex = CreateMutexA(NULL, FALSE, NULL);
 	async_globals.work_semaphore = CreateSemaphoreA(NULL, 0, 150, NULL);
-	g_5020c8.unknown00 = 0;
-	g_5020c8.unknown04 = 0x4fa0c8;
-	g_5020c8.unknown08 = 0x8000;
+	g_4fa0c8.owner = NULL;
+	g_4fa0c8.buffer = g_4fa0c8.storage;
+	g_4fa0c8.size = sizeof(g_4fa0c8.storage);
 	async_globals.thread = CreateThread(NULL, 0x4000, async_thread_proc, NULL, 0, NULL);
 	SetThreadPriority(async_globals.thread, 1);
 }

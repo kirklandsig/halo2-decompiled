@@ -120,6 +120,18 @@ point2f *function_13bec0(s_tag_data const *function, byte range_index, byte poin
 // parameters swapped 12, the root as a long parameter 16; the root by an out parameter 12-16; the
 // ratio helper's parameters swapped 12-16; the root as `long bits` read back through a real
 // local that the asm multiplies by 12, with the x-first high range 16.
+// Round 52: a square-root helper with its own result local (as 0x2b9750's) and an rsqrtss asm
+// helper that only stores the reciprocal, multiplied in C, give retail's slots, stores and
+// `fld; fmul`, but pow then loads the input first (no store and reload of the product) 201
+// (1944 bytes); the same with the rsqrtss helper returning by `fld` 12; b copied into an
+// asm-visible local (retail's store order, the root takes the numerator's slot) 12; an rsqrtss
+// helper that multiplies by the estimate passed in 16; the root through a long pointer out
+// parameter 12. Screened: names and declaration orders of the root, the copy and the reciprocal
+// never move the slots; any root the asm reads takes the numerator's slot.
+// Round 62: union root result 221 (1972 bytes); root bits read from the numerator 15; reciprocal declared first 15;
+// denominator after the root 8 (retail's store order and denominator home; low root/reciprocal homes exchanged and
+// the high result home differs), rejected as only three points without a match; implicit x87 return 12; separate
+// result local 46; parameter result 225 (1984); denominator before the root 15. Opening helper restored.
 // @retail 0x13b390
 real function_13b390(void const *function, real input, real range)
 {

@@ -11,9 +11,10 @@ long log2_floor(dword value)
 	long result = 0;
 	if (value > 0)
 	{
-		while (value != 1)
+		dword copy = value;
+		while (copy != 1)
 		{
-			value >>= 1;
+			copy >>= 1;
 			result++;
 		}
 	}

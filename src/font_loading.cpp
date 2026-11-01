@@ -507,7 +507,11 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
-// score 85 (was 85): alpha extension, literal-word assembly and run-two reuse differ.
+// score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
+// retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
+// the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so
+// the 16-bit helper is kept.
+// score 85 (was 85): Frame 0xc agrees; alpha extension, literal assembly and run-two reuse differ.
 // Alpha parity extension, literal-word assembly and run=2 reuse remain. Disjoint
 // shifted/multiplied alpha fields 204/194; long/word/unsigned opacity nibble 172/236/172; word
 // color-first/alpha-first and long color-first assembly 175/228/172. Original pixel helper and
@@ -546,6 +550,18 @@ static inline word font_character_pixel(long alpha, long color)
 // each with one run workspace 185/191/204/228. Helper and decoder restored.
 // Round 231: native byte-header class / high-alpha / low-alpha field subsets 1-7,
 // then all fields with the native six-bit count, 85 each. Original input view restored.
+// Round 448: Indexed two-pixel stores with one run-based advance; full-width parity,
+// word fill pixels and default one-byte consumption, all eight combinations 161/213/153/217/131/203/122/211.
+// Original body and helpers restored; Frame 0xc agrees; alpha extension, literal assembly and run-two reuse remain.
+// Round 212: Conditional expansion, word/long results: one expanded-alpha result 216/220;
+// complete-pixel result 205/210; two-path alpha assignment 197/205;
+// separate complete-pixel returns 195/199. All restored; parity branches and
+// pointer-convention changes regress. Alpha width, literal assembly and run-two reuse remain.
+// Round 245: plain two-byte literal parser, word/dword accumulator, with full parity and
+// native word fill interactions 85/85/204/204/107/107/208/208. Original helper and decoder restored.
+// Round 470: signed helper/destination/both 85/85/85; signed fill carriers alone,
+// with helper/destination/both 109 each; all with signed color 109. All restored;
+// alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

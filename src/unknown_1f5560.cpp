@@ -310,6 +310,11 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
+// matches (0, plain): an array of one steering the state's word stack home is the same form as the
+// one-member struct below (Y201, MiniMax G), so it is reverted; the body stays at 11.
+// Not kept (MiniMax G, 10-31): the state in a named one-member struct local matches (0); that is the
+// one-member struct steering a stack home that Y201 already found here (held, ruled out).
 // score 11 (was 11): the state is loaded with movsx and spilled as a dword;
 // retail loads it into cx and keeps it in a word on the stack. Tried: the
 // state through function_e70b0's out parameter 124; this helper with an out
@@ -632,7 +637,18 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 67 (was 67): approach as its own statement after the arms (no gotos), struct copy of the
+// score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
+// products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
+// second dot's i term keeps the projection vector in the register where retail has the point.
+// MiniMax G (10-31): the first dot written out by hand (i term projection-first, j and k terms
+// point-first, an order the helper cannot express) 7: an existing helper's body by hand, kept only
+// with a match; both dots projection-first 10 (same code).
+// Earlier 12: layout, frame and code now as retail; left: both dot products evaluate their
+// Frame and block layout agree; dot-product term/operand order remains.
+// Earlier: layout, frame and code now as retail; left: both dot products evaluate their
+// y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
+// y,z), a value-numbering tie that flips with the CSE sharing of the current-point address.
+// Earlier state: approach as its own statement after the arms (no gotos), struct copy of the
 // direction and `remaining <` on the left give retail's length and code (frame 0x1c and entry
 // agree); left: retail lays the previous-point false arm and the approach call after the first
 // return (a jump-threaded copy) with the last-path projection falling into the shared test; ours
@@ -687,6 +703,34 @@ struct s_1f9762
 // Round 444: caller ordinary-inline difference/normalizer/query boundaries, seven
 // subsets 67 each; all with direction-valid-first guard 191. All declarations and
 // the complete body restored; native approach placement remains.
+// Round 38 (lane 1): kept 12: the last arm keeps only the distance test and its pointer choice moves
+// to `else if (!reached && direction_valid && unknown4d4)` after an `if (!last) { if (direction_valid)
+// { approach } }` (VC pulls the projection/return chain up behind the last arm only when the
+// approach's store is not the projection's IL predecessor). On that graph: the actor's own path
+// fields with a typed 0x528 start 23 (loses the +0x50c base); the previous point or the projection
+// index read through the actor's own fields beside `path` 4/4 (mixed views), with `dot3f(direction,
+// point)` first 2/2, with the other argument orders 4/2, with both mixes 10; compile-only screens
+// (~150 forms: else-if condition orders, declaration positions, names, previous-point if/else or
+// two calls, the path-records layout at +0x50c, a typed 0x4d8 vector, operand orders, a one-use
+// current-point pointer in the projection) keep y,z.
+// Round 14 (lane 2; fast, aligned in brackets, 30 at the start): only the first dot direction first
+// 67 [28] (retail's i product is direction first in the first dot, point first in the second; ours
+// the reverse); only the second 67 [30]; `last` as `field_2d <= field_2e + 1` 69; the previous-point
+// ternary with its arms reversed 92, with the first dot swapped 92; diagnostics, one-caller helpers
+// (not keepable): the previous point as a forceinline accessor 67 [28], the approach computation
+// as a forceinline helper returning whether it has length 67 [36].
+// Round 101 (lane 8; exact one-link LTCG harness, fast-confirmed): the first dot's arguments
+// reversed 10, the `next` local dropped 10, the projection as one condition 10 (each fixes only the
+// first dot's x-term); field_1c typed as the point record x `next` x remaining/one condition/two
+// named dots x both argument orders x `previous` local, 96 forms 10-12; the point's dot named first
+// 12 (canonicalised); `field_2e >= field_2d - 1` 13, `field_2d <= field_2e + 1` 14, `field_2e >= 1`
+// 14; path-point or current-point accessors 10-12; char/long/short index locals in the approach
+// 12/45/8 (short flips y/z but loads a word, 19 fast), in the direction arm 137-140; renames 12; the
+// projection as an inline helper in all parameter and argument orders 10. Diagnostic: the path read
+// through an embedded member at the projection only, first dot reversed, 2 (a mixed read); the second
+// dot's x-term never moved in 12 forms on that graph.
+// Round 456: Native persistent path reference on recovered block graph, readonly path, actual point value at projection and first-dot operand graphs:
+// 12/10/108/108/12/10/108/108. Original executable body and supporting declarations restored.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)
@@ -722,19 +766,22 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 		}
 		if (function_1e3920(actor_index) > distance)
 			reached = true;
-		else if (direction_valid && actor->unknown4d4)
-			projection_direction = &direction;
 	}
-	if (!last && direction_valid)
+	if (!last)
 	{
-		s_type_c3b527 *previous = path->field_2e > 0 ? &path->field_30[path->field_2e - 1].point : (s_type_c3b527 *)path->field_1c;
-		function_210be0(previous, &path->field_30[path->field_2e].point, &approach);
-		if (function_30bf0(&approach) > 0.0f)
-			projection_direction = &approach;
+		if (direction_valid)
+		{
+			s_type_c3b527 *previous = path->field_2e > 0 ? &path->field_30[path->field_2e - 1].point : (s_type_c3b527 *)path->field_1c;
+			function_210be0(previous, &path->field_30[path->field_2e].point, &approach);
+			if (function_30bf0(&approach) > 0.0f)
+				projection_direction = &approach;
+		}
 	}
+	else if (!reached && direction_valid && actor->unknown4d4)
+		projection_direction = &direction;
 	if (projection_direction)
 	{
-		real remaining = dot3f((vector3f *)&path->field_30[path->field_2e].point.point, projection_direction) - dot3f((vector3f const *)point, projection_direction);
+		real remaining = dot3f(projection_direction, (vector3f *)&path->field_30[path->field_2e].point.point) - dot3f((vector3f const *)point, projection_direction);
 		if (remaining < *(real *)(definition + 4) * 1.2f)
 			reached = true;
 	}
@@ -864,6 +911,31 @@ real normalize2d(point2f *v);
 // return, folded false exit). Request result returned from its arm 182 (919 B); early false return after
 // the retry 135; retry admission and call joined by && 135; unit index local 135; validity block
 // flattened into an early false return 232. All restored.
+// Lane 16 r46: `return valid;` folds to `xor al, al` (VC propagates the branch value), so retail's
+// `mov al, bl` returns a value it cannot prove zero. `bool result = valid;` with one exit 236 (877 B,
+// result takes BL); `result = false; if (query) result = true;` 182; the facing fallback written into
+// `direction` 135 (same code); both speed lookups as calls to the existing 0x26f290 (same body) 316
+// (/Ob1 file, stays out of line even with a __forceinline redeclaration; a local inline copy 135, same
+// code); the result renamed reachable/arrived/success 135 each.
+// Round 208: Retry-outcome-owned chosen-speed defaults with early result declaration, valid-scope
+// retry outputs and horizontal-first pair declarations, masks 0..7: 212 each at 914/935 bytes.
+// Original chosen-speed initialization and complete body restored; retained DL result and
+// movement/request exits remain unresolved.
+// Round 38 (lane 1): validity reused for the trajectory result with one final `return validity`
+// and the request call returned from its arm 236 (877 B: every exit `mov al, bl`, retail keeps two
+// variables, BL validity and a DL trajectory result); the request call returned from its arm
+// alone 182 (919 B, result still memory-homed), also with the first-type test as its own `if` 182;
+// the retry admission as `minimum < speed * 1.25f` 135; the retry success flag set after the
+// output copies 135 (same code). The compile-only harness gives the result BL, so it cannot screen
+// the LTCG memory-homing; the unmatched trajectory callee (frame 0x28 against 0x30) may feed it.
+// Round 216: Native direction/request/facing declarations at entry, seven subsets 135 each; all with entry result 135. Request scope changes lookup/copy registers, not DL residence; all restored.
+// Round 40 (lane 11, fast): `if (valid == true)` with `return valid;` 138 (cmp bl, 1, but the invalid
+// exit is retail's unfolded `mov al, bl`: VC folds the value only from a test against zero); a copy
+// `bool result = valid;` tested, `return valid;` 135 (copy propagated, folded); the jump publication
+// as a __forceinline helper 135 (same code); the request arm returning its call with the movement
+// test as its own `if` 182 (919 B). Diagnostics, all reverted: the facing normalization removed 358,
+// the retry removed 485, the type scan removed 496; the result stays memory-homed in all three, so its
+// homing does not come from the retry call, the facing calls or the scan.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1155,6 +1227,13 @@ real function_50650(real cosine);
 // clamp through a PIN macro, a named return value, and the velocity through the file's own planar
 // normalizer: identical code each (137). Retail preloads the velocity's j before fsqrt and scales i from
 // memory into a reciprocal copy; the epilogue pops sit before the final minimum's branches.
+// Round 29 (lane 11, fast; control 137): the whole minimum as one return expression 283 (1422 bytes: the
+// macro repeats the nested minimum); a two-pointer 2-D dot helper (as in 0x1b0cd0) for the velocity dot 137,
+// for the facing and velocity dots 137 (same code); facing_scale declared before turning_scale 135 (retail's
+// entry store order: facing, turning, velocity, following); the velocity copy as `= { i, j }` 137. Compile-only
+// listing: the 2-D normalize written out (plain or `*=` products) gives normalize2d_fast's code; retail keeps
+// velocity.j loaded across the length test (`mulss j, inv`, i through a copy of inv), ours folds both; the
+// non-LTCG listing places the four pops after the last merge's comiss as retail does, our LTCG build does not.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1397,13 +1476,14 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
-// Round 16: retail's result sits at [esp+0x10] and its radius at [esp+0x14], ours the other way
-// round, and retail materialises both direction components before the x87 length.
+// MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),
 // spills the lateral term to the type slot, and puts radius/desired, then direction, below the
 // difference/transformed-origin slot.
+// Round 16: retail's result sits at [esp+0x10] and its radius at [esp+0x14], ours the other way
+// round, and retail materialises both direction components before the x87 length.
 // With ordinary input/side lifetimes: persistent target 313, both input points 297, shared
 // arccosine 296, late radius 312, frame pointer 401. Ordinary lifetimes: facing value 307; scalar
 // side 309; scalar center 306; origin constructed first 306; reused negative radius 329. Ordinary
@@ -1486,6 +1566,15 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // Round 444: Ordinary origin with zero result after type/side/projection geometry
 // 292/284/284; assigned-sign counterparts 292/281/281; forward-scoped result with
 // direct/assigned sign 300/300. All restored; zero/radius and vector homes remain.
+// Round 208: Forward-before-lateral projections with ordinary origin, y-first type/side center pairs
+// and origin-workspace-first masks 0..7: 257/286/286/279/257/286/286/279. Original projections, row
+// stores and complete body restored; natural input convention, zero/radius and direction homes
+// remain.
+// Round 38 (lane 1): the side offset as if/else arms with the products in each arm 270 (aligned
+// 215 -> 194: zero in xmm1 and the type-zero arms closer, entry homes unchanged); with the flag
+// declared after the normalization 305 (1188 B); radius renamed to sort before the stack points 238,
+// `center` declared beside `direction` 238, radius declared before the flag and result 238 (same code).
+// Round 216: Early origin/target/both/facing/origin-facing/target-facing/all point values before lookup 322/311/346/331/351/347/380; all with entry result 380. All restored; zero/radius and native input/vector homes remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

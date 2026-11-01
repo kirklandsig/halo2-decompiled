@@ -103,6 +103,10 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // after the entry value; ours uses EAX and hoists them. `if (result && call)` without the outer else
 // 113; inner update false-first 18; receiver through `peers` 108; `handles[i]` at each use 18;
 // permuter 56 tries, best 18.
+// Round 184 (lane 3): `if (result && call) result = true; else result = false;` 113 (386 bytes);
+// `if (!result || !call) result = false; else result = true;` 113; the inner update as
+// `result = call ? true : false;` 113; the entry index as a local 18 (same code); the inner
+// `if (result)` dropped (the loop condition implies it) 126 (370 bytes).
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {
@@ -312,7 +316,12 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	long local_1 = arg_1[0];
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
-// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// score 115 (was 115): frame 0x1c agrees; validation items/data carriers and entry past the items reload differ.
+// Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// this round: no new form; the case 1/3 loop still keeps its cursors in
+// registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
+// Earlier (115): the case 1/3 loop still differs in registers: retail keeps the items
+// Earlier: the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
@@ -374,6 +383,35 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // to the helper 115; the case 2/4 entry through a named element pointer 115, its state read once into
 // a named local 115 (same code). Natural loops still split the handle (harness: pointer cursors 184
 // positional, index loops with the direct call or the helper 184/185).
+// Round 30 (lane 13, fast): the cursors declared at the case top without the volatile reads 212 (528
+// bytes), also shared (with the counter) by the notify loop 212; the notify loop reusing the validation
+// counter 115 (same code); no early return after the validation 115; a `void *const *` data cursor over
+// data.v 115. Compile-only, the natural loop still splits the handle with the loop in a forceinline
+// helper, without the `__assume(0)` default, with extra cases, or with the handle used inside the loop.
+// Round 214: shared phase ordinal 115; entry chain array 115; positive validity admission 115;
+// ordinal/entry chain array 115; ordinal/positive admission 115; entry array/positive admission
+// 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
+// Round 106 (fast): after the loop retail loads the count into ECX (ours EAX), which shifts the count == 1
+// block and the chain call. Count test inverted (chain call first) 109 at 544 bytes; result test as a scope
+// instead of the early return 115; loop condition operands swapped 115; dword handle 115; case 2/4 written
+// before case 1/3 162.
+// N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
+// Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, code equal to the full listing; env positional/
+// aligned 99/55 for this body): retail's loop cursors behave as ordinary spilled variables (the items cursor
+// reloaded on the back edge only, the preheader's EAX used on entry; ESI/EDI untouched in the loop), not volatile
+// reads. New: an index for loop through a forceinline helper taking the block and the index, without the
+// volatile reads, 184/55; the items cursor typed as the field's dword (volatile reads kept): identical; the
+// handle re-read from the request in the count-one tail (diagnostic, natural loop) 184. Re-measured in the env
+// only (listed above): no volatile reads 184/63 (handle spilled before the switch, items cursor in EDI), the
+// loop in a forceinline validator 184, a for loop stepping both cursors 193, an index loop passing element
+// addresses 185.
+// Round 60 (lane 16, fast): without the volatile cursor reads (207, 524 bytes) VC splits the handle around
+// the loop (spilled at entry, reloaded after) and gives EDI to the items cursor; retail keeps this/request/
+// index/handle in EBX/EBP/ESI/EDI and spills both cursors and the counter. On that base: the notify loop
+// reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
+// (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
+// index declared first from the field (`index & 0x3ff`, then the handle) 207.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

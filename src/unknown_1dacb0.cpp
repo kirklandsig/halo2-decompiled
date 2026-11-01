@@ -1157,6 +1157,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // The matched channel-refresh caller also differs; original complete body restored.
 // DL204: last native named-record selection, guarded/conditional complete result,
 // mutable/readonly source and member/aggregate iterator 990/1005/990/1005/990/1005/990/1005. Restored.
+// Round 459: Resolved-output defaults after corresponding key stores,
+// mode/class/both/type/mode-type/class-type/all 828/828/828/828/828/828/828; all after traversal defaults
+// 826. Original initialization restored. All executable trial forms restored.
+// Round 262: Ordinary inline metadata on existing private resource levels: outer alone 3524
+// (310/2825); middle/inner and all remaining pairs/triple 828 each; all with forced existing
+// animation-resource expansion 828. All provider metadata, target body and request tuples restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1278,6 +1284,15 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // gives 839/839 and loses twelve checked matches. Two-point reductions rejected. Inline trials
 // recover all controls. Return/candidate/output homes and late zero carrier remain; original body
 // and declaration restored.
+// T47: Full native iterator memset before key publication, with requested-key ownership
+// subsets 0..7: 996/999/1021/1042/999/999/1023/1042. Native clear reaches retail
+// length in some forms but does not recover the homes; original complete body restored.
+// Round 459: Resolved-output defaults after corresponding key stores,
+// mode/class/both/type/mode-type/class-type/all 828/828/828/828/828/828/828; all after traversal defaults
+// 826. Original initialization restored. All executable trial forms restored.
+// Round 471: Separate selected graph/index short/short, short/long, long/short, long/long,
+// materialized before/after outputs 1024/1002/1017/1000/1018/1001/1014/1002.
+// All selected-component carriers and original constructor lifetimes restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -67,6 +67,9 @@ struct s_4e6950
 };
 extern s_4e6950 g_4e6950;
 
+// score 0 (was 342): MATCH. The scale coefficients are read through their own address in the
+// three scaled cases (23, 35, 24), as retail re-reads them from memory after every store
+// through out; the aggregate copies and the common switch exit stay as they were.
 // score 342 (was 342): Retail length recovered; scaled cases still hoist coefficients rather than reload after stores.
 // Round 291: Native component loops for case subsets 23/35/23+35/24/23+24/35+24/all:
 // 351/351/381/351/381/381/381; all with four global-scale loops 381 (fast control 351).
@@ -83,6 +86,9 @@ extern s_4e6950 g_4e6950;
 // Round 445: Clamp-only component walk after retained scaler 367; symmetric first-product
 // lifetimes 342; both 367; symmetric biased-product lifetimes 342; walk/biased 367;
 // first/biased 342; all 357; all with forced existing clamp 357. Original body/helper restored.
+// Round 451: Existing complete-vector setter for clamped case subsets
+// 23/35/23+35/24/23+24/35+24/all, then forced clamp on all: 360/343/337/344/389/388/352/352.
+// Five-point form rejected; original publications restored.
 // @retail 0x33980
 void function_33980(long selector, vector3f *out)
 {
@@ -153,28 +159,30 @@ void function_33980(long selector, vector3f *out)
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector30;
 		*out = *vector;
-		vector3f_scale(out, g_485a6c, out);
-		out->i = pin_unit(out->i);
-		out->j = pin_unit(out->j);
-		out->k = pin_unit(out->k);
+		/* retail re-reads the scale from memory after every store through out */
+		out->i = pin_unit(out->i * *(real const *)&g_485a6c);
+		out->j = pin_unit(out->j * *(real const *)&g_485a6c);
+		out->k = pin_unit(out->k * *(real const *)&g_485a6c);
 		break;
 	}
 	case 35:
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector30;
 		*out = *vector;
-		out->i = pin_unit(out->i * g_485a6c * 0.5f);
-		out->j = pin_unit(out->j * g_485a6c * 0.5f);
-		out->k = pin_unit(out->k * g_485a6c * 0.5f);
+		/* retail re-reads the scale from memory after every store through out */
+		out->i = pin_unit(out->i * *(real const *)&g_485a6c * 0.5f);
+		out->j = pin_unit(out->j * *(real const *)&g_485a6c * 0.5f);
+		out->k = pin_unit(out->k * *(real const *)&g_485a6c * 0.5f);
 		break;
 	}
 	case 24:
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector10;
 		*out = *vector;
-		out->i = pin_unit((g_485a70 + 1.0f) * out->i);
-		out->j = pin_unit((g_485a70 + 1.0f) * out->j);
-		out->k = pin_unit((g_485a70 + 1.0f) * out->k);
+		/* retail re-reads the scale from memory after every store through out */
+		out->i = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->i);
+		out->j = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->j);
+		out->k = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->k);
 		break;
 	}
 	case 25:

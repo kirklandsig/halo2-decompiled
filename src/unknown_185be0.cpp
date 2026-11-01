@@ -289,6 +289,15 @@ union s_185be7
 // power call; control-root/NONE, settings/zero homes and flag joins remain.
 // Independent final input-five/four/seven Boolean ownership, subsets 1-7: 728/754/776/750/777/757/786; all with selected-input Boolean 784.
 // The three-point input-five lead is below the retention gate; every original predicate observation, individual helper call, root and full body restored.
+// Round 452: shared object/header getters and readonly settings, subsets 1-7,
+// 731 each; complete shared graph with ordinary lookup/predicate inline 810.
+// The control-root/NONE and range-result homes remain; original full source restored.
+// Round 461: raw third-input byte/word/long/dword across duration and latch tests
+// 734/730/733/733; complementary inactive bool/byte/short/long 731/731/728/730.
+// Gains at most three rejected; original Boolean carrier and complete body restored.
+// Round 265: library range / paired axis-duration / paired response-weight-angle
+// selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
+// upper-first nesting 1320. Native frame, original custom clamps and full body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

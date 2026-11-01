@@ -49,6 +49,14 @@ struct s_emitter_248340
 // arguments are pushed before the queries, so retail used named locals); the tag local set by the
 // guard's query and re-queried in the block 27 (31 with the volatile); the emitter decrement before
 // the particle store 8; the definition as a reference 4.
+// Round 57: without the volatile the all-stack first pass gives the tag ebx and particle ebp
+// (so particle stays a stack argument); renaming tag, definition index, group, particle or
+// emitter leaves that pass unchanged. Without the volatile (one-file harness, aligned counts): plain
+// 11 (`ret 8`, tag in ebx); tag declared before the definition index, emitter decrement first, group
+// named: the same code as plain.
+// Round 97: plain tag with the emitter address at the end or entry 27/27 (caller 138); tag read through
+// its address 27; both addresses 27; const group home 4; const definition pointer 4;
+// const particle or emitter parameter 4/4 (caller 137).
 // @retail 0x248340
 void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	s_emitter_248340 *emitter)

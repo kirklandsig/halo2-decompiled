@@ -90,7 +90,7 @@ PRIVATE __forceinline void scripted_vector_scale(vector3f const *vector, real sc
 
 /* sets an object's linear velocity from speeds along its forward, left and up
    axes */
-// score 30 (was 76): frame 0xc and retail's spills of the left products into velocity agree; 378
+// score 30 (was 30): frame 0xc and retail's spills of the left products into velocity agree; 378
 // bytes against 377. Left: two cross-product terms take the other operand order, the k spill is
 // scheduled after `push ebx`, and the up term is loaded rather than copied from up_speed (one byte),
 // so the three final sums land in the up registers where retail keeps them in the forward ones.
@@ -131,6 +131,39 @@ PRIVATE __forceinline void scripted_vector_scale(vector3f const *vector, real sc
 // declared before left with the left-first chain 87.
 // Round 232: Completed-vector memcpy / native component loop crossed with original / staged cross and native / helper left addition
 // 83, 76, 82, 75, 83, 78, 83, 78. Original executable source restored.
+// Round 107 (fast; compile-only harness reproduces the product operand choice and final-add registers,
+// and every text order of products, sums and scale spellings compiles the same): `vector3f const
+// *forward = &object->forward;` passed only to the cross product 8 (377 bytes: retail's up-term copy and
+// schedule; left: the j row's second product loads fwd.k where retail loads up.i, and the three final adds
+// put the sum in the up registers); not kept, a one-use pointer local without a match. On it: an up
+// pointer in the up scale 26, in the cross 26, declared first and both in the cross 34; forward pointer in
+// the forward scale too 33, there only 28; up pointer alone in the cross 16 (that product right, the
+// other five flip); up pointer in the cross and up scale 76 (366); first sum before the up scale 83;
+// second add's operands swapped 8 (same code). Pointer locals for both scales only 26 (cross terms
+// retail's, schedule not); on it up scaled first 28, up added through vector3f_add_scaled 83 (361).
+// Also on the 8 form: up through vector3f_add_scaled 83 (361); first sum into forward_part, then
+// forward_part + up_part into velocity 8; vector3f_scale for the up, forward or left part 8 each (same
+// code); up scaled before left 77 (380). A second object lookup for the cross product's forward 30
+// (CSE'd away). Harness: the cross helper's six row orders, plain or staged, keep the j row's operand
+// order (orders starting with k fix it but compute k first); a shared `part` vector 33. Pointer
+// placements (forward in cross/forward scale, up in cross/up scale): up scale only 28; forward scale and
+// up cross 34; those plus the up scale 74 (366); forward in cross and both scales 32; forward cross, up
+// cross and up scale 31; forward cross and scale with up cross 31.
+// Round 4 (lane 18, fast): second products of the j and k cross terms with the operands swapped 30
+// (same code); first add as velocity + forward_part 30 (same code); scale as scale * component 30
+// (same code); scale storing j, k, i 46; cross storing k, j, i 40; velocity declared first 30; cross
+// product straight into velocity, scaled in place 32. Restored.
+// Round 21 (lane 14, fast): `forward`/`up` pointer locals for the cross product only, up declared first
+// 34; forward declared first 26 (retail's cross-product operand order; one-use pointers, not kept);
+// those pointers also used in the two scalings 42 (377 bytes and retail's k-spill schedule, but the
+// forward j and up j products multiply from memory where retail preloads them); in the forward scaling
+// only 31, in the up scaling only 32 (both 377 bytes); the first sum before the up scaling with the
+// cross pointers 81 (362 bytes), with all pointers 86 (360). The last adds accumulate in the up
+// registers in every form (retail in the forward ones).
+// Round 93: forward-only cross pointer/reference 8; staged cross, unit scaled add, velocity-first,
+// late or mutable pointer and forward-up declarations 8 each on that base; both sums forward with
+// publication 84; up-alias cross 111; forward-alias 130; single accumulator and second-sum-forward
+// 85 each (caller conventions changed). One-use aliases not kept; original restored.
 // @retail 0x10b010
 void function_10b010(long object_index, real forward_speed, real left_speed, real up_speed)
 {

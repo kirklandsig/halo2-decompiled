@@ -501,6 +501,16 @@ struct s_tag_header_globals
 
 extern s_tag_header_globals *g_4e034c;
 
+/* the globals' material table (+0x150 count, +0x154 elements of 0xb4 bytes) */
+inline byte *global_material_get(short index)
+{
+	byte *result = 0;
+
+	if (index != NONE && index >= 0 && index < *(long *)((byte *)g_4e034c + 0x150))
+		result = *(byte **)((byte *)g_4e034c + 0x154) + index * 0xb4;
+	return result;
+}
+
 /* g_4687a4: a default vector, read by the camera (2-10) and animation code */
 extern vector3f *g_4687a4;
 

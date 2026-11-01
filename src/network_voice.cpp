@@ -1331,6 +1331,38 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // element pointer 109, the same through a cursor `&channel[i]` 108, `channel + i` / `channel[i]`
 // 128 (368 bytes), indexed with a separate result 112; cursor, flag, total order 99 (350 bytes);
 // the cursor step in the for statement 94 (same code).
+// Round 95: single cause, the identity flag's register (bl, retail al); every other difference follows from it.
+// Flag before cursor and total 93 (350 bytes); flag, total, cursor 111 (0x54990 1); flag set by an if
+// from false 93 (still bl); flag at function entry 108 (0x54990 1); getter value kept as a long and compared
+// in the ternary 141 (0x54990 13); screened: const flag, `? true : false`, a per-channel stride local in
+// either operand order, `2 + product`, two-statement and parenthesised adds 94 (same code); flag per channel
+// 165 (390 bytes); the channels pointer kept live past the loop (diagnostic) leaves the flag in bl.
+// Round 112: the materialised has_player bool takes EAX; written `active && (mask & bit) != 0` (no bool) the flag
+// gets AL, the mask EBX and the active byte CL as retail (harness aligned 105 -> 49) but 0x56160/0x56380 need
+// the result form: 118 (0x56160 69, 0x56380 130, 0x54990 5 lost). Count read before the has_player test 141
+// (383 bytes); shared inline flag helper for 0x56220/0x56380 94 (same code); per-channel `result = 0; if (...)`
+// helper 193 (411 bytes); values as dword 94 (same code). Screened, same code or worse: 27 order/traversal/helper
+// forms, 30 product spellings (count/size locals, two adds), mixed direct/pointer reads 368-372 bytes.
+// Round 8 (lane 17): BLOCKED-BY 0x56160 and 0x56380, whose matches pin the shared bool helper (retail materialises
+// the per-channel test in CL after the shift, ours in AL). The helper returning byte/char/a bool through a byte
+// return 94 each with 0x56160 68; returning long 123 (0x56160 103, 0x56380 123, 0x54990 5); `(!is_unknown00 ? 11 :
+// 13)` 94 (same code); a per-channel multiplier set by an if 110 (0x54990 13); `player == voice_get_unknown00()` 94.
+// Round 27 (lane 14, fast; harness positional/aligned 90/105 on the control): has-player as an early
+// continue with the cursor step in the for header 94; identity compare written player == getter 94;
+// multiplier before the count in the product 94; `total += 2` 94 (all four the same code); cursor, flag,
+// total order 99 (350 bytes; channels moves to EDI, flag still BL); cursor declared at entry (harness) 113
+// with 0x54990 off by 11. Retail's colours all follow from the flag taking EAX before the loop temps
+// (mask then lands in EBX, has-player in CL); every form here lets the mask take EAX first.
+// Round 20: the walk also differs in its steps: ours adds 0x170 after every unrolled channel, retail
+// addresses the four channels at fixed offsets from one cursor and steps 0x5c0 once. `&channel[i]`
+// through the local pointer 128 (368 bytes: a second IV for the values, biased +0x2ec base, 0x54990
+// 6); flag first with the step in the for statement 111 (channels in EBP, 0x54990 1; flag still BL);
+// a named per-channel size in the arm 94; nested initialized/have-player tests 94; `2 + (flag ? 13 :
+// 11) * value` 94; a countdown counter `remaining = 16 .. > 0` 94 (all four the same code).
+// Round 10 (lane 17): flag, total, cursor 111 (0x54990 1; channels moves to EBP but the flag still takes BL, so
+// channels being live at the flag's definition is not what keeps retail's flag in AL); the flag declared at
+// function entry and assigned in place 94; the getter result named before the compare 94; total, flag, cursor 108
+// (0x54990 1); cursor, flag, total 99 (350 bytes); the cursor `s_voice_channel const *` 94 (same code).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1384,9 +1416,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// score 134 (was 134): the retained mask is a plain local and the pre-loop statements run capacity,
+// size, written, mask: the bit (EBP), size (EBX), count (ECX), the frame order i/written/kept/size/bit
+// and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
+// `written = 0` and the PIN test (retail `test edi, edi`, immediate store), so the capacity-fail exit
+// gets its own `xor eax, eax` epilogue and the code is 460 bytes against 449.
 // Round 19: unchanged; retail keeps the player bit in EBP and the queue count in ECX, ours
 // caches the count in EBP and moves the bit to EBX; no new form was found.
-// score 141 (was 141): the convention now agrees with retail (queue ESI, player EAX copied to
+// Earlier, at 141: the convention now agrees with retail (queue ESI, player EAX copied to
 // EDI, cursor EDX before the player as the declared order, the rest on the stack, `ret 0xc`): the
 // result is computed before the header stores, so EDI holds it after the loop. Still differs:
 // retail keeps the player bit in EBP and the queue count in ECX (ours caches the count in EBP and
@@ -1416,6 +1453,29 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // product in EBX and the player back in EDI).
 // Round 198: one final mask snapshot dword/word after header 142/142, before result 141/141,
 // after result 141/141; snapshot with written before size 168/168.
+// Round 98 (lane 8; LTCG env link of this file, 0x56380 built in the same link; env rows
+// positional/aligned, volatile base 128/54): the 24 orders of mask/size/written/capacity with a
+// volatile or plain mask, named or inline bit, single exit or direct returns: with a plain mask,
+// every order that computes the mask before the size passes the player on the stack (0x56380 lost);
+// capacity/size/written/mask 122/27 (kept, check 134), size/capacity/written/mask and
+// size/written/capacity/mask 125/33; direct returns 154+. On the kept order: the first cursor byte
+// stored in each include_mask arm 151/58 (475 bytes; retail's test-before-store order); the mask
+// declared inside the capacity test 127/49 (449 bytes, bit in memory); both 127/45; written declared
+// there 157/77; capacity test as an early `goto done` 122/27; long/dword types 122/27;
+// `entry_size <= capacity` 122/29; bit-first loop test 122/27; mask and written before the
+// has-player test 150/82; has-player in a named bool 122/27; written at function scope 141/134
+// (0x56380 lost); `2 + written * entry_size` 122/27; a direct `return NONE` 162/242; the inactive
+// queue as an early `goto done` 122/27; one `||` failure test 139/40.
+// Round 20: the zero in EAX is a shared constant for the result, the PIN test and `written = 0`;
+// with a non-constant result start (diagnostic) the PIN test becomes `test edi, edi` and written an
+// immediate store (205, convention moves). Inactive queue as an early `return 0` 191 (0x56380 73);
+// written declared inside the capacity block 197; nested else arms instead of the gotos 134 (same
+// code); first cursor byte stored in each include_mask arm with `*cursor++` in the else 178 (475
+// bytes); the player bit written at its use 134 (same code); clamp test removed (diagnostic) 171
+// with `ret 0x10`.
+// Upper-first ternary, sequential bounds, lower/upper-first conditional clamped-result construction:
+// 179/134/134/140; same four with exhaustive result production 201/177/177/177. Zero sharing and pre-loop
+// scheduling remain; original source restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1434,10 +1494,10 @@ long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *outpu
 			result = NONE;
 			goto done;
 		}
-		volatile dword kept = (1 << queue->count) - 1;
+		capacity -= 2;
 		long entry_size = include_mask ? 13 : 11;
 		long written = 0;
-		capacity -= 2;
+		dword kept = (1 << queue->count) - 1;
 		if (capacity >= entry_size)
 		{
 			for (long i = 0; i < queue->count; i++)
@@ -1554,6 +1614,8 @@ static inline bool voice_mode_is_passive(void)
 	return result;
 }
 
+static inline dword voice_get_player_mask_inlined(void);
+
 // score 85 (was 94): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -1587,18 +1649,20 @@ static inline bool voice_mode_is_passive(void)
 // compiled /O2 or redeclared inline/__forceinline is inlined in all three callers; with the session getters
 // 0x59670/0x596a0 opaque the eager pair and esi remote appear (60, 415 bytes), so the lazy byte is
 // BLOCKED-BY 0x59670/0x596a0 being visible to LTCG, the call by 0x53bb0's per-site inlining.
+// Round 95: the active mask through the existing getter 0x54d00 171 (called, 390 bytes); the inner removal
+// test nested under the mask test, a named target bit, or a named removal flag 85 each (same code); the remote
+// mask computed after the active mask 113. 0x53bb0 declared inline (diagnostic) inlines it in all three callers
+// and its copy here runs 19 bytes long (102), so the per-site inlining is not the only gap.
+// Round 112: harness with 0x59670/0x596a0 left out (opaque to LTCG) gives retail's eager byte pair and ESI
+// remote from this source (aligned 19 -> 13); only the inlined second port-flag query is then left. Muted mask
+// as one conditional expression 98; memset before the player-mask read 141; `~muted & remote` 85 (same code);
+// the player mask through 0x54b10 182 (386 bytes); through the existing inline twin 85 (same code, kept).
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
 	if (values->enabled)
 	{
-		dword players = 0;
-		if (voice_available())
-		{
-			byte *membership = (byte *)voice_get_membership();
-			if (membership)
-				players = *(dword *)(membership + 0x10d0);
-		}
+		dword players = voice_get_player_mask_inlined();
 		dword local = voice_get_local_player_mask();
 		dword remote = players & ~local;
 		dword active = 0;
@@ -2214,6 +2278,16 @@ long voice_players_share_team(long other, long player)
 // with separate noinline 25,25,25; mode force-inline alone/with both outlined queries 25,25.
 // Lane 13 r20: team flag taken before the membership call 142; team test as `mode != 2` 25; ternary
 // mask in the block 47; `mode == 3 || mode == 2` 25; mode read from the global field 25.
+// Lane 12 r66 (fast): retail's EAX test and `mov esi, eax` copy are the global-test form with the
+// mode and the mask named inside the block (`if (g.mode == 2 || g.mode == 3) { long mode = g.mode;
+// dword mask = 0; ...`) when the 0x53de0 call ends the global's availability: with a compiler barrier
+// after those two declarations (diagnostic only) it matches byte for byte; our link proves 0x53de0
+// leaves the global alone, so the inner uses fold back into the test's load (56). Tried: early
+// returns of the named result (init, then mode) 114; a force-inline helper taking the mode 123 (the
+// convention moves to ECX); the getter named inside under a global test 56; the global read at both
+// tests with the mask inside 56; the mask declared after the mode 25 (same code). Diagnostic: a write to
+// an unrelated global added to 0x53c30 does not end the mode's availability (56): the link tracks
+// which globals a callee writes.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
@@ -2667,57 +2741,7 @@ long __stdcall function_53b00(long player, byte *output, long capacity)
  return result;
 }
 
-// score 19 (was 124): frame, flag block and register roles now agree; retail calls 0x53c70 before
-// pushing the other 0x56790 arguments (ours pushes four first; a named or multiply-assigned result,
-// a long result, `inline` on 0x56790 and 0x53c70 opaque in the harness all keep it after them), and
-// three scratch registers in the final arms differ (remaining loaded into EAX, the bit into EDX).
-// Round 19: unchanged; the capacity/preserve homes, the preferred-bit scheduling and the 0x53c70
-// call order still differ; no new form was found.
-// Earlier at 124: capacity/preserve homes, preferred-bit scheduling and the 0x53c70 call order differ;
-// retail tests the availability flags once (no re-read) and recomputes 1 << preferred for the final ors.
-// Frame 0x14 agrees; capacity/preserve homes, preferred index/bit and helper setup differ.
-// Earlier: capacity/preserve homes, preferred-bit scheduling and session-field load differ.
-// Capacity named slots 124; native long preserve 144; final preferred-bit recomputation 161;
-// non-preservation-first finish 131; separate entry guards 124.
-// Preserve declared before capacity 124; complete output fill 146; later preferred-bit lifetime 124;
-// direct deferred-mask expression 124; combined skip predicate 124. Original body retained.
-// Boolean role names 124; entry-scope workspaces 124; guarded preferred/mode values 154;
-// shared final selected bit 189; direct blocked assignment 165.
-// Capacity/preserve and preferred-bit homes remain; original body retained.
-// Mode read from field +4 as retail does (value fix) 124; existing unknown00 getter 124;
-// plain flag test for preferred 162; word deferred 138 (its block then agrees, 447 bytes);
-// zero-initialised masks 124 but loses the matched 0x54890; int/unsigned shift in the final ors 176/176.
-// Captured/working capacity after guard/preserve/preferred/mode/members 127/147/158/147/147;
-// entry working declaration 127; derived capacity before admission/in routing scope 147/130. Restored.
-// Round 117: Plain availability fields 162; joint workspace names 124; full final mask 143; mode observation first 130; existing preferred getter 124; byte preserve 146; unsigned preferred 124.
-// Definite blocked path result 165; shared mode-two capacity 160; direct session query 188;
-// early allowed-member query 124 (exact-only); mode-two admission first 137;
-// preferred eligibility first 142; complete blocked-preservation arm 124; path result plus arm 165.
-// Round 71: shared availability scope with full-width deferred 167 (432 bytes);
-// full-width deferred with final preferred-bit recomputation 178 (417); entry preserve 124;
-// early allowed-member query with final recomputation 161 (428); entry preserve/selected 124;
-// selected-only recomputation 144; nonblocked deferred-only/both recomputation 146/146 (470).
-// Original body restored.
-// Round 82 (one-file LTCG build, exact for this file): plain flag reads in the preferred getter give retail's flag
-// block (CL for the second flag, AL kept for the mode test) and recomputing 1 << preferred for the final ors puts the
-// index in EDI as retail does, but either lets the bit take EBP and the mode a cmov (retail: the bit in EBX, spilled
-// around the calls, and the mode on the stack). Word deferred 138; recomputed ors 161; both 176; plain getter 162,
-// with both 177; the 0x53c70 result in a named local 124 (the call stays after the pushes); every order of the bit,
-// blocked, selected and deferred declarations, five finish shapes and a 250-form toggle sample 124 or more. The
-// one-use deferred temporary and its casts were dropped (same code).
-// Round 86: mode in an if/else 157, declared first 135; word deferred with selected ored first 138; output
-// stores in each finish arm 160; bit tests through function_56790(dword, long) 165; local renames move no
-// slot; with the plain getter the mode becomes a cmov and selected loses EBP; a 154-form toggle search 124+.
-// Round 30 (lane 10, one-file harness exact, whole-file mode): `capacity = 1` stored once after the
-// eligibility chain gives retail's frame (preserve 0, capacity 4, deferred 8, mode 0xc) 134; with plain
-// flag reads in the preferred getter 121; then the bit: a named bit local 148, the 32 mixes of the local
-// and the recomputed shift 76-175, the shift at every use (retail recomputes it in both final arms)
-// with `deferred` as a word and `selected` declared first 23; 0x56790's register pointers in retail's
-// setup order (remaining, capacity) 19. Kept as the existing bit test for the two tests and the existing
-// word_flags_set for the three ors (same code). On that body: blocked-arm ors swapped 70, nonblocked
-// arm swapped 21, `if (!preserve) deferred = 0; else if ...` 59, cast-free ors 19, operand orders in
-// the tests and masks 19, a single-exit nested opening 19 (identical), the goto replaced by a test of
-// blocked 124 on the old body (identical code, not kept).
+/* fills a route with the members the routing reaches now and the ones it defers */
 // @retail 0x565c0
 void __stdcall function_565c0(s_voice_routing *routing, dword remaining, s_voice_route *output)
 {
@@ -2751,8 +2775,9 @@ void __stdcall function_565c0(s_voice_routing *routing, dword remaining, s_voice
   remaining &= eligible;
   if (deferred)
    blocked = true;
+  dword allowed = kind == 2 ? function_53c70() : 0;
   if (kind == 2)
-   function_56790(&remaining, &capacity, function_53c70(), &selected, preserve, preferred, &blocked);
+   function_56790(&remaining, &capacity, allowed, &selected, preserve, preferred, &blocked);
   if (capacity != 1 || !preserve || !blocked)
    function_56790(&remaining, &capacity, (dword)-1, &selected, preserve, preferred, &blocked);
  }
@@ -2761,8 +2786,8 @@ finish:
  {
   if (blocked)
   {
-   deferred |= (word)remaining;
    word_flags_set(&selected, preferred, true);
+   deferred |= (word)remaining;
   }
   else if (function_56790(remaining, preferred))
   {
@@ -3091,6 +3116,24 @@ struct s_voice_route_choice
 // Round 86: a choice cursor declared first and stepped at the end of the body 392 (frame 0x48); a reference to
 // the listener mask 399; the headset test inverted 406; the distance comparison reversed 363 and the nearest
 // test nested 363 (same code).
+// Round 95: after the loops retail holds talker in EBX and a zero in EBP (byte tests then load al and test
+// it, the priority-0 push is `push ebp`, and the two SetPlaybackPriority tails merge); ours swaps them (zero
+// in EBX gives `cmp [mem], bl` and the separate tails). An extra per-iteration use of choices or talker
+// (diagnostic) moves neither. Word headset 364; branch radio with a word headset 408 (1273 bytes, aligned
+// differences 220 against 281); the nearest arm first (`if (!radio && nearest != NONE)`) 383, with branch radio
+// 416, with a word headset 384.
+// Round 446: Unsigned nearest/player field plus ordinal/both, signed headset alone/with nearest/
+// with player/all three, and player field alone: all eight 363 on the byte-bitwise graph.
+// Unsigned mode field did not compile; original mode, records and full body restored.
+// Round 112: a named XUID used by both radio-arm engine calls 375 (1288 bytes); with branch radio 418; with a
+// per-choice pointer 385; branch radio, pointer and XUID 417; the same with the NONE-nearest arm first 420
+// (aligned best of a 16-form screen, frame 0x50). Entry and tail rotation (talker EBP, zero EBX) unchanged.
+// Round 462: Consumed next-ordinal choice pointer/reference before headset, original/reused talker
+// mask 1075/1084; after headset 1079/1088; reference forms 1075/1084/1079/1088. All suppress
+// four-way expansion; original body restored.
+// Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
+// masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
+// original observations, bitwise radio and full body restored; entry/cursor allocation remains.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3270,9 +3313,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// score 139 (was 139): channel/cursor/count registers and route homes differ;
 // Round 19: unchanged; retail keeps the channel in ebp from entry and the cursor in edi, ours
 // gives the member index ebp and reloads the channel; no new form was found.
-// score 139 (was 139): channel/cursor/count registers and route homes differ;
 // frame pointer 188; short stride 163; short index 139; recipient-bit reuse 161; route name 139.
 // Round 53: retail keeps the channel in ebp from entry (its home then holds the route) and spills
 // the current member; ours gives the member ebp and reloads the channel. A packet cursor beside the
@@ -3291,6 +3334,36 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 86: cursor with a channel-index local in the relay arm 158, with a dword member mask 190, with split
 // NONE/kind tests 164; index local, late stride and early counter 158; index local in the other arm 162;
 // a 245-form toggle search 139+.
+// Round 95: the allocator ranks the member local just above the channel parameter: with the packet cursor,
+// one extra per-iteration read of channel->index (diagnostic store to a global) flips EBP to the channel
+// from entry, the route moves into the channel's parameter slot and, with the entry order size, stride,
+// count, cursor, only that store, `add edi, ecx` for `add edi, 2` and retail's separate zero-trip exit
+// (`mov eax, ecx`) differ (harness 61); the member forced to memory gives the same flip (136). Local and
+// parameter names change nothing. Real trials: cursor 164; cursor with entry order size/stride/count/cursor
+// 167; member fetched before a shared kind test 169; clear through word_flags_set 164; named member bit
+// 179; screened: the existing inline bit test 164, arms swapped 156, member declared at loop top 167,
+// a shared two-call receive helper 184.
+// Round 446: Direct count bounds disjunction/lower-first/upper-first 185/179/180;
+// byte admission with original clamp 139; byte/long direct bounds 185/182;
+// direct/byte bounds with independent cursor 177/177. Original complete body restored.
+// Round 112: with a packet cursor declared after the consumed count (cursor first merges it back into
+// data + consumed) the member takes EBP; one extra channel->index read at the loop, relay-arm or plain-arm top
+// (diagnostic store, reverted) flips EBP to the channel (harness aligned 84 -> 30), leaving only the entry
+// order and retail's separate zero-trip exit. Real: cursor with consumed, size, cursor, size order 164; consumed,
+// size, packet size, cursor 162; shared two-call receive helper 192 (457 bytes); plain arm first 153; member at
+// function scope with split NONE/kind tests 164. Screened, no flip: 24 entry orders, 48 combinations of split
+// tests, members before the call, route at loop scope, (word) clear, `> 1`, `packet_size > size`.
+// Round 52: packet cursor beside the count (retail's EDI cursor, BX mask, ESI size; the member then
+// takes EBP and the channel stays in its stack slot) 164; with that, the NONE and kind tests split 164,
+// the mask tested as `(members >> member) & 1` 164, a per-iteration channel-index local 164; the
+// cursor at function scope before the stride 141. Screened: a channel pointer copy and the mask
+// declared before the member read change nothing.
+// Round 20 (no cursor; data keeps EBP, consumed EDI): NONE and kind tests split 139; size reduced
+// before the stride 139; consumed, size, stride order 158 (476 bytes); `*(word *)&packet[1]` with
+// `== 0` 139; the plain arm through the out-of-line talker test 181 (450 bytes, not inlined); one
+// shared kind test before the relay branch 180 (467 bytes).
+// Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
+// 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

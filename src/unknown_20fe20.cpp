@@ -9,6 +9,7 @@
 #include "object_iterator.h"
 #include "unknown_1428b0.h"
 #include "unknown_20fe20.h"
+#include "unknown_20f1a3.h"
 #include "unknown_11cc90.h"
 #include "vector_angles.h"
 #include "slot_handler.h"
@@ -193,19 +194,6 @@ long function_20f960(long index, s_audio_priority_table *table, bool *expired)
 		*expired = value;
 	}
 	return result;
-}
-
-PRIVATE __forceinline long function_20f1a3(byte const *arg_0, real arg_1)
-{
-    long local_0 = *(long const *)(arg_0 + 8);
-    real local_1 = *(short const *)(arg_0 + 2) * arg_1;
-    long local_2;
-    __asm
-    {
-        fld local_1
-        fistp local_2
-    }
-    return local_0 + local_2;
 }
 
 // @retail 0x20f1a0
@@ -1134,6 +1122,11 @@ void function_2118c0(void)
 // as b * 8 + x 150; a [3][8][8] table 150; a row += 8 loop, a row induction
 // variable, inline row accessors, w's computed in the loops 150-180 (all rows
 // become pointer IVs); previous at the k level 22; tb before ta 20.
+// Round 55: a local 3D table pointer/reference 150/150; function-scope/split wrapped
+// indices 14/14; split float declarations 14; early band reset 14; sample/function-scope row 14/14.
+// Round 141 (lane 4): the band row as `b * 8` 150 (every row becomes a pointer IV); w3, w2, w0
+// declared in that order 150; a long band index 134; the knots named (`next = previous + 2.0f`,
+// `current = previous + 1.0f`) 14 (same code); the first sample row from the band row 163.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -1835,7 +1828,56 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
     return false;
 }
 
-// score 277 (was 527): 2265 bytes against 2243. The 0x40 test's failure keeps
+// score 277 (was 277): 2265/2243 bytes; frame 0x2c agrees. The level-lookup failure owns a private
+// definition reload before clearing eligibility; retail joins the shared clear/reload tail. The
+// success epilogue stays before failure, and the unsigned zero-byte test uses JNE rather than JA.
+// Round 26 (lane I, fast; all eight queue functions measured together, control
+// 154 at 2265 bytes): the 0x100 group's source index read again from the source
+// pointer after the hostility calls, so that the source pointer stays in esi across
+// them as retail's does, 221 at 2273 bytes: the group then matches retail
+// instruction for instruction (the aligned diff falls from 57 to 36 differing
+// instructions), but the function is 30 bytes over retail's, so the positional
+// score rises. That form with the 0x40 failure split into two statements (`!actor`
+// and the two level lookups) 302 at 2274 bytes: the private copy of the shared tail
+// disappears and both the 0x40 and the 0x100 group then match retail, but `flags &
+// 0x40` is tested twice (`mov eax,ebx; and eax,0x40` instead of retail's `test
+// bl,0x40`) and the epilogue order is still ours. The split alone 298 at 2273; the
+// split with the 0x40 test through a `bool` local 645 at 2183 (the whole register
+// allocation is reshuffled); the split with the 0x40 test written once 632 at 2200
+// bytes (an earlier lane's split trial gave the same numbers). The body is unchanged.
+// Retail's own tail has two failure blocks of its own, not one shared one: at 0x20dd34
+// the type store, the eligible store and a jump to the join (the 0x40 group and the
+// "the required level is not the current level" case both jump there, so those two
+// failures are one block in retail), and at 0x20dfe1 the same two stores with the type
+// taken from edx, falling through to the reload of the definition and then to the join.
+// The 0x40 failure jumps past that reload, which is why retail's copy of the failure
+// does not need it.
+// Round 25: the 0x100 group's switch with an explicit `default: eligible = false;`
+// (retail's default arm jumps into the shared `eligible = false` store) compiles to
+// byte-identical code - MSVC drops the store as a known value - so the body is
+// unchanged. The failure stores moved into the two failure arms (so that the success
+// path is the function's fall-through, as in retail's layout) measure 586 at 2258
+// bytes, so the body is unchanged as well.
+// Earlier 154 (was 160): 2265 bytes against 2243. The required actor level is read
+// into a `current` local before the request's required level, so the call comes
+// first and the request's level is read after it, as retail does; the request
+// pointer then stays in esi across the calls, as retail's does.
+// Earlier 160 (was 200): 2265 bytes against 2243. The 0x100 group's source index
+// is read into a `long source_index` local (the `source` test is now an `if`
+// around it), so the `!= NONE` test compares a register value instead of a
+// memory operand, and the same local indexes the player record.
+// Earlier 200 (was 221): 2273 bytes against 2243. The current actor level is read
+// straight into the comparison (`required != function_272ab0(...)`) instead of
+// through a `short current` local, which drops the local and its reload.
+// Earlier 221 (was 277): 2273 bytes against 2243. The 0x40 test is now computed
+// into a `blocked` flag, the 0x80/0x100 groups run only when it is clear and the
+// failure (`eligible = false`) is the group's last statement, so it reaches the
+// shared tail like retail's instead of keeping a private block; the 0x39d test
+// is `!(object[0x39d] > 0)`, which gives retail's `ja`.
+// MiniMax I (10-31) review: the run's 453 -> 419 (fast) came from the `blocked` flag alone, a one-use
+// local (kept only with a match): the same changes with the 0x40 test as an if/else (`eligible = false`
+// in the if) 453, the flag's condition inlined into `if (!(...))` 650. The body stays as it was.
+// Earlier 277 (was 277): 2265 bytes against 2243. The 0x40 test's failure keeps
 // its own `reload definition; eligible = false; jmp` block where retail jumps
 // into the shared `eligible = false; reload` tail (and its no-actor path into
 // the 0x20 failure), and the success exit is laid out before the failure exit
@@ -1855,12 +1897,50 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
 // bool/long friendliness 549/545/549/545/551/610/544/610 reduced. Boolean pair restores
 // frame 0x2c and first +0x37, but plain 530 at 2273/2243 regresses; restored.
 // Original frame, observation points and all helper/call inputs retained.
+// Round 44 (lane 16, plain counts): retail's 0x80 no-actor/squad-NONE branches and the 0x100
+// switch default jump to the `eligible = false; reload definition` tail (only squad-entry-null
+// goes to the reload alone), so retail stores eligible again there; ours sends all of them to the
+// reload. Tried: `else eligible = false` in the 0x80 group plus `default: eligible = false` 277
+// (VC drops both stores, same code); the 0x80 result in its own bool 283 (BL, flags no longer in
+// BX); the switch result in its own bool 289 (DL); the 0x80 group as a forced-inline bool helper
+// 299 (LTCG then inlines 0x203330); the 0x40 test as `!(actor && (a != NONE || b != NONE))` 277
+// (same code); the loop's success return in the else arm after the advance code 277 (same code).
 // Round 18 (lane 14, fast; this function's reduced-image control is 453 at 2273 bytes against the full
 // build's 277): `object[0x39d] <= 0` gives retail's `ja` but not its target, 453; the 0x40 test with the
 // actor test negated as a whole 453 (same code); the 0x80 block as an `else if` with the 0x100 test after
 // it 453; the 0x40 failure as the else arm 638 (frame 0x28); `<= 0` with the failure arm braced 453.
 // Everything before the 0x40 failure block matches but for branch targets: ours reloads the definition
 // before `eligible = false`, retail stores first and so shares the 0x1a block's tail.
+// Round 30 (lane 11, plain; aligned diff 29 at 620/617 instructions): `object[0x39d] <= 0` 277 (retail's
+// `ja`, aligned 28; the 0x40 block and the exits are the rest); the 0x80 failure as an else arm with the
+// squad lookup's clear inside the then arm 277 (aligned 30); the last eligibility block nested in the
+// 0x40 block's `if (eligible)` 277 (same code), inside the 0x40 test's else arm 277 (same code); the 0x40
+// result as an assignment with the later tests under `if (eligible)` 652. Diagnostic: the success exit
+// written after the failure exit with a label 277 (same code: VC places the success exit first whatever
+// the source order); a compile-only harness keeps the exit order and the success block's load order
+// (weight, tag value, tag pointer; retail loads the tag pointer first) for a break with a retest, a found
+// flag, `tag_index[0]`, a copied tag and a weight pointer local.
+// Round 26 (lane 14, fast; faithful with the file plus 0x1a6fe0, 0x1a7ad0, 0x272ab0, 0x1c9e50, 0x20f1a0,
+// 0x1144a0, 0x114440, 0x20f040, 0x203330, 0x25d770 and 0x25d810 in the image: control 277; aligned 29):
+// the 0x40 failure as its own statement with the 0x80/0x100 groups under `if (eligible)` 277 (same
+// code); the same with `!actor` and the two lookups as separate failure statements 632 (2200 bytes,
+// registers reassigned from the prologue); the 0x40 failure as the else arm with the inverted test 632;
+// `!actor` and the lookups as two else-if failure arms each repeating the 0x40 test (diagnostic) 302;
+// the success stores tag first 277 (same code); `object[0x39d] <= 0` 277 (retail's `ja`, aligned 28).
+// Round 49 (lane 16, plain): the 0x80 group with no early clear and `else eligible = false` on
+// both failures 271 (the no-actor and squad-NONE exits then reach retail's shared clear-and-reload
+// tail, but the squad-entry-null exit does too and the group's early clear is gone; 2260 bytes);
+// that with the failure arm first 271; with the squad bit as a ternary 271; with `default:
+// eligible = false` in the 0x100 switch 271; the clear moved inside the actor arm before the
+// lookup with an outer else 277 (all three exits right, the clear lands before the call); early
+// clear plus outer else 277 (the else is dropped). Retail keeps the early clear and the redundant
+// failure clears, which ours removes as known-false stores. Diagnostic: the eligible flag's
+// address escaping sends the 0x40 failure into the shared tail (as retail) but reshuffles the
+// whole function (614/664).
+// Round 261: Native definition mutable/readonly, native deadline array mutable/readonly, and all four
+// paired mutable/readonly receiver forms: 277 each in the calibrated 57-root image (single-root 453
+// each, same as its control). Failure reload/join and success exit layout remain. Original record/body
+// restored; inherited score-heading stack merged.
 // @retail 0x20d8c0
 short function_20d8c0(long source_index, s_audio_priority_table *table, byte const *request,
     long object_index, long target_index, long previous_index, long *tag_index, real *weight)
@@ -2562,6 +2642,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // differences at each use 366; no helper, locals y, z, x and an accumulated
 // z, y, x sum 45 (z, x, y 47; selector in the switch 343); locals y, z, x
 // before the helper 430.
+// Round 141 (lane 4): vector3d_from_points3d + length_sq3f with the delta's fields in the cases
+// 365 (x, y, z order, table moves); the helper's differences y, z, x with one-expression and split
+// sums 26/26; a one-expression sum in every difference order (the term order is ignored; only the
+// difference order counts) xyz/xzy 27, yxz 23, yzx 26, zxy 11, zyx 16; the outer x, y, z locals in
+// the other five orders xzy/zxy/zyx 15, yxz/yzx 3 (same code).
 // @retail 0x20c440
 void function_20c440(byte const *request, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2767,7 +2852,11 @@ bool function_1df640(short team_a, short team_b);
 // read through the table parameter 6, the bound's terms swapped 6 (VC sorts
 // them), a (long) cast on either or both terms 6; (r169) the parameter-address
 // statements removed 6 (kept); a long index 148; a named request pointer 6;
-// a while loop 6.
+// a while loop 6; (r106) the index read from the group before the count test
+// with `group[0] + group[1]` as the bound 8 (the first word's load moves above
+// the branch, the reload order stays); a named entry pointer 6; the count test
+// in the loop condition 6; the existing object_get/actor_get helpers for both
+// objects 6 (same code); the entries as rows of 0x40 bytes 6.
 // @retail 0x20cbd0
 void function_20cbd0(short group_index, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category,
@@ -2837,6 +2926,12 @@ void function_20fda0(long arg_0);
 // (r169) the node before the queue 24 (pool loads first, node add moves up);
 // the node before the call 49; NODE() 19; a long side 39; the queue written
 // at both calls 62; a `byte *const &` node 19.
+// Round 141 (lane 4): retail loads the pool first and the queue into EAX after the MOVSX, then
+// builds the node as data + offset in EAX before the flag read (the 0x20d570 lookup shape); ours
+// loads the queue into EDX first and folds the node into the flag read. One queue call after the
+// if/else 19; the pool read into a local before the owner (0x20f960's form) 19; the node declared
+// first 19; the side cast inside the owner expression 19; the object through OBJECT_FROM_INDEX 19
+// (all the same code).
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

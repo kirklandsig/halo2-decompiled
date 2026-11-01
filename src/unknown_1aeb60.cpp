@@ -373,6 +373,46 @@ short *function_e70b0(long unit_index, short *value);
 // Round 7 (m3 lane 2): matched 0x1aeb60/0x1af0a0 here give the index ECX and the data EDX as ours does;
 // the index copied into a local 49; the prop index named for its test and lookup 49; the index read once
 // through its address 49; `2 == ...` for the final mode test 49; `state->timer == 0` 49.
+// Round 11 (m3 lane 2): the two final tests and the action query as one condition (action declared
+// first) 49; the prop time product in a named elapsed value 49; the timer's zero test nested over
+// the actor flag test 49; `if (--state->ticks < 1)` 108 (445 bytes); the final mode read through a
+// second named actor lookup 49. Retail: 8 matched functions load an actor index into EDX with the
+// data base in ECX (0x1a80e0, 0x1b5aa0, 0x258660, ...), 15 into ECX (0x1aeb60, 0x1a93c0, ...); no
+// frame or prologue feature separates the two groups.
+// Round 132 (an LTCG env link with 0xe70b0's object reproduces it): with 0xe70b0 left out of line the
+// first 97 instructions are retail's (index EDX, actor data ECX), so the swap follows the inlined
+// action-state read. At the call: its result in a pointer local 110 (437 bytes); called alone and the
+// local compared 49; `7 !=` 49; the unit index in a local 49; `state->unknown34 != 0` 49.
+// Round 110 (fast): the final block as a guard return 49; the action query's out value tested in place of
+// the returned pointer 49; `7 != ...` 49; `0 < state->timer` 49 (the same code each time). Diagnostic, not
+// kept: the actor address written offset first (`(index & 0xffff) * size + data`) 49, so the operand order
+// of the address expression does not decide the ECX/EDX tie either.
+// Round 98 (lane 8; LTCG env link with the ballast and 0xe70b0's object, equal to the full listing):
+// the swap comes from the LTCG-inlined 0xe70b0 action query. Linked without 0xe70b0's object (the
+// query stays an external fastcall call) the same source gives retail's roles (index EDX, actor ECX,
+// temporaries EDX) for the first 97 rows; 0xe70b0 written with a unit local, or the query spelled out
+// in place (diagnostics), keep the swap. Trials: `(short)state->unknown34` 49; `short action = 0;`
+// 49; the timer block as one `> 0 && !--timer && ...` condition 49 (identical code each time); the
+// query result in a named `short const *` 105 aligned 49 (436 bytes); re-measured in the env: the
+// query called, then `action != 7` 49, slot cast before the actor 49 (identical code).
+// Round 24 (lane 14): every differing row is ours with the scratch registers rotated (ECX/EDX at the
+// entry, EAX/EDX and ECX/EAX in the later blocks), as if retail's allocation started one register
+// further on. The definition moved after 0x1afcf0 in this file 49 (fast and plain; other functions
+// unchanged); the existing typed actor_datum_get for the first lookup 49, for both lookups 49; the
+// delay product written random times ticks 49 (the same code each time).
+// Round 101 (lane 8; exact LTCG harness, 42 = 49): BLOCKED-BY 0xe70b0's inlined shape (its file is
+// another lane's this round). 0xe70b0 bodies tried in the harness only: an actions-pointer local 49, a
+// result-pointer local 105 (436 bytes), a header-pointer local 54; here `if (--state->ticks <= 0)` 49
+// (same code), a named object index for the event call 49.
+// Round 181 (lane 3): the rotation reaches the final call: retail keeps the 0x34 byte in DL and
+// loads ECX (the facing argument) before pushing it, ours keeps it in CL and pushes it first, so the
+// byte's colour and the actor's (ECX in retail) are one decision. The definition moved to the top of
+// the file 49; the action state read into a short value local 49; the random range given file and
+// line as 0x1bf0f0 does 49; a `__forceinline` declaration of 0xe70b0 here 49; an explicit short
+// conversion of the byte argument 49 (identical code each time).
+// Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
+// lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
+// mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
@@ -562,6 +602,16 @@ struct s_1af5c6
 // Round 15: the ray vector built in the call's argument list (the point-difference helper returning its
 // output) 20; the existing distance3d for the distance 31; the second object index in its own local 20;
 // the second header read inside the test 20; the hit fraction read into a local after the test 19.
+// Round 11 (lane 18): the tail from the 0x11c010 test on is 0x1c8df0 with constant arguments (no side
+// probes, the 0x15808c2f mask, the 0x20 bit cleared for an actor with +0x26c set, no out-pointer):
+// a call to 0x1c8df0 330 (359 bytes; LTCG keeps it out of line, also with a __forceinline
+// declaration here 330, or with auto-inlining allowed 330, or with `inline` on 0x1c8df0's definition 321); the distance through the existing
+// vector3d_from_points3d + magnitude3d 20 (kept: it replaces the hand-written difference and square
+// root), with the hit fraction read into a local after the test 19; the ignore index copied before the
+// ray vector 20; the ignore index chosen by a plain if/else 140 (fast); the copied point and the 2640c0
+// buffer in one block and the probe's vector and result in another 44 (frame stays 0x80, but the point
+// copy goes below the NONE/source pair), the same with the point copy renamed 44; one category result
+// in 0x1c8df0's if/else-if form 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
@@ -609,10 +659,9 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, local_13);
 	if (!function_1697c0(local_12, &local_9.field_4, local_13, local_8, NONE, (s_collision_result_1697c0 *)&local_7))
 		return 0;
-	real local_16 = local_2->field_30.x - local_9.field_4.x;
-	real local_17 = local_2->field_30.y - local_9.field_4.y;
-	real local_18 = local_2->field_30.z - local_9.field_4.z;
-	real local_14 = (real)sqrt(local_18 * local_18 + local_17 * local_17 + local_16 * local_16);
+	vector3f local_20;
+	vector3d_from_points3d(&local_9.field_4, &local_2->field_30, &local_20);
+	real local_14 = magnitude3d(&local_20);
 	if (1.0f > local_14)
 		return 4;
 	return 1.0f > local_14 * local_7.field_4 ? 2 : 4;

@@ -195,6 +195,36 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
 // 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
 // its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
+// Round 143 (lane 4, fast with the file, faithful 92): the node's direction copied field by field from the
+// struct 177 (608 bytes: the direction lives in registers, no store-back, and still no early Y load), from
+// the direction locals 177, with no direction locals 177; the direction from vector2d_from_points2d 91 (as
+// lane 17 r1: Y is then popped and the squares start with X), that with no direction locals 91. Matched
+// 0x294050 gets the early loads for every component but the first (j, k) under the same x87 sum.
+// Compile-only screen (/O2 /arch:SSE, reproduces our code): the early Y load (and retail's XMM4 zero)
+// appears only when the direction comes from vector2d_from_points2d and the walk reads it only through
+// the existing dot_product2d and cross_product2d (the dot and the second cross factor, any normalizer
+// form); it is then a hoisted load, so Y lands in XMM1 and the second factor loads other.x instead of
+// multiplying Y in place as retail does (real 106, 634 bytes). Direct reads, locals, scalar locals or a
+// helper copying into locals never give it. A hoisted load is never multiplied in place by a memory
+// operand (a Y-first cross helper, the sibling/cross check moved after the walk loop, or no node copy:
+// still `movss xmm5, [other.x]; mulss xmm5, y`), and the check after the loop adds an unthreaded
+// `index != NONE` test; retail's in-place `mulss xmm0, [edx+0xc]` needs Y as a variable.
+// Round 122 (lane 6, fast): the dot and both crosses through the existing dot_product2d/cross_product2d (vector2f
+// casts, direction locals dropped) 152 (634 bytes); with the subtraction through vector2d_from_points2d and the
+// normalizer's single exit (distance zeroed in an else) 106 (634: retail's early `movss xmm0, [y]` preload, its
+// distance/zero registers, dot, first cross and loop entry, but y and the inverse swap XMM0/XMM1 and the second
+// cross loads other.x where retail multiplies y in place); with the first cross by name 107; with the second
+// cross by name 149 (630 bytes, the preload is lost); with the normalizer's distance zeroed in the then-arm 114.
+// Compile-only screen: the preload appears only when y is read through the helpers' pointers after the
+// subtraction helper; product orders, store orders, sum order and the helpers' argument orders change nothing.
+// Round 258: Both captured normalized components used for native direction publication, y/x or
+// x/y capture order and publication after value08/position/distance/parent: 177/177/177/177/177/177/177/177.
+// Original native copy, captures and body restored; early Y preload and XMM allocation remain.
+// Round 27 (m3 lane 2, fast): the node's direction filled by components 177 (608 bytes: direction kept in
+// XMM0/XMM1 to the end), also without the direction locals 177; the direction locals declared first in the
+// function and assigned after the normalize 92 (same code); the cross factors named 92 (same code); direction
+// from vector2d_from_points2d with the locals x first 92. Compile-only (reproduces ours): no direction locals,
+// locals declared at the block top, dot operands swapped, a named dot: none preloads y.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -361,8 +391,8 @@ static inline void avoidance_bit_set(dword *bits, long index)
 
 static __forceinline point2f *avoidance_scale2d(point2f const *direction, real distance, point2f *scaled)
 {
-	scaled->y = direction->y * distance;
 	scaled->x = distance * direction->x;
+	scaled->y = direction->y * distance;
 	return scaled;
 }
 
@@ -451,16 +481,6 @@ short __stdcall avoidance_expand_obstacle(s_pathfinding_data const *pathfinding,
 	return added;
 }
 
-// score 21 (was 21): the computed distance is stored to the stack and read back here, while retail
-// keeps it in a register.
-// Left: the movement x product (retail copies the distance and folds direction.x; ours loads
-// direction.x). Tried: the scale helper with the distance by reference or pointer and x first 22;
-// the trace declared first or before the direction pointer 21; `&node->direction` passed to it 21.
-// The movement scaled in place from a copy of the direction 162; the point moved through
-// avoidance_point_along2d in place 134; a named distance local with the two products written
-// out 21; the products added straight into the point 134; the helper scaling its output in
-// place 134. A compile-only build gives our load forms for every helper and statement
-// spelling; matched 0x25eea0 gets the copy form from a computed local (`nt * direction->k`).
 // @retail 0x2c3d40
 bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const *pathfinding, bool allow_partial)
 {
@@ -474,12 +494,11 @@ bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const 
 		if ((short)index != NONE)
 		{
 			s_avoidance_node *node = &search->nodes[(short)index];
-			point2f const *direction = &node->direction;
 			short added = 0;
 			s_avoidance_trace trace;
 
 			function_26ccb0(pathfinding, search->obstacles, NONE, &node->position, node->value08,
-				search->value18, direction, search->radius, node->distance, node->parent == NONE,
+				search->value18, &node->direction, search->radius, node->distance, node->parent == NONE,
 				true, search->value29, false, &trace);
 			if (trace.edge == 0xffff)
 			{
@@ -489,7 +508,7 @@ bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const 
 					{
 						point2f point;
 
-						avoidance_point_along2d(&node->position, direction, trace.distance, &point);
+						avoidance_point_along2d(&node->position, &node->direction, trace.distance, &point);
 						search->value1e = avoidance_add_node(search, &point, false, search->value18, NONE, NONE,
 							node->cost - node->distance + trace.distance, (short)index);
 						added = 1;
@@ -497,6 +516,7 @@ bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const 
 				}
 				else
 				{
+					point2f const *direction = &node->direction;
 					s_obstacle *obstacle = &search->obstacles->obstacles[trace.obstacle];
 
 					if (allow_partial && trace.group == search->goal_obstacle)
@@ -633,7 +653,11 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
-// score 675 (was 675): the frame 0x1f88 and the length agree, but retail keeps the success result
+// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
+// callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
+// success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
+// constant, and the path pointer and the obstacle, search and step homes differ.
+// Earlier: the frame 0x1f88 and the length agree, but retail keeps the success result
 // in a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and
 // the path pointer and the obstacle, search and step homes differ.
 // Round 134: retail's result is a stack byte (ebx = pathfinding, then NONE): bool result 757; radius as
@@ -696,6 +720,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // image loss accepted.
 // Round 232: Once-read radius/options/both, per-use flags alone/with radius/with options/with both, then all with Boolean success
 // 754, 748, 773, 675, 754, 768, 773, 786. Original executable source restored.
+// T47: Input-step cursor / forward inserted-step cursor / repeated blocking-segment receiver
+// subsets 730/728/766/675/730/728/766; all with Boolean success 752. Original body restored.
+// Round 260: Six direction/previous-direction/world-start declaration schedules 675/675/675/675/675/675;
+// reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

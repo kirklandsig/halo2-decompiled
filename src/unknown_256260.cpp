@@ -144,6 +144,13 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // return); result in the started path and one not-started return 97/97/19/19; started failure falling
 // to the outer return 78/60/84; on the 70 form: early !character return 70, outer returns merged 91,
 // result declared before the character call 74 or at the top 97, a final extra return 70.
+// Lane 10 round 42: `!(a >= b)` is the form that tests with jb (comiss sets CF for less or unordered),
+// `a < b` swaps the operands to use ja. The preload needs result returned on three paths (the 70 form);
+// with two uses the load sinks: started success only 97, success and found 97, success and after-loop 97,
+// found and one final block return 97. Started failure assigning result 125 (result spilled); started
+// failure falling to one shared return of g_470be8 111 (edi pushed before the guards), or to the
+// !character return with `!(>=)` 84 (the success gets its own epilogue); the started success falling to
+// a final block return after the else 70 (the jb still joins the nearby g_470be8 epilogue).
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {

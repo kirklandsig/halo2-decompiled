@@ -167,6 +167,14 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
  return function_cbd50(unit_index, *(signed char *)(unit + 0x212 + slot));
 }
 
+// Round 30 (lane D): the permuter's best variant scores 601 against its own 608 baseline (seven points,
+// below the retention margin) and it adds volatile qualifiers and swapped call arguments, so it is not
+// kept. Manual trials this round: a named table base 620 (a tie), the player index set to NONE and then
+// conditionally assigned 623, that form with the named base 623, and dropping the (void)&local_index
+// anchor 620 (a tie); all restored. What still differs: retail loads the state table into ESI and the
+// state pointer into EDI (base + index * 0x1b0), then reuses ESI for the player index and the player
+// pointer; ours folds the base into the add and keeps the state in ESI. The 0x54 frame, the EDX type
+// argument and the 2308-byte length agree.
 // score 620 (was 620): retail loads the state table into ESI and the state pointer into EDI, then reuses
 // ESI for the player index and the player pointer and keeps the unit pointer in EBX; ours folds the base
 // into the add and keeps the state in ESI, and retail returns from inside each switch case.
@@ -265,6 +273,14 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // retain 559 differing rows through the last retail return. Original target, helper
 // definitions/declarations, native cases, pool observations, local qualifiers and all call values
 // restored. Base/state and player/unit homes remain.
+// DL209: Case-owned failure guards in reset/inventory/capability group subsets 1-7: 620 each; all
+// with ordinary player pointer 786. Original cases and qualifier restored.
+// Round 459: Uniform caller unit-field observations, bool/byte/short/long return carriers, inherited/plain
+// player pointer 760/683/659/661/786/865/650/669. Original unit snapshot, cases and qualifiers restored.
+// All executable trial forms restored.
+// Round 262: Entry declaration scopes for status/child iterator/metadata result, all
+// seven nonempty subsets 620 each; complete workspaces with ordinary player pointer 786 (2124/2308).
+// Original scopes, cases, helper contracts and inherited local qualifications restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

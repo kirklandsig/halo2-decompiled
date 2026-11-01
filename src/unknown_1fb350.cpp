@@ -40,6 +40,10 @@ PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0);
 // Compile-only screens reproduce ours exactly; declaration/setup orders, nested tests, swapped
 // compare, goto exit, stdcall, a pool local, pool read at each use in the step all keep ESI;
 // only an object index held in EBX from entry (0x1fb760's case) moves the pool to EDI.
+// Round 139: the step through the non-volatile shared iterator 41 (pool to EBX); the loop
+// condition `!result && step` with the result assigned from the test 29; the result set from the
+// flag inside the object test 30; the object index read through its address 12; the iterator
+// aggregate-initialised 13; a 600 s permuter run (61 tries), none below 12.
 // @retail 0x1fb6f0
 bool recorded_animation_playing(long object_index)
 {
@@ -326,7 +330,28 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
-// score 122 (was 122): our frame is eight bytes smaller and the base pointer is kept in EDI where
+// score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
+// the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
+// index in EDI; ours forwards the pool into EDI for both.
+// Round 17: a _ReadWriteBarrier() between the datum lookup and the null test makes MSVC materialise
+// retail's 0-or-pointer phi, and a second one between iterator.index = index and the object-index
+// load keeps the object load after the store; with both the found path is instruction for instruction
+// retail's and the function measures 473 bytes, retail's length, but the second barrier makes MSVC
+// hoist g_4e0300 into EBP and wrecks the prologue (139). Without it the best surviving form is the
+// committed body with the datum index computed from the element's salt instead of the shared helper:
+// 99, a gain of 2, below the threshold, so the body was restored. The tail's element expression
+// (pool->size * index + pool->data), the order of the store and the datum index, and the object
+// index in a local are all insensitive (99, 99, 164, 99). What is left is the register allocation:
+// retail keeps the datum index in EDI, the element base in EBP and the object pool in EBX, and its
+// body is 7 bytes longer than ours, so the internal jump displacements differ as well.
+// Not kept (101, no match): the iterator step written out in the body (data_find_index, the
+// element and datum index by hand, a four-field datum iterator), a hand copy of function_1fb762.
+// With it the search matches retail byte for byte (the shared data_find_index scan
+// snapshots the high water in ESI and the four-field datum iterator gives retail's 0x14 frame and its
+// two pool homes). What still differs is register allocation: retail keeps the datum index in EDI and
+// the element base in EBP, ours keeps the datum index in EBX and the element base in ECX, so the
+// object-pool load lands in EBP instead of EBX and the unit mask in EAX instead of EDX.
+// Earlier at 122: our frame is eight bytes smaller and the base pointer is kept in EDI where
 // retail keeps it in ECX. Retail iterates with the four-field datum iterator (data and index stored,
 // the datum index kept in EDI), snapshots the high water per search and computes the element from a
 // second spilled copy of the pool. Shared step with/without the barrier 162/152; datum iterator 152
@@ -374,6 +399,68 @@ extern "C" void _ReadWriteBarrier(void);
 // DL199: Completion byte/word/short/long on ordinary three-field and four-field iterators: 152
 // each. Four-field frame reaches 0x10, still below retail 0x14; the second pool home remains
 // missing. All callback values and original body restored.
+// DL209: Absolute-index scan/element API pairs 318/278/318/278/201/167; salted-handle APIs 174/185;
+// single condition-step scan/element pairs 203/180/203/180. All restored.
+// Round 250: Ordinary shared traversal with remaining-tick/control receiver subsets on three/four-
+// field iterators 151/152/151/151/152/151; complete receivers with positive callback completion
+// 166/166. Four-field frame 0x10 still lacks the second pool home. All matched controls survive;
+// original body, include and private helpers restored.
+// Earlier (122, was 122): this round: the permuter on this function finished with no candidate (10
+// Earlier round (122): the permuter on this function finished with no candidate (10
+// tries in 605.9 s, best 122, the baseline, no confirming build); retail's frame is 0x14 with the
+// pool pointer in two stack homes and the current index in a third, ours is 0xc with the pool
+// pointer in EDI, and the fast check's reduced image leaves g_4e0300 and g_4f5724 unresolved, so
+// every line that loads one of them is counted as a difference.
+// Earlier (122, was 122): this round: the listing was re-read against retail's and no new source
+// Earlier round (122): the listing was re-read against retail's and no new source
+// shape was found. Retail's frame is 0x14 with the pool pointer in two stack homes and the
+// current index in a third, ours is 0xc with the pool pointer in EDI. Note that the fast check
+// builds a reduced image in which g_4e0300 and g_4f5724 are missing, so the global loads differ
+// from retail's and the score overstates the real gap. A permuter run on this function was
+// started at the end of the round.
+// Earlier (122, was 122): this round: the listing was re-read to place the first difference; retail
+// Earlier round (122): the listing was re-read to place the first difference; retail
+// loads the pool once in the prologue and keeps it in two stack homes (one at the loop head, one
+// for the element lookup) with the iteration index in a third, ours keeps the pool in EDI with one
+// home, so the frame is 0xc against retail's 0x14 and every later offset differs. Still retail's
+// second home for the pool pointer and its register-held datum index; BLOCKED-BY 0xf0fd0 for the
+// flag register in the release path.
+// Earlier (122, was 122): computing the datum index in the body from the element's salt and the
+// Earlier round (122): computing the datum index in the body from the element's salt and the
+// iteration index, as retail does, gives 150 and 148 against 122, and a separate local for the
+// pool pointer used by the release call gives 158; the length stays 473 in all of them. Still
+// the frame of 0xc against retail's 0x14, retail's second home for the pool pointer and its
+// register-held datum index.
+// Round 250: Ordinary shared traversal with remaining-tick/control receiver subsets on three/four-
+// field iterators 151/152/151/151/152/151; complete receivers with positive callback completion
+// 166/166. Four-field frame 0x10 still lacks the second pool home. All matched controls survive;
+// original body, include and private helpers restored.
+// Round 57 (lane 16, fast with the file's iterator users): the barrier before the unit lookup 161 (479 bytes);
+// the finished arm as the else of the tick arm with its own release 137 (486 bytes); `if (!unit) { release;
+// continue; }` first 162 (482 bytes); the deletion test reading the object index at each use 127; `bool finished`
+// declared at its assignment 122 (same code).
+// Round 43 (lane 10): four-field datum iterator with the shared inline step, iterator set from a pool
+// local, released through the global 162 (frame 0x10, the local propagated away); the same set from the
+// global 162; that without the barrier 152; the current step with a pool local for the iterator and the
+// release 126; a pool local assigned after the iterator for the release only 158 (as noted earlier);
+// the release through `iterator.data` 126.
+// Round 143 (lane 4, fast with the file, faithful 122), the existing four-field datum iterator and
+// data_datum_iterator_next_inlined (as 0xc1720 and 0x1406b0): with the barrier 162; without it 152 (frame
+// 0x10, high water in ESI and the iterator's pool re-read per pass as retail, but no second pool home: the
+// element is formed from the same EDI pool); without the datum-index initialiser 152 (same code); with the
+// datum index named in the body for the release 162; released through `iterator.data` 153.
+// Round 122 (lane 6, fast with the file and 0xc6de0/0xf0fd0/0xcbf60): the existing four-field
+// data_datum_iterator_next_called (scan out of line) 189 (436 bytes); data_datum_iterator_next_inlined with
+// the barrier 162, without it 152 (as recorded); with a pool local only for the iterator (release through the
+// global) 162; the iterator's datum index initialiser dropped 122 (same code: the store is dead); a four-field
+// step with the snapshot scan (data_find_index, 0x84ad0's form) as a file-local forceinline 162, without the
+// barrier 152 (the same code as the shared step: the scan form is not what differs).
+// Round 27 (m3 lane 2, fast): the header's non-volatile data_iterator_next_inlined with a pool local set after
+// the iterator for the release 135 (frame 0x10, ESI high-water snapshot as retail, the pool forwarded into EDI
+// for both the scan and the element where retail reads the iterator's home and a second copy); that without the
+// barrier 129; data_iterator.h's four-field iterator and data_datum_iterator_next_inlined with the pool local
+// 133; the iterator aggregate-initialised 122 (same code); `animation` declared in the while condition 122
+// (same code).
 // @retail 0x1fb510
 void function_1fb510(void)
 {

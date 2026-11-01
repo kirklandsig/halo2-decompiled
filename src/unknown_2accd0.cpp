@@ -573,7 +573,7 @@ void saved_game_file_get_path(const s_saved_game_file *file, char *path)
 	}
 }
 
-bool g_5020d4;
+s_thread_stack g_4fa0c8;
 
 enum
 {
@@ -600,9 +600,31 @@ struct s_signed_file_read_parameters
 };
 #pragma pack(pop)
 
-__forceinline byte *job_thread_buffer_get(s_async_task *task, dword *size);
+/* claims the job thread's scratch buffer for a task: the buffer in use and
+   its size */
+__forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dword *size)
+{
+	g_4fa0c8.owner = task;
+	*buffer = g_4fa0c8.buffer;
+	*size = g_4fa0c8.size;
+	g_4fa0c8.external = *buffer != g_4fa0c8.storage;
+}
 
-// score 53 (was 53): retail sums the two sizes body first everywhere (entry `mov eax, [ebx+0xc];
+// score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
+// size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
+// and size through pointers; with the `void *` parameters view and one function-scope byte count the
+// length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
+// the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
+// body_size in ESI, retail ECX): retail computes each sum into a fresh register.
+// Round 14 (lane 2; 0x2adb10 in brackets): that getter as `owner; *buffer; *size; flag` 34 [129],
+// kept; returning the size (`owner; *buffer; flag; return size`) 34 [138]; that with the view in
+// 0x2adb10 too 34 [138]; total written body first 34; no total local 88; compile-only (exact here):
+// position declared at the top of the body block or first, size declared first, size computed
+// before the buffer in the body arm, one function-scope position, the clamp as MIN or a one-line if:
+// 34 each; without the view or without the shared byte count 156-ish (235 instructions); a named
+// remaining count in the scratch arm (also declared with size, also set in the body arm, also
+// with MIN) 156-ish (235 instructions: the sums turn header first and the hoist goes).
+// Earlier (53): retail sums the two sizes body first everywhere (entry `mov eax, [ebx+0xc];
 // mov ecx, [ebx+4]; lea edx, [eax+ecx+0x14]`, total in EDX, task in EAX; signature case `lea esi,
 // [ecx+edx]` with body_size in ECX); ours sums header first (total in EAX), so the signature case does
 // not start with `mov ecx, [ebx+0xc]` like the body case and VC7.1 cannot hoist that common first
@@ -642,13 +664,90 @@ __forceinline byte *job_thread_buffer_get(s_async_task *task, dword *size);
 // compares, an out-parameter getter, getter store orders: no better. On the 34 form the claim and
 // size helpers as plain, static or inline functions, or in another file (inlined by the link): 34
 // each, 0x2adb10 279 each.
+// Lane 14 r20, with the record (0x2adb10 in brackets): the view alone 51 [133]; the current getter
+// 159 [131], with the view 157 [130], with per-arm size 156 [130]; a getter returning the size with
+// the buffer through `byte **` 50 [139], with the view 49 [139], plus per-arm size 36 (aligned 27:
+// the total's sum order, the dispatch hoist's register and the size/position ESI/EDI swap left)
+// [139]; the same getter with the flag from a fresh read 36 [280]; claim/size helpers with a local
+// buffer 156/154 [130-138], with the claim returning a fresh read 34/34/36 [278-280, 944 bytes];
+// that getter called out of line (plain function here or in async.cpp) 77 (672 bytes).
 // DL round 206: shared header/body extent 236; retained total as signature offset 226;
 // integer denominator converted at both divisions 207; per-use size fields 235;
 // guarded conversion initialized/separately assigned 64/64; shared extent with per-use
 // conversion/guarded conversion 233/235. Original body restored.
+// Lane 16 r46: `void *` view 51; with the total converted in place 73; total operand orders on the view
+// 51/51; `real total_size;` declared first 51. On the view, storage and owner/buffer/size/flag as one
+// record (init `buffer = storage`) 157 (the reloads appear; 0x2adb10 131, 0x120a90 matched); plus the
+// per-arm size 161 (689 B); plus `body_size > body_offset` 157 (dispatch hoist appears, into ESI); plus a
+// function-scope position 157; size/position renamed 157 each: size keeps ESI, position EDI (retail
+// the reverse), so the hoisted body-size load lands in the size register instead of ECX.
+// Round 112 (real --fast; compile-only aligned in brackets, base [22]): retail's body arm computes the
+// remaining count in ECX (the hoisted body_size) and copies it to size with a `mov edi, ecx` shared with
+// the scratch clamp; ours computes it in place in size's register. One MIN after both arms (the direct arm
+// setting size to the remaining count) 158 (690 bytes) [20: size EDI, position ESI as retail, but the
+// clamp becomes cmova and the body case loads body_offset first, so the hoist goes]; the same with `if
+// (size > remaining) size = remaining;` after the arms 158 [20, also cmova]; a capacity local for it 27
+// [compile-only]; a remaining local set in both arms (size = remaining) 161 (689) [25: copy-propagated,
+// sums header first]; the arms swapped (`if (!parameters->body)`) 41 (687) [24]; a named remaining in the
+// scratch arm 161 (689) [25]. Compile-only, all 22 (same code): size/position at function scope in any
+// order, bytes before/after total/total_size, both position sums' written operand order, the signature
+// buffers at function scope or swapped; worse: the body pointer local 25, buffer initialised from the body
+// 28, the total converted in place 60, the shared MIN with the total in place or the view dropped 53+.
+// Round 12 (fast; 0x2adb10 129 throughout): the scratch registers follow VC's EAX -> ECX -> EDX
+// round-robin for temporaries; the `total` local is coalesced into the body-size load's EAX where retail
+// sums into a fresh temporary (EDX). No total local (sum inside the conversion) 88: the first 20
+// instructions are then retail's (total EDX, task EAX), but the signature case loads body_size straight
+// into position's ESI (retail: temporaries ECX/EDX and `lea esi, [ecx+edx]`), rotating every later
+// temporary, and the body case keeps size ESI / position EDI. On that: one function-scope position 88;
+// buffer and size declared at the top of the body case 88; the signature sum body first 88; the
+// signature case before the body case 88 (same code each). Retail's hoisted body_size is a temporary
+// shared by both cases (its body arm ends `sub ecx, eax` + the clamp's `mov edi, ecx`), as if hoisted
+// before allocation; ours is hoisted after allocation from two identical coalesced loads.
+// Round 34 (lane 13, LTCG harness, base 22 = 34): locals renamed (size as count/read_size, position
+// as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
+// before its buffer 34 (all identical code: names do not break these register ties); the body case as
+// an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
+// Round 106 (lane 7; compile-only exact here, aligned in brackets, base [22]): retail's body arm ends in the
+// scratch clamp's `mov edi, ecx` (one `size = remaining` reached from both arms). One size assignment after
+// the arms with a body pointer local, `size = body ? remaining : MIN(size, remaining)`, gives retail's size
+// EDI / position ESI / buffer EBP and the whole scratch arm, 161 (689 bytes) [16: the body arm loads the
+// size first, so the dispatch hoist goes]; the same as if/else 161 [16]; with the local at case scope 161
+// [16]; per-arm remaining with `if (body || size > remaining) size = remaining;` 160 (689) [20: body arm
+// retail's but buffer/size EBP/EDI swapped]; `if (body || size > remaining expression)` 157 (691) [16];
+// the body local alone 161 [25]; capacity from each arm then MIN or if after the join [22-27, cmova];
+// names/declaration order/body-test operand order/total and signature sum orders on these: no change.
+// Diagnostic (a mixed read, not kept): the join plus a body-size local read before the switch for the
+// body test 24 (687 bytes) [12]: the body arm onward is retail's; left the entry total (EAX, retail EDX),
+// the switch in EDX with the load before the first test (retail ECX, load after `dec`), and the
+// signature sum folded into ESI (retail `lea esi, [ecx+edx]`). Without the total local on that [46].
+// Compile-only, no change [22]: position/size at function or switch scope, initialised size or buffer,
+// `size = body_size; size -= offset`, an explicit if clamp, the signature position spelled
+// `p = a; p += b`, as long, declared after the signature buffers or compared reversed, the cases
+// swapped; a forceinline seek helper for either position [31-65]. Flags (diagnostic): /O1, /Ox, /Oy-,
+// /Ob1, no /arch:SSE: none gives retail's colours.
+// Round 42 (lane 11, fast): a separate scratch-size local as 0x2adb10 writes it (`dword buffer_size;`
+// getter into it, `size = MIN(buffer_size, remaining)`) gives retail's body arm (the remaining count in
+// ECX from the body-size load, `sub ecx, eax` jumping into the clamp's `mov size, ecx`; position ESI) but
+// the sums turn header first and the hoist goes: 160 (689 bytes); with a named remaining in the scratch
+// arm 158 (689; the entry sum turns body first again, the sig position still takes the body-size
+// register), the remaining set in both arms 158 (689); `size = buffer_size; if (size > remaining)` with
+// `body_size > body_offset` 35; size set to the remaining before the `parameters->body` test 164 (691).
+// Compile-only (exact here, base 22 aligned): about 900 combinations of those arms with the total local
+// or none, both test orders, both operand orders of each position, buffer/size declaration and statement
+// orders, the size local's placement and name, and the getter's store orders: none below 22.
+// Lane 12 r66 (fast; a /GL- compile-only screen matched the build): a body_size local read once before the
+// switch for the body test, the direct arm and the signature sum (the scratch clamp still reading the
+// fields after the claim) 33: the body arm becomes retail's (`sub ecx, eax` then the shared `mov reg, ecx`),
+// but the entry sums header first, the dispatch loads it before the header case and size/position stay
+// ESI/EDI (a mixed read, not kept); with the clamp on the local too worse (compile-only); renamed or with the
+// total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
+// clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
+// (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
 // @retail 0x2ad7c0
-PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_read_parameters *parameters, long parameters_size)
+PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
+	s_signed_file_read_parameters *parameters = (s_signed_file_read_parameters *)parameters_view;
+	dword bytes;
 	dword total = parameters->header_size + parameters->body_size + sizeof(XCALCSIG_SIGNATURE);
 	real total_size = (real)total;
 
@@ -659,7 +758,6 @@ PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_r
 		{
 		case _signed_file_read_header:
 		{
-			dword bytes;
 			parameters->file = CreateFileA(parameters->task->path, GENERIC_READ, 0, NULL, OPEN_ALWAYS, 0, NULL);
 			if (parameters->file != INVALID_HANDLE_VALUE &&
 				ReadFile(parameters->file, parameters->header, parameters->header_size, &bytes, NULL) &&
@@ -681,20 +779,16 @@ PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_r
 			if (parameters->body_offset < parameters->body_size)
 			{
 				byte *buffer;
-				dword size = parameters->body_size - parameters->body_offset;
-				dword bytes;
+				dword size;
 				if (parameters->body)
 				{
 					buffer = parameters->body + parameters->body_offset;
+					size = parameters->body_size - parameters->body_offset;
 				}
 				else
 				{
-					dword available;
-					buffer = job_thread_buffer_get(task, &available);
-					if (size > available)
-					{
-						size = available;
-					}
+					job_thread_buffer_get(task, &buffer, &size);
+					size = MIN(size, parameters->body_size - parameters->body_offset);
 				}
 
 				dword position = parameters->header_size + parameters->body_offset;
@@ -720,7 +814,6 @@ PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_r
 			dword position = parameters->header_size + parameters->body_size;
 			XCALCSIG_SIGNATURE stored;
 			XCALCSIG_SIGNATURE computed;
-			dword bytes;
 
 			if (SetFilePointer(parameters->file, position, NULL, FILE_BEGIN) == position &&
 				ReadFile(parameters->file, &stored, sizeof(stored), &bytes, NULL) && bytes == sizeof(stored))
@@ -771,17 +864,7 @@ bool signed_file_read_begin(const char *path, void *header, dword header_size, v
 	parameters.task = task;
 	parameters.non_roamable = non_roamable;
 	parameters.state = _signed_file_read_header;
-	return async_task_add_work((async_task_work_function)signed_file_read_work, sizeof(parameters), &parameters, 2, &task->done) != NONE;
-}
-
-/* the job thread's scratch buffer, claimed by a task */
-__forceinline byte *job_thread_buffer_get(s_async_task *task, dword *size)
-{
-	byte *buffer = (byte *)g_5020c8.unknown04;
-	g_5020d4 = buffer != (byte *)0x4fa0c8;
-	*size = g_5020c8.unknown08;
-	g_5020c8.unknown00 = (dword)task;
-	return buffer;
+	return async_task_add_work(signed_file_read_work, sizeof(parameters), &parameters, 2, &task->done) != NONE;
 }
 
 enum
@@ -810,7 +893,18 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 134 (was 134): frame 0x18 and length agree; scratch-owner versus header/minimum scheduling, opposite buffer/count homes and extension I/O residency remain.
+// score 129 (was 134): with the address-taken scratch record and the two-pointer getter (see
+// 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
+// scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
+// the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
+// offset, buffer in EBP) and sums body first (ours header first in every spelling).
+// Round 14 (lane 2): the header loop's chunk as `MIN(buffer_size, header_size - offset)` 127 (aligned
+// 82 -> 88, a swap picked by score: not kept); the `void *` view here, with the size-returning
+// getter, 138 (no change);
+// compile-only: the 16 spellings of the extend arm's two sums compile the same; function-scope
+// buffer, size, byte count or success, all 16 combinations, no better; a getter-local buffer
+// (any order) gives 0x2ad7c0 156.
+// Earlier (134): frame 0x18 and length agree; scratch-owner versus header/minimum scheduling, opposite buffer/count homes and extension I/O residency remain.
 // Earlier: retail keeps every `parameters` load after the scratch getter's
 // stores, as if the scratch object were address-taken (its 0x8000-byte storage at
 // 0x4fa0c8 sits right before the owner/pointer/size words and the flag byte); ours
@@ -853,6 +947,23 @@ struct s_signed_file_write_parameters
 // to retail's length, sum order and dispatch hoist but 156 (buffer through eax, size/position
 // registers swapped). Left: getter store/load order per site, extend offset spilled where retail
 // spills the buffer.
+// Lane 14 r20 (one record of storage, owner, buffer, size and flag, `buffer = storage` at init,
+// defined in this file; 0x2ad7c0 in brackets): the current getter 131 [159]; with the view 130
+// [157]; the getter returning the size, buffer through `byte **`, 139 [50], with the view 139
+// [49], plus 0x2ad7c0's per-arm size 139 [36]; claim (buffer read into a local, flag, owner) and
+// size helpers 138/130 by call order [156/156], owner first 137 [154], local read first 137 [154];
+// claim storing the owner then the flag and returning a fresh read 279/278 by call order (944
+// bytes, aligned 41) [34/34], flag first 280 [36]; the size/`byte **` getter with the flag from a
+// fresh read 280 (944, aligned 51) [36], also returning a fresh size 280 [36]; that getter as a
+// plain function in async.cpp 313 (called: /Ob1 file) [77, called], without `__forceinline` or with
+// `inline` here 139 [77, called]. In the 944-byte forms the header site loads the buffer into EAX
+// and copies it to EDI and puts the size in EBX, where retail loads the buffer straight into EDI
+// and the size into EAX (copied to EBX before the memset's zero); the 940-byte forms keep retail's
+// buffer register but give the buffer the parameters home (retail the task home).
+// Round 261: Shared WriteFile output for header+scratch/header+direct/header+publication/header+signat
+// ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
+// lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
+// original body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
@@ -892,8 +1003,9 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 				}
 			}
 
+			byte *buffer;
 			dword buffer_size;
-			byte *buffer = job_thread_buffer_get(task, &buffer_size);
+			job_thread_buffer_get(task, &buffer, &buffer_size);
 			memset(buffer, 0, MIN(buffer_size, parameters->header_size));
 
 			bool success = true;
@@ -914,8 +1026,9 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 	case _signed_file_write_extend:
 		if (parameters->no_header)
 		{
+			byte *buffer;
 			dword buffer_size;
-			byte *buffer = job_thread_buffer_get(task, &buffer_size);
+			job_thread_buffer_get(task, &buffer, &buffer_size);
 			long offset = parameters->body_size - buffer_size + parameters->header_size;
 			offset = offset > 0 ? offset : 0;
 			memset(buffer, 0, buffer_size);

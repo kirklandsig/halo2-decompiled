@@ -990,6 +990,16 @@ struct s_string_buffer
 // and an `else if (== 9)` arm with the same loads 65 (the arms merge); the chain in a
 // bool, a long, or a flag set by an if 65; the score1 format call in both arms with the
 // chain 100 (483 bytes) or the range 104.
+// Independent final-mode if 63 (501 bytes); nested output guards with the range 13,
+// with the chain 50; score-widget declarations split 50; one value declaration 50;
+// upper-bound-first range 14; 7/9/8 chain 51; grouped final equalities 50 (plain).
+// Round 41 (lane 10, fast): retail's `cmp 9; jne <score1 format>; jmp <loads>` after RET
+// looks like a second copy of the loads cross-jumped into the first after layout. Six
+// separate else-if arms with the same loads 50 (merged, 9 in line); the 1/3/4/7/8 chain,
+// an `== 9` arm and a final else arm, each with its own score1 format call 95 (484 bytes,
+// the format string goes to EDI); the same as seven arms 95; the 1/3/4/7/8 chain with an
+// `== 9` arm whose loads are in the other order 50, the chain's loads reversed instead 50;
+// a multi-label switch (diagnostic) 100 (range compares).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

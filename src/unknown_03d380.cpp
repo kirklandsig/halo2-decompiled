@@ -314,7 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
-// score 47 (was 47): the address of the record is built here with an imul
+// score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.
 // Retail also falls from the type test into the special-type arm, then the
@@ -357,12 +357,36 @@ void function_125a90(long value);
 // Round 442: Live type observations with bool/byte/short/long removal 91/91/85/90; removal-
 // first completion 91/91/85/90. Original type capture, comparison widths and complete body
 // restored.
-// score 36 (was 47): the special arm now assigns the removal flag itself
+// Later (36, from 47): the special arm now assigns the removal flag itself
 // (`remove = (type == 0x26) && !a`) and the kind arm assigns `remove = (byte != 1)`,
 // so both arms branch to their own blocks instead of merging into the special arm's test;
 // the removal arm is written before the keep arm, which puts retail's blocks in retail's order.
 // Still differs: the b flag is loaded before the element address (retail loads it after) and
 // the type lookup uses EAX where retail uses EDX.
+// Round 109 (lane 5, fast): the special arm as `if (type == 0x26) remove = !a; else remove = false;`
+// on the long type with the kind arm as `if (byte == 1) remove = false;` 51: both arm bodies are
+// then retail's code (`cmp eax, 0x26`, the `sete` of !a, the fused kind arm), but the kind chain is
+// still laid out first; that with keep written first 47 (tail-merged); the condition named `bool
+// special = 0x20 || 0x26` with those arms 144 (retail's block order, but LTCG then inlines 0x221810,
+// 467 bytes), with `if (!special)` and the kind arm first 158 (471 bytes, inlined), with the call's
+// argument as `(short)type` 144. BLOCKED-BY 0x221810: the named-condition layout needs 0x221810 kept
+// out of line (its file is outside this round).
+// Round 44 (lane 16, fast counts; control 36): retail lays out the special arm first, falling
+// into the removal with its `!a` materialized (`sete al; test al, al; je keep`), then the kind
+// arm fused (`jne remove`) falling into keep; ours lays out the kind arm first (materialized
+// `setne al; test al, al`) and fuses the special arm. Tried: the inner test on the long type
+// (`type == 0x26 && !a`, retail's `cmp eax, 0x26`) 46, still kind arm first; that as a ternary
+// `type == 0x26 ? !a : false` 88; the type test negated with the kind arm first and the special
+// arm in the else 46 (same code as the long test); the kind arm as `remove = false` under one
+// `kind && byte == 1` test 88; a two-case switch on the short type 86 (compares in ECX).
+// Round 108 (lane 6): the type byte is the sound definition's class (the existing
+// sound_definition_get(...)->promotion_index): read as a short 87 (`movsx ax`, retail widens to
+// 32 bits), as a long through the getter 36 (same code as the direct read). Retail re-tests
+// `cmp eax, 0x26` after `cmp ax, 0x26`, so its inner test is on the full-width value and is not
+// threaded away (matched 0x18d360 tests the same pair on a short); that inner long test alone
+// 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
+// assigned on every path with no initializer 36 and the negated test with the kind arm first 36
+// both compile to the same code (VC normalises the arm order).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
