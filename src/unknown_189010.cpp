@@ -149,6 +149,15 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
+// 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
+// tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
+// retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:
+// the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1)` 110 (VC merges both into `test ch, 9`; retail
+// tests the byte bit 8, then shifts out bit 11). In the current header order (plain checks): set-or-clear
+// object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
+// priority from the request's audible field 147 (485). Retail's full header order
+// (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
 // score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
 // and our link inlines, in src/unknown_221490.cpp.

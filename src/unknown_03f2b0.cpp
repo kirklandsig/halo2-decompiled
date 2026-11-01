@@ -452,6 +452,11 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// score 100 (was 100): BLOCKED-BY 0x144f0 (unmatched, in src/unknown_01cf50.cpp): retail calls it with the tag
+// and two zeros in EAX/ECX/EBX and three stack arguments; our tree takes four stack arguments and the priority
+// in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw
+// schedule after the call differs. Round 71: no new form (the remaining colour-byte and manager-order forms
+// below gain 2 at most).
 // score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
 // image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
 // call convention in src/unknown_01cf50.cpp.
