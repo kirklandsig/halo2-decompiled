@@ -294,6 +294,11 @@ struct s_seat_animations
 // (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
 // with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
 // `i` declared at function scope 52 (same code).
+// Round 33 (lane 15, fast): round 118's address-read form with `!result &&` in the while test 52 (same code);
+// the count/entries pairs as two-field block structs, a block pointer selected per inner pass 73 (type in EAX,
+// 181 bytes, 0x188130 1), the struct ternary `(first ? a->first : a->second).entries[i]` 57 (175 bytes, 0x188130
+// 12); the per-arm entry as if/else 78 (animation in EBX, 0x188130 17); the parent walk as a self tail call 70
+// (stays a call, no loop).
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {

@@ -146,6 +146,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes
 // to the stack); on that form the body array first 118, the model first 122, a byte shift in case 0 124, int type
 // 124, result first 124, the rigid body at each use 97 at 260 [122], the rigid body after the kind-7 path 103.
+// Round 33 (lane 15, fast): o,t,r with the kind-7 ternary re-measured 96 at 256 bytes [0] (rigid body computed
+// in place in ECX where retail copies the index to ESI, header data in ESI for retail's EDX, branchless kind 7);
+// on it the kind-7 path as `if (type == 1) return 0xc; return 1;` 96 (folded to the same select), case 0 as
+// `(byte >> 2) & 1` through the component 96 (still `shr eax, 2`), through object_index 141 [213], the kind-7
+// path as a one-case switch 124 [194]; o,r,t 105 and r,o,t 107 (240 bytes [13]).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

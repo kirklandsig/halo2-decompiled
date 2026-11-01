@@ -425,6 +425,11 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
 // sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
 // as an aggregate initializer 111 (same code).
+// Round 33 (lane 15, fast): the word count computed inside the do loop from a `count` local (bytes as
+// `((count + 31) >> 5) * sizeof(dword)`) 224 (796 bytes: still CSEd into the head's shift, the shared value
+// spilled); the same from a padded-count local 224; `bool changed = true; while (changed)` 111 (same code, no
+// preheader jmp); round 85's memcmp-break loop re-measured 125 (810 bytes), with the padded-count head and
+// in-loop word count 228 (791 bytes).
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {

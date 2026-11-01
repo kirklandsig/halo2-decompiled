@@ -164,6 +164,11 @@ struct s_spawn_scenario_23aea0
 // pointer); with the scenario read first 110; one type loop with the index 252 (not unrolled); `index =
 // type * 3 - 4` 103; the index plus a named source record 121; the index with the table store after
 // the defaults 104.
+// Round 33 (lane 15, fast): a twelve-byte record assignment per type in the two-by-six loops 145 (406 bytes);
+// one type loop through a typed source record and `types[type - 2]` fields 123; `type != 14` 254 (278 bytes, not
+// unrolled); the source as the definition's seven-dword record array `records[type][k]` 121; that with `index =
+// type * 3` 121. A scan of retail for loops storing through `[reg + global]` with a small `cmp reg, imm` bound
+// found no matched function with this integer-offset shape to copy from.
 // @retail 0x23aea0
 void function_23aea0()
 {

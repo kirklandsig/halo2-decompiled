@@ -450,6 +450,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // code), the node type named once (`short type = node->unknown10;` for every test and store) 349
 // (1388 bytes, frame 0xe4; the special test then threads straight into the first arm); the named
 // type on the original long-count body 354 (1395 bytes). Original body restored.
+// Round 33 (lane 15, fast; ret 0x24 in both builds): retail's distance test is the existing 0x210a30 inlined
+// (its shared `(k*k + j*j) + i*i` tail, with 0x210850 inlined inside it); calling 0x210a30 here stays a call
+// (its file is /Ob1 and it is not inline) 524 (1228 bytes, ret 0x28, 0x270930 260), with `__forceinline`
+// declarations of 0x210a30 and 0x210850 here 524 (ignored); declaring it inline in its header (diagnostic,
+// restored) inlines it but calls 0x210850 404 (1348 bytes), both inline 530 (0x210a30 itself loses). Short
+// link count with the type named once 349 (1388 bytes, frame 0xe4); on it count zeroed after the init loop
+// 354, the link count incremented after the copy 349, `special` false then set by an if 349; local names
+// (two placeholder orders, diagnostic) leave the slots unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -836,6 +844,13 @@ bool function_2715a0(byte *buffer)
 // links/native masks 515; long remaining count and mutable links 502; long remaining count with
 // native masks 516; long remaining count and readonly links 502; long remaining count with
 // readonly links/native masks 516.
+// Round 33 (lane 15, fast): retail takes the link length's root before the 0x210be0 call and keeps it as a
+// stored float (`fstp [esp + 0x14]`, later `divss`); ours sinks `fsqrt` past the call and divides on x87.
+// `sqrtf` 486 (same code); the margin computed before the call 487 (root before the call, x87 divide);
+// the insertion 0x271fd0 declared inline (inlined, frame 0xc58) 488; `node` declared at function scope 486
+// (same code); both link flag tests as plain masks 522 (2052 bytes); state read once through its address
+// (diagnostic) 486 (same code). The four-way rotation (state/node/link/count EBX/ESI/EBP/EDI for retail's
+// EBP/EBX/EDI/ESI) and the shrink-wrapped pushes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
