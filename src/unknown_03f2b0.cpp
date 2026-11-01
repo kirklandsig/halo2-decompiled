@@ -1230,6 +1230,8 @@ static inline long render_memory_allocate(long bytes)
 // One-file LTCG probe (this file + 0x137650/0x137800's files): an entry calling this function directly
 // also gets eax, so the caller does not fix it; unused extra parameters are dropped and every position of
 // the permutations still gets eax.
+// Round 63: const count 1; const result 1; permutation-array and node-array declarators 1/1;
+// sizeof(transform4x3f) in the size product 10; const extra_bytes 1; inline/forceinline target 1/1.
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)
