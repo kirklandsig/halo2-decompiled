@@ -769,6 +769,9 @@ union s_60403
 // Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
 // at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
 // named `dword bit = 1 << i;` in the emission loop 149 (same code).
+// Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
+// count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
+// loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

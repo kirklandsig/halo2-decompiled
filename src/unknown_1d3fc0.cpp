@@ -30,7 +30,7 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
-// score 110 (was 119): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
+// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // Earlier: magnitude order, reciprocal/SSE carriers and projection schedule remain.
 // Retail sums the forward magnitude j,i,k (k loaded late, reloaded on the short-vector path) and the
@@ -120,6 +120,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // bytes); the up pointer taken before forward's normalization, normalized after it, with dot3f(forward,
 // up) or dot3f(up, forward) 151/151; a const forward receiver 110 (same code); the second up
 // normalization's returned pointer passed straight to cross3f 110 (same code).
+// Round 37 (m3 lane 14, fast): unused-local probes (1-16 before forward, 1-8 at the top, 1-8 before the
+// dot) 110 each, identical code; the transform array as six separate transforms (either name order) 110
+// (identical code, same slots); the projection as a loop over `n[axis]` 110; through a named scaled
+// vector 110; pointer locals dropped with the projection on the matrix fields 181 (953 bytes: forward
+// then folds all three products), the same on six transforms 181.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

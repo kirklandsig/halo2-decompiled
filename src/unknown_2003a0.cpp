@@ -2121,6 +2121,10 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 37 (m3 lane 14, fast), on 0x203d70's inline-step loop with the word flag store and full-width
+// return (71, 191 bytes): iterator declared at function scope 71; actor index declared at function scope
+// 71; loop pointer declared in the while condition 71; squad_get(squad_index) at every squad use 92 (224);
+// early return for the tick test 89 (220).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

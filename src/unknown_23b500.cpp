@@ -164,6 +164,11 @@ struct s_spawn_scenario_23aea0
 // pointer); with the scenario read first 110; one type loop with the index 252 (not unrolled); `index =
 // type * 3 - 4` 103; the index plus a named source record 121; the index with the table store after
 // the defaults 104.
+// Round 37 (m3 lane 14, fast): the override type read once into a local 122 (367 bytes; retail re-reads
+// it per store); the inner loop over type (`type = i * 6 + 2; type < i * 6 + 8`) 226 (313); one
+// function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
+// nested loops through a named source record pointer 123. No other retail function uses this
+// integer-offset store idiom, so no matched sibling shows its form.
 // @retail 0x23aea0
 void function_23aea0()
 {
