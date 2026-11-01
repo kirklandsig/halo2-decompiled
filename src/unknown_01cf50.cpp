@@ -2449,6 +2449,8 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
+// MiniMax D (run 37): no new form, no lower score; the second table_entry_data lookup has to
+// stay out of line like retail's, and that is decided in src/unknown_023540.cpp (not my file).
 // score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
 // inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
 // that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
@@ -2518,6 +2520,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
     return result;
 }
 
+// MiniMax D (run 37): no new form, no lower score; the maximum as `first <= second ? second : first` gives retail's comiss operand order but still scores 26, the maximum without the round trip through the stack scores 47, the four forms of the maximum (the two ternary orders, the if/else and the initial-value form) score 47 or 48, and retail's own phi copies the maximum into g_4b9fa4's register while ours keeps it in 0.0001f's.
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
@@ -2750,6 +2753,9 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
+// MiniMax D (run 37): no new form, no lower score; the only real difference is that retail
+// folds the record base into the payload pointer one store earlier than we do, the rest of
+// the fast differences are the reduced image's addresses for the globals and the constant.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -2995,6 +3001,10 @@ bool g_5093bc;
 // depth format is assigned first; the two flag bytes still come from a register instead of memory.
 // MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
 // casts the global's own address, so it is not kept without a match.
+// MiniMax D (run 37): no new form, no lower score; a memcpy of the settings into the global
+// gives retail's store order (52) but the flag bytes are still taken from the loaded dword
+// instead of memory, the reads through the packed dword give 69 and 72, a dword copy of the
+// first four bytes gives 55 and reading the flag bytes through the global's address gives 52.
 // score 55 (fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // format after the back buffer width and clearing the result before the device pointer gives 68;
 // reading the two flag bytes back through a byte pointer to g_runtime_device_configuration as
@@ -3319,6 +3329,8 @@ bool function_14600()
     return result;
 }
 
+// MiniMax D (run 37): no new form, no lower score; the width reciprocal first gives 74, the
+// width first with constants[3] first gives 78 and the full retail order gives 43.
 // score 40 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
@@ -5183,6 +5195,9 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 }
 
 // @retail 0x4ebd0
+// MiniMax D (run 37): no new form, no lower score; the tag without the volatile gives 111 (in
+// the original order 117) and the reordered body gives 101, so the original body is kept even
+// though it keeps a volatile local that the coordinator's rules dislike.
 // score 54 (was 54): retail reads the block base out of the table before it
 // reads the record tag and keeps that tag in a register, ours spills the tag
 // to a stack slot and reloads it, and adds the table's base pointer in after
@@ -5419,6 +5434,7 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->bottom += dy;
 }
 
+// MiniMax D (run 37): no new form, no lower score; the bitmap pointer declared first, the two rectangles swapped and the casts removed all give 60, a short top gives 99 and the clamps written as if/else give 187, the four clamp values as longs or declared first in the outer scope give 122 and 113, and retail's frame leaves sixteen bytes below the rectangles where ours leaves twelve, which the type and the order of the clamp locals do not move.
 // score 60 (was 75): the two rectangles sit four bytes higher in the frame than retail's and the
 // bitmap pointer shares the clip's slot instead of being spilled; the clip branch clamps the left
 // edge with a conditional set instead of retail's branch.
@@ -7802,6 +7818,9 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
+// MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
+// decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
+// expression for world_effects gives 65; the original 16 is kept.
 
 // @retail 0x13680
 void function_13680(bool skip_effects)
