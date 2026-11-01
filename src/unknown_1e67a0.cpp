@@ -639,6 +639,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // with a plain long in the old order 163 (1045 bytes), plus the movement add 147 (1087 bytes), plus the
 // projection through vector3f_add_scaled too 147 (1086 bytes). Reconfirmed:
 // jitter add 130, with retail-order plain jitter 231, plus movement add 174 (aligned 129), retail order alone 233.
+// Round 62 (fast, 0x24590 listed; jitter on/off first with `*=` and a plain long in each): projection, movement
+// and jitter adds through the existing helpers 191 (1066 bytes); projection and movement 189 (1063, aligned
+// 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
+// volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
+// memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

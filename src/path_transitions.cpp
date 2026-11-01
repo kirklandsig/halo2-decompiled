@@ -568,6 +568,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // (+4) is only the margin product: retail multiplies the reciprocal in place by the radius in memory
 // (`mulss xmm2, [eax]`), ours loads the radius and multiplies by the reciprocal; with that and the entry's
 // pathfinding register fixed, the dot3f form would align everything after case 1/6.
+// Round 62: the corner pointers a, b, c, d 299 fast and plain (1284 bytes, aligned 119: actor_index loaded
+// into EAX as the first instruction, so pathfinding arrives in EDX and moves to EBX after it; retail moves
+// EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
+// first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
+// before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
