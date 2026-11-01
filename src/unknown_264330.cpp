@@ -858,7 +858,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
-// score 267 (was 265): actor EBX, prop ESI, squad and unit homes, the type-15 arm and the 0x25c9d0
+// score 257 (was 267): actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
 // call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
 // scheduling before the branch, the suppression/current byte homes swapped ([esp+0x12]/[esp+0x13]),
 // and at the first 0x1c8df0 call retail spills the root into the squad's slot and keeps the hit
@@ -973,6 +973,14 @@ real function_296600(long actor_index, long prop_ref_index);
 // the first 0x1c8df0 call (retail stores it into the squad's slot and loads current into AL, so its hit
 // pointer stays in EDX where ours spills it), the root/priority homes after it, and BLOCKED-BY 0x25cb60
 // (contributor) for the movsx of the sight.
+// Round 38 (lane 15, plain checks; aligned = LCS-aligned differing instructions, 105 at 267): current
+// computed before suppressed 372; the time read before the prop lookup 271; the unit as
+// `object[0xaa] == 0 ? object : NULL` 257 (kept: plain 1256 bytes; the code is now branchless
+// setne/dec/and where retail selects with cmovne from the NULL-first home, aligned 117, so the
+// NULL-first form remains the closer structure once the slot swaps are solved). On it: the ternary
+// inverted 257; time before prop 258; current before suppressed 366; the unit selected right after the
+// object lookup 289; `prop_ref_index ==` operand order 257. Byte homes: ours puts suppressed (3 byte
+// refs plus its address) at [esp+0x12] and current (4 refs) at [esp+0x13], retail the reverse.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
@@ -995,11 +1003,9 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	s_type_76cf92 *prop = prop_get(reference->prop_index);
 	long time = g_510c54->game_time;
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
-	byte *unit = NULL;
 	bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
 	bool current = *(long *)(actor + 0x338) == prop_ref_index;
-	if (object[0xaa] == 0)
-		unit = object;
+	byte *unit = object[0xaa] == 0 ? object : NULL;
 	if (*(short *)(actor + 4) == 15 && *(long *)(actor + 0x26c) != NONE)
 	{
 		byte *parent = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x26c) & 0xffff) * 12 + 8);

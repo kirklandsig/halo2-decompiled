@@ -184,6 +184,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
 // `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 38 (lane 15, fast): entry computed into the entry local and stored to its field after the chain
+// lookup 187; tables field read into a restore-tables local before the entry store and used for all
+// three bases 284; `10 * first` 47; the entry as `&base[first * 10]` 47; packed read through a word
+// const view 47. The tail is still BLOCKED-BY 0x18a90 (contributor file). Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

@@ -1368,6 +1368,12 @@ PRIVATE inline long score_string_list_1608e0()
 // Round 265: library scroll/header-alpha/body-row-alpha bounds and their pairs/all
 // 697/727/719/729/725/743/817; all with upper-first nesting 789. Body-row bounds
 // recover frame 0x79c but regress to 719 at 2922 bytes; original full body restored.
+// Round 38 (lane 15, fast; aligned = LCS-aligned differing instructions, baseline 628): fade count declared
+// (uninitialized) at the top 680 (identical code); screen height computed before x 693 (aligned 588: the
+// clamp limit is then read and converted once as retail, but the panel moves to EBX and left stays in BP);
+// screen height first of all 693; the player lookup written at each of its four uses (no pointer local) 725;
+// x/y into a two-short origin with row_position copied from it by memcpy and the title bounds from the
+// origin, on the height-first order, 721 (2906 bytes). Original body restored.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
