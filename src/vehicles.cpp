@@ -2571,7 +2571,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
+// score 719 (was 728): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
 // both point setters 846. Plain confirms four existing cross3f calls, unchanged call roles.
@@ -2586,6 +2587,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // high), with climb 729; with climb, `boost * maximum`
 // and `boost * vehicle->speed` 721 each (identical code), boost preset to 1.0f then the conditional 747, boost as
 // one ternary 721 (identical).
+// J221: Friction APIs 726; force producer 755; both 753; with distinct relative output friction/force/both 734/763/760; all with climb 753, velocity role names 760. Original transform plus friction APIs and the actual twice-used climb observation 719 fast/plain, kept; same fields, values, float groups and game-call tuples. All other forms restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2618,8 +2620,9 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 		vehicle->unknown1b8 = 1.0f;
 	}
 
-	real elevation = vehicle->unknown1b8 *
-		(0.0f > vehicle->unknown1b8 ? *(real *)(definition + 0x1f8) : *(real *)(definition + 0x1f4));
+	real climb = vehicle->unknown1b8;
+	real elevation = climb *
+		(0.0f > climb ? *(real *)(definition + 0x1f8) : *(real *)(definition + 0x1f4));
 
 	vehicle_approach(&vehicle->unknown370, (real const *)(definition + 0x22c), elevation, dt);
 
@@ -2680,27 +2683,21 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 		real friction = vehicle_friction(forward_speed, *(real *)(definition + 0x200),
 			*(real *)(definition + 0x27c) * acceleration_scale) * state->unknown6c;
 
-		force.i += facing->i * friction;
-		force.j += facing->j * friction;
-		force.k += facing->k * friction;
+		vector3f_add_scaled(&force, facing, friction, &force);
 	}
 	if (vehicle->turn == 0.0f)
 	{
 		real friction = vehicle_friction(left_speed, *(real *)(definition + 0x238), *(real *)(definition + 0x27c)) *
 			state->unknown6c;
 
-		force.i += left.i * friction;
-		force.j += left.j * friction;
-		force.k += left.k * friction;
+		vector3f_add_scaled(&force, &left, friction, &force);
 	}
 	if (vehicle->unknown370 == 0.0f)
 	{
 		real friction = vehicle_friction(up_speed, *(real *)(definition + 0x238), *(real *)(definition + 0x27c)) *
 			state->unknown6c;
 
-		force.i += up.i * friction;
-		force.j += up.j * friction;
-		force.k += up.k * friction;
+		vector3f_add_scaled(&force, &up, friction, &force);
 	}
 
 	real angular_scale = *(real *)(definition + 0x270) * 15.0f;
@@ -4095,7 +4092,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
-// score 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
+// score 817 (was 817): Frame 0x18 agrees; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
+// Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // Complete definition snapshot, result-first, direct active predicate in seven nonempty
 // combinations 1006/864/1006/869/1002/869/1002; snapshot with numeric movement-case
 // source order 1006. Original observations, switch and body restored.
@@ -4106,6 +4104,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Round 45 (lane 1): ours keeps 1.0 in XMM5 from entry (retail loads it per site; every callee writes only
 // XMM0/XMM1); the final clamp as if/else-if 817 (identical); the 0xc0005a5 exit without `forced = false` 822
 // (retail clears BL there); both 822; result declared before forced 817; result declared first 817 (identical).
+// J221: Shared lateral cross and native byte forced state 817/817; full-width state 820; common recognized-name exit 817, with cross/full-width 818/820; ascending/descending complete cases 817/817; both Boolean-valued channels produced as floating indicators 813 (four points, below eight; restored). Original observations, result/control graph and complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

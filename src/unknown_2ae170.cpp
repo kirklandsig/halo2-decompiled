@@ -574,7 +574,8 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 	settings->mixbins.dwMixBinCount++;
 }
 
-// score 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
+// score 299 (was 299): Aligned 0x144 frame and zero-temporary/descriptor copies versus retail 0x94; repeated converter coalescing remains.
+// Earlier at 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
 // Earlier: frame 0x130 versus 0x94; our LTCG CSEs and hoists the identical 0x12aff0(-64, 0, -64)
 // conversions (6 calls versus retail's 15; BLOCKED-BY 0x12aff0: retail's callers treat it as opaque).
 // Round 75: SetMixBins (retail calls 0x37c5e4) for SetMixBinVolumes 449 (kept); the existing 0x2216f0 with a
@@ -691,6 +692,7 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // Round 217: Complete descriptor value initialization at declaration and by assignment, first/second/
 // third/all for each: 307/314/314/299/307/314/314/299. Unselected value-production forms restored.
 // Selected native descriptor value production: 2aeb20-t04; original scopes and game-call inputs retained.
+// J221: On native value construction: first/second/both submission scopes 316/327/374; full-zero first/third restart 314; direct CRT zero first/second/both/all 299/299/307/348. Original value constructors, descriptors, routing and submission tuples restored.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
