@@ -2216,6 +2216,17 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
 // the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
 // parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
+// Round 55: object offset named as a local (`local_offset + data + 8`, retail's SIB order) 154;
+// `(local_3 & 0x400000)` for the field-bit test 168, with the named offset 167; the 0x2000 compare through
+// an inline pointer helper either way round 155/155; its copy through memcpy 155, through an inline pointer
+// helper 155, memcpy with the named offset 154; a compare-and-copy inline helper 155; a `long const *` or
+// `long const &` to the 0x214 field used for both, also inside the 0x2000 test, 155/155/155; memcmp for the
+// compare 214 (retail's two loads and register compare, no dead add), with memcpy for the copy 214; the
+// second slot mask named at the loop top for both tests 268 (1043 bytes); the first slot mask declared at
+// function scope 155; `for (local_5 = 18; local_5 < 22; local_5++)` without the countdown 247 (1051), with
+// the named offset 246. Retail's dead `add ebp, 0x214` is the idiom of a pointer-to-field variable whose
+// last use was folded away (matched 0x89df0 and 0xbb950 link walks, 0xa0c50's inlined flag setter); no
+// existing accessor reads the unit's 0x214 field.
 // Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
 // loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
 // no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags

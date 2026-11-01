@@ -389,6 +389,9 @@ void function_125a90(long value);
 // 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
 // assigned on every path with no initializer 36 and the negated test with the kind arm first 36
 // both compile to the same code (VC normalises the arm order).
+// Round 55 (fast): element computed before the index local 51; index as `(word)datum` 114; the special arm
+// as `if (type == 0x26) remove = !a; else remove = false;` on the long type 88 (417 bytes); `remove` declared
+// before the index and element 36; the element through a typed elements array local 36.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

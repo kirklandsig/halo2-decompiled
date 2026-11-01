@@ -336,6 +336,13 @@ void __stdcall function_1160c0(real dt)
 // Round 264: Existing initial/normalized axis setters and const native delta/target/offset,
 // subsets 1/2/4/3/5/6/7, then all with const assigned-once scalars 192/179/179/192/192/179/192/192.
 // Original producers and complete body restored; segment/previous/axis homes remain.
+// Round 54 (m3 lane 1, fast): retail's angle call passes direction in ECX and the up vector in EDX, which is
+// `function_11ce20(&vertical, &direction)` (0x11ce20 matches; the angle is symmetric): 177, the call setup then
+// agrees (two points, not kept). The rest offset declared at function scope before previous 179 (identical code:
+// the homes do not follow scope); on the swapped call: the prediction rows after the velocity and position
+// publication 213; the rest offset copied right after the segment lookup 292 (1354 bytes); the blend complement
+// named and used three times 177. Retail mirrors two groups of homes: length/cosine +0x10, segment/scale/sine
+// +0x14, axis +0x18 (ours axis +0x10, length +0x20) and offset +0x50, previous +0x5c (ours reversed).
 // Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
 // direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
 // offset copy (v*cos + projection*axis - cross*sine) with predicted = position + offset 236 (1370 bytes); the dot

@@ -671,6 +671,16 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // both through the existing vector3f_assign 233 each (1020 bytes). On the plain long our build merges limits.j and
 // limits.k into one value (two stores and one spill where retail keeps XMM6/XMM7 copies and three stores); the
 // volatile long is what keeps them apart here, and no tried form keeps them apart without it.
+// Round 56 (m3 lane 1, fast, 0x24590 listed): limits as one aggregate initializer 132 (same code); that with
+// retail-order jitter on a plain long 233; that jitter with its products added straight into the velocity 239;
+// the scaled factor named (`speed_factor = x134 * factor`) 132 (same code); retail-order jitter on a plain long
+// with every on/off, sign and scale value as `v = 1.0f; if (!(bits & n)) v = alt;` 165 (1051 bytes, aligned 90
+// against this body's 104: limits split around the call and spilled at retail's +0x1c/+0x20/+0x24 from
+// XMM4/6/7, on_x/on_y in XMM2/XMM5 and on_z in a stack slot as retail, but 1.0 then takes XMM1, the factor XMM2
+// and input_fraction XMM3, retail 3/1/2, and the jitter sums run z first); on that, the products added straight
+// into the velocity 248, the jitter add through vector3f_add 160 (aligned 88), plus the movement add 164
+// (1098 bytes, aligned 82); only the on/off values in that if form, signs and scales as `*=` ternaries, 165
+// (1046 bytes, aligned 83: the on/off form alone gives the split limits).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -896,6 +906,13 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // copy 206 (slot fixed, the scale goes through memory); the same by hand 203; in place plus
 // `!(fabs(angle) < 0.0001f)` 200; copy then scale in place 220; `moved_away = false` set inside the
 // test 159 (retail's `xor dl, dl` ... `mov dl, 1`, a flag set in a test: only with a match).
+// Round 56 (m3 lane 1, fast): the sample vector in its own block closed after the velocity stores (angle outside)
+// 155 (same code: scope does not place the slot); that with `!(0.0001f > fabs(angle))` 173 (the test and the
+// forward copy then retail's, the sample still at +0x18); one vector for the sample, the forward copy and the
+// rotation done in place (cross and projection first) with that test 155 at 1382 bytes (everything up to the
+// rotation is then retail's: sample at +0xc, test, copy; left the axis read into registers where retail uses
+// memory operands, and sine in the angle's dead slot +0x34 where retail puts cosine there and sine at +0x44);
+// on that, cosine before sine 156, the moved-away flag preset false and set in its test 178.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

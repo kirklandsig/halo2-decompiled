@@ -413,6 +413,9 @@ short *function_e70b0(long unit_index, short *value);
 // Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
 // lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
 // mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
+// Round 55 (fast): `now` declared at function scope 49; `long const now` with a named `real const elapsed`
+// and `10.0f < elapsed` 49; the final mode read through the entry actor pointer 132 (423 bytes);
+// `state->ticks -= 1;` 49; the unit index through a `long const &` 49.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

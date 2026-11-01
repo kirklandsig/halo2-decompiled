@@ -72,6 +72,7 @@ bool function_25d9b0(long prop_index);
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
 // score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
+// the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
 // retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.
@@ -191,6 +192,21 @@ bool function_25d9b0(long prop_index);
 // (`test al, al; je` to a `return priority` placed last) and falls into the shared `xor eax, eax` exit. On that
 // block: `if (!busy) return priority;` 65 (old registers), `if (busy) priority = 0; return priority;` 82, the whole
 // test as one && with an extra `return 0` 65. Left: the select, the success/zero block order and `xor ax, ax`.
+// Round 55 (fast with the file and its callees, faithful 49): VC if-converts the busy test (`neg al; sbb;
+// not; and`) for `if (busy) return 0; return priority;` with a final `priority = 0; return priority;` 49,
+// `if (!busy) return priority; return 0;` 49, a named bool 65 and `return busy ? 0 : priority` 83 (573);
+// `if (!busy) return priority;` with the final `priority = 0` 65; busy joined with `&&` 65 (no select, but
+// actor/node swap to EBP/EBX), with node declared first 65, a long priority 62, both 62, the fallback or
+// every lookup through actor->prop_index 65/65; `goto done` after the `&&` test / after the busy test 65/49;
+// the condition inverted returning 0 65; single exit with `priority = 0` through goto/if-else 76/76 (542);
+// a short result at the label 91/108/94; the evaluation after `if (priority <= 0) return 0;` with early
+// returns, `&&` busy, inverted test and busy in its own if 49/65/49/49; a goto-free form (found paths `break`,
+// fallback `else if`, `short priority = 0`) with an if/else result 141 (574), `short result = 0` 201 (594),
+// `&& !busy` returning priority 142, busy in its own if 118 (571); on the current loop an if/else short result
+// with `&& !busy` 63 (555; no select, actor/node swap) and `if (busy) result = 0; else result = priority;` with
+// else-arms `result = 0` 48 (556; retail's `xor eax, eax` zero exit, still a select; one point, not kept), with
+// a long priority 60/53, with a long invitation index 141/140. A short result zeroed in an if/else is what
+// gives retail's 32-bit `xor eax, eax`; `return 0` gives `xor ax, ax`.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -263,7 +279,7 @@ evaluate:
 // index into a local before the actor lookup, the reversed compare, a named actor local and the
 // separate-exit forms compile byte-identically (73) or worse (85-87 at 272-277 bytes); holding
 // the call out of line needs a noinline declaration in src/unknown_25d690.cpp.
-// score 73 (was 73): retail calls function_25d740 out of line (ECX node) and sinks the
+// Earlier: retail calls function_25d740 out of line (ECX node) and sinks the
 // ESI/EDI saves past each early exit; our build inlines it through the prop_node_view
 // wrapper, so the blocks are laid out differently. A single exit (`result = 0x10;` in the
 // near arm, `result = g_46fbe8;` in the far arm) with the slot's prop index read before the
@@ -394,6 +410,10 @@ evaluate:
 // (still inlined here, its other callers unchanged), with the single-exit form 88; the single-exit form 88
 // (278 bytes); the two outer tests joined with `&&` and the call in the else arm 88. BLOCKED-BY 0x25d740
 // (LTCG inlines it at this call site only). The slot cast at each use, as 0x1b82d0 reads it, 73.
+// Round 55 (fast with the file and its callees): the definition moved to the top / the end of the file 73/73;
+// view and velocity declared at function scope 73; `if (!view) return result;` after the velocity query 73;
+// the near arm as `result = 0x10;` with the far tests in its else 78. Our build also inlines 0x25d740 in
+// unmatched 0x261510, where retail calls it.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {
