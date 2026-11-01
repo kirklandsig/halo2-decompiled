@@ -137,6 +137,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
 // Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
 // `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
+// Round 59 (fast; 0x1a303b/0x2b393c stayed matched): 1-8 unused locals at the top (diagnostic) 43 each;
+// result set before the copy 43; the entry pointer declared at function scope 43; `*iterator = index =
+// entry->next` without early returns 43; `g_4cf98c + index` 43; a two-use dword flags local 43 (all same code).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1030,6 +1033,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
 // cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
+// Round 59 (fast): 1-8 unused locals at the top (diagnostic) 49 each. Round 149's plain entry rebuilt (cmovle lower,
+// explicit `>` arm, count path upper first with the flag cleared, flag set before the decrements) 54: only the
+// EDX/ESI load of the removed index and upper in EAX (coalesced with the count and the backward index) differ.
+// On it: backward copy as `for (i = upper; i > lower; i--) g[i] = g[i - 1]` 361 (1165 bytes, upper still EAX);
+// the copy arms tested as `!downward` 54; the two calls passed g_4cf980 with `removed` assigned after them 373
+// (1177 bytes); the count test as `g_4cf978 > position` 56; lower as `removed <= position ? removed : position` 56.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

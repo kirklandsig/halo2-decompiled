@@ -352,6 +352,14 @@ s_object_gc_entry_ab g_440570[6] =
 // (the frame's extra dword). The action-null exit as a break to the final clear 179 (330 bytes); the
 // level computed through g_4de2f4 at each use 110; the query failure clearing and returning in place
 // 110; the level declared before the buffers 110; the action-null exit clearing through g_4de2f4 125.
+// Round 59 (fast): round 44's index walk + `advance = !again` rebuilt 122 (393 bytes: frame 0x2a04, level in EBP,
+// +8 entry pointer and sete as retail; the state stays in EBX across the 0xbf1c0 call, so gathered spills, and the
+// loop is rotated). On it: the query failure clearing and returning in place 122 (same code); `while (action)`
+// with the query in the condition 176 (333 bytes); the loop inside `if (level != NONE)` with the NONE path and the
+// query failure sharing the final clear 149 (371 bytes; the shared clear still uses the EBX state); `again`
+// declared at the action 122; a named eligibility bool 122. Diagnostics: 0xbf1c0 also storing an unrelated global
+// (its convention then changes) still keeps g_4de2f4 across the call; `critical` in one array with `again` (escaping to
+// the action) changes nothing (114). 0xbf1c0 has this single retail caller.
 // @retail 0xbf380
 void function_bf380()
 {
