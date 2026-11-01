@@ -1163,6 +1163,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 262: Ordinary inline metadata on existing private resource levels: outer alone 3524
 // (310/2825); middle/inner and all remaining pairs/triple 828 each; all with forced existing
 // animation-resource expansion 828. All provider metadata, target body and request tuples restored.
+// Round 489: chained candidate/result assignment in the named branch, native iterator, late constant
+// candidate and missing name branch first, combinations 978/976/984/982/991/989/984/982.
+// All reach 2825 bytes but regress; original complete producer, iterator and body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1293,6 +1296,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 471: Separate selected graph/index short/short, short/long, long/short, long/long,
 // materialized before/after outputs 1024/1002/1017/1000/1018/1001/1014/1002.
 // All selected-component carriers and original constructor lifetimes restored.
+// Round 489: chained candidate/result assignment in the named branch, native iterator, late constant
+// candidate and missing name branch first, combinations 978/976/984/982/991/989/984/982.
+// All reach 2825 bytes but regress; original complete producer, iterator and body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
