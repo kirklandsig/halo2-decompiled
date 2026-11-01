@@ -490,6 +490,32 @@ def test_linear_rows_capture_axes_after_linear_updates(solver_images, kind, prec
                             assert struct.unpack_from('<4f', heap, 0xa0) == (2, 0, 0, 0)
 
 
+@pytest.mark.parametrize('kind', [3, 7, 8])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_coupled_rows_with_body_storage_aliases(solver_images, kind, precision):
+    # Both projections precede coupled impulses, while later velocity writes
+    # and residual updates must still observe aliased row/body storage.
+    for owner in (0, 0x80):
+        for offset in (0, 0x10, 0x20):
+            for alias in (False, True):
+                for seed in range(8):
+                    # Seed 2 supplies valid contact/friction record pointers
+                    # without temporary-scale records or an earlier callback.
+                    data = solver_case(kind, 2)
+                    source = solver_case(kind, seed)
+                    data[:0x100] = source[:0x100]
+                    for start, end in ((0x60, 0x80), (0xe0, 0x100), (0x104, 0x140)):
+                        data[start:end] = bytes(end - start)
+                    put(data, STEP + 28, 'i', (1, 2, 4)[seed % 3])
+                    put(data, OPS + 4, 'I', HEAP + owner + offset)
+                    put(data, OPS + 16, 'I', HEAP if alias else HEAP + 0x80)
+                    size, row_kind = OP_LAYOUT[kind]
+                    put(data, OPS + 24, 'I', kind | size << 8 | row_kind << 16)
+                    put(data, OPS + 24 + size, 'I', 0x400)
+                    compare_case(solver_images, data, precision,
+                                 ('coupled row overlap', kind, owner, offset, alias, seed))
+
+
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_contact_pair_groups_then_friction(solver_images, precision):
     # Local retail disassembly identifies the two pair entries, their four
