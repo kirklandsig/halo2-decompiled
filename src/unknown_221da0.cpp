@@ -757,133 +757,21 @@ void __stdcall vector_constructor_iterator(void *arg_0, unsigned arg_1, int arg_
 void *__fastcall function_31bc70(void *arg_0);
 real function_18cac0(long arg_0);
 
-// score 155 (was 155): the frame 0x8ac agrees, but the camera pointer takes ESI where retail keeps it
-// in EBP and the gain table is addressed through a pointer in EBP where retail addresses it from the
-// stack; dropping the memset result frees EBP but makes MSVC align the frame (240) and passing the
-// array instead of the clear result changes the frame again (219), so the clear-result view is kept.
-// score 155 (was 155): frame 0x8ac agrees; camera ESI/EBP and persistent clear-result/side homes differ.
-// Earlier: the camera pointer takes ESI where retail keeps it in EBP, and the
-// clear-result and side locals sit at [esp + 0x14], [esp + 0x18] and [esp + 0x28] where retail
-// has [esp + 0x10], [esp + 0x24] and [esp + 0x2c]; the body is 797 bytes to retail's 812.
-// Earlier: frame 0x8ac agrees; camera ESI/EBP and persistent clear-result/side homes differ.
-// frame 0x8ac agrees; camera/gain-view allocation and maximum-tail registers differ.
-// frame 0x8ac agrees; persistent camera/gain and scalar homes differ.
-// Earlier: Frame 0x8ac agrees; camera ESI/EBP, table-view and side homes remain.
-// Earlier: aligned EBP frame 0x8b4 versus direct 0x8ac; native large-clear and scalar homes differed.
-// reversed side guard 225; missing-door continue 225; camera-cluster continue 225;
-// indexed batch-entry pointer 225; previous-gain snapshot 262.
-// Earlier: aligned clear still owns EBP and shifts the scalar homes;
-// unsigned-word door index 236; unsigned-word cluster index 540; both 523;
-// signed-byte side 246; one door-cluster table 233; selected mask pointer 254;
-// both word indices/signed side 534; mask pointer/native camera index 254.
-// inner count snapshot 225; Boolean side 246; native door cluster 236;
-// absent-door-bit continue 225; final batch count snapshot 237.
-// Round 211: Batch countdown/cursor 237; unsigned native side 225; camera mask/word parts 226; signed-word
-// door cluster 237; countdown/membership parts 238. Aligned-clear frame and receiver homes remain.
-// Gain after mask queries 251; global BSP receiver 227; audibility-bound receiver reread 244;
-// unsigned membership masks 246; pretested cluster while walk 225.
-// Round 215: unsigned-word selector 229; read-only audibility receiver 225;
-// mask declaration before gain 225; chained small-mask zero 245; branch-derived gain result 229.
-// Flat mask, reversed flat index 225/225; door division 265; cluster division 230;
-// both divisions 269; flat with door/cluster/both divisions 265/230/269.
-// Round 164: Returned gain view ending before final batch 228 (frame 0x8b0);
-// native real table, post-clear BSP and readonly camera combinations 228 each.
-// All eight regress; original clear, gain view and aligned body restored.
-// Three-state mask admission with long/short/signed-byte/byte complete arms 225/229/246/246;
-// default-first admission at those widths 225/229/246/246. Original early continue, selector and whole library clear restored.
-// readonly camera 225; audibility once 233; camera audibility 233; max workspace 225; camera max 225;
-// audibility max 233; camera audibility max 233; double door gain 338.
-// Round 234: Gain-output cursor with original clear, native side, outer maximum
-// workspace and both: 252 each; the same four with the whole library clear return
-// 241 each. Original indexed traversal, native clear, gain result and executable
-// body restored at 225; aligned frame and scalar homes remain.
-// Round 140: our build aligns the frame for the 0x800-byte clear (compile-only too: any
-// memset of a local of 128 bytes or more aligns there); retail does not. The clear through
-// a helper in another file (LTCG inlines it) 225 (still aligned); batch count read once
-// 237 (812 bytes); door clusters through the cached audibility pointer 233 (812 bytes); gain
-// loop bound read once 225; door count read once 237.
-// Lane 8 r58: max as a ternary store 229; table value first with negated test 254; real
-// table type 225; batch count read once 237; with real table 237. The alignment needs the
-// memset and a frame over 0x800: a table of 0x1c0 dwords or no memset gives the plain frame.
-// Round 180: Indexed gain-element pointer inside/before admission 225/225; complete result
-// arms 229/229; two-use old gain 262/262; old gain with complete arms 254/254.
-// Round 196: Whole clear return/direct camera, side long/short/signed-byte/byte 248/248/250/250;
-// with audibility at each bound 223/245/223/223. On long 223, after-clear BSP/native real/both
-// 235/223/235; small-mask memset alone/with after-clear BSP/native real/both 216 each.
-// Whole clear return, direct camera/audibility and library mask clear kept at 216 plain (813/812).
-// Round 195: Outer, inner and batch induction-zero lifetimes independently [241, 230, 247]; paired/joint
-// lifetimes [236, 263, 256, 254]; entry declarations with per-door inner reset 257. Original zeros,
-// clears and loop domains restored; scalar and mask/result homes remain.
-// Round 201: Per-door camera cluster captured after mask query in long/short, alone, with complete
-// role names, with an outer maximum workspace, and with both: 250 each (eight forms, 785 bytes).
-// Original direct field observations and inner result lifetime restored; frame/home and max joins remain.
-// Round 360: table-default strict maximum with audibility/camera/batch-bound
-// interactions 207/209/257/261/228/222/241/243. Table-default result kept at 207
-// plain, 813 bytes; unordered/equal values still select the door gain. Original
-// scalar observations and both library clears retained; camera/BSP homes remain.
-// Round 364: shared Boolean mask tests 155, kept plain; native batch countdown 209;
-// both 157; camera guard 207; mask/guard 155; countdown/guard 209; all 157;
-// all with unsigned side 157. Same two library clears and strict maximum retained.
-// Membership helper at door/camera/inner only 207/155/207; door-camera/door-inner/camera-inner
-// 155/207/155. The camera membership role accounts for the retained change.
-// Round 366: final-array ownership 219; consistent audibility 167; both 239; native per-door camera cluster 155; array/cluster 221; audibility/cluster 167; all 239; direct native array throughout 190. All restored.
-// Native callback-entry record with audibility/direct-array/countdown interactions
-// 155/167/240/190/157/172/237/192; gain/cluster-query/door-query/all inline declarations
-// with separate noinline declarations 155/155/155/155. Original body and declarations restored.
-// Round 210: On the shared membership graph: door-default maximum 216; conditional expression/complete
-// result arms 230/230; branch publication 541; outer maximum workspace 155; indexed
-// element pointer with table-default/door-default/complete-arm results 155/216/230. All restored.
-// Round 368: persistent camera/structure/gain names alone and in all combinations 155 each; coherent array
-// names with all three 155. Original executable body restored.
-// Round 370: consistent camera-provider observations with native table, default-first side and
-// after-clear structure interactions 253/253/270/269/253/253/270/269; restored.
-// Round 237: On the shared membership graph, native side short/word/signed-byte/byte
-// 179/179/224/224; first-side-default forms 230 each. Both clears, constructor, live bounds,
-// strict maximum and original side result restored.
-// Selected-mask address on shared membership with final-array ownership, consistent audibility
-// and native real storage: 266/266/260/260/263/263/266/266; exact-only pointer forms restored.
-// Round 153: plain real table with memset 240 (aligned frame); audibility read before the door query 238; table
-// indexed directly with memset's return for the final call 203 (plain frame, return pointer spilled), with the
-// audibility read 249; batch count read once 153 (retail's countdown; one-use local). Compile-only: every clear of
-// a directly addressed table aligns the frame.
-// Round 108: retail clears and indexes the 0x800-byte table in place (`[esp + eax*4 + 0xbc]`,
-// `lea ecx, [esp + 0xc0]` for 0x221e30) with no realignment; the only caller 0x125b40 also realigns
-// here and not in retail. Every other retail function that clears a stack local of 0x1f4 dwords or
-// more with rep stosd realigns its frame. A real table with memset 240; dword table viewed through
-// a cast pointer 264; zeroing loop (compiles to rep stosd) 264; table pointer used for the clear and
-// every access 264: all realign. Compile-only screens: struct-wrapped table, `= {0}`, `= {}`,
-// `&table[0]`, split clears, a table member at +4, a clear or the whole body in an inline helper all
-// realign; a table of 0x1f0 dwords does not, 0x1f4 does (the frame size is not the trigger); only
-// /O1 or /Os or /Oy- (diagnostic flags, not kept) avoid it.
-// Round 184: Entry declarations of gain/door/pair-mask arrays, masks 1-7, then all in reversed
-// declaration order: eight at 155. Original scopes, both library clears, per-door construction, live
-// bounds, side priority, strict maximum and full body restored.
-// Round 265: all six lexical orders of door/side/inner long slots, then both
-// uninitialized pre-clear declaration orders, 155 each. Original declarations and body restored.
-// Round 179: three-state side on the unaligned shared-membership graph, complete arms in
-// long/short/signed-byte/byte 155/179/224/224; first-side default 232/229/230/230. Original
-// ordinal, early absent-side continue, clear return, helpers and complete body restored.
-// Round 186: Initial camera-cluster short/long with guarded/conditional/default-result/early-null
-// admission 218/272/247/275/247/275/218/272. Original direct observations and whole body restored.
-// Round 188: camera-provider/membership ordinary/forced/separate-noinline declaration
-// pairs (1,0)/(2,0)/(0,1)/(0,2)/(1,1)/(1,2)/(2,1)/(2,2):
-// 155/169/155/577/155/577/169/585. Original shared inline contracts and body restored.
-// Round 408: all-use structure reads with native real storage and/or final-array
-// publication 229/155/229/155; with consistent audibility 190/192/190/192.
-// Original cached structure, library clears and complete ownership graph restored.
-// Round 297: Signed-int outer/inner/batch induction identities in all seven
-// nonempty subsets 155 each; all with signed-int side 155. Original long
-// induction, clear-result view and complete body restored.
-// Round 309: Plain two-mask search with long/unsigned-long/short/word scan, absent-side
-// continuation 229/229/230/230; complete admission 233/233/234/234. Both native clears,
-// original side selection and whole executable body restored; camera/gain-view homes remain.
-// Round 441: BSP-before-first-mask query contract with native real table/outer maximum/consistent audibility combinations 156/156/156/156/167/167/167/167. Original query definition, declaration, call and complete body restored; camera/clear-result and side homes remain.
-// Round 245: plain door-cluster/gain/final-entry cursors in seven subsets
-// 236/203/211/154/236/203/211; all with native real table 211. Final-entry cursor
-// saves one point and is rejected. Original indexed body and both library clears restored.
-// Round 470: complete-array clear-return view with real backing, retained
-// audibility and camera-cluster continuation interactions 155/155/167/167/155/155/167/167.
-// Original scalar view and complete body restored; camera/clear-result homes remain.
+/* the per-cluster gains of one listener, cleared before use (a plain memset of a local this large makes
+   VC realign the frame with `and esp, -8`; retail's clear doesn't, as with 0x125b40's value tables) */
+struct s_cluster_gain_table
+{
+	real gains[0x200];
+
+	real *clear()
+	{
+		memset(gains, 0, sizeof(gains));
+		return gains;
+	}
+};
+
+/* raises each cluster's gain to the door gain of every door audible from the listener's cluster,
+   then runs the voices of that listener against the gains */
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {
@@ -891,14 +779,15 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 	if (local_0 && local_0->index != NONE)
 	{
 		s_structure_bsp_view *local_1 = (s_structure_bsp_view *)g_4e0348;
-		dword local_13[0x200];
-		real *local_2 = (real *)memset(local_13, 0, sizeof(local_13));
+		s_cluster_gain_table local_13;
+		real *local_2 = local_13.clear();
 		if (local_1->audibility_count > 0)
 		{
+			s_structure_audibility *audibility = local_1->audibility;
 			dword local_4[4];
 			memset(local_4, 0, sizeof(local_4));
 			function_249d10(local_1, local_4, local_0->index);
-			for (long local_5 = 0; local_5 < local_1->audibility->door_count; local_5++)
+			for (long local_5 = 0; local_5 < audibility->door_count; local_5++)
 			{
 				if (bit_vector_test(local_4, local_5))
 				{
@@ -908,7 +797,7 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 						real local_7 = function_18cac0(local_6);
 						dword local_8[2][16];
 						vector_constructor_iterator(local_8, 0x40, 2, function_31bc70);
-						function_249c90(local_8[0], local_1, local_5, local_8[1]);
+						function_249c90(local_1, local_8[0], local_5, local_8[1]);
 						long local_9;
 						if (bit_vector_test(local_8[0], local_0->index))
 							local_9 = 1;
@@ -921,16 +810,15 @@ void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 							if (local_11 != local_0->index && (bit_vector_test(local_8[local_9], local_11)))
 							{
 								real gain = local_2[local_11];
-								if (!(gain > local_7))
-									gain = local_7;
-								local_2[local_11] = gain;
+								local_2[local_11] = gain > local_7 ? gain : local_7;
 							}
 						}
 					}
 				}
 			}
 		}
-		for (long local_12 = 0; local_12 < arg_1->count; local_12++)
+		long count = arg_1->count;
+		for (long local_12 = 0; local_12 < count; local_12++)
 		{
 			if (arg_1->entries[local_12].listener == arg_0)
 				function_221e30((s_221e30 *)&arg_1->entries[local_12], local_2, local_0);

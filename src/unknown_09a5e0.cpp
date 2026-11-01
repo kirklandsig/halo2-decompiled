@@ -2206,6 +2206,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
 // tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
 // Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
+// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
+// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
+// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
+// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
+// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
