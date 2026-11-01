@@ -209,6 +209,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // cache flags stored first 129 (863 bytes), with the sample in a named local 133. On field_10 first, the child
 // loop: the effect index read into a local before the loop 131 (875 bytes), the parent stored before the link
 // and both list addresses taken through the child's parent 128 (872 bytes), the child test as `continue` 133.
+// Round 57 (m3 lane 9, fast): field_10 first with the fifth sample in a local stored in both arms of the cache
+// test 156 (879 bytes, not hoisted); field_10 first with the compare against the record re-derived from the pool
+// 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
+// the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
+// with field_10 first 133.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

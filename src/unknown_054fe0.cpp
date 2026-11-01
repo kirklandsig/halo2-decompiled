@@ -1116,106 +1116,12 @@ static inline bool session_member_get_qos(s_network_observer *observer, c_class_
 	return result;
 }
 
-// score 67 (was 67): Frame 0x74 versus 0x78; output/cursor ownership, extrema homes and member-bound reread remain.
-// Round 102 (lane 7): a one-file LTCG harness (this file plus the bodies of every callee the function and
-// its two callers reach) reproduces this function exactly: 67 here, 86 for host-after-observer with
-// (session, latency), 0 for that plus the volatile member_count re-read. On that recipe: the channel lookup
-// through the existing member-state getter 98 (329 bytes; adds a NULL test); bound tests swapped 86; qos
-// declared at the loop top 86; host and member arms each setting the bit 108 (338 bytes); `mask = mask |
-// bit` 86; `session->member_count > i` as the loop test 86. On the current body the state getter 95
-// (329 bytes). Real --fast agrees: the four recipe forms 86 each (callers 140 and 19), the getter 95 (callers
-// stay matched). The current (latency, session) order already gives retail's convention (session in EBX,
-// latency pushed, as 0x658c0's call shows); what differs is that ours keeps the CSE'd count in EAX and
-// gives the member cursor EBP and latency ESI, where retail gives latency EBP, keeps the cursor in ECX
-// (spilled around the copy) and compares the count from memory.
-// Earlier: the frame is still four bytes smaller than retail's and the
-// count, the minimum and the maximum are still set up in another order; this
-// round's trials in this file found no lower form of them
-// Earlier: the frame is four bytes smaller than retail's and the locals
-// (the count, the minimum and the maximum) are set up in another order.
-// Retail gives latency ebp and spills the member cursor; ours the reverse. The
-// mask update written in both arms gives latency ebp but moves session off ebx
-// (two stack arguments): 112, host arm first 112, with continue 112; the same
-// with host read after the observer 109/109. Retail also re-reads member_count
-// in the member check where ours reuses the loop's load.
-// Observer as a ternary initializer 102 (convention flips, 0x658c0 and 0x65770
-// lost); times declared first 67; mask update as `x = x | bit` 67; loop index
-// declared before the loop 67; `count != 0` 67.
-// Round 198: guarded-result graphs at the existing channel/observer/member QoS helpers, seven
-// combinations 67 each; all three with late host read 86. Round 20: the observer through the existing
-// getter with the host arm updating the mask itself gives retail's registers and frame only while at
-// most one counter is set before the getter; count first 100, observer first with if/else arms 99,
-// count first with if/else arms 100, times first 99, host read right after the getter 99 (334 bytes
-// each: the extremes' stores sink past the memset, the member check reuses the loop's member_count
-// load, the cursor takes esi and the loop head is padded). Screened (one-file LTCG harness): the
-// member count read through another address expression or with the output cleared first, the QoS
-// helper's four parameters in every order, clamp/min-max/mask/tail spellings: no change.
-// combinations 67 each; all three with late host read 86.
-// Round 29: the observer through the existing observer getter gives retail's allocation
-// once the host is read after it and the mask is also written in a host arm (frame 0x78,
-// latency ebp, session ebx, the cursor spilled to retail's slot), but the count/maximum/
-// minimum stores sink past the memset, the check still reuses the loop's member_count
-// and the loop head gets a pad: 99 with `continue`, as `else if`, as `if (i != host) ...
-// else`, and as a guarded do loop; the getter alone 100. With those stores ahead of the
-// observer branch (retail's order) the cursor keeps the register in every form screened:
-// getter after the counters, helper parameter orders, qos scope, times position, while loop.
-// Round 13: retail also re-reads member_count inside the member check (ours reuses the loop
-// condition's load in eax: a CSE across the back edge retail does not make). The host read after
-// the observer selection alone 86 (callers 0x658c0 and 0x65770 lose their match); the existing
-// observer getter with the host after it 100; the member check through the existing member-state
-// getter 95; qos declared before the loop 67; the observer chosen in an if/else 103 (same callers).
-// Round 20: this body with the host read after the observer 86, the same through the getter
-// 86 (latency to ebx, session to the stack); the round 29 form 99 with the counters before the
-// getter 109, with the host and the counters before it 112 (session on the stack); qos at
-// function scope 67.
-// Round 46: Predicate-produced QoS result bool/byte/short/long, native and library copies: all eight 188 (230 bytes, outlined member helper). On that graph, forced observer/member/both/all helper boundaries 188/67/67/67; original helpers and body restored.
-// Round 13 (fast): the clamp as one conditional expression reading the field 67, as two ifs 67, the count stored
-// then incremented 67 (same code each); the observer selected after the memset 65 (0x658c0 140 and 0x65770 19 lose
-// their match); the host read after the counter set-up, before the observer 66.
-// Round 35: target found with a diagnostic: host read after the observer branch, parameters in the order
-// (session, latency) at the definition and its one call, and the member check re-reading member_count
-// instead of reusing the loop's load give a byte match (0x658c0 and 0x65770 still match) when the re-read
-// is forced through a volatile cast (diagnostic only, reverted). Without the re-read: host after the
-// observer + (session, latency) 86, (session, latency) alone 89. Re-read attempts on that graph, each 86:
-// count through a membership-block pointer; `session->member_count > member_index`; count in a helper
-// local; bound test nested apart from the flag test; helpers defined after the function; the channel
-// helper's session read once through its address (re-reads in a compile-only build, not under LTCG); the
-// same in the outer qos helper; helpers with external linkage. A store through latency ahead of the check
-// also removes the reuse (compile-only), so retail's check sees member_count as possibly changed.
-// Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
-// session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
-// function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
-// guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
-// (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
-// Round 54 (lane 12, fast with 0x658c0/0x65770): an `include` flag set from the QoS query in place of
-// `continue` 126 (351 bytes); the channel lookup and the observer QoS test as two statements 67 (same code);
-// both on the (session, latency) order with the host read after the observer 108/86 (callers 140/19);
-// `s_qos_result qos = { 0 };` 67. Compile-only (keeps the CSE): the loop as a while with the increment at
-// the end, qos at the loop top, the lookup as a member function of the session class or the whole function
-// as one, a memset of qos; clearing qos inside the QoS helper re-reads but puts the helper out of line;
-// the lookup in another object is a call under LTCG (/Ob1).
-// Round 23 (lane 15): the recipe without the re-read is 86 and in the current tree also costs 0x658c0
-// (430 bytes, 140) and 0x65770 (19), plain; LTCG then passes latency in EBX and session on the stack.
-// No out-of-line member-channel, channel-QoS or observer getter exists in retail to call instead. On the
-// recipe (fast): helper session const 86; channel helper bound and flag tests as early returns 86; loop
-// condition `session->member_count > i` 86; all three helpers __forceinline 86; the channel helper alone
-// __forceinline 86.
-// Round 26 (lane 15, fast; on the recipe, which in this tree passes latency in EBX and session on the stack, 86 with
-// 0x658c0 140 and 0x65770 19): a pointer local to the member mask 86; `host != i` 86; times declared first 86; the
-// counters declared before the observer 86 (callers 140/19 each). Lead: the member bit set first in the loop body
-// gives retail's frame 0x78, session in EBX, latency on the stack, the member_count re-read in the check and both
-// callers' match (78, 319 bytes, aligned 24), but it sets the bit for members whose QoS lookup fails, which retail
-// skips (its failure exits jump past the mask store): not keepable. Retail's re-read needs a store or call between
-// the latch's member_count load and the check that keeps the bit on the success and host paths only.
-// Round 36 (lane 10, fast), each on host-after-observer + (session, latency) (86, latency then arrives in EBX and
-// session on the stack): the channel helper through the existing member-state getter 98 (329 bytes); qos at
-// function scope 86; the loop as a count-guarded do/while (diagnostic) 86 (identical: VC rotates both alike, the
-// guard still loads the count into EAX for the check); the for loop under a `count > 0` guard (diagnostic) 187
-// (231 bytes); the host read after the memset 89. Callers 0x658c0 140 and 0x65770 19 in each.
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
+
 // @retail 0x64480
-void network_session_get_member_latency(s_session_member_latency *latency, c_class_58d20 *session)
+void network_session_get_member_latency(c_class_58d20 *session, s_session_member_latency *latency)
 {
-	long host = session->current_member;
 	s_network_observer *observer = 0;
 	long count = 0;
 	long maximum = 0x80000000;
@@ -1223,12 +1129,15 @@ void network_session_get_member_latency(s_session_member_latency *latency, c_cla
 	long times[16];
 	if (g_527330.initialized)
 		observer = (s_network_observer *)g_527330.unknown48;
+	long host = session->current_member;
 	memset(latency, 0, sizeof(*latency));
 	for (long i = 0; i < session->member_count; i++)
 	{
 		if (i != host)
 		{
 			s_qos_result qos;
+			/* the member count is read again for the member check */
+			_ReadWriteBarrier();
 			if (!session_member_get_qos(observer, session, i, &qos))
 				continue;
 			long time = qos.rtt_median;
@@ -1289,7 +1198,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 		properties.unknown68 = 0;
 		properties.unknown6c = 0;
 		properties.unknown70 = 0;
-		network_session_get_member_latency((s_session_member_latency *)properties.unknown74, session);
+		network_session_get_member_latency(session, (s_session_member_latency *)properties.unknown74);
 		if (g_4cd868.unknown62)
 		{
 			properties.unknown68 = g_4cd868.unknown78;
@@ -1449,6 +1358,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // byte compare); team read from the field at each use 206 (917 bytes); the no-current form again 198 (owner
 // edx, `test`, cursor +0x1138 as retail; the zero takes esi in the second loop and the name count stays in
 // memory), with the PIN clamp 198.
+// Round 256: Scalar cache test first crossed with bounded byte count, uniform current-field reads
+// and copy-first completion: 222/223/211/226/213/248/238/234. Original cache guard, count,
+// receivers, publication and body restored; owner/count/zero homes remain.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

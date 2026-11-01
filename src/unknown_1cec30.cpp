@@ -979,6 +979,12 @@ void function_1d1540(s_havok_component *component);
 // Round 250: One body receiver with conditional post-reset refetch: constructor copy, flag/fixed-
 // first and bool/byte refresh 81/81/81/81 at 220 bytes; set copy 85/85/86/86 at 231. Frame/component
 // convention remains; every matched control survives.
+// Round 41 (lane 11, fast, with 0x1d0c20/0x1d1b60/0x1d5120): the 88 body again 88 (0x1d0c20 40, 0x1d5120 73);
+// on it the plain struct copy in place of set() 85 at 220 bytes (rep movsd, component still loaded from
+// [ebp + 0xc] into EBX; 0x1d0c20 38, 0x1d5120 77); the fixed arm refetching into the body pointer and
+// returning on its own 88. On the plain-copy body, parameters (transform, index, component) 85 (same code;
+// definition, both declarations and both calls changed together) and (component, index, transform) 85 with
+// matched 0x1d1b60 lost at 2.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2292,6 +2298,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // (`*(s_havok_property_word const *)&value`, as the out-of-line setter does) 163 (1467 bytes); the speed
 // sum before the velocity sums 91 (same code);
 // the result written through `body->unknown30` with no pointer local 99.
+// Round 464: success-boundary velocity/speed/other-contact default subsets
+// 339/192/305/284/412/337/411; velocity and speed at material admission with
+// late other-contact zero 411. Original default lifetimes and helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

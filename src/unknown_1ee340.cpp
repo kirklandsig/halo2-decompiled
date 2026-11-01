@@ -103,6 +103,15 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// This round (score 6, was 6): the entry block still loads the index before
+// the radius constant, and the loop still materialises the vertex address
+// before the x store; a fresh address expression for the point helper, the w
+// and mask stores written from separate expressions, the pointer written as
+// vertices_raw + count * 4 and a point3f pointer all compile identically.
+// Also this round: the member stores reordered (surface_index before kind, and
+// surface_index first) and the vertex pointer taken as a point3f pointer all
+// leave the two differences in place, and the w store written through the array
+// again is worse (38).
 // score 6 (was 6): radius/index loads swap; vertex x uses the completed
 // address before its store. Derived count/kind/value initializers 33; all
 // member initializers 6; index/count/kind initializers 6; const source 6;

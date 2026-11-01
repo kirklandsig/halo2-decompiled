@@ -452,6 +452,14 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
+// image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
+// call convention in src/unknown_01cf50.cpp.
+// this round: no new form. Retail's argument values for the call to 0x144f0
+// are (tag, 0, 0, 1, bitmap, 0.0f) and naming them that way leaves the score at 100, so the call
+// site was left as it was: the six arguments are still pushed on the stack where retail passes the
+// first three in EAX/ECX/EBX, because 0x144f0's definition (src/unknown_01cf50.cpp) carries no /Gr
+// flag; the colour/draw schedule after the call still differs.
 // score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
 // it with tag/stage/fallback in EAX/ECX/EBX and three stack arguments, our tree uses the standard
 // six-argument convention, so the call site and the colour/draw schedule after it differ.
@@ -472,6 +480,11 @@ void function_1cf50(void);
 // colour global as a dword/byte union read after the store 98, with the manager change 98 (union with anonymous
 // bytes / byte array 98/98); shifts of the global after the store 100; `& 0xff` channels of the global/local 98/100;
 // union colour local copied to the global, channels from either 98/98 (unions get a stack copy, `sub esp, 8`).
+// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
+// retail calls it with the tag, stage and index in EAX/ECX/EBX and three stack arguments, our tree
+// uses the standard six-argument convention, so the call site and the colour/draw schedule after it
+// differ. (The fast score reads 100 or 101 depending on the size of the reduced image; that is a
+// layout artefact of the reduced build, not a source change.)
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {

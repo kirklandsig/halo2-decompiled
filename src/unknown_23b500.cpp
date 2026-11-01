@@ -158,6 +158,12 @@ struct s_spawn_scenario_23aea0
 // (aligned 25), in one loop 252; a named dword source record pointer 118; a types pointer two records below
 // the array 157 (378 bytes); a two-dimensional view 100; real-typed fields in one type loop 100: always the
 // pointer induction.
+// Round 104 (lane 8, fast): retail's displacement 0x502248 is g_502258 - 16 (`g_502258[type * 3 - 4]`
+// on an integer IV type * 12 from 0x18, exit `cmp eax, 0xa8`). `long index = type * 3` named in the
+// nested loops 103 (definition in retail's EAX and the source lea between the scalar stores; IV still a
+// pointer); with the scenario read first 110; one type loop with the index 252 (not unrolled); `index =
+// type * 3 - 4` 103; the index plus a named source record 121; the index with the table store after
+// the defaults 104.
 // @retail 0x23aea0
 void function_23aea0()
 {

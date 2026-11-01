@@ -109,6 +109,9 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // before/after the result 68/68; a cluster element pointer 11; the accumulator declared at the
 // cluster block top / function top 11/11 (real 11); the inverse before the memset 11; the sample
 // array declared first 11; the product declared before the sum 15 (real 15).
+// Round 464: absolute byte-span induction in accumulation/blend/both 172/80/142;
+// named span ends 172/80/142; both exact-end tests 142; accumulation destination
+// span cursor 534. Original inner displacement lifetimes restored.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {
