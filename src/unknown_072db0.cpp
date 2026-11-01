@@ -1863,6 +1863,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round 57 (m3 lane 1, fast): on online_logon_connected() (729, aligned 479): the delay ternary
 // 729 (aligned 477); a user record pointer 775 (2846 bytes, cursor xuid-based in EBX); pointer +
 // ternary 775; pointer + identity memcpy from it 775; pointer + property copy first 774.
+// Round N274: Library property copy before identity capture 711; readonly identity 711;
+// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
+// Original identity/property order, native buffer lifetime and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -150,6 +150,10 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 // registers, 71 at 880 bytes); no written cross order can give those ranks. i, j, k dot 30;
 // ticks-to-seconds helper for case 8 30; named effect index for cases 9/10 30; dot3f in
 // case 12 70; the first three together 30.
+// the fraction as a ternary 210. Round 69: case 12 dot3f in either argument order 70/70;
+// cross3f_staged plain 212, with the inherited qualified vector 31, plain with a named projection
+// 212; ordinary inline on the private implementation 1074 (17 bytes); case 13 dot3f in either
+// argument order 31/31.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {
