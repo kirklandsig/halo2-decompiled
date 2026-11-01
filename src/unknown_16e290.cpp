@@ -1564,7 +1564,7 @@ struct s_camera_clip_reference_16ebf0
 	byte field_14[4];
 };
 
-// score 87 (was 117): frame 0x98, vector homes and forward/position EBX/EBP now agree;
+// score 87 (was 87): frame 0x98, vector homes and forward/position EBX/EBP now agree;
 // Left: cross-product carriers, clipping-result production and interpolation scheduling.
 // Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
 // position pointers take EBP/EBX for retail's EBX/EBP, the cross product's forward.j/up.k xmm0/xmm1
@@ -1709,6 +1709,10 @@ struct s_camera_clip_reference_16ebf0
 // Round N274: On signed-reference/bool homes, false-first result 105; native high-bit test 87;
 // false-first with high-bit 105; table fields at use 87; fields with false-first/high-bit/both
 // 105/87/105; all with entry constant result 243. Original clipping-result and cross graph restored.
+// Round 278: Existing real-vector interpolation scale/add-scaled or scale/scale/add, direct cross with
+// native/CRT point publication 88 each; staged cross with both pipelines and both publications 91 each.
+// Exact 953-byte lengths but no gain; original interpolation, helper graph, includes and complete body
+// restored. Native frame/pointer homes agree; first cross carriers and clipping-result production remain.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {

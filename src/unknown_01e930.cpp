@@ -453,6 +453,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // orders 310/286/310/286; each with a one-use end tick at subtraction 310/286/310/286. No-init/zero-init
 // frames 0x30/0x38 regress.
 // Original executable source restored; Original timestamp helper and complete body restored; frame 0x3c versus 0x40, clock/output homes and instruction policy remain.
+// Round 278: Separate bounded-pump and timed allocation phases, long/dword/short/byte ordinal: break-on-
+// success 288/288/289/304; result-conditioned finite loop 312/312/311/328. All preserve the thirty-pump
+// sequence but shrink the frame to 0x34 and grow code. Original retry phase, clocks, helpers, file policy
+// and full body restored; frame 0x3c/0x40 and status/allocation/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
