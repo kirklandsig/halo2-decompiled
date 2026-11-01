@@ -258,6 +258,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
 // declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
 // retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
+// DL218: Advancing file cursor with short ordinal and pointer-extent less/equality bounds, each
+// wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
+// Handle ECX and stored-success memory test remain; original task values, waits, completion
+// qualifier and complete executable body restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

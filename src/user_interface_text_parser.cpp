@@ -580,6 +580,9 @@ done:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
 // bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
 // after it 54; `if (globals != NULL)` 54.
+// DL218: Zero-default name results with local/entry initialization and complete signed/unsigned
+// arms tie 32 with the repeated exit, 54 with one copy. No reduction of entry EDI save or scratch-
+// buffer cache; original complete parser and all call values restored.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
