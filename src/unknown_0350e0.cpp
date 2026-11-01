@@ -742,6 +742,11 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // a pointer to the +0xe0 field for the tests, `NULL`/`true` spellings of the arguments, a local for
 // the second tag read after the call. Retail never takes g_4858c4's address, so its reload means
 // retail's 0x1bd50 counts as writing it (the same symbol as a global 0x1bd50 stores, a structure?).
+// Round 186: a store to g_4858c4 added to 0x1bd50 as a diagnostic gives retail's reload exactly, so the
+// cause is outside this body: g_4858c4 and g_485a58 (which 0x1bd50 writes) look like members of one
+// retail storage struct, BLOCKED-BY g_4858c4's definition (src/unknown_030290.cpp). Tried (all 26 unless
+// noted): `_ReadWriteBarrier()` after the call; the signature test nested in its own `if`; the fields
+// read by index (`((long *)g_4858c4)[0x38]`); `&& tag` for `!= 0`; the flag stored after the call 31.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1423,18 +1428,9 @@ struct s_320b0_box
     vector3f radius;
 };
 
-// score 98 (was 103): the 1.0 held across the loop sits in xmm4 here, in xmm3 in
-// retail, and the scale temporary the other way round; ours also folds the
-// last term's matrix element as a memory operand (`movaps; mulss [mem]`) where
-// retail loads it first. The compiler orders each sum by the order the three
-// coordinates are declared in, not by the source order of the terms; declaring
-// z, y, x gave 99 (x, y, z 103, y, z, x 104, z, x, y 105, y, x, z 106), and
-// writing the scale test as `1.0f != scale` took one more. Copying the point
-// through a point3f local spilled it to the stack (much worse).
 // @retail 0x320b0
 bool function_320b0(s_320b0_box const *box)
 {
-    real const volatile *box_scale = &box->matrix.scale;
     byte *context = (byte *)g_547f88.context;
     box3f bounds;
     bounds.x0 = 0.0f - box->radius.i;
@@ -1450,45 +1446,41 @@ bool function_320b0(s_320b0_box const *box)
     {
         {
             long i = edge * 2;
-            real z = ((point3f *)edges)[i].z;
-            real y = ((point3f *)edges)[i].y;
             real x = ((point3f *)edges)[i].x;
-            real scale = *box_scale;
-            if (1.0f != scale)
+            real y = ((point3f *)edges)[i].y;
+            real z = ((point3f *)edges)[i].z;
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
         {
             long i = edge * 2 + 1;
-            real z = ((point3f *)edges)[i].z;
-            real y = ((point3f *)edges)[i].y;
             real x = ((point3f *)edges)[i].x;
-            real scale = *box_scale;
-            if (1.0f != scale)
+            real y = ((point3f *)edges)[i].y;
+            real z = ((point3f *)edges)[i].z;
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
     }
     s_bounds3d projected;
     bool visible = function_1652e0((s_view *)(context + 4), *(real *)(context + 0x74), transformed,
         24, NULL, NULL, &projected, true, false);
-    bool overlaps = projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
+    visible &= projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
         projected.y1 >= *(real *)(context + 0xac) && *(real *)(context + 0xb0) >= projected.y0;
-    return visible & overlaps;
+    return visible;
 }
 
 PRIVATE __forceinline real random_signed_value(s_random_globals *random)
@@ -2258,10 +2250,18 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 139 (r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// score 132 (was 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
+// Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
+// (loaded once, re-read at the loop top) with i in esi, the index in ebx, the object in edi and the
+// cursor in ebp; ours gives `list` ebp. `g_547f98` read at each use instead of the `list` local 113 | 77
+// (frame 0x9c, retail 0xa0, so not kept), with `!(depth >= 0.0f)` 111 | 75, with the camera fields 110
+// | 75, with `g >= 0 ? (g <= 3 ? g : 3) : 0` 113 | 83; `!(depth >= 0.0f)` alone 132 | 69 (retail's
+// `comiss depth, 0; jae`); the depth as `g_4b9e14.right.k * x + up.k * y + forward.k * z + position.z`
+// 133 | 68. The view/count slots are swapped against retail as in 0x33400 (view is register-assigned
+// at the clamp's join, then spilled: `xor eax, eax` for the zero arm and a dead reload).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2921,6 +2921,18 @@ s_cached_input_list g_5246f8[4];
 // `if (count > 0)` guard, `view` as if/else or the alpha/special locals hoisted; the list arrays
 // hoisted 149, a pointer-compare limit 145; `view` computed after the loop 124 but the list
 // pointer then moves to ebp.
+// Round 186 (a --fast image with 0x3e9c0's other callers' files reproduces the full build): without
+// the volatiles the body is retail's nearly everywhere (aligned 45 against 76) but esi/edi are pushed
+// in the prologue, the clamp's zero comes from eax with a dead reload and selected/view swap slots:
+// 130. On that base: clamp re-assigned 134, `g >= 0 ? (g <= 3 ? g : 3) : 0` 129, if/ternary clamp 130,
+// if/else-if clamp 134, clamp at the tail 114 (list back on the stack), `if (count > 0)` 130,
+// `!(depth >= 0.0f)` 130 (retail's comiss order), camera-field depth 129, selected renamed 130,
+// declaration orders 132-137. On this form: `!(depth >= 0.0f)` 98, camera fields 100, both 100,
+// `&g_5246f8[view]` at both calls 99. Cause of the entry pushes: LTCG keeps the stack 8-byte aligned
+// down to 0x3d7f0 (object_view_distance's `double` locals; see 0x335e0's note). With those as real
+// (diagnostic only, 0x3d7f0 gets worse) the volatile-free body pushes esi/edi after the count test as
+// retail does (aligned 25); then only the clamp's zero arm, its dead reload and the selected/view
+// slots remain (130 positional from the two-instruction shift).
 // @retail 0x33400
 long function_33400(byte const *list, s_cached_input *output, long mode)
 {
@@ -3392,6 +3404,13 @@ byte g_509413;
 // EBX (both still unmatched), where ours uses EAX plus a stack word and EDX; retail also
 // zeroes the flags from the loop's zero register. Reading the two gates as `if (!a || !b)`
 // and storing literal true saves 4 bytes (143 to 139) but leaves the score at 42.
+// Round 186: ours pushes at entry because LTCG keeps an 8-byte aligned stack down to function_3d7f0
+// (via function_33400): object_view_distance's `double` locals. With them as real (diagnostic) or the
+// distance through the existing distance3d (0x3ea30), the gates come before the pushes as in retail
+// (40), but 0x3d7f0 gets worse (177, 189), so neither is kept. With 0x33400 volatile-free (list in EBX)
+// this body is retail's except the frame (0x284: the alignment), the entry pushes and 0x1ddd0's ESI/EDI
+// arguments. Also tried: `if (a && b) { ... }` 42, the records declared before it 42, two separate
+// early returns 42.
 // @retail 0x335e0
 void __stdcall function_335e0(long mode)
 {
@@ -4016,6 +4035,15 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // keeps the raw g_4ba022 byte in the slot (removes the extra `mov [esp+0x1c],1` stores and matches
 // pass 8, 6 differing spots left, but 26 bytes short so the score is 193), the volatile spelling
 // from 0x423c0 (209), `enabled = enabled && extra` (213).
+// Round 186: LCS-aligned this body is only 12 instructions off (the positional count is the shifts):
+// the early `enabled = 1` stores, pass 3's late stores, pass 8's raw gate byte, the dead g_485898 loads
+// of the three no-cull passes and function_14b60's eax argument. A gate pointer (`byte const *gate`,
+// NULL for the ungated passes, `if (enabled && gate) enabled = *gate;`) leaves 6 (193 positional,
+// 958 bytes): the dead loads only appear when 0x44370 itself is inlined at link time (a file-local
+// copy folds them away), and 0x14b60's register argument needs its body (disabled in its owner's
+// file because it moves matched 0x14ac0's frame). Also tried: `enabled &= extra_enabled` 191,
+// `!(g_485898 >= 4 && g_485898 <= 7) && normal_cull` 138, 0x44370's `>= 4 && <= 7 ? 0 : cull`
+// 138 (cull arms reversed), `if (enabled && extra_enabled != 1)` 167.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
