@@ -676,6 +676,10 @@ void function_117dd0(long index, vector3f *wind)
 // acceleration as a memory operand); a velocity local then `velocity + acceleration` rows 172 (776 bytes),
 // vector3f_add(&acceleration, &velocity, ..) 174 (776), vector3f_add(&velocity, &acceleration, ..) 174 (776); the
 // acceleration filled field by field, k summed in its own statement / in the same one, 183/187. All restored.
+// Round 43 (lane 13, --fast, control 63): tangent through vector3d_from_points3d(projected, force) 66; drag
+// applied as vector3f_add_scaled(&force, &tangent, -drag, &force) 189 (719 bytes); the dot passed straight to
+// vector3f_scale 63 (same code); both helper forms 66; the point-difference tangent with a written dot
+// `i*i + k*k + j*j` 97 (736 bytes). All restored.
 // @retail 0x118140
 void function_118140(long index)
 {
