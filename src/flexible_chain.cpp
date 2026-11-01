@@ -378,6 +378,8 @@ void __stdcall function_1160c0(real dt)
 // if/else 200, before the rest-offset copy 194, before the velocity stores 192 (previous stays at +0x40 in all three:
 // the mirrored homes do not follow where previous's live range ends); `previous = node->position` after the
 // publication 179 (same code); `segment->stiffness * definition->stiffness` 179 (same code).
+// Round 291: Angle before axis/after axis/after root, with original/early paired trig,
+// 314/307/293/319/294/316; early angle with short selected ordinal 326/332. Original producers restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

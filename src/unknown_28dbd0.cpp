@@ -213,6 +213,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
 // consuming weighted-preserved direction 226/227/208/209
 // Original executable body and helpers restored.
+// Round 291: Heading/paired transform/fallback-point overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
+// then all with shared velocity scale, 264/299/206/280/275/313/296/296. Original full file and helpers restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -1337,6 +1337,8 @@ struct s_looping_detail_request
 // Round 290: Shared offset/outer selected-player/outer camera workspace subsets 1-7 all 127;
 // complete workspace with native signed count 129. Original declarations and count restored;
 // entry frame/copy agree, detail retention and first-player expansion remain.
+// Round 291: Source/offset/velocity overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
+// then all with native flag, 190/180/123/193/185/174/186/186. Four-point best rejected; original copies restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1671,6 +1673,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 489/489/489 reduced; with independent per-pass counts 492/493/394; active-only tail with
 // complete request storage and both/no count snapshots 394/488. Reduced control 479;
 // active-only tail/counts plain 379 at 1924 bytes (baseline 305/1923), restored.
+// Round 291: Native integer activity/mask domains long/short/word: 305/304/304/410/410/304/304/304.
+// One-point forms rejected; original dword mask/activity, request and range loops restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

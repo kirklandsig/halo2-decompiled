@@ -1121,6 +1121,8 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 333: Complete selected snapshot memmove with first/second signed-word domains
 // 333/334/334/339; native short-count counterparts 333/334/334/339. Query/sweep and selected homes
 // remain; original body restored.
+// Round 291: Positive-count end-pointer scan with short count/pre-query sweep/capture-order masks 0..7
+// 378/377/361/362/378/377/361/362. All enlarge the frame and extent; original indexed scan restored.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
