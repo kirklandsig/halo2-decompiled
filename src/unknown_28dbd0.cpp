@@ -186,6 +186,19 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
 // 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
 // sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
+// Round 114 (m3 lane 7, fast): helper order sine, named dot, cosine, projection, `cross3f(v, axis)` subtracted 226
+// (retail's fsin placement, frame 0x120); that with `cross3f(axis, v)` added 225, with cross3f_staged 226, with
+// direct per-component sums 226; the kept order with only the dot named before the cosine 226. Retail keeps the
+// heading's zero k in a register only through the dot (then a memory 0.0 and an `xorps`); ours keeps it throughout.
+// Round 45 (lane 13, fast): sine/cosine passed to a (vector, axis, sine, cosine) helper with scalar
+// vector-x-axis cross terms subtracted 229 (frame 0x114, no cross spills); cross order j/k/i with
+// the axis term first 229 (same code); cross through cross3f into a local 226 (frame 0x120); separate
+// output vector 251; sine/cosine named in the caller 240. Original helper restored.
+// Round 40 (m3 lane 15, fast = plain): the 0x11c/0x118 frame is the helper's cross vector home (local_3 at
+// +0x24..+0x2f, its .j slot never used), where retail spills scalar cross terms (+0x20, +0x28). Cross scaled by the sine
+// in the sums 193 (1225 bytes); cross3f_staged 173 (same code); scaled cross into a second vector 226; vector x axis
+// subtracted 187; the 0x194a10 scalar form (sine, cosine, P, X.j, X.k, X.i inline) 231 (1192), with dot3f 228 (1194):
+// sine/cosine slots retail's but frame 0x114, heading.k's zero kept in a register and heading.j reloaded from its home.
 // Round 23 (lane 18, fast): the matched 0x170d70 rotation form (cross i, projection, cross j, k; rows
 // v*cos + projection*axis - cross*sin) with sine then cosine computed by the caller 241 (frame 0x114,
 // 1193 bytes: sine first and its +0x24 home as retail, but heading at +0x10, cosine +0x1c, one cross spill);
@@ -194,6 +207,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // projection*axis + v*cos - cross*sin 241 (same code); the 173 form with three scalar cross terms 246
 // (frame 0x124). Diagnostic: the random arm's two draws as an offset vector with zero k (z stored back,
 // the -0.5 applied per draw as retail; ours still consumes the draws in the adds) 226 (1220 bytes).
+// Round 284: shared scaled-add accumulation deferring cross/projection/both/direction+cross,
+// original/sine-first production: 233/230, 204/252, 254/253, 235/231. Original
+// complete helper and body restored; frame 0x11c versus 0x118 remains.
+// Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
+// consuming weighted-preserved direction 226/227/208/209
+// Original executable body and helpers restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

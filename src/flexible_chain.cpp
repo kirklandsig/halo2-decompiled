@@ -321,6 +321,10 @@ void __stdcall function_1160c0(real dt)
 // stiffness computed after the tick increment about 183 (harness 165); the axis scaled with *= 179 (same code).
 // Round 53: the axis j/k (or all three) scaled with `*=` 179/179 (same code); the segment index in a short
 // local 290; `definition->segments + (...)` 179; length declared then assigned 179.
+// Round 61 (lane 16, fast): the float library forms for the roots and the angle: sinf/cosf for the rotation 182
+// (aligned 198 -> 200), sqrtf for the axis length 179 and for the segment-length scale 179 (same code), fabsf
+// for the length test 179, all five together 182. Retail's frame runs length, segment, axis upward from
+// [esp+0x10]; ours axis, segment, length; the axis j/k scaling reloads the stored component in retail.
 // Lane 18 round 17 (an LTCG link of this file's generated unit, 180 objects, equal to the full listing; 172
 // there for 179): the physics tag in a one-use local 172 and the physics index in a local used for the test and
 // the lookup 172 (both identical; the tag address is still formed before the -1 push); 1/dt before the loop 182;
@@ -332,12 +336,48 @@ void __stdcall function_1160c0(real dt)
 // Round 264: Existing initial/normalized axis setters and const native delta/target/offset,
 // subsets 1/2/4/3/5/6/7, then all with const assigned-once scalars 192/179/179/192/192/179/192/192.
 // Original producers and complete body restored; segment/previous/axis homes remain.
+// Round 54 (m3 lane 1, fast): retail's angle call passes direction in ECX and the up vector in EDX, which is
+// `function_11ce20(&vertical, &direction)` (0x11ce20 matches; the angle is symmetric): 177, the call setup then
+// agrees (two points, not kept). The rest offset declared at function scope before previous 179 (identical code:
+// the homes do not follow scope); on the swapped call: the prediction rows after the velocity and position
+// publication 213; the rest offset copied right after the segment lookup 292 (1354 bytes); the blend complement
+// named and used three times 177. Retail mirrors two groups of homes: length/cosine +0x10, segment/scale/sine
+// +0x14, axis +0x18 (ours axis +0x10, length +0x20) and offset +0x50, previous +0x5c (ours reversed).
 // Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
 // direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
 // offset copy (v*cos + projection*axis - cross*sine) with predicted = position + offset 236 (1370 bytes); the dot
 // and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
 // &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
 // axis 177. Body restored.
+// Round 45 (lane 14, fast), on the retail-order angle call (177): the vertical declared before the loop 301; the
+// vertical and the inverse step before the loop 190; the angle taken after the rest-offset copy with the vertical
+// before the loop 301; the first node's direction copied before its position 188. The segment/scale temp slot
+// sits above the axis in our frame and below it in retail's.
+// Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
+// cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position` and sine/cosine angle names 179
+// each (all identical code: neither names nor declaration order place these homes).
+// Round 37 (lane 15, fast): every slot is shared alike except two mirrored groups: retail runs length/cosine +0,
+// segment/scale/sine +4, axis +8, rest offset +0x40, previous +0x4c; ours runs axis +0, segment +0xc, length
+// +0x10, previous +0x40, offset +0x4c (the axis, length and normalization code is otherwise retail's). The axis
+// is `vertical x direction`: the existing cross3f(&vertical, &direction, &axis) with the vertical declared just
+// before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
+// difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
+// Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
+// Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
+// cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position`, sine/cosine angle names 179
+// each (all identical code: neither names nor declaration order place these homes).
+// Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
+// direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
+// offset copy (v*cos + projection*axis - cross*sine) with predicted = position + offset 236 (1370 bytes); the dot
+// and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
+// &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
+// axis 177. Body restored.
+// Round 74 (m3 lane 12, fast; 0x73360 kept its match in each): `previous = position` right after the i == 0
+// if/else 200, before the rest-offset copy 194, before the velocity stores 192 (previous stays at +0x40 in all three:
+// the mirrored homes do not follow where previous's live range ends); `previous = node->position` after the
+// publication 179 (same code); `segment->stiffness * definition->stiffness` 179 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

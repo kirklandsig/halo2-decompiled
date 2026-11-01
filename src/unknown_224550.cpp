@@ -226,6 +226,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 262: Library copies of definition/selected-frame bounds/both 381/381/381;
 // geometry-array copy alone/with definition/with selected/with both/with encoded UV copy 478 each.
 // The original arrays and all input-before-store UV captures are restored; frame/cache homes remain.
+// Round 45 (lane 13, fast): retail reloads both the cache (EBX, which also holds the idiv frame count) and
+// the context (ESI) from their stack slots; ours enregisters the cache in EBP and the context in EBX.
+// Re-read frame count in its own local 381 (same code); cache's last use read through its own address 381;
+// tint code in the body with the in-place clamp loop 476 (2012 bytes, frame 0x60, cache still EBP); the
+// four clamps as explicit statements 476; with a short clamp counter 483.
 // Round 23 (lane 18; fast = plain): the sequence count read at each use instead of re-assigning `count`
 // 465 (1928 bytes, aligned 245 -> 203: the cache in EBX from entry, the colour in EBP, as retail); with the
 // tint clamped in place in the channel loop 415; with the geometry typed as the 4-real rectangle and copied
@@ -250,6 +255,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // flip removed uv_b has 18 references to the tint's 21 and takes the top slot (retail's order); unconditional
 // tint updates cut the tint to 13 and it stays on top. Retail has the same 30/21 counts as ours but puts the
 // tint lower, so its weights are frequency-scaled: look for the branch shape that lowers uv_b's weight.
+// Round 284: native three-channel RGB clamp with separate alpha, phased/fused
+// input modulation, ascending/descending ordinals and alpha last/first:
+// 383/381/391/389/399/399/506/498. Original complete producer and callback restored;
+// frame 0x50 versus 0x60 and tint/UV overlap remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

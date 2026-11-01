@@ -152,6 +152,9 @@ void c_widget::v15(c_widget *widget)
 // Round 55 (real, v17 unchanged at 2): widget declared, then assigned, tested `!= NULL` 2; ineligible arm
 // stepping with `continue` 2; for loop with the helper at both ends 2; `break` in place of the return
 // 2; the widget held as the base class pointer with casts at the calls 2.
+// Round 101: direct base traversal at entry, step or both; a named or function-scope next result;
+// explicit else, this entry, failure return or derived step qualification; a loop-local current: all 2;
+// a 2400 s permuter run, initial-build compiler hang.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
@@ -227,6 +230,10 @@ void c_widget::v16()
 // helper-fallback ternary entry 42; ternary entry and step 12; helper-fallback if/else step 35;
 // helper-fallback if/else entry 13; if/else entry and step 45; single-exit goto with if/else step 35.
 // Original executable body restored.
+// Round 116 (lane 8, fast): `register` widget 2; the step in an `else` arm of the eligibility test 2; the step
+// through a named `previous` local 2; `do { if (!widget) return; ... } while (true)` (diagnostic) 2; `break` with
+// the focus after the loop 37 (94 bytes). Retail's copy-then-test head is what follows a call result (13 such heads
+// in retail, all after calls); a test-before-copy head occurs only 4 times in all of retail.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

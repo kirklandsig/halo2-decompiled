@@ -183,6 +183,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
+// and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// Earlier: frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// Earlier convention form: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
 // score 642 (was 642): frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // The stack layout agrees with the matched caller 0x1eb6f0 (out, dt, d, q, pos; state ESI, update AL, a ECX,
 // b EDX); retail loads q into EBX at entry (and again after the first normalize), ours d.
@@ -278,6 +285,18 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
 // then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
 // inherited counter qualification, body and exact caller restored; direction/sample homes remain.
+// Round 129 (lane 5, fast, caller checked): both activation length sums written j, k, i 642 (same x87 order:
+// it follows the delta components' first assignment); the first clamp's 12/8 factor before t 718 (2861 B,
+// caller lost); the first clamp as PIN with the cap inline 761 (2914 B); the activation target through a
+// point-along-vector helper 668 (2883 B), with the direction refresh through vector3d_from_points3d 670
+// (both blocks then store through eax/edi as retail, EBX unchanged); both direction refreshes through
+// vector3d_from_points3d 665 (2888 B).
+// Round 326: complete sampled input at its projection producer, working/separate values and
+// branch/conditional zero fallback 685/706/689/689; those graphs with early second/third factors
+// 651/663/678/678. Original observations, expression trees and body restored; direction/sample homes remain.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
 // Round 66 (lane 9, fast, caller 0x1eb6f0 matched in each): d read through `vector3f *const *` at every use 673
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter
@@ -288,6 +307,16 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // clamp to the duration; retail loads it three times, AL/CL/AL); s->limit read at each use (retail reads it
 // four times) 689 [734]; with the second clamp's factor first 719 [581]; with the output clamp's too 719
 // [573]. Callers kept in the last three. Original body restored.
+// Round 277: standard minimum/maximum/alignment-pin families, subsets 1..7,
+// 718/752/751/829/868/895/880; all with failure constant first 880. Alignment-pin
+// graphs also lose the exact caller; original body, helpers and 0x24 frame restored.
+// Round N284: Ramp-admission orders settled-ticks-distance/distance-settled-ticks/
+// distance-ticks-settled/ticks-settled-distance/ticks-distance-settled 642/696/696/695/696;
+// nested settled/distance/ticks gates 642/696/695. Original sample, comparisons,
+// counter result and complete body restored; exact caller preserved throughout.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -420,6 +420,9 @@ __forceinline short function_1a1fb0(short height)
 // `blip->type` compares without the view aligned 11 (blip an ebx register parameter); a
 // `T *const *` reference aligned 15; a named options pointer after the store 9, before the clamp
 // aligned 5 (reordered); a named override bool 9; type tests first aligned 6.
+// Round 70 (--fast): a byte type 9; the clamp as a nested ternary 44 (216 bytes); each height
+// initialised from the clamp 9; an early return for the NONE object 9; the type mask named once
+// (as motion_sensor_object_type does) 60 (213 bytes, the mask held in ebx).
 // @retail 0x1a1faf
 void motion_sensor_blip_set_type(long local_player_index, long object_index, s_motion_sensor_blip *blip)
 {

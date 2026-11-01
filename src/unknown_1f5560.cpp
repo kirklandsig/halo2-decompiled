@@ -310,6 +310,8 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// MiniMax D (11-01): the state in a plain short local 90 and the same read written out in the
+// initialiser 90: the load is zero-extended and the spill stays a dword; no lower score.
 // Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
 // matches (0, plain): an array of one steering the state's word stack home is the same form as the
 // one-member struct below (Y201, MiniMax G), so it is reverted; the body stays at 11.
@@ -640,6 +642,9 @@ struct s_1f9762
 // score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
 // products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
 // second dot's i term keeps the projection vector in the register where retail has the point.
+// Round 103: on the projection index read through the actor, a second projection pointer, input pointer,
+// projection or input reference, direct comparison and subtract-assignment 2 each; current dot named first 4;
+// input dot named first 2; input dot alone named 4; two-component input product 14. Original body restored.
 // MiniMax G (10-31): the first dot written out by hand (i term projection-first, j and k terms
 // point-first, an order the helper cannot express) 7: an existing helper's body by hand, kept only
 // with a match; both dots projection-first 10 (same code).
@@ -814,6 +819,12 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
+// stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
+// (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
+// MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
+// variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
+// lower score.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -945,6 +956,9 @@ real normalize2d(point2f *v);
 // store goes, DL caching and the shared exit do not appear); one exit with `bool result = valid;`
 // plus the request return 219; chosen speed declared after the first call 160; result declared first
 // in the valid block 135 (same code).
+// N271: complete actor/unit/speed-table receiver observations at use, seven subsets
+// 308/135/135/324/308/135/324; all with existing request point setter 336.
+// Original receivers and body restored; DL success retention and movement/request exits remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1593,6 +1607,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // 0x26ccb0 argument order and the zero exit remain); on the first: result declared after the radius
 // 239, `return 0.0f` at the type exit 239, result declared before the entry lookup 262. The volatile
 // origin read removed 255 (0x29cbb0 300 -> 319). All restored.
+// N271: existing normalizer single-result entry-default/exhaustive/reused-magnitude/acceptance
+// graphs, then caller assigned-sign completion: 273/255/275/254; 255/260/265/259.
+// All ordinary-origin forms restored with the original helper; zero/radius and vector homes remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

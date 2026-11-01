@@ -408,6 +408,18 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
 // 141; available/success declared at the search block's top, available alone, available at function
 // scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
+// Round 61 (lane 16, fast): the node state read into a block local before the marker call 101 (0x25d690 then
+// runs before the pushes as retail; a one-use call result, not kept); the existing function_25d690 called
+// directly in the argument (no prop_node_state) 113 (same code). The sibling single exit (`bool result =
+// true; if (prop == NONE) result = false; else if (ready) { body } return result;`) 182, with the state local
+// 161 (aligned 116 -> 91: frame 0x162c, the result byte at 0xf beside has_markers, retail's `mov al, 1` and
+// 0x25d690 order, but the actor offset in EAX spilled where retail keeps it in ESI, and the slot held in
+// ESI); on that: the state pointer at the function top, at the ready block's top, or written out at each use
+// as `slot->unknownc` 161 each (same code); `result` declared before the actor 175; the two tests nested
+// (`if (prop != NONE) { if (ready) {...} } else result = false;`) 277; `else { if (ready) {...} }` 161;
+// the direct 0x25d690 call 182.
+// Round 477: Comparison-produced entry result signed-byte/byte/short/long on aligned and native search requests 116/116/275/276 each.
+// Narrow results fold later returns to constants despite recovering frame 0x162c; original Boolean result, aligned request and complete body restored.
 // Round 46 (m3 lane 10, fast): lane 14's sibling single exit rebuilt (`bool result = true; if (prop_index ==
 // NONE) result = false; else if (ready) { body } return result;`) 182: frame 0x162c, the result byte at 0xf
 // beside has_markers and retail's `mov al, 1; mov [esp+0xf], al; jne; xor al, al` opening, but the actor
@@ -435,6 +447,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 264: False-first single result, library movement minimum/two-use location index/
 // explicit marker-result masks 0..7 281/274/281/274/271/271/271/271. The first restores frame
 // 0x162c/result +0xf but regresses; original complete body and request producers restored.
+// Round 150: 0x25d690 called directly in the 0x1ac610 argument (no inline wrapper) 113 (same code: the call
+// still follows the first two pushes); has_markers typed byte 113 (same code); sibling result shape 182, with
+// has_markers byte 182, with the missing-prop path returning false directly 287 (folds); the first two state
+// clears as one chained assignment 115. The compile-only harness gives frame 0x162c here but other registers.
 // Round 111 (lane 8, fast): the sibling single exit rebuilt 182 (frame 0x162c, result byte at 0xf beside
 // has_markers and retail's opening; left: the actor offset in EAX spilled at 0x20 with the actor at 0x18,
 // where retail keeps the offset in ESI at 0x18 and the actor at 0x20, and the slot parameter held in ESI);
@@ -443,6 +459,15 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with one `return result` 274; `bool result = false;` set true inside a prop-index block that holds the
 // ready test 281 (1056 bytes); 0x25d690 called directly in the marker call's argument (no wrapper) 113
 // (same code: the call still follows the first two pushes).
+// Round 291: result identity before readiness/availability, all readiness/availability/
+// selection identity subsets, 113/113/113/113/113/113/113/113. Original body restored.
+// Round 133 (m3 lane 6, fast with the file and its callees listed): the node state read into a block local before the
+// marker call together with the movement limit read at each use 97 (aligned 116 -> 102; the 0x25d690 call, the marker
+// block and the select become retail's, the frame stays 0x1634 with the result byte in its own dword; one-use call
+// result, not kept); the sibling single exit with both 156 (aligned 86: frame 0x162c and retail's result byte, but the
+// actor offset in EAX and `slot` held in ESI), with the result declared before the actor 170 (aligned 89), the sibling
+// exit with the node state alone 161 (aligned 91); `result` renamed `has_prop` (sorts beside has_markers) 113 and with
+// both pieces 97 (identical code: names don't move the byte slots).
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
