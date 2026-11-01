@@ -2212,6 +2212,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // `test ecx, 0x400000`, but the result is then loaded in both arms and the unit stays in EBP); with the
 // named index, memcmp for the 0x2000 test 213 (retail's two-register compare, no dead add), memcmp plus
 // memcpy 213, memcpy for the copy alone 154. Retail reloads the unit from its home after the slot loop.
+// Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
+// loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
+// no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
+// read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
+// flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

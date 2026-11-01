@@ -380,6 +380,25 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Env-only on the aligned-18 form: a for loop 22, n/index before the copy 69, entries or first declared at
 // function scope 18/18, index before n 18, `&g_4ba138[first]` 18, current set to first + count 42; a separate
 // loop cursor copied from entries 55; no first local 49.
+// Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
+// the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
+// current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),
+// 60 on the indexed form 125-145; a short count inside the `if` with the loop re-reading the field on the block
+// 143 (164 real), indexed 145; a dword count at the `if` top indexed 126 (140 real, 495 bytes), block 125; real
+// `--fast`: unsigned cache_index 54, current/count/first/entries/copy/selection/advance on the block 66, first/
+// entries/current/copy/selection/advance 66.
+// Round 47 (lane 11, fast): the block pointer renamed to sort after or before the other locals 54/54
+// (same code: its slot stays between n and the weight, where retail has the weight and the scaled
+// index is a temporary after geometry); the count read at each use through the caller's metadata
+// view (`g_4c6b00[cache_index].count`) with the entries from the record view 144 (492 bytes: the
+// indexed form's index EDX, count CX, zero EAX, first EAX, entries ESI spilled at once, where retail
+// has count AX/EAX, zero ECX, first EDI and entries EDX); that with a short count local at the `if`
+// or before the clears 177/177 (480 bytes).
+// Round 70 (lane 12, fast): indexed form 144 (492 bytes; count CX and zero EAX where retail has AX and ECX,
+// first in EAX where retail loads it into EDI); a short count local before or after the clears 177/177 (480
+// bytes: the short stays in BX, is extended into EDX for the copy and tested as `test bx, bx` at the loop
+// guard, where retail extends it once into EAX and tests EAX); on the indexed form the parameters as (mode,
+// cache_index) at the definition and the call 144 (same code), first as `current = first = previous` 144.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

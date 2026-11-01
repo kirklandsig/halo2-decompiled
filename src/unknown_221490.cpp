@@ -618,6 +618,16 @@ bool sound_driver_voice_create_buffer(
 // short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
 // at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
 // block top with `result = NONE` after the decrement 155.
+// Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
+// first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
+// assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D
+// first/play first 194/108; play at function scope before the range test 183, the 3D flag there 182, both
+// there after the voice index 93, both before the result 117 (0x191420 1 in three of these).
+// Round 112 (lane 8, fast with 0x191420): the 3D flag declared with play and assigned later in the first
+// block (retail's `and bl, 1` sits among the first creation's pushes): after the zeroing and count store 80,
+// with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
+// code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
+// (anneal, 600 s, 67 tries): best 71.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

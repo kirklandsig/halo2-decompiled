@@ -152,6 +152,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
 // early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
 // do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
+// Round 127 (lane 6, fast, with 0x1a303b/0x2b393c): `while (!result && index != NONE)` with a successor local and
+// `index = next` at the end 37 again (no hoist in this build; player read from the stack, ret 8, callers 15/27);
+// its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
+// 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
+// entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -520,9 +525,10 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
-// score 67 (was 67): frame 0x90 versus 0xa0: the three identity words fold away (retail stores them at
-// +0x10 and reads them back for the copy, with the source record right after at +0x1c); packed
-// source-byte carriers and initialization homes differ; signed array-end comparison recovered.
+// score 53 (was 67): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
+// 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
+// packed source-byte carriers and initialization homes differ.
 // Forward entry pointer 133; chained source resets 149; link-word fill 157; signed byte sentinel 149; unsigned entry index 133 (plain).
 // Existing record initializer with zero tail 130; short/word counters 133/133;
 // counters-before-version stores 132; separate link stores 133; initializer and store order 129 (plain).
@@ -628,6 +634,15 @@ void function_1537f0(s_profile_record *record);
 // entries walked with a signed index 45 (259 bytes, plain); not kept (a made-up struct that sets the stack homes;
 // no existing type pairs them). The record's field 0x40 then shares a register with the field 0x44 word and the
 // NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
+// Round 49 (lane 10): the entries walked with a pointer `for (entry = g_4cf98c; entry < g_4cf98c + 350;
+// entry++)` with the record's tail clear and 0xff sentinel kept 98 (292 bytes); the identity declared and
+// zeroed after the entry pointer 67; the existing 4-aligned s_player_properties as the record with the tail
+// clear dropped 78 (238 bytes), with an XUID identity zeroed after the record initializer 78 (238); the index
+// loop with the tail clear dropped 78 (238). Kept: the pointer walk with the tail clear and sentinel dropped
+// (the tail clear zeroed fields 0x7c-0x8f the inlined view copy never reads, and the sentinel re-stored the 0xff
+// the record initializer already leaves in field 0x7f) 53 (255 bytes, plain). On that: `entry !=
+// g_4cf98c + 350` 53, the record before the identity 53, an XUID identity 53, the identity `= { 0 }` 53. The
+// identity is still folded in every form.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -638,15 +653,12 @@ void function_7f930(void)
 	g_4cf97c = NONE;
 	g_4cf984 = NONE;
 	g_4cf988 = NONE;
-	for (long i = 0; i < 350; i++)
+	for (s_player_configuration_cache_entry *entry = g_4cf98c; entry < g_4cf98c + 350; entry++)
 	{
 		s_cached_player_identity identity;
 		memset(&identity, 0, sizeof(identity));
 		s_cached_player_source source;
 		function_1537f0((s_profile_record *)&source);
-		memset(source.unknown7c, 0, sizeof(source.unknown7c) + sizeof(source.field7f) + sizeof(source.unknown80));
-		source.field7f = 0xff;
-		s_player_configuration_cache_entry *entry = &g_4cf98c[i];
 		function_7f8b0((s_cached_player_view *)&entry->player, &identity, &source, NULL);
 		entry->next = entry->next_other = entry->unknown58 = entry->previous_other = NONE;
 		memset(&entry->flags, 0, sizeof(entry->flags) + sizeof(entry->unknown64));
@@ -1077,6 +1089,14 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
 // function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
 // : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
+// Round 127 (lane 6, fast with 0x80490/0x80330): a compile-only /Gd harness scored against retail (a normalized diff,
+// 47 for the build's 49) reproduces upper taking EAX; there six declaration orders of lower/upper/downward, upper as
+// `position < removed ? ...`, lower as `position >= removed ? ...`, upper assigned before lower, the count path
+// lower first, `lower < upper`, upper declared first in the function and one block-scope copy index all leave it
+// in EAX (34-35 on the plain-entry form). Real: round 149's plain entry with the explicit flag arms and the count
+// path upper first 56, with `lower = removed > position ? position : removed` 54 (only the EDX/ESI entry load and
+// upper in EAX left); the plain entry alone 370 (1162 bytes), with the explicit flag arms only 358, with the count
+// path's flag store only 372.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

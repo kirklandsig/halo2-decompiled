@@ -286,6 +286,16 @@ static __forceinline bool structure_bsp_collision_available()
 // retail function finds no other `mov r8, 1; jmp` to a `test r8, r8` past a call: only 0x14af40 shares it.
 // N round 257: Complete native collision output on the inverted probe graph, byte/bool result and bool/byte found, raw/native triangle sentinel 53/53/53/53/63/63/63/63.
 // Original record declarations, byte buffer and complete body restored.
+// Round 108 (m3 lane 7, fast): a `modeled` flag set from 0xbf9a0 in the else arm of the scenery test, then
+// `if (modeled) return 0x14a8e0(...)` and `if (!excluded)` requery 88 (found in BL, not the flag); `found = false`
+// at the join before `if (!excluded)` 77 (263 bytes, threaded); a short policy defaulting to 2, tested twice
+// 64; `excluded = false; if (type == 6) excluded = policy != 2;` with the model query and requery nested under
+// `if (!excluded)`, else `found = false` 69 (268 bytes); a `lightmapped` flag tested around the model query
+// and again around the requery 77 (263 bytes). Compile-only, all thread the join test. Compile-only probes:
+// VC threads the flag through struct copies, inline accessors, address-taken references and cross-module
+// (LTCG) inline helpers alike; only a side effect at the join (a store, even a redundant `result = false;`)
+// leaves the test un-threaded, and that store stays in the code. Diagnostic (not kept): the flag set in both
+// arms with `result = false;` before `if (excluded) return result;` 102 (302 bytes; flag in AL, not BL).
 // Round 25 (m3 lane 2, fast; a compile-only /O2 screen of this file reproduces the threading): `found = false;`
 // placed at the join before `if (!excluded)` around the requery, the && flag guarding 0xbf9a0, 77 (263 bytes:
 // the store is sunk into the excluded arm and both tests thread); `result = false;` at the join with
@@ -320,6 +330,14 @@ static __forceinline bool structure_bsp_collision_available()
 // compile-only screen of 13 more flag forms (if-set, set after the probe, long, `== false`, struct-held, ternary
 // requery, address-taken pointer parameter reassigned, parameter re-read at the join) threads every one; only a
 // real load at the join keeps the flag, and it stays ahead of the test. The permuter's baseline link stalled.
+// Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
+// jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
+// into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
+// `excluded = false`, `excluded = scenery_excluded;` at the join and a final `found && !excluded`. Real builds of
+// that: 77 (295 bytes: a second flag test, `found` spilled across the probe, the probe block laid out last); with
+// the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
+// (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
+// { requery }` 75 (295 bytes).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -894,6 +912,12 @@ done:
 // threading); the existing 0x10a0b0 called, with `inline` on its definition, 162 (stays out of line,
 // 0xd2a50 99); the flag and a `modeled` result set in if/else arms (false and the 0xbf9a0 result in
 // the eligible arm) 125 (same code).
+// Round 108 (m3 lane 7, fast): the flag as `type == 6 ? policy != 2 : false` 133 (470 bytes); `excluded = false;
+// if (type == 6) { short policy = ...; excluded = policy != 2; }` 133 (470 bytes); the scenery test as an empty
+// if-arm with the model query and requery as its else-ifs 125 (same code); the attempt limit as a `break` inside
+// `if (!result && (bit & 1))` 125 (same code); a named `modeled` bool from `!excluded && 0xbf9a0` 125 (same
+// code). Compile-only none of these keeps the flag in BL (VC threads it; a store at the join stops that, see
+// 0x14b120's note).
 // Round 25 (m3 lane 2, fast): the exclusion named in two parts (`bool scenery = ...; bool excluded = scenery &&
 // ...`) 125 (same code); as `object[0xaa] == 6 ? policy != 2 : false` 133 (470 bytes, setne/test, still
 // threaded); the retry test as `if (result || !(flags & 1) || ++attempts >= 3) break;` 125; the flag inverted
@@ -921,6 +945,10 @@ done:
 // result reset moved to just before the loop 136; the probe copy before the flags computation 128. Retail never
 // reads that stack parameter (orig+0xc, the caller pushes 1) and spills the result into the surface pointer's
 // dead slot; only 0xd2a50 calls it.
+// Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
+// local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
+// first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
+// existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

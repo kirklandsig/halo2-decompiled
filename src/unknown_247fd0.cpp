@@ -214,6 +214,14 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
 // the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
 // with field_10 first 133.
+// Round 108 (m3 lane 7, fast): compile-only, `fstp [m]` then `cmp reg, [m2]` folds under /G7 (flags lead, not
+// acted on) or with a code-less compiler barrier between them; with field_10 first and such a barrier (a
+// diagnostic, reverted at once) 32: everything to the child loop is then retail's, and what is left is the
+// child loop (retail loads the effect index into ECX and the vtable into EDX before the pushes, and loads
+// arg_2 again for the second list address). The ordinal passed as `local_5` without the short cast (as
+// 0x247950 writes it) 70 (same code); with the child's unknown08 as one ternary 98; with the child through
+// DATUM 70 (same code); with the first lookup through the inline particle_object_for_tag 69. A 600 s
+// permuter run (62 tries) found nothing below 70; its own baseline full build took 1162 s.
 // Round 142 (lane 4, fast with 0x248cc0): field_10 first with the cache test as an empty `if (==) {} else`
 // 133 (876 bytes), through a `bool record_changed` 133, as `field_50 != local_1` with the mask cleared first
 // 129 (863 bytes), through a `parent` pointer for arg_2 133; the count increment next to the list link 208
@@ -236,6 +244,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // to just before the fifth draw 153; the record-list link stores after the flag-bit setup 109; the child
 // reciprocal computed between the parent and owner stores 80. Retail 0x247950 also loads arg_2 twice for the two
 // list addresses at its link call, so that reload is systematic (allocation), not this body's source.
+// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
+// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
+// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
+// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
+// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
+// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -539,6 +553,15 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // definition short (case 0 / default) 370 (still `cmp word ptr [reg + 0xc], 0`); the final NONE test as an early
 // return inside the body 356 (identical); the definition's bit-4 test as a shifted byte local 359 (still `test byte
 // ptr [reg + 0x16], 0x10`). Retail 0x247fd0 saves EBP late after its one early exit; this one saves it at entry.
+// Round 110 (m3 lane 7, fast): retail 0x247fd0 sinks its EBP push past the allocation test as ours does here, so
+// retail's entry push comes from the effect-flag block. The early exit as `goto done;` 356 (same code, re-measured
+// against round 137's goto form); the allocation failure as an early return with the body unnested 356 (same
+// code); the flag's store and test as two statements (`local_18 = local_24 != 0; if (local_24 != 0) return;`) 425;
+// the volatile flag declared in the effect block 356 (same code); the flag byte declared bare at function scope
+// 356 (same code). Retail copies field_10 with `movss` (ours, and retail's 0x247fd0, with an integer move) and
+// re-derives the effect record for the velocity (so a shared effect pointer would not fit): the copy through a
+// `real` local 359 (still an integer move); with a `(real)` cast 356 (same code); through the reused `last_sample`
+// 356 (integer move); through the grouped sample field 373 (1659 bytes: `movss` as retail, plus a store to the field).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -254,6 +254,13 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Round 269: Default-relocated case orders 0d1/1d0/d01/d10 fast 336 each; reversed cases with
 // axis-first declarations 336, with assignments/both 361/361; default-first reversed with both 361
 // (fast control 336, full 324). Original switch, assignments and body restored; ESI/XMM/scale schedules remain.
+// Round 190 (plain; fast still reports "builds differently"): opposite.k cleared before i/j 358; the third
+// remaining weight read before the first/second product 325; the zero-direction test inverted with its arms
+// swapped 324 (same count); the accumulate helper taking the colour by reference 324; its weight sum as the
+// first statement 374 (1899 bytes). Compile-only (whole-function similarity, control 214): 1-16 unused locals
+// at entry move it by 2 at most (period 8; residue 4 folds only the red product, retail folds green and blue);
+// every other statement order inside the accumulate helper is worse (239-427); the angle declared at the loop
+// body's top and the magnitude's square order compile the same.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

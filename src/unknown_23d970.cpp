@@ -546,6 +546,7 @@ __declspec(noinline) s_player_state *function_16f3a0(long index);
 real function_30bf0(vector3f *vector);
 vector3f *function_11d090(vector3f const *vector, vector3f *out);
 void function_172520(s_observer_command *command);
+void function_1f087b(vector3f const *a, vector3f const *b, vector3f *result); /* inline in src/unknown_1f03e0.cpp */
 
 struct s_follow_output_23de50
 {
@@ -588,7 +589,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// score 57 (was 57): camera-basis register allocation differs. Retail loads previous_up.k into
+// score 45 (was 57): the second product through the existing staged helper of src/unknown_1f03e0.cpp
+// (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
+// loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
+// product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
+// second product's schedule (retail computes k, j, i) and the else branch's forward stores (through
+// edi here, ecx in retail).
+// Before round 127: camera-basis register allocation differed. Retail loads previous_up.k into
 // xmm0 after storing the distance and holds right.i/j/k in xmm2/xmm1/xmm0 (ours loads it before
 // the store, into xmm1, and right lands in xmm2/xmm0/xmm1); retail computes the second cross
 // product staged (all products, then the stores through eax), copying right's components
@@ -710,6 +717,25 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // for the second product 221 (1272); the camera basis as a force-inline helper with pointer parameters 296
 // (1267, frame differs); `right` renamed `left` 57 and previous_up/direction renamed up/a_direction 57
 // (identical code: local names do not move these registers).
+// Round 127 (lane 5, fast): diagnostic, round 111's second-view staged product with the else-branch
+// forward pointer re-measured 53 (1262 bytes; up.k and right.i swap xmm0/xmm2), and on it the first
+// product written out in each statement order ijk/ikj/jik/jki/kij/kji 54/54/216/217/56/217; `advance`
+// declared at its block 340 (1261 bytes; retail clears it as a stack byte at entry); the gamepad delay
+// as a ternary 57 (same code); the delay update through a named remaining local 111 (1261 bytes).
+// Then (plain unless noted), existing out-of-file cross helpers for the second product: function_1f087b
+// 45 (kept), scripted_cross_product 57, cross_11e130 57, function_25a131 229 (1277), vector_basis_cross
+// (staged k first) 217 (1270); for both products scripted_cross_product 57, function_1f087b 49 (1264);
+// with function_1f087b second, the first through scripted_cross_product 45, cross_11e130 45,
+// function_25a131 215, vector_basis_cross second with function_1f087b/scripted first 221/217. Same-file
+// staged second products by statement order (diagnostic, fast = plain): ijk/jik/jki 45, ikj/kij/kji 217
+// (computing k before j recolours the first product); on 45 the first product written out in the five
+// other plain orders 56-63 (1261-1262), staged in any order 49 (1264); on 45 right declared first,
+// direction declared first, const previous_up 45 each; a forward pointer in the else branch 43 (the
+// else branch is then retail's; one-use pointer, kept only on a match).
+// Round 127 (lane 6, fast): the second product into a local up, then copied before the normalize 253 (1290
+// bytes), normalized in the local and then copied 254 (1292); previous_up through the out-of-line player state
+// getter 367 (1244: retail inlines it here); diagnostic: the distance not stored 218 at retail's 1261 bytes (the
+// three bytes go, but the second product keeps our operand order: the store does not set it).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
@@ -766,7 +792,7 @@ void __stdcall function_23de50(void *state, void *input, s_observer_command *out
 		command->forward = direction;
 		vector3f right;
 		cross3f(&previous_up, &command->forward, &right);
-		cross3f(&command->forward, &right, &command->up);
+		function_1f087b(&command->forward, &right, &command->up);
 		function_30bf0(&command->up);
 		command->field_of_view = observer->field_of_view;
 		command->offset = *g_4687a4;
