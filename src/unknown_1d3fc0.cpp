@@ -174,6 +174,21 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // orders x every operand spelling) never drop the k preload and the spelling never matters; the dot's argument
 // order and all six projection row orders compile the same; distinct in/out pointers, products through
 // locals and a magnitude helper compile like the control.
+// Round 133 (m3 lane 6, fast with the file's callees listed): forward's k preload goes away when the dot reads its k
+// term from the matrix field while i and j come through the pointer (`forward->i * up->i + forward->j * up->j +
+// local_1[0].forward.k * up->k`): 64 (926 bytes, aligned 56 -> 25; forward's whole block is then retail's, k formed as
+// `inv * [k]` with the short-path reload). On it, a second helper summing `m = k*k; m += j*j; m += i*i;` for up, up and
+// left (forward keeps the j-square helper) 2 at 922 bytes; the only difference left is the dot's i term (retail copies
+// forward.i and multiplies by up.i, ours copies up.i). A mixed read, so not kept without the match. On the 2 form: the i
+// term spelled up-first, the dot in j, k, i order, parenthesised groupings (four), the projection's k row through the
+// field: 2 each (same code); the other field/pointer mixes in the dot 72-159; forward helper scale orders j,i,k /
+// i,k,j / k,i,j 11/140/139 and k,j,i in the second helper 80; unused-local probes before forward (1-9, 11, 13, 15),
+// up (1-4, 6, 8, 10, 12, 14) and the dot (1-7) 2, or 4 at 9/11/13 and 10/12/14 (they swap the dot's k and i terms, never
+// the i operands); a permuter run (10 tries in 629 s after its own 1015 s baseline build) nothing below 2. Rule found: a
+// direct field mention makes that field's symbol oldest (so up.i read directly flips the i term to retail's order) but,
+// placed after that vector's normalisation, also stops its preload: up.i read directly in the projection's i row
+// 126 (929 bytes, aligned 5), in the dot 126, in the cross after the second normalisation 120 (aligned 11). Lead: a
+// natural form that names up.i before forward.i is created without reading it after up's normalisation.
 // Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
 // 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
 // forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register

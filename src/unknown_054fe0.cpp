@@ -1226,6 +1226,10 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
 // in the requested cursor.
 // Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain;
+// the zero kept in EDX from the parameters test through both loops is the first difference (+0x1d).
+// Round 31 (lane D): unchanged this round, and no new form was tried; still
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
 // Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // this round: retail's record defaults differ from ours in three places - it

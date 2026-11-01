@@ -274,6 +274,10 @@ struct s_block_candidate
 // Retail lays the no-candidate tail (limit update, result reload, `pop edi`) and the shared epilogue right
 // after the loop guard (`jg loop`, falling into the tail); allocation failure and the post-loop !have_best
 // test jump back to it. Ours places the tail last and enters the loop through `jle tail; jmp body`.
+// Round 131 (m3 lane 6, fast): `long offset = 0;` as the first statement 373 (push/pop order and the pages
+// register become retail's, the zero moves to EDI, frame still 0x1050); offset declared after the result,
+// before the clamp 400 (1231 bytes); the clamp as an if/else-if chain 370 (same code); both 373; offset
+// first with the candidate stored previous/offset/time/pages 372.
 // Round 275: Reused candidate pages/time/both/best fields/pages-best/time-best/all 369/367/367/370/367/367/367; all with immutable successor 367. One/three-point leads rejected.
 // Original executable source restored; frame 0x1050 versus 0x1054, page/ring homes and policy blocks remain.
 // Round 277: Existing private iterator with field/aggregate initialization and candidate
