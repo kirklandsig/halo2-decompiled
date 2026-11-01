@@ -924,6 +924,10 @@ struct s_signed_file_write_parameters
 // and copies it to EDI and puts the size in EBX, where retail loads the buffer straight into EDI
 // and the size into EAX (copied to EBX before the memset's zero); the 940-byte forms keep retail's
 // buffer register but give the buffer the parameters home (retail the task home).
+// Round 261: Shared WriteFile output for header+scratch/header+direct/header+publication/header+signat
+// ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
+// lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
+// original body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
