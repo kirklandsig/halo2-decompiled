@@ -577,7 +577,7 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 	return result;
 }
 
-// score 22 (was 55): kept in round 184 (coordinator ruling): the variant address named before the summary
+// score 22 (was 22): kept in round 184 (coordinator ruling): the variant address named before the summary
 // getter gives the session EBX as in retail, and 0x6e500 and 0x72700 match with it. Left: the opening's
 // second lea after the je (retail's comes before it) and a one-step scratch rotation through the summary
 // lea, the mask temp and the copy loop.
@@ -738,6 +738,20 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // count local, index scope, mask/slot spellings, nested tests, `players + i`, nested tail); const parameter,
 // function-scope or shared index, the size macro (5). Frame alignment comes from the players memset (no
 // effect). Flags: only /O1 and /Os give EBX, with different code.
+// Round 143 (lane 4, fast with the inlined callees and both callers, faithful 22): every opening that
+// computes both stored addresses before testing them gives retail's opening schedule and summary/mask
+// registers but the session ESI (0x6e500 69, 0x72700 94): NULL-preset pair 46, if/else pair 46, the pair
+// assigned players first 46, a two-out-pointer inline getter 46; on the preset pair the variant named at
+// the top of the state block 46 or just before the player loop 46.
+// Round 122 (lane 6, fast with the inlined callees): the preset stored pair, a plain `for` copy loop and the
+// 0x49c8 value named before the player loop 116 (493 bytes: every instruction retail's, session EBX, but the
+// value takes a stack slot, frame 0xec0); preset pair + `for` copy + players base local 109 (477 bytes, session
+// ESI); if/else stored pair + `for` copy 108; `for` copy + named player pointer 100 (477, the mask read folds);
+// preset pair + `for` copy + named player pointer 108. First-pass harness (this file's body with the inlined
+// callees, /Gd): the preset pair + `for` copy is retail's code up to the player loop with the session in ESI;
+// deleting the whole tail (live test and both setters) gives EBX there, deleting one setter, the live test,
+// the summary or the set_data_4f24 call does not; 176 statement orders of variant/summary/memsets/count/mask
+// store with the `for` copy loop give nothing below the current order.
 // Round 57 (lane 16, fast with the inlined callees): the two block addresses named inside a `flag4f20` block that
 // jumps to the result store 22 (same code: the second lea still follows the first test); the buffers declared
 // before the variant 22 (same code); a `for` copy loop bounded by `session->member_count` 138 (session ESI);

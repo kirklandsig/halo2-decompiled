@@ -668,6 +668,19 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // after it 217 (1261 bytes, every product register moves), with cross3f_staged for the second
 // product 223 (1266); either with a forward pointer in the else branch 217/223; the else branch
 // without the cosine local (cos(pitch) at both uses) 238 (1284 bytes).
+// Round 42 (lane 11, fast): the side vector built in command->up and crossed in place with
+// cross3f_staged (cross3f/staged first product) 252/243 (1291/1289 bytes: the first product's stores
+// stay and the second reloads them); the staged second product with each product's operands swapped
+// (b * a) 217 (1270, canonicalised like cross3f_staged); the first product from the direction local
+// 217 (1261, again); a forward pointer for the copy and the first product with the staged second
+// product reading command->forward 217 (1270), the pointer taken after the copy 217 (propagated).
+// Retail's second product treats forward's loads as values newer than right's (as the listed second
+// view of the command gives), so something between the products separates them; no plain form did.
+// Round 65 (lane 12, fast): the second product in place on the output (first product into command->up,
+// then cross3f_staged from it into it, no right local) 252 (1291 bytes); a cross returning its output
+// pointer passed straight to the normalize 57 (same code); the first product as a cross returning the
+// vector by value 303 (1332 bytes); the second product staged in place on right, then copied to the
+// output 260 (1296 bytes); the distance stored through a pointer to its field 57 (same code).
 // Round 58 (lane 16, fast): both products cross3f_staged through command->up (first into up, second
 // in place) 243 (1289 bytes: up stored and reloaded); `cross3f(&forward, &previous_up, &right)` then
 // `cross3f(&right, &forward, &up)` (the same up) 57: previous_up's loads become retail's (j xmm3, i
@@ -677,6 +690,19 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // right negated after the forward-first product (diagnostic) 256 (the negation is not folded); on the
 // forward-first form: the first product as cross3f_staged 57, previous_up copied after the direction
 // difference 249 (1272 bytes).
+// Round 15 (lane 17, fast): a cross helper returning its result pointer, the second product passed
+// straight to the normalize 57 (same code), both products through it nested with staged components
+// 221 (1272 bytes), plain components nested 57; a player-state pointer local for the previous_up copy
+// 57; previous_up declared at function scope 57. Diagnostics: the first product's components in j, i,
+// k order (up.k named first) with the staged second product, written out 218 (forward read through
+// edi), through a pointer helper 219 (up.k then in xmm2, loaded before the distance store).
+// Round 17 (lane 17, fast): both products staged with the first in place into the previous_up copy 222
+// (1270 bytes); the else branch through a force-inline helper reading the angles through the observer and
+// writing through its forward pointer (0x23d790's form) 222 (1273 bytes: the else branch is retail's, but
+// the first product recolours, up.k xmm2, and the second loses its memory operands), with cross3f_staged
+// for the second product 221 (1272); the camera basis as a force-inline helper with pointer parameters 296
+// (1267, frame differs); `right` renamed `left` 57 and previous_up/direction renamed up/a_direction 57
+// (identical code: local names do not move these registers).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

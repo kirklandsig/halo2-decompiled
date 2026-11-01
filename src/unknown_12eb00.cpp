@@ -100,9 +100,22 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // Output pointer addition 21; offset addition 21; hi < x pins with a named contribution 18;
 // with unsigned final/accumulation offsets 18/18; with an outer countdown while 18;
 // reversed pin order 239; nested pin tests 18 (fast). Restored: best gain only 3.
+// Round 186 (ours ends `ret 8` like retail; screens of the reduced image, real --fast where marked):
+// the result renamed added/count_out/output_count/result/written 11 each (result real 11); the
+// accumulation/blend address terms as `offset + (byte *)base` (accumulator, entry, output) 11 each
+// (accumulator real 11); blend terms swapped 11; `output + result` 11; the offset sum swapped 11; a
+// walking cluster pointer declared before the loop and stepped at the loop end 15 (real 15, same
+// homes), with the result renamed added/result/written 15 each; that pointer at function scope
+// before/after the result 68/68; a cluster element pointer 11; the accumulator declared at the
+// cluster block top / function top 11/11 (real 11); the inverse before the memset 11; the sample
+// array declared first 11; the product declared before the sum 15 (real 15).
 // Round 464: absolute byte-span induction in accumulation/blend/both 172/80/142;
 // named span ends 172/80/142; both exact-end tests 142; accumulation destination
 // span cursor 534. Original inner displacement lifetimes restored.
+// Round 59 (fast): the offset table as an {offset, size} struct array 11 (same code); the weights
+// zeroed by an initializer 221; the entry lookup as a ternary 29; blend terms entry-first 11;
+// the blend accumulator zeroed by `= {0}` 216 (1256 bytes). 1-8 unused locals at the top (diagnostic) 11 each:
+// the slot tie does not follow the symbol count.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

@@ -979,12 +979,25 @@ void function_1d1540(s_havok_component *component);
 // Round 250: One body receiver with conditional post-reset refetch: constructor copy, flag/fixed-
 // first and bool/byte refresh 81/81/81/81 at 220 bytes; set copy 85/85/86/86 at 231. Frame/component
 // convention remains; every matched control survives.
+// Round 13 (lane 18, fast, with 0x1d0c20/0x1d1b60/0x1d5120/0x1d3fc0): retail's argument setup at both
+// callers is ECX (index), then EBX (component), then EAX (transform), so the setup-order rule gives
+// (transform, component, index): on this body 81 (0x1d1b60 lost at 2), on the 88 body (set copy, body
+// pointer, m_fixed first) 88; the 88 body with a const body pointer 88; the transform by reference 88;
+// the component by reference 88 (the 88 forms keep 0x1d5120 at 73, 0x1d0c20 40). A /Gd compile-only first
+// pass of this body keeps the component in ESI and never touches EBX, yet LTCG still stacks it, so the
+// first pass alone does not predict the EBX parameter.
 // Round 41 (lane 11, fast, with 0x1d0c20/0x1d1b60/0x1d5120): the 88 body again 88 (0x1d0c20 40, 0x1d5120 73);
 // on it the plain struct copy in place of set() 85 at 220 bytes (rep movsd, component still loaded from
 // [ebp + 0xc] into EBX; 0x1d0c20 38, 0x1d5120 77); the fixed arm refetching into the body pointer and
 // returning on its own 88. On the plain-copy body, parameters (transform, index, component) 85 (same code;
 // definition, both declarations and both calls changed together) and (component, index, transform) 85 with
 // matched 0x1d1b60 lost at 2.
+// Round 60 (m3 lane 9, fast with 0x1d0c20/0x1d1b60/0x1d5120): on the 88 body (set copy, body pointer,
+// m_fixed first; aligned 8, only the component's stack home): the definition marked `inline` 88; the
+// reset test as a named bool 154 (278 bytes); the body read by direct rigid_bodies indexing 88; the fixed
+// and flag tests nested with a return in the reset arm 88; the transformed flag read before the copy 88.
+// It is on the object/havok call cycle (0x1d1260 and 0x1d1540 reach it again through 0x1d1b60 ->
+// 0x1d0c20 without any stubbed function), so where LTCG enters that cycle may decide its convention.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2309,6 +2322,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // remain); the shared inverse with an own velocity length 199 (the normal block changes from +0x53),
 // with the word-first setter 192; vector3f_add velocity sums + shared inverse + word-first setter 404,
 // with the length as sqrt(dot3f) 404.
+// Round 14 (lane 17, fast): the length kept from normalize3d in a named local 91; the speed products'
+// operand order (v * s for all three, s * v for all three) 91/91; the material count cast to real 91;
+// the result pointer declared before the normalization 263 (1403 bytes). Diagnostics (written-out
+// normalization, not kept): the scale as (s * i, j * s, k * s) 91 (identical code: operand order is
+// not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
+// k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
+// unscaled else), reloading only i; ours reloads all three in each arm.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

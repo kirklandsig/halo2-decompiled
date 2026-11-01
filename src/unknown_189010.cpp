@@ -228,6 +228,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // reloads them. Suppressing the inline (inline depth zero) costs six matched callers of this
 // function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
 // state registers decide where the request is homed.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

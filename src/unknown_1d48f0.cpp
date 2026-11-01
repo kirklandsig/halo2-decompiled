@@ -223,6 +223,9 @@ const dword g_455978[81] = {
 // direction/planar 308 each (names do not move these slots).
 // On that form: the copy declared before the table vector 308; the blend factor first and the copy in its own
 // nested block 317 (2075 bytes).
+// Round 473: coherent component identity after SSE setup, original/shared filter and per-sample/shared
+// invariant blend: 488/476/512/524; entry identity on the same four graphs 493/521/494/502. Original body
+// restored; optional-state/sample/ray homes and selective location/release expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

@@ -158,6 +158,15 @@ struct s_spawn_scenario_23aea0
 // (aligned 25), in one loop 252; a named dword source record pointer 118; a types pointer two records below
 // the array 157 (378 bytes); a two-dimensional view 100; real-typed fields in one type loop 100: always the
 // pointer induction.
+// Round 62 (lane 12, fast): in retail, 18 of the 21 loops that keep an integer offset with the global in
+// the displacement compare unsigned (`dword` or sizeof-count counters, `jb`: 0x137c20, 0x193010, 0xe99a0,
+// 0x6bff0); this one and 0x238b4a (three tables) use `jl`. A standalone compile of this body gives the
+// integer offset (unrolled by six, `cmp eax, 144; jb`, rebased to 0) only for a zero-based `dword` counter
+// over a struct-typed global; through the cast `dword` array, or from a start of 2, it counts down with a
+// pointer, and every signed counter folds the global into the pointer. Real: one zero-based loop to
+// `NUMBEROF(globals->types)` 141 (375 bytes, countdown); the inner batch counter `dword` 105 (same code);
+// both batch counters `dword` 141; one type loop to `2 + NUMBEROF(globals->types)` 141; the scenario read
+// first 110.
 // Round 104 (lane 8, fast): retail's displacement 0x502248 is g_502258 - 16 (`g_502258[type * 3 - 4]`
 // on an integer IV type * 12 from 0x18, exit `cmp eax, 0xa8`). `long index = type * 3` named in the
 // nested loops 103 (definition in retail's EAX and the source lea between the scalar stores; IV still a
@@ -169,6 +178,15 @@ struct s_spawn_scenario_23aea0
 // copy 158; a short type 256. Compile-only probes: a second global of the same stride in the loop gives an integer IV
 // rebased to 0 (`xor eax, eax`, displacement +0x18), never retail's unrebased 0x18 start; selectany/static/extern "C"/
 // thread/class-member globals, const and local base pointers, an inline getter and negative-offset bases all fold.
+// Round 45 (lane 10, fast; compile-only screens agree): 1..31 unused locals at the top keep the pointer induction
+// (not a numbering tie); one type loop through `globals->types[type - 2]` real fields 105 (same code), dword
+// fields 254 (278 bytes, not unrolled); the nested loops through `globals->types[i * 6 + j]` dword fields 105;
+// a `s_spawn_influence_type *weights` element pointer 252 (278), an element reference 252 (278).
+// Round 37 (m3 lane 14, fast): the override type read once into a local 122 (367 bytes; retail re-reads
+// it per store); the inner loop over type (`type = i * 6 + 2; type < i * 6 + 8`) 226 (313); one
+// function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
+// nested loops through a named source record pointer 123. No other retail function uses this
+// integer-offset store idiom, so no matched sibling shows its form.
 // @retail 0x23aea0
 void function_23aea0()
 {

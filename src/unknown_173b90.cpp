@@ -568,6 +568,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // address computation then leads); the offset advanced before the next index 42 (same code); the
 // offset declared first 42 (same code); the offset as `dword` 42; the transform test read once into a
 // bool for both tests 326 (1156 bytes).
+// Round 46 (m3 lane 10, fast): the emitter's next index read right after the emitter lookup 318 (1150
+// bytes), with scale first 318; the 0xf80f particle mask computed right after the emitter mask read 263
+// (1117 bytes), with scale first 261; the emitter mask read from the definition at both uses 239 (1136 bytes).
 // Round 59 (lane 16, fast with callees and 0x2243c0): one flags local for the six flag tests 292 (1157 bytes);
 // the emitter mask declared just before its first use 236, at the emitter loop's scope 220; indexed
 // definitions with the flags local 297 (1159 bytes); the particle mask inline at its call 42 (identical). A
@@ -1027,6 +1030,11 @@ public:
 // kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
 // negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
 // tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
+// Round 105 (lane 7, fast): the spawn location assigned before its scale 248 (same count); the parent colour in a
+// local before the child definition call 262 (1363 bytes); the name tests as an if/else chain 277; the particle
+// typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
+// the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
+// returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1381,6 +1389,7 @@ bool function_17afd0(long effect_index, long value);
 // the sentinel in ebx, so the flag lands in al and the same-view in bl instead of a stack byte.
 // The sentinel's register and the Boolean homes remain.
 // Earlier (102): frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
+// Frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // (coalesced; later NONE tests use immediates) and the availability flag in bl; ours keeps the
 // sentinel in ebx, the owner in edi and the flag in al, and tests the definition's bit 9 as a
 // byte instead of a shifted word. Owner/NONE coalescing and Boolean homes differ.
@@ -1448,6 +1457,13 @@ bool function_17afd0(long effect_index, long value);
 // shifted, one-expression availability and the if/else owner 113 (aligned 63 -> 51; the NONE sentinel stays
 // in EBX where retail has EBP coalesced with the owner); with false-then-set availability 138-148 (the flag
 // spills to a stack byte and same_view takes BL, retail the other way round).
+// Round 105 (lane 7, fast): with the view global at each use, the shifted bit 9 and one-expression availability
+// 123 (496 bytes; NONE stays in EBX, so owner = NONE is a copy, not retail's EBP coalescing); availability
+// false-then-set (retail's `xor bl, bl` before the query) 138 (508 bytes, availability spilled, same-view in
+// BL), with the owner in an if/else 138, with same-view in an if/else 138, with the camera flag declared
+// before the owner 138; one-expression availability with the if/else owner 113 (498 bytes); owner declared
+// before the effect index 125; availability declared at the loop top 123. Retail keeps -1 in EBP until the
+// owner takes EBP; ours keeps -1 in EBX all through, so five values compete across the view query.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

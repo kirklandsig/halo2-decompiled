@@ -203,12 +203,30 @@ struct s_free_state_23d260
 // at the function's top, each and all together, 102 (same code); the normalize test as `!` 121 (1328
 // bytes) and as `0.f ==` 102 (same code); the roll update with the zero arm first 107. The zero stays
 // in XMM3 and the clamp constants in XMM1 in every form.
+// Round 23 (m3 lane 2, fast): on lane 16's normalize3d + yaw cosine/sine form (276 here too: retail's x87 length,
+// but the side.i copy is scheduled right after the forward.j store, before forward.k, which shifts everything after
+// by one instruction; zero still XMM3 and the divide after the lahf) the up stores written k, i, j 274; j, k, i 257;
+// i, k, j 286; j, i, k 283; i, j, k 285; side.j assigned before side.i 257 (the copy stays early and side.i is then
+// squared first), with side.k last as well 257; side.j before side.i on the original body 102 (same code).
 // Round 120 (m3 lane 5): `side` declared with `side.k = 0.f` at the function's top 102; the movement's
 // yaw cosine/sine as named locals on this graph 291 (movement x87 then retail's apart from the k load,
 // but the side/up block recolours and ours runs four instructions short ahead of it); the roll
 // rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
 // 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
 // Original body restored.
+// Round 25 (m3 lane 2, fast): a 605 s permuter run, 24 tries, none below 102 (its reduced image scores 320, so it
+// cannot steer this function); the side vector through the existing vector3f_assign with normalize3d 291 (1309
+// bytes), with the yaw cosine/sine locals 276 (same as plain assignments); the forward vector through the existing
+// direction_from_angles (by-value angles) 282. The forward vector written through a pointer helper (this file's
+// orbit_direction_23d790, reading the angles through its state pointer) moves the side.i copy after `fld
+// forward.i` as in retail: called with the state cast to the orbit state 89 (1327 bytes; not keepable, a cast
+// between unrelated structs), with normalize3d 261, with normalize3d and the yaw locals 279 (1312 bytes); written
+// properly (a yaw/pitch pair type in both states, the helper taking it, 0x23d790 still matching) 279 (1326 bytes:
+// the same x87 fix, but the side/up SSE colouring follows the type path and is worse). Zero stays in XMM3 in all.
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 102 [89]): normalize3d with yaw cosine/sine
+// locals re-measured 276 [88]; on it the up components written k,i,j / j,k,i / j,i,k / i,k,j / i,j,k 274/257
+// [86]/283/286/285, up as cross3f 279 [86], as cross3f_staged 289; the forward vector built in a local and
+// copied out, the side read from it, 367 (1367 bytes); forward.k computed after the side vector 288 [109].
 // Round 60 (lane 16, fast; aligned counts in brackets, base 102 [89]): the existing cross3f_staged for up
 // 256 [48] (first difference +0xa6: zero XMM1, clamp and side registers as retail); with a file-local
 // normalize (normalize_inline's shape, length as `i*i + (j*j + k*k)`) as well 236 [48]: the x87 squared

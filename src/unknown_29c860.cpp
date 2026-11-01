@@ -155,6 +155,13 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 // actor lookup or first 2/2/13; 0x11cc90's parameters declared (b, a) 2; all three first forms 2.
 // Round 91: internal forceinline/plain helper linkage, the helper after its caller, point-reference subsets,
 // an output reference and an actor reference 2 each; all restored.
+// Round 35 (lane 14; exact one-link LTCG harness, then --fast): 1-8 unused initialised locals at the top,
+// before the call or inside 0x11cc90 never move the pair (3/5/6 only move later stack slots), so it is not
+// a numbering tie; the 0x1e5450 call given arg_1 directly, or a global in place of the call (diagnostics),
+// gives retail's pair; the tag through ai/moving/header/handler object getters or `->tag_index` 2 each;
+// PIN-macro clamps 63; the first limit as an if-form 113; the second limit as a ternary 97; the actor
+// lookup at its first use 83, after the first limit 70; the gain as a ternary or `field * angle` 2; the
+// clamps tested `x < -limit` 2.
 // @retail 0x29c860
 void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	point2f const *arg_3, real arg_4, vector3f *arg_5)

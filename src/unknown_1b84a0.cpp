@@ -414,6 +414,33 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // as `slot->unknownc` 161 each (same code); `result` declared before the actor 175; the two tests nested
 // (`if (prop != NONE) { if (ready) {...} } else result = false;`) 277; `else { if (ready) {...} }` 161;
 // the direct 0x25d690 call 182.
+// Round 46 (m3 lane 10, fast): lane 14's sibling single exit rebuilt (`bool result = true; if (prop_index ==
+// NONE) result = false; else if (ready) { body } return result;`) 182: frame 0x162c, the result byte at 0xf
+// beside has_markers and retail's `mov al, 1; mov [esp+0xf], al; jne; xor al, al` opening, but the actor
+// offset in EAX (spilled at 0x20; retail ESI at 0x18) and the view/character homes swapped (ours 0x1c/0x14,
+// retail 0x14/0x1c). On it: result declared before the actor 195; the ready test nested inside a
+// prop-index test with `else result = false` 277; the body's locals declared at function scope 182, with
+// has_markers first 182.
+// Round 14 (lane 17, fast): on this body the node state read into a block local before the marker call 101
+// (that block becomes retail's; one-use call result, not kept); `has_markers` renamed 113 (same code). The
+// whole body in the sibling result shape again 182; on it the node-state local 161 (frame 0x162c, result
+// byte, marker block and the tail's EDI reference as retail; left: the actor offset in EAX and the node
+// table base in ESI where retail has them the other way round, then the view/offset/character/actor spill
+// homes rotate and the slot stays in ESI); on that, the result declared before the actor 175; the tests as
+// nested ifs with the false result in an else 277.
+// Round 13 (lane 18, fast): retail's frame slots follow reference counts: its result byte (two defs in
+// the sibling `bool result = true; if (... == NONE) result = false; else if (ready) { body } return result;`
+// shape) sits beside has_markers at 0xe/0xf, so the 113 form's single-def result spills to its own dword
+// and the frame grows by 8. The movement limit read at each use gives retail's select block exactly
+// (distance in XMM0) 110 (aligned 113 against 116); on the sibling shape (182, aligned 105) it gives 178
+// (aligned 101: frame and result byte as retail; the actor offset in EAX, not ESI, and the slot
+// parameter enregistered in ESI from the state stores, where retail spills the offset around the view
+// branch and reloads the slot into EBX at the unknown04 test); the state pointer formed at entry from the
+// parameter 113 / sibling 182 (same code); sibling + limit read + result declared before the actor 191.
+// Retail also inlines matched 0x1f86f0 (the 504 test), which sits in an /Ob1 file (a flags lead).
+// Round 264: False-first single result, library movement minimum/two-use location index/
+// explicit marker-result masks 0..7 281/274/281/274/271/271/271/271. The first restores frame
+// 0x162c/result +0xf but regresses; original complete body and request producers restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

@@ -1839,6 +1839,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
 // else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
 // indexings 77 (identical); the zero position as a chained assignment 79.
+// Round 105 (lane 7, fast with 0x178360): node copy first 107 (758 bytes, entry as retail up to the hoisted marker
+// index extension; aligned 66), with the position/forward/up declarations above it 107, with up declared first
+// 107, with the forward inputs declared at function scope 107; node first with the marker fields read at each
+// use (no marker pointer) 218 (779 bytes, caller 0x178360 86).
 // Round 59 (lane 16, fast with 0x178360): node-first loses because VC merges the two arms' identical
 // leading `movsx edx, dx` into the entry, where retail's else arm extends into ECX (base in EDX, `lea eax,
 // [ecx + edx]`), so its arms differ. On node-first: the else arm copying a whole marker local 141 (774
@@ -1977,6 +1981,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
+// (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
 // tried native slot scalar 159 (a one-use copy of the field; not kept without a match); cursor/request/transform names and late settings receiver 166 (fast control 166);
@@ -2301,6 +2307,8 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
+// and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
@@ -3112,6 +3120,10 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	return next_index;
 }
 
+// score 12. MiniMax C (11-01) reached 3 with a second copy of the point helper whose rows sum
+// left*y + forward*x + up*z (the shared helper's order is what the matched 0x179fb0 and 0x17a380 need):
+// all three rows then match and only the loads differ (retail x, y, z; ours z, x, y). Not kept at review
+// (a copied helper body without a match); a match through it would keep it.
 // score 12 (was 12): only rows x and y of the node point transform differ: retail sums them as
 // left*y + forward*x + up*z (row z as written), the function-wide reassociation order. Round 170: the
 // single exit (`result = true; goto done;`) gave the early BL, and 0x152450's `next` player search the rest.
@@ -3268,7 +3280,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
-// score 74 (was 88): frame 0x94 agrees and the lens call setup now matches (it was blocked by
+// score 74 (was 88): frame 0x94 agrees; the scale default/conditional branch and the point transform's
+// y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) remain. The lens call
+// now takes retail's registers (0x2dba0 matched in round 104; it was BLOCKED-BY 0x2dba0: retail passes
+// its tag index in ecx and the position on the stack).
+// frame 0x94 agrees and the lens call setup now matches (it was blocked by
 // 0x2dba0's convention until round 59). Only two things remain: retail's scale is the default-if form
 // (`real scale = 1.0f; if (a) scale = scale_a; if (b) scale *= scale_b;`), and the point transform's
 // y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place). Default-if with the
@@ -3314,6 +3330,14 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // branch, ours only x; no helper spelling (local orders, `*=`, a scale local) or placement changes it.
 // Forward/up before the point 334; colour after the transform 219; position copied last 92; copies in
 // up/forward/position order 92; default-first scale before the copies 312.
+// Round 105 (lane 7, fast with callers and callees; 0x2dba0 now matched): `real scale = 1.0f; if (a) scale =
+// scale_a; if (b) scale *= scale_b;` after the colour copy 272 (1519 bytes, aligned 6), with the default
+// declared before the colour copy 270 (aligned 4: only the y copy's two movaps and its register remain, 6
+// bytes); on that, the node matrix declared at the loop top 270, the point transformed from the location's
+// position 339, the mode as long 270. Compile-only screen of the y copy: every order of the copies and the
+// scale block, unused/dead locals, and the shared point helper's local, scale-local and product orders: only
+// helper forms that change matched 0x179fb0/0x17a380 move it; a field-wise position copy gives retail's y
+// copy but turns the struct copy into float moves.
 // Round 59 (lane 16, fast with the callees and both callers listed; a fast check of the function alone
 // builds it differently): the lens call setup now matches, so only the scale block and the y copy remain.
 // Default-if scale 272 (1519 bytes: the scale block is retail's but for one store pair; the six bytes are

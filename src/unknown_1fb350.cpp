@@ -330,6 +330,9 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
+// the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
+// index in EDI; ours forwards the pool into EDI for both.
 // Round 17: a _ReadWriteBarrier() between the datum lookup and the null test makes MSVC materialise
 // retail's 0-or-pointer phi, and a second one between iterator.index = index and the object-index
 // load keeps the object load after the store; with both the found path is instruction for instruction
@@ -348,7 +351,7 @@ extern "C" void _ReadWriteBarrier(void);
 // two pool homes). What still differs is register allocation: retail keeps the datum index in EDI and
 // the element base in EBP, ours keeps the datum index in EBX and the element base in ECX, so the
 // object-pool load lands in EBP instead of EBX and the unit mask in EAX instead of EDX.
-// score 122 (was 122): our frame is eight bytes smaller and the base pointer is kept in EDI where
+// Earlier at 122: our frame is eight bytes smaller and the base pointer is kept in EDI where
 // retail keeps it in ECX. Retail iterates with the four-field datum iterator (data and index stored,
 // the datum index kept in EDI), snapshots the high water per search and computes the element from a
 // second spilled copy of the pool. Shared step with/without the barrier 162/152; datum iterator 152
@@ -441,6 +444,23 @@ extern "C" void _ReadWriteBarrier(void);
 // global 162; that without the barrier 152; the current step with a pool local for the iterator and the
 // release 126; a pool local assigned after the iterator for the release only 158 (as noted earlier);
 // the release through `iterator.data` 126.
+// Round 143 (lane 4, fast with the file, faithful 122), the existing four-field datum iterator and
+// data_datum_iterator_next_inlined (as 0xc1720 and 0x1406b0): with the barrier 162; without it 152 (frame
+// 0x10, high water in ESI and the iterator's pool re-read per pass as retail, but no second pool home: the
+// element is formed from the same EDI pool); without the datum-index initialiser 152 (same code); with the
+// datum index named in the body for the release 162; released through `iterator.data` 153.
+// Round 122 (lane 6, fast with the file and 0xc6de0/0xf0fd0/0xcbf60): the existing four-field
+// data_datum_iterator_next_called (scan out of line) 189 (436 bytes); data_datum_iterator_next_inlined with
+// the barrier 162, without it 152 (as recorded); with a pool local only for the iterator (release through the
+// global) 162; the iterator's datum index initialiser dropped 122 (same code: the store is dead); a four-field
+// step with the snapshot scan (data_find_index, 0x84ad0's form) as a file-local forceinline 162, without the
+// barrier 152 (the same code as the shared step: the scan form is not what differs).
+// Round 27 (m3 lane 2, fast): the header's non-volatile data_iterator_next_inlined with a pool local set after
+// the iterator for the release 135 (frame 0x10, ESI high-water snapshot as retail, the pool forwarded into EDI
+// for both the scan and the element where retail reads the iterator's home and a second copy); that without the
+// barrier 129; data_iterator.h's four-field iterator and data_datum_iterator_next_inlined with the pool local
+// 133; the iterator aggregate-initialised 122 (same code); `animation` declared in the while condition 122
+// (same code).
 // @retail 0x1fb510
 void function_1fb510(void)
 {
