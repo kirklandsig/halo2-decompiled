@@ -184,6 +184,23 @@ PRIVATE inline byte const *material_parameters(long tag)
 // before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
 // `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 54 (lane 10, fast): restore table pointer published in a chained assignment 47; range reference
+// declared beside the entry reference 47; definition derived from the just-published parameters field 47;
+// the entry byte offset named once for both walks 47; parameters published after the definition lookup 193;
+// the pending masks ORed in right after the tables are published 191 (978 bytes); the pass published after
+// the range is computed 118 (974 bytes).
+// Round 38 (lane 15, fast): entry computed into the entry local and stored to its field after the chain
+// lookup 187; tables field read into a restore-tables local before the entry store and used for all
+// three bases 284; `10 * first` 47; the entry as `&base[first * 10]` 47; packed read through a word
+// const view 47. The tail is still BLOCKED-BY 0x18a90 (contributor file). Original body restored.
+// Round 23 (lane 17, fast): the restore block's packed word read inside the chain index 47; the pass
+// pointer stored to its field and read back 47; the parameters and tables stores as chained
+// assignments 47; the pass store chained 47; the restore guard as `different_tag || changed` 49.
+// Round 281: multi-use addresses of the actual table/entry/range pointer fields, each alone,
+// table-entry/table-range/entry-range pairs and all three, 47 each; early table-field address 47.
+// Restore-load order and the sampler state convention remain; original body restored.
+// MiniMax I (11-01): no new form, no lower score; the restore block still loads `second` before the table bases
+// where retail loads it after them, and the 0x18a90 tail is still blocked by that file's call convention.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1466,10 +1483,28 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // spelling tried (~60: all six store orders, chains, `out` and `out + 1` pointer copies, dependency chains, the
 // width store in each of the four positions, the zeros before the width) floors at 2; the pointer copy keeps
 // 0x1b2c0 exact but leaves 0x19ca0 at 130, so the direct form is not kept (it raises another function's score here).
+// Round 23 (lane 17, fast; scores as 0x1b2c0/0x19ca0): the reorder comes from the later of the two identical
+// case 14/18 bodies in source order. When it stores straight through `out` (array, a struct cast of `out`, or a
+// plain `real *p = out` copy) and ends with the out[2], out[3] stores of cases 10 and 12/13, VC emits out[3]
+// before out[2] in cases 10, 13 and 14/18; when the later body goes through `out + 1` nothing reorders, but the
+// copy costs 0x19ca0 its match. Case 14 direct with 18 through `out + 1` MATCH/130; 14 through `out + 1` with
+// 18 direct 6/130; 14 direct moved after case 17 (18 still through `out + 1`) MATCH/130; 18 direct moved before
+// 14 21/130 (layout); both through a struct cast of `out` 6/MATCH; `case 14: case 18:` direct at 18's / 14's
+// place 6/MATCH, 25/MATCH; direct bodies ending `return true;` in 14/18/both 25/6/6 (MATCH each); cases 10, 12,
+// 13, 14, 18 all written out[3] first 6/MATCH (source order kept); case 13 falling through into 12 with
+// direct/pointer bodies 6/MATCH, MATCH/130; case 18 as a chain from out[1], four statements, values copied
+// from out[1], both chained 6/MATCH each; array/struct-cast mixes 6/MATCH; `real *zero = out;` in 18 or both
+// 6/MATCH; cases 12/13 written out[3] first with direct bodies 2/MATCH (case 13 left in source order), case 10
+// so 6, both 6; the bodies storing width last 5/MATCH (no reorder, but they zero xmm1). Diagnostics: dead
+// long/real temps 1-7 change nothing; case 18 with another value (no identical pair) does not reorder.
 // Round 279: Existing native four-vector persistent sample output, indexed/field consumers
 // with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
 // exact-only storage forms restored, including the temporary include; sampler and writers
 // unchanged. The mapped rescale word load remains.
+// Round 234: Existing sampler and two writer inline-metadata subsets, then all with mapped reload, and
+// native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
+// sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
+// writers and entire body restored.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {

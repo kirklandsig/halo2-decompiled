@@ -57,6 +57,11 @@ struct s_emitter_248340
 // Round 97: plain tag with the emitter address at the end or entry 27/27 (caller 138); tag read through
 // its address 27; both addresses 27; const group home 4; const definition pointer 4;
 // const particle or emitter parameter 4/4 (caller 137).
+// Round 70 (--fast): parameters reordered to (particle, system, emitter) at the definition, declaration
+// and call (0x247140 sets eax before ebx) 4, caller 0x247140 194, so the declared order stays; the volatile
+// moved to the group 35 (caller 138); a `register` tag without the volatile 27 (caller 138); the volatile
+// moved to the definition index 27 (caller still matched: the tag then takes edi, the definition index the
+// emitter's home); the system definition named before its tag index 4.
 // @retail 0x248340
 void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	s_emitter_248340 *emitter)

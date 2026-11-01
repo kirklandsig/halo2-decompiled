@@ -229,8 +229,29 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Original repeated producers, short scale loop, accepted angular consumers and complete body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
 // linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 50 (m3 lane 11, fast): retail's byte slots hold local_17 (record bit 2) at +9 and local_1 at +0xa where
+// ours has them the other way; local_17 renamed to sort before local_1, local_1 renamed to sort after it,
+// local_17 declared at the top, local_17 declared between local_0 and local_1: 902 each (identical code); the
+// early return as a single-exit if 902 (identical code).
+// Round 65 (lane 16, fast): address-taken homes mapped from both listings: the marker, quaternion, body matrix
+// and product matrix stack identically at the top (each 0x1c higher in ours); the gap is all below the marker.
+// Retail keeps the second-block and angular response fractions in separate homes (+0xdc, +0x2c; ours shares
+// +0x10), the angular block's real output at +0xf4 next to the first block's response output (+0xf8). Each block's
+// response fraction declared in its own block 935 (frame 0x1f4; homes +0xf8/+0x20, not retail's); the one-use
+// motion-position pointer dropped 965 (4284 bytes); the first block's difference through the existing
+// vector3d_from_points3d without the staging copy 961 (frame 0x1e4, 4235 bytes); split responses with it 968.
+// The body slot index read once into its local everywhere (the angular block's three direct field reads through
+// the local) 941 (4232 bytes); the re-read after the lookup calls dropped 985 (frame 0x1ec); both 999.
+// Round 217: standard slot upper, paired byte bounds and response-fraction bounds, seven subsets,
+// then all with target-level bound: 998/980/1046/963/1006/1067/1131/1135. Original restored.
+// Round 331: Complete factor-first scale, reversed wide-dot and real-dot multiplicands, seven subsets
+// and all with planar product order: 902 each. Original private kernels and complete body restored;
+// entry/frame, second activity byte and lower vector/scalar homes remain.
 // Round 259: Shared scale for radial/planar/axial/angular/radial-planar/radial-angular/planar-angular/radial-planar-angular phases
 // 1009/1014/912/939/1136/1090/1074/1206. Original body and producer sites restored.
+// Round 283: reverse scale short/long/signed-byte 902/929/902; reverse short scale with reverse
+// add/subtract/both 1086/1060/1158; with forward add/subtract loops 1157; all reverse long 1239.
+// Original producers, accepted angular consumers and full body restored; frame and entry homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -417,6 +417,18 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
 // (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
 // index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 49 (lane 11, fast), all without the volatile reads: 0x991d0 called directly with `local_10[0]`/`local_10[4]`
+// 207; the notify loop walking the same items cursor variable 220 (520 bytes); the count-one tail reading the
+// handle from the request (diagnostic) 221 (the handle is then not spilled, but the items cursor still takes EDI:
+// retail's choice is the cursor's weight, not the handle conflict); a dword handle 207; the data cursor as
+// `void *const *` over data.v 207. The volatile form's extra `mov edx, eax` (item loaded into EAX) shifts every
+// later line by one, which is most of its 115.
+// Round 285: Test-set inline validator result, success/failure initialization with
+// both/size-only/handle-only/no input producers: 115/134/138/137 in both orders. Items/data carriers and
+// validation-loop entry remain; complete helper and body restored.
+// Round 287: Native byte/signed-byte/word/long validation results on the original
+// case priority, all-valid/rejected polarity: 115/115/206/160/124/124/188/91. Cursors and loop entry
+// remain; native long rejection 91 also plain, restored as an unmatched flag form.
 // Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
 // 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
 // 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison
@@ -428,6 +440,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
 // switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
 // inverted 109 (544 bytes, branches laid out opposite to retail).
+// Round 490: existing producer returns long/unsigned long/short/word/byte/signed char, 115 each;
+// long result with direct size/handle input 138/134. Producer result width canonicalizes; restored.
 // Round 42 (m3 lane 13, fast): case 2/4's state test as an `if` of its own around the handle/state test 115 (same
 // code); the chain-length test written `local_9 == info.count` with memcmp sized by info.count 178 (520 bytes); the
 // validity flag declared before the switch 142; the validation loop as a plain `for` over the counter (volatile

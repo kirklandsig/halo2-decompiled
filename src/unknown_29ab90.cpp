@@ -59,7 +59,7 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 	arg_2->k = arg_0->k * arg_1;
 }
 
-// score 383 (was 383): frame 0x5c versus 0x64, actor/input transport and x87 homes differ.
+// score 354 (was 354): frame 0x58 versus 0x64 and magnitude/vector/query homes remain; actor EAX and stack input now agree.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -209,6 +209,14 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // in seven subsets, then all with position at entry: 446/376/446/376/446/376/446/446.
 // Independent native-vector producer orders 465/546/564/645 on that graph: 435/376/381/439.
 // Original copies, helper bodies and call roles restored; frame and input transport remain.
+// Round 288: On native working/query aggregates, magnitude/planar result pairs
+// 415/376/379/379/415/416/379/379; current coefficient/history value/both 376/354/354;
+// early magnitude result/root-initialized magnitude/planar result/current plus planar 393/445/355/355.
+// Keep the complete history vector with the native working/query aggregates: 354 fast/plain,
+// 1863/1863 bytes; original private math helpers, arithmetic groups and game-call roles retained.
+// Round 292: on the retained history graph, native working/query copies and coordinate history
+// in seven subsets 413/372/401/365/399/371/396; shared constant-vector observation 410.
+// Original aggregate/native producers and all helpers restored; frame and magnitude homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -226,9 +234,9 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	if (*(long *)(local_0 + 0x26c) == NONE)
 		*(long *)(local_0 + 0x7fc) = function_1f5f30(arg_0);
 	vector3f const *local_3 = (vector3f const *)(local_0 + 0x290);
-	vector3f local_4 = *local_3;
+	vector3f local_4 = { local_3->i, local_3->j, local_3->k };
 	vector3f local_5 = *g_4687a4;
-	vector3f local_6 = *g_4687a4;
+	vector3f local_6 = { g_4687a4->i, g_4687a4->j, g_4687a4->k };
 	point3f local_7;
 	function_b9dd0(arg_1, &local_7);
 	real local_9 = function_29ab91(*arg_2);
@@ -293,10 +301,11 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 			long local_26 = local_25 < 0.0f ? -1 : 1;
 			local_22.i = (real)(sqrt(fabs((double)local_25)) * local_2->field_6c * local_26 + local_22.i);
 		}
+		vector3f history = *(vector3f const *)(local_0 + 0x678);
 		real history_weight = local_2->field_64;
-		local_5.i = (local_6.i + local_22.i) * (1.0f - history_weight) + *(real *)(local_0 + 0x678) * history_weight;
-		local_5.j = (local_6.j + local_22.j) * (1.0f - history_weight) + *(real *)(local_0 + 0x67c) * history_weight;
-		local_5.k = (local_6.k + local_22.k) * (1.0f - history_weight) + *(real *)(local_0 + 0x680) * history_weight;
+		local_5.i = (local_6.i + local_22.i) * (1.0f - history_weight) + history.i * history_weight;
+		local_5.j = (local_6.j + local_22.j) * (1.0f - history_weight) + history.j * history_weight;
+		local_5.k = (local_6.k + local_22.k) * (1.0f - history_weight) + history.k * history_weight;
 		local_5.i = function_29ab93(local_5.i, -1.0f, 1.0f);
 		local_5.j = function_29ab93(local_5.j, -1.0f, 1.0f);
 		local_5.k = function_29ab93(local_5.k, -1.0f, 1.0f);
