@@ -1501,29 +1501,17 @@ struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
-// score 19 (was 19). Retail takes eax=start, esi=end, dl=narrow, [esp+4]=fraction (ret 4; callers 0x171830, 0x16ebf0
-// load esi and dl); ours keeps narrow on the stack (cmp byte ptr [esp+0x74], bl) and puts end in edx (ret 8). The
-// body is otherwise identical (130 vs 132 bytes). The declared order of the parameters does not change any of this
-// (tried 4 orders). Tried: `long narrow` (14: test esi,esi, 130 bytes, but retail's callers load dl),
-// byte/char (19), short (21), `narrow ? a : b` (42), `flags &= ~2` (19), flags/direction statement order (19),
-// early `return true/false` instead of result (41), result set last (41).
-// Why (c2B): the bool is not forced onto the stack; it needs a byte register at entry. With `long narrow` it
-// takes esi (end stays in edx), and without the `result` byte (early returns) it takes bl and end takes ecx.
-// With `result` in bl, start in eax, end in edx and the flags in ecx there is no byte register left, so
-// narrow stays on the stack. Retail has end in esi, so edx is free for narrow and for the `lea edx` that it
-// schedules between the direction components; ours cannot (it holds end in edx until the last component).
-// Parameter position (narrow second, 'long' or bool) did not move any register. Also tried, same score
-// or worse: direction via vector3d_from_points3d (19), k j i order (21), locals for the three differences
-// (19), a pointer local for the result or the direction (19), flags after or inside the direction (23, 29),
-// `flags = narrow ? .. : ..` (42), if/else for flags (31), char result (24). Callers follow this function's
-// convention: `long narrow` raises 0x171830 266 -> 288 and 0x16ebf0 120 -> 169.
+// Matches with the collision flags as an unsigned long declared before `result` (found by the permuter). The
+// start then arrives in EAX, the end in ESI and `narrow` in DL, as retail's callers 0x171830 and 0x16ebf0 set them
+// up (ret 4). Before (19), narrow stayed on the stack and the end came in EDX; `long narrow` gave 14, other spellings
+// of the flag, the result and the direction 19-42.
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
-    bool result = false;
     s_segment_collision collision;
     collision.material = NONE;
-    long flags = 0x808c0f;
+    unsigned long flags = 0x808c0f;
+    bool result = false;
     if (narrow) flags = 0x808c0d;
     vector3f direction;
     direction.i = end->x - start->x;
