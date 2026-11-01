@@ -200,7 +200,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
-// score 32 (was 43): the limit test is written the other way round, so the comparison matches
+// score 32 (was 32): the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
 // in other registers and the limit is computed before the squared length. Converting the ticks
@@ -376,6 +376,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // place as retail, first difference +0x65, but the i/j stores, the k product and the correction differ);
 // that with the delta through scaled_difference3f(state velocity, velocity, 1.0f, delta) 59 (366 bytes; the
 // correction then forms all three products before the load-first adds as retail), with `(real)ticks` 56.
+// Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
+// deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
+// then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain
+// order follows the delta order, while retail has j-first chains with an i, j, k delta (its k, j, i sum). A
+// compile-only screen of ~1150 forms (rate stage per component/staged/copied first/as a struct in all six
+// orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
+// orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
+// the root changes nothing.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

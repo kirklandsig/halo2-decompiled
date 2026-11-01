@@ -295,7 +295,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 113 (was 147): the search tail's three exits now fall to one `return result` (retail's
+// score 113 (was 113): the search tail's three exits now fall to one `return result` (retail's
 // reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
 // 0xf beside has_markers/available at 0xe, so later homes sit 8 higher), the result set with setne
 // (retail `mov al, 1` before the branch), 0x25d690 called after the marker call's first pushes, and
@@ -404,6 +404,16 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
 // 141; available/success declared at the search block's top, available alone, available at function
 // scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
+// Round 61 (lane 16, fast): the node state read into a block local before the marker call 101 (0x25d690 then
+// runs before the pushes as retail; a one-use call result, not kept); the existing function_25d690 called
+// directly in the argument (no prop_node_state) 113 (same code). The sibling single exit (`bool result =
+// true; if (prop == NONE) result = false; else if (ready) { body } return result;`) 182, with the state local
+// 161 (aligned 116 -> 91: frame 0x162c, the result byte at 0xf beside has_markers, retail's `mov al, 1` and
+// 0x25d690 order, but the actor offset in EAX spilled where retail keeps it in ESI, and the slot held in
+// ESI); on that: the state pointer at the function top, at the ready block's top, or written out at each use
+// as `slot->unknownc` 161 each (same code); `result` declared before the actor 175; the two tests nested
+// (`if (prop != NONE) { if (ready) {...} } else result = false;`) 277; `else { if (ready) {...} }` 161;
+// the direct 0x25d690 call 182.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
