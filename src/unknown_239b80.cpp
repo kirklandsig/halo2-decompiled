@@ -345,6 +345,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 124 (fast; the one-file LTCG harness agreed each time): case 1's distance in a named real
+// 42; case 1 through a block-local point pointer 42; `points + i` in case 1 42; case 1's dot written
+// by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
+// (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
+// state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

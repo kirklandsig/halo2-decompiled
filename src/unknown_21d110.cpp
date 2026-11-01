@@ -786,7 +786,6 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 48 (Kimi 2): repeat_state and loop_alternate held in one named 8-byte record matched byte for byte
 // (0 at 823); not kept, a struct that only groups locals to move their stack homes.
 // Earlier note (30, was 60): every remaining difference is a stack offset. Retail keeps the loop bool
-// score 30 (was 30): every remaining difference is a stack offset. Retail keeps the loop bool
 // in a dword-aligned unit (its low byte) between repeat_state and the listener; ours is a
 // one-byte home in the lowest unit, which shifts the lighter dwords by four and reorders the
 // heavier ones. Retail's order: sound flags, effect, entry offset, controller, state, index,
@@ -908,6 +907,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // definition declared before the snapshot 40; tag_index at function scope 40; direct repeat state 145;
 // direct loop flag 191; both fields direct 199 (0x15c frame); signed-short repeat_state 189.
 // Original executable body restored.
+// Round 124 (plain checks): the loop index declared at the top 30; the entry pointer, the tag index,
+// and the 'snd!' case's listener and rate stage each declared at function scope 30; a dword
+// repeat_state 30 (identical code each time). One-file LTCG harness (reproduces our frame): scope,
+// declaration order and names never move a slot; a long flag (832 bytes) lands beside repeat_state
+// (flag below it), so only the flag's one-byte size sends it to the lowest unit.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

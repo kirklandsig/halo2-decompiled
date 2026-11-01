@@ -2857,7 +2857,12 @@ void function_158090(long player_index, short old_team)
 // the existing cause setter forced inline 69; inline depth one 12; the existing initializer forced
 // inline 73; global optimization off 120. The team through engine_player_get 14; a pool pointer
 // local 14; the players local declared at function scope 12; the event declared first 12; a player
-// reference 35; a second index local 12.
+// reference 35; a second index local 12. Round 124: the team through the header's event_player_get
+// 14 (every register retail's, mark-dirty block too, but the data load sinks below the init stores);
+// a player pointer from it before the event 35; the index local declared before the players local 12;
+// players as a byte pointer read by byte offset 12; the existing out-of-line cause setter called
+// plainly 69; the two cause stores swapped 40; a 600 s permuter run from the event_player_get form
+// (44 variants), none below 14.
 // @retail 0x157de0
 void function_157de0(long player_index)
 {
@@ -4804,6 +4809,10 @@ bool function_158eb0()
 // mode last 5; `!!` on the global 38; index local read after the count, before the flag 5.
 // The flag through engine_options() 5; `flag ? 1 : 0` 5; a named score 5; count assigned after
 // its declaration 5; index initialised first 7; the bool flag passed directly 41.
+// Round 124: retail evaluates the mode before the index (so the mode takes ECX and is copied to EAX);
+// ours evaluates the index first. A long mode local after the flag 37 (the mode goes straight to EAX,
+// 144 bytes); the mode local in place of the flag 37; `(bool)` on the global for that local 44; the
+// flag read before the count 5; the score named and the count moved after the call 5.
 // @retail 0x158f50
 bool function_158f50()
 {

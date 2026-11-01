@@ -793,11 +793,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
 // the copied normal's x into xmm4; retail keeps the near distance in xmm5 and the zero in xmm4,
 // ours keeps the near distance in xmm6 and the zero in xmm1.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Intersection/projected point setters 119/119; existing in-place vector scale 115; long/byte result 216/119.
 // Forward value copy 474; direct projected element 246; scaled direct element 247; separate scaled vector 115.
 // Second-plane-first 425; reuse first negated normal 463; indexed plane selection 375.
@@ -851,6 +851,20 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Original transfers and complete body restored; coefficient preload and projection homes remain.
 // Round 100 (lane 8, fast): plane 0's d in every term order with camera-first or normal-first products: operand order
 // never changes the code; i/j/k 146, i/k/j normal-first 115 (same code), j/i/k 149, j/k/i 133, k/i/j 144, k/j/i 133.
+// Round 124 (one-file LTCG harness, exact at 115; five confirmed with fast): whatever the term order,
+// the last term of plane 0's d loads its camera component after the copy (the copied normal's i
+// takes xmm4), and the zero that inherits camera i's register then shifts the clip loop's XMM homes.
+// Plane 0's d with explicit grouping, every term order and operand order: (a+b)+c 145-179, a+(b+c)
+// 145-179 (`e.i*n.i + (e.k*n.k + e.j*n.j)` 145 fast); d accumulated with `+=` in any order 287 (1867
+// bytes); a named d 119 (fast); d computed from the forward pointer before or after the copy 441/442;
+// the three camera components in named reals, any order 276; the near distance computed after the
+// copy 141 (fast), before the bounds copy 191, just before the d negation 179; d negated together
+// with the near add 423; the normal negations in the other five orders 126-141 (j, i, k 126 fast);
+// a by-name normal copy 460/464; a plane-negate or vector-negate inline helper for both planes 269/247;
+// classification in 96 term/operand/grouping forms, none below 115; the intersection written
+// directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
+// Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
+// operands fixed in the unrolled loop, flipped in the remainder loop).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
