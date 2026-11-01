@@ -214,6 +214,15 @@ struct s_free_state_23d260
 // rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
 // 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
 // Original body restored.
+// Round 125 (m3 lane 5, fast): screen of normalize_inline/normalize3d x hand-written up/cross3f(&side,
+// &forward, &up)/cross3f_staged x the six side assignment orders: normalize_inline with any order 102,
+// with cross3f 257, with cross3f_staged 256; normalize3d with the hand-written up 291 (1309 bytes for
+// k,i,j/i,j,k/i,k,j, 1326 for the others); normalize3d with cross3f 279 (side.i before side.j: x87
+// length exact, but the side.i copy is hoisted above the forward.k store where retail keeps it after
+// the side.j load) or 143 (side.j before side.i: the length squares side.i first again); normalize3d
+// with cross3f_staged 289/290. With the yaw cosine/sine as named locals for the movement: normalize3d
+// and the hand-written up 276 (k,i,j) / 257 (j,i,k and k,j,i); normalize3d and cross3f 279/283/283;
+// normalize_inline 291.
 // Round 25 (m3 lane 2, fast): a 605 s permuter run, 24 tries, none below 102 (its reduced image scores 320, so it
 // cannot steer this function); the side vector through the existing vector3f_assign with normalize3d 291 (1309
 // bytes), with the yaw cosine/sine locals 276 (same as plain assignments); the forward vector through the existing
@@ -255,6 +264,16 @@ struct s_free_state_23d260
 // side register as retail, but the short-length path is no longer threaded to the fallback. So the zero's
 // register follows the float temp count (the extra x87 reload in normalize_inline's order gives XMM1).
 // Lead: s_view_angles + j-first normalize + staged cross, plus whatever adds the one temp retail has.
+// Round 128 (m3 lane 5; aligned counts in brackets, base 102 [89]): the forward vector written through
+// `vector3f *forward = &command->forward` (reads left on `command->forward`) 94 [78] (1328 bytes: the side.i
+// copy then follows the forward.k store as in retail; zero still XMM3, side.i squared first), not kept: a pointer
+// that only renames the field, with mixed access. Also: movement.j terms swapped 121 (1328 bytes, the
+// product order does not move); the roll rows as `v->i = v->i * cosine + projection * axis->i - cross_i * sine`
+// 288; on the pointer form: normalize3d 259 [77] (x87 length and 1326 bytes as retail, side.k then stays in the
+// inverse's XMM0); that with yaw cosine/sine locals 274 [82]; cross3f_staged(&side, forward, &command->up) 282
+// [51] (1335 bytes; first difference +0xae: zero XMM1 as retail, forward.k kept in a stack copy); that with
+// normalize3d 267 [57]; up written k, i, j 272 [71]; cross3f 273; the up reads through `forward` 275, the side
+// reads 254, both 284; yaw cosine/sine locals alone 100; side assigned k, j, i or i, j, k 94 (same code).
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

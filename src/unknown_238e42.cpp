@@ -1003,6 +1003,10 @@ bool __stdcall function_2399da(long controller_index)
 // own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
 // permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an
 // if/else chain 101 (440 bytes; 0x239a3d 0 -> 42, restored).
+// Round 128 (m3 lane 5, fast): the identity local renamed to sort before `rank` 90 (same code: no name
+// tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
+// (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
+// reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

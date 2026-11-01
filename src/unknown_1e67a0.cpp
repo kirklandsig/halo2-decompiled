@@ -644,6 +644,12 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
 // volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
 // memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
+// Round 126 (lane 5, fast, 0x24590 listed): written operand and sum orders do not reach the code: the
+// direction scaled as `inverse * i`, `j * inverse`, `k * inverse` (retail's register pattern) 132, the
+// projection summed i, j, k 132, `0.0f <` on the definition and blend tests 132, `1.0f == blend` 132,
+// `1.0f > magnitude` in the clamp 132 (all identical); speed/acceleration stores before the limits 212
+// (1065 bytes); limits in k, j, i order 136, in j, k, i order 134; retail-order jitter with a plain long
+// re-measured 233 (limits.k then shares limits.j's register and is stored at its definition).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

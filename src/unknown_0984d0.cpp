@@ -320,6 +320,7 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
+// Earlier at 115: the case 1/3 loop still differs in registers: retail keeps the items
 // Earlier (115): the case 1/3 loop still differs in registers: retail keeps the items
 // Earlier: the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
@@ -397,6 +398,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // before case 1/3 162.
 // N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
 // Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 125 (lane 5): the slot index written out as `local_1 & 0x3ff` at each use 161 (diagnostic of
+// the handle's weight); the handle typed dword 115; memcmp sized by the request's count with the count
+// test reversed 178 (520 bytes); a plain for loop with the cursors set before it (no hand-inverted
+// guard) 195; the case 2/4 element through a pointer local 115.
 // Round 64 (lane 12; one-link LTCG env with the stand-in callers, code equal to the full listing; env positional/
 // aligned 99/55 for this body): retail's loop cursors behave as ordinary spilled variables (the items cursor
 // reloaded on the back edge only, the preheader's EAX used on entry; ESI/EDI untouched in the loop), not volatile

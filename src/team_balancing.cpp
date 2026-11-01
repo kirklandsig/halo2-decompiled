@@ -887,6 +887,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
 // 35. Re-measured: copy before the maximum 82, open
 // slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
+// Round 127 (lane 5, fast with 0x91e30): the copy stored before the maximum update 82 (170 bytes);
+// next_party set to 0 just before the copy loop 34; the fill through a block-scoped element pointer 34;
+// the clamp as `if (excess < 0) excess = 0;` 46; the fill through a pointer to next_party 34
+// (propagated); diagnostics: next_party as a memory-resident one-element array 34 (same code, so
+// residency is not what flips the roles), a volatile read at the fill 58 (no rep stosd; reverted).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

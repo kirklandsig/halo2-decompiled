@@ -789,6 +789,13 @@ real g_55e618;
 // at the hit block's top 99, the velocity pointer 196. Position stores before the dot 116 (frame 0x118); a
 // position local stored after impact.index 286 (1594 bytes); a normal copy with real_point3d_set after
 // impact.index 269; the normal as a union member 605.
+// Round 126 (lane 5, fast; 0x2ba3e0 and 0x2b8da0 match throughout): perpendicular and tangent declared at
+// function scope 102; the impact at function scope 102; the impact declared and its index stored right after
+// the normal pointer 102 (all the same code); the sweep at function scope 110; the collision word stored
+// before the start stores with perpendicular/tangent at function scope 100, with the early impact 100 (two
+// points, not kept); the velocity pointer form re-measured 194 (1541 bytes), with the dot through a
+// forceinline pointer helper 194 (identical: the helper's loads still merge, so the twice-read velocity.i of
+// retail is not an inline-boundary effect).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
