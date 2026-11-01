@@ -887,7 +887,7 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
-// score 42 (was 310): walked against retail block by block (calls, argument order, offsets, constants, conditions,
+// score 42 (was 42): walked against retail block by block (calls, argument order, offsets, constants, conditions,
 // case bodies): the only behaviour difference was the final flags bit-7 clear, which retail also runs when the
 // biped has no havok component (0xddf46 is the NONE branch's target, 0xdd9bf); it is now outside the if.
 // What still differs: crouch sum loads the biped's crouch first (retail 0xddb25 loads crouch_change first; swapping
@@ -900,6 +900,11 @@ extern long *g_51e9cc;
 // unsigned key (47 -> 46), `PIN(contact...) == contact` (46 -> 45), i, k, j square sum (45 -> 42), word flag masks.
 // Earlier rounds (350 and up): word flags, shared velocity norm, unsigned key, full-width physics result, case
 // order (the compiler lays the cases out itself: 1/5/4 and 5/4/1 give the same bytes), clamp admission, owned crouch.
+// Round 46 (lane 14, fast): retail inlines 0xb77d0 here (the velocity block). That block as a call to function_b77d0 498
+// (stays a call; the crouch sum then loads crouch_change first as retail); with a __forceinline declaration 498
+// (not honoured; 0xb77d0's file is /Ob1); 0xb77d0 defined `inline` 44 (inlined, the square sum back to i/j/k and the
+// crouch order back; 0x2056e0 stops matching). crouch_change named crouch_delta 42, change 42,
+// z_crouch_change 42; the sum named `crouch` before the PIN 42.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {

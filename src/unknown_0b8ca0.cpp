@@ -1823,6 +1823,11 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
 // Four-point lead is below the gate; original header type, byte stores, activity
 // observation, root fields, node query, shared transforms and full body restored.
+// Round 46 (lane 14, fast): retail inlines 0xb8bd0 here and also 0x142570 (this file's attachment-point helper
+// writes that body); both callees' files are /Ob1. Round 189's form with the node matrix taken through 0xb8bd0
+// defined `inline`, before the link stores, 300. A data local at entry for the object and
+// the ancestry walk, the parent and header from `pool->data` after it 302, header first 302, the walk alone 292;
+// the object through the header view, header at entry 285.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

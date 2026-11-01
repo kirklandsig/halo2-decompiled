@@ -246,6 +246,10 @@ static inline void quaternion_transform_vector(
 // 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
 // 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
 // computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
+// Round 46 (lane 14, fast): retail's rows group as i (cross + scalar) + dot, j/k (scalar + dot) + cross; only the
+// i row written cross-first 200 (same code: the sums are reordered by the compiler), with the i/k/j dot 200 (a
+// repeat of round 30's form), with s/dot/w2 order 257 (1305 bytes); state declared before rotation 200; rotation
+// renamed quaternion 200; state renamed halves 200; its members swapped (sine half first) 200; both 200.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -885,6 +889,11 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 46 (lane 14, plain): only terms whose single use is the next statement written into it: the first 420
+// (921 declarations) 1775 at 10763 bytes with retail's convention (rotation in EAX, ret 4; 0x22850 235, 0x23690
+// 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading
+// terms and the matrix as plain locals 2236 (frame 0x300 as retail, 10297 bytes), with the matrix pointer kept
+// over a plain array 2235. Retail loads the eight leading terms in declaration order, then rotation[7].
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

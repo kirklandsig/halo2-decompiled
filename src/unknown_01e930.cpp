@@ -453,6 +453,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 46 (lane 14, fast): retail's start clock sits below its elapsed clock (ours the other way round);
+// elapsed renamed waited 244, start renamed clock_start 244, both 244 (homes unchanged); the retry counter
+// renamed retries 244; block declared before the size test 256 (the listed 256 form), with waited 256.
+// Retail's SSE code (movss 1.0f stores, fld/fcompi timeout) still needs /arch:SSE, which this file lacks.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
