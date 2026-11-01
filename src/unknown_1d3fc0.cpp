@@ -125,6 +125,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (identical code, same slots); the projection as a loop over `n[axis]` 110; through a named scaled
 // vector 110; pointer locals dropped with the projection on the matrix fields 181 (953 bytes: forward
 // then folds all three products), the same on six transforms 181.
+// Round 279: Complete independent orthogonalized scalar results before stores in all six
+// producer row orders 188 each; with all three removed products named 188, existing staged
+// cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
