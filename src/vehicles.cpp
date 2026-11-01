@@ -843,6 +843,10 @@ __forceinline long vehicle_round(real value)
 // side cross still reads vehicle->up). Compile-only screens: the pointer at both crosses 5 flips, a forward
 // pointer at any use 2-15, 256 helper/pointer combinations and 400 random ones (scopes, scale forms, named
 // dot, strength if/else, `rate *= strength`, declaration orders) at best 1 flip; the pointer's name changes nothing.
+// J220: complete mode byte/short/long 172/158/158; result byte/short/long 174/180/178;
+// angular output as axis workspace 30, with byte mode 174. Post-reader mode
+// byte/staged-side/short/long 10/19/38/31 (partial observations, exact-only). One common cross
+// direct/staged before rate clamp 194/194, after clamp 223/223.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2349,7 +2353,9 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
-// score 10 (was 29): the spin wrap helper now takes the field's address and the advance (it adds,
+// score 10 (was 10): frame 0x30, 991-byte length and ret 8 agree; torque and loop-offset homes
+// remain swapped, plus the first fmod advance reload/zero order.
+// Before the frame repair (29): the spin wrap helper now takes the field's address and the advance (it adds,
 // wraps and re-reads the period through its pointer), which gives retail's spin tail. Left: frame
 // 0x34 versus 0x30 (one never-referenced dword at the frame top) with the torque and loop-offset
 // slots swapped; every other differing line is that 4-byte offset. Round 182: the helper in place
@@ -2429,6 +2435,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // first); a nested ternary with the gear assigned inside it 10 (identical). Diagnostics: without the
 // in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
 // weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
+// J220: non-braking producer first 23, active gear first 18, both 23;
+// advance before contact loop 168, with non-braking first 181. Definition cursor 168,
+// both real cursors 210, definition cursor/non-braking first 181.
+// Existing throttle temporary named before/after torque 10/10.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
