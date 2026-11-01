@@ -151,6 +151,14 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // then retail's); original products with the j, i, k accumulating sum 111. Lead: with k, i, j products and the
 // j, i, k accumulating sum, forward's x87 sum and its j/i registers are retail's; the remaining gate is forward's k
 // preload (retail scales k from memory into the reciprocal's register and reloads it on the short path).
+// Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
+// 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
+// forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register
+// (retail: reciprocal in xmm6, `mulss xmm6, [k]`, k reloaded on the short path), also with k captured
+// before the sqrt, a `>=` test, an early return, `*=` products or the existing vector3f_scale; the
+// dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
+// harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
+// 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
 // Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
 // helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
 // j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k

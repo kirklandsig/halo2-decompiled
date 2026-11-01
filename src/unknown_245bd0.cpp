@@ -386,6 +386,10 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // length_sq3f, vector3f_scale(&d, 1.f / distance, &plane->n), vector3f_assign(&plane->n, 0.f, 0.f, 1.f) and
 // `distance > 0.f` 152, with the j,k,i sum 61, with shape_scale3d 61. Diagnostic: one to three dead locals in
 // the sphere helper 57 (no symbol-count rotation here).
+// Round 24 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80): diagnostic dead temps 1-7 at this function's top 57
+// each except 6 (171, 669 bytes: a spill), so the temp count does not set these operand orders; the squared distance
+// through the existing accumulating helpers of src/unknown_2ba3e0.cpp (k, i, j / k, j, i statement sums through the
+// pointer) 150/152, each with the dot's inputs swapped and the unit-z zeros stored separately 150/152.
 // Round 37 (lane 15, fast with 0x2461a0/0x245bd0/0x245d80): ours multiplies copies of the scale for x and z
 // (retail multiplies the x and z differences in place, the helper's written order); the scale renamed
 // inverse_distance 57 and the difference renamed to_point 57 (names do not move the operand order); the sum

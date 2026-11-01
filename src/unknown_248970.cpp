@@ -281,6 +281,14 @@ public:
 // head assigned before the initialization with the separate allocation local 95; the break as the init test's
 // `else` 54 (same code). Diagnostic: the file without /Ob1 and the existing 0x2483f0 called for the link 301
 // (670 bytes: 0x1751d0 inlines and 0x2483f0 stays a call), so /Ob1 is right.
+// Round 18 (lane 17, fast, with 0x175270): head declared before the child offset 68 (the prologue changes);
+// the existing 0x2483f0 called for the link with `inline` on its definition and its inline_depth(1) pair removed
+// 261 (the link inlines, 712 bytes, but the location becomes an EBX register argument: 0x175270 100; 0x2483f0,
+// 0x248cc0, 0x248d90 still match); that with the location read once through its address 244 (stacked again,
+// but held in EBX all through, frame 8; 0x175270 21); the child table indexed by the counter
+// (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
+// the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
+// offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
 // Round 31 (m3 lane 2, fast; 0x175270, 0x2483f0 and 0x248cc0 checked each time): the link through the
 // existing 0x2483f0 with a forceinline declaration here 301 (still a call); with 0x2483f0's
 // inline_depth(1) wrapper also dropped 301 (still a call; 0x2483f0 and 0x248cc0 still match); with the

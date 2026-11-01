@@ -503,6 +503,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // before the result 75, `result = true` between the field store and the attach 72 (176 bytes, result spilled);
 // the clear under `index != NONE && flagged` then `else if (index != NONE)` 75 (the repeated test is threaded
 // before CSE, as round 65 found for the predicate form).
+// Round 24 (lane 17, fast): the object read through a NONE-checked ternary (`index != NONE ? object : NULL`)
+// on the early bool 77 (folded before CSE, address shared), on the long result 64 (185 bytes: the NONE test
+// stays); a separate `deleted` bool set under `index != NONE`, then `if (deleted)` clear `else if (index !=
+// NONE)` the attach block, with the early bool 72, with `return !deleted && index != NONE` 67; the same with
+// `deleted` as one short-circuit expression 75 (160 bytes).
 // Round 47 (lane 11, fast): the entity's index stored only in the success arm, NONE in the else of one
 // `index != NONE && !flagged` test, early bool 66 (the store after the test reloads the table data with
 // the global kept in EDX as retail, but the index arithmetic stays shared and EBP caches the last

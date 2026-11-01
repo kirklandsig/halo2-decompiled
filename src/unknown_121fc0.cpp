@@ -140,6 +140,12 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // it) 128; the new-index arm first (`== NONE`) 188 (764 bytes); the token stored after the duplicate search 215 (756
 // bytes). Diagnostic only, not keepable: the done flag `bool volatile` (the wait's parameter type) 128. The
 // compile-only screen does not reproduce this body (the wait helper is not inlined across files there).
+// Round 20 (lane 17, fast): round 60's `long size = 0` passed as `(dword *)&size`, re-measured with round
+// 33's counters declared before the token array, 122 (the gain is the zero store, which retail does not
+// have); the counters before the token array alone re-measured 126; diagnostic, the token loop hand-inverted (`if (token) do ... while (token)`) 128
+// (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
+// loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
+// its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
 // Round 31 (m3 lane 2, fast): the token walk with one tokenizer call in the while condition (next
 // starting at the buffer) 287 (690 bytes); the done flag declared `bool volatile` as file_read_string
 // 0x121a40 does 128 (same code); that with the size zero-initialised as there 122 (the earlier 6-point

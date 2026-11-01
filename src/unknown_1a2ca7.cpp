@@ -971,6 +971,11 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // before the message array 82. Retail keeps both getter null tests (the second as `cmovne`) and shares
 // +0x6c between the sender and the player; ours shares +0x68 between the read-through message and the
 // player and puts the added count at +0x6c. Original body restored.
+// Round 25 (lane 17, fast): a message pointer stepped at the body's end without the qualified read 157 (the
+// getter's null test still folds); the getter defined out of line in another file and inlined by the link
+// (diagnostic) 145, test still folded: ours knows the message cursor is non-null, retail tests it at both
+// getter uses (`test ecx, ecx; cmovne esi, ecx` before the copy); an indexed if-set exclusion loop 135 (448
+// bytes); the cursor, remaining and flag declared in reverse 81; `messages + i` 81.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1475,6 +1480,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// score 117 (was 117): BLOCKED-BY 0x63d00. Retail keeps &player->xuid in ESI across 0x63d00 in the
+// clan-list loop (it treats 0x63d00 as clobbering EDX), so j takes EDI and the presence cursor spills to
+// [ebp-4], the friend count's earlier home; the early count homes follow from that.
 // MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
 // pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
 // the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
@@ -1550,6 +1558,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // not place these spill homes); the player xuid first in the clan-presence compare alone 183 (838 bytes).
 // Retail reads the friend count first into ebp-4 and reloads it into ESI after 0x18ff47; that slot later
 // holds the clan-presence cursor. Original body restored.
+// Round 25 (lane 17, fast): friend count first with the clan count named member_count 124 (friend count
+// still [ebp-8] and in ESI at once); counts zeroed then set by two ifs 242 (839 bytes); counts as if/else
+// arms 117 (same code); inverted ternaries `!pool ? 0 : count` 121; friend-first if/else arms 124.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

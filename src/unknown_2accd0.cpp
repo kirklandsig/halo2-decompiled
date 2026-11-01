@@ -754,6 +754,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // returning the buffer with the size through `dword *` (owner, size, flag from the buffer field) 34
 // [279, 944 bytes]. Compile-only: both positions written at both uses 111, with no total local 101;
 // about 450 random rewrites of the current form found nothing below it.
+// Round 23 (lane 17, fast; 0x2adb10 129 throughout): the getter returning a two-field (buffer, size)
+// record by value 170 (695 bytes); a scratch-arm `buffer_size` local with one function-scope position for
+// both cases 160 (689; sums header first again); the signature position written at both uses (no local)
+// 221 (694); the body position at both uses 213; the signature case as the switch's `default:` label 177
+// (688). Diagnostic: 1-7 dead long temps leave the code byte-identical (34), so these colour ties do not
+// follow the temp count.
 // Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
 // conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
 // declared with buffer/size and assigned later: 34 each (same code). All restored.
@@ -1004,6 +1010,11 @@ struct s_signed_file_write_parameters
 // `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
 // memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for
 // both arms 129, with the `void *` parameters view as well 129.
+// Before round 23 the first line read 129 (was 134).
+// Round 23 (lane 17, fast; 0x2ad7c0 34 throughout): the `void *` view with the current getter 129
+// (byte-identical; the extend sums stay header first); the header memset's count from the record's size
+// field 272 (952 bytes); the extend arm's memset before its offset 301 (948); its chunk size before its
+// memset 262; the zero clamp as `if (offset < 0) offset = 0;` 268. Dead temps 1-7: identical code.
 // Round 64 (lane 16, fast): the header-site memset count read from the record's size field (diagnostic)
 // 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
 // `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the

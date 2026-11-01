@@ -205,6 +205,17 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 50: pending request as path input 161; call-first pending input 430; transfer buffer local
 // after/before resize 165/519; one-use handle locals in states 7/9/14 151/317/153 and states 7+14
 // 143 (one-use field copies, not kept without a match). Opening body restored.
+// Round 25 (lane 17, fast): state 19's buffer release before the slot clear 43 (the -1 store then sinks to the
+// handle store); state 0 call-first 432, with a memcpy copy 432, and with 0x214db0's file name as a ternary
+// (still matching) 432: `mov esi, edi` stays; state 11's clamp as min-ternaries in three operand orders 37/37/37,
+// `chunk = limit; if (chunk > remaining)` 37, `chunk = remaining; if (remaining > limit)` 38 and `if (limit < chunk)`
+// 38 (chunk shares remaining's register as in retail, the scratch registers rotate by one); a state 7 header
+// pointer local 37, without the file local 334; state 16's copy as a struct assignment 37. Lead: with the header
+// and the slot as members of one struct (diagnostic) and the release first, 35: the slot store stays ahead of
+// the header clear as in retail, so 0x55b4f0..0x55c02c look like one struct (its users span five files).
+// Single-variable clamps `chunk = total - completed; if (...) chunk = limit;` with `chunk > limit` 38,
+// `limit <= chunk` 37 (retail's `cmp limit, chunk; jg` shape, registers still rotated: ours colours the limit
+// first) and `limit < chunk` 38.
 // Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
 // (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
 // after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep

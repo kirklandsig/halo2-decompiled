@@ -924,6 +924,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // operand order follows the parameter declaration order, not the sum's spelling, and the fill value has to
 // be evaluated after the count and destination, which here only a non-leaf value does (a load through a
 // register such as `party_indices[0]` is placed last; every local, global or folded form loads first).
+// Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
+// the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
+// 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
+// copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
+// as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
 // Round 127 (lane 5, fast with 0x91e30): the copy stored before the maximum update 82 (170 bytes);
 // next_party set to 0 just before the copy loop 34; the fill through a block-scoped element pointer 34;
 // the clamp as `if (excess < 0) excess = 0;` 46; the fill through a pointer to next_party 34

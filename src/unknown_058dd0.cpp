@@ -816,6 +816,11 @@ void c_session_client::function_06dbc0()
 // `if (!flag) break; return;` 65 (148 bytes); the type tested before the mode 49. `mov ecx, 2` is the
 // `repe cmpsd` count reused for the mode compare (ours has it too); retail allocates as if the compare
 // clobbered EDX (this in EBX, id in EBP). Original grouped body restored.
+// Round 25 (lane 17, fast): 0x6d380 as a __stdcall member of c_session_client (definition, declaration and
+// both calls) 43 (same code); the compare and call inside the switch's default with cases 2/4/6 breaking 43;
+// early returns on the mode/type test and on an equal id 43; those early returns with separate case 7 and 8
+// bodies 47; the in-switch compare with separate case 7 and 8 bodies 47. In every form mode and member index
+// take a callee-saved register because this already holds EDX; retail colours mode/index first (EDX).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

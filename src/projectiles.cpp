@@ -1824,6 +1824,11 @@ real function_17c900(short function_type, real input);
 // products as `3 * salt` / `7 * salt` 348 (same code); the wander amount as one conditional expression 348
 // (same code). Retail's caller sets the output with `lea ebx, [esp+0xc4]` and pushes only the index, and
 // this body saves only EBP/ESI/EDI: the output arrives in EBX and is never written there.
+// Round 22 (lane 17, fast): the target point local renamed 348 and the direction local renamed 348 (identical
+// code: names do not order this frame's slots); the salt written at both uses re-measured 329 (retail's stack
+// index, the rest offset by retail's 0x18 to_target slot and early xmm4 zero), with either rename 329. Retail
+// scales to_target as `s * i` from memory (copy of s) but j and k in place in xmm2/xmm1, the mixed pattern
+// of i written by name and j/k written through a pointer; ours copies s for all three.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

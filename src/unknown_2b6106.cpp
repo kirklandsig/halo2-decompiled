@@ -795,6 +795,13 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // where ours reuses ESI. Non-mix subsets: text buffers + name arms + state at each use 506; with short
 // count 512; buffers + short count 511; with the timer form 518; with session/bit-7 order 513; with long
 // loops 592; with the score pointers 577, plus the timer form 530. Original body kept.
+// Round 23 (lane 17, fast) on the four text buffers as `s_text_256` (506, retail's EBP bias): the 7/8
+// arm's caption call before its total 467 (2035 bytes; positional only: that arm stops sharing the arm
+// tail but computes its total after the call where retail computes it first; not kept); the state read
+// inside the guard and into its local only in the details branch 505; the 7/8 arm's widget index and
+// row increment as two statements 506 (same code); `long row` 506; both timer arms passing
+// `seconds / 60, seconds % 60` 506. Retail's shared arm tail stores row = 1 to its home and reloads it
+// into EDI, while its 7/8 arm sets EDI directly: that arm sits in another home region of row.
 // Round 41 (lane 14): one show after the 2/3 arm's campaign/totals if-else 607 (1977 B); `text[row]` then
 // `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
 // (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms

@@ -715,6 +715,10 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // form a dword/long second scan 87/87 (344 bytes: retail's indexed loop with scale hoisted after the
 // compression call, registers rotated: index ESI, NONE EBP, scale EDI); that with the location copied
 // before the velocity 88. Still BLOCKED-BY 0x1883e0's declarations. Original body restored.
+// Round 25 (lane 17, fast): effect point as `point + forward * 0.01f` 77, as `0.01f * forward + point` 77, as an
+// aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
+// their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
+// src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

@@ -559,6 +559,11 @@ long function_243b10(long key_b, bool team_only, long *second)
 // array at function scope 172, an options local at function scope for the key and the marker test (as
 // 0x243b10) 169; on 169: the named result index 169, the options local per marker block 172, the inner
 // loop as `while` with `j++` 169, the results array at function scope 169, the marker select as if/else 188.
+// Round 22 (lane 17, fast with 0x19ec40 and its callees 0x1e5bb0/0x1e2a90/0x29b00 in the image, which agrees with
+// the full count; without them the image builds 203): the accumulated distance 173; the table local assigned at
+// the top of each k iteration 169 (717 bytes; the slot parameter moves to the stack, the table is hoisted to
+// EDI and caller 0x240160 drops to 46), with the accumulated distance 169; `long j` declared in the for 173;
+// count declared before the results array and assigned from the query 173.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1153,9 +1158,9 @@ void c_game_engine_markers::v21(long object_index)
 // returns for the mode, type and slot tests 40; the object fetched before the type test as in the
 // matched v24 119 (the object is then kept, where retail reloads it).
 // In short: the entry swaps EAX/ECX for the object index and the header; retail computes the
+// Summary of the same two causes: the entry swaps EAX/ECX for the object index and the header; retail computes the
 // Earlier note (40): the entry swaps EAX/ECX for the object index and the header; retail computes the
 // Earlier summary: the entry swaps EAX/ECX for the object index and the header; retail computes the
-// Summary of the same two causes: the entry swaps EAX/ECX for the object index and the header; retail computes the
 // player pointer before the flag test with the players' data load unfolded and reloads the options
 // pointer at the engine-type compare.
 // Round 77: the team at each call again 119 (the options pointer then stays in EDX from entry and the
@@ -1271,6 +1276,18 @@ void c_game_engine_markers::v21(long object_index)
 // swapped 48; team at each call with the player before a `(word)` absolute index 86 (432 bytes, options still
 // in EDX from entry), team per arm the same 86; other per-call/per-arm forms 113-121. Only with the scaled
 // index shared by the type test and the slot fetch does ours put the index first in the type test's fetch.
+// Round 20 (lane 17, fast): on the team at each call: the flag test through TEST_FIELD_BIT 119 (same
+// code); the absolute index computed inside the flag block 119; the effect team through the existing
+// function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
+// form 40 (same code). In that form only the options pointer's allocation differs (CSE'd from entry and
+// kept in EDX, where retail reloads it into ECX at the compare and the type test takes EDX/ESI).
+// Round 22 (lane 17, fast): both parameters and the slot/unit locals renamed 40 (identical code: names do
+// not steer this body's registers); the absolute index as a word local 90; the mode test removed
+// (diagnostic) 131, and the entry still takes the index in EAX and the header in ECX, so the swap is not
+// from the mode test's CL; the team at each call re-measured 119 (its players-data load folds into the add
+// only because EDX already holds the options pointer: one cause, not two); a named `valid_slot` bool for both
+// slot range tests 106 (plain; the fast image drops the function); the unit through slot_handler.h's object_get
+// 40 (identical).
 // Round 64 (lane 9, fast): declaration order only: the unit declared before the slot 40, player_index
 // declared at the function's top 40, absolute_index at the type block's top 40 (same code each); on the team
 // at each call: the unit declared first 119, player_index at the top 119; the player getter at each call
@@ -1278,6 +1295,11 @@ void c_game_engine_markers::v21(long object_index)
 // object-index CSE) 117 still loads the index into EAX. A compile-only build with 0x101280's body pasted in
 // as an inline reproduces the entry swap and keeps it with the header in a local, the index masked into a
 // local, or without the mode test.
+// Round 24 (lane 17, fast): slot_object_get and ctf_player_get __forceinline 40 (identical; no matched function
+// in the file changes); `#pragma inline_depth(1)` around this body (diagnostic) 40 (identical: the inlining order
+// does not set the swap); slot and unit declared at function scope 40; the type test in a named bool 40; the slot
+// read first and `type == 1 && slot != NONE` joined as the matched v16 does 117 (428 bytes). The team at each call
+// re-measured 119 keeps the same entry swap, so the swap does not come from the middle's register pressure.
 // Round 43 (fast): the team at each call with the player pointer before the absolute index 119 (430
 // bytes; options pointer in EDX from entry again); that with the options in a local for the mode test
 // only 119; that with the player as typed pointer arithmetic on the absolute index 120; the team read

@@ -772,6 +772,12 @@ struct s_device_machine_view
 // device and definition with word-local masks 122, the same order on the lane S form without the zero store
 // 34 (same code); `__assume(group != NULL)` after the group pointer (as matched 0x187450) with word-local
 // masks 122 (no colouring change); `(group_flags & 1) == 1 && (group_flags & 2) == 2` 122.
+// Round 21 (lane 17; compile-only /FAs screen of the file reproduces the listing): on masks + the zero store
+// (122), a two-byte bitfield struct copy tested with `&&` 122, bitfields through a struct-pointer cast of the
+// field 122, a `word const *` to the group's flags 122, a `short` flags local 122, `register` on the group
+// pointer 122 (all the pushed ESI); screens only: `register` on the flags or machine flags, `!= 0` masks, the
+// flags word at its read, machine flags first (ESI); the bitfield copy tested with `&` frees EAX only by
+// spilling the copy to the stack. 1-7 dead temporaries (diagnostic) leave both forms unchanged.
 // Round 127 (lane 5, fast): word-local masks + the 0x1200055f zero store re-measured 122 (pushed ESI);
 // `__assume(group != NULL)` after the lookup on it 122 and on the lane S form 34 (same code: it is no
 // third reference); the lane S bits masked straight from the field 34 (same code). Matched 0x107870
