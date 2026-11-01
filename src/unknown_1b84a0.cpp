@@ -443,6 +443,13 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with one `return result` 274; `bool result = false;` set true inside a prop-index block that holds the
 // ready test 281 (1056 bytes); 0x25d690 called directly in the marker call's argument (no wrapper) 113
 // (same code: the call still follows the first two pushes).
+// Round 133 (m3 lane 6, fast with the file and its callees listed): the node state read into a block local before the
+// marker call together with the movement limit read at each use 97 (aligned 116 -> 102; the 0x25d690 call, the marker
+// block and the select become retail's, the frame stays 0x1634 with the result byte in its own dword; one-use call
+// result, not kept); the sibling single exit with both 156 (aligned 86: frame 0x162c and retail's result byte, but the
+// actor offset in EAX and `slot` held in ESI), with the result declared before the actor 170 (aligned 89), the sibling
+// exit with the node state alone 161 (aligned 91); `result` renamed `has_prop` (sorts beside has_markers) 113 and with
+// both pieces 97 (identical code: names don't move the byte slots).
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
