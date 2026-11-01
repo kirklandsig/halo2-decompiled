@@ -584,6 +584,10 @@ bool sound_driver_voice_create_buffer(
 // `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
 // both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
 // code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
+// Round 58 (lane 16, fast): three_d declared first with the result declared after the voice index 182 (599
+// bytes: the voice index takes EBP, both bools spill); the voice index as a long 161; the globals local
+// dropped (the global at each use) with three_d first 182 (599), with play first 71 (same code); three_d
+// first with the 3D test negated (NULL arm first) 182 (599).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

@@ -340,6 +340,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
 // vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
 // file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
+// Round 58 (lane 16, fast): the best-* updates stored plane, depth, type, index 63; the root kept as a double
+// with the reciprocal `(real)(1.0 / root)` 397 (456 bytes, sphere helper outlined); the normal copied from the
+// difference and scaled in place on the plane 397 (456); the radius test as `!(distance_squared >= r * r)` 58;
+// the squared distance as a double 397 (456). Repeats: unit-z default before the epsilon test 174 (689 bytes),
+// a radius local after the normal 62 (672 bytes).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
