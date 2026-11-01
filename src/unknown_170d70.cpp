@@ -736,13 +736,24 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 	}
 }
 
+// score 142 (was 156): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
+// limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
+// What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
+// (je 0x172fad ... jmp 0x172f08) with cluster_slot in ebx and volume_index in ebp (pushed only before the loop);
+// we keep it inline with the two registers swapped. Tried: creation inline with one trailing cluster pointer (156),
+// `while ((slot = map[ci]) == NONE)` (134 but the first argument moves to eax and ret becomes 0x18), `for (;;)` with
+// a break (138, same convention change), a forceinline helper returning the cluster (130, but needs a pointer
+// difference to recover the slot), a helper returning the slot (159), volume_index declared before the slot
+// (156), goto create/found (203).
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
 {
 	long cluster_slot = cluster_map[cluster_index];
 	s_view_cluster_1733e0 *cluster;
-	if (cluster_slot == NONE)
+	if (cluster_slot != NONE)
+		cluster = &collection->clusters[cluster_slot];
+	else
 	{
 		short count = collection->cluster_count;
 		if (count >= 128)
@@ -754,8 +765,8 @@ bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool,
 		collection->clusters[cluster_slot].index = (short)cluster_index;
 		memset(collection->clusters[cluster_slot].counts, 0, sizeof(collection->clusters[cluster_slot].counts));
 		memset(collection->clusters[cluster_slot].heads, 0xff, sizeof(collection->clusters[cluster_slot].heads));
+		cluster = &collection->clusters[cluster_slot];
 	}
-	cluster = &collection->clusters[cluster_slot];
 	do
 	{
 		short volume_index = collection->volume_count;
@@ -1073,6 +1084,11 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
 
+// score 23 (unchanged): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
+// distance). Only the x term's fld/fmul operand order (retail loads the plane first) and the block layout differ:
+// retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
+// last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
+// `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
@@ -1265,6 +1281,14 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
+// score 221 (unchanged): the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
+// (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
+// the 173380 clip, the stores into the new entry in retail's order, the 173b00/173b60 calls, the flag tail).
+// Remaining: retail saves esi at entry (we push all four registers at the loop), so every [esp+N] differs; retail's
+// spill slot for the other cluster (movsx'd, [esp+0x3c]) is the last one while ours is the second ([esp+0x18], with a
+// zero-extending xor/mov); the g_4687dc rectangle copy is scheduled earlier in retail. Tried: other_cluster as long
+// (236), as a ternary short/long (240/246), no variable with next->value08 reused for the 173b00 call (257/259),
+// an extra short copy widened to long (246).
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
