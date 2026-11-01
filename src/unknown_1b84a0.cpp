@@ -439,6 +439,14 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // still follows the first two pushes); has_markers typed byte 113 (same code); sibling result shape 182, with
 // has_markers byte 182, with the missing-prop path returning false directly 287 (folds); the first two state
 // clears as one chained assignment 115. The compile-only harness gives frame 0x162c here but other registers.
+// Round 111 (lane 8, fast): the sibling single exit rebuilt 182 (frame 0x162c, result byte at 0xf beside
+// has_markers and retail's opening; left: the actor offset in EAX spilled at 0x20 with the actor at 0x18,
+// where retail keeps the offset in ESI at 0x18 and the actor at 0x20, and the slot parameter held in ESI);
+// on it a `long prop_index` local for the NONE test and the node lookup 182 (same code); the same local on
+// the kept form 113 (same code); the kept form's computed result nested as `if (result && ready) { body }`
+// with one `return result` 274; `bool result = false;` set true inside a prop-index block that holds the
+// ready test 281 (1056 bytes); 0x25d690 called directly in the marker call's argument (no wrapper) 113
+// (same code: the call still follows the first two pushes).
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

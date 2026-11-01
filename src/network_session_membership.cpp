@@ -798,6 +798,11 @@ union s_60403
 // Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
 // count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
 // loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
+// Round 51 (lane 1, fast): the member loop's arms swapped (`!= NONE` first) 348 (1513 bytes); a member
+// cursor stepped by the loop 443 (1561); `retained |= 1 << i` 149 (same code); the inner mapping bound
+// compared first 149; the old index named before the old member pointer 149. Retail keeps previous in EBX
+// through the member loop (reloaded at its latch, `lea esi, [ecx + ebx + 0xc]`); ours reloads it from its
+// home for the old member.
 // Round 148 (lane 4, fast): `const byte *old_members = previous + 0xc;` before the member loop, the old
 // member taken from it, 276 (1513 bytes): the first natural form that gives retail's entry (previous EBX,
 // current EBP, frame 0x94) with the mapping and removal loops as retail except two swapped count/cursor

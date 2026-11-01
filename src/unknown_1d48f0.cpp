@@ -217,6 +217,16 @@ const dword g_455978[81] = {
 // Round 473: coherent component identity after SSE setup, original/shared filter and per-sample/shared
 // invariant blend: 488/476/512/524; entry identity on the same four graphs 493/521/494/502. Original body
 // restored; optional-state/sample/ray homes and selective location/release expansion remain.
+// Round 30 (lane 2): retail's radial block is 0x29b2e0's inlined planar normaliser (function_29b32b in
+// src/unknown_29b2e0.cpp): the whole table entry copied, k cleared, x87 sqrt of i*i + j*j, the epsilon test,
+// i scaled by (1 / length) first, and `continue` when it returns 0. That helper moved unchanged into
+// include/unknown_11cc90.h and used here (3-D copy, `if (function_29b32b(&radial) == 0.0f) continue;`, scaled
+// by arg_6) 306 plain (2078 bytes against 2083, sequence-aligned 205 -> 172, 485 against 486 instructions;
+// 0x29b990 kept its match): the positional count rises only because the sample/radial/length/count/optional
+// homes differ (ours sample +0x20, radial +0x30, length +0x2c; retail endpoint +0x1c, radial +0x2c, length
+// +0x44, sample +0x48). On that form: the endpoint copied from *arg_11 then offset in place 337 (2104 bytes);
+// the sample renamed, the radial scale through vector3f_scale, the endpoint declared at the loop top 306 each
+// (same code). Restored; a later round should keep this helper form once the homes can be moved.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

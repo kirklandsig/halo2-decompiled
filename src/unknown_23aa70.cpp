@@ -182,6 +182,8 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 	vertex_decode_ranges_23ac30(x, y, z, bounds, &range, point);
 }
 
+/* reads one vertex position (and its node, for the formats that store one) from a
+   buffer in one of four formats; packed formats decode through the bounds */
 // score 62 (was 62): format 3 loads the buffer data into EBP where retail uses EBX, and
 // format 4 forms a vertex pointer where retail addresses every field as base + index * 8
 // and keeps the index for the late node read. Indexing format 4 gives exactly retail's
@@ -357,28 +359,31 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	switch (buffer->format)
 	{
 	case 1:
-		*point = ((point3f const *)(buffer->data + buffer->offset))[index];
-		if (node) *node = 0;
+		{
+			point3f const *vertices = (point3f const *)(buffer->data + buffer->offset);
+			*point = vertices[index];
+			if (node) *node = 0;
+		}
 		break;
 	case 2:
 		{
-			s_packed_vertex_23ac30 const *vertex = ((s_packed_vertex_23ac30 const *)(buffer->data + buffer->offset)) + index;
-			vertex_decode_23ac30(vertex->x, vertex->y, vertex->z, bounds, point);
+			s_packed_vertex_23ac30 const *vertices = (s_packed_vertex_23ac30 const *)(buffer->data + buffer->offset);
+			vertex_decode_23ac30(vertices[index].x, vertices[index].y, vertices[index].z, bounds, point);
 			if (node) *node = 0;
 		}
 		break;
 	case 3:
 		{
-			s_vertex_with_node_23ac30 const *vertex = ((s_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset)) + index;
-			*point = vertex->position;
-			if (node) *node = vertex->node;
+			s_vertex_with_node_23ac30 const *vertices = (s_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset);
+			*point = vertices[index].position;
+			if (node) *node = vertices[index].node;
 		}
 		break;
 	case 4:
 		{
-			s_packed_vertex_with_node_23ac30 const *vertex = ((s_packed_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset)) + index;
-			vertex_decode_23ac30(vertex->x, vertex->y, vertex->z, bounds, point);
-			if (node) *node = vertex->node;
+			s_packed_vertex_with_node_23ac30 const *vertices = (s_packed_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset);
+			vertex_decode_23ac30(vertices[index].x, vertices[index].y, vertices[index].z, bounds, point);
+			if (node) *node = vertices[index].node;
 		}
 		break;
 	default:

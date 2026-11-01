@@ -151,6 +151,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // k*complement for ik/jk) 238 (1816). Retail's two rotation cases are scheduled differently from each other
 // (case 1 spills k^2 to +0x24, case 2 spills k^2 to +0x30 and s*j to +0x20), so its two inline copies got
 // different homes for the square/sine vectors.
+// Round 129 (m3 lane 6, fast): case 0's up copied field by field k, j, i 354 (the jump tables then sit at
+// retail's address, but the copy becomes float loads and the cross recolours); the forward negations
+// written k, j, i 219 (same code); both 354; the rotation's j square moved ahead of ij 360 (1840 bytes);
+// left.j moved ahead of ik 350 (1764 bytes, frame changes). Compile-only (non-LTCG) does not reproduce
+// this function's rotation block (its schedule and loads differ from the real build), so it can't screen it.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

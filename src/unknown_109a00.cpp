@@ -461,6 +461,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // dot spelling gives the same code; no by-name or pointer access per axis or per written component
 // moved the dot's k,i,j order or the swapped products. A 600 s permuter run was cut off by its time
 // cap while confirming a candidate.
+// Round 125 (m3 lane 5, fast): the entry pointer declared before the object lookup 113 (the entry index
+// still arrives in EAX); the entry as `entries + entry_index` 112 (same code); the hand-written cross and
+// dot replaced by the existing cross3f_staged(up, forward, left) and dot3f 112 (same code, kept).
 // Round 60 (m3 lane 9, fast with 0xb7060; real builds of round 40's screened forms): the dot as `dot = k;
 // dot += j; dot += i` 110 (k and j products up-first as retail), with the three axis pointers declared
 // together before the normalize calls 109, with `up->i = up->i - scaled_i` 110; the center through
@@ -477,6 +480,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // code), with the center change 149; the center change with the search's body pointer declared before the outer
 // loop 149. Compile-only: 1-32 unused-local probes before the axis pointers or after the inverse never change
 // the dot's k, i, j term order (only its registers).
+// Round 128 (m3 lane 5, fast with 0xb7060): retail's roles (object EAX, entry ECX) are the declared-order rule
+// (first EAX, last ECX); with the center through carrier_vector_from_havok (149, 0xb7060 11) the body is retail's
+// but for the entry/component EBX/EBP swap and the entry index on the stack, whose home slot then holds `found`
+// (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
+// declared before the default body 154; the entry before the object 151; the object through a `headers` local
+// (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
@@ -532,7 +541,7 @@ void function_109660(long object_index, long entry_index)
 					function_30bf0(left);
 					vector3f *up = &entry->transform.up;
 					function_30bf0(up);
-					real dot = up->k * forward->k + up->j * forward->j + forward->i * up->i;
+					real dot = dot3f(forward, up);
 					real scaled_i = forward->i * dot;
 					real scaled_j = forward->j * dot;
 					real scaled_k = forward->k * dot;
@@ -540,12 +549,7 @@ void function_109660(long object_index, long entry_index)
 					up->j -= scaled_j;
 					up->k -= scaled_k;
 					function_30bf0(up);
-					real cross_k = forward->j * up->i - forward->i * up->j;
-					real cross_j = forward->i * up->k - forward->k * up->i;
-					real cross_i = up->j * forward->k - up->k * forward->j;
-					left->i = cross_i;
-					left->j = cross_j;
-					left->k = cross_k;
+					cross3f_staged(up, forward, left);
 					function_30bf0(left);
 				}
 				return;
