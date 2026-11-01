@@ -348,6 +348,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // from both copies 196 (all six loads before the subtractions, start.z first as in retail; the end copy is one-use).
 // DL220: Scalar origin with native difference constructors, crossed with scalar start, ray constructor and staged cross:
 // 192/195/192/195/192/195/192/195. Original complete body restored; original frame and register homes remain.
+// Round 450: Existing dot-helper complete products/partial sum/accumulation/native inputs,
+// original then shared polygon count, 192/253/253/320/193/269/269/315. Original complete shape
+// query and shared dot helper restored; frame 0x84 and retained-origin/edge homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

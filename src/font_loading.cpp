@@ -596,6 +596,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 296: Consumed spans short/word/byte/signed-char with long/dword counts, then byte/signed-
 // char/short/word spans with the long pixel-helper result. Scores
 // 101/101/91/91/101/101/91/91/98/98/99/99. Original complete body restored.
+// Round 450: Literal color/store/count orders SCN/SNC/NSC/NCS, word then long pixel helper:
+// 183/180/182/121/143/171/142/116. Original literal publication, helper, aliased source reads and
+// complete decoder restored; parity extension, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
