@@ -330,6 +330,9 @@ static __forceinline bool structure_bsp_collision_available()
 // the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
 // (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
 // { requery }` 75 (295 bytes).
+// Round 286: Complete collision object-handle observations with cached/direct header,
+// cached/per-use source and bool/byte found, eight forms 53 each. Original field
+// snapshots and complete executable body restored; exclusion/source-slot join remains.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -935,6 +938,9 @@ done:
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
 // existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
+// Round 286: Native collision storage 125; unsigned flags 125; bounded short/byte attempts
+// 124/129; native handle observations 125; separate flags/all scalar workspace 157/157
+// (caller lost); direct triangle 158 (caller lost). Original storage and executable body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
