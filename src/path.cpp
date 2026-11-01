@@ -368,7 +368,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 295 (was 315): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// score 295 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // Round r4 (lane 17): our extra frame word is the links cursor (strength-reduced long link count); retail indexes
 // links[link_count] with a short count. Short link count 368 (1368 bytes, frame 0xe4); with count assigned after
 // the init loop and special set false-then-true 389; count after the init loop 379; separate increment after the
@@ -485,6 +485,11 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // (valid) result = bit; return result;`) retail's `and al, 1; mov [esp + 0xf], al` store into the special slot appears,
 // 361/186 (1374 bytes); its plain/dword/long bit spellings 361/352/361, on the long count 355, with the late count
 // 365, with the named type 351, with the split increment 360.
+// Round 66 (m3 lane 16, fast; 0x270930 kept): the special test through a surface-test helper shared with 0x271630's
+// case 2 295 (same code), with special false then set by an if 298; short link count 366 and with the increment
+// split after the copy 367 (ours keeps the count in EDX and increments it before the store; retail keeps `previous`
+// in EDI, uses EDX for the copy and increments the count in memory); the link copy as a struct assignment 305, on
+// the short count with the split increment 367.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -889,6 +894,11 @@ bool function_2715a0(byte *buffer)
 // stores 481 (cases 1/5/6 and default take retail's shape; five points, not kept); case 2 as if/else stores
 // 566 (2136 bytes; node moves to EBX, state to ESI), with the child's stored index 566, its ternary 481;
 // per-case stores with the pop-or-NONE loop 502; per-case stores with native flag masks 512 (2060 bytes).
+// Round 66 (m3 lane 16, plain; retail's case 2 reads the surface index back from the child and joins its +1 path
+// to the default's `inc`): case 2 on `surfaces[child->unknown14]` with the ternary 486 (same code); as if/else 523
+// (2100 bytes); per-case child depth stores with case 2 if/else 566 (2136 bytes); per-case depth local with case 2
+// `if (clear) { +2; break; }` falling into the default 528 (2104 bytes); the surface test through a helper shared
+// with 0x270d90's special test 486 (same code), with case 2 as if/else 523.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

@@ -495,7 +495,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 276 (was 284): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// score 265 (was 276): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
+// case 0's first.y as retail, one slot lower); the first point and the half width take XMM5/XMM6/XMM4 and XMM3
+// where retail has XMM6/XMM5/XMM3 and XMM4; local slots are permuted (vertex cursor and state width swapped,
+// pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
 // differ (state width +0x54 against +0x4c, tint +0x7c against +0x78). The state clamp is now retail's
@@ -638,6 +641,17 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
 // native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
 // only forms all restored; frame and geometry/color homes remain.
+// Round 66 (m3 lane 16, fast, kept form confirmed plain; 0x42c50/0x42b20 matched each time): the edge points named
+// positive/negative, declared second-first, both 276 (same code); per-component pairs in cases 0, 1/2 and 4
+// first-first 385, second-first 464 (2584 bytes); pairs in cases 1/2 and 4 only first-first 385, second-first 274
+// (frame 0xa8, second in XMM0-2 as retail); on that case 0 second-first 464, per-component 274, y before x 274,
+// `half_width + z` 274; case 1/2 y pair before x second-first 270 (first-first 272 at 2596, frame 0xa0), with dy
+// scaled first 270, x before y with dy scaled first 274; case 0's first point z before x or y 265 (kept: case 0
+// then loads z twice and adds the half width as retail), first.z last 270, second block first 465; on 265 case 4
+// pairs y,x,z 269, z,y,x 271, x,z,y 356, z,x,y 264; case 1/2 dx/dy scaled by the half width in place 376 (2604);
+// case 1/2 z pair first or between 564 (2588), first-first z pair last 266. Case 0's first set z, y, x and z, x, y
+// give identical code (z, x, y kept). The difflib-aligned count rose 178 -> 200 with the kept form (case 4 and the
+// vertex stores worse; cases 0-2 and the second point's XMM0-2 better), so the next round should start there.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -731,7 +745,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         switch (definition->mode)
         {
         case 0:
-            first.x = point->position.x; first.y = point->position.y; first.z = point->position.z + half_width;
+            first.z = point->position.z + half_width; first.x = point->position.x; first.y = point->position.y;
             second.x = point->position.x; second.y = point->position.y; second.z = point->position.z - half_width;
             if (input->normal)
             {
@@ -776,8 +790,9 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     real inverse = 1.0f / length;
                     dx *= inverse; dy *= inverse;
                 }
-                first.x = point->position.x + dy * half_width; first.y = point->position.y + dx * half_width; first.z = point->position.z;
-                second.x = point->position.x - dy * half_width; second.y = point->position.y - dx * half_width; second.z = point->position.z;
+                second.y = point->position.y - dx * half_width; first.y = point->position.y + dx * half_width;
+                second.x = point->position.x - dy * half_width; first.x = point->position.x + dy * half_width;
+                second.z = point->position.z; first.z = point->position.z;
                 if (input->normal) normal = *g_4687b0;
             }
             break;
@@ -806,8 +821,9 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     real inverse = 1.0f / length;
                     side.i *= inverse; side.j *= inverse; side.k *= inverse;
                 }
-                first.x = point->position.x + side.i * half_width; first.y = point->position.y + side.j * half_width; first.z = point->position.z + side.k * half_width;
-                second.x = point->position.x - side.i * half_width; second.y = point->position.y - side.j * half_width; second.z = point->position.z - side.k * half_width;
+                second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
+                second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
+                second.z = point->position.z - side.k * half_width; first.z = point->position.z + side.k * half_width;
                 if (input->normal)
                 {
                     cross3f(&direction, &side, &normal);
@@ -950,6 +966,12 @@ void __stdcall function_43720(s_43740_input *input)
 // group pointer written into the image expression 62; the call's count argument recomputed from the
 // point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored
 // last 64 (211 bytes, and 0x42b20 stops matching).
+// Round 66 (m3 lane 16, fast; 0x42b20 checked each time): the tag assigned inside the test 62 (same
+// code); the count named first with the record filled in retail's store order (shader, normal, slot,
+// tag, position, then source, definition, count, bitmap) 64 (0x42b20 4); a long slot index with the
+// named count for the field and the call 64 (0x42b20 4); the call's count recomputed 62 (again);
+// the position computed before the record is declared 62. No matched retail function has this
+// head's one-value EAX test / EBP copy.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
