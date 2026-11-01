@@ -1195,6 +1195,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // Round 57: aggregate iterator initialization 24; first-initialized index 24; iterator pointer 50;
 // index declared after initialization 24; first-next while/do-while 64/64; current-index rename 24;
 // named state predicate 24 (one-use local, restored). Plain checks throughout; original body restored.
+// Lane 18 round 15 (fast with 0x126df0, 0x12a810 and the matched siblings; it reproduces 24): 0x126df0's
+// fade-in gain as a ternary 37 (0x126df0 15); one `sound` local shared by 0x126df0's two halves 24; the
+// iterator's next link tested `== first ? NONE :` 24; both iterator helpers __forceinline 24, only the
+// next helper 24; a __forceinline declaration of 0x126df0 in this file 24. Diagnostic: without the state
+// test the first index leaves EBX for the stack and the index takes EDI (48), so the conditional arm
+// weighs into the tie. A 600 s fast annealing permuter run: 64 tries, none below 24 (its reduced image scores the
+// original 57, so it cannot see this tie).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

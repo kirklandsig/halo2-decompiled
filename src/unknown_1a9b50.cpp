@@ -684,9 +684,9 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 384 (was 384): this round: no new form; the frame and the length agree, and the early false exit's
-// place, the object/magnitude homes and the query scalar homes still differ.
-// score 384 (was 384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
+// score 384 (was 384): the frame and the length agree, and the early false exit's place, the
+// object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
+// Earlier (384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
 // `goto local_7` jump; ours puts it last. `bool local_2 = !f13 && !f14 && !f2d; if (local_2) {...} return
 // local_2;` (and the same with an if/else setting the flag) lands it where retail does, but arg_0 then takes
@@ -792,6 +792,14 @@ static __forceinline long real_to_long(real value);
 // result declared true before it 510 (frame 0x54: the result folds); the facing pointer declared
 // after the flag and vector 384 (identical); the near-facing flag set before its copy 384
 // (identical); that copy read from the view directly 397.
+// Lane 18 round 15 (fast with the callees): VC pulls a block up behind its first predecessor's chain only when jump
+// threading created it, so retail's false exit is a threaded copy of the return; the computed entry flag
+// (`bool local_2 = !f13 && !f14 && !f2d; if (local_2)`, lane 6's form) re-measured 517: it lands the exit where
+// retail does, but arg_0 then keeps EDI (the settings pointer is spilled) and the frame is 0x54. On that form:
+// `!(f13 || f14 || f2d)` 517; the actor taken before the flag 518 (1921 bytes); the settings lookup before the
+// actor 511 (1912 bytes); a redundant `local_2 = true` in the then-arm (diagnostic) 530. On the original form:
+// the last 0x1a9e00 dispatch moved after the if and guarded by `local_2 &&` 406 (the exit stays last); the
+// result declared before the slot view 384 (identical).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
