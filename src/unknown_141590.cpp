@@ -250,6 +250,10 @@ static inline void quaternion_transform_vector(
 // i row written cross-first 200 (same code: the sums are reordered by the compiler), with the i/k/j dot 200 (a
 // repeat of round 30's form), with s/dot/w2 order 257 (1305 bytes); state declared before rotation 200; rotation
 // renamed quaternion 200; state renamed halves 200; its members swapped (sine half first) 200; both 200.
+// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
+// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
+// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
+// spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -894,6 +898,11 @@ void function_143250(
 // 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading
 // terms and the matrix as plain locals 2236 (frame 0x300 as retail, 10297 bytes), with the matrix pointer kept
 // over a plain array 2235. Retail loads the eight leading terms in declaration order, then rotation[7].
+// Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
+// 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
+// frame 0x314. On that product graph, native row subsets and late matrix declaration:
+// 1807/1855/1989/1992/2093/2090/2238/2238. Original scalar graph, workspace, publications and body
+// restored; frame 0x314/0x300 and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

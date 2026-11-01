@@ -575,6 +575,8 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 }
 
 // score 281 (was 299): Workspace frame/prologue and repeated conversion coalescing remain.
+// Aligned 0x144 frame and zero-temporary/descriptor copies versus retail 0x94; repeated converter coalescing remains.
+// Earlier at 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
 // Earlier: frame 0x130 versus 0x94; our LTCG CSEs and hoists the identical 0x12aff0(-64, 0, -64)
 // conversions (6 calls versus retail's 15; BLOCKED-BY 0x12aff0: retail's callers treat it as opaque).
 // Round 75: SetMixBins (retail calls 0x37c5e4) for SetMixBinVolumes 449 (kept); the existing 0x2216f0 with a
@@ -698,6 +700,7 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // the first set 300, third object declared with the others 308, third set reusing the first object 375.
 // Diagnostics: 0x12aff0 alone in a /GL- file 308 (0x12aff0 itself 59: retail returns in xmm0, so it is
 // LTCG code; five matched callers lost); the whole file with /Op 281. Neither is retail's cause.
+// J221: On native value construction: first/second/both submission scopes 316/327/374; full-zero first/third restart 314; direct CRT zero first/second/both/all 299/299/307/348. Original value constructors, descriptors, routing and submission tuples restored.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
@@ -752,7 +755,9 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 }
 
 // MiniMax R (10-31): no new form, no lower score.
-// score 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
+// score 370 (was 370): Frame 0xc and input roles agree; selected-level/right-destination homes and integer/SSE
+// staging remain. Dispatcher must stay exact.
+// Earlier at 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
 // Earlier: retail copies the input level into a dead argument slot through a
 // frame 0xc agrees; retail copies the input level into a dead argument slot through a
 // Frame 0xc agrees; selected-primary storage, destination construction and integer-bit/SSE staging differ.
@@ -878,6 +883,9 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // for every sum and the offset 420 (dispatcher 23); that level as a bits/value union reached through a
 // reference 416 (dispatcher 23); offset as a plain float sum 384; send level and offset read before the
 // gain snapshots 401 (dispatcher 23). Whole-file /Op diagnostic 363.
+// J222: Special input bits 412; front subtotal 412, input/front 423; rear 412, input/rear 423; front/rear 422;
+// all 432; all with boosted offset 416. Every form loses dispatcher 0x2af7b0 and is rejected; all original
+// arithmetic, observations, helpers, declarations and executable body restored.
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {

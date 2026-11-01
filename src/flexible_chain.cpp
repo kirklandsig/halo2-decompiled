@@ -321,6 +321,14 @@ void __stdcall function_1160c0(real dt)
 // stiffness computed after the tick increment about 183 (harness 165); the axis scaled with *= 179 (same code).
 // Round 53: the axis j/k (or all three) scaled with `*=` 179/179 (same code); the segment index in a short
 // local 290; `definition->segments + (...)` 179; length declared then assigned 179.
+// Round 61 (lane 16, fast): the float library forms for the roots and the angle: sinf/cosf for the rotation 182
+// (aligned 198 -> 200), sqrtf for the axis length 179 and for the segment-length scale 179 (same code), fabsf
+// for the length test 179, all five together 182. Retail's frame runs length, segment, axis upward from
+// [esp+0x10]; ours axis, segment, length; the axis j/k scaling reloads the stored component in retail.
+// Lane 18 round 17 (an LTCG link of this file's generated unit, 180 objects, equal to the full listing; 172
+// there for 179): the physics tag in a one-use local 172 and the physics index in a local used for the test and
+// the lookup 172 (both identical; the tag address is still formed before the -1 push); 1/dt before the loop 182;
+// a long loop index 289 (1358 bytes); the root test as `fabs(length) < .0001f` 172.
 // Round 35 (lane 13): rest-offset copy at the loop top (before the tick) 289 (1354 bytes; offset still homes
 // above previous); length/axis declared at the loop-body top 179 (same code); previous renamed last_position
 // 179 (no slot moves); the dot named before the complement product 179 (same code); a 600 s permuter run
@@ -338,6 +346,13 @@ void __stdcall function_1160c0(real dt)
 // vertical and the inverse step before the loop 190; the angle taken after the rest-offset copy with the vertical
 // before the loop 301; the first node's direction copied before its position 188. The segment/scale temp slot
 // sits above the axis in our frame and below it in retail's.
+// Round 37 (lane 15, fast): every slot is shared alike except two mirrored groups: retail runs length/cosine +0,
+// segment/scale/sine +4, axis +8, rest offset +0x40, previous +0x4c; ours runs axis +0, segment +0xc, length
+// +0x10, previous +0x40, offset +0x4c (the axis, length and normalization code is otherwise retail's). The axis
+// is `vertical x direction`: the existing cross3f(&vertical, &direction, &axis) with the vertical declared just
+// before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
+// difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
+// Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

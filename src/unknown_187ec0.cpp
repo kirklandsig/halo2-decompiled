@@ -56,6 +56,9 @@ static inline s_player_datum *player_get(long player_index)
 // declaration's initializer 3; the record declared before the pointer 3; the index as dword (cast or local) 3,
 // direct with the cast 16; a table-base pointer local at the top 3; the global declared with its size 3; the
 // permuter (58 annealed tries) best 3.
+// Round 102: an independent source index 3; guard/source ownership swapped 3; the source index declared separately 3,
+// at function scope 3, inside the guard 3; a source reference with that copy 3; record before pointer with it 3;
+// the copy initializer with it 3. All compile to the baseline's three instructions.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -296,6 +299,11 @@ struct s_seat_animations
 // (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
 // with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
 // `i` declared at function scope 52 (same code).
+// Round 33 (lane 15, fast): round 118's address-read form with `!result &&` in the while test 52 (same code);
+// the count/entries pairs as two-field block structs, a block pointer selected per inner pass 73 (type in EAX,
+// 181 bytes, 0x188130 1), the struct ternary `(first ? a->first : a->second).entries[i]` 57 (175 bytes, 0x188130
+// 12); the per-arm entry as if/else 78 (animation in EBX, 0x188130 17); the parent walk as a self tail call 70
+// (stays a call, no loop).
 // Round 65 (lane 12, fast with 0x188130/0x188640/0x188690), all on round 118's 52 form (rebuilt: 52,
 // animation/count/element in EBX/EBP/EAX for retail's EBP/EAX/EBX): the count selected by if/else 52;
 // the entry returned from the inner loop with a final `return NULL` 91 (143 bytes); `!result &&` in the
@@ -654,6 +662,8 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax R (11-01): no new form, no lower score; retail's point/forward register split still comes
+// from the call sites in other files, so the frame and the two scans stay as they are.
 // score 77 (was 77): retail's own clone takes the point in EAX and the forward vector in ECX and
 // pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
 // from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,

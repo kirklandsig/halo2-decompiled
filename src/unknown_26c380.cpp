@@ -212,6 +212,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 259: native returned cross vector, component/aggregate construction, mutable/const
 // normal and explicit/aggregate planar initialization, eight combinations 597 each.
 // All original helper contracts, normal storage and executable source restored.
+// Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
+// planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
+// Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
