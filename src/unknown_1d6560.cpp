@@ -186,6 +186,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 240: Primary body result default, crossed with secondary body default, one byte type
 // and native object-byte shift: 100/108/91/91/100/108/91/91. Original body restored;
 // shared-type forms lose the matched caller (13); the five-point gain is below the keep gate.
+// Round 243: shared primary/secondary flag-selection cases, main type byte/short/long/dword
+// 132/136/128/128; the group after the object case 131/136/126/126. All grow and lose
+// the matched caller (13). Original separate flag cases, both type reads and body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

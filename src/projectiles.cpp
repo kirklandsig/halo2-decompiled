@@ -991,6 +991,10 @@ real function_30bf0(vector3f *v);
 // Round 495: Whole fallback/default/publication CRT-copy subsets on the shared-scale/path
 // graph 232 each (seven forms); complete copies with entry result 245. Original body
 // restored; frame, rounded-root scheduling and separate divisions remain.
+// Round 243: existing horizontal dot producer alone/both norms 232/232; with complete
+// displacement helper 235/236; entry-result counterparts 245/245/228/228. The 228 forms
+// recover frame 0x30 but gain only four and lose four matched callers. Original helpers,
+// inputs, scalar trees, result lifetime and inherited optional-pointer contract restored.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,

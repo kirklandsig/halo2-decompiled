@@ -872,6 +872,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 0x1ffe00 call loses its pushes); the remembered branch first (`if (state < 1 || state > 2) { if (unknown00 == NONE)
 // goto done; ... }`) in case 2 341 (1404 B), in case 1 (`state < 1` to done first) 305 (1440 B), both 305; the
 // object index read before 0x210850 in both remembered branches 309 (1444 B).
+// Round 243 (fast control 341/1404, full 257/1448): direct false admission returns for
+// movement/pool/selected-reference/attention/object/default, actor admissions/all admissions
+// 396/343/363/343/347/338/343/338. Three-point default forms rejected; all original exits,
+// result producers and native point copies restored. Byte homes and direction-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

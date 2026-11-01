@@ -1380,7 +1380,7 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 
 /* puts the actors an ai index names into the free seats of a vehicle (or
    makes them walk to them), nearest first, best seat first */
-// score 32 (was 41): Frame 0x6ac and the 846-byte extent agree; iterator/candidate scheduling, leave-request registers and request/slot publication homes remain.
+// score 32 (was 32): Frame 0x6ac and the 846-byte extent agree; iterator/candidate scheduling, leave-request registers and request/slot publication homes remain.
 // Round 244: shared displacement dot 41; existing distance producer 278 (782 bytes);
 // pointer-result for traversal 274, with shared dot 274; capacity-first admission 45,
 // with traversal 278; existing request output/seat reference formals 41/41. All restored.
@@ -1427,6 +1427,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
 // FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
 // flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
+// Round 243: scalar count/ordinal/selection lexical names, four individual and four paired/complete
+// families, 32 each. Original names and entire executable body restored; candidate scaling,
+// leave-request transport and request publication still differ at the matching frame and extent.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
