@@ -1210,6 +1210,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // it 44; the no-model parent through slot_handler.h's object_get and object_node_matrix 44 (same code each).
 // Without the guard: the node loop from 0 with `node != 0 &&` in the mask test 105 (1374 bytes), with
 // `if (node == 0) continue;` 105.
+// Round 26 (lane 17, fast; retail also reuses EDI for the render branch's parent lookup after the 0xb8bd0
+// call, so only the no-model path loses the data field): a pointer local to orientations, stored or
+// current read once (diagnostics) 97 each, same code. On the count > 0 guard diagnostic: no-model mirrored
+// flag before the matrix 43 (aligned 8 -> 12); parent index read at each use 44; no-model branch first 314;
+// render branch ending in `return` with the no-model code after it 44; parent read through
+// s_object_transform_view 44; parent header through a file-local inline lookup taking the pool pointer as a
+// parameter (diagnostic) 44, same code.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

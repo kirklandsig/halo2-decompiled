@@ -75,7 +75,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  return result;
 }
 // score 330 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// Stack homes, suffix address rederivation and block placement remain.
+// frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // merging the two XONLINE_FRIEND copies into one local in the status block
+// Frame 0xfd4 agrees; child/text/layout homes, suffix rederivation and block placement remain.
+// Earlier: Stack homes, suffix address rederivation and block placement remain.
+// Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
 // the block order follows retail's apart from a few blocks, but stack offsets
 // Stack homes, suffix address rederivation and block placement remain.
@@ -85,6 +90,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // merging the two XONLINE_FRIEND copies into one local in the status block
 // the block order follows retail's apart from a few blocks, but stack offsets
+// the block order follows retail's apart from a few blocks, but stack offsets
+// Stack homes, suffix address rederivation and block placement remain.
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -178,6 +185,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Round 279: Existing status producer writes the real final payload directly, before/after
 // the disjoint range helper, crossed with constructor-owned zero and native flag bits:
 // 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.
+// Round 332: Terminator stores through the append result with shared flags and native identity/status, subsets
+// 0-7: 327/338/327/338/327/338/327/338.
+// Three-point gain rejected; original executable source restored.
+// Round 284: shared actual invitation/session/voice icon-result publication, subsets
+// 1-7: 490/389/487/374/487/390/669; all with native short session/voice results 673.
+// Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

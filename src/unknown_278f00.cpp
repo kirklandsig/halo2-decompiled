@@ -201,6 +201,11 @@ bool function_a7670(long object_index);
 // Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
 // all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
 // selector/list/count homes, BL admission and indexed cleanup remain.
+// DH round 262: standard-count first/second/both membership 201/213/235; indexed cleanup
+// 213/232/206; both counts with unsigned/immutable result storage 235/235. All exact-only forms restored.
+// DH round 264: Force-inline contracts for the existing property/component/object inline producers,
+// all seven subsets and all three with readonly body input, 181 each. Original declarations,
+// body and call cycle restored; scratch EDX/EAX, list/count homes, admission BL and cleanup remain.
 // @retail 0x278f00
 void function_278f00()
 {

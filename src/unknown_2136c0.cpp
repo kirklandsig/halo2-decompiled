@@ -195,6 +195,10 @@ void function_213970(void);
 // Round 283: previous language/version/both at their comparisons, mutable/immutable, all six 131; both
 // immutable before query 141; both with per-use requested language 139. Exact-only captures restored;
 // protected two-block allocation and original body retained.
+// DL220: Plain member-level array resets using library payload clears and native endpoint stores, seven subsets; all with reversed member publication:
+// 169/178/202/171/195/204/227/227. Separate allocation still prevents both complete bulk clears. Original body restored.
+// DH round 262: language after header payload/first sentinel, with native progress/handle reset
+// subsets 131/175/168/187 and 131/172/165/184. Original resets, getter site and complete body restored.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

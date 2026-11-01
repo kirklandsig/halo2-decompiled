@@ -612,6 +612,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // derivation, masks 0..7: 199/201/197/199/259/260/260/261. Original dword mask, offset/default lifetimes and
 // body restored. Shared rotation/frame providers stay matched; offset/default/reload and row-i input/product
 // residence remain.
+// Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
+// before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
+// All overrides and memory observations stayed fixed; original defaults and complete body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1089,6 +1092,10 @@ public:
 // Round 299: Retained zxy magnitudes with perpendicular store orders ikj/jik/jki/kij/kji 239/184/258/261/262;
 // native perpendicular result/common publication with ijk/jki/kij producers 431/444/436. Original axis
 // producers and body restored; normalized-j/default-cross and color/tag homes remain.
+// Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
+// 189/248/240/184/237; coordinate names 248; reversed independent comparisons
+// with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
+// Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

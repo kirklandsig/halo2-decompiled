@@ -189,6 +189,12 @@ real normalize2d(point2f *arg_0);
 // (same code); the object lookup before the point copy 211 (aligned 170 -> 200); the radius after the
 // centre copy 215. The inline route to 0x30c60 needs its definition changed (unknown_030290.cpp, held by
 // another lane this round).
+// Round 445: Native double squared-distance/projection/radius-clearance domains, seven
+// subsets and complete far-mode scalar graph: 279/262/265/293/261/258/274/274.
+// Original complete executable body restored.
+// Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
+// point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
+// Original scalar expressions, publication and complete body restored; output/vector homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

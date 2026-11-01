@@ -92,6 +92,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 
 // score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
 // the two 0xbadc0 calls (index * 12 kept in ESI), ours reuses the entry fetch. Earlier notes:
@@ -191,6 +192,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Round 280: complete pre-reset prior-state predicate, reset/preserve decision, bool/long
 // storage and producer/entry declaration 110/110/113/113/113/113/116/116. Original complete
 // body restored; merged lookup and late prior-state carrier remain.
+// Round 332: Retained absolute header ordinal long/dword/word/int, each with entry or late false
+// result: 107/107/109/107/122/122/124/122.
+// Original executable source restored; no eligible gain.
+// Round 284: reset/sound domain without the implied keep retest, crossed with early preserve
+// exit, producer prior-state lifetime and sound sentinel exit: eight forms 134 each.
+// Original complete body restored; fresh current-unit observation and late prior-state home remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

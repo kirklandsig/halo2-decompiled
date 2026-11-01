@@ -305,6 +305,17 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // code: PRIVATE is empty); the admission test as nested ifs 620 (same code); the request entry fetched before
 // the player index 622. Retail tail-merges cases 24-29 into one 0x1e8eb0 call (each case only pushes its
 // arguments) and case 18 into the same post-call test, with 19 returns against our 26.
+// Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
+// 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
+// through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 263: Real state layout with typed current/reset/input observation subsets 620/620/620/620/620/620/620; all with ordinary player 786.
+// Original state declaration, raw observations, case graph, inherited qualifiers and complete body restored.
+// Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
+// gives 620/623/650/649/613/651/651/653. Seven-point best is below the
+// retention margin; original case order and executable body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

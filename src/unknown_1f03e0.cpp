@@ -737,6 +737,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // each cosine-complement interaction and two dot declaration-scope combinations:
 // 262/262/266/262/262/262/266/262. All lose the caller match; original dot,
 // receivers, scalar graph, helper declaration state and complete body restored.
+// Round 481: Complete fallback plane/forward candidate with publication after normalization,
+// eight independent fallback/forward-phase/active-entry declaration pairs 247 each (1243 bytes).
+// Original in-place fallback and full body restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -953,6 +956,8 @@ struct s_flags_1f0870
 // Round 235: complete movement-scale/history-anchor/both/current+scale/current+anchor/
 // all/current/all with split anchor assignment: 623/665/672/627/661/666/621/666. Current-value
 // forms revisit the clean store graph; original observations and full body restored.
+// Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
+// declaration lifetimes. Scores 590/590/590/590/590/590/590/590. Original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1334,6 +1339,8 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // input captures, original exits 555/425/555/419; single-result joins 555/567/555/567.
 // Candidate-dot admission bool/byte/short/long 419 each; rejection 420 each.
 // Original normalizer, comparisons and full body restored; zero/count homes remain.
+// Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
+// 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
@@ -1592,6 +1599,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 329: Complete reset orders MNSZ/SNMZ/ZNMS/NSMZ/NZMS/MSNZ/SZNM/ZMSN
 // 223/221/222/221/222/222/222/223; N=normal, M=material, S=sentinel, Z=scalar zero. Both
 // reset phases use the same order; original stores and complete body restored.
+// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
+// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
+// executable source restored; zero width, reset/selection homes and material-call expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

@@ -302,6 +302,9 @@ struct s_object_damage_view
 // Round 290: Persistent victim-team/credited-player/code role names, all seven subsets, 353 each;
 // all names with separate declarations and original assignments 353. Frame 0x50 agrees; the
 // three scalar homes, biased history cursor and attribution/award allocation remain. Original restored.
+// Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
+// then consistent existing inline validation: 375/396/509/494/509/526/557/515.
+// Original complete executable body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

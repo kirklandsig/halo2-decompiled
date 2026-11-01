@@ -2112,6 +2112,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 231: structure/model/both admission guards 817/618/642; the same guards with
 // test-produced shared status 817/798/776; both guards with special-material single
 // completion and test-produced/original status 816/797. Original admission and body restored.
+// Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
+// native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
+// producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
