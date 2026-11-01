@@ -547,6 +547,12 @@ done:
 // before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
 // the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
 // its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 45 (lane 11, fast), all on the natural one-copy form (54, 173 bytes; only the EBX constant, the
+// selector's ECX and the late tag load differ): the selector read into a named local before the tag 54;
+// the shared getter with two returns (`if (variant) return variant; return &g_54e4a0;`) 54, with the
+// selector local 54 (parse_variant stays matched); the variant declared at function scope 54; an explicit
+// `else goto done;` on the globals test 54. Retail's .text holds 0x55c6e4 twice and no data table holds
+// any parse buffer; the matched siblings each hold their buffer constant once (cached in ESI).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

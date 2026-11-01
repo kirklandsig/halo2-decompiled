@@ -1848,6 +1848,15 @@ real function_2683f0(long actor_index, long node_index, short type)
 // zero store and loop entry; a 3-point gain, not kept); with a shared iterator-start helper for the
 // file's three prop walks 259 (the walks still match); with the long second counter 260; visibility
 // as one expression or an if/else 450/450 (2841 B).
+// Round 45 (lane 11; fast image 199 at 2880 bytes for this body, 0x25d810 builds differently there): the
+// established/visible flags renamed so their names sort the other way 199/199/199 (identical code: the
+// byte slots do not follow names here); the slot search with a long counter (retail's pointer-walking
+// loop, as the first search) 199 fast, 263 plain (2848 bytes); the player cleared before the first search
+// with it 375, alone 384 (the not-found exit then threads past the index test, which retail keeps). The
+// existing ai_player_get/ai_player_index_get calls: ai_player_get stays out of line (its file is /Ob1;
+// retail inlines it here) 867, with a forceinline declaration 877; ai_player_index_get for both searches
+// (the second search is then CSE'd away) 822/797/818 for a long index with the player cleared first, a
+// short index, and a short index with the player cleared first.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

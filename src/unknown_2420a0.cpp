@@ -524,6 +524,11 @@ long function_243b10(long key_b, bool team_only, long *second)
 // count stays in ECX and the index in EAX where retail keeps the count in EAX and spills the index);
 // sqrtf 173. The table local at the loop top or in the marker block (169, 717 B) hoists the table to
 // EDI and moves the slot to EBP from the stack, so it is not retail's allocation either.
+// Round 45 (lane 11, plain; a fast image builds 0x19ec40 differently here, 203 for this body): the distance's
+// squares named (`dx_squared`, `dy_squared`) 173; the delta as a vector2f through dot_product2d 173; a named
+// squared distance 173 (all identical code); the x maximum written bound-first like y and z 152 (701 bytes, a
+// positional gain only: the x compare then loads the bound into a register where retail compares the distance
+// with the memory bound, so not kept), with the squares reversed 152, with the accumulated distance 152.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1197,6 +1202,12 @@ void c_game_engine_markers::v21(long object_index)
 // against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
 // at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
 // matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
+// Round 45 (lane 11, fast): matched 0x241620's form (one options local for every engine read, the player through
+// event_player_get, the team at each call) 120 (429 bytes); on the team at each call: the unit and its two reads
+// renamed (names do not move registers) 119, a slot-table local for the flag test and the slot-block stores 119,
+// a const unit pointer 119, a separate local for the event block's player-index re-read 119. Diagnostic: the unit
+// first with the team at each call reloads the options as retail but keeps the type test's object pointer (no
+// re-fetch of the slot), so the options hold follows the register pressure across the type test.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

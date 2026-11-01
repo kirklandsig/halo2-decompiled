@@ -1038,7 +1038,7 @@ bool function_68670(byte *source, long size, void *block);
 // what forces its reload; ours keeps the remainder for the second read. The permuter ran without
 // finding a better form. The header home, the size register, the forwarded cursor and the grouped
 // case-1 stores remain.
-// score 72 (was 72): retail treats the read header as reachable through the ring buffer: it reloads
+// Earlier (72): retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at
 // esp+0x14 (header at esp+0xc, ours at esp+0x10), interleaves the message's zero and value stores
@@ -1123,6 +1123,20 @@ bool function_68670(byte *source, long size, void *block);
 // address forced to escape restores retail's reloads and late header load (retail behaves as if the
 // read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
 // stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 45 (lane 11, fast): retail's frame is the 72 form's plus a case-0 copy (ours pads 4 bytes below
+// the header; the compile-only listing shows no other local), and retail's header is address-exposed:
+// its size loads only after the start/used stores and the first read reloads the ring fields. Grouping
+// the header and the case-0 message in one struct (diagnostic only, a grouping form) gives both: 39 at
+// retail's 553 bytes, leaving the header-size register (SI, retail DX, so retail reloads the start before
+// the payload read and interleaves case 1's stores) and case 0's copy store, which retail schedules after
+// the channel load. On that diagnostic: the size declared before its test 122; a short size 39; the
+// header size at each use 125; case 0 written out under the channel test 36 (helper body by hand, the
+// copy store then lands after the branch). Real forms: the view-address line after the header and
+// payload declarations 72 (same frame); `standard` (self-aligned entry) without the view-address line 168
+// (519 bytes, the view is then held in a register), with the case-0 copy 154, with the grouping 154; a
+// ring read member (read_wrapped, start advance, used update) inline in this file's ring declaration
+// 72 (identical), with the case-0 copy 137; the same member out of line in the ring file 243 (not
+// inlined, 466 bytes). What exposes the header in retail without sending it is the open question.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
