@@ -592,6 +592,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // reloads); the word copy from the field with the store through the pointer 129; the word copy
 // through the pointer with direct stores 77 (the engine-index load then moves up past one store).
 // Round 216: Final signed-char/byte/short/word counters 97 each; with word saved mask 93 each. Word mask read-only, signed present, both signed accumulators, and read-only/both signed 77 each. All restored; shared post-loop mask reload remains.
+// Round 116 (lane 8, fast): word mask from the field with stores through `globals` 129 (375 bytes); word mask
+// through the pointer with the mask stored through `globals` 77 (engine load moves up one store; playing stays in
+// EAX); word mask with the OR uncast 77 (present still loaded first); added mask computed after both stores 32 / 77
+// (word); `register` word mask 77; word mask and pointer declared after the accumulators 77; word mask with present
+// not volatile 63 (present in EDI, `globals` re-read, mask still from memory). Retail reloads the spilled word once
+// as a dword in the first test block; ours folds `movzx ecx, word [mask]` into the compare and reloads for the OR.
 // @retail 0x158140
 void function_158140(void)
 {
