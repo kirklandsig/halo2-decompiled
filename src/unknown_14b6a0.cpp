@@ -373,6 +373,10 @@ void function_14bac0()
 // workspace, 311/305/311/305; with native result-tested recipients
 // 304/302/307/305. Original separate probes, returned relocation output,
 // selected unit, observations and both player traversals restored.
+// Round 244: independent scalar displacement on the returned-output/selected-unit graph,
+// six complete initializer orders 235/239/239/241/241/239; request/marker-scope scalar
+// declarations 235/235. Original aggregate, output pointer, bounds and traversals
+// restored; frame 0x50 versus 0x3c, point/iterator sharing and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

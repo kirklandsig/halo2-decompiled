@@ -656,6 +656,10 @@ struct s_collision_result_buffer_1697c0
 // and two entry reciprocal declarations 322 each; existing length_sq3f and dot3f producers
 // 322/322. All original helpers restored; frame 0xa8 agrees, scratch/axis homes and
 // initialization/rotation schedules remain. Matched caller and shared rotation user unchanged.
+// Round 244: complete normalization outputs via shared scale with named/direct reciprocal,
+// shared setter and complete coordinate products: 322/323/322/322; with one length-result exit
+// 341/340/341/341. Original private normalizer and sampler restored; frame 0xa8 agrees,
+// normalization scratch/axis homes and initialization/rotation schedules remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

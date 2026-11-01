@@ -1875,6 +1875,10 @@ real function_17c900(short function_type, real input);
 // variants 464 (eight forms); forced original graphs 410/348, forced shared-reciprocal
 // single-exit graphs 398/344 (344 raises other users 0 to 8 and 3 to 10). All helper
 // changes restored; stacked-index/output transport and component homes remain.
+// Round 244: existing moving/havok object getters, each with early/drift-local salt
+// and common/branch-final point output: 348/377/365/382, twice. Original macro,
+// salt, point workspace and final publication restored; frame 0x30 agrees, stacked
+// index/output-EBX contract and point/direction homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

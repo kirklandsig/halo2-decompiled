@@ -437,6 +437,10 @@ struct s_physics_component_walk : s_havok_component
 // Every snapshot has two real uses and preserves the read-only query values, but
 // frames/code grow. Original method, field rereads, counts and recursive arguments
 // restored; frame 0x18 agrees, neighbor/key ownership and cold exit placement remain.
+// Round 244: actual section-element references and direct indexed key fields in the two scans,
+// eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
+// References canonicalize; direct fields grow or rotate allocation. Original method and
+// both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

@@ -2638,6 +2638,10 @@ struct s_scenario_scripting_view
 // Round 236: Complete native input/product/both/full-result nodes in the existing squared-length helper,
 // each with original/loop-owned short counter: 80/87/80/87/80/87/80/87.
 // Original complete search and shared helper restored; actor/counter/data homes remain.
+// Round 244: actor acquisition after lower/upper set admission, before search and per iteration,
+// each with early/loop-scope short counter: 89/96/90/95/91/95/98/94. Original acquisition
+// and loop restored; frame 0x18 agrees, actor/counter/set allocation remains. Wrapper
+// also rose 0 -> 1 in the first seven trials.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
