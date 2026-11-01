@@ -345,6 +345,9 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 46 (lane 1, fast): a braced case 0 with `vector2f *normal = &line.n` for the dot only, and for the
+// normalize too, 42/42 (same code); j stored through it, with the normalize by name or through it, 44/44 (304
+// bytes); the loop test `state != 2` 43; the loop on `i < count` alone with case 1 returning 2 88 (301 bytes).
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -772,6 +775,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // distance local) 133; the previous side stored before the previous point at the loop end 129 (same code); the
 // result declared after the flags and mask 132; the side test as `previous_inside != inside` 129 (same code); the
 // current side `bool const` 129 (same code). Diagnostic only: an `if (count > 0)` guard around the loop 211.
+// Round 46 (lane 1, fast): the previous side as `!(distance < 0.f)` 129 (same code); the previous point as
+// `points + (count - 1)` 129; a named `count - 1` index local 273; the loop test `count > i` 130; the clipped
+// reset after the alias copy 220; the fraction negated with unary minus 129 (same code).
 // Round 56 (lane 16, fast): the previous side as `= false; if (distance >= 0) = true` 130; the inside test written
 // as `distance >= 0.f` at the append 265 (874 bytes); the side flags renamed (side/previous_side, last_inside,
 // was_inside) 129 each (same code and slots: the names do not move the byte flags here).

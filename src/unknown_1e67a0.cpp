@@ -632,6 +632,13 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // constant choice is no numbering tie); the two `(void)&parameter;` statements were dead (removed: identical
 // code); without them, the jitter add through the existing vector3f_add 130 (1077 bytes, as round 91: not kept);
 // the movement scaled through the existing vector3f_scale 132; the direction normalised through it 132.
+// Round 47 (m3 lane 1, fast, 0x24590 listed; aligned counts against this body's 154): retail order
+// jitter (on/off, signs, scale-on-left selects) with a plain long and its products added straight into the
+// velocity plus the movement add through vector3f_add 202 (1055 bytes, aligned 111); round 91's 174 form
+// plus the projection through vector3f_add_scaled 191 (aligned 117); the jitter add through vector3f_add
+// with a plain long in the old order 163 (1045 bytes), plus the movement add 147 (1087 bytes), plus the
+// projection through vector3f_add_scaled too 147 (1086 bytes). Reconfirmed:
+// jitter add 130, with retail-order plain jitter 231, plus movement add 174 (aligned 129), retail order alone 233.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
