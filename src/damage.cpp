@@ -651,7 +651,7 @@ void function_d6a70(long object_index)
 	}
 }
 
-// score 159 (was 168): what is left is register allocation, from one cause. Retail loads g_4e0300 into ebp in the
+// score 159 (was 159): what is left is register allocation, from one cause. Retail loads g_4e0300 into ebp in the
 // prologue and reuses it for the body_depleted lookup and the unknownd4 lookup (it does not reload it across 0xb8b70
 // and the memset); that puts the index in esi and the object in a frame slot ([esp+0xc]) and the owner in ebp.
 // Ours reloads g_4e0300 at each lookup and so keeps the index in ebp. The iterator calls now match (0xd0620 takes
@@ -665,6 +665,10 @@ void function_d6a70(long object_index)
 // unknownd4 block, to see whether g_4e0300 then stays in a register (202, it goes to esi, not ebp). The reload
 // across 0xb8b70 looks like the link-time pass not knowing that 0xb8b70 leaves g_4e0300 alone, so this is probably
 // not fixable from the source.
+// Round 478: uniform pool/header-array capture 161/188; with native accumulator initialization
+// 160/174; with full-width last-child result 168/195; both storage changes 167/181.
+// On the recovered pool frame, cached first store 164; fresh first test/cached store 165;
+// fresh parent test 175; both fresh tests 173. Original frame 0x4c versus 0x50 and reload/store homes remain; all restored.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -937,6 +941,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // the cached `position` pointer (206). Tried: the player_index/NONE split of the first badc0 use (354, all three
 // inlined); separate `!unit` / `player_index == NONE` tests (209); a squared-distance helper called twice (249,
 // still shared); s_record_pool_iterator + data_iterator_next_inlined for the players (208).
+// Round 273: Outer copy/player ordinal/return-candidate lifetimes, seven subsets,
+// 206/230/230/225/225/233/233; all plus descriptive result names 233. Original body restored;
+// frame 0x1a4 versus 0x1b4, ordinal/result spills and first lookup expansion remain.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1450,7 +1457,7 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 
 /* whether an object, or anything seated in or attached to it, is a unit (a
    player's unit, if players_only) */
-// score 187 (was 167): the compiler inlines 0xbadc0 (the datum lookup and the type test) at the unit check in the
+// score 187 (was 187): the compiler inlines 0xbadc0 (the datum lookup and the type test) at the unit check in the
 // iterator loop; retail calls it (`mov eax,child_index; push 3; call 0xbadc0`). That is the only real difference:
 // with the call kept out of line (checked with a throwaway noinline copy of 0xbadc0 in this file) the rest of the
 // function compiles to retail's 246 bytes with `result` in the dead first argument slot, if the tails are written
@@ -1466,6 +1473,10 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // from the loop (253). All inline 0xbadc0. A noinline declaration of 0xbadc0 in its own file (unknown_0bad50.cpp)
 // makes this function MATCH with the `||` tails, but breaks 0x11a570, 0x11a680, 0x274f30, 0x275160, 0x275270 and
 // 0x2736c0 (retail inlines it there), so it cannot be used. 0xd0620 (not ours) takes the iterator in ebx in retail.
+// Round 478: result-first recursive admission and one return, bool/byte/short/long result
+// 184/195/207/205; comparison-produced iterator result 190/201/175/170.
+// Three-point ordinary gain rejected; comparison-result flags are exact-only and restored.
+// The verifier still expands, frame remains 0x1c versus 0x18, and recursive/result homes differ.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -1767,6 +1778,10 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // Tried: the flag preset true and cleared inside the loop (284), `if (i < count) {...} else flag = true` after the loop
 // (512), the `?:` operands as `!= 0`, `!!`, `(bool)` or `== mask` (286, 286, 284, 262 with +3 bytes), `region` declared
 // before `object` (275 with the preset flag), a separate loop variable for the second loop (no change).
+// Round 273: Destruction produced by its complete original admission test in
+// bool/byte/short/long storage 234/234/240/241; with entry-initialized shared
+// ordinal 243/243/251/252. Wider decisions reach 958 bytes but leave frame
+// 0x1c versus 0x20 and wrong ordinal/destruction ownership. Original body restored.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -3583,7 +3598,7 @@ PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
 /* whether the structure blocks damage from the damage's origin to a point
    on an object; around units, four rays offset sideways by the
    definition's spread must all be blocked */
-// score 153 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
+// score 153 (was 153): the root walk is written out inline in the ray loop (damage_object_root,
 // 0xbaf80 stays a call in the else branch; 164), and the loop sets result and breaks instead of returning from
 // inside (153; the failing call's epilogue is then shared with the else branch as in retail). Left: retail's
 // cases 2 and 3 share the code from `movaps xmm1,xmm0 / mulss xmm1,[up.i]` while ours scales case 2 as
@@ -3592,6 +3607,10 @@ PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
 // before `remaining` (165, and the convention changes to object_index in edi / point in ebx), the same for the
 // else branch's 0xbaf80 result (211, same convention change), `v->i * scale` in scale3f (153), the cross
 // product's first line with its products swapped (153).
+// Round 478: real collision extent 0x5c alone/shared cross/staged cross/scale return/staged return
+// 151/151/151/151/151; native scale input 370; complete scale products with shared/staged cross 151/151.
+// Point-difference output return at second/else/both sites with full extent 163/151/163;
+// both at original extent 165. Frame 0x90 versus 0xa0 and scale/root scheduling remain; all restored.
 // @retail 0xd6f90
 bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const *data)
 {
@@ -4384,6 +4403,10 @@ struct s_damage_object_creation
 // object_index in esi, hoists the section_mask_a zero-extension into edi and spills the datum offset, so its
 // frame is 4 bytes larger; ours keeps the offset in esi and object_index in edi. Tried: the loop as
 // `if (detached_nodes > 0 && ...) while (detached_nodes != 0)` (236), a `word mask_a` local (221).
+// Round 273: Shared scan ordinal/node-count-first/entry node-state workspace, seven
+// subsets 221/225/225/221/221/225/225; all with entry creation workspace 225.
+// Shared ordinal recovers base-first byte access at 221; frame 0x13dc versus 0x13e0
+// and handle/offset allocation remain. Original complete body restored.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

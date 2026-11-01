@@ -1365,6 +1365,8 @@ PRIVATE inline long score_string_list_1608e0()
 // height 718. Frame improves to 0x794; viewer/clamp/color homes remain, 2906/2879 bytes. Coordinator review: the
 // field aggregate is a copy of the global kept only with a match (the natural copies give 687) and it moves the
 // size off retail's, so the body is back to its earlier form (680).
+// Round 476: On the shared-caption rectangle graph, title/caption/team-localization lifetime subsets 1-7 and all with decoder declaration at consumption: eight forms 680 each at 2879 bytes.
+// Frame 0x790, viewer/panel roles, clamp and color/coordinate homes stay unchanged. Original body and all existing scalar qualifiers restored.
 // Round 265: library scroll/header-alpha/body-row-alpha bounds and their pairs/all
 // 697/727/719/729/725/743/817; all with upper-first nesting 789. Body-row bounds
 // recover frame 0x79c but regress to 719 at 2922 bytes; original full body restored.

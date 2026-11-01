@@ -853,7 +853,8 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 589 (was 589): Frame 0x18/0x2c, input/selection homes, override layout and fraction retention differ.
+// score 570 (was 589): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
+// fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
 // The one-point nearest gains are ineligible; original scalar producers and arithmetic restored.
@@ -870,6 +871,22 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Singleton/multi-record shared table scope 589 (kept, plain; 2127/2122 bytes).
 // Round 248: pointer-end scans with direct ordinals, pointer/ordinal exclusions and shared
 // table ends 736/723/713/737/679/693/735/850; all original traversals restored.
+// Round 62 (m3 lane 16): the override copies as the else arm of `if (!g_5093f4)` (retail places them after the
+// blend) 581; with the implied `|| opposite == NONE` dropped from the copy-first test 570 (kept, plain); fraction
+// assigned under `if (opposite != NONE)` 570; `second` as `opposite != NONE ? samples + opposite : NULL` tested
+// before the call (retail's `add esi, ecx; je`) 576; the fraction pieces alone 584; index second scan
+// (`j != nearest`) 726, with the fraction pieces 731. Retail-shaped body (index scans over
+// `source->entries[i]` with `i != nearest`, ternary `second`, override else arm): 661 at 2033 bytes (LCS-aligned
+// 564 against the old body's 987): position stays in EDX as retail, but VC shares one zero register for the
+// count test, `nearest` and `i` (`xor eax, eax; cmp ebx, eax` where retail has `test ebx, ebx` and separate
+// `xor edi, edi`/`xor eax, eax`) and keeps `nearest` in memory; with that body's first scan declaring y, x, z
+// (retail's x, y, z load order) 661; with vector3d_from_points3d/dot3f/length_sq3f in the second scan 661; a short
+// `nearest` (diagnostic: no zero merge, `nearest` in EDI, loop 1's registers as retail, but a movsx) 651, aligned
+// 294. Retail's 0x2c frame holds two vector3f homes (an x spill at +0x24 and delta.k at +0x38, which shares the
+// fallback vector's slots); every vector spelling here scalarizes fully (frame 0x20).
+// On the kept 570 body: first scan indexed (`samples + i`) 583; entries read inside the count == 1 arm (aligned 961 ->
+// 602, but source and position then arrive in EAX/ECX) 597; both 612; the retail-shaped body with the kept tail 664
+// (aligned 425); that body with one `samples` local 715.
 // Round 261: Coherent interpolation inline declaration, alone/with fraction-provider inline, each with
 // original/unsigned selected ordinals/zero-default fraction/both result forms: 608 each (2145/2122
 // bytes). All declarations and original body restored; count/selection/fraction homes and frame
@@ -881,80 +898,82 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
     long count = *(long *)((byte *)g_4e0344->bsp + 0x38);
     if (count > 0)
     {
-        if (g_5093f4)
+        if (!g_5093f4)
+        {
+            s_light_sample const *samples = source->entries;
+            if (count == 1)
+            {
+                copy_light_sample(samples, order, red, green, blue, direction);
+                return;
+            }
+            long nearest = 0;
+            real closest_distance = 1048576.0f;
+            s_light_sample const *nearest_sample = samples;
+            for (long i = 0; i < count; ++i)
+            {
+                real x = position->x - nearest_sample->position.x;
+                real y = position->y - nearest_sample->position.y;
+                real z = position->z - nearest_sample->position.z;
+                real distance = z * z + x * x + y * y;
+                if (distance < closest_distance)
+                {
+                    closest_distance = distance;
+                    nearest = i;
+                }
+                ++nearest_sample;
+            }
+            s_light_sample const *first = samples + nearest;
+            vector3f delta;
+            delta.i = position->x - first->position.x;
+            delta.j = position->y - first->position.y;
+            delta.k = position->z - first->position.z;
+            long opposite = NONE;
+            real other_distance = 1048576.0f;
+            for (s_light_sample const *opposite_sample = samples;
+                 opposite_sample < samples + count; ++opposite_sample)
+            {
+                if (opposite_sample != first)
+                {
+                    real x = position->x - opposite_sample->position.x;
+                    real y = position->y - opposite_sample->position.y;
+                    real z = position->z - opposite_sample->position.z;
+                    real projection = delta.k * z + delta.j * y + delta.i * x;
+                    if (projection <= 0.0f)
+                    {
+                        real distance = z * z + y * y + x * x;
+                        if (distance < other_distance)
+                        {
+                            other_distance = distance;
+                            opposite = opposite_sample - samples;
+                        }
+                    }
+                }
+            }
+            real fraction = opposite != NONE
+                ? function_022c30(&first->position, position, &samples[opposite].position) : 0.0f;
+            if (fraction <= 0.0f)
+                copy_light_sample(first, order, red, green, blue, direction);
+            else
+            {
+                s_light_sample const *second = samples + opposite;
+                if (fraction >= 1.0f)
+                    copy_light_sample(second, order, red, green, blue, direction);
+                else
+                {
+                    function_022750(second->red, order, first->red, red, fraction);
+                    function_022750(second->green, order, first->green, green, fraction);
+                    function_022750(second->blue, order, first->blue, blue, fraction);
+                    direction->i = (second->direction.i - first->direction.i) * fraction + first->direction.i;
+                    direction->j = (second->direction.j - first->direction.j) * fraction + first->direction.j;
+                    direction->k = (second->direction.k - first->direction.k) * fraction + first->direction.k;
+                }
+            }
+        }
+        else
         {
             memcpy(red, g_4b8940, sizeof(g_4b8940));
             memcpy(green, g_4b8964, sizeof(g_4b8964));
             memcpy(blue, g_4b8988, sizeof(g_4b8988));
-            return;
-        }
-        s_light_sample const *samples = source->entries;
-        if (count == 1)
-        {
-            copy_light_sample(samples, order, red, green, blue, direction);
-            return;
-        }
-        long nearest = 0;
-        real closest_distance = 1048576.0f;
-        s_light_sample const *nearest_sample = samples;
-        for (long i = 0; i < count; ++i)
-        {
-            real x = position->x - nearest_sample->position.x;
-            real y = position->y - nearest_sample->position.y;
-            real z = position->z - nearest_sample->position.z;
-            real distance = z * z + x * x + y * y;
-            if (distance < closest_distance)
-            {
-                closest_distance = distance;
-                nearest = i;
-            }
-            ++nearest_sample;
-        }
-        s_light_sample const *first = samples + nearest;
-        vector3f delta;
-        delta.i = position->x - first->position.x;
-        delta.j = position->y - first->position.y;
-        delta.k = position->z - first->position.z;
-        long opposite = NONE;
-        real other_distance = 1048576.0f;
-        for (s_light_sample const *opposite_sample = samples;
-             opposite_sample < samples + count; ++opposite_sample)
-        {
-            if (opposite_sample != first)
-            {
-                real x = position->x - opposite_sample->position.x;
-                real y = position->y - opposite_sample->position.y;
-                real z = position->z - opposite_sample->position.z;
-                real projection = delta.k * z + delta.j * y + delta.i * x;
-                if (projection <= 0.0f)
-                {
-                    real distance = z * z + y * y + x * x;
-                    if (distance < other_distance)
-                    {
-                        other_distance = distance;
-                        opposite = opposite_sample - samples;
-                    }
-                }
-            }
-        }
-        real fraction = opposite != NONE
-            ? function_022c30(&first->position, position, &samples[opposite].position) : 0.0f;
-        if (fraction <= 0.0f || opposite == NONE)
-            copy_light_sample(first, order, red, green, blue, direction);
-        else
-        {
-            s_light_sample const *second = samples + opposite;
-            if (fraction >= 1.0f)
-                copy_light_sample(second, order, red, green, blue, direction);
-            else
-            {
-                function_022750(second->red, order, first->red, red, fraction);
-                function_022750(second->green, order, first->green, green, fraction);
-                function_022750(second->blue, order, first->blue, blue, fraction);
-                direction->i = (second->direction.i - first->direction.i) * fraction + first->direction.i;
-                direction->j = (second->direction.j - first->direction.j) * fraction + first->direction.j;
-                direction->k = (second->direction.k - first->direction.k) * fraction + first->direction.k;
-            }
         }
     }
     else
@@ -1353,6 +1372,8 @@ bool function_0bfe60(dword const *flags, long bit);
 // flags are not what keeps retail's inline from ours; the slot read through a reference 52; the pixel count
 // as a long passed through a cast (0x20770's form) 52; the `continue` test after the bit-test block 139 (441
 // bytes); one `data` pointer shared by both draw calls 139.
+// Round 481: One invariant embedded bitset row before/after count admission with signed
+// long/short/byte/64-bit remainder storage 98/96/140/96/140/96/137/143. Original row lifetime and body restored.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

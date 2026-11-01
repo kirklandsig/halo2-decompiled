@@ -477,6 +477,11 @@ s_node_view *function_26be30(s_iterator *iterator);
 // (offset ECX, type EDX, early slot `lea eax`; 107 overall), without the inlined state reset it
 // keeps ours (152): the call ahead of the loop, not the zero register, tips the allocation. The swarm
 // test nested in two ifs 7; the swarm index read into a local inside the block for the call 7.
+// Round 67: shared slot with named type or callback declared first 10 each; with 0x28c before 0x278 12;
+// with a named swarm flag or nested swarm test and two-use perception index 10 each; with location after
+// the two stores 18; with 0x4fc before the 0x4ac test 14; plain while 10; handler local 10; callback field
+// at test and call through the handler local 10. The slot address still forms after the callback test and
+// only the nullable-slot mask changes; none of the prefix combinations moves it or the offset/type registers.
 // @retail 0x1e23c0
 void function_1e23c0(long actor_index)
 {

@@ -270,6 +270,15 @@ static inline real interpolate_linear(real a, real b, real t)
 // the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
 // the base: the declared current/following key pointers used for delta/offset/scale 225 (644 bytes),
 // with the fraction before the delta 225; identical switch cases merged in all four switches 209.
+// Lane 18 round 16 (one-link LTCG env with a copy-constructing entry, equal to the full listing; fast): fraction first
+// with both loop restart tests as `if (...) restart = true;` 197 (645 bytes: the loop and after-loop registers become
+// retail's, next time stays at -0xc and EBX holds the zero, only the two `restart = false` stores are missing); that
+// with animation.target read at each use instead of the keys local 197 (env: nothing else differs but those two
+// stores); fraction first with target at each use 207; that with elapsed before next time 206; fraction first with
+// `restart = false;` at the loop top and `if (...) restart = true;` 209 (649 bytes). Env only: any form that stores the
+// false restart (`restart = cond`, if/else, `cond ? true : false`, `type == 0 ? ... : false`, reset-then-if) keeps next
+// time in EBX with fraction first (aligned 30-46); dispose/restart predicates as inline helpers 576-607 bytes; on
+// the plain body, target at each use 96 (same registers) and `if (...) restart = true;` 206.
 // Round 142 (lane 4, fast): fraction first (diagnostic) 207; with no per-pass disposal reset 207; the
 // boundary disposal as `if ((valuee & 2) && type == 0) { dispose = true; break; }` 96 (same code), with
 // fraction first 207, with fraction first and no reset 207, with no reset 96; the key table read before

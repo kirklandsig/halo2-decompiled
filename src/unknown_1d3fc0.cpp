@@ -149,6 +149,17 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // placed after that vector's normalisation, also stops its preload: up.i read directly in the projection's i row
 // 126 (929 bytes, aligned 5), in the dot 126, in the cross after the second normalisation 120 (aligned 11). Lead: a
 // natural form that names up.i before forward.i is created without reading it after up's normalisation.
+// Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
+// 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
+// forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register
+// (retail: reciprocal in xmm6, `mulss xmm6, [k]`, k reloaded on the short path), also with k captured
+// before the sqrt, a `>=` test, an early return, `*=` products or the existing vector3f_scale; the
+// dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
+// harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
+// 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
+// Round 279: Complete independent orthogonalized scalar results before stores in all six
+// producer row orders 188 each; with all three removed products named 188, existing staged
+// cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
