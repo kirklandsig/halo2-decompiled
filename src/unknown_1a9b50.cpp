@@ -517,6 +517,8 @@ extern point2f *g_468778;
 // Round 249: Repeated actor/request truth snapshots, singly/both 400/401/394;
 // actor-first counterparts 402/425/415; both with late false default, original/actor-first
 // acquisition 426/429. All three predicate calls, early distance and complete original body restored.
+// Round 471: Complete persistent actor/settings/slot/prop lexical priorities in eight
+// role-correct identity sets 375 each. Original pointer names, observations and body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

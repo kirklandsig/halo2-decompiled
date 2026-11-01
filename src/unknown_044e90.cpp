@@ -99,6 +99,9 @@
 // Round 467: Full-width input ordinals entry/section/both, then both with live
 // selection fields, original storage 438/421/438/466; native eight-byte storage
 // 435/417/435/465. Four-point aligned lead rejected; original header and body restored.
+// Round 471: Native workspace list construction on eight-byte storage, original/reverse
+// object order and six field-group orders 573 each (1620 bytes). Constructor and native
+// alignment removed; original branch-local descriptor publication and full header restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
