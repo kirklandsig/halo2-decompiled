@@ -1233,8 +1233,8 @@ void __stdcall function_c2d00(long light_index)
     if (marker_index != NONE)
     {
         long marker_name = function_b8c40(*(long *)(light + 0x4c), marker_index);
-        bool first_person = (definition[0] & 0x20) != 0;
-        if (first_person &&
+        bool uses_weapon_marker = (definition[0] & 0x20) != 0;
+        if (uses_weapon_marker &&
             first_person_weapon_get_marker(*(long *)(light + 0x4c), marker_name,
                 (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8)))
         {
