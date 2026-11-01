@@ -285,6 +285,11 @@ struct s_free_state_23d260
 // forward/up pointers declared before the side vector and used for the side and up cross too 289
 // (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
 // pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
+// Round 55 (lane 10, fast): the side normalized through two-return j-first normalizers with the hand-written
+// up (k, j, i): sum `k*k + j*j + i*i` with every scale `inverse * x` 275; `i*i + (j*j + k*k)` with `k * inv`
+// 269; `j*j + k*k + i*i` with `(1 / m) * i` first 268; the `i*i + (j*j + k*k)` normalizer with cross3f_staged
+// and the forward vector written and read through one `forward` pointer 273 (1330 bytes, first difference +0xa6),
+// with the pointer for the writes only 281.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

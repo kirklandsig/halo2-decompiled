@@ -257,7 +257,7 @@ evaluate:
 // index into a local before the actor lookup, the reversed compare, a named actor local and the
 // separate-exit forms compile byte-identically (73) or worse (85-87 at 272-277 bytes); holding
 // the call out of line needs a noinline declaration in src/unknown_25d690.cpp.
-// score 73 (was 73): retail calls function_25d740 out of line (ECX node) and sinks the
+// Earlier: retail calls function_25d740 out of line (ECX node) and sinks the
 // ESI/EDI saves past each early exit; our build inlines it through the prop_node_view
 // wrapper, so the blocks are laid out differently. A single exit (`result = 0x10;` in the
 // near arm, `result = g_46fbe8;` in the far arm) with the slot's prop index read before the
@@ -388,6 +388,10 @@ evaluate:
 // (still inlined here, its other callers unchanged), with the single-exit form 88; the single-exit form 88
 // (278 bytes); the two outer tests joined with `&&` and the call in the else arm 88. BLOCKED-BY 0x25d740
 // (LTCG inlines it at this call site only). The slot cast at each use, as 0x1b82d0 reads it, 73.
+// Round 55 (lane 10, fast; 0x25d740 listed, call still inlined in every form): velocity declared at the
+// function's top 73; the far result assigned (`result = g_46fbe8;`) and returned at the end 78; view and
+// velocity declared right after the node lookup 73; the near test with the call in its else arm and no early
+// return 78; the prop compare as a guard return (`!=`) 73.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

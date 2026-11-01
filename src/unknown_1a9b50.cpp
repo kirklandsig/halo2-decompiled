@@ -525,6 +525,12 @@ extern point2f *g_468778;
 // constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
 // settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
 // first facing dot read off the prop view 408 (1556).
+// Round 55 (lane 10, fast): on the actor-first form with constant returns (393 re-measured): the slot pointer
+// declared first 393; the settings rejection as its own early return 410; the prop pointer declared with the
+// lookups at function scope 395; the prop pointer cleared in the prop-less else arm in place of its NULL
+// initializer 385 (the settings pointer then lives only at [esp+0xc] as retail's [esp+0x10], but arg_0 stays in
+// EBX and the prop goes to ESI; retail's `xor ebx, ebx` before the NONE test shows the NULL initializer is
+// retail's); the prop index in a named local 393.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

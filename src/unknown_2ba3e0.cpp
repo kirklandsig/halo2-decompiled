@@ -814,6 +814,13 @@ real g_55e618;
 // points, not kept); the velocity pointer form re-measured 194 (1541 bytes), with the dot through a
 // forceinline pointer helper 194 (identical: the helper's loads still merge, so the twice-read velocity.i of
 // retail is not an inline-boundary effect).
+// Round 55 (lane 10, fast): the particle struct typed (flags word at +2, reals at +8 and +0x34, read as
+// fields with no flags pointer) 99 (the flags test after the call then hoists as retail); that with the
+// collision word stored before the start stores 97 (five points, not kept); on that typed body: the
+// velocity pointer with real_point3d_set and perpendicular/tangent interleaved 195 (1539 bytes), in retail's
+// computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 182; the velocity pointer
+// alone 194; the velocity read at each use 198; real_point3d_set alone 242 (1570 bytes). On the untyped
+// body: the 179 form in retail's computation order 185 (1547 bytes, frame 0x124 again).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

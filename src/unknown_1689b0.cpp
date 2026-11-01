@@ -1556,11 +1556,6 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
-// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
-// Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
-// product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
-// the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
-// not retail's form. Original body kept.
 // score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain; the prism cursor is
 // anchored at point_count (retail at plane.j, prism + 0x14: every prism displacement differs by 0x14).
 // Retail keeps the zero in ESI (pushed first, reused as the prism pointer, based at plane.j where
@@ -1641,6 +1636,14 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // `shapes.prisms[index].field` with no prism pointer 686 (2956 bytes, zero to EBP, no cursor); the distance through
 // the existing plane_distance_to_point 620 (frame 0xb958); long counters declared count/radius by kind 571 (2890
 // bytes); word counters declared that way 551 (one point); the loop without the `counts[2] > 0` guard 555.
+// Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
+// product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
+// the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
+// not retail's form. Original body kept.
+// Round 55 (lane 10, fast; 0x120790 and 0x16a440 listed, unchanged): both point reconstructions through the
+// existing 0x120790 (retail inlines it here) 651 (2925 bytes); with long counters 640 (2917); with the distance
+// through plane_distance_to_point 644 (2918); with both 634 (2910); long counters and plane_distance_to_point on
+// this body 610 (2887 bytes, frame changes at +0x1).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
