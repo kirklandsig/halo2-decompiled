@@ -206,6 +206,14 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
 // the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
 // with field_10 first 133.
+// Round 108 (m3 lane 7, fast): compile-only, `fstp [m]` then `cmp reg, [m2]` folds under /G7 (flags lead, not
+// acted on) or with a code-less compiler barrier between them; with field_10 first and such a barrier (a
+// diagnostic, reverted at once) 32: everything to the child loop is then retail's, and what is left is the
+// child loop (retail loads the effect index into ECX and the vtable into EDX before the pushes, and loads
+// arg_2 again for the second list address). The ordinal passed as `local_5` without the short cast (as
+// 0x247950 writes it) 70 (same code); with the child's unknown08 as one ternary 98; with the child through
+// DATUM 70 (same code); with the first lookup through the inline particle_object_for_tag 69. A 600 s
+// permuter run (62 tries) found nothing below 70; its own baseline full build took 1162 s.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

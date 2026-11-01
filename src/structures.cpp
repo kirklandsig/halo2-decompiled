@@ -286,6 +286,16 @@ static __forceinline bool structure_bsp_collision_available()
 // retail function finds no other `mov r8, 1; jmp` to a `test r8, r8` past a call: only 0x14af40 shares it.
 // N round 257: Complete native collision output on the inverted probe graph, byte/bool result and bool/byte found, raw/native triangle sentinel 53/53/53/53/63/63/63/63.
 // Original record declarations, byte buffer and complete body restored.
+// Round 108 (m3 lane 7, fast): a `modeled` flag set from 0xbf9a0 in the else arm of the scenery test, then
+// `if (modeled) return 0x14a8e0(...)` and `if (!excluded)` requery 88 (found in BL, not the flag); `found = false`
+// at the join before `if (!excluded)` 77 (263 bytes, threaded); a short policy defaulting to 2, tested twice
+// 64; `excluded = false; if (type == 6) excluded = policy != 2;` with the model query and requery nested under
+// `if (!excluded)`, else `found = false` 69 (268 bytes); a `lightmapped` flag tested around the model query
+// and again around the requery 77 (263 bytes). Compile-only, all thread the join test. Compile-only probes:
+// VC threads the flag through struct copies, inline accessors, address-taken references and cross-module
+// (LTCG) inline helpers alike; only a side effect at the join (a store, even a redundant `result = false;`)
+// leaves the test un-threaded, and that store stays in the code. Diagnostic (not kept): the flag set in both
+// arms with `result = false;` before `if (excluded) return result;` 102 (302 bytes; flag in AL, not BL).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -836,6 +846,12 @@ done:
 // threading); the existing 0x10a0b0 called, with `inline` on its definition, 162 (stays out of line,
 // 0xd2a50 99); the flag and a `modeled` result set in if/else arms (false and the 0xbf9a0 result in
 // the eligible arm) 125 (same code).
+// Round 108 (m3 lane 7, fast): the flag as `type == 6 ? policy != 2 : false` 133 (470 bytes); `excluded = false;
+// if (type == 6) { short policy = ...; excluded = policy != 2; }` 133 (470 bytes); the scenery test as an empty
+// if-arm with the model query and requery as its else-ifs 125 (same code); the attempt limit as a `break` inside
+// `if (!result && (bit & 1))` 125 (same code); a named `modeled` bool from `!excluded && 0xbf9a0` 125 (same
+// code). Compile-only none of these keeps the flag in BL (VC threads it; a store at the join stops that, see
+// 0x14b120's note).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

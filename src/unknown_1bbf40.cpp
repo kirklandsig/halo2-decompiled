@@ -576,6 +576,15 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
 // g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
 // datum-index `continue` as a nested if 47 (same code).
+// Round 108 (m3 lane 7, fast): `special = false; if (type == 6) { if (byte) special = true; }` 202 (872 bytes);
+// `if (type == 6 && byte) special = true; else if (0x1b8d40 != NONE) goto done; else { special = false; ... }`
+// 200 (872); `special = false; if (type == 6 && byte) special = true; else { scan }` 202 (872); the raw-byte
+// bitwise def with `special = false` opening the scan and seat_object declared (NONE) before it 193 (862 bytes,
+// aligned 13: only the setcc def and the AL/CL tail register left), with the false after the 0x1b8d40 test 193
+// (aligned 14); on that seat placement, `type == 6 ? byte : false` 211 (877), `special = false; if (type ==
+// 6) special = byte;` 97 (861 bytes, aligned 12: entry exact to +0x87; left the setne def stored to the slot,
+// the tail reading memory and the 10.0 temporaries' homes). Every constant (branchy) def keeps the flag in
+// memory at the tail; retail's `mov cl, 1` with the split spill is still unreproduced.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
