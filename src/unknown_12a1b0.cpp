@@ -1307,6 +1307,12 @@ struct s_looping_detail_request
 // at each use 141 fast; the draw through _random with file and line 139 fast (same code); `player_count != 0` 139 fast;
 // `while (skip != 0)` 139 fast. The query stays inlined in all five. Diagnostic: an extra inlined vector add in the
 // audible arm leaves it inlined too (607 bytes), so it is the call site's static frequency, not an inline budget.
+// Round 128 (m3 lane 6, plain): retail calls 0x14dde0 from seven sites (0x1132f0, 0x125b40, 0x1391ed, 0x1df3e0,
+// 0x219ed0, 0x240820 and this one) and inlines it at four (0x11b350, 0x13c250, 0x15c150, 0x225730); only this
+// site differs. 0x14dde0's body as `return local_player_next_inline(NONE);` (same bytes, larger before folding)
+// 127, every caller unchanged; the count test as `>= 1` 128, as `!= 0` (diagnostic) 127, the query still
+// inlined; the definition index named once for the lookup and the audible arm's call 159; the camera position
+// as one pointer local for the add and 0x11bed0 125 (two points, not kept).
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1596,6 +1602,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 0x11c; the second loop keeps index and track index in EBX/EBP and &sounds[i] in EDI where retail keeps
 // the track definition in EBP and NONE in EBX, and `active` spills); with that and the 0xa0 request 374
 // (frame 0x12c: the `active` spill is the one extra slot). The pitch sum still adds the lower bound first.
+// Round 128 (m3 lane 6, plain): retail's frame is 16 scalar slots, the two arrays and a 0xa0-byte request with
+// nothing shared (0x40 + 0x48 + 0xa0 = 0x128); ours has 17 slots (playback and `active` spilled, no count) and the
+// 0x90 request. Retail's count slot lets playback die before the second pitch-range loop, so `active` takes EDI
+// there and NONE sits in EBX. Tried: `gains` declared before `sounds` 305 (identical code); one count local read
+// before each loop 460 (1939 bytes, frame 0x128, playback in EDI as retail, but the iterator counter spills and
+// &sounds[i] takes EDI); that with the gain through the existing decibels_add 481 (1955 bytes, frame 0x12c);
+// the 0xa0 request with decibels_add 432 (1939 bytes); all three 481 (1955 bytes, frame 0x13c).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

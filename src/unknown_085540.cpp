@@ -1143,6 +1143,15 @@ bool function_68670(byte *source, long size, void *block);
 // (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
 // live from the test into the cases (reloaded after the payload read); ours coalesces it with the
 // long size in ESI.
+// Round 31 (m3 lane 2, fast): case 2 as the switch's default (no __assume) 144; the case-0 copy
+// with the payload count declared before its test 129; the payload read using header.size at each
+// use 116 (554 bytes); the count decrement as the for loop's step 171 (483 bytes); payload declared
+// before the header with the case-0 copy 137. Diagnostics (grouping structs, reverted at once): the
+// header, the case-0 copy and the payload in one record 49 (frame 0x1445c); the header and the copy
+// in one record 39 at 553 bytes (the header escapes through the sent copy: retail's frame, header
+// homes and in-memory ring updates). Left there: the size in SI where retail has DX, because ours
+// forwards the stored ring start (EDX) into the second read where retail reloads it, and the case-0
+// copy scheduling and 0x68670 argument order that follow from it.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

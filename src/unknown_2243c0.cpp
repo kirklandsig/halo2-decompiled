@@ -325,6 +325,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // `lea` and its zero grouping all appear, but arg_3 stays in EBP (retail ESI, arg_4 EBP), block 2's address is
 // loaded early and the material index is not copied through ESI; with the flags read just before 0x173ba0 the check
 // hung in Wine (unmeasured).
+// Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
+// the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
+// element's field through a named `long const *` 117 (same code); the pass block's address named right
+// before its read (`local_passes`, retail reads it after the second ordinal) 117 (same code), with the grouped
+// zeros 120, with the masked fallback 152.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

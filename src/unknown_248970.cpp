@@ -281,6 +281,20 @@ public:
 // head assigned before the initialization with the separate allocation local 95; the break as the init test's
 // `else` 54 (same code). Diagnostic: the file without /Ob1 and the existing 0x2483f0 called for the link 301
 // (670 bytes: 0x1751d0 inlines and 0x2483f0 stays a call), so /Ob1 is right.
+// Round 31 (m3 lane 2, fast; 0x175270, 0x2483f0 and 0x248cc0 checked each time): the link through the
+// existing 0x2483f0 with a forceinline declaration here 301 (still a call); with 0x2483f0's
+// inline_depth(1) wrapper also dropped 301 (still a call; 0x2483f0 and 0x248cc0 still match); with the
+// wrapper dropped and `inline` on 0x2483f0's definition 261 (712 bytes: 0x2483f0 is inlined with
+// retail's salt/difference link shape, but the location becomes an EBX register argument, the flag
+// goes to the stack, the frame is 0x0c and 0x175270 drops to 100); on that, head set before the
+// break test 248, and without the position pointer 261. The inline_depth(1) wrapper is what keeps
+// 0x2483f0 out of line in this /Ob1 file; the inlined link brings the same convention change as the
+// hand-written and helper forms. All restored.
+// Round 147 (m3 lane 4, fast, with 0x175270): the pool global read at each use (no pool local) 54 (same code);
+// the pool local declared before the loop and assigned at its top 54 (same); the handle as
+// `(salt << 16) | (element - data)` in place 176 (716 bytes: frame 0x0c, the location held in EBP, metadata
+// spilled); that with `head = child_index;` before a break test on head 248 (location an EBX register argument,
+// 0x175270 100); the break as the initialization test's `else` 54 (same).
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

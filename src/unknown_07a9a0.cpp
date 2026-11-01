@@ -352,6 +352,11 @@ void function_07b3e0(void)
 // non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
 // retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
 // file's /Ob1 keeps them out of line here: a flags decision).
+// Round 129 (m3 lane 6, fast): the scan and the datum index both reading the global at each use (no pool
+// local) 45 (126 bytes: LTCG hoists the two reads into one EBP and drops the final reload); with
+// index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);
+// diagnostic file-local step copies passing `iterator->data` to the scan and using a `data` copy for the
+// datum, and the reverse, 58/58 (the copies coalesce into one pool register, as the iterator form).
 // @retail 0x7b430
 void function_07b430(void)
 {

@@ -345,6 +345,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 188 (fast; a compile-only screen reproduces the integer roles): dot_product2d taking (point,
+// normal) at its definition and both calls 42; case 1 through fabsf 42; the index declared beside the
+// state 42; both of the first two 42; case 1 returning 2 directly 70 (the index takes EDX as in retail,
+// but the extra exit path moves the layout). Compile-only: all 24 declaration orders of first, line,
+// state and the index, each with both dot parameter orders, keep EDX/ESI for state/index.
 // Round 46 (lane 1, fast): a braced case 0 with `vector2f *normal = &line.n` for the dot only, and for the
 // normalize too, 42/42 (same code); j stored through it, with the normalize by name or through it, 44/44 (304
 // bytes); the loop test `state != 2` 43; the loop on `i < count` alone with case 1 returning 2 88 (301 bytes).

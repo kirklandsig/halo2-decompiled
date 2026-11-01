@@ -637,6 +637,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // colour at -0x2c and text_bounds at -0x38; text_bounds declared in each block that uses it, after/before the colour
 // locals 114/114 (homes unchanged); that with the bool timer 191 (1888 bytes); flash declared at the phase block top
 // 114 plain (fast crashes on that source). Diagnostic: a volatile `left` scrambles the entry (468).
+// Round 128 (m3 lane 6, fast; control 114): on the bool timer (191, 1888 bytes) `left` is still stored as a
+// dword (retail `mov word ptr [ebp-0x3c], ax`) and the scripted flag still packs at -2: `left` assigned in two
+// statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
+// rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
+// code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
