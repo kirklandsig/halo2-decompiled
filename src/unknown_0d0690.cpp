@@ -216,6 +216,14 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // all pairs and all three 162/162/179/162/180/180/180; original real-narrowed terms
 // in double scalar carriers 186. Original contribution and color ownership restored.
 // Round 183: shared vector add, either input owner, and unit add-scaled in place 93/93/93/93; separate native sum output, plain/scaled and either owner, 188/188/188/188. Original accumulation restored.
+// Round 68 (lane 9, fast): colour first alone is retail's code everywhere except the post-call add (ours
+// reloads the power, adds the strength to it and copies back: 3 instructions, +7 bytes) and the ecx/edi
+// pair; an opaque call (volatile function-pointer diagnostic, reverted) after 0x131c20 or `&color` escaping
+// before the loop does not change that add. Trials:
+// a power value read once with the entry pointer (strength = power in the first-light arm; test, divide
+// and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
+// `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
+// strength declared inside the lights branch 139.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

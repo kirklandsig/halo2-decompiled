@@ -275,6 +275,12 @@ public:
 // with the entry locals 115; the pool local declared, then assigned 95; `return` for the break 95. On 54: the inline
 // 0x2483f0 call 298; head and offset in the for-init 53; `head = child_index;` before the break test, testing head
 // 118 or child_index 118 (both make the location an EBX register argument); the link element from `child_index` 54.
+// Lane 9 round 67 (fast, which reproduces 54 with 0x175270 matching): the salt-and-difference link with the
+// location parameter read through its address at the link 166 (location stays stacked, but frame 0x10, 717 bytes);
+// child_offset alone in the for-init 67; head taking the allocation directly (init and break test on head) 95;
+// head assigned before the initialization with the separate allocation local 95; the break as the init test's
+// `else` 54 (same code). Diagnostic: the file without /Ob1 and the existing 0x2483f0 called for the link 301
+// (670 bytes: 0x1751d0 inlines and 0x2483f0 stays a call), so /Ob1 is right.
 // Round 31 (m3 lane 2, fast; 0x175270, 0x2483f0 and 0x248cc0 checked each time): the link through the
 // existing 0x2483f0 with a forceinline declaration here 301 (still a call); with 0x2483f0's
 // inline_depth(1) wrapper also dropped 301 (still a call; 0x2483f0 and 0x248cc0 still match); with the

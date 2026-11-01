@@ -639,6 +639,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
 // tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
 // where retail starts a new group after origin (-0xd).
+// Lane 9 round 67 (fast, which reproduces 114): `left` computed after the split-screen top adjustment 125; the
+// address-taken rectangles: retail homes text_bounds at -0x24 just below the scalars and the colour at -0x34, ours the
+// colour at -0x2c and text_bounds at -0x38; text_bounds declared in each block that uses it, after/before the colour
+// locals 114/114 (homes unchanged); that with the bool timer 191 (1888 bytes); flash declared at the phase block top
+// 114 plain (fast crashes on that source). Diagnostic: a volatile `left` scrambles the entry (468).
 // Round 128 (m3 lane 6, fast; control 114): on the bool timer (191, 1888 bytes) `left` is still stored as a
 // dword (retail `mov word ptr [ebp-0x3c], ax`) and the scripted flag still packs at -2: `left` assigned in two
 // statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two

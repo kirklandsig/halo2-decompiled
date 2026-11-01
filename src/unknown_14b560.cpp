@@ -2771,6 +2771,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // iterator's datum (no player local) 103 (same code); the root walk as a while loop 103 (same); `last_unit =
 // unit` 141 (596 bytes); last_position copied before last_unit is set 101 (two, not kept); the root walk
 // starting from the unit's parent 159 (625 bytes).
+// Lane 9 round 67 (plain; fast controls 193 here): loop 1 through the real 0x6b380 180 (562 bytes: LTCG keeps
+// it out of line there too, so the inline copy stays); loop 2 reading iterator.datum_index at each call 103
+// (same code); the busy tests as `a && b` expressions 117; loop 1's unit test as a nested block instead of
+// `continue` 103; single exit (countdown and status tests enclosing, `if (!failed)` store) 103. Diagnostic:
+// 0x6b380 built without link-time code generation 146, ten matched callers lost (it is LTCG in retail).
 // Round 50 (lane 1, plain checks): with the final store aimed at another global (diagnostic) 88: the
 // prologue then matches; left are loop 1's datum/unit in ESI/EDI swapped and NONE not kept in EDX after
 // the 0x16bc00 call (retail `or edx,-1; cmp eax,edx`, reused for the NONE store, the last-unit test and

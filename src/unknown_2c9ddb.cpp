@@ -69,7 +69,7 @@ extern long g_55c154;
 // 0x216a50 call that follows; our link inlines the copy into a wcsncpy call plus a terminator store, and 0x13fac0
 // lives in another lane's file. The two-arm rewrite again 174 (595 bytes, `this` in EDI spilled to [ebp-4], EBX
 // takes the 1<<index shift, `variant` moves to [ebp-0x154], the frame flips to `mov ebp,esp` with `sub esp,0x254`).
-// score 61 (was 61): biased 0x250 frame agrees; creation classification spill
+// Earlier at 61 (from 61): biased 0x250 frame agrees; creation classification spill
 // and expanded string copy remain. File-type result 61; word classification 69;
 // direct source argument 61; unsigned saved handle 61; result plus word 69.
 // creation classification spill and copy inline boundary;
@@ -142,6 +142,11 @@ extern long g_55c154;
 // two-arm form the callee-saved registers rotate (`this` ESI and spilled, entry EDI, saved EBX, EBX also caching
 // zero in the first half and &g_54e4a0 in the second, where retail pushes immediates): retail's EBX `this`,
 // ESI entry, EDI saved only appear with the one-load body.
+// Round 69 (m3 lane 9, fast): retail's two load arms on the plain body 174 (595 bytes: EBX takes the constant
+// 1 in the first half and `saved` in the second, `this` moves to EDI and spills, unbiased frame); on it: the
+// first half's selection in its own local with a fresh `selected` in the second half 174, entry->variant read
+// directly in the second half 174, the name buffer declared just before the second half 174, `saved`
+// declared at the top 174 (all the same code).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
