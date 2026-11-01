@@ -717,6 +717,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 232: isolated unit-test blocked/ready result at its short-circuit boundary,
 // bool/byte/short/long storage, 89/89/89/89 and 89/89/89/89. No native result
 // width recovers the initial unit-argument register or later scalar/query homes; restored.
+// Round 235: native signed/unsigned word/long exit-result producers at final observation
+// and entry-declared with original-site assignment: 89 each. Original final global
+// observation and complete body restored; initial unit-call scratch rotation remains.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

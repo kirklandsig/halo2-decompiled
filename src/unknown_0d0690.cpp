@@ -1441,6 +1441,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 232: Ordered normalizer single-result zero/magnitude defaults, direct/shared
 // scale, forced/ordinary inline: 530 each (caller 457/413 versus 364). Original
 // returned-length contract, helper, all inputs and full body restored.
+// Round 235: uniform published-length field consumers with combined admission/entry-base/
+// late-result subsets 0-7: 577/562/569/564/571/571/577/570. All regress both caller
+// levels; original local length, selection, helper graph and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
