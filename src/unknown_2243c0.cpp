@@ -309,6 +309,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // code); the stage/pass parameters as named const copies at the top 117; the first ordinal as `word`
 // 117; the pass element's field as `[1]` of a long pointer 117; the group test through
 // `g_4e3b44[(short)local_tag]` with no instance local 165.
+// Round 57 (lane 16, fast): the group tag read once into a named dword tested twice 165 (first difference +0xe);
+// the first ordinal read straight from block 0's address 117; the geometry test as an early return 117; the
+// cached pointers compared field first 119; no byte alias of the definition (casts of arg_0) 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

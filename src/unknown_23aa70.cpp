@@ -316,6 +316,13 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // caller 158, but the index is loaded into BX and re-extended per case, so format 4 forms a pointer again); as
 // `dword` 175; the decode written as a macro (no parameter temporaries) 175; the index read once through its own
 // address into a local used by every case 175; the bounds as three lo/hi pairs 175.
+// Round 57 (lane 16, fast with 0x14a8e0), formats 3 and 4 indexed unless noted (175, flipped): one function-scope
+// byte `vertex_data` assigned in every case and cast per access 175; the cases written in reverse order 176 (same
+// layout); format 4's decode and node store as one forceinline helper taking the records and index 175; format 4
+// through `data`/`offset` locals re-forming the base at each access 89 (retail's convention and format 3's EBX
+// offset kept, but format 4 re-associates to `offset + index*8` plus data and forms a pointer again, and the EBP
+// push sinks into format 2), with `offset + data` 89. Diagnostic: format 2's node store before its decode with 3/4
+// indexed 194 (still flipped): only format 4 keeping base and index live across its decode flips the node to EBX.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

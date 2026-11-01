@@ -738,6 +738,17 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // count local, index scope, mask/slot spellings, nested tests, `players + i`, nested tail); const parameter,
 // function-scope or shared index, the size macro (5). Frame alignment comes from the players memset (no
 // effect). Flags: only /O1 and /Os give EBX, with different code.
+// Round 57 (lane 16, fast with the inlined callees): the two block addresses named inside a `flag4f20` block that
+// jumps to the result store 22 (same code: the second lea still follows the first test); the buffers declared
+// before the variant 22 (same code); a `for` copy loop bounded by `session->member_count` 138 (session ESI);
+// 0x6ec80's live-and-flag opening as an inline out-pointer getter 46 (opening schedule, summary lea and mask temp
+// become retail's; session ESI, index EDI, cursor EBX); that with a `for (i < member_count)` copy loop and one
+// index shared by both loops 108 (477 bytes). Diagnostics: a plain `for` copy loop on this body 100 (477 bytes:
+// the copy loop, its prologue and the out-cursor lea become retail's, the summary lea and mask temp stay rotated,
+// the player loop folds the mask read); the getter opening with a `for` copy loop and the 0x49c8 argument as 0
+// gives retail's EBX/ESI/EDI and retail's code up to the player loop (97): only the folded mask read and the
+// player loop's argument temporaries (out ECX, summary EDX for retail's EAX/ECX) remain, so retail's form looks
+// like that opening plus the `for` copy with the session ranked below the index.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
