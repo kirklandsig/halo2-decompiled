@@ -539,8 +539,6 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 	actor_looking_rotate_in_place(vector, axis, sine, cosine);
 }
 
-// score 333 (was 333): this round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
-// random/trig and vector schedules still differ.
 // score 333 (was 333): the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // Tried: direct collision Boolean 355; initial best vector before normalization 356; result declared first 354;
 // long sample counter 355; axis/sample/range names 355; shared normalizer 330 (sum order changed, restored);
@@ -591,6 +589,13 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
 // 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
 // but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Lane 18 r14 (one-link LTCG env with the callee-closure objects, exact for this function: env count 326 = check
+// 333): collision type at 0x5c 324; with byte clear 328; byte clear 330; byte clear set first in each pass 334;
+// that with 0x5c 329 (late EBX push, byte clear in AL); yaw-axis pointer local before the loop 334, with 0x5c 333;
+// rotation helper with the j/k cross terms first and i in its row: vector 328, scalars 326 (same code), 0x29c860
+// spelling 328, k before j 329 (0x297d30 22/22/22/38, control 22); candidate copy before the draws 327, between
+// them 343; fraction as `((real *)&collision)[1]` 326; best_fraction declared before result 326 (same code).
+// Retail also holds g_4687b0 in ECX across the loop and keeps best.k in a stack slot.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -767,6 +772,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case 2's remembered 0x1e3b00 block (case 1's copy cross-jumps into it; the 0xcafc0 blocks stay apart).
 // N round 257: Actual marker output at function/case/valid-reference/aiming lifetime, original/two-use marker-key observations 322/322/322/322/322/322/322/322.
 // Original marker lifetime, key reads and complete body restored; fast control 322, full 276.
+// Lane 18 r14 (one-link LTCG env with 333 objects, exact for this function: env count 233 = check 276; the
+// 0x1ffe00 call now pushes both arguments as in retail): the first difference is point_valid's byte (ours below
+// result, retail above); eleven renames of either flag (a_, zz_, valid_point, has_point, success, found ...)
+// leave the homes unchanged; `bool result = false; bool point_valid = false;` 235, point first 233, `point_valid =
+// result = false` 235, flags before the actor lookup 235 / point first 233. Case 2 with its own remembered-prop
+// copy (retail keeps two) 228 at 1484 B: retail's order up to its 0x1e3b00 call, but case 1's copy does not
+// cross-jump into it, so the direction/output tail still follows the shared copy; the tail written inside case 2
+// is byte-identical (228).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1370,6 +1383,10 @@ struct s_actor_looking_turn_request
 // 543 (on 442); first/second before the unit index 442; turn request declared with them 442; override
 // result as `if (0x2967b0(...)) { valid = true; forced = true; }` 535. Retail also packs first/second into the
 // two vectors' slots (as if they lived in an inlined helper's scope).
+// Lane 18 r14 (one-link LTCG env with 351 objects, exact for this function: env count 411 = check 442; a plain
+// noinline declaration of 0x1fdd90 here changes nothing): the side test as `if (first == A || first == B)
+// { bool current_side = first == A; ...` 464 (retail's threaded side stores); bool valid 519; that with the side
+// test 517; bool looking_valid 513; both bool 516; both with the side test 515.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

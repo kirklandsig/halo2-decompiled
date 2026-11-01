@@ -580,6 +580,14 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // move no slot); the dead pathfinding store dropped 204 (1056 bytes; retail has the store, sharing
 // the sine's slot); the sector index read at the trace call 265; the rotation helper __forceinline
 // 90 (identical); the pathfinding pointer as a ternary 217.
+// Lane 18 r14 (one-link LTCG env, exact for this function: env count 70 = check 90): rotation helper with the j/k
+// cross terms first and the i term in its row, in place as a vector 75, as scalars 75, on component copies as a
+// vector 75, as scalars 70 (same code as now); each with the ring phase named before the distance 78/78/78/125;
+// the current helper with the named phase 125. On the vector form with the phase (rotation core and SSE ring
+// conversion as retail, radius copied through integer registers): plain radius 213, sector index first with a
+// plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
+// helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
+// below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

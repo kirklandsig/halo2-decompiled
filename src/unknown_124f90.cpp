@@ -2026,64 +2026,46 @@ bool function_12be90(void);
 /* advances the sound system's clock and the ambience fades, and fades the
    master gain out while the game asks for it (after its delay) and back in
    once nothing is busy */
-// score 30 (was 30): retail reloads elapsed_time after function_12be90 (ours keeps it in xmm0;
-// BLOCKED-BY 0x12be90, whose file another lane holds), so the fade-in clamp and every jump
-// after it differ; the fade-out clamp's two subtractions sit in swapped registers. Tried:
-// elapsed_time stored before seconds 28 (top then exact); the products' * and / swapped 30;
-// fade-out through PIN_126660 74, as PIN_126660 + fade 68, fade + PIN_126660 68, via SOUND_SYSTEM
-// 68; a change local before the step 77; fade-in without the elapsed local 44. Every value-first
-// fade-out merges retail's two return tails.
-// conversion and clamp registers, elapsed reload differ; shared quotient 30;
-// shared elapsed 79; both time values 79; shared change 74; quotient/change 74; shared lower bound
-// 74; quotient/lower bound 74; all clamp values 74.
-// Round 32 (fast): elapsed_time stored first 28 (conversion copy then retail's); with it: the fade-out
-// through approach_126660 72; `fade = fade + PIN(...)` 28; value-first clamp (value < lower) 68 (retail's
-// copy/zero registers, but the two return tails merge and the add reloads the fade into XMM1); the same
-// with lower-first branch arms 72, written result + fade 68, named clamp result 68; a fade local read
-// once 65 (tails kept, fade held in XMM3); fade local for the clamp only 71. The whole function alone
-// in a /GL- file 111 (retail keeps EDX across 0x12be90, so its register use is known there).
 // @retail 0x1269f0
 void sound_system_update_time(void)
 {
 	dword now = GetTickCount();
-	s_sound_system_view *sound_system = SOUND_SYSTEM;
-	long elapsed = now - sound_system->field_14_2;
+	long elapsed = now - SOUND_SYSTEM->field_14_2;
 
-	sound_system->field_14_2 = now;
+	SOUND_SYSTEM->field_14_2 = now;
+	SOUND_SYSTEM->elapsed_time = (real)elapsed / 1000.0f;
 	real seconds = (real)elapsed * 0.001f;
-	sound_system->time += elapsed;
-	sound_system->ambience_fade += seconds;
-	sound_system->elapsed_time = (real)elapsed / 1000.0f;
-	sound_system->previous_ambience_fade += seconds;
+	SOUND_SYSTEM->time += elapsed;
+	SOUND_SYSTEM->ambience_fade += seconds;
+	SOUND_SYSTEM->previous_ambience_fade += seconds;
 	if (g_4e6948 && g_4e6948->flag1120 && g_4e6948->state == 1)
 	{
 		if (g_4e6948->flag1121)
 		{
-			if (sound_system->master_fade_delay == NONE)
-				sound_system->master_fade_delay = (long)(sound_system->master_fade_times.i * 1000.0f);
-			if (sound_system->master_fade_delay > 0)
+			if (SOUND_SYSTEM->master_fade_delay == NONE)
+				SOUND_SYSTEM->master_fade_delay = (long)(SOUND_SYSTEM->master_fade_times.i * 1000.0f);
+			if (SOUND_SYSTEM->master_fade_delay > 0)
 			{
-				sound_system->master_fade_delay = sound_system->master_fade_delay - elapsed > 0 ? sound_system->master_fade_delay - elapsed : 0;
+				SOUND_SYSTEM->master_fade_delay = SOUND_SYSTEM->master_fade_delay - elapsed > 0 ? SOUND_SYSTEM->master_fade_delay - elapsed : 0;
 			}
-			if (sound_system->master_fade_delay == 0)
+			if (SOUND_SYSTEM->master_fade_delay == 0)
 			{
-				real step = sound_system->elapsed_time / (0.001f > sound_system->master_fade_times.j ? 0.001f : sound_system->master_fade_times.j);
+				real step = SOUND_SYSTEM->elapsed_time / (0.001f > SOUND_SYSTEM->master_fade_times.j ? 0.001f : SOUND_SYSTEM->master_fade_times.j);
 
-				sound_system->master_fade += PIN(0.0f - sound_system->master_fade, 0.0f - step, step);
+				approach_126660(&SOUND_SYSTEM->master_fade, 0.0f - SOUND_SYSTEM->master_fade, step);
 			}
 		}
 		else if (!function_12be90())
 		{
-			real fade_seconds = sound_system->elapsed_time;
-			real step = fade_seconds / (0.001f > sound_system->master_fade_times.k ? 0.001f : sound_system->master_fade_times.k);
+			real step = SOUND_SYSTEM->elapsed_time / (0.001f > SOUND_SYSTEM->master_fade_times.k ? 0.001f : SOUND_SYSTEM->master_fade_times.k);
 
-			approach_126660(&sound_system->master_fade, 1.0f - sound_system->master_fade, 0.0f - step, step);
-			sound_system->master_fade_delay = NONE;
+			approach_126660(&SOUND_SYSTEM->master_fade, 1.0f - SOUND_SYSTEM->master_fade, step);
+			SOUND_SYSTEM->master_fade_delay = NONE;
 		}
 	}
 	else
 	{
-		sound_system->master_fade = 1.0f;
+		SOUND_SYSTEM->master_fade = 1.0f;
 	}
 }
 
@@ -2149,7 +2131,9 @@ void sound_update_locations(void)
 /* moves the sound system's two environments toward the two requested:
    each request takes the slot already holding it or a faded-out one and
    fades it in over its transition time; slots no request takes fade out */
-// score 14 (was 17): retail adds the clamped unknown18 step through a copy
+// score 13 (was 14): retail adds the clamped unknown14 step in place and the fade-in step through a
+// copy register; ours does the opposite, so the two sites trade xmm1 and xmm2.
+// At 14 (was 17): retail adds the clamped unknown18 step through a copy
 // register and adds the clamped unknown14 step in place; ours does the
 // opposite, so the two sites trade xmm1 and xmm2.
 // Round 29: target-first helper on the first three/four clamps 33/33; forceinline 33;
@@ -2176,6 +2160,10 @@ void sound_update_locations(void)
 // Round 34 (lane 13, real check): kept the round-33 screen's best: the first loop's step without its
 // transition-time local, the unknown18 add as `+=` and the unknown14 add through the helper, 17 -> 14
 // (left: the unknown18 add is in place and the unknown14 add goes through a copy, retail the reverse).
+// Lane 18 round 14: approach_126660 takes (value, delta, maximum) and forms the lower bound after the
+// delta (every caller passed `0 - x, x`; 0x1269f0 matched with it). With the round-34 mix 29; all 64
+// helper/`+=` choices for the six adds screened (LTCG probe): all six through the helper 13 (kept, plain),
+// helper except the second loop's fade 13, unknown10/fade-in/fade-out as `+=` 14; none of the other 60 below 14.
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
@@ -2219,12 +2207,12 @@ void sound_environments_update(s_sound_environment const *requests)
 				{
 					real maximum = step * k_pi;
 
-					approach_126660(&environment->unknown0c, request->unknown0c - environment->unknown0c, 0.0f - maximum, maximum);
-					approach_126660(&environment->unknown10, request->unknown10 - environment->unknown10, 0.0f - maximum, maximum);
+					approach_126660(&environment->unknown0c, request->unknown0c - environment->unknown0c, maximum);
+					approach_126660(&environment->unknown10, request->unknown10 - environment->unknown10, maximum);
 				}
-				environment->unknown18 += PIN_126660(request->unknown18 - environment->unknown18, 0.0f - step, step);
-				approach_126660(&environment->unknown14, request->unknown14 - environment->unknown14, 0.0f - step, step);
-				environment->fade += PIN_126660(1.0f - environment->fade, 0.0f - step, step);
+				approach_126660(&environment->unknown18, request->unknown18 - environment->unknown18, step);
+				approach_126660(&environment->unknown14, request->unknown14 - environment->unknown14, step);
+				approach_126660(&environment->fade, 1.0f - environment->fade, step);
 				environment->transition_time = request->transition_time;
 				environment->index = request->index;
 				used[slot >> 5] |= 1 << (slot & 31);
@@ -2242,7 +2230,7 @@ void sound_environments_update(s_sound_environment const *requests)
 			real transition_time = environment->transition_time > 0.001f ? environment->transition_time : 0.001f;
 			real step = sound_system->elapsed_time / transition_time;
 
-			environment->fade += PIN_126660(0.0f - environment->fade, 0.0f - step, step);
+			approach_126660(&environment->fade, 0.0f - environment->fade, step);
 		}
 	} while (++i < 2);
 }
