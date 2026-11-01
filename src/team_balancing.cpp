@@ -913,6 +913,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // loaded first); the extra-first sum with the clamp's subtraction written in place 45 (192 bytes); the fill
 // bound `i != total` 35; the maximum test as `party_indices[i] + 1 >= next_party` 35. Re-measured
 // (diagnostic, value-changing): `(short)next_party` in the fill 7 with retail's roles.
+// Round 279: standard maximum element selection, reduction/copy first, maximum/reverse-minimum
+// comparator, if/conditional lower bound: 72/80/84/94/78/87/84/90.
+// Original combined scan, fill and clamp restored; count ownership remains.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
