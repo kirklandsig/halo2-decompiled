@@ -441,6 +441,9 @@ static inline bool teams_enabled_19e1c0()
 // Round 449: Complete player/team/other token dispatch results, bool subsets 1..7
 // 454/454/454/454/454/454/454; all with ordinary final result 736 (fast control 390, full 390).
 // Original complete executable source restored; opening structural differences remain.
+// Round 451: Separate positive/rejected maximum-score gates with short/long opponent
+// counter and inherited/ordinary result storage: 388/388/421/421/691/691/688/688. Best two-point gain rejected; original
+// scan, result and full body restored; frame and independent name-copy tails remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

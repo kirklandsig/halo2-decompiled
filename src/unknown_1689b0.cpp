@@ -1663,6 +1663,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 445: Native double radius-minimum/nearest-separation/normalization result domains,
 // seven subsets and full-width-count graph: 651/641/678/621/643/681/697/763.
 // Original complete executable body restored.
+// Round 451: Edge-reconstruction endpoint declarations at entry/radius/prism/producer
+// scopes, original and complete endpoint role names: 552/552/552/552/552/552/552/552. Original declarations, names and
+// complete body restored; sum homes, query zero and prism anchor remain.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
