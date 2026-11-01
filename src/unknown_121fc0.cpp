@@ -181,6 +181,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
 // mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
 // delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
+// Round 47 (m3 lane 14, fast): diagnostic, the token declared NULL at the block top and stored to a global
+// after the success block: 129 at 779 bytes, but aligned 51 -> 40, `push ebp` at the block start with ESI/EDI
+// and popped after the g_4e3b40 store as retail (a compile-only screen agrees: only a token live across the
+// whole block moves the save; token scope, a for walk, the loop after the success block, a nested first-token
+// test do not); the search as `j < count && found == NONE` 214 (758 bytes); the search index tested after a
+// `break` loop (no found index) 132; the count and unique declarations swapped 128; both counters declared
+// before the token array, unique first 127.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
