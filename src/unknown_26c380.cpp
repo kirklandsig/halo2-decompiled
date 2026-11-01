@@ -666,6 +666,10 @@ bool function_210690(short output_index, point3f const *point, point3f *out);
 // in contributor code). With this order: point read directly 35, plus start first 2. With this
 // signature: start and result first 37; that through one `point3f const *` read of `&point` 37;
 // point read directly 28 here but five matched callers lose their argument setup.
+// Round 52 (fast only, not kept): an unused last parameter (the pathfinding data, which 0x26d0e0 receives as its
+// unused third argument and 0x26d570 computes before its call) is dropped by LTCG: every caller's code unchanged,
+// 28. Kept only with every call passing it: BLOCKED-BY 0x270400 (two call lines in contributor code); a
+// defaulted parameter would avoid them but needs a ruling. The plain check hit a Wine hang; body restored.
 // @retail 0x26d100
 long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
 {

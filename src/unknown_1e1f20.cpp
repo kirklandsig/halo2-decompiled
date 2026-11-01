@@ -631,7 +631,7 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
-// score 285 (was 285): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
+// score 281 (was 285): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
 // Earlier: Frame 0x20 agrees; early actor-pool allocation, cleanup and slot homes remain.
 // frame 0x1c versus 0x20, early actor/pool allocation,
 // cleanup countdown and slot homes remain.
@@ -773,6 +773,14 @@ void swarm_leader_detach(long actor_index);
 // 0x18, 0x54) through it 291 (974 bytes); the prop-list clear through it 290; 0x1e1740's slot-local
 // loop 261 (same code). 0x258600 takes the actor index in EDI in both builds. Still BLOCKED-BY
 // 0x26ed40 (inlined in retail, kept out of line by its file's flags).
+// Round 132 (lane 6, plain): the prop-owner scan through the existing record-pool iterator
+// (data_iterator_next_inlined) in place of the hand-expanded index scan and NULL test 281 (kept;
+// 981 bytes; the found block now sits out of line as in retail); on that: the prop walk through
+// prop_node_get at each use 284; through one prop_node_get pointer local 290 (965 bytes); the
+// participant index read at each store 299 (997 bytes); the scan through the datum iterator 281
+// (same code); every actor read through a fresh actor_get with no actor local 310 (1012 bytes, but
+// aligned 153 against 190: frame 0x20, index EDI, callback ECX and the spilled offset are then all
+// retail's, and only retail's cached actor pointer in EBP is missing).
 // Round 67 (lane 16, plain each): every function in 0x258600's callee closure (0x258540, 0x258480, 0x16ba40) is
 // matched, so that lead is not a stub or unmatched body there; 0x2628f0 (a direct callee) and deeper 0x1e3b60,
 // 0xcc810, 0x203bf0 and 0x28f8d0 are unmatched. A named bool for the definition bit (`bool counted = definition
@@ -780,6 +788,9 @@ void swarm_leader_detach(long actor_index);
 // 352 (1028 bytes: frame 0x20 and the cursor spilled to +0x14 as retail, but the actor offset and index fold into
 // one `index * 0xb6 + i` multiply instead of retail's spilled offset plus an i*12 IV); that with a short memory
 // index 371 (1044 bytes); the bit tested as `*definition & 8` 285; 0x203ed0's argument as `value != 0` 285.
+// Y488: native actor members at 0x10/0x1c/0x3f4, seven subsets and
+// all with short bounded cleanup ordinal, eight 261 against fast control 261.
+// Real type and complete body restored; ordinary 285, frame/actor/cleanup homes remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
@@ -824,12 +835,12 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		record_pool_release(g_502418, current);
 	}
 	actor_get(actor_index)->first_prop_index = NONE;
-	long index = NONE;
-	while ((index = data_next_absolute_index_inlined(g_50241c, index + 1)) != NONE)
+	s_record_pool_iterator prop_iterator;
+	byte *prop;
+	prop_iterator.data = g_50241c;
+	prop_iterator.index = NONE;
+	while ((prop = data_iterator_next_inlined(&prop_iterator)) != NULL)
 	{
-		byte *prop = g_50241c->data + g_50241c->size * index;
-		if (!prop)
-			break;
 		if (*(long *)(prop + 0x1c) == actor_index)
 			*(long *)(prop + 0x1c) = NONE;
 	}

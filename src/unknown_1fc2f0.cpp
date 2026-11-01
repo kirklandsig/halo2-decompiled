@@ -398,6 +398,16 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // place as retail, first difference +0x65, but the i/j stores, the k product and the correction differ);
 // that with the delta through scaled_difference3f(state velocity, velocity, 1.0f, delta) 59 (366 bytes; the
 // correction then forms all three products before the load-first adds as retail), with `(real)ticks` 56.
+// Round 48 (m3 lane 11, fast): every stage through the existing helpers (vector3f_add_scaled into a predicted
+// point, vector3d_from_points3d, vector3f_scale by the ticks, vector3d_from_points3d for the delta, the delta
+// scaled in place then vector3f_add) 57: retail's whole store/delta/sum shape, colours rotated as with the
+// 1.0f scaled_difference3f delta (ticks and k XMM4, i XMM2, j XMM3 where retail has XMM3/XMM4/XMM2); that
+// with the 1.0f scaled_difference3f delta 57; the delta copied per component then subtracted in place, k, i, j,
+// 34; the predicted point with a `long ticks` local and deltas k, i, j 30; that with the delta copied i, k, j
+// then subtracted k, i, j 29 (366 bytes). Screen only: local names, declaration order, ticks
+// or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
+// (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
+// XMM4); `delta = velocity;` then in-place subtractions 82-90.
 // Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
 // deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
 // then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain
@@ -417,6 +427,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // locals, declaration orders, short/inline/early conversion on the scaled_difference3f delta all identical; rate
 // products staged before the conversion with that delta 51+ positional; ~450 random prediction/delta/correction
 // combinations none below the round 46 form.
+// Round 24 (lane 17, fast): diagnostic dead temps 1-7 on this body 32 each (identical code: the temp count that
+// sets SSE operand orders elsewhere does not reach this body). Round 181's 46 form rebuilt (rate stage j, k, i,
+// conversion, k subtraction, i subtract/scale/delta, j subtract/scale, k scale, deltas j, k): 46 at +0x78, and its
+// whole difference is k's tick product (ours multiplies into the dying tick register, retail multiplies v.k in place
+// and copies it to XMM3) plus the correction block (retail: scale in XMM1, j/k scaled in place, all three products
+// before the load-first adds); on it dead temps 0-7 46 each; k's product written `tick_scale * velocity.k` 46
+// (canonicalised); the conversion after k's subtraction 64 (369 bytes); the correction through the existing
+// vector3f_scale + vector3f_add 70.
 // Round 48 (m3 lane 11, fast): every stage through the existing helpers (vector3f_add_scaled into a predicted
 // point, vector3d_from_points3d, vector3f_scale by the ticks, vector3d_from_points3d for the delta, the delta
 // scaled in place then vector3f_add) 57: retail's whole store/delta/sum shape, colours rotated as with the

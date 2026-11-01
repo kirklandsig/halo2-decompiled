@@ -94,6 +94,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // bool output declared at function scope 209 (975 bytes); the actor local for the equal-arm
 // unknown040 store 256 (955 bytes); a fresh actor lookup for the unknown4ae store 176 (985 bytes);
 // the prop position pointer named once for 0x1ac610 and 0x210ac0 227. Original body restored.
+// Round 54 (lane 10, plain; fast is unusable here, control 209): result declared first 187; both
+// 0x1f4a20 flags declared before the 0x262b40 result 9 (same code); the five cleared flags as one
+// chained assignment 13; the result declared right before the search-result test 58; the 0x1af530
+// range output declared at the top of the found branch 9 (same code).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

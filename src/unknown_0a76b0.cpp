@@ -1066,6 +1066,11 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 }
 
 /* starts throwing a grenade (type 22) */
+// MiniMax E (11-01): 16 with the unit's ordinal masked once into a local and the table entry read
+// through it as a raw address cast (`*(s_unit_action_unit **)(g_4e0300->data + ordinal * 12 + 8)`) in all
+// three lookups, so they use retail's address operand order, and the result stored before the action's
+// flag store; not kept (an address-cast read stays only with a byte match). The exit block still follows
+// the notice block; retail has it before the notice block, which ends with its own copy of it.
 // score 19 (was 272): Frame, setup and width domains agree; success pop/store/result schedule and
 // failure-branch spans remain. The slot index masked once into a local and the macro's lookup
 // written out by hand at its three uses gave 16 (not kept: a hand copy of UNIT_ACTION_UNIT_GET).
@@ -1349,6 +1354,17 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // getter functions 198; header->unit at every use 218; a data-pointer local for the slot lookup 198/188.
 // Retail's `mov ecx, edx` copy of the data register before the second unit load is in no other retail
 // function (byte search).
+// Round 46 (lane 13): the 0xcbd50 argument through a header-array local 148, through the `unit` local 148,
+// `long has_other = function_cbd50(...) != NONE` 148, the slot read through a fresh lookup 148 (all the same
+// code: locals are copy-propagated and every lookup shares one load); is_vehicle before has_other 189 (608 B,
+// loop padding). The hand straight to 0xd0870 (203) is retail's code at that call, but the body is then 585 B
+// and the positional score rises; the entry's second unit load is the structural cause (a compile-only
+// harness also merges it for inline getters taking the pool, the data pointer or the index);
+// `function_ee8a0(unit_index, primary)` 197 (591 B); the state name as a ternary 188 (604 B, but a branch
+// and jump where retail stores the 0x288 field and then overwrites it).
+// Round 324: lexical receiver/hand/paired-weapon home subsets 1-7, then all with
+// the companion-weapon test named by its role, 148/148/148/148/148/148/148/148. Original body
+// restored; early pool load, second unit lookup and hand lifetime remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1511,6 +1527,8 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax E (11-01): no new form, no lower score; the entry block keeps the same eleven
+// instructions in a different order in every form tried.
 // score 11 (was 29): only the entry block's order differs (retail loads the global and the
 // actions pointer before `cmp ecx, 8; sete bl`). Tried: unit_action_active() 95; primary
 // declared first 11; primary inside the block 82; a unit local 90; an early-return guard 11;
@@ -1581,6 +1599,14 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // Round 187: a pool local for the hand getter's lookup (function top, after the hand, after the slot
 // read) 167 each (517 bytes: ours then shares one lookup and keeps the request in EBP); for the slot
 // read's lookup instead 167.
+// Round 46 (lane 13): the hand weapon through the existing 0xcbd50 with the slot read as its argument 157
+// (527 B); weapon_index renamed to sort before mode 138 (same code: the homes do not follow names here);
+// `result = false;` right after the getter with one `return result` 171 (517 B: the NONE path is no longer
+// jump-threaded, as in retail, but the weapon takes EBP and the pool is not kept); `if (weapon_index == NONE)
+// return false;` 142 (524 B); a typed request struct for the byte at +4 138 (same code).
+// Round 324: lexical weapon/mode/slot home subsets 1-7, then all with the Boolean
+// flag named by its animation role, 138 each. Complete original body restored;
+// same-block pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1761,6 +1787,13 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // weapon through the local 118 (318); the local declared in the block or the player index read at the top 85 each;
 // every lookup through the local with the nested exit 123 (314). A throwaway inline helper with its own pool copy
 // (diagnostic) 122: its copy is propagated and all lookups merge.
+// Round 114 (m3 lane 7, fast): a single-exit `result = false` at the top with `given` declared in the weapon block
+// and `result = given;` at its end 121 (314 bytes: frame 0x20, retail's hoisted `xor al, al` and given in BL with
+// `mov al, bl` exits, but the unit stays in ESI and the second lookup reuses it, so unit_index never gets EBP); on
+// it the unit through a header pointer local 121, `return given;` inside the block 107 (328, loses the hoist), the
+// weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
+// data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
+// player unit 96, inside the weapon block 121, with the player index read in place 87.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -1895,6 +1928,7 @@ PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *re
 // 0xe9370 and 0xe9500 (score 139 each; round 58: 127 and 129, both 389 bytes) were 17 bytes short through unit_action_pause, which
 // reaches function_e7020 (that one matches since its overlay lookup stays out of line).
 /* pauses a unit's animation (type 23) */
+// MiniMax E (11-01): no new form, no lower score.
 // score 127 (was 127): saved EBX/result BL still replace retail scratch ECX/stack byte;
 // sentinel, channel flags and completion homes differ. False-first bool/byte/short/long
 // completions 135/129/142/139; true-first 127/133/153/149. True-first bool kept;
@@ -2152,7 +2186,9 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// score 235. Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
+// score 235 (was 235): Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
+// Frame 0x14 agrees; pool/index/type/name homes remain.
+// Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
 // shared actions receiver 328; single exit with hand/bit 315; per-use speed with hand/bit 302.
@@ -2170,6 +2206,17 @@ __forceinline char unit_action_round(real value)
 // first-person name through EBP/EDI/EBX (ours EDI/EBX/EBP, then type EBP vs EBX), the is_biped/result
 // stack bytes swap (0x13/0x12), `current` in ESI vs EAX, the frame-count products' order and the
 // lunge-speed division from memory.
+// Round 46 (lane 13): `real seconds = frame_count * 0.033333335f;` then `seconds * (real)field_2_3` 234 (retail's
+// product order; in one expression VC reassociates to field*frames*k); with the lunge speed read at each use too
+// 234 (both blocks are then retail's code, one line off for retail's result byte store); with first_person_name
+// = NONE declared first and the short-slot hand getter 314 (1195 B; the entry is retail's except pool/offset/NONE
+// in EDI/EBX/EBP where retail has EBP/EDI/EBX); with a function-top pool local as well 314; is_biped renamed to
+// sort after result 235 (same code: ours keeps result in a register, retail in the stack byte at 0x12).
+// On the seconds and per-use speed form: the two animation exits merged into one `goto done` 277 (1213 B);
+// TEST_FIELD_BIT on the 0x1b test 249 (1193 B).
+// J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
+// Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
+// all with success at the final return 278. Sub-eight forms and all other trials restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2760,6 +2807,8 @@ void function_a8b10(long unit_index);
 
 /* takes a unit out of its vehicle seat: detached, its weapon back in hand,
    its exit animations */
+// MiniMax E (11-01): no new form, no lower score; the reduced image builds this one
+// differently (88 there, 9 in the full build), so only a plain check can score it.
 // score 9 (was 68): 483 bytes as retail. Earlier: score 68 (477 bytes, retail 483). With 0xe0070's loop written with a found flag (lane 14 round 12;
 // not kept, a test-set flag is kept only with a match) it scored 9 and only scratch registers differed:
 // retail eax/ecx for the 0xcbd50 slot read, edx for the 0xee460 push and eax/ecx for the two seat pushes;
@@ -2910,6 +2959,9 @@ transform4x3f *function_ba160(long object_index, transform4x3f *matrix);
 
 /* the end of a vehicle exit: the unit leaves the seat with its exit
    animation's velocity */
+// MiniMax E (11-01): matched (was 35, plain-confirmed): the channel's animation id read into a local
+// before the call, the velocity components as named reals scaled in place, and the sums
+// up * z + left * y + forward * x.
 // score 35 (was 103): Frame 0x40 and retail length agree; the graph chain is in EDX (retail EBX, the
 // animation id loaded early into EDX) and the velocity loads run k, j, i (retail i, j, k; the sums
 // then start with up * k). Graph at call 103; complete component preload
@@ -2937,18 +2989,28 @@ void __stdcall function_eac90(long unit_index, bool hurried, bool push)
 	vector3f velocity;
 	transform4x3f matrix_storage;
 
-	state->animation_velocity_get(state->channels[0].animation_id, state->channels[0].frame_position * 0.033333335f,
+	c_type_709360 animation_id = state->channels[0].animation_id;
+
+	state->animation_velocity_get(animation_id, state->channels[0].frame_position * 0.033333335f,
 		state->channels[0].rate, (long)graph, &velocity);
 
 	transform4x3f *matrix = function_ba160(unit_index, &matrix_storage);
 	vector3f world;
 
 	real scale = matrix->scale;
+	real velocity_x = velocity.i;
+	real velocity_y = velocity.j;
+	real velocity_z = velocity.k;
+
 	if (scale != 1.0f)
-		vector3f_scale(&velocity, scale, &velocity);
-	world.i = matrix->up.i * velocity.k + matrix->left.i * velocity.j + matrix->forward.i * velocity.i;
-	world.j = matrix->up.j * velocity.k + matrix->left.j * velocity.j + matrix->forward.j * velocity.i;
-	world.k = matrix->up.k * velocity.k + matrix->left.k * velocity.j + matrix->forward.k * velocity.i;
+	{
+		velocity_x *= scale;
+		velocity_y *= scale;
+		velocity_z *= scale;
+	}
+	world.i = matrix->up.i * velocity_z + matrix->left.i * velocity_y + matrix->forward.i * velocity_x;
+	world.j = matrix->up.j * velocity_z + matrix->left.j * velocity_y + matrix->forward.j * velocity_x;
+	world.k = matrix->up.k * velocity_z + matrix->left.k * velocity_y + matrix->forward.k * velocity_x;
 	function_ea8e0(unit_index, hurried);
 	unit->linear_velocity.i += world.i;
 	unit->linear_velocity.j += world.j;
@@ -3745,6 +3807,8 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax E (11-01): no new form, no lower score; a plain check confirms the full
+// build inlines 0xe5750 here too (the unit read before the call: 72, 110 bytes).
 // score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67).
 // Early guard, comparison local, byte/long/short type, const pointer and header lookup
 // all 72; direct post-call unit lookup 52.
@@ -4738,6 +4802,8 @@ void function_edfa0(long unit_index, point2f const *facing)
 }
 
 /* faces a unit along its aiming direction */
+// MiniMax E (11-01): no new form, no lower score; the same helper without the zeroed
+// length (26) and the symmetric operand order (13) keep the commuted multiply.
 // score 13 (was 24): retail stores x before it loads y (`movss xmm2, y; mulss xmm2, xmm0`); ours
 // multiplies y into the inverse's register and stores both after. Tried: the products as `*=` or
 // in any operand order 13; normalize2d_fast 13; `else length = 0.0f;` before the test, either arm
@@ -5019,6 +5085,8 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
+// MiniMax E (11-01): no new form, no lower score; the reduced image scores 54 where the
+// full build gives 70.
 // score 70 (was 70): the first difference is inside the body of function_1058b0,
 // which is inlined here but lives in src/weapons.cpp, so the object lookup and
 // the tag table are read through different registers than retail. The 12 extra bytes are the

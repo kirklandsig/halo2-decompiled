@@ -32,6 +32,25 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// Round 150 lead (best 2, not kept: needs a match): forward's k preload follows how later code reads
+// forward.k. One read of the matrix field `local_1[0].forward.k` in the projection's k row (or the dot's k
+// term), with the i/j rows through `forward`, gives retail's whole forward block (j, i preloaded, `mulss
+// xmm6, [k]`, skip-path k reload, sum j, i, k). On it, one helper for all four with the squared length in
+// its own local (`real squared = dot3f(v, v); real length = sqrt(squared);`) gives every sum and the
+// projection retail's order: 2 at 922 bytes (plain), left only the dot's i term (retail `forward.i * up.i`,
+// ours up first). Not kept: the k row read through the field while i/j use the pointer is a mixed read.
+// Real: k-row field read alone 64 (926 bytes); with a k,j,i statement-sum second helper for up/left 11
+// (923); the squared-length helper alone 154. Compile-only on the 2-form: all six dot term orders x
+// operand orders, statement-sum dots, the k field read in the dot instead, 1-32 unused-local probes before
+// forward/up/dot/projection/cross (move only the term order), renamed pointers, the helper's scale order
+// and operand order (48), else/`>=`/division/sqrtf/`*=`/vector3f_scale bodies, the cross written out or
+// cross3f_staged, the pointer taken after the normalization: the i term stays up-first every time.
+// Direct field reads of forward.i/j anywhere in the block (dot, projection or cross) drop their preloads.
+// A 600 s permuter run on the 2-form got 8 tries (machine load), nothing better. Real on the 2-form:
+// helper `inline` 2, dot3f(up, forward) 2, the field read in the dot's k term instead 2, forward and up in
+// one declaration 2, a left pointer for the cross and its normalization 4 (compile-only). A field read
+// anywhere in the function (even a dead one in another branch) drops that field's preload; a read of
+// another array element's forward.k does nothing.
 // Earlier: magnitude order, reciprocal/SSE carriers and projection schedule remain.
 // Retail sums the forward magnitude j,i,k (k loaded late, reloaded on the short-vector path) and the
 // other three k,j,i; in this /Ob1 file every sum compiles i,j,k whatever the source order (dot3f,
@@ -132,6 +151,20 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // then retail's); original products with the j, i, k accumulating sum 111. Lead: with k, i, j products and the
 // j, i, k accumulating sum, forward's x87 sum and its j/i registers are retail's; the remaining gate is forward's k
 // preload (retail scales k from memory into the reciprocal's register and reloads it on the short path).
+// Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
+// 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
+// forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register
+// (retail: reciprocal in xmm6, `mulss xmm6, [k]`, k reloaded on the short path), also with k captured
+// before the sqrt, a `>=` test, an early return, `*=` products or the existing vector3f_scale; the
+// dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
+// harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
+// 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
+// Round 435: up-first split receiver declarations on the returned-receiver/direct-left graph,
+// crossed with early uninitialized projection/reciprocal and loop-entry receiver lifetimes,
+// eight contexts 110 each. Actual input reads and assignments stay in place; all forms restored.
+// Round 279: Complete independent orthogonalized scalar results before stores in all six
+// producer row orders 188 each; with all three removed products named 188, existing staged
+// cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
 // Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
 // helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
 // j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k
@@ -141,6 +174,23 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // orders x every operand spelling) never drop the k preload and the spelling never matters; the dot's argument
 // order and all six projection row orders compile the same; distinct in/out pointers, products through
 // locals and a magnitude helper compile like the control.
+// Round 133 (m3 lane 6, fast with the file's callees listed): forward's k preload goes away when the dot reads its k
+// term from the matrix field while i and j come through the pointer (`forward->i * up->i + forward->j * up->j +
+// local_1[0].forward.k * up->k`): 64 (926 bytes, aligned 56 -> 25; forward's whole block is then retail's, k formed as
+// `inv * [k]` with the short-path reload). On it, a second helper summing `m = k*k; m += j*j; m += i*i;` for up, up and
+// left (forward keeps the j-square helper) 2 at 922 bytes; the only difference left is the dot's i term (retail copies
+// forward.i and multiplies by up.i, ours copies up.i). A mixed read, so not kept without the match. On the 2 form: the i
+// term spelled up-first, the dot in j, k, i order, parenthesised groupings (four), the projection's k row through the
+// field: 2 each (same code); the other field/pointer mixes in the dot 72-159; forward helper scale orders j,i,k /
+// i,k,j / k,i,j 11/140/139 and k,j,i in the second helper 80; unused-local probes before forward (1-9, 11, 13, 15),
+// up (1-4, 6, 8, 10, 12, 14) and the dot (1-7) 2, or 4 at 9/11/13 and 10/12/14 (they swap the dot's k and i terms, never
+// the i operands); a permuter run (10 tries in 629 s after its own 1015 s baseline build) nothing below 2. Rule found: a
+// direct field mention makes that field's symbol oldest (so up.i read directly flips the i term to retail's order) but,
+// placed after that vector's normalisation, also stops its preload: up.i read directly in the projection's i row
+// 126 (929 bytes, aligned 5), in the dot 126, in the cross after the second normalisation 120 (aligned 11). Lead: a
+// natural form that names up.i before forward.i is created without reading it after up's normalisation.
+// Round 291: up evaluated before forward, returned/pre-call receiver masks and symmetric
+// dot roles, 112/112/153/153/112/112/153/153. Original helper and body restored.
 // Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
 // 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
 // forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register
@@ -152,6 +202,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 279: Complete independent orthogonalized scalar results before stores in all six
 // producer row orders 188 each; with all three removed products named 188, existing staged
 // cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
+// Round 291: up evaluated before forward, returned/pre-call receiver masks and symmetric
+// dot roles, 112/112/153/153/112/112/153/153. Original helper and body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

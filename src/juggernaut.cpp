@@ -309,6 +309,11 @@ void c_juggernaut_engine::v15(long player_index)
 // on the player index 85; the removal call on the masked index too 8; renaming the player index
 // (index, player) or the masked index (player_absolute_index, slot_index) with the masked-index
 // test 8 each.
+// Round 70 (--fast): the test shifted as `1u << absolute_index` 81 (the keep path's shift is still
+// CSE'd with it, `or ecx, edi`; the inlined removal's `~(1 << index)` never is); a long-parameter
+// inline twin of the test called with the masked index 81, the twin masking the datum index itself
+// 81; no masked-index local (each use masks the player index) 85 (the test shifts by bl and the
+// mask is computed per path); both indices declared at function scope with the masked-index test 8.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {
