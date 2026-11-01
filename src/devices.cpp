@@ -772,6 +772,16 @@ struct s_device_machine_view
 // device and definition with word-local masks 122, the same order on the lane S form without the zero store
 // 34 (same code); `__assume(group != NULL)` after the group pointer (as matched 0x187450) with word-local
 // masks 122 (no colouring change); `(group_flags & 1) == 1 && (group_flags & 2) == 2` 122.
+// Round 127 (lane 5, fast): word-local masks + the 0x1200055f zero store re-measured 122 (pushed ESI);
+// `__assume(group != NULL)` after the lookup on it 122 and on the lane S form 34 (same code: it is no
+// third reference); the lane S bits masked straight from the field 34 (same code). Matched 0x107870
+// loads the same two bits with `mov ax, [ecx+2]` into another register than its pointer (no lead).
+// Round 48 (lane 10, fast): on the lane S form, the bits local as `word` 34 (same code), with the
+// 0x1200055f zero store 117 (657 bytes; the listing is then retail's except the 3-byte longer
+// `movzx eax, byte [eax+2]; and eax, 3` for retail's `mov ax, [eax+2]`, so the score is a shift);
+// the zero store alone re-measured 117; the bits local `dword` without the `& 3` plus the zero store 122
+// (a full `movzx eax, word [esi+2]` and still the pushed ESI, so the conflict is not the 16-bit width);
+// `group->flags & 3` read directly without the word local 34.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

@@ -212,6 +212,11 @@ void function_44720(void)
 // transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
 // re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
 // the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
+// Round 47 (lane 10, fast with 0x45560 listed): on the level-at-call form (135, 487 bytes) the structure global
+// read in each lookup branch 135 (0x45560 190 -> 246); the transform index written at the 0x45ce0 call 163; the
+// material as a ternary 140; the selected material written at the 0x41040 call 135. On the current form: the
+// structure global in each branch 107 (same code; 0x45560 246); the material as a ternary 127. Retail's 0x45560
+// reads the structure global and the flags above the instance test, its 0x44c90 inside each branch.
 // Round 32: 0x458d0's matched lookup loads the structure global once above its branch, so the per-branch
 // reloads are this function's own; retail's loop callees reach none of the global's writers. Level test at
 // the call 135 (frame, slots and EDI/EBP/EBX roles retail's); with the lookup given `&g_4ba138[(short)index]`
@@ -221,6 +226,11 @@ void function_44720(void)
 // Round 467: Accepted entry level named at its original read in long/short/word/byte,
 // used by admission and cached submission predicate 155/151/151/152; predicate at its
 // submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 52 (lane 1, fast with 0x44720): on the level-at-call form (re-measured 135, 487 bytes) the material
+// index as a long 132; that with the lookup given `&g_4ba138[(short)index]` 130 (510 bytes); with the weight
+// also a long 145; the entry as `g_4ba138 + (short)index` 135. On the current form the material index as a
+// long 126. Retail's material index takes EAX after the in-place `and eax, 0xf` (the lookup re-reads the
+// flags); ours loads it into ECX and keeps the flags in EAX through the lookup.
 // Round 113 (lane 8, fast with 0x44720/0x45560): retail's helper flags reads do not share the level
 // test's read (diagnostic only, a volatile flags read in the helper with the level at the call: 121, 494
 // bytes, with retail's in-place `and eax, 0xf`, per-path flags reloads and per-arm g_4e0348 loads), while

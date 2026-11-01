@@ -700,6 +700,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // scan's loop test 310 (1077 bytes); an early-return session guard 32 (same code). On 28 (after the full
 // check): the swap's update through the `update` local 28 (same code); the occupied key through the loop-top
 // `player` 291.
+// Round 148 (fast, on the swap order (collection, player, update, other) at definition, declaration
+// and call: 32, the swap call and the occupied block's head as retail): a dword second-loop index 32
+// (`jb` for retail's `jl`); the occupied key as `&collection->players[i]` 32 and `collection` taken in
+// the else branch only 32 (both same code); `collection` declared before the second loop 276 (1072 bytes:
+// the key becomes a spilled `collection + 4` and the cursor offset goes); 1, 2, 3 or 8 unused locals at
+// the function top, the second loop's top or before `slot` 32 each (code-neutral numbering probes, so the
+// key sum's grouping is no symbol-order tie: retail ranks `collection` with the loop invariants).
 // Round 109 (lane 8, fast; aligned = difflib count, base 8): on the swap order above (36 in its notes, 32 now,
 // aligned 15): the second-loop player as a const pointer 32 (28 without the swap order, same code); the occupied
 // record's key copied before its type/index stores 37; the occupied record's update as `update = updates +

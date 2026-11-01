@@ -176,6 +176,10 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // Round 59: the facing mode through a field reference/pointer 7 each; the release reference through a field
 // reference/pointer 7 each; one actor-index address read at the facing/release call 7 each; the data block
 // through its array's address 7; one actor-index reference shared by all three calls 7. All neutral.
+// Round 148 (fast): the release reference through a fresh actor getter 57 (286 bytes); the readiness as an
+// if/else of two stores 78 (254 bytes); the null-view and already-complete tests merged into one guard 8;
+// the facing call in an else of its guard 7; named facing/point pointers for the call 7 (same code); a 600 s
+// permuter run (fast, anneal, 80 tries), none below 7.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {

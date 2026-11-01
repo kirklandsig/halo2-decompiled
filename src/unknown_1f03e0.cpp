@@ -497,7 +497,18 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
 // (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
 // (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
+// Round 108 (m3 lane 7, fast): the selected normal copied by value 189 (997 bytes; compile-only it gives
+// retail's XMM1/2/0 first cross but adds the copy); `break` after the selected == 0 arm 122 (same code); the
+// two dots inside the compare 122 (same code); the averaging arm first (`selected == NONE`) 187 (980 bytes);
+// `selected != 0` arm first ending in `break` 164 (975 bytes). Ours already stores i/j/k from the same
+// registers in both selected arms, yet VC does not cross-jump them (compile-only too); retail's merged tail
+// starts at the g_4687b0 reload after the i store.
 // J218: Existing staged-cross output setter/three-contact output-pointer scaled-add/native scratch values, seven subsets, then scratch value assignment: 122/122/122/199/199/199/199/199. Pointer-result staged cross, forced/ordinary inline, exact-only: 122/122. Original complete body restored.
+// Round 50 (lane 10, fast with 0x1201a0 and 0x1f2e60 listed): the averaging result as one `*out = dot_a < dot_average
+// ? *a : average;` copy (no `support`) 201 (996 bytes); `a`/`b` declared in each branch 306 (1027 bytes); the first
+// cross through 0x1f087b 122 (same code); the `selected != 0` arm first 164 (975 bytes, as before); the compare
+// written `dot_average > dot_a` 122 (same code); dot_average computed before dot_a 122 (same code). Ours hoists the
+// g_4687b0 reload into each selected arm (each computes j, k, i), so the arms' j/k store tails are not shared.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)

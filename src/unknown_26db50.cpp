@@ -580,6 +580,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // move no slot); the dead pathfinding store dropped 204 (1056 bytes; retail has the store, sharing
 // the sine's slot); the sector index read at the trace call 265; the rotation helper __forceinline
 // 90 (identical); the pathfinding pointer as a ternary 217.
+// Round 126 (m3 lane 6, fast with the file's 13 matched functions): the angle with the ring term first 90, the
+// distance with the ring product first 90, the distance without the double cast 90, both term orders 90 (all the
+// same code); a named ring phase written as the angle's first term 143 (1088 B; retail's SSE ring conversion, the
+// rotation then spills).
 // Round 109 (lane 8, fast; aligned = difflib count 60): the angle with the ring term first 90; the distance
 // with the ring product first 90; both 90; the distance as `(double)radius * 1.2 + radius * (real)ring` 90;
 // `(real)(radius * 1.2 + ring * radius)` 90 (all same code: VC canonicalises the operand orders, and the
