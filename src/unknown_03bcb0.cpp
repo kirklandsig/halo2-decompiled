@@ -899,7 +899,7 @@ void function_12d50(bool scaled, real const *projection, real *output);
 point3f g_4c1b08[4];
 
 #pragma inline_depth(0)
-PRIVATE __forceinline void draw_quad(void)
+PRIVATE __forceinline void submit_quad_vertices(void)
 {
     D3DDevice_Begin(D3DPT_QUADLIST);
     D3DDevice_SetVertexDataColor(9, 0xffffffff);
@@ -972,7 +972,7 @@ long __stdcall function_3bf20(s_slot *slot, byte *data)
     D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
     D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
     D3DDevice_SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-    draw_quad();
+    submit_quad_vertices();
     D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x1010101);
     D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
     D3DDevice_SetRenderState(D3DRS_STENCILENABLE, 0);
