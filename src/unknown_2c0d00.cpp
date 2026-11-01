@@ -1069,6 +1069,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
 // `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
 // the second offset's vector from the start computed first 349.
+// Round 443: repeated native byte/word/long/dword side-index values at entry
+// 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
+// radius, traversal, predicates and complete body restored.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1457,6 +1460,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // is chosen, no initialiser 469 (1757 bytes); the one-step arm with its own `return` 444 (same code);
 // the copy-last block after the loop through two gotos 444 (same code: its placement is not source
 // order); the next-step pointer only inside the corner branch, the fallback indexing points[next] 478.
+// Round 443: zero-extended word type with short/word/long/dword link results,
+// at typed selection 493/493/492/492; at native emission with common stores
+// 517/520/517/517. Complete record, signed domains and body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

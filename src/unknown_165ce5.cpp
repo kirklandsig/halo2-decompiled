@@ -1592,6 +1592,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
 // All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
 // J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
+// Round 443: complete overlay-clear/start/idle decision results, seven bool
+// subsets and the complete long set, 220 each (fast control 220, full 218).
+// Original decision expressions, clock reads and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

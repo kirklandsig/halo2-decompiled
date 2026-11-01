@@ -592,6 +592,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
 // Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
 // queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 443: phase-specific final/surface/material output receivers, seven
+// pointer subsets and full graph with final reference, 344/393/329/321/344/393/329/329.
+// Original output observations, scalar samples, plane math and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

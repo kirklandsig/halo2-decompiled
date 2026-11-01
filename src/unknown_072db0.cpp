@@ -1371,7 +1371,7 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 61 (was 92): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
+// score 61 (was 61): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
 // and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
 // the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
 // ECX into the loop head and stores it there, ours keeps it in memory) and the lower zero (retail sets it
@@ -1538,6 +1538,9 @@ struct s_rating_summary
 // inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
 // it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
 // out of line is still unknown.
+// Round 443: native complete team-counter value, original/admission storage,
+// crossed with key-before-session and per-arm lower results, 383/383/389/389
+// in either scope. Original pointer, summary order, lower and full body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
