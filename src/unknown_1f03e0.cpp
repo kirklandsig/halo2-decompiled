@@ -737,6 +737,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // each cosine-complement interaction and two dot declaration-scope combinations:
 // 262/262/266/262/262/262/266/262. All lose the caller match; original dot,
 // receivers, scalar graph, helper declaration state and complete body restored.
+// Round 481: Complete fallback plane/forward candidate with publication after normalization,
+// eight independent fallback/forward-phase/active-entry declaration pairs 247 each (1243 bytes).
+// Original in-place fallback and full body restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {

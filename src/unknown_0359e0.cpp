@@ -160,6 +160,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 277: standard minimum with short/word/byte/long shared count 109/93/93/101;
 // native short less predicate with the same carriers 117/119/119/119. Exact caller
 // and both neighbors survive; original minimum, counts, helper and body restored.
+// Round 193 (lane 3, fast with 0x136140): x and y used directly with the existing log2_floor (retail's
+// loops) 119 again: our allocator then keeps the width count in EDI (retail ECX) and moves x into EBX, and
+// LTCG passes width/x in EAX/ECX and y on the stack (0x136140 28). On that form: the minimum as if/else 119;
+// the height logarithm first 118 (0x136140 8, y still on the stack), with the if/else minimum 118; the high
+// arm's ORs low part first 119; `!=` tail tests 119.
 // Round 483: six complete width/height/shared count naming orders 82 each;
 // first two naming orders with the existing shared logarithm 87/87. Native
 // count-home allocation does not change; original names and body restored.

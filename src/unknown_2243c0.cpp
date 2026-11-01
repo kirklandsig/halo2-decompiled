@@ -353,6 +353,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // pointer 120 (still fused); on the 149 form the sums written parameter first 149, the root handle named 149.
 // Round 277: standard find with original/final zeros and word/masked fallback 132/155/136/153;
 // standard equality-predicate search on the same four graphs 199/211/203/210. Original body restored.
+// Round 193 (lane 3, fast; control 117): the flags read at each use (in the call's mask and the cache
+// update after it) 166 (re-read after the call; arg_0 leaves EAX); TAG_GROUP test, TAG_GET fallback and
+// the four cache zeros grouped 163; the late flags local through the stored definition (local_0.field_0)
+// 149, declared first and assigned late 149, as long 149: with the read late our allocator gives arg_0
+// EBP (arg_4 takes EBX) and LTCG then passes it on the stack, where retail keeps it in EBX from EAX.
+// Retail's group read (add then load), unfused stage element (lea then movzx) and dead pass-element lea
+// look like tag/block accessors inlined at link time; no out-of-line accessor exists here to call.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
