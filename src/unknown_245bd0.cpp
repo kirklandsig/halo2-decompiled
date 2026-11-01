@@ -346,6 +346,11 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // squared-distance helper (no vector of its own) beside the difference 307 (776 bytes), with the
 // difference made inside the radius test 227 (722): the subtractions are still not merged. Diagnostic:
 // the unit-z arm's 1.0 read from a named global stops the 1.0 hoist (retail's fsqrt block) 153 (681 bytes).
+// Round 17 (lane 17, fast): the difference from a by-value helper 397 (sphere helper outlined, 456 bytes);
+// length_sq3f(&d) with the normal by fields 152 again (every product then in place and 1.0 loaded in each
+// arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
+// 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
+// existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

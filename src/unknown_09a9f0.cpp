@@ -449,6 +449,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
 // 49/77 (same code); the chained form with the early bool and the store and attach through the existing
 // 0xbb780 77 (still one shared header address under the link's inline).
+// Round 17 (lane 17, fast), all on the early bool result: the header flag test as an inline predicate
+// with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
+// stays shared and EBP caches the last argument); the second virtual call on the local index 81;
+// `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

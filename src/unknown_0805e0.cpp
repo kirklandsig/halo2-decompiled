@@ -137,6 +137,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
 // Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
 // `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
+// Round 17 (lane 17, fast): the guest mask as a byte parameter of the exclusion helper 43 (propagated, still an
+// immediate); `while (!result && index != NONE)` with a successor local and `else index = next` 57 (AL mask, but
+// the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
+// early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
+// do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1030,6 +1035,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
 // cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
+// Round 17 (lane 17, fast): round 149's plain entry with the explicit `>` arm and the count path upper first
+// rebuilt 56; with round 119's mixed read 54 (first difference +0x4c: the entry and EDX load are retail's);
+// plus `downward = true` first in the `<` arm 52 (only upper in EAX, against retail's ECX, and the forward
+// copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
+// function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
+// : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

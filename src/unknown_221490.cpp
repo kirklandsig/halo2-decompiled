@@ -584,6 +584,13 @@ bool sound_driver_voice_create_buffer(
 // `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
 // both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
 // code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
+// Round 17 (lane 17, fast with 0x191420): the 3D flag defined first with a long result 158 (618 bytes: the
+// bools take retail's BL/stack byte and the tail is retail's one instruction late; the prologue differs: the
+// result is a sign-extended copy stored after the range test where retail spills the zero-extended voice
+// index before it, and the count store comes after the zeroing); with a long voice index 184 (597); the
+// short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
+// at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
+// block top with `result = NONE` after the decrement 155.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
