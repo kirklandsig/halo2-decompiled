@@ -1702,6 +1702,22 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
+// jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
+// (307; 308 with retail's shift-form flag tests), a flag with one `if` gives 323, and the byte
+// activity bit `(header->flags & 4) != 0` gives retail's `shr al, 2; and al, 1` at 281 (a
+// four-point gain, under the gate, so not kept). Retail also inlines function_b8bd0's marker
+// pointer; that file is /Ob1, so LTCG keeps our call and it cannot be changed here. This round:
+// the shared exit together with the byte activity bit is 308, and marking the declaration of
+// function_b8bd0 in this file __forceinline changes nothing (the call stays).
+// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
+// jump target at +0x76. This round: a `goto done` shared exit (both early exits) keeps the frame at
+// 0x64 and does give retail's single epilogue, but the score stays 285 - retail re-derives
+// pool->data over the pool pointer in ebx and reads the header byte through that copy, ours keeps
+// the first copy in edi and re-derives a second one into edx; folding the loop's early exit into the
+// allowed flag instead gives 340. The permuter found nothing below 285.
 // score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
 // Earlier: the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
 // +0x76 (pool in EBX, -1 in EAX). Retail inlines the node matrix lookup (0xb8bd0's body, here called
