@@ -668,6 +668,14 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // after it 217 (1261 bytes, every product register moves), with cross3f_staged for the second
 // product 223 (1266); either with a forward pointer in the else branch 217/223; the else branch
 // without the cosine local (cos(pitch) at both uses) 238 (1284 bytes).
+// Round 42 (lane 11, fast): the side vector built in command->up and crossed in place with
+// cross3f_staged (cross3f/staged first product) 252/243 (1291/1289 bytes: the first product's stores
+// stay and the second reloads them); the staged second product with each product's operands swapped
+// (b * a) 217 (1270, canonicalised like cross3f_staged); the first product from the direction local
+// 217 (1261, again); a forward pointer for the copy and the first product with the staged second
+// product reading command->forward 217 (1270), the pointer taken after the copy 217 (propagated).
+// Retail's second product treats forward's loads as values newer than right's (as the listed second
+// view of the command gives), so something between the products separates them; no plain form did.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

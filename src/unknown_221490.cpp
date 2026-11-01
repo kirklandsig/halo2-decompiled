@@ -486,7 +486,6 @@ bool sound_driver_voice_create_buffer(
 }
 
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
-// Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
 // voice offset, the descriptor zero and the input mixbin are swapped (the failure exit now agrees).
@@ -588,6 +587,16 @@ bool sound_driver_voice_create_buffer(
 // descriptor clear 181 (599 bytes); both bools in one declaration, play first 71 (same code), the 3D flag
 // first 182 (599); the result declared after the voice index 71 (same code), with the 3D flag first 182;
 // the 3D flag before the voice reference and play after it 183 (599).
+// Round 42 (lane 11, fast): the 3D flag defined first 182 (599 bytes: the voice index takes EBP, the zero
+// EBX, both bools spill), with a long result 158 (618: bools as retail, the result a sign-extended copy
+// stored after the range test), plus the count stored before the clear 158; the bools before the voice
+// reference with the count stored before the clear 72; the 3D flag first with the voice index returned
+// in the block (NONE outside, NONE stored on the 3D failure) 154 (628 bytes; 0x191420 1). Compile-only
+// (mixbin passed on the stack as here): 288 orders of the voice reference, bools, mix-bin locals, top
+// declarations, count store and failure-arm order (floor 64 against 66, all play first); result as
+// short/long/word/dword/char, placed at the start/middle/end, with both bool spellings (3D first): the
+// voice index, the input mixbin or play always outranks the 3D flag for EBX; renaming the bools and the
+// voice index changes nothing.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

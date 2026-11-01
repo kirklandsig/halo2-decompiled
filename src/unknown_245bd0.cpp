@@ -334,6 +334,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
 // difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
 // `j + (k + i)` 61; k, i, j statements 61.
+// Round 42 (lane 11, fast): the squared distance from the points themselves (the difference vector kept
+// for the normal) 307 (776 bytes), with the separate unit-z zeros and the swapped dot 307 (776); with the
+// difference vector made only in the scale arm 222 (722); the difference held in a plane3f local's
+// normal 57 (same code); the difference as a brace-initialised vector 61. Compile-only screen of the
+// sphere block (GPRs masked, base 42, the listed pointer diagnostic 12): the sum direct/length_sq3f/
+// dot3f/from the points x the scale helper/reciprocal in the call/fields x chained or separate zeros
+// x both dot orders: 34 at best (helper-only reads give every product in place).
 // Round 12 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80): the squared distance through a two-point
 // helper with its own difference vector (vector3d_from_points3d + length_sq3f, the form other files carry)
 // beside the normal's difference 307 (776 bytes: the subtractions are not merged), with the normal's

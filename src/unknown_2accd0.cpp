@@ -725,6 +725,16 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // `p = a; p += b`, as long, declared after the signature buffers or compared reversed, the cases
 // swapped; a forceinline seek helper for either position [31-65]. Flags (diagnostic): /O1, /Ox, /Oy-,
 // /Ob1, no /arch:SSE: none gives retail's colours.
+// Round 42 (lane 11, fast): a separate scratch-size local as 0x2adb10 writes it (`dword buffer_size;`
+// getter into it, `size = MIN(buffer_size, remaining)`) gives retail's body arm (the remaining count in
+// ECX from the body-size load, `sub ecx, eax` jumping into the clamp's `mov size, ecx`; position ESI) but
+// the sums turn header first and the hoist goes: 160 (689 bytes); with a named remaining in the scratch
+// arm 158 (689; the entry sum turns body first again, the sig position still takes the body-size
+// register), the remaining set in both arms 158 (689); `size = buffer_size; if (size > remaining)` with
+// `body_size > body_offset` 35; size set to the remaining before the `parameters->body` test 164 (691).
+// Compile-only (exact here, base 22 aligned): about 900 combinations of those arms with the total local
+// or none, both test orders, both operand orders of each position, buffer/size declaration and statement
+// orders, the size local's placement and name, and the getter's store orders: none below 22.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

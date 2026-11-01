@@ -532,7 +532,7 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
-// score 126 (was 306): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
+// score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
 // Earlier: frame 0x20 versus 0x28, initial magnitude and vector homes differ.
@@ -567,6 +567,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Round 103 (first difference: the velocity copy loads x into ECX, retail EAX; then the 1.0 constant): the
 // velocity as an aggregate initializer `{ i, j }` 130; the short-speed fallback as `direction = velocity` 275
 // (1159 bytes); forward, heading or the input vector as aggregate initializers 126 each (identical).
+// Round 44 (lane 11): k written in both blend rows 126, k declared after blend 126, heading declared before forward
+// 126 (all identical code); the input rotation before the forward copy 122; forward normalized before the input
+// rotation 270 (1146 bytes). Retail loads the 1.0 constant between the entry magnitude's i/j add and its k
+// product (XMM3; ours after the whole sum, XMM2), and writes blend.y before blend.x.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1472,7 +1476,7 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 44 (was 371): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
+// score 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
 // retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
 // channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
 // (ours: EAX), which moves the iterator/channel init, the kind-loop value/counter homes and the cross block; and VC
@@ -1506,6 +1510,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // Coordinator review (lane 8 r103): the lane's 40 named each half product in a one-use local (`real half`),
 // kept only with a match; without them 356. Writing the half product into the result (and the loop's value)
 // first and adding 0.5f in a second statement keeps VC from refolding it, 44 with no new local (kept).
+// Round 44 (lane 11): the iterator initialized by a constructor of s_graph_iterator3c (mem-init list in member
+// order, the animation id's own constructor between index and the 0x28 word, floats typed real) 40 (kept, shared
+// with 0xf6670: the iterator's stores are then retail's 0x6c/0x8c/0x90/0x92/0x94/0x96 order); on it: the function
+// channel declared before the iterator 44 (twice, before and after the real-typed fields); linear_velocity
+// declared first 40, `i` declared first 40, the cross result declared at the block top 40 (all identical code).
+// Left: retail schedules the graph index load and the iterator's NONE stores before the channel's NONE stores.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -1574,15 +1584,6 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		}
 
 		s_graph_iterator3c iterator;
-
-		iterator.unknown00 = NONE;
-		*(real *)&iterator.unknown08 = 0.0f;
-		*(real *)&iterator.unknown0c = 0.0f;
-		*(real *)&iterator.unknown10 = 0.0f;
-		iterator.index = NONE;
-		iterator.next_index = NONE;
-		*(short *)iterator.unknown28 = NONE;
-
 		c_animation_channel function_channel;
 
 		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
@@ -2269,6 +2270,9 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // Round 45 (lane 1): `-torque` 101 (identical); `torque < 0.0f ? 0.0f - torque : torque` 100; torque declared at
 // the gear read 101; NONE-first if/else with `-torque` 127 at 697 bytes (torque XMM3, magnitude XMM0; retail XMM0,
 // XMM1), with the flipped test 129.
+// Round 44 (lane 11): the contact torque store as if/else 171 (692 bytes); right computed before left 101; right
+// declared before left 101; `!(i & 1) ? left : right` 101 (identical code); diagnostic: the turn product at both
+// uses 98 again (left: the NONE gear arm, right copied to XMM0 before its store, the spin temp at each definition).
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2766,6 +2770,7 @@ point2f *g_468774;
 
 real normalize2d(point2f *v);
 real function_30bf0(vector3f *v);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 bool __stdcall function_a75d0(vector3f *vector, real maximum);
 extern vector3f *g_4687a4;
 
@@ -2786,7 +2791,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
-// score 1053 (was 1053): Frame 0x80 versus 0x74; velocity and force homes still differ.
+// score 1052 (was 1053): Frame 0x80 versus 0x74; velocity and force homes still differ.
 // Existing inverse transform 1137; forward transform and accumulation 1053 kept;
 // both 1238; shared cross products 1130; inverse/cross 1134; forward/cross 1056;
 // all three 1222; all with mass scales 1254. Plain confirms the shared in-place
@@ -2795,6 +2800,11 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // nonempty combinations 1094/1072/1064/1066/1062/1053/1089; all with force/velocity role names 1089.
 // Original-graph persistent/planar/later/all native frame-object name families 1053/1053/1053/1053.
 // Original body restored; the frame remains 0x80 versus 0x74.
+// Round 44 (lane 11): the permutation count/pointer through the existing 0xba690 1052 (kept: removes the helper's
+// body written by hand); the velocity transform through the existing 0x1427f0 1238 at 4511 bytes (out of line:
+// its /Ob1 file; retail inlines it here, x, y and z in registers with only the forward and left rows stored);
+// 0x1427f0 marked inline at its definition 1084 (frame 0x84) but matched 0x210770 then breaks (48); a
+// __forceinline redeclaration here 1238 (ignored). The frame stays 0x80 against 0x74 (a flags lead).
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3101,9 +3111,10 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 		torque.k *= mass;
 	}
 
-	s_vehicle *current = VEHICLE_GET(vehicle_index);
-	long permutation_count = current->unknown118 / 10;
-	byte const *permutations = (byte *)current + current->unknown11a + permutation_count * 2;
+	long permutation_count;
+	long permutations;
+
+	function_ba690(vehicle_index, &permutation_count, NULL, NULL, &permutations);
 
 	for (i = 0; i < *(long *)(definition + 0x2e8); i++)
 	{
@@ -3115,7 +3126,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 			permutation < permutation_count)
 		{
 			state->points[i].unknowna0 =
-				*(real *)(point_definition + 0x38 + (char)permutations[permutation * 8 + 1] * 4);
+				*(real *)(point_definition + 0x38 + (char)((byte const *)permutations)[permutation * 8 + 1] * 4);
 		}
 		else
 		{
@@ -3272,7 +3283,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
-// score 154 (was 169): Staged cross and native up receiver kept; projection/trig schedules remain.
+// score 154 (was 154): Staged cross and native up receiver kept; projection/trig schedules remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
 // coordinated external force-inline 326, with wide angle 359; all original contracts restored.
@@ -3313,6 +3324,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // and cos * up.i, as a tail merge of two written-out rotations would); the same with `real angle` 339 at 983
 // bytes; on the 121 form the x87 forward rows' products swapped 121 and sine declared first 121 (identical code:
 // sine keeps the state slot where retail's takes the result slot).
+// Round 44 (lane 11): sine declared before cosine 154; the axis declared first 154; plain cross3f for the flip axis
+// 154 (all identical code); `double angle` 130 at 786 bytes with either sine/cosine order (exact-only, not kept).
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3762,7 +3775,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 251 (was 286): every frame slot now retail's; left: the override search's exit (retail tests the found
+// score 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
 // element out of line, threaded from the loop; ours re-tests i < count), the permutation pointer's load order,
 // integer registers in the ray copies, the scale products (ours copy the scale, retail scales in place), the
 // clamp/fallback store placement and the final flag writer. Before round 45 (286, was 303): the state/permutation
@@ -3808,6 +3821,24 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // point first 265, with the node test's zero arm last 263, with both 251 (kept); on 251 `real reach = 0.0f -
 // length;` before the ray / at the products / after the copies / between the copies 249/251/249/249 (in-place
 // products but a hoisted zero); the Havok clamp as an explicit store then if/else-if 257.
+// Round 44 (lane 11): the permutation count/pointer through the existing 0xba690 (count, NULL, NULL, &pointer;
+// LTCG inlines it with retail's loads) 250 -> 214 (kept); the iterator's constructor and real-typed floats
+// (0x1dceb0 still matches; iterator stores then exactly retail's, the casts at the reads gone) 251 -> 250 and
+// 214 -> 206 (kept); 0xba690 before the iterator 215; the havok component pointer read before the && chain 204
+// (computed ahead of the NONE test); as `index != NONE ? get : NULL` 206; the fallback ternary 236, as if/else
+// 242 (LTCG keeps its zero in an XMM register across 0x168f40); word_flags_set bit 8 216; the update bit through
+// the word-bits view in if/else 216 (retail's `or/and byte [edi+0x349]` and split epilogue exactly, a score rise
+// at 1376 bytes); `ray.vector.i *= 0.0f - length` 272; the ray vector copied by components 318; the override
+// search as a NULL found pointer 206 (retail's loop exit exactly; a flag set in the loop); the Havok clamp as a
+// store then if/else-if 212 (retail's clamp block exactly); `changed` declared after the 0xba690 call 199 with
+// reach / 204 without (retail's store order; under the bar); `real reach = 0.0f - length;` used in all three
+// products, before/after/between the ray copies 199/199/199 (retail's in-place products, but the zero is then
+// hoisted to XMM5; 7 points, under the bar); reach declared with offset or first, or at the products, 206
+// (identical); vector3f_scale 206; an inline helper returning the active component's world (NULL otherwise),
+// diagnostic: with the found pointer, the bit writer and the clamp store 211 at 1375 bytes, the component block
+// then retail's (`[eax+ebx+4]` flag read, then `add eax, ebx`), a bool ray-cast helper the same; all of those
+// with reach 181. Left on that set: the world loaded into EAX then moved to ESI (retail loads ESI), the zero
+// hoisting with reach, and the fallback select (retail `movss 1.0 / jne / xorps`).
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -3818,19 +3849,14 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 
 	if (!(definition[0x2ac] & 1))
 	{
-		long permutation_count = vehicle->unknown118 / 10;
-		byte const *permutations = (byte *)vehicle + vehicle->unknown11a + permutation_count * 2;
+		long permutation_count;
+		long permutations;
 		s_graph_iterator3c iterator;
 		real largest_change = 0.0f;
 		bool changed = false;
 
-		iterator.unknown00 = NONE;
-		*(real *)&iterator.unknown08 = 0.0f;
-		*(real *)&iterator.unknown0c = 0.0f;
-		*(real *)&iterator.unknown10 = 0.0f;
-		iterator.index = NONE;
-		*(short *)iterator.unknown28 = NONE;
-		iterator.next_index = NONE;
+		function_ba690(vehicle_index, &permutation_count, NULL, NULL, &permutations);
+
 		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
 			long index = iterator.index;
@@ -3857,18 +3883,18 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 					}
 				}
 
-				if (i < override_count &&
-					(char)permutations[*(long *)(override + 0x48) * 8 + 1] >= *(short *)(override + 0x42))
+				if (i < override_count && (char)((byte const *)permutations)[*(long *)(override + 0x48) * 8 + 1] >=
+					*(short *)(override + 0x42))
 				{
-					offset = *(real *)&iterator.unknown14;
-					rest = *(real *)&iterator.unknown1c;
-					length = *(real *)&iterator.unknown18;
+					offset = iterator.unknown14;
+					rest = iterator.unknown1c;
+					length = iterator.unknown18;
 				}
 				else
 				{
-					offset = *(real *)&iterator.unknown08;
-					rest = *(real *)&iterator.unknown10;
-					length = *(real *)&iterator.unknown0c;
+					offset = iterator.unknown08;
+					rest = iterator.unknown10;
+					length = iterator.unknown0c;
 				}
 
 				s_vehicle_ray ray;
