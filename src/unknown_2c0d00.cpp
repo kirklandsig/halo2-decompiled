@@ -30,7 +30,7 @@ short __stdcall function_bb050(long mask, dword type_mask, void const *location,
     point3f const *position, real radius, long *objects, short maximum_count);
 short function_26f930(long object_index, s_object_marker *markers, short capacity, word flags);
 short function_26fbf0(long object_index, s_object_marker *markers, short capacity, long flags);
-short function_26fe20(long object_index, s_object_marker *markers, short capacity, long flags);
+short function_26fe20(long object_index, s_object_marker *markers, short capacity, word flags);
 bool function_26f8f0(s_object_marker const *marker);
 long function_25d810(long object_index, long actor_index, bool create);
 

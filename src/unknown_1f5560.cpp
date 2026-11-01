@@ -1354,16 +1354,14 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
 
 #include "object_markers.h"
 #include "unknown_1f9240.h"
-bool function_26f2d0(s_path_settings const *settings, point3f const *start, point3f const *end);
-bool function_26f360(s_path_settings const *settings, point3f const *start, point3f const *end);
+bool function_26f2d0(point3f const *start, point3f const *end, s_path_settings const *settings);
+bool function_26f360(point3f const *start, point3f const *end, s_path_settings const *settings);
 bool function_26fe90(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point);
 bool function_26f990(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point);
 
-// score 81 (was 235): Frame 0xe4 agrees; actor/character registers, selector tests and target/direction homes still differ.
-// Shared point difference 240; entry request reservation 236; both 242; initial if admission 226;
-// if admission plus shared difference 202 kept (1002 bytes); entry request plus if 228;
-// complete graph/role names 209/209. Ascending admission 226, with shared difference 202,
-// with typed request fields 214, with both 210. Original game-call values and orders retained.
+/* handles actor movement for transition types 3 and 5, selecting a target
+   marker and either issuing the corresponding movement request or producing
+   steering output toward the target. */
 // @retail 0x1f7c70
 bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, vector3f *direction_out, short *type_out, vector3f *movement_out)
 {
@@ -1376,61 +1374,75 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
     s_object_marker marker;
     point3f target;
     real minimum;
-    if (type == 5)
+    switch (type)
     {
+    case 5:
         if (!function_10f9b0(actor->unknown018, 0x5000534, 0x5000049, 3, &animation, false) ||
             !function_26fe90(actor_index, object_index, *(real *)(character + 4), &marker, &target))
             goto failed;
         minimum = 0.8660253882408142f;
-    }
-    else if (type == 3)
-    {
+        break;
+
+    case 3:
         if (!function_10f9b0(actor->unknown018, 0x5000281, 0x5000049, 3, &animation, false) ||
             !function_26f990(actor_index, object_index, *(real *)(character + 4), &marker, &target))
             goto failed;
         minimum = 0.95f;
-    }
-    else
+        break;
+
+    default:
         goto failed;
+    }
+
     {
         vector3f direction;
         vector3d_from_points3d(&actor->position, &target, &direction);
         direction.k = 0.0f;
         real distance = function_30bf0(&direction);
-        if (distance > 0.0f && animation.position.x * -1.3f > distance && dot3f(&actor->unknown290, &direction) > 0.0f)
+
+        if (distance > 0.0f &&
+            animation.position.x * -1.3f > distance &&
+            dot3f(&actor->unknown290, &direction) > 0.0f)
         {
             if (fabs(dot3f(&marker.matrix.left, &direction)) < minimum)
                 goto failed;
+
             if (dot3f(&actor->unknown290, &direction) > 0.99f)
             {
                 result = false;
                 function_1f9450(actor_index, object_index);
+
                 s_path_settings settings;
                 function_1f9240(actor_index, &settings);
+
                 s_unit_request request;
                 bool can_move = false;
+
                 switch (type)
                 {
                 case 5:
-                    if (function_26f2d0(&settings, &actor->position, &target))
+                    if (function_26f2d0(&actor->position, &target, &settings))
                     {
                         request.type = 0x2b;
                         can_move = true;
                     }
                     break;
+
                 case 3:
-                    if (function_26f360(&settings, &actor->position, &target))
+                    if (function_26f360(&actor->position, &target, &settings))
                     {
                         request.type = 0x2a;
                         can_move = true;
                     }
                     break;
                 }
+
                 if (can_move)
                 {
                     *(vector3f *)((byte *)&request + 0x10) = direction;
                     *(point3f *)((byte *)&request + 4) = target;
                     result = function_e6900(actor->unknown018, &request);
+
                     if (result)
                     {
                         actor->unknown5ac = NONE;
@@ -1438,12 +1450,15 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
                         goto completed;
                     }
                 }
+
                 if (allow_jump && function_1f8160(actor_index, 0, &target, true))
                 {
                     actor->unknown5ac = NONE;
                     actor->unknown5b0 = NONE;
                 }
-                if (!result) failed = true;
+
+                if (!result)
+                    failed = true;
             }
             else
             {
@@ -1454,20 +1469,27 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
                 *((bool *)actor + 0x6d1) = false;
                 actor->unknown5d0 = false;
             }
+
 completed:
             result = true;
-            if (failed) goto failed;
+            if (failed)
+                goto failed;
+
+            return result;
         }
-        return result;
+
+        goto done;
     }
+
 failed:
     *movement_out = *g_4687a4;
     actor = actor_get(actor_index);
     *(long *)((byte *)actor + 0x300) = object_index;
     *(short *)((byte *)actor + 0x304) = g_510c54->field_2_3 * 5;
+
+done:
     return result;
 }
-
 
 struct s_pathfinding_data;
 struct s_obstacle_list;
