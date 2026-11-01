@@ -279,6 +279,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // 158 (962 bytes); the determinant in natural cross order 138 (same code); the edges read through
 // quad->corners instead of the corner pointer 179 (953 bytes).
 // Round 447: native plane/corner-array/edge-array references before both copies, subsets 1..7: 201/138/201/160/206/160/201; complete bindings after the copies 159. Original body and helper restored; plane receiver, selectors and inverse schedule remain.
+// Round 219: complete parallel products, planar subtotals, running coordinates and native aggregate
+// construction, each with the existing point setter: 152/152/156/158/152/152/138/142. Original
+// four-use helper restored; plane-store base, selector/publication and inverse scheduling remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

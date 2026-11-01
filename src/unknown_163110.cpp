@@ -917,6 +917,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Y488: plain near/source/far normal-negation loops, seven subsets,
 // 259/257/259/259/267/259/113; all with short component indices 488.
 // Two-point gain rejected; original body restored. Coefficient/zero XMM roles remain.
+// Round 215: complete classification/denominator/both products 263/247/131;
+// complete numerator products 113; classification/numerator 265; denominator/numerator 251;
+// all three product boundaries 140; existing shared vector addition after scale 115.
+// All restored; early coefficient preload and clipping/projection allocation remain.
 // Round 37 (lane 15, fast): that pointer used for all three plane-0 negations 251 (1867 bytes); the j/k-only
 // diagnostic re-measured 113 (the e4.i load stays after the copy: its gain is in the later classification
 // operands); plane 0's d negated before its normal 143; plane 1's negated vector computed before plane 0 426;
@@ -932,6 +936,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // all three product boundaries 140; existing shared vector addition after scale 115.
 // All restored; early coefficient preload and clipping/projection allocation remain.
 // Round 447: double near-sum/near-distance/screen-factor storage, subsets 1..7: 444/434/443/439/444/429/435; single-use clamp at its offset addition 208. Original domains and body restored; coefficient preload and projection homes remain.
+// Round 219: positive visibility on guarded loops, entry-result/projection-input-cursor/shared-count
+// masks 0..7: 236/236/132/132/470/470/470/470. Original culling result, independent counts and
+// projection indexing restored; coefficient preload, zero roles and projection staging remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

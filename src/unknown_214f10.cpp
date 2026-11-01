@@ -275,6 +275,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // file copy and success declared at function scope 42; the long open result declared at function scope 42; the handle
 // read into a `void *` local with the by-value file built from it in the branch 42 (same code each); a dword result
 // with `success = (byte)opened; if (opened != 0)` 43.
+// DL218: Advancing file cursor with short ordinal and pointer-extent less/equality bounds, each
+// wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
+// Handle ECX and stored-success memory test remain; original task values, waits, completion
+// qualifier and complete executable body restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

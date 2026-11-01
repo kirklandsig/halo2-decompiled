@@ -81,6 +81,7 @@ void function_2232a0(void)
 // Earlier at 109: one-dword frame agrees; the count block, the count/layout join and the layout
 // Earlier at 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
 // Earlier (109): one-dword frame agrees; the count block, the count/layout join and the layout
+// Earlier: one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
 // it anywhere later every count-one path threads straight to the layout stores); the slot scan uses
@@ -234,6 +235,11 @@ void function_2232a0(void)
 // store before the empty-scan NULL 117; the scan index declared after count and layout 109; the per-view
 // record address as `g_47f0f8 + 1 + index` 109 (identical code where 109). 75 of the differences still sit
 // in the tail after the loop (0x2b5d0's convention: count + 1 in EAX, kept in EDX across the record init).
+// DL218: Complete dispatch inline and shared-predicate forced expansion, separately/together and
+// with optional-source initialization, six forms 109; predicate-only and combined pretested
+// traversal 138/138. All controls preserved. Original body, every declaration and initializer
+// restored. Exact count/layout prefix, outer pretest, loop-entry source zero and outside tail
+// transport remain.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

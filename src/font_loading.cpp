@@ -574,6 +574,8 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 489: signed byte alpha input with word/long helper result, long/word fills
 // and byte/full parity, eight combinations 201/205/205/205/201/209/205/205.
 // Original alpha type, helper, fill values and complete decoder restored.
+// Round 216: Plain packed-alpha triplet loop, long/short shift counter with word/long helper result and byte/full parity:
+// 164/218/172/222/238/222/183/230. Original executable source restored.
 // Round 275: Pointer stores in switch/ordinary/both fill loops 172/172/164; full parity 228/228/236; both with word pixels 166, full parity and word pixels 240.
 // Original executable source restored; alpha extension, literal assembly and two-run reuse remain.
 // Round 277: Complete alpha-only pixel helper with word/long result and byte/numeric parity, OR

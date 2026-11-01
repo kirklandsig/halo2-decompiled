@@ -353,6 +353,9 @@ void function_14bac0()
 // Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
 // 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
 // pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 219: common reset exit with native recipient, shared probe/bounds and real relocation/destination
+// buffers, masks 0..7: 222/228/233/229/222/228/233/229. Original exit, buffers and both scans
+// restored; frame, point/recipient sharing and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

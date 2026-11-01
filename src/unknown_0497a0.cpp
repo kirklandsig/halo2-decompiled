@@ -182,6 +182,9 @@
 // Round 444: Double inverse/paired camera shifts/complete projection factors, subsets
 // 1/2/4/3/5/6/7 then all with both wave factors: 774/665/716/815/820/750/877/878. Original precision, helper graph
 // and sixth-component integer conversion restored; frame and shape/basis homes remain.
+// Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
+// then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
+// original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
