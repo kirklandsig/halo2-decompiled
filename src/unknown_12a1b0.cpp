@@ -1326,6 +1326,11 @@ struct s_looping_detail_request
 // so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
 // site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
 // bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
+// Round 69 (lane 16, fast with 0x21b0e0, which agrees with the plain check here; with 0x14dde0 alone the reduced image
+// gives 139 at 543 bytes): `__assume(skip < player_count)` before the query 127 (same code); the random draw, the
+// query and the skip loop in one forceinline helper taking the count 127 (same code); skip and player declared at
+// the top of the else arm 127 (same code); the audible test on the request's copy 170; one offset vector shared by
+// both arms 127 (same code). The query stays inlined in all five.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

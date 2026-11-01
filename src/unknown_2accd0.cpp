@@ -761,6 +761,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
 // code); the total converted after the task state store 42; the seek position written at each use in the
 // signature case / body case / both 221 (694 bytes) / 213 / 221 (695 bytes).
+// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
+// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
+// declared with buffer/size and assigned later: 34 each (same code). All restored.
+// Round 69 (lane 16, fast; 0x2adb10 in brackets, 129 at the start): getter statement orders owner, buffer, flag,
+// size 34 [138]; buffer, flag, size, owner 36 [131]; buffer, flag, owner, size 36 [139]; buffer, size, owner, flag
+// 34 [129]; owner, size, buffer, flag 34 [129]. Getter restored.
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
@@ -1002,6 +1008,10 @@ struct s_signed_file_write_parameters
 // 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
 // `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the
 // extend offset clamped from a named unclamped excess 129 (same code).
+// Round 69 (lane 16, fast; 0x2ad7c0 in brackets, 34 at the start): the getter's statements reordered so the flag
+// is computed before the size is read: owner, buffer, flag, size 138 [34]; buffer, flag, size, owner 131 [36];
+// buffer, flag, owner, size 139 [36]; also buffer, size, owner, flag 129 [34] and owner, size, buffer, flag
+// 129 [34]. Our scheduler hoists the size load into EBX at the header site in every order.
 // Round 484: native I/O header-failure/extension-admission/signature-admission joins,
 // subsets H/E/S/HE/HS/ES/HES and HES with explicit byte-count failure
 // 301/129/129/301/301/129/301/301; frame/capacity/offset homes remain. Original body restored.

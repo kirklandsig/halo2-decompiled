@@ -263,6 +263,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // retail re-reads them after it, so not kept), the same with field_10 first 126; field_10 first with the
 // update through the existing 0x173c10 method 133, with the compare swapped 133, with a named sample 133;
 // field_10 first with `arg_1->field_02++` and `field_44 = field_44 | 0xf80f` 133.
+// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
+// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
+// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
+// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
+// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
+// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

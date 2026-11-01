@@ -257,6 +257,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Round 114 (lane 8, fast with 0xb5f10/0xb61d0): `(long)length >= start + count` 40 (same code); the shared
 // length helper returning `long` 40 (0xb61d0 then 1, `jl` for `jb`); `0 <= start && 0 < count` 40; `0x200 <
 // count` 40; `count <= (long)length - start` 34 (start arrives in EDX, 0xb5f10 6).
+// Round 67 (lane 16, fast with 0xb5f10/0xb61d0): `length - count >= start` 34 (scan counter in ECX as retail,
+// but start in EDX, walk EDI; 0xb5f10 6); that with `string + start` or `start + string` at the copy 29 each
+// (the sum goes to the string load's EAX, retail adds into start's EDI; 0xb5f10 6); `start <= length - count`
+// 34 (0xb5f10 6); `__stdcall` on the definition 40 (identical code).
 // Round 127 (lane 5, fast with 0xb5f10/0xb61d0): the count clamp as a ternary 40; `length >= start +
 // count` 40; the copy helper written out (diagnostic) 40; the scan given a cast of the string 40 (these
 // four same code); start added before the count increment 36 (0xb5f10 6).

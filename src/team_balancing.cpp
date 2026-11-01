@@ -607,6 +607,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // candidate)` / `spread_equal(reference, candidate)` helpers 65 (the reference-left code). Retail queries the left
 // operand first in both the spread compares (candidate left) and the cost compare (reference left); ours queries
 // the stack candidate last in every form.
+// Round 69 (lane 16, fast): the candidate as a reference bound to a copied temporary 123 (535 bytes); a
+// `__forceinline` free `operator<` on two solution references, `candidate < *reference`, 67 (same code), with the
+// cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
+// reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
+// count_spread (the newer, higher stack copy) still runs before the candidate's.
 // Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
 // `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
 // a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any

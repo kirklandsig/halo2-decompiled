@@ -233,6 +233,15 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // ours has them the other way; local_17 renamed to sort before local_1, local_1 renamed to sort after it,
 // local_17 declared at the top, local_17 declared between local_0 and local_1: 902 each (identical code); the
 // early return as a single-exit if 902 (identical code).
+// Round 65 (lane 16, fast): address-taken homes mapped from both listings: the marker, quaternion, body matrix
+// and product matrix stack identically at the top (each 0x1c higher in ours); the gap is all below the marker.
+// Retail keeps the second-block and angular response fractions in separate homes (+0xdc, +0x2c; ours shares
+// +0x10), the angular block's real output at +0xf4 next to the first block's response output (+0xf8). Each block's
+// response fraction declared in its own block 935 (frame 0x1f4; homes +0xf8/+0x20, not retail's); the one-use
+// motion-position pointer dropped 965 (4284 bytes); the first block's difference through the existing
+// vector3d_from_points3d without the staging copy 961 (frame 0x1e4, 4235 bytes); split responses with it 968.
+// The body slot index read once into its local everywhere (the angular block's three direct field reads through
+// the local) 941 (4232 bytes); the re-read after the lookup calls dropped 985 (frame 0x1ec); both 999.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

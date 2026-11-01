@@ -646,6 +646,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // scan's exit, the scan laid out before the tail) but 233 (839 bytes: allow_exit then lives in BL, so NONE
 // takes EBP and the frame is 0x30). Without a statement at the end of the scan arm the empty join is removed,
 // the tail is laid out after the special arm and the flag stays in memory; retail's IR had something there.
+// Round 110 (m3 lane 7, fast): retail homes the flag in the dead actor_index parameter slot. `bool special = type
+// == 6; special &= actor->unknown268 != 0;` 47 (same code); the if/else def with `special = false` opening the
+// scan and the tail's prop test nested under `if (special)` 200 (872 bytes); the if/else def with `special`
+// declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
+// `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
+// nothing below 47.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

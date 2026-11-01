@@ -408,6 +408,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
 // (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
 // XMM4); `delta = velocity;` then in-place subtractions 82-90.
+// Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
+// deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
+// then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain
+// order follows the delta order, while retail has j-first chains with an i, j, k delta (its k, j, i sum). A
+// compile-only screen of ~1150 forms (rate stage per component/staged/copied first/as a struct in all six
+// orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
+// orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
+// the root changes nothing.
 // Round 128 (m3 lane 6, fast; compile-only harness positional counts track the build at +4): the deltas through
 // the existing scaled_difference3f(state velocity, velocity, 1.0f, delta) on this body 57 (the stores, deltas and
 // (k + j) + i sum are then retail's instruction for instruction, only rotated: conversion/k delta XMM4, i delta XMM2,

@@ -1353,6 +1353,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // address built from the array element). On round 53's 7 form: the handle pointer 7; the checksum as
 // `if (call) valid = a == b; else valid = false;` 15 (header zero moves to AL); a bool-returning inline write
 // helper in the close condition 355 (834 bytes: the two headers share one slot).
+// Round 64 (lane 16, fast), on round 56's 6 form (reproduces at 6): the resize handle local before `bool resized;`
+// 6, `const` 6, the done flag declared once before the loop 6 (same code each); the close passing the resize handle
+// local 129 (915 bytes); the size limit read just before the size query 284 (902 bytes). s_file_handle cannot take a
+// copy constructor (it is a member of the task union), so retail's by-value handles are plain struct copies.
 // Round 66 (lane 9, fast): the 7 and 6 forms and the write-handle-local form (114, close copy dropped) reproduce.
 // Register reading: in all three the checksum load takes the scratch register one step after the close call's
 // copy (7: ECX/EDX, 6: EDX/EAX, write local: EAX coalesced/ECX), in retail two steps (ECX/EAX), so one more

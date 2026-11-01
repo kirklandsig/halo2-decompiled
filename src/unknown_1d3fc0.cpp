@@ -144,6 +144,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (identical code, same slots); the projection as a loop over `n[axis]` 110; through a named scaled
 // vector 110; pointer locals dropped with the projection on the matrix fields 181 (953 bytes: forward
 // then folds all three products), the same on six transforms 181.
+// Round 66 (m3 lane 16, fast; 0x1c4a80 matched each time): helper products k, i, j 115 (first
+// difference +0x167: forward gets retail's j XMM4 / i XMM5, k still preloaded into XMM6); j, i, k 114;
+// k, j, i 152; j, k, i 153; i, k, j 113; on k, i, j the sum spelled j+k+i, k+i+j, i+k+j, j+i+k, k+j+i
+// 115 each; k, i, j with an accumulating k, j, i sum 151, with a j, i, k sum 116 (forward's x87 sum is
+// then retail's); original products with the j, i, k accumulating sum 111. Lead: with k, i, j products and the
+// j, i, k accumulating sum, forward's x87 sum and its j/i registers are retail's; the remaining gate is forward's k
+// preload (retail scales k from memory into the reciprocal's register and reloads it on the short path).
 // Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
 // helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
 // j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k

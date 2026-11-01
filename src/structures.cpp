@@ -359,6 +359,14 @@ static __forceinline bool structure_bsp_collision_available()
 // non-inline exclusion helper 103 (240 bytes: LTCG keeps it out of line); the kept form with the collision
 // read through the source at every use 53 (same code); a `short policy = 2` local set by 0x10a0b0 for
 // scenery and tested `== 2` before 0xbf9a0 and `!= 2` before the requery 62.
+// Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
+// jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
+// into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
+// `excluded = false`, `excluded = scenery_excluded;` at the join and a final `found && !excluded`. Real builds of
+// that: 77 (295 bytes: a second flag test, `found` spilled across the probe, the probe block laid out last); with
+// the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
+// (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
+// { requery }` 75 (295 bytes).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -989,6 +997,10 @@ done:
 // through a `found` flag 139 (471 bytes); either with the existing availability helper 148 (470 bytes: the
 // failure exit inline as retail's, but ESI pushed after it) / 150; the plain form with `*probe = *point`
 // before the flags computation 128.
+// Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
+// local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
+// first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
+// existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

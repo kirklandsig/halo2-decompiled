@@ -588,6 +588,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // indexed with scale first and `+=` translation 113 (1136 bytes); indexed with the one declaration 113. A
 // compile-only screen of the helper's copy as memcpy gives the same code as the struct copy; copying from
 // `*out` (the same vector) loses the copy's alias and turns every row.
+// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
+// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
+// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
+// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
+// fixed); after the particle mask or the particle lookup 42 (no change).
 // Round 20 (lane 17, fast): permuter 600 s, 58 tries, none below 42. Row i's input copy is stored in the
 // order the row consumes it (ours y, z, x; retail y, x, z), so the copy follows the sum order. Both
 // rotations fed from a separate input copy (`position = translated_position`, rotated into it; the same
@@ -1055,6 +1060,14 @@ public:
 // table entry with no `name` local 248 (same code); spawn record declared before the matrix 248 (same code);
 // scale and position stores ahead of the orientation if/else 280; the child's next index read after the
 // particle block, before the recursive update 303.
+// Round 65 (lane 16, fast): about 110 of the count is two one-instruction shifts: retail's default case jumps into
+// the fallback's cross tail one instruction earlier (`subss xmm0, xmm2` shared: the fallback holds forward.j in
+// XMM2 from a load hoisted above the normalization branch, ours reloads it per path into XMM3), and retail reads
+// the parent colour before the child definition call (spilled at +0x28). Switch on the name table entry directly
+// 248 (identical); unused locals (diagnostic) 248; normalize_inline in the fallback 248 (x87 sum k, i, j: VC emits
+// the flattened squares in reverse spelling order, retail's j, i, k would need a k, i, j spelling no helper has);
+// scale nested in the normalize call in the fallback/default case/both 248 each; the colour in a local before the
+// matrix scale/after the position copy 262/261 (1363 bytes), with a tinted local too 278 (frame 0x5c).
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
