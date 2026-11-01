@@ -356,6 +356,10 @@ void c_class_2c9e69::select_last_variant()
 // declarations 36; nested named condition 36; named condition with the inherited qualifier 36; empty condition with
 // direct named text 36; explicit/implicit assignment-condition receivers 36/36. Every form merges the loads into EDI.
 // Opening body restored.
+// Round 41: plain text 36 (154 bytes, the reload hoisted into the datum block); typed lookups with the name call's
+// result as the buffer argument 21 (the result moves to ESI, the receiver still re-read); name-arm copy only 13 (159,
+// remeasured: EDI for EBX); that with plain text 36; `variant == NONE && text` / `variant != NONE && text` 36 (159, the
+// second variant test is not threaded away); name-arm copy with the buffer at function scope 13.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

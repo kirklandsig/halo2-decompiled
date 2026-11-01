@@ -284,6 +284,17 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
 // 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
 // in the sampled block 189. Original body restored.
+// Round 41 (ours ends `ret 0x18` as retail): the weighted getter's inlining is local to its call site: it stays
+// inlined with arm 1 removed (421) or arm 3's getter removed (218), and goes out of line (as retail, which also
+// un-merges the second publish tail) when its call sits under one more condition, even a redundant one the
+// optimizer folds: a repeated `weighted.index != NONE` guard around it 227 (943 bytes, entry and first arm then
+// retail's but for the 0x30 frame); with the data struct in the sampled block 210; plus a twice-used long frame
+// 201 (940 bytes; left: the loop's pointer plus spilled countdown, frame-first product, `mov eax, edi` where
+// retail recomputes `lea eax, [esp+0x14]` after 0x1ddb40/0x1c7380). Not kept (a repeated test, no match).
+// Plain forms, getter still inlined: nested ifs for the weighted admission 207; `return` when it fails 207;
+// separate weighted channel 360; weighted id in a twice-used local 306; animation declared at the positive
+// block's top 207; sampled flag before the getter 276; data struct in the sampled block 215; the frame read
+// from the field at both tests 260 (retail's reload at the second test, 955 bytes).
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
