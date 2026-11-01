@@ -286,6 +286,12 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the
 // address line 623; the player index as the matched 0x1e83c0's ternary 622; result declared first 620
 // (same code).
+// Round 56 (m3 lane 1, fast; 0x1e83c0 kept its match, 0x1e6bd0 unchanged at 303): the weapon helper in
+// src/unknown_1e77c0.cpp's form (`bool secondary`, 0x212/0x213 select, object table read inside) 653 (2256
+// bytes); only the headers parameter dropped (table read inside) 653; the helper as a plain `inline` 620 (same
+// code: PRIVATE is empty); the admission test as nested ifs 620 (same code); the request entry fetched before
+// the player index 622. Retail tail-merges cases 24-29 into one 0x1e8eb0 call (each case only pushes its
+// arguments) and case 18 into the same post-call test, with 19 returns against our 26.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
