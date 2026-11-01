@@ -184,6 +184,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
 // `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 54 (lane 10, fast): restore table pointer published in a chained assignment 47; range reference
+// declared beside the entry reference 47; definition derived from the just-published parameters field 47;
+// the entry byte offset named once for both walks 47; parameters published after the definition lookup 193;
+// the pending masks ORed in right after the tables are published 191 (978 bytes); the pass published after
+// the range is computed 118 (974 bytes).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

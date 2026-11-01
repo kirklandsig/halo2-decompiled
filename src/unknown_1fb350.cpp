@@ -461,6 +461,11 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier 129; data_iterator.h's four-field iterator and data_datum_iterator_next_inlined with the pool local
 // 133; the iterator aggregate-initialised 122 (same code); `animation` declared in the while condition 122
 // (same code).
+// Round 54 (lane 10, fast): the iterator set up through a file-local inline initializer taking the pool 122
+// (same code); the shared step reading the iterator's pool again for the element, or its scan reading it
+// directly, 122/122 (copy propagation merges the reads); the unit getter __forceinline 122 (same code); its
+// result filled in an if/else 158 (460 bytes); the object index read once per pass into a named local used
+// by every call 152 (476 bytes); the barrier moved inside the unit test 148 (476 bytes). All restored.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

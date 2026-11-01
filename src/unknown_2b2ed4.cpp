@@ -76,7 +76,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 }
 // score 330 (was 330): merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
-// score 330 (was 330): the block order follows retail's apart from a few blocks, but stack offsets
+// Earlier: the block order follows retail's apart from a few blocks, but stack offsets
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -144,6 +144,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // dispatch keeping only `if (text != NONE)`, 548 (2352 bytes); the null-datum guard as a wrapping if 330 (same
 // code); the session-player lookup as if/else 330 (same code). The suffix buffer's home also needs retail's
 // re-derived `lea` after each 0x230134 call (an open callee case: BLOCKED-BY 0x230134).
+// Round 54 (lane 10, fast; control 330): received text as if/else re-checked 661 (2338 bytes: the NONE
+// test threads but the bool homes reorder); the pending bit chosen by a shift count `>> (friends ? 12 :
+// 10)` 368; the identity pointer as a conditional expression 625; the visibility as a plain `!empty &&
+// !self` 442; the text id declared before the message buffer 330 (same code); the empty row's flags
+// cleared in one chained assignment 344. 0x230134 takes its buffer in ESI (and the string id in ECX).
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
