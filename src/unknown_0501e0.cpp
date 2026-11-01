@@ -201,6 +201,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 471: Uniform weighted-point second/first product and sum producers, seven
 // nonempty combinations 222/222/224/221/222/222/224; complete producers with earlier
 // blend-scale storage 224. Original expression producers, helper and full body restored.
+// Round 35 (m3 lane 2, fast): both camera offsets through the existing vector3d_from_points3d 221 (1147 bytes),
+// with the orthographic segment through it too 224 (1148 bytes); the segment alone through it 221 (1145 bytes);
+// both offsets through it with the depth limits written in the condition 233 (1153 bytes); the first offset alone
+// through it 222 (1146 bytes). Retail computes each depth limit lazily after the two `k < 0` tests (`mulss` by the
+// 4.0 in memory); ours hoists both limits and the 4.0 into registers ahead of the tests.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

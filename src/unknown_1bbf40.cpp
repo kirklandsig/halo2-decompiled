@@ -626,6 +626,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
 // `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
 // nothing below 47.
+// Round 35 (m3 lane 2, fast): round 185's if/else flag with `special = false` closing the scan arm rebuilt 190
+// (frame 0x30, the seat object in the dead actor slot); with the seat object renamed to sort first or last 190/190
+// (same code: the dead-slot reuse does not follow names); `bool ordinary = type != 6 || !byte` tested for the scan
+// and negated at the tail 200 (872 bytes, memory-only); `((type == 6) & byte) != 0` 195 (flag still BL); `special =
+// type == 6; if (!byte) special = false;` 170 (863 bytes: NONE in EBX, flag memory/AL); a `register` `&&` flag 200.
+// Every form with NONE in EBX leaves the flag without a callee-saved byte register, as retail; none gives CL.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
