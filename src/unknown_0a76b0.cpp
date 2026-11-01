@@ -267,6 +267,14 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
+// score 271 (was 279): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
+// takes unit_index in esi and keeps name in edi, which function_e6960's type argument clobbers, so name is
+// reloaded at the join and VC cannot thread the switch's two function_e68c0 cases into retail's single
+// shared call; the c7070 chain's calls also merge differently.
+// Round 46: the existing unit_action_hand_weapon_get(unit, 0/1) for both weapon tests (retail's short
+// index) 271; actions read at each use 337; no unit local 344; next_state/next_action declared first 278;
+// the e70b0 count arms the other way round 278 (fewer structural differences, positional worse); count
+// declared at function scope 277.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -411,7 +419,7 @@ void function_e6b00(long unit_index, long name, long *state_name, long *action_n
 
 	if (name == 0x6000007)
 	{
-		long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), false);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
 
 		if (weapon_index != NONE &&
 			*(short *)(g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes + 0x292) == 3)
@@ -421,7 +429,7 @@ void function_e6b00(long unit_index, long name, long *state_name, long *action_n
 	}
 	else if (name == 0xb00053f)
 	{
-		long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), true);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 1);
 
 		if (weapon_index != NONE &&
 			*(short *)(g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes + 0x292) == 3)
@@ -617,19 +625,15 @@ void __stdcall function_e73c0(long unit_index, long type)
 
 /* plays the animation of a weapon's request (the ready, put away, firing
    and dual wielding animations) */
-// score 281 (was 281): Frame 4 agrees; action/unit argument staging and both switch table extents differ.
-// Round 236: native case order with cached request type, call-result exit and descending action cases, all subsets 281/281/281/281/292/292/292/292.
-// Original executable body restored.
 // @retail 0xe7440
 bool __stdcall function_e7440(long unit_index, s_unit_request *request)
 {
 	real blend = 0.06675f;
 	long mode;
+	long name;
 
 	switch (request->type)
 	{
-	case 0:
-	case 1:
 	case 2:
 	case 3:
 	case 12:
@@ -659,47 +663,64 @@ bool __stdcall function_e7440(long unit_index, s_unit_request *request)
 
 	switch (request->type)
 	{
-	case 0:
-	case 1:
 	case 2:
-		return function_113e90(unit_index, 0x6000006, blend, NULL, mode);
+		name = 0x6000006;
+		break;
 	case 3:
-		return function_113e90(unit_index, 0x6000007, blend, NULL, mode);
+		name = 0x6000007;
+		break;
 	case 4:
-		return function_113e90(unit_index, 0x9000004, blend, NULL, mode);
+		name = 0x9000004;
+		break;
 	case 5:
-		return function_113e90(unit_index, 0x9000005, blend, NULL, mode);
+		name = 0x9000005;
+		break;
 	case 6:
-		return function_113e90(unit_index, 0x9000008, blend, NULL, mode);
+		name = 0x9000008;
+		break;
 	case 7:
-		return function_113e90(unit_index, 0x9000009, blend, NULL, mode);
+		name = 0x9000009;
+		break;
 	case 12:
-		return function_113e90(unit_index, 0xb00053e, blend, NULL, mode);
+		name = 0xb00053e;
+		break;
 	case 13:
-		return function_113e90(unit_index, 0xb00053f, blend, NULL, mode);
+		name = 0xb00053f;
+		break;
 	case 14:
-		return function_113e90(unit_index, 0xe00053c, blend, NULL, mode);
+		name = 0xe00053c;
+		break;
 	case 15:
-		return function_113e90(unit_index, 0xe00053d, blend, NULL, mode);
+		name = 0xe00053d;
+		break;
 	case 16:
-		return function_113e90(unit_index, 0xe000540, blend, NULL, mode);
+		name = 0xe000540;
+		break;
 	case 17:
-		return function_113e90(unit_index, 0xe000541, blend, NULL, mode);
+		name = 0xe000541;
+		break;
 	case 54:
-		return function_113e90(unit_index, 0xb00006d, blend, NULL, mode);
+		name = 0xb00006d;
+		break;
 	case 55:
-		return function_113e90(unit_index, 0xa000066, blend, NULL, mode);
+		name = 0xa000066;
+		break;
 	case 56:
-		return function_113e90(unit_index, 0x8000071, blend, NULL, mode);
+		name = 0x8000071;
+		break;
 	case 57:
-		return function_113e90(unit_index, 0x1000067e, blend, NULL, mode);
+		name = 0x1000067e;
+		break;
 	case 58:
-		return function_113e90(unit_index, 0xf00067f, blend, NULL, mode);
+		name = 0xf00067f;
+		break;
 	case 59:
-		return function_113e90(unit_index, 0xd000680, blend, NULL, mode);
+		name = 0xd000680;
+		break;
 	default:
 		__assume(0);
 	}
+	return function_113e90(unit_index, name, blend, NULL, mode);
 }
 
 /* the object placement data of 0xb7930/0xb7b40 (the fields set here) */
@@ -797,7 +818,7 @@ struct s_unit_action_grenade_throw
 void function_b9a90(long object_index);
 bool function_a76b0(long unit_index, long flag);
 void function_cafc0(long unit_index, point3f *position);
-void function_a91c0(long unit_index, long projectile_index, point3f const *origin, vector3f const *forward);
+void function_a91c0(long unit_index, short grenade_type, point3f const *origin, vector3f const *forward);
 void __stdcall function_b8540(long object_index);
 void function_d0e60(long unit_index, real amount, real limit);
 point3f *function_b9dd0(long object_index, point3f *result);
@@ -814,6 +835,15 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// score 392 (was 429): retail keeps the unit pointer in esi from entry (ours keeps the projectile's pool
+// offset there and reloads the unit), works on a second copy of the throw direction inside the player
+// block (copied with integer moves before both crosses and the offset sum), and blends the spread with
+// the velocity*ratio products first.
+// Round 46: the grenade type saved before it is cleared and passed to function_a91c0 (retail's argument;
+// ours passed the projectile index) 395; with function_a91c0's value parameter a short (retail pushes the
+// short slot raw) 392, retail's length; both crosses through cross3f 393; the offset sum through three
+// vector3f_add_scaled 396 (frame 0xc0); with the speed scale and parent velocity through vector3f_scale /
+// vector3f_add 428; the scaled aim vector through vector3f_scale before the blend 389, with cross3f 390.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -825,6 +855,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 
 	if (projectile_index != NONE)
 	{
+		short grenade_type = actions->grenade_type;
 		s_unit_action_unit *projectile = UNIT_ACTION_UNIT_GET(projectile_index);
 		long marker_name = NONE;
 		bool attach = false;
@@ -861,7 +892,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 
 			function_cafc0(unit_index, &origin);
 			forward = unit->field_xe66477;
-			function_a91c0(unit_index, projectile_index, &origin, &forward);
+			function_a91c0(unit_index, grenade_type, &origin, &forward);
 		}
 		else if (!actions->grenade_cancelled)
 		{
@@ -2414,6 +2445,15 @@ long function_c8f60(long unit_index, short seat_index);
 /* puts a unit in a vehicle's seat: attached to the seat's marker, its
    weapon put away (or dropped), its seat animations, and the seat's
    occupant asked to leave */
+// score 306 (was 321): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
+// the unit pointer (ours keeps the unit in ebp), so the constant-1 stores and most reloads differ; retail
+// also tests the 0x3dc state as a zero-extended long and has a dead `lea` of the header's unit field.
+// Round 46: inverse in its own block (retail shares its slot with the drop/exit requests and the
+// orientation) 310, retail's frame 0xf0 and length; node matrix through function_b8bd0 348 (stays a call
+// from the /Ob1 file); both 340; is_vehicle through a dword shift 310; the existing
+// unit_action_hand_weapon_get(unit, 0) (retail's short index) 306; the 0x3dc state read once into a long
+// 307 (with the getter 304); all three 304; result/reset declared the other way 306; unit declared at
+// function scope 306; unit read through a header pointer 306.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -2459,12 +2499,15 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 		transform4x3f const *field_50 =
 			(transform4x3f const *)((byte *)current + *(short *)((byte *)current + 0x116));
 		s_object_marker marker;
-		transform4x3f inverse;
 		transform4x3f relative;
 
 		function_b8d30(vehicle_index, *(long *)(seat + 8), &marker, 1, false);
-		function_141590(&marker.matrix, &inverse);
-		function_142a60(&inverse, field_50, &relative);
+		{
+			transform4x3f inverse;
+
+			function_141590(&marker.matrix, &inverse);
+			function_142a60(&inverse, field_50, &relative);
+		}
 		function_b8ee0(vehicle_index, *(long *)(seat + 8), unit_index, 0);
 		unit->seat_index = seat_index;
 		if (UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4 != NONE)
@@ -2475,7 +2518,7 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 		{
 			function_e68c0(0x13, unit_index);
 
-			long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), false);
+			long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
 
 			if (weapon_index == NONE)
 			{
@@ -3761,12 +3804,24 @@ extern vector3f *g_4687bc;
 /* a raised weapon's point (type 41 update): when its time is up, it
    shoves the target in front of the unit, with damage and an impact
    effect */
-// score 277 (was 287): Frame 0xb8 agrees; unit/target registers, vector copies, true exit and material widths remain.
+// score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
+// data and offset registers swap in its address add, and the 0x188180 call setup differs
+// (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
+// in eax, forward in ecx and pushes the short material slot raw).
 // Round 236: complete initial vector copy with entry damage lifetime and center/shove/impact names, all subsets 277/277/277/277/277/277/277/277.
 // Keep only the whole forward-vector initialization; all workspace and name changes restored.
+// Round 46: result false at entry 310; result per exit 277; result true, cleared on failure 220; material
+// NONE before function_d6660 222; long rigid body index 221; long node index (nested) 202; dot through
+// vector3d_from_points3d + dot3f 203; perpendicular scaled/added in place 227; side cases scaled into a
+// fresh vector 99; add operands swapped 227; dot term orders xzy 97, xyz 94, zyx 99, zxy 97, yxz 99;
+// dot3f either way 100/100; rigid_bodies.data 94; material read before the component 93; rigid body
+// pointer 90; both 89; result declared first 54; unknown14 stored first/second/last 51/51/56;
+// x + (y + z) 54; x + (z + y) 48; with unknown14 second 45; rigid body by pointer arithmetic 45;
+// the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
+	bool result = true;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
@@ -3774,114 +3829,129 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 	actions->point_ticks--;
 	if (target_index == NONE)
-		return false;
-	if (actions->point_ticks > 0)
-		return true;
-
-	byte *target = (byte *)function_badc0(target_index, NONE);
-
-	if (!target)
-		return false;
-
-	byte *target_definition = g_4e3b44[*(long *)target & 0xffff].bytes;
-	s_unit_action_unit *root = UNIT_ACTION_UNIT_GET(function_baf80(target_index));
-	vector3f direction = unit->forward;
-	point3f target_center;
-	point3f unit_center;
-
-	direction.k = 0.0f;
-	if (function_30bf0(&direction) == 0.0f)
-		return false;
-
-	real negative_j = 0.0f - direction.j;
-
-	function_b9dd0(target_index, &target_center);
-	function_b9dd0(unit_index, &unit_center);
-	if (!((target_center.y - unit_center.y) * direction.j + (target_center.z - unit_center.z) * direction.k +
-		(target_center.x - unit_center.x) * direction.i > 0.0f))
 	{
-		return false;
+		result = false;
 	}
-
-	switch (actions->point_mode)
+	else if (actions->point_ticks <= 0)
 	{
-	case 0:
-		direction.i *= 3.0f;
-		direction.j *= 3.0f;
-		break;
-	case 1:
-	{
-		real i = direction.i;
+		byte *target = (byte *)function_badc0(target_index, NONE);
 
-		direction.i = i * 0.3f + negative_j * 3.0f;
-		direction.j = direction.j * 0.3f + i * 3.0f;
-		break;
-	}
-	case 2:
-	{
-		real i = direction.i;
-
-		direction.i = i * 0.3f + negative_j * -3.0f;
-		direction.j = direction.j * 0.3f + i * -3.0f;
-		break;
-	}
-	}
-	direction.k = 1.5f;
-
-	vector3f shove = direction;
-
-	if (function_30bf0(&shove) == 0.0f)
-		return false;
-
-	if (*(long *)(local_98b918 + 0x190) != NONE)
-	{
-		s_type_1e6529 damage;
-
-		function_d6660(&damage, unit_index);
-		damage.material_index = NONE;
-		damage.unknown84 = 3;
-		damage.scale = 1.0f;
-		object_get_damage_owner(unit_index, &damage.owner);
-		damage.definition_index = *(long *)(local_98b918 + 0x190);
-		damage.position = unit_center;
-		damage.origin = unit_center;
-		damage.unknown14 = unit_index;
-		damage.direction = direction;
-		function_30bf0(&damage.direction);
-		damage.node_direction = damage.direction;
-		function_d7b80(&damage, actions->point_target, NONE, NONE, NONE, NULL);
-	}
-
-	if (((1 << *local_98b918) & 1) && root->havok_component_index != NONE)
-	{
-		byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
-		long effect_tag_index = *(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24);
-
-		if (effect_tag_index != NONE)
+		if (target)
 		{
-			s_havok_component *component = havok_component_get(root->havok_component_index);
-			short material_index = g_54e898;
-			short rigid_body_index = function_0b67a0((s_small_index const *)component);
+			byte *target_definition = g_4e3b44[*(long *)target & 0xffff].bytes;
+			s_unit_action_unit *root = UNIT_ACTION_UNIT_GET(function_baf80(target_index));
+			vector3f direction = unit->forward;
+			point3f target_center;
+			point3f unit_center;
 
-			if (rigid_body_index != NONE && component->rigid_bodies[rigid_body_index].node_count > 0 &&
-				*component->rigid_bodies[rigid_body_index].nodes != NONE)
+			direction.k = 0.0f;
+			if (function_30bf0(&direction) != 0.0f)
 			{
-				vector3f impulse;
-				byte strength;
+				vector3f perpendicular;
 
-				impulse.i = shove.i * -1.0f;
-				impulse.j = shove.j * -1.0f;
-				impulse.k = shove.k * -1.0f;
-				function_1eb020(effect_tag_index, (long)*component->rigid_bodies[rigid_body_index].nodes, &material_index);
-				strength = target_definition[0x1a];
-				if (strength > definition[0x1a])
-					strength = definition[0x1a];
-				function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
-					material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+				perpendicular.i = 0.0f - direction.j;
+				perpendicular.j = direction.i;
+				perpendicular.k = 0.0f;
+
+				function_b9dd0(target_index, &target_center);
+				function_b9dd0(unit_index, &unit_center);
+				if ((target_center.x - unit_center.x) * direction.i + ((target_center.z - unit_center.z) * direction.k +
+					(target_center.y - unit_center.y) * direction.j) > 0.0f)
+				{
+					switch (actions->point_mode)
+					{
+					case 0:
+						vector3f_scale(&direction, 3.0f, &direction);
+						break;
+					case 1:
+					{
+						vector3f ahead;
+
+						vector3f_scale(&perpendicular, 3.0f, &perpendicular);
+						vector3f_scale(&direction, 0.3f, &ahead);
+						vector3f_add(&ahead, &perpendicular, &direction);
+						break;
+					}
+					case 2:
+					{
+						vector3f ahead;
+
+						vector3f_scale(&perpendicular, -3.0f, &perpendicular);
+						vector3f_scale(&direction, 0.3f, &ahead);
+						vector3f_add(&ahead, &perpendicular, &direction);
+						break;
+					}
+					}
+					direction.k = 1.5f;
+
+					vector3f shove = direction;
+
+					if (function_30bf0(&shove) != 0.0f)
+					{
+						if (*(long *)(local_98b918 + 0x190) != NONE)
+						{
+							s_type_1e6529 damage;
+
+							damage.material_index = NONE;
+							function_d6660(&damage, unit_index);
+							damage.unknown84 = 3;
+							damage.scale = 1.0f;
+							object_get_damage_owner(unit_index, &damage.owner);
+							damage.definition_index = *(long *)(local_98b918 + 0x190);
+							damage.unknown14 = unit_index;
+							damage.position = unit_center;
+							damage.origin = unit_center;
+							damage.direction = direction;
+							function_30bf0(&damage.direction);
+							damage.node_direction = damage.direction;
+							function_d7b80(&damage, actions->point_target, NONE, NONE, NONE, NULL);
+						}
+
+						if (((1 << *local_98b918) & 1) && root->havok_component_index != NONE)
+						{
+							byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
+							long effect_tag_index = *(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24);
+
+							if (effect_tag_index != NONE)
+							{
+								short material_index = g_54e898;
+								s_havok_component *component = havok_component_get(root->havok_component_index);
+								long rigid_body_index = function_0b67a0((s_small_index const *)component);
+
+								if (rigid_body_index != NONE)
+								{
+									s_havok_component_rigid_body const *rigid_body = &component->rigid_bodies[rigid_body_index];
+
+									if (rigid_body->node_count > 0)
+									{
+										long node_index = rigid_body->nodes[0];
+
+										if (node_index != NONE)
+										{
+											vector3f impulse;
+											byte strength;
+
+											impulse.i = shove.i * -1.0f;
+											impulse.j = shove.j * -1.0f;
+											impulse.k = shove.k * -1.0f;
+											function_1eb020(effect_tag_index, node_index, &material_index);
+											strength = target_definition[0x1a];
+											if (strength > definition[0x1a])
+												strength = definition[0x1a];
+											function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
+												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+		result = false;
 	}
-	return false;
+	return result;
 }
 
 /* plays a pose animation at a point (type 42) */
@@ -4145,17 +4215,29 @@ void __stdcall function_ecfc0(long unit_index, long type)
 
 void function_11d820(quaternionf const *a, quaternionf const *b, quaternionf *out);
 extern vector3f *g_4687ac;
+PRIVATE __forceinline point3f *unit_action_transform_point(transform4x3f const *matrix, point3f const *point, point3f *out);
+PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 309 (was 327): Frame 0x11c agrees; unit/pool registers, basis/quaternion homes and call/float scheduling remain.
+// score 268 (was 309): the animation result is stored as the call's al before the test (retail stores
+// a constant 1 after it and has no early epilogue), the away and seat-offset xmm registers differ
+// (retail scales the offset with the component as destination), and a few float schedules.
 // Round 236: actual animation result with existing basis cross products, all eight subsets 317/316/317/315/309/307/310/326.
 // Keep actual animation result and shared frame-left cross; other basis helpers restored (extra first cross 307, only two points).
 // Round 39 lead: 0x11d820 takes `a` in ECX and `b` in EAX (its own retail bytes), so the two calls here likely pass the
 // quaternions the other way round, as 0xee090's did (fixed there); the swap alone leaves this listing's count unchanged
 // (positional 286 in a link of this file and its callees), and the offset/frame math through 0xee090's two point helpers
 // is 160 bytes short of retail (1228), so neither is kept yet.
+// Round 46: per-case b8d30 tests with the flag set in an && test, body under if (result) 320; per-case early
+// returns + result = true 316; per-case calls with the constant names 301; body under if (result) 322; up
+// copied inside the no-parent block 309; renamed up 309; both crosses through cross3f 286; away through
+// vector3f_scale 291; seat offset through the transform/untransform helpers 373 (untransform out of line);
+// quaternion order as 0xee090 291; both 373; helpers declared __forceinline 268; x *= scale in the helper 268;
+// result = b8d30 > 0 && f() per case 354/275 (folded)/313/275; early returns + result = true 294; body under
+// if (result) 293; flag form 300 (retail's exit layout, but false stored at entry); per-case result = true 289/294;
+// up initialised before the no-parent test again 272 (retail never stores up on the parent path, 0xed273).
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
@@ -4169,59 +4251,50 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 	if (unit->object_type == 0)
 		function_1e54d0((byte *)UNIT_ACTION_UNIT_GET(unit_index) + 0x3dc, 1);
 
-	long name;
-
 	switch (*(short *)((byte *)request + 6))
 	{
 	case 0:
 		if (function_b8d30(unit_index, 0xf0005b4, &marker, 1, false) <= 0)
 			return false;
-		name = 0xc0005b7;
+		result = function_10f430(unit_index, 0x6000086, 0x7000101, 0x7000101, 0xc0005b7, 0.1f, 0, 0);
 		break;
 	case 1:
 		if (function_b8d30(unit_index, 0xe0005b5, &marker, 1, false) <= 0)
 			return false;
-		name = 0xb0005b8;
+		result = function_10f430(unit_index, 0x6000086, 0x7000101, 0x7000101, 0xb0005b8, 0.1f, 0, 0);
 		break;
 	default:
 		return false;
 	}
-	result = function_10f430(unit_index, 0x6000086, 0x7000101, 0x7000101, name, 0.1f, 0, 0);
 	if (!result)
 		return false;
 
 	vector3f forward;
-	vector3f up = object_matrix.up;
+	vector3f up;
 
 	if (unit->parent_object_index == NONE)
 	{
 		vector3f away;
 		vector3f left;
 
-		away.i = marker.matrix.up.i * -1.0f;
-		away.j = marker.matrix.up.j * -1.0f;
-		away.k = marker.matrix.up.k * -1.0f;
-		left.i = up.j * away.k - up.k * away.j;
-		left.j = up.k * away.i - up.i * away.k;
-		left.k = up.i * away.j - up.j * away.i;
+		up = object_matrix.up;
+		vector3f_scale(&marker.matrix.up, -1.0f, &away);
+		cross3f(&up, &away, &left);
 		if (0.0f >= function_30bf0(&left))
 		{
 			up = *g_4687b0;
 			left = *g_4687ac;
 		}
-		forward.i = left.j * up.k - left.k * up.j;
-		forward.j = left.k * up.i - up.k * left.i;
-		forward.k = up.j * left.i - left.j * up.i;
+		cross3f(&left, &up, &forward);
 		function_b75a0(unit_index, NULL, &forward, &up, NULL, false);
 	}
 
 	byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
 	transform4x3f frame;
-	vector3f offset = *(vector3f *)(seat_transform + 0x10);
-	vector3f world;
-	vector3f local;
+	point3f world;
+	point3f local;
 	quaternionf object_orientation;
-	quaternionf local_2e3e32;
+	quaternionf frame_orientation;
 	quaternionf orientation;
 
 	frame.scale = 1.0f;
@@ -4229,27 +4302,14 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 	cross3f(&up, &forward, &frame.left);
 	frame.up = up;
 	frame.position = object_matrix.position;
-	if (object_matrix.scale != 1.0f)
-	{
-		offset.i *= object_matrix.scale;
-		offset.j *= object_matrix.scale;
-		offset.k *= object_matrix.scale;
-	}
-	world.i = object_matrix.left.i * offset.j + object_matrix.up.i * offset.k + object_matrix.forward.i * offset.i +
-		object_matrix.position.x - frame.position.x;
-	world.j = object_matrix.left.j * offset.j + object_matrix.up.j * offset.k + object_matrix.forward.j * offset.i +
-		object_matrix.position.y - frame.position.y;
-	world.k = object_matrix.left.k * offset.j + object_matrix.up.k * offset.k + object_matrix.forward.k * offset.i +
-		object_matrix.position.z - frame.position.z;
-	local.i = frame.forward.k * world.k + frame.forward.j * world.j + frame.forward.i * world.i;
-	local.j = frame.left.k * world.k + frame.left.j * world.j + frame.left.i * world.i;
-	local.k = frame.up.k * world.k + frame.up.j * world.j + frame.up.i * world.i;
+	unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
+	unit_action_untransform_point(&frame, &world, &local);
 	function_141f60(&object_matrix.rotation, &object_orientation);
-	function_141f60(&frame.rotation, &local_2e3e32);
-	local_2e3e32.w *= -1.0f;
-	function_11d820((quaternionf const *)seat_transform, &object_orientation, &orientation);
-	function_11d820(&orientation, &local_2e3e32, &orientation);
-	*(vector3f *)(seat_transform + 0x10) = local;
+	function_141f60(&frame.rotation, &frame_orientation);
+	frame_orientation.w *= -1.0f;
+	function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
+	function_11d820(&frame_orientation, &orientation, &orientation);
+	*(point3f *)(seat_transform + 0x10) = local;
 	*(quaternionf *)seat_transform = orientation;
 
 	actions->hoist_ticks = *(short *)((byte *)request + 4);
@@ -4716,7 +4776,7 @@ void function_1420f0(transform4x3f *out, point3f const *position, vector3f const
    matrix's frame (0 for a matrix with no scale): the bodies of 0x142570 and
    0x142700, which retail inlines here (unknown_141590.cpp is /Ob1, which
    keeps its own out of line) */
-PRIVATE inline point3f *unit_action_transform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
+PRIVATE __forceinline point3f *unit_action_transform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
 {
 	real x = point->x;
 	real y = point->y;
@@ -4734,7 +4794,7 @@ PRIVATE inline point3f *unit_action_transform_point(transform4x3f const *matrix,
 	return out;
 }
 
-PRIVATE inline point3f *unit_action_untransform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
+PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
 {
 	if (matrix->scale != 0.0f)
 	{

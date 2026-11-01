@@ -367,7 +367,7 @@ struct s_direction_event_data
 };
 
 // @retail 0xa91c0
-void function_a91c0(long index, long value, point3f const *origin, vector3f const *direction)
+void function_a91c0(long index, short value, point3f const *origin, vector3f const *direction)
 {
     s_direction_event_data data;
     long current = index;
@@ -376,7 +376,7 @@ void function_a91c0(long index, long value, point3f const *origin, vector3f cons
         byte *object = EVENT_OBJECT(current);
         if (*(signed char *)(object + 0x23c) >= 0 && *(signed char *)(object + 0x23c) < 2)
         {
-            data.value = (short)value;
+            data.value = value;
             data.origin = *origin;
             data.direction = *direction;
             function_b5a70(NONE, 0x16, 1, (long)&index, sizeof(data), &data, g_4cef1c);
