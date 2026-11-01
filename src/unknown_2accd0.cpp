@@ -707,6 +707,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
 // before its buffer 34 (all identical code: names do not break these register ties); the body case as
 // an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
+// Round 125 (lane 6, fast with 0x2adb10 129 throughout): `long position` in the signature case, the body
+// case or both 34 each (identical code); one exit through `long result = 1;` with `result = 0;` on the
+// success paths and the cleanup under `if (result)` (0x2adb10's form) 34, with result declared before the
+// view 34 (identical code); the signature case as `default:` without `__assume(0)` 177 (688 bytes); the
+// view declared `* const` 34 (identical).
 // Round 106 (lane 7; compile-only exact here, aligned in brackets, base [22]): retail's body arm ends in the
 // scratch clamp's `mov edi, ecx` (one `size = remaining` reached from both arms). One size assignment after
 // the arms with a body pointer local, `size = body ? remaining : MIN(size, remaining)`, gives retail's size
@@ -749,6 +754,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // returning the buffer with the size through `dword *` (owner, size, flag from the buffer field) 34
 // [279, 944 bytes]. Compile-only: both positions written at both uses 111, with no total local 101;
 // about 450 random rewrites of the current form found nothing below it.
+// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
+// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
+// declared with buffer/size and assigned later: 34 each (same code). All restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

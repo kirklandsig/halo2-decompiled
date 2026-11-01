@@ -3096,6 +3096,22 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // bytes, 0x176f60 25), with spawn at function scope 109 (0x176f60 25). With the mode per call the effect
 // index is computed in EAX and moved to EBP (retail computes it in EBP from the stack slot), so LTCG passes
 // it in a register, and the definition takes EBX where retail spills it. 0x175a80 gets retail's registers.
+// Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
+// mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
+// early `return next_index;` on the definition test 94; the mode per call with that early return 111
+// (0x176f60 25), with the spawn cursor too 112 (0x176f60 25); spawn with the particle system looked up
+// before the effect 113; spawn with both colours declared inside the type-query block and the next index
+// read after the definition call 95.
+// Round 47 (lane 11, fast; 0x176f60 matches in each): the next index read straight off the datum lookup before
+// the particle system pointer is named 118 (345 bytes), on the spawn-cursor form 115 (345 bytes); the spawn
+// cursor (re-measured 90) with the cached mode as a long local 89 at retail's 337 bytes (frame 0x54, every
+// slot home as retail, the mode in the definition's slot loaded by movzx; left: the particle system in EDI
+// and the next index in ESI, so the colours and type object rotate, and the mode cached where retail reloads
+// the definition per call); the cached mode as short 93. On spawn + long mode: next index read after the
+// location index 95; the cursor assigned before the colour reads 88 (best, gain 5, not kept); that with the
+// mode read before the colours 88; particle system looked up before the effect 113 (345 bytes); next index
+// declared before the lookups and assigned after 88; effect looked up after the definition 119 (346 bytes);
+// early return on the definition test 95 (334 bytes).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

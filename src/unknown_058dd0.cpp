@@ -804,6 +804,13 @@ void c_session_client::function_06dbc0()
 // joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
 // explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
 // (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
+// Round 113 (lane 8): separate case 7 and case 8 bodies (0x58d90's own form) re-measured 47 (plain check
+// agrees): retail's direct 7-entry jump table, and the only difference left is `this` in EDX where retail
+// moves it to EBX at entry (mode/index then take ESI for retail's EDX, id EBX for retail's EBP). On that
+// base: the compare reading `session->` while the switch uses `s` 50; id read once through its address 47;
+// a member pointer local 47; a `client` copy of this 47; cases 2/4/6 grouped 47. The file is /O2 /Gr and
+// 0x58d90's own file /O2 /Ob0, which keeps it out of line here where retail inlines it (a flags lead for
+// the user, not tried).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
