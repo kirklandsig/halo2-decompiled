@@ -181,6 +181,12 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // Round 62: condition assignment/declaration 2/2; candidate-updated declaration 28 (96 bytes); for assignment 2;
 // implicit/reversed assignment 2/2; assignment with shared focus exit 39 (100); declaration with shared focus exit
 // 49 (102). Opening body restored.
+// Lane 13 r48 (fast, both twins, 2 each, the same code): the search as a guarded do-while with the step
+// assigned in its condition (`while ((widget = widget->next_wrapped()) != NULL)`); a `goto found` single exit
+// after the while loop; a guarded do-while with the step at the bottom; a `for` loop with the step in its
+// header and `goto found`; `widget` declared before a `for` that assigns it. Loop syntax never reaches the copy:
+// retail tests ESI after the merged phi copy (copies in the predecessors, merged after scheduling), ours
+// schedules the test ahead of the copy inside one block.
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -222,6 +228,12 @@ void c_button_widget_45d5d0::v8()
 // condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
 // per failed test 2; the eligibility as a named bool 2. Harness: an early-return previous-or-last helper at both 12
 // (retail's tail, entry coalesced into ESI); previous_wrapped entry with that step 37 (98 bytes).
+// Lane 13 r48 (fast, both twins, 2 each, the same code): the search as a guarded do-while with the step
+// assigned in its condition (`while ((widget = widget->previous_wrapped()) != NULL)`); a `goto found` single exit
+// after the while loop; a guarded do-while with the step at the bottom; a `for` loop with the step in its
+// header and `goto found`; `widget` declared before a `for` that assigns it. Loop syntax never reaches the copy:
+// retail tests ESI after the merged phi copy (copies in the predecessors, merged after scheduling), ours
+// schedules the test ahead of the copy inside one block.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {
