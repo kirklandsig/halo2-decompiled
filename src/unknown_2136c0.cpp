@@ -168,6 +168,12 @@ void function_213970(void);
 // word 131; the version update before the language query 128 (three points, dropped); block B's string and
 // request clears first, then its header, then block A 131; the file array cleared per element in a loop
 // 131. Repeats as checks: the language getter at both uses 129; block A's NONE store between its clears 131.
+// Round 42 (lane 14, fast): grouped by retail block, block A's clears and NONE store, then block B's clears
+// and its scalars in address order 131; block B (clears, scalars) before block A 131; block B's scalars
+// between its header clear and its string/request clears 145 (242 bytes); the first form with the existing
+// wrapper 0x11cae0 at the test and the store 129 (232 bytes, two points); the zero scalars first, then the
+// five clears, then the NONE/flag stores in block order 131. Still BLOCKED-BY the separate definitions in
+// src/unknown_12be90.cpp and src/unknown_2141f0.cpp (both held by other lanes this round).
 // Round 126 (lane 5, fast): the language local on the left of its comparison 131; the NONE/enable stores
 // ahead of the scalar zero stores 131; the version as a named const local 131; the dirty flag set before
 // each preference store 131; the handle reset first among the scalar stores 131 (all the same code). The

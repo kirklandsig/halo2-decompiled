@@ -799,6 +799,14 @@ real g_55e618;
 // dot or the perpendicular products in the other text order 179/179 (same code), the dot read from the
 // particle fields 189, keep computed after the velocity pointer 188; the normal as a union member read
 // directly 605 (h0, copy form), 651 (on the 179 form).
+// Round 43 (lane 14, fast): collision record declared in the loop block 243 (1570 bytes), at the countdown block's
+// top 243; velocity pointer 195; pointer plus loop-block collision 184 (1536 bytes, frame 0x118: tangent +0x38, sweep
+// +0x44, cache +0x50, collision +0xa4 as retail, no perpendicular home, j/material/next slots rotated); that with
+// retail's computation order 170 (1547), with rows i, i, j, j, k, k 179 (1537 bytes); on the last: velocity pointer
+// before normal 191, keep before normal 179, both 190, normal before the coefficient loop 179, `normal->x * dot`
+// 179, `keep * field` 179, keep at each use 120 (1525, keep recomputed after the call). Ours keeps the normal as the
+// destination of every `dot * normal` product, so tangent.k spills where retail multiplies dot in place, spills perp.k
+// (+0xac) and keeps tangent.k (that spill is what gives retail its perpendicular home and the 0x124 frame).
 // Round 30 (lane 2, fast): retail loads every normal/point component and the placement's last argument
 // above the position stores and reuses the dot's normal registers for the position; ours reloads the normal
 // after each position store, so our particle stores may alias the collision record. The particle's +2 word read

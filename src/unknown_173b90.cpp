@@ -1049,6 +1049,12 @@ public:
 // typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
 // the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
 // returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
+// Round 43 (lane 14, fast; the old perpendicular call 394 retried on the round-27 base): the fallback's
+// perpendicular through the existing out-of-line 0x11d000 286 (1327
+// bytes), its normalisation through 0x30bf0 357 (1259), both 326 (1253): retail inlines both there; switch on the
+// table entry with no `name` local 248 (same code); spawn record declared before the matrix 248 (same code);
+// scale and position stores ahead of the orientation if/else 280; the child's next index read after the
+// particle block, before the recursive update 303.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

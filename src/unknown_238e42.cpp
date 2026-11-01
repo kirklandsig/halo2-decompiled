@@ -999,6 +999,11 @@ bool __stdcall function_2399da(long controller_index)
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
 // for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
+// with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
+// test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
+// identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
+// rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
 // Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
 // own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
 // permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an
@@ -1007,6 +1012,10 @@ bool __stdcall function_2399da(long controller_index)
 // tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
 // (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
 // reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
+// Round 45 (lane 14, fast): the identity and the rank each have four uses in the dispatch region (a tie);
+// may_change as `(flags & 0x800) != 0` 90; have_member as one comparison 90; the dispatch inverted with the
+// over-rank and rank-3 returns first and the remove arm last 95 (437 bytes); have_member and may_change each
+// declared at their first assignment 90/90.
 // Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
 // with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the

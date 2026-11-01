@@ -420,6 +420,11 @@ static inline bool teams_enabled_19e1c0()
 // each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
 // token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
 // failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
+// Round 46 (lane 14, fast): retail's per-compare `token` reloads take a scratch register each, so the case
+// bodies' EAX/ECX/EDX rotation differs and only the copy and format calls are shared (0x19e74c, 0x19e3b8).
+// Plain result 691 (control); with a `length` local and `length > remaining ? remaining : length` in the four
+// name/team cases 692, as `remaining < length ? remaining : length` 692; the length local with the volatile
+// result 412 (1444 bytes); plain result with the token fallback clamp as a ternary 693, with both 694.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

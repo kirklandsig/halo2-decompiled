@@ -190,6 +190,10 @@ struct c_aggregate : c_child
 // stored inside the dispatch gate (its only reader) 34; the dispatch child read at each call 121 (357 bytes);
 // the get_info fallback as a ternary assignment 31; error and total declared in one statement 31 (the last
 // three the same code). The frame stays 0x8024 in each.
+// Round 38 (m3 lane 14, fast): the dispatch and cleanup loops each in a block of their own 31; produced
+// declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
+// the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
+// 0x8024 in all).
 // Round 31 (m3 lane 2, fast): produced as a dword (passed through a long pointer cast) 31; total as a
 // dword 32; the room argument as `sizeof(blocks) / sizeof(blocks[0]) - total` 31; the collection child
 // declared before loop 1 31; error and total declared before starts 31 (frame 0x8024 in each).

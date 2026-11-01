@@ -436,6 +436,22 @@ PRIVATE inline long polygon_round_19f(real value)
 // perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner
 // radius at its use 430; on the uv form: bottom by fields 374, bottom right after the index 375 (step in EBP,
 // pointer spilled instead), edge with one cast 374, top from the vertex 377, top.z assigned 375.
+// Round 42 (lane 14, fast; "aligned" = differing lines after a sequence alignment, base 157): retail's 1.5 is
+// not a literal but a .data float at 0x47ff94 (between g_47ff90 and g_47ff98, read only here). With
+// `real g_47ff94 = 1.5f;`, the distance as `real distance = (real)sqrt(...) - radius;` and the bound written
+// as `g_47ff94 * radius` in the clamp and the divisor, the fade block is retail's (the global loaded once,
+// fst into the dead radius slot, the second product in place) but for the xmm numbering and the clamp's
+// arm order: 384 (aligned 144, 1501 bytes); with the radial denominator written in the division,
+// `/ (maximum_distance - spread)`, our compiler divides by the hoisted value as retail does (a named
+// denominator, in the loop or before it, becomes a reciprocal multiply): 389 (aligned 136, 1495 bytes).
+// Neither is kept: the base's longer x87 fade block happens to offset the missing inline of 0x1ccb0(59)
+// (retail inlines it; BLOCKED-BY 0x1ccb0 in a contributor's /Ob1 file), so every shorter fade block
+// raises the positional count. Also: the float distance with one bound local 374 (1501 bytes); with
+// `1.5f * radius` written twice 388, as `radius * 1.5f` 388 (same code: the literal is commuted);
+// the global with the original double distance 390; the inline denominator on the base 370 (aligned
+// 155); the alpha divided in double, on the base/on the global form 399/350 (hoisted in double);
+// diagnostic float-consistency pragma 500 (1605 bytes). Next: keep the global, float distance and
+// inline denominator once 0x1ccb0 inlines here.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

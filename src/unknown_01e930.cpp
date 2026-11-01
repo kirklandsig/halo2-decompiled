@@ -461,6 +461,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // query 245 (1100 bytes); the allocation result declared after the start time 256 (the last two are the listed
 // scores of those forms alone, so the loading local's gain cancels in them). Lead: the loading local is retail's
 // for both queries, so it may count once the frame's mask slot is found.
+// Round 46 (lane 14, fast): retail's start clock sits below its elapsed clock (ours the other way round);
+// elapsed renamed waited 244, start renamed clock_start 244, both 244 (homes unchanged); the retry counter
+// renamed retries 244; block declared before the size test 256 (the listed 256 form), with waited 256.
+// Retail's SSE code (movss 1.0f stores, fld/fcompi timeout) still needs /arch:SSE, which this file lacks.
 // Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
 // neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
 // allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start

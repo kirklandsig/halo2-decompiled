@@ -253,6 +253,11 @@ struct s_free_state_23d260
 // `if (length == 0.f)` fallback) 119 (retail's x87 length exactly, but the side.i copy is scheduled before
 // the forward.k sine and zero stays XMM3); with `-forward.i` 119; with the epsilon test as `fabs < eps` 119;
 // with side.k assigned first 119; with cross3f_staged for up 289.
+// Round 40 (lane 14, fast): movement.j with the cosine product first 121 (1328 bytes); the rotation's
+// projection and rows each as one expression (0x11d3b0's style) 110 (1330 bytes); the rotation's
+// forward/up pointers declared before the side vector and used for the side and up cross too 289
+// (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
+// pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
 // Round 29 (m3 lane 2, fast; none kept): retail's side block is 0x11d090's code (`w.i = v->j; w.j = 0.f - v->i;
 // w.k = 0.f`, length `sqrt(j*j + i*i + k*k)`, `!(0.0001f > fabs(length))` scale, `else length = 0.f`, then `if
 // (length == 0.f)`), with a constant fallback. That side form 119 (x87 squares j first as retail, but the side.i

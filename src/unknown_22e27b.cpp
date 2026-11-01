@@ -292,6 +292,16 @@ static inline real interpolate_linear(real a, real b, real t)
 // before a nested type test 210; restart byte/char/long/short 207/207/229/231; dispose byte/char/long/short
 // 207/207/198/200; dispose declared first 207; dispose initialised 207; boundary dispose true-only 207, with
 // the true-only restart 197.
+// Round 42 (lane 14, fast): fraction first (diagnostic base) 207; the fraction written as the
+// interpolation helper's argument and again in the scale (no t local) 153 (660 bytes); diagnostics
+// (a throwaway store before the loop, inside it or at the end) never move the loop's first scratch off
+// EAX, so the rotation is not a temporary count. On fraction first: restart as `if (type == 0) restart =
+// (bit 1 || bit 2); else restart = false;` 207; `restart = false;` then `if (type == 0 && (...)) restart =
+// true;` in both boundary blocks 193 (656 bytes): next time stays at [ebp-0xc] and the loop head is
+// retail's (direction ECX, frame EDX, flags EDX/EAX, zero in EBX), but the false store comes before the
+// test (retail stores it on the false path) and the timing setup computes next time first; on that form
+// the elapsed assignment first / between frame time and next time 198/193. Inline restart and disposal
+// predicates taking (type, flags), restart/disposal/both 255 (614 bytes)/207/255.
 // Round 128 (m3 lane 6, fast; control 96): in the loop retail holds the direction in ECX, the frame and then
 // the flags in EDX and the shared `& 2` bit in EAX (compared again as `cmp ax, bx` for the restart). The `& 2`
 // bit named in both boundary blocks for the disposal and restart tests: `word` 209 (663 bytes, narrowed through

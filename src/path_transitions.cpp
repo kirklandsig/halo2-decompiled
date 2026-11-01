@@ -581,6 +581,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
 // first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
 // before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
 // Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
 // round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
 // a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21
@@ -590,6 +594,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
 // `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
 // `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 45 (lane 14, fast), on the b, a, c, d corners with vector3d_from_points3d and both sums through dot3f: the
+// base 274 (aligned 199 -> 158); with case 5's direction declared first 274; case 2's position declared first 280;
+// both 276; both dot3f calls taking `&first` first 274. Left on it: the entry, first.j/first.k and the 1.0/radius*2
+// constants in swapped XMM registers, and the margin formed in the radius register, not in place in the reciprocal's.
 // Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
 // 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
 // of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
