@@ -296,6 +296,11 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
+// (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
+// at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
+// the 0x6b380 loop 237, all three 259; centre/height/radius in their own block 217 (frame 0x44, gain under the gate),
+// with the 0x6b380 loop 229, plus the direct point 238 (frame 0x40).
 // @retail 0x14b6a0
 void function_14b6a0()
 {

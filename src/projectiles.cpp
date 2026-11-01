@@ -964,6 +964,9 @@ real function_30bf0(vector3f *v);
 // optimal time as `sqrt(-root / two_a)` 236 (the SSE reciprocal stays); two_a written out at both divisions
 // with plain pointer reads 247 (ret 0x28, callers lost); C++ references to the two pointer parameters 232
 // (same code); `if (0.0f > gravity) gravity = 0.0f;` ahead of the vertical delta 247.
+// Round 189 (m3 lane 3, fast with the three matched callers): two_a from gravity 242 and two_a first with
+// `a = two_a * 0.5f` 230 (both lose every caller's convention); `two_a = a + a` 232 (the SSE reciprocal stays);
+// two_a before the discriminant base 238; delta.k computed with delta.i/j 233.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
