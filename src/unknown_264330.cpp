@@ -543,6 +543,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
 // Round 260: tail completion bool/byte/short/long at finalization/entry 437 each;
 // exact-only flags restored; frame 0xa4 and stacked actor input remain.
+// Round 263: Independent native-long sample/update/sampled-one subsets 433/424/430/425/452/425/430; all long with ordinary maximum 445.
+// Original while traversal, Boolean flags, maximum qualifier, workspaces and complete body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

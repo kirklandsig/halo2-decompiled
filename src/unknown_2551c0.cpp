@@ -714,6 +714,8 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
+// pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
