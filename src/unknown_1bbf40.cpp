@@ -576,6 +576,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
 // g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
 // datum-index `continue` as a nested if 47 (same code).
+// Round 27 (m3 lane 2, fast): if/else def with `special = false` after the 0x1b8d40 test 200 (872 bytes,
+// memory-only), just before `allow_exit = true` 200; the false at the end of the scan arm 190 (as round 185),
+// with `seat_object` declared and set to NONE at function scope 209 (frame still 0x30), declared there and
+// assigned in place 190 (same code), with a byte flag 190 (same code); the `&&` flag renamed to sort first or
+// last 200/200 (same code); a forceinline tail helper taking the flag and allow_exit by value with the `&&` def
+// 199 (865 bytes), with the if/else def and the false at the scan's start 199.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

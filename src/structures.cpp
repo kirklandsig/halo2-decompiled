@@ -296,6 +296,15 @@ static __forceinline bool structure_bsp_collision_available()
 // 92 (296 bytes). The screen keeps the flag test only when the flag-test block's predecessor on the excluded
 // edge is not the arm that sets the flag (a computed value or a memory test first); every such form that
 // keeps the semantics adds code at the join, and the flag is then spilled where retail spills the collision.
+// Round 27 (m3 lane 2, fast): `found = false; if (!excluded) found = requery;` with the collision assigned after
+// that if 79 (288 bytes: retail's `mov cl, 1; jmp` and an un-threaded `test cl, cl`, but `xor al, al` at the
+// join, the flag spilled and NONE in EBP); with a bool result 81 (286 bytes); with the collision published
+// through `source.collision` 79; `found = !excluded; if (found) found = requery;` with the assignment after the
+// if 86 (291 bytes); an inline helper returning 0/1/2 (excluded/model/none) for the object part 160 (225 bytes,
+// out of line); an inline `type == 6 && policy != 2` helper with `if (!excluded) requery else return result` 105
+// (245 bytes, out of line). Compile-only: /O1, /Os, /G7, /Ob1, /Ob0, /Op and /Ox all thread the flag too, and so
+// do helpers returning the exclusion (early returns, single-exit result, &&), `found = excluded ? ...`,
+// `found = !excluded && requery` and an `__assume` at the join.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -854,6 +863,11 @@ done:
 // only (it requeries after a failed model lookup, so not keepable): `if (!result && !excluded)` in front of the
 // requery keeps retail's `mov bl, 1; jmp` / `test bl, bl`, NONE in EBX with the back edge's `or ebx, -1` and
 // the result in its parameter slot in a compile-only screen, but 157 (488 bytes) in the real build.
+// Round 27 (m3 lane 2, fast): a `found` local (`object_index == NONE`, set by the requery) with one shared
+// lightmap call after the object part 157 (455 bytes, matched caller 0xd2a50 67); that with the excluded arm
+// clearing `found` 159 (453 bytes, 0xd2a50 72); the flag declared at function scope and cleared before the loop
+// 125 (same code); the object part as an if/else-if chain with an empty excluded arm 125 (same code);
+// `excluded = false; if (scenery) excluded = policy != 2;` 133 (470 bytes, setne, threaded).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

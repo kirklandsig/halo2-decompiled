@@ -206,6 +206,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
 // the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
 // with field_10 first 133.
+// Round 27 (m3 lane 2, fast): field_10 first 133 again (aligned count 21 against the kept form's 55: only the
+// split compare, the child-loop pad and the child-loop rotation are left); with the child's reciprocal before the
+// link call 138; the reciprocal before the link alone 102 (872 bytes); the child pointer as `data + (word)index`
+// 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
+// with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
+// `changed` bool, dword-cast pointers, the cache stores swapped.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
