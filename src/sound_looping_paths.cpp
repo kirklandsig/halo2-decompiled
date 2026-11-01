@@ -232,6 +232,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 470: unsigned raw decibel words in choice/target/datum records, all
 // seven subsets 886 each; all with unsigned helper transport 886. Original
 // records, helpers and body restored; entry zero and target/query/count homes remain.
+// Round 446: native persistent/query/search scalar lexical homes, seven subsets
+// and all with Boolean local roles 886 each. Original scalar names, body and helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

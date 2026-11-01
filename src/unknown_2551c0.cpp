@@ -202,6 +202,8 @@ short __stdcall function_2551c0(long actor_index)
 // Round 48 (lane 10, fast): all three vector components named in the rotation helper (read at each of
 // their uses), declared k/j/i, k/i/j, j/k/i or i/k/j: 116/116/115/116 (816 bytes; the frame grows to 0x64);
 // the score's `dot + 1` named as an alignment local 56 (815 bytes).
+// Round 446: native projection/cross/angular scalar precision, seven subsets 392/392/392/72/392/392/392;
+// all with complete score storage precision 414. Exact-only forms restored with original helper and body.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
