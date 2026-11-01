@@ -314,6 +314,9 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

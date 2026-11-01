@@ -525,6 +525,9 @@ extern point2f *g_468778;
 // constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
 // settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
 // first facing dot read off the prop view 408 (1556).
+// Round 289: Complete facing value with actor-first/target position/target velocity values, masks
+// 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
+// observations, lookup order, early distance and complete body retained.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
