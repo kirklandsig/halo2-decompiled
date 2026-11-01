@@ -1184,6 +1184,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // inline/ordinary, ordinary/inline, inline/inline, noinline/ordinary, ordinary/noinline,
 // noinline/noinline, inline/noinline, noinline/inline: 196/196/196/211/196/211/196/211 fast.
 // Case-18 noinline moves the input roles and loses the matched caller; all declarations restored.
+// Round 267: shared connection lookup on the accepted primary root, successful/
+// failure-first lookup guards and inner orders 567/576/657/765: 212 each reduced,
+// against control 196 (full 153). All lose caller 0x7afd0 at three differences;
+// original classifier, separate lookups, native input roles and caller match restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -3185,7 +3185,7 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 }
 #pragma inline_depth(255)
 
-// score 31 (was 227): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// score 31 (was 31): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
 // selectors (retail loads small into CL first and computes input before the alpha selector), the
 // constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
 // first), and modes one to three's quantizer inputs in shift's home where retail uses clip's.
@@ -3313,6 +3313,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // whole/fraction/alpha/input orders fwria 939, fiwra 965, fwira 976, fiawr 35, faiwr 950,
 // iafwr 43, aifwr 959, frwia 771, frwai 452, fawri 31; alpha selector at its use 947; both
 // selectors at their uses 975.
+// Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
+// at selector production 243/31/957/243. Original body restored; selector order,
+// span/constant reload pairs and shift/clip quantizer homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
