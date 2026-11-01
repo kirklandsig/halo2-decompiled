@@ -332,6 +332,11 @@ void function_07b3e0(void)
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
 // left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 18 (lane 17, fast): the iterator aggregate-initialised `= { g_4cf8d8, NONE, NONE }` 58 (same code as
+// the iterator form); the two-local form with the scan copy taken from the pool local 60, the pool from the
+// scan local 60 (both coalesce: only two separate reads of the global keep EBX/EBP apart, 11); on that
+// two-read form the scan as data_next_absolute_index_inlined 65, the index assigned after the release 55.
+// Retail's dead `add ecx, esi` needs the datum pointer materialised, as only the iterator step does.
 // Round 107 (lane 8, fast with 0x7b650): `if (!g_4cf8d4) return;` guard 39 (same code); the datum index named
 // before the call 39 (same code); the iterator form re-measured 58 (120 bytes); the existing out-of-line
 // record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
@@ -352,6 +357,15 @@ void function_07b3e0(void)
 // non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
 // retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
 // file's /Ob1 keeps them out of line here: a flags decision).
+// Round 18 (m3 lane 18, fast with 0x7b650): both helpers on the global, no pool local, 45 (126 bytes: the global is
+// read inside the loop); data_find_index (data_array.h) returning from inside its loop 60 at 118 bytes: the not-found
+// path then threads straight to the exit, the found block follows the `ret`, and the final stores take immediate
+// zeros, all as retail; only the second pool register (EBX scan, EBP datum), the loop pad and the step's dead datum
+// `add` are missing. With it, MiniMax H's two pool locals 10 at 131 bytes (only the found block's data/size registers
+// and the dead `add`; one-use duplicate local, not kept). The iterator form over a file-local scan that returns from
+// its loop 58 (120 bytes: retail's found block with the dead `add` and data in ESI, one pool register); the datum
+// iterator (bool step) 58; the step reading the iterator's pool again after the scan 58; scan on the iterator field
+// with the datum on the step's copy 58; the iterator set up by an inline (iterator, pool) helper 58.
 // Round 129 (m3 lane 6, fast): the scan and the datum index both reading the global at each use (no pool
 // local) 45 (126 bytes: LTCG hoists the two reads into one EBP and drops the final reload); with
 // index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);

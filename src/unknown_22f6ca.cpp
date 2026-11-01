@@ -126,6 +126,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // lookup 25 (the text loop's reset becomes retail's `and`, but the zero moves above the pane call),
 // with the model loop's own counter as well 25; the text result declared once before its loop 23;
 // `animating` declared before the pane test 23.
+// Round 101: the inner counter initialized at declaration 23; concrete block-24 or block-18 result
+// types 23 each; implicit model index store 23; text or model preincrement 23 each; a forceinline
+// setup helper for only the first three alike loops 23; both concrete group result types 23.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

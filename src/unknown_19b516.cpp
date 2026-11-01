@@ -152,6 +152,9 @@ void c_widget::v15(c_widget *widget)
 // Round 55 (real, v17 unchanged at 2): widget declared, then assigned, tested `!= NULL` 2; ineligible arm
 // stepping with `continue` 2; for loop with the helper at both ends 2; `break` in place of the return
 // 2; the widget held as the base class pointer with casts at the calls 2.
+// Round 101: direct base traversal at entry, step or both; a named or function-scope next result;
+// explicit else, this entry, failure return or derived step qualification; a loop-local current: all 2;
+// a 2400 s permuter run, initial-build compiler hang.
 // @retail 0x22ebc3
 void c_widget::v16()
 {

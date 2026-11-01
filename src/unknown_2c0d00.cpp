@@ -288,6 +288,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
 // Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
 // all original constant lifetimes, qualifiers, buffers and complete body restored.
+// Round 479: positive index/visibility/self-vehicle admission subsets 1/2/4/3/5/6/7
+// all 931f (control 931); actual returned object transform 940f. Original gates,
+// defaults, matrix consumers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1286,6 +1289,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
     s_path_location const *location, s_avoidance_trace *trace);
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+// MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
+// scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
+// lowered the 444.
 // score 444 (was 444): frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1457,6 +1463,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // is chosen, no initialiser 469 (1757 bytes); the one-step arm with its own `return` 444 (same code);
 // the copy-last block after the loop through two gotos 444 (same code: its placement is not source
 // order); the next-step pointer only inside the corner branch, the fallback indexing points[next] 478.
+// Round 479: native positioned-point subobject with short/long type-link
+// combinations 477/488/477/476; native position subobject 474/471/473/471
+// (fast control 444). Original complete record snapshot and body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

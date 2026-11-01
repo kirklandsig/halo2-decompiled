@@ -387,6 +387,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // round's four trials in this file (the index initialised in the enclosing block, a
 // count local, a function-scope seat pointer and a plain recompile) gave 14, 14, 67
 // and a byte-identical body, so the body is unchanged
+// score 11 (was 11): the seat loop still keeps the seat count in EBP and the index in
+// ESI here while retail keeps the count in ESI and the index in EBP, so the loop's
+// preamble (the two pushes, the zero the guard compares against and the first store)
+// is laid out differently; the body after the preamble matches; this round's index
+// declared before the loop keeps the same split and scores 11 as well, and the
+// permuter was stopped by the harness's time limit three times without a result
 // score 11 (was 11): the seat loop still keeps the seat count in EBP and the index
 // in ESI here while retail keeps the count in ESI and the index in EBP, so the loop
 // preamble is laid out differently; this round's count-in-a-local trial compiles
@@ -981,6 +987,11 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 
 /* invites the clump members to the joint, the nearest first, when the
    object has more than one seat to take */
+// score 17 (was 17): retail still loads the element pool's data right after the table
+// pointer into EDX and keeps the element record in ECX, ours loads the data later into
+// ESI and the record into EAX; this round's declaration-order trials (the element
+// pointer before or after the actor) move the whole prologue instead, and the body
+// after the call matches
 // score 17 (was 17): the element pointer is still formed after the call's argument
 // pushes, so the element pool's data has to survive them and lands in ESI with the
 // record in EAX; retail forms it before the pushes, so the data stays in the
@@ -1452,6 +1463,11 @@ void function_1f86a0(long actor_index);
 // element local) 233. In retail EDI keeps the actor through the loop
 // untouched and EBX takes the entry (spilled at F+4, briefly the first 0xbaf40 result); ours gives BL the mask and
 // uses EDI for that result, reloading the actor.
+// Round 20 (lane 17, fast): the element index read once into a local and reused for the joint index at
+// the break 244; a plain break with `if (entry != NULL) joint_index = entry->unknown4;` after the loop
+// 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
+// first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
+// as the subscript base 134 (same code, so the head's early header load is not evaluation order).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
