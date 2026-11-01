@@ -1957,6 +1957,9 @@ void function_269250(long clump_index, long actor_index);
 // in-arm search as a forceinline function returning the selection 126 (480 B); the in-arm compare with the selection
 // and best declared once for the whole function and reset per actor 126. The fast image swaps 0x269580's two
 // argument registers (0x269580 matches only in the full image): read this function's call setup from plain checks.
+// Round 231: Produced actor/group/both pointer for scopes 87/335/335; readonly actor 87, with
+// those scopes 87/335/335; all with entry uninitialized score 335. Original common score graph,
+// observations and body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2188,6 +2191,9 @@ void function_269250(long clump_index, long actor_index)
 // Round 482: Independent category false-initializer lifetimes at entry/object/type
 // boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
 // declarations restored; category-byte homes and deletion/pool completion remain.
+// Round 231: Disjoint-category unit deletion reaches existing completion, original/native node
+// with original/reversed/chained category initialization 188/188/186/186/186/186/188/188. All
+// reach 760 bytes; original continuation and body restored.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2311,112 +2317,7 @@ int __cdecl function_269da0(void const *a, void const *b);
 void bitset_or(dword const *a, dword const *b, dword *destination, long bit_count);
 void *actor_get_character_situation_entry(long actor_index);
 
-// score 71 (was 283): the cluster loop (hoisted reset word in SI, NONE in EDI), the marking loop and the
-// second selection loop now equal retail; left: the prop-loop head (ours loads the count before the prop
-// pool and keeps the pool in EDI where retail has EDX) and the first selection loop's `add ebx, 0x10`,
-// where retail re-derives the candidate from the cursor (doing that here drops the reset hoist, 301).
-// Plain checks only: --fast drops the reset hoist that the plain build keeps.
-// Round 29: the existing bitset_or for the hand-written OR loop 252 (aligned 139 -> 90); with the marking
-// slots as 0x269580/0x269250 write them 178; the first loop as `while (selected < 50 && cursor < count)`
-// with the second loop's candidate re-derived from the cursor 71 (kept). On 178: that condition with the
-// candidate re-derived after `++cursor` in both loops 301, in the first only 308, the condition alone 316
-// (1310 B); the second loop's re-derivation alone 173; the condition with the candidates taken at the tops
-// of both loops 297; re-derivation in both with the first loop's break kept 180 (1334 B). On 71:
-// s_clump_prop_walk for the prop loop 71 (same code); the first loop's step as `candidate = candidates
-// + cursor` 301 (the reset hoist drops as with `&candidates[cursor]`); the second loop indexing
-// `candidates[cursor].prop_index` with no pointer 81. Fast diagnostics (reverted): an early reset local
-// as long stored as (short) 26 on the both-loop form (aligned 17), as short/word 275; the structure
-// global at the compare only 302; a local s_location copied in the arm 336.
-// Earlier: Frame 0x6a4 agrees; retail hoists the reset word into SI and NONE into EDI for
-// the cluster loop and reads the cluster count twice (ours keeps one read live), recomputes each
-// candidate from the short cursor (`movsx ebx, di; shl ebx, 4; lea ebx, [esp+ebx+0x74]`) and leaves the
-// first selection loop unrotated; visibility/marking registers follow.
-// frame 0x6a4 agrees; reset-word/cursor allocation and selection/cleanup placement differ.
-// frame 0x6a4 agrees; reset-word/cursor allocation and selection/cleanup layout differ; typed cluster view 322f; isolated cluster iterator 322f; unsigned cursor 328f; unsigned selected 322f; case-result assignment 391f; existing first 347f; indexed cleanup 351f.
-// Round 280: full-width reset snapshot 373; current-child handle 322; late cursor 350; late selected total 335; ascending word merge 374.
-// Round 156, caller context: depth zero 505; depth one 322; target size 517;
-// wide cluster selectors 356; retained generation slot 322. Original body retained.
-// round 312: reset/cursor allocation remains; selected byte 332; generation publication first 338; short visibility count 355; cluster-count snapshot 374; shared iterator initializer 322.
-// Frame 0x6a4 agrees; reset-word SI, marking registers and selection/cleanup placement remain. Existing creation helper 322; exhaustive successor 324; native clump heads 373; generation value 332; shared state fallthrough 322; visibility pointers 374.
-// Scoped first distance iterator 322; two-use candidate-distance sample 326; readonly
-// settings view 322; first scope plus sample 326; separate marking result 322; first
-// scope plus marking result 322; chained reset fields 322, plus marking result 322.
-// Live clear/admission/both 322/315/315; live row/clear-row/admission-row/all 315/383/322/356;
-// candidate address before sort 356. Live admission bound 315 (the global re-read at one of four uses; not kept);
-// early reset-word SI load recovered; all call tuples and existing merge/selection loops retained.
-// Round 342: candidate-count lifetime at collection 383; invalid-cluster reset first 322;
-// fallback initialization first 322; observed-state CRT copy 322; shared visibility test 322.
-// Readonly candidate 322; priority/type/both samples 331/357/369; readonly samples 369; selected threshold first 372; threshold with samples 361; readonly structure 322.
-// Round 368: joint selection-phase counter lifetime, short/long cursor and total
-// 360/352/361/352; the same four with indexed candidate advancement 382/372/365/371.
-// Round 373: shared marking-chain walk ordinary/inline/forced 296/296/296;
-// entry chain workspace with the same boundaries 296/296/296; uniform structure
-// observations with ordinary/forced walk 331/331. Ordinary shared walk kept.
-// Round 144: existing complete actor/location/both views 296f each; cluster field
-// observations alone or with actor/location/both 296f each; both views and readonly
-// visibility row 296f. All restored; early reset-word and later allocation remain.
-// Round 183: Backward visibility source/destination/both pointer induction 331/322/358;
-// four default-position permutations 296/296/296/296; both pointers with default first 358.
-// Original merge and dispatch restored; reset-word SI and later cursor/selection homes remain.
-// Round 351: native short count/cursor/selected home names in all seven combinations
-// 296 each; all scalar-home names with structure/distance roles 296. Original names restored.
-// Round 192: actor/prop/node iterator lexical homes in all seven combinations 296 each;
-// complete native iterator/array homes 296. Frame 0x6a4, early reset-word SI and later
-// visibility/selection allocation unchanged; original names and all code restored.
-// DL round 156: native member/object generation ordinals word-word, word-long, long-word,
-// long-long, dword-long, long-dword, dword-word, word-dword
-// 311/323/323/299/299/299/323/323. Shared walk and original observations restored.
-// Round 353: on the shared marking walk, reset snapshots short/long/word
-// 357/356/357; short/long with chained sentinels 357/356; short/long
-// with long actor cluster 359/362; all three 359. Original observations restored.
-// Native word dispatch zero-first/direct field 283/283; one-first 354; unsigned
-// eligibility 342. Early state result with those forms 323/323/325/329. Guarded
-// nonzero word dispatch 283 retained; original state-result lifetime kept.
-// Round 27: actor-step/getter expansion boundaries, ordinary/inline/forced
-// in all eight non-original pairs [283,283,283,283,283,283,283,283]. Original
-// declarations and bodies restored; early reset SI and later homes remain.
-// Round 167: existing absent-leaf location initializer 283; visibility cluster,
-// row-count and row-pointer scalar homes in all seven combinations 283 each.
-// Original reset and names restored; early reset SI and later allocation remain.
-// Round 250: existing native structure count 283; with per-iteration candidate,
-// short/long cursor and selected carriers 384/336/383/337;
-// corresponding direct indexed fields 374/336/375/337. Original body restored.
-// Round 29: Real distance member and entry cluster/candidate array declarations in all seven combinations, then the entry distance workspace: 283 each. Original publication and declaration lifetimes restored.
-// Round 383: shared existing location reset ordinary/inline/forced/outlined 283/283/283/346;
-// with consistently retained clump heads 391/391/391/411. Original helper linkage, both original
-// helper callers, root observations and complete executable body restored.
-// Round 386: real actor/prop/node traversal workspace reuse for each pair/all,
-// then the same four with the actual uninitialized query workspace at entry
-// 283/283/283/283/283/283/283/283; original independent workspaces and body restored.
-// Round 244: Five alternate location-reset field orders 283 each; reset-word-first with either sentinel
-// chain 283/283; reset between sentinels with invalid-cluster-first merge 283. Early reset SI and
-// visibility/selection homes remain; original field publications restored.
-// Round 90: `while (selected < 50 && cursor < count)` for the first selection loop 423 (retail's
-// unrotated head, but the frame drops to 0x6a0: the clump offset gets EBX instead of a spill); with
-// `&candidates[cursor]` per iteration 396; with the candidate reassigned after `++cursor` in both loops
-// 372 (aligned 202 -> 161, 1308 bytes); that reassignment alone on the original loops 388 (frame 0x6a0);
-// on the 372 form with the structure global read at every use 368. Retail's extra pressure is the
-// hoisted reset word/NONE pair; ours never hoists them.
-// Round 391: Loop-local produced object pointers in plain for initializers/steps,
-// cluster/marking/prop in seven subsets 397/389/439/401/478/458/573;
-// all three with the object query 653. All step returns tested; original body restored.
-// Round 74: live admission 293; entry reset 348; post-clear reset 284; both-loop
-// recomputation with live admission 318; selection-only 325 and cleanup-only 287 with live
-// admission; both-loop recomputation with entry reset 353; adding live admission 316.
-// Original executable body restored.
-// Round 84: reset word named before the distance store 351 (the load moves to retail's spot, registers
-// shift); one iterator per actor loop 283 (same code); structure global at each use 318; named stamp
-// index in both marking arms 319 (retail's direct marking addresses, later loops misaligned by padding);
-// with `while (selected < 50 && cursor < count)` as well 326.
-// DL round 206: candidate evaluator/collector inline modes 1/0, 0/1, 1/1, 2/0,
-// 0/2, 2/1, 1/2, 2/2 (ordinary, inline, forced) 283/283/283/1749/459/1749/459/3173.
-// Forced evaluator expansion also loses matched neighbours; all declarations and body restored.
-// Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
-// with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
-// allocation remain; all matched controls survive.
-// Round 482: Stable selection-count snapshots short/long after sort 197/313, before sort
-// 203/315; with first-loop indexed candidate advancement 314/171/313/184.
-// Caller-inclusive fast control 71; every snapshot regresses. Original escaped count restored.
+
 // @retail 0x269870
 void function_269870(long clump_index)
 {
@@ -2481,7 +2382,8 @@ void function_269870(long clump_index)
     s_type_76cf92 *prop;
     while ((prop = clump_next_prop(&props)) != NULL)
     {
-        if (function_269e60(*(long *)((byte *)prop + 8), clump, props.index, &candidates[count], false) < clump->update_state)
+        long object_index = prop->object_index;
+        if (function_269e60(object_index, clump, props.index, &candidates[count], false) < clump->update_state)
             function_26aaf0((s_clump *)clump, props.index);
         else
             ++count;
@@ -2558,7 +2460,7 @@ void function_269870(long clump_index)
             }
         }
         ++cursor;
-        ++candidate;
+        candidate = &candidates[cursor];
     }
     while (cursor < count)
     {

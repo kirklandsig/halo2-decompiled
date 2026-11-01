@@ -151,6 +151,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
 // private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
 // 84/90. All three controls matched; original mask, helpers and tails restored.
+// Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
+// 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
+// original helper calls, relations and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

@@ -339,6 +339,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // cache zeros grouped 149 (head and stage in ESI as retail, but the tag table goes to ECX above the frame
 // where retail keeps it in EDI); the grouped zeros with the second ordinal read through a named element
 // pointer 120 (still fused); on the 149 form the sums written parameter first 149, the root handle named 149.
+// Round 231: On the saved-EDI entry graph, repeated shader input with grouped zeros/late
+// mask/reused stage-pass subsets 146/168/162/164/146/168/162/164. Late-mask forms lose the
+// matched wrapper; all restored. Fallback masking and stage/pass homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
