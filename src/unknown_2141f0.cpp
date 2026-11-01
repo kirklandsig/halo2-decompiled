@@ -243,6 +243,15 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
 // snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
 // 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
+// Round 71 (lane 9, fast), state 11 (retail: chunk shares EAX with the remaining bytes, completed ECX, limit EDX,
+// slot EDX early, file EAX late): `long chunk = remaining; if (g_55bd1c <= remaining) chunk = g_55bd1c;` 37
+// (retail's `cmp limit, remaining; jg` shape, registers rotated); `g_55bd1c <= remaining ? g_55bd1c : remaining`
+// 37 (same code); the chunk as the difference clamped in place 38; the if-clamp with the slot local first 38,
+// between clamp and store 38, after the store 37; the if-clamp or difference clamp without the slot local 115
+// each (chunk EAX and completed ECX as retail, but buffer and limit swapped and the slot read late, which
+// breaks the checker's global pairing); a named buffer local for g_55bd18 with ternary/if clamp, with and without
+// the slot local 37/37/115/115; an `s_cache_file *file = &g_557c90[g_55bd10]` pointer in place of the slot local
+// (ternary, if, after the store, first) 250/250/250/275 (1724 bytes).
 // @retail 0x2141f0
 bool function_2141f0(void)
 {
