@@ -247,6 +247,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // increment 49 (92 bytes), count first with `string + start` 46 (103 bytes); the add reading the
 // plain parameter once through its own address (volatile) before the increment, count first or start
 // first, 36/36 (0xb5f10 6 each). Moving the add ahead of the clamp always passes start in EDX.
+// Round 124 (lane 5): every other parameter order, the definition and both calls changed together, in the
+// real build: 40 for the orders keeping string first and start before count (0xb5f10 0 only for
+// string/start/destination/count and string/count/start/destination), 40-41 for the rest (0xb5f10 2-6).
+// An LTCG env link of this file (entry stub calling 0xb5f10; reproduces 40/28/39 and 0xb5f10 0/6/0) over
+// 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
+// or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
+// colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
