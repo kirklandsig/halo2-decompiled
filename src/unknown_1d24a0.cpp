@@ -227,6 +227,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Original kernels and full body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
 // linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 259: Shared scale for radial/planar/axial/angular/radial-planar/radial-angular/planar-angular/radial-planar-angular phases
+// 1009/1014/912/939/1136/1090/1074/1206. Original body and producer sites restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

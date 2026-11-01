@@ -184,6 +184,8 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // start time read into a local before the clock 439 (aligned diff 155 from 162: retail's load order;
 // one-use, not kept); the reset flag as bool 469 (frame 0x3e4). Retail's 0x5b080 call is why ours
 // keeps the session state in ESI after the getter call (the inlined body re-tests it).
+// Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
+// 439/439/439/439/439/439/439/469. Original body and producer sites restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

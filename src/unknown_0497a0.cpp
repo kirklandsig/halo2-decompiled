@@ -167,6 +167,8 @@
 // Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
 // 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
 // shape/basis homes and thirteen excess bytes remain.
+// Round 259: Entry uninitialized scaled-product/maxima/wave-scalar storage, seven subsets, then all plus the existing truncation carrier
+// 581/581/581/581/581/581/581/581. Original body and producer sites restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
