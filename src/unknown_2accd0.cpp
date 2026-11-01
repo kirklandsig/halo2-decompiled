@@ -743,6 +743,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Round 23 (lane 17, fast; 0x2adb10 129 throughout): the getter returning a two-field (buffer, size)
+// record by value 170 (695 bytes); a scratch-arm `buffer_size` local with one function-scope position for
+// both cases 160 (689; sums header first again); the signature position written at both uses (no local)
+// 221 (694); the body position at both uses 213; the signature case as the switch's `default:` label 177
+// (688). Diagnostic: 1-7 dead long temps leave the code byte-identical (34), so these colour ties do not
+// follow the temp count.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -893,7 +899,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 129 (was 134): with the address-taken scratch record and the two-pointer getter (see
+// score 129 (was 129): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -964,6 +970,11 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Before round 23 the first line read 129 (was 134).
+// Round 23 (lane 17, fast; 0x2ad7c0 34 throughout): the `void *` view with the current getter 129
+// (byte-identical; the extend sums stay header first); the header memset's count from the record's size
+// field 272 (952 bytes); the extend arm's memset before its offset 301 (948); its chunk size before its
+// memset 262; the zero clamp as `if (offset < 0) offset = 0;` 268. Dead temps 1-7: identical code.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

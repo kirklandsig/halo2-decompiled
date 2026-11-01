@@ -770,6 +770,13 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // compile-only build gives retail's 0x85c frame and slot layout but no EBP bias either. `in_session == true` 510
 // (two-point gain rejected); bit 7 taken before the clock read 515; bool campaign 540; both first forms 513;
 // a long row 512 (same code).
+// Round 23 (lane 17, fast) on the four text buffers as `s_text_256` (506, retail's EBP bias): the 7/8
+// arm's caption call before its total 467 (2035 bytes; positional only: that arm stops sharing the arm
+// tail but computes its total after the call where retail computes it first; not kept); the state read
+// inside the guard and into its local only in the details branch 505; the 7/8 arm's widget index and
+// row increment as two statements 506 (same code); `long row` 506; both timer arms passing
+// `seconds / 60, seconds % 60` 506. Retail's shared arm tail stores row = 1 to its home and reloads it
+// into EDI, while its 7/8 arm sets EDI directly: that arm sits in another home region of row.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
