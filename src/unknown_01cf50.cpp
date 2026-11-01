@@ -366,6 +366,9 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
 
+// score 72 (was 68): the texture pointer is taken from a local again and the flags are read
+// in the test itself: the four points the bitmap's own address won are under the keep bar,
+// so the body of the earlier round is restored.
 // Tried (MiniMax S run 10): the mipmap limit at bitmap + 0x14 read into a local before the
 // texture pointer is cleared scores 70 against 72; under the keep bar.
 // @retail 0x1d000
@@ -5654,6 +5657,9 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// score 182 (was 202): the default depths are stored only when the current depth is not zero
+// (retail's ordered comparison), and the scenario record's override travels through locals
+// before the pair is written back.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -5674,15 +5680,19 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
     union { dword bits; real value; } default_lower, default_upper;
     default_lower.bits = g_467014;
     default_upper.bits = g_467018;
-    g_485ad4.lo = default_lower.value;
-    g_485ad4.hi = default_upper.value;
+    if (g_485ad4.lo != 0.0f) g_485ad4.lo = default_lower.value;
+    if (g_485ad4.hi != 0.0f) g_485ad4.hi = default_upper.value;
+    real lower_depth = default_lower.value;
+    real upper_depth = default_upper.value;
     if (g_5093e0)
     {
         real value = *(real *)((byte *)g_5093e0 + 0x190);
-        if (value > 0.0f) g_485ad4.lo = value;
+        if (value > 0.0f) lower_depth = value;
         value = *(real *)((byte *)g_5093e0 + 0x194);
-        if (value > 0.0f) g_485ad4.hi = value;
+        if (value > 0.0f) upper_depth = value;
     }
+    g_485ad4.lo = lower_depth;
+    g_485ad4.hi = upper_depth;
     function_0206a0();
     geometry_cache_update();
     function_12c600();
@@ -8024,27 +8034,36 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// score 167 (was 171): the rectangle offsets reach the callee's registers the way retail's do
+// (the y value is the second argument and the x value the third), the device result is tested
+// in the register and the failure path writes the flag, and the palette result is a local of
+// its own, so the flag keeps the value retail gives it.
 // @retail 0x12560
 void function_12560()
 {
     if (g_485a88) return;
     function_0169f0();
-    short x, y;
-    if (g_485ac5 && g_485ac6) { x = 0x20; y = 0x18; }
-    else { x = 0x30; y = 0x24; }
+    short y, x;
+    if (g_485ac5 && g_485ac6) { y = 0x20; x = 0x18; }
+    else { y = 0x30; x = 0x24; }
     function_016a30(1.0f, y, x);
     Direct3D_SetPushBufferSize(0x100000, 0x8000);
-    volatile bool success = function_128c0(&g_43ed80);
-    if (success)
+    volatile bool success;
+    if (!function_128c0(&g_43ed80))
+    {
+        success = false;
+    }
+    else
     {
         g_4670bc = 1;
         function_16b10((s_render_reset_state *)g_485b48);
         function_1c1b0();
         function_1c810();
         D3DPalette *palette = NULL;
-        success = function_1d3f0(3, g_468848, &palette);
+        bool palette_ok = function_1d3f0(3, g_468848, &palette);
+        success = palette_ok;
         g_484dbc = palette;
-        if (success)
+        if (palette_ok)
             {
                 D3DDevice_SetPalette(0, (D3DPalette *)g_484dbc);
                 D3DDevice_SetPalette(1, (D3DPalette *)g_484dbc);
