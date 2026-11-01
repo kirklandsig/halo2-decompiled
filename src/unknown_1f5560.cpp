@@ -927,6 +927,9 @@ real normalize2d(point2f *v);
 // test as its own `if` 182 (919 B). Diagnostics, all reverted: the facing normalization removed 358,
 // the retry removed 485, the type scan removed 496; the result stays memory-homed in all three, so its
 // homing does not come from the retry call, the facing calls or the scan.
+// N271: complete actor/unit/speed-table receiver observations at use, seven subsets
+// 308/135/135/324/308/135/324; all with existing request point setter 336.
+// Original receivers and body restored; DL success retention and movement/request exits remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1565,6 +1568,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // declared after the normalization 305 (1188 B); radius renamed to sort before the stack points 238,
 // `center` declared beside `direction` 238, radius declared before the flag and result 238 (same code).
 // Round 216: Early origin/target/both/facing/origin-facing/target-facing/all point values before lookup 322/311/346/331/351/347/380; all with entry result 380. All restored; zero/radius and native input/vector homes remain.
+// N271: existing normalizer single-result entry-default/exhaustive/reused-magnitude/acceptance
+// graphs, then caller assigned-sign completion: 273/255/275/254; 255/260/265/259.
+// All ordinary-origin forms restored with the original helper; zero/radius and vector homes remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

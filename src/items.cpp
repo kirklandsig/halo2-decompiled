@@ -1455,6 +1455,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // Round 269: Native two-use spin byte/char/short/long 191/190/191/195; exhaustive branch-owned
 // result defaults with those carriers 191/190/191/195. Frame/return-byte/release homes remain;
 // original spin Boolean, default, helper and complete body restored.
+// N271: full spin-byte capture, byte/signed-byte/word/dword with mask decoding 191/194/189/190;
+// with shift decoding 158/158/185/189. Original twice-used Boolean and complete body restored;
+// result byte +0xe/+0xf, release-byte RMW/early impulse sharing and event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -4070,6 +4070,8 @@ static __forceinline long nonnegative_15ce70(long value)
 // Round 241: uniform presence/self/both decisions 575/559/560; with native statistics
 // ordinal 572/552/544; both with override join 560, also staged decoding 560.
 // Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
+// N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
+// 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {

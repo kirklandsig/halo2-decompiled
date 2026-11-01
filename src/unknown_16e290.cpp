@@ -1536,9 +1536,9 @@ struct s_camera_clip_reference_16ebf0
 	byte field_14[4];
 };
 
-// score 120 (was 120): frame 0x98 and state/forward/up/point homes now agree.
-// Left: forward/position saved registers, cross-product carriers and the stacked clipping flag.
-// score 120 (was 120): frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
+// score 87 (was 117): frame 0x98, vector homes and forward/position EBX/EBP now agree;
+// Left: cross-product carriers, clipping-result production and interpolation scheduling.
+// Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
 // position pointers take EBP/EBX for retail's EBX/EBP, the cross product's forward.j/up.k xmm0/xmm1
 // colouring, and the clipping call: retail passes the flag in DL and the end point in ESI, ours pushes
 // the flag and passes the point in EDX. That is 0x171d00's own convention (BLOCKED-BY 0x171d00, a held
@@ -1674,6 +1674,10 @@ struct s_camera_clip_reference_16ebf0
 // 203, with forward/up pointer locals 203/206; a typed observer view (position/forward/up/flags
 // fields) 120 (identical code) in every pointer form; position through the pointer at each subset
 // of its four uses (copy, call, interpolation, store-back): only the interpolation decides, 119/220.
+// N271: signed-byte reference with byte/bool/signed-byte/long truth 112/87/112/115;
+// short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
+// inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool
+// truth, plain 87 at 953 bytes. Cross carriers, clipping producers and interpolation still differ.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
@@ -1728,18 +1732,18 @@ void function_16ebf0(long user_index)
 	{
 		s_location location;
 		function_11bed0(&location, &point);
-		byte narrow;
+		bool narrow;
 		if (location.cluster_index != NONE)
 		{
 			s_16e210_match_view *geometry = (s_16e210_match_view *)g_4e0348;
-			byte reference = geometry->clusters[location.cluster_index].cluster_reference;
-			if (reference != 0xff)
+			signed char reference = geometry->clusters[location.cluster_index].cluster_reference;
+			if (reference != NONE)
 			{
 				s_camera_clip_reference_16ebf0 *entry =
 					&((s_camera_clip_reference_16ebf0 *)geometry->references)[reference & 0x7f];
 				if (entry->index != NONE)
 				{
-					narrow = !(reference & 0x80) ||
+					narrow = reference >= 0 ||
 						entry->plane.j * point.y + entry->plane.k * point.z + entry->plane.i * point.x - entry->plane.d < 0.0f;
 				}
 				else narrow = false;
