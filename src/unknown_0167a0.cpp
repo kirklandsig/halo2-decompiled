@@ -1458,6 +1458,13 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // 10-20, merged 14/18 labels, `return true` in the case, fall-through into case 12, `(out + 1)[k]`, cast
 // fields and `out++` all floor at 2 or worse. Next: a 0x1b2c0 form that hides case 14's stores from the
 // sinking without a pointer copy or a loop.
+// MiniMax R (10-31): confirmed the cause and its price. Writing cases 14/18 of 0x1b2c0 straight through `out`
+// (no `real *zero = out + 1` copy) makes LTCG lose the knowledge that the call leaves the entry table alone, so
+// 0x19ca0 matches retail byte for byte (MATCH, 0). The price: VC then emits case 14/18's three zero stores as
+// out[1], out[3], out[2] where retail has out[1], out[2], out[3], so 0x1b2c0 goes from MATCH to 2. Every direct
+// spelling tried (~60: all six store orders, chains, `out` and `out + 1` pointer copies, dependency chains, the
+// width store in each of the four positions, the zeros before the width) floors at 2; the pointer copy keeps
+// 0x1b2c0 exact but leaves 0x19ca0 at 130, so the direct form is not kept (it raises another function's score here).
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
