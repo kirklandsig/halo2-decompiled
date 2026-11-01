@@ -2431,6 +2431,13 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // declaration order of first/last/requested/found/i (317-319), per-loop `long i` (317), an `entries` alias (317),
 // a copy of `first` for the later calls (370), found set before/after the swap (360/318). Without the
 // "last >= i" forms 390; "limit <= i" stops the unrolling (802).
+// Round 36: a compile-only build reproduces this listing (aligned 131 against retail); `first` takes EBP in all 60
+// random combinations of declaration order, loop tests, flag order, per-loop counters, an entries alias and the
+// clamp spelling, in renames, and even with its address taken (diagnostic), so the EBP/EDX choice is not a spelling.
+// Retail's growth loop computes `elapsed + step`, stores it and re-reads elapsed for `initial + elapsed`; a pointer to
+// `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
+// Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
+// second loop as a search with the swap after it 365.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4096,6 +4103,13 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // unculled/gated plus unculled/all five modes 482/280/540/340/636/435/722;
 // plain loop over the actual mode sequence 795. Provider stays out of line;
 // original whole body and call roles restored. Flag stores and stub convention remain.
+// Round 36 (fast, the shared pass helper changed for all three callers): the gate only for modes 2/8 with
+// `if (mode == 3 || mode == 16) enabled = true;` after the cull call and pass 8's raw byte 193 (958 bytes;
+// 0x423c0 201, 0x2bcd0 371), the same with the `!= 0` gate 186, with `g_485898 >= 4 && g_485898 <= 7 ? 0 :
+// cull` 193; the gate pointer with that late store 193, with the cull ternary 193. The late store is
+// threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
+// 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
+// retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
