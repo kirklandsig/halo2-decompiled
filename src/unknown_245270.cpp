@@ -488,6 +488,10 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 43 (lane 14, fast): plane table read after the edge vector 203 / after the long code copies 203 /
+// that with the side bits before the plane pointers 203 (all three move the source back to EDX, 0x245aa0 3);
+// side bits before the plane pointers alone 209; second material through a record pointer 209; the emit
+// call's material fields read through the source again 205 (0x245aa0 107).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

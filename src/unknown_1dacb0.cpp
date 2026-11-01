@@ -1163,6 +1163,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 262: Ordinary inline metadata on existing private resource levels: outer alone 3524
 // (310/2825); middle/inner and all remaining pairs/triple 828 each; all with forced existing
 // animation-resource expansion 828. All provider metadata, target body and request tuples restored.
+// Round 43 (lane 14, fast, both bodies): single exit as the matched 0x1dc790 1040 (2857 bytes); 0x1dc790's
+// iterator field order 828 (code changes); both 1040; iterator outputs declared after the iterator initialisation
+// 826 (two-point gain rejected); that with 0x1dc790's field order 828. Retail gives found_mode's dead parameter home
+// to the per-attempt candidate (ours to iterator_mode) and the no-result path its own epilogue.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1293,6 +1297,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 471: Separate selected graph/index short/short, short/long, long/short, long/long,
 // materialized before/after outputs 1024/1002/1017/1000/1018/1001/1014/1002.
 // All selected-component carriers and original constructor lifetimes restored.
+// Round 43 (lane 14, fast, both bodies): single exit as the matched 0x1dc790 1040 (2857 bytes); 0x1dc790's
+// iterator field order 828 (code changes); both 1040; iterator outputs declared after the iterator initialisation
+// 826 (two-point gain rejected); that with 0x1dc790's field order 828. Retail gives found_mode's dead parameter home
+// to the per-attempt candidate (ours to iterator_mode) and the no-result path its own epilogue.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

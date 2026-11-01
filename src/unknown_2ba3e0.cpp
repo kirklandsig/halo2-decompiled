@@ -781,6 +781,14 @@ real g_55e618;
 // computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 196; on the copy form the
 // collision word stored before the start stores plus the impact before the position 100 (two-point gain,
 // not kept); the copy form in retail's computation order 211; keep computed after impact.index 197 (1536 bytes).
+// Round 43 (lane 14, fast): collision record declared in the loop block 243 (1570 bytes), at the countdown block's
+// top 243; velocity pointer 195; pointer plus loop-block collision 184 (1536 bytes, frame 0x118: tangent +0x38, sweep
+// +0x44, cache +0x50, collision +0xa4 as retail, no perpendicular home, j/material/next slots rotated); that with
+// retail's computation order 170 (1547), with rows i, i, j, j, k, k 179 (1537 bytes); on the last: velocity pointer
+// before normal 191, keep before normal 179, both 190, normal before the coefficient loop 179, `normal->x * dot`
+// 179, `keep * field` 179, keep at each use 120 (1525, keep recomputed after the call). Ours keeps the normal as the
+// destination of every `dot * normal` product, so tangent.k spills where retail multiplies dot in place, spills perp.k
+// (+0xac) and keeps tangent.k (that spill is what gives retail its perpendicular home and the 0x124 frame).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
