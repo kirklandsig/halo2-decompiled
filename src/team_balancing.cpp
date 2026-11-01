@@ -595,6 +595,13 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
 // ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
 // `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
+// Round 114 (lane 8; one-file LTCG harness of this file, exact at 67): the copy, swaps and queries through a
+// non-const `s_balance_solution *trial = &candidate` 67 (same code); `s_balance_solution const &reference =
+// improved ? best : current` at the test 67; `(improved ? best : current).` at each of the six queries 112 (539
+// bytes); `reference[0].count_spread()` 67; the spread tests through forceinline `spread_greater(reference,
+// candidate)` / `spread_equal(reference, candidate)` helpers 65 (the reference-left code). Retail queries the left
+// operand first in both the spread compares (candidate left) and the cost compare (reference left); ours queries
+// the stack candidate last in every form.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -887,6 +894,18 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
 // 35. Re-measured: copy before the maximum 82, open
 // slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
+// Round 114 (lane 8; fast, and a one-file LTCG harness of this file that reproduces 34): the fill as `while
+// (player_count < total) parties[player_count++] = next_party;` 34 (same code); parameters (extra_count,
+// party_indices, player_count) with the call updated 35, with the clamp's subtraction in place 46, with the
+// fill advancing player_count / next_party first / extra-first sum / an independent fill index / the maximum
+// as a ternary 35 each, the clamp as `if (excess < 0) excess = 0;` 47, the fill over extra_count 62; fill
+// values `next_party + 0`, `| 0`, `-(-next_party)`, `*&next_party`, through a `long const *`, through a
+// const-reference fill helper, an `int` or `dword` next_party, a one-field struct: 34 each (same code).
+// Diagnostics: `(short)` on the fill value with the clamp's subtraction in place 5, and with extra_count
+// declared before player_count (any of three orders) 4, only the `movsx` left: the `lea ebx, [edx + eax]`
+// operand order follows the parameter declaration order, not the sum's spelling, and the fill value has to
+// be evaluated after the count and destination, which here only a non-leaf value does (a load through a
+// register such as `party_indices[0]` is placed last; every local, global or folded form loads first).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

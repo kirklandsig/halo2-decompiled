@@ -3528,6 +3528,15 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
 // fast; all three with the native machine-address field copy 131. Original declarations,
 // machine copy, result qualifier and full body restored; full starting count remains 119.
+// Round 114 (lane 8, fast; check it with 0x59e50 in the same run: with 0x630f0 alone the control reads 131,
+// with 0x59e50 the full 119): `result` declared after the machine copy 133 (control 131; its store moves
+// after the word store); the machine copy through memcpy 119 (same code); one shared `channel == NONE`
+// failure after both attach paths, the else arm closing only an attached channel, 141 at 463 bytes (indexed
+// flag read and an ECX reason-5 tail as retail, but the shared test is laid out after the else arm); the copy
+// and lookup in an inline identity helper 119 (same code); failures through an inline helper that sets its
+// false result before the reason store 119 (same code). Diagnostic: one extra early register temp rotates
+// every later block by one (attach EDX/EAX, reason pointer ECX), so the scratch choice is a round robin and
+// retail sits two allocations further on with identical code before the first attach.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3767,6 +3776,12 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
 // address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
 // key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
+// Round 114 (lane 8, fast with 0x5c720/0x630f0/0x63080): the address tested through its typed fields
+// (`address.address_length`, `address.ipv4_address`) in place of a byte pointer to the whole local 136 (same
+// code, kept); the clock read into a named `now` 136 (same code); the identity copied with memcpy 136 (same
+// code); the address test joined to the 0x7ab10 call's test with `&&` 136; the clock `__forceinline`
+// declaration with the typed fields 145 (581 bytes); the remote record zeroed by `= { 0 }` 136 (the clear then
+// starts at +4, `mov ecx, 0x6a`, where retail's memset clears the whole record).
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -3790,8 +3805,7 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
    s_type_99af70 address;
    if (function_07ab10(session->value38, &address, local, 0x3e9, (const XNADDR *)host))
    {
-    const byte *raw_address = (const byte *)&address;
-    if (*(word *)(raw_address + 0x12) != 4 || *(dword *)raw_address != 0x7f000001)
+    if (address.address_length != 4 || address.ipv4_address != 0x7f000001)
     {
      long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)host);
      if (channel != NONE)
