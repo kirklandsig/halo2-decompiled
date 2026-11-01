@@ -189,6 +189,9 @@ struct c_aggregate : c_child
 // Round 285: Shared callback output with fixed short/unsigned-short collection and dispatch ordinals,
 // scratch after counters/before arrays: eight at 161 (406 bytes). Frame and callback/loop temporary homes
 // remain; complete body and original signed ordinals restored.
+// Round 287: One count across callback and dispatch-end/cleanup/both phases,
+// independent/function-scope information output, count before arrays: 138/157/176/138/157/176/176/176.
+// Escaped count and later loop homes remain; original signed traversal and outputs restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -415,6 +415,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Round 285: Test-set inline validator result, success/failure initialization with
 // both/size-only/handle-only/no input producers: 115/134/138/137 in both orders. Items/data carriers and
 // validation-loop entry remain; complete helper and body restored.
+// Round 287: Native byte/signed-byte/word/long validation results on the original
+// case priority, all-valid/rejected polarity: 115/115/206/160/124/124/188/91. Cursors and loop entry
+// remain; native long rejection 91 also plain, restored as an unmatched flag form.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

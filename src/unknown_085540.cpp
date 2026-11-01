@@ -1146,6 +1146,9 @@ bool function_68670(byte *source, long size, void *block);
 // Round 285: Existing shared prefix initializer with sequence-copy, short-copy-guard and loop-payload
 // subsets: 120/156/119/154/135/142/139/146. Header/sequence homes, DX size and prefix-store order remain;
 // original memset, payload scope, helper calls and body restored.
+// Round 287: Case priorities 021/102/120/201 with function/loop header homes:
+// 72/72/72/72/118/118/118/118. Header/sequence homes, DX size and reader knowledge remain;
+// original case priority, header lifetime and complete body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
