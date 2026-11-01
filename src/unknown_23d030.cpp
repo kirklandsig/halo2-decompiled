@@ -209,6 +209,17 @@ struct s_free_state_23d260
 // rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
 // 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
 // Original body restored.
+// Round 60 (lane 16, fast; aligned counts in brackets, base 102 [89]): the existing cross3f_staged for up
+// 256 [48] (first difference +0xa6: zero XMM1, clamp and side registers as retail); with a file-local
+// normalize (normalize_inline's shape, length as `i*i + (j*j + k*k)`) as well 236 [48]: the x87 squared
+// length, zero XMM1 and the side scale are then retail's exactly, and only the up cross block (retail
+// stores k, j, i as it goes, reloads forward.k/j) and the roll rotation's operand orders remain. Every
+// other cross form loses the zero register again: the cross written out k, j, i 269 [89], cross3f 273 [82], staged locals stored k, j, i 268 [84]; normalize3d
+// or a dot-ordered helper with the staged cross 289 [92]. On that lead: side j, i, k 256 [45]; yaw
+// cosine/sine locals 237 [51]; rotated_k computed before the cross terms 230 [75] (1327 bytes); pitch
+// sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
+// k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
+// 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -320,7 +320,7 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
-// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// Earlier: the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
@@ -392,6 +392,12 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
 // N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
 // Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 60 (lane 16, fast): without the volatile cursor reads (207, 524 bytes) VC splits the handle around
+// the loop (spilled at entry, reloaded after) and gives EDI to the items cursor; retail keeps this/request/
+// index/handle in EBX/EBP/ESI/EDI and spills both cursors and the counter. On that base: the notify loop
+// reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
+// (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
+// index declared first from the field (`index & 0x3ff`, then the handle) 207.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

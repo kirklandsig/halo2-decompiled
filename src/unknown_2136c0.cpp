@@ -130,6 +130,12 @@ void function_213970(void);
 // after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
 // getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
 // clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
+// Round 60 (lane 16, fast): without the size pragma (diagnostic base 158): the language local declared at the top
+// and assigned after the NONE stores 158; block B's clears before block A's 158; block A's NONE store right after
+// block A's clears 161; the handle record value-initialised (`= s_file_handle()`) 158; with the pragma 165.
+// With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
+// the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
+// Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

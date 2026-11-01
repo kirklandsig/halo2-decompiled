@@ -99,6 +99,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
 // ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
 // restored; early EBP and read-size/count/cursor homes remain.
+// Round 60 (lane 16, fast): retail treats the read size as an unpromoted memory variable (read, select
+// `mov eax, 0x7ff; ja`, reload in the else arm, store, reload for the index); ours promotes it after the
+// wait (the compile-only build does too, so it is not a callee summary). `if (!success) goto` the block end
+// 128; the size as `long` passed as `(dword *)&size` 128; the read and wait in an inline blocking-read
+// wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
+// initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
+// 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
