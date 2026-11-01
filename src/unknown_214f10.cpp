@@ -254,6 +254,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
 // handle and constant 42 (same code); success set true inside the open branch over a false
 // initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
+// Round 70 (lane 12, fast): the long result from the array element with the copy passed 42 (same code); the
+// long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
+// declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
+// retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

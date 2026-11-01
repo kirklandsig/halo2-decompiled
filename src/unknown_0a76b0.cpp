@@ -21,6 +21,7 @@ The handlers of the unit request table at 0x467564
 #include "unknown_1cec30.h"
 #include "bit_vector.h"
 #include "local_players.h"
+#include "game_engine_events.h"
 #include <math.h>
 #include <string.h>
 
@@ -1658,6 +1659,13 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // admission as an early `return result` 130 (412 bytes). Retail inlines 0x14de90 at both calls in 0xe8de0 and
 // 0xee7f0, the first in 0xccba0, none here or in 0xe7fb0 (and none in /O1 and /Ob1 callers), so the caller's
 // size alone does not decide it.
+// Round 69 (lane 12, fast): the mode read into a named local for the switch and the call 140 (408 bytes); the
+// admission split into a weapon test and an early `return result` after 0xcd7b0 133 (404); the modes array after the
+// result or before the request alias 72 each; the mode-0/1 admission as `allowed = false; if (...) allowed = true;`
+// 72. Diagnostics (not kept): the weapon lookup and the current slot through two throwaway inline getters 114 (376
+// bytes; the first 0x14de90 call still inlines); with the weapon dead before the end (0x191fab given 0) the request
+// still takes EBP and the result moves to BL (123), so the request is outranked by the result as well as the weapon.
+// Retail's NONE arm after the out-of-line call is `or eax, eax` (0b c0).
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -1716,7 +1724,7 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 
 /* gives a unit's weapon to a player's unit, taking the player's weapon
    in exchange (type 21) */
-// score 97 (was 107): frame 0x24 versus 0x20 (given in a stack byte, retail BL); unit/weapon allocation and
+// score 97 (was 97): frame 0x24 versus 0x20 (given in a stack byte, retail BL); unit/weapon allocation and
 // the inline unknown13c exit differ (retail hoists `xor al, al` and jumps into the epilogue tail).
 // Earlier: score 100 (was 127): frame 0x24 versus 0x20; unit/weapon allocation and transfer-call convention differ.
 // Both ordinal-hand reads 122; result first 118; entry drop workspace/live request/single receiver 122 each;
@@ -1730,6 +1738,15 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // `taken` as one expression, an actor local), a pool pointer local and the header read for the unit or the
 // getter keep the unit in EBP. Locate-only: an unused read of g_4e0300->data at the top gives retail's reload
 // and unit_index in EBP (harness signature-aligned 22 against 64), as 0xe5040's unused header does.
+// Round 69 (lane 12, fast): both weapon lookups through the existing header getter unit_get_current_weapon 97 (same
+// code); a function-top pool local (`objects = g_4e0300`) for all three lookups 100; for the weapon and other-weapon
+// lookups with the unit by the macro 125 (339 bytes), and that with the nested single exit 85 (retail length, the
+// prologue and everything after the lookups retail's: only retail's second reload of the pool data for the other
+// weapon is missing; not kept, it mixes the global with its local copy); on that the other lookup by the macro 122
+// (314), the weapon by the macro 118 (318), the unit through the local and the weapon by the macro 100, the unit and
+// weapon through the local 118 (318); the local declared in the block or the player index read at the top 85 each;
+// every lookup through the local with the nested exit 123 (314). A throwaway inline helper with its own pool copy
+// (diagnostic) 122: its copy is propagated and all lookups merge.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -3033,19 +3050,6 @@ void __stdcall function_a8b90(long unit_index);
 
 /* boards another seat of a unit's vehicle (type 31): the seat its seat
    boards */
-// score 37 (was 86): frame 0xc and saved homes agree; entry table register, seat-predicate vehicle register
-// and success-result spill remain. Result first 123; direct vehicle receiver 86; tag at each use 118;
-// seat at each use/native word 86/86; player index once 86; parent/tag names 86; combined form 123.
-// Round 29: fully nested single exit (no `return false`) 89 (470 bytes) but closer by alignment:
-// the result is then retail's BL (`mov bl, 1` ... `mov al, bl`) with one `xor al, al` exit; what
-// is left there is the pool data in EDX (retail EBP from entry, so our EBP save sinks below the
-// vehicle test) and 0xeaf50's vehicle in ECX (BLOCKED-BY 0xeaf50). With the vehicle read by
-// UNIT_ACTION_UNIT_GET 89; with the unit read through its header 89; with the result declared
-// first 121; eaf50 in the seat condition and the 113e90 failure as `goto done` 89.
-// Round 187: with 0xeaf50 matched (vehicle in EDI as retail) the early-return body rose to 124; the
-// fully nested single exit is now 37 (aligned 7): only the player value lookup differs (retail
-// forms the player's address, `add esi, ecx; mov cx, [esi + 0x28]`, ours folds it into one load into
-// SI), which shifts the tail. The getter through a player pointer 37; the player index in a local 37.
 // @retail 0xeb090
 bool __stdcall unit_action_vehicle_board(long unit_index, s_unit_request *request)
 {
@@ -3087,10 +3091,10 @@ bool __stdcall unit_action_vehicle_board(long unit_index, s_unit_request *reques
 								function_d12b0(vehicle_index, *(short *)(seat + 0x3e), 0, 0);
 								if (unit->unknown13c != NONE)
 								{
-									short user_index = unit_action_player_value28_get(unit->unknown13c);
+									s_event_player *player = event_player_get(unit->unknown13c);
 
-									if (user_index != NONE)
-										function_1874b0(user_index, (vector3f const *)((byte *)vehicle + 0x150));
+									if (player->local_index != NONE)
+										function_1874b0(player->local_index, (vector3f const *)((byte *)vehicle + 0x150));
 								}
 							}
 							result = true;

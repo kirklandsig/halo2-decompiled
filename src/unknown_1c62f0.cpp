@@ -727,6 +727,11 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // declared `const *const` 93, declared just before the first dispatch 93, declared after the position
 // read 93 (same code each). Lead not tried: callback and user passed as one by-value pair would keep both
 // in memory as retail, but every caller up the chain would change with it.
+// Round 70 (lane 12, fast with callers and callees): the callback parameter read plainly at the first
+// dispatch (pointer at the others) 136 (537 bytes); the frame clamp as `0.0f > frame ? 0.0f : frame` 107; the
+// last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93
+// (same code); the non-looping end frame as `next_frame = last_frame` 91 (531 bytes only because that arm loses
+// retail's recomputed frame count; every later line still differs).
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)
