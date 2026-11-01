@@ -332,6 +332,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 244: complete ordinary-path requested-forward values via native/const,
 // aggregate/const, memcpy/memmove and entry copy/memmove constructions
 // 295/295/264/264/295/314/295/314. Original input observations and body restored.
+// Round 288: plain world-up component rows with long/short/dword/word counters,
+// scalar/native-vector captures 224/318/224/318/295/300/295/300.
+// Original producer and body restored; frame, early-save and basis homes remain.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -745,6 +748,9 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
 // same result arms with the existing animation helper 130/120. All restored; post-reset
 // table/object/result homes, native size load and saved-key tests remain.
+// Round 288: native output selection/allocation/controller field-family subsets
+// 83/83/83/85/85/85/85, all with native reset timer 85. Original record layout,
+// byte views, body and shared allocator interface restored.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {

@@ -438,6 +438,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Initial copy/advance count owned as long on the word-ordinal indexed graph [134, 130, 141, 141];
 // exact-only field snapshots restored.
 // Original executable source restored. Scaled-index ownership and the first-index spill remain.
+// Round 288: field-major resets across groups in all six field orders, then
+// count/first/flags and flags/count/first with reversed group order, 54 each.
+// Original stores and executable body restored; index/count/zero and copy homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
