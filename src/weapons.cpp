@@ -2028,6 +2028,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // call, not kept); one magazine pointer declared at the top for both blocks 124; the slot's weapon index read from
 // the unit at each use 124. Retail keeps a false result in BL across the 0x106030 call and returns it on the
 // failure exit (constant 1 on success), so its result is not folded at the join; ours folds both exits.
+// Round 52 (lane 1, plain): `long taken = 0;` after the 0x106030 call 126 (585 bytes); the first block's
+// minimum as its own `take` local added to `taken` 178 (589 bytes); `definition` read after the 0x1008f0 call
+// 174; the taken placement without the definition-index local 196 (569 bytes, 0x102b90 5); the taken placement
+// with `return true` in the success block and `return result` at the end 130 (0x102b90 5).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

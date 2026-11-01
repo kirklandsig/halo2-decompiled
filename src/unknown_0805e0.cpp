@@ -137,6 +137,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
 // Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
 // `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
+// Round 28 (m3 lane 2, fast with 0x1a303b/0x2b393c): `while (!result && *iterator != NONE)` indexing through
+// the iterator 79 (102 bytes: the mask is hoisted into AL, but the loop reloads the iterator, which moves to
+// EBX with `ret`, both callers lose); the `!result` loop with `index = *iterator` re-read at the end 42 (iterator
+// in EBX, player on the stack, callers lose); `!result` loop with a successor local, result declared after the
+// index 37 (the listed form: player on the stack, ret 8, `!result` not threaded, mask an immediate); the same
+// with `index != NONE && !result` 53; a for loop stepping `index = *iterator` with `break` 51 (convention kept,
+// index and successor share ECX, mask an immediate).
 // Round 59 (fast; 0x1a303b/0x2b393c stayed matched): 1-8 unused locals at the top (diagnostic) 43 each;
 // result set before the copy 43; the entry pointer declared at function scope 43; `*iterator = index =
 // entry->next` without early returns 43; `g_4cf98c + index` 43; a two-use dword flags local 43 (all same code).
@@ -145,6 +152,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
 // early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
 // do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
+// Round 127 (lane 6, fast, with 0x1a303b/0x2b393c): `while (!result && index != NONE)` with a successor local and
+// `index = next` at the end 37 again (no hoist in this build; player read from the stack, ret 8, callers 15/27);
+// its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
+// 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
+// entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1059,6 +1071,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
 // cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
+// Round 28 (m3 lane 2, fast with 0x80330/0x80490): on the current body, the count path assigning upper before
+// lower 50; the zero-initialized bounds declared above the full-cache test 49 (same code: their zero values are
+// threaded away, so they never interfere with the count and upper still shares its register); `cache_full`
+// kept with `removed` set to NONE and assigned inside the test 370 (1162 bytes); the flag declared before the
+// bounds 49; the shift test written `lower < upper` 49. Retail's upper takes ECX because the backward copy's
+// index `i = upper - 1` gets EAX (`lea eax, [ecx - 1]`); ours puts upper in EAX and decrements it in place.
 // Round 59 (fast): 1-8 unused locals at the top (diagnostic) 49 each. Round 149's plain entry rebuilt (cmovle lower,
 // explicit `>` arm, count path upper first with the flag cleared, flag set before the decrements) 54: only the
 // EDX/ESI load of the removed index and upper in EAX (coalesced with the count and the backward index) differ.
@@ -1071,6 +1089,14 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
 // function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
 // : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
+// Round 127 (lane 6, fast with 0x80490/0x80330): a compile-only /Gd harness scored against retail (a normalized diff,
+// 47 for the build's 49) reproduces upper taking EAX; there six declaration orders of lower/upper/downward, upper as
+// `position < removed ? ...`, lower as `position >= removed ? ...`, upper assigned before lower, the count path
+// lower first, `lower < upper`, upper declared first in the function and one block-scope copy index all leave it
+// in EAX (34-35 on the plain-entry form). Real: round 149's plain entry with the explicit flag arms and the count
+// path upper first 56, with `lower = removed > position ? position : removed` 54 (only the EDX/ESI entry load and
+// upper in EAX left); the plain entry alone 370 (1162 bytes), with the explicit flag arms only 358, with the count
+// path's flag store only 372.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

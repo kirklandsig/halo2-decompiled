@@ -254,6 +254,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
 // or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
 // colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
+// Round 127 (lane 5, fast with 0xb5f10/0xb61d0): the count clamp as a ternary 40; `length >= start +
+// count` 40; the copy helper written out (diagnostic) 40; the scan given a cast of the string 40 (these
+// four same code); start added before the count increment 36 (0xb5f10 6).
 // Round 48 (lane 10, fast with 0xb5f10/0xb61d0): lead, not kept (a one-use local computed ahead of the
 // compare): inside `if (start >= 0 && count > 0)`, `long length = ...;` then `char const *source = string +
 // start;` then `if (start + count <= length)` 21 with 0xb5f10 0: retail's prologue (`mov edi, ecx`, start

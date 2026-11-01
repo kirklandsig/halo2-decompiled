@@ -28,6 +28,7 @@
 #include "unknown_0494b0.h"
 #include "normalize3d.h"
 #include "vector_products.h"
+#include "bit_vector.h"
 
 
 
@@ -753,6 +754,9 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // retail storage struct, BLOCKED-BY g_4858c4's definition (src/unknown_030290.cpp). Tried (all 26 unless
 // noted): `_ReadWriteBarrier()` after the call; the signature test nested in its own `if`; the fields
 // read by index (`((long *)g_4858c4)[0x38]`); `&& tag` for `!= 0`; the flag stored after the call 31.
+// Round 109 (all 26): ours already reloads `[esi+0xe0]` after 0x1bd50, only the g_4858c4 symbol stays cached;
+// the signature tested first; the test as `!(... == NONE || ... == 0 || ... != 'shad')`; a shader local assigned
+// again from the global after the call; an early return on a tag local; an inline predicate on the shader.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1290,6 +1294,10 @@ long function_baf80(long object_index);
 // and definition in one expression (22), `(word)parent` inline (12), the model read without the
 // definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
 // `parent` declared before the model test (12), definition/model declared at the top (12).
+// Round 109: the first chain's definition also lands in EDX (retail EAX, reusing the dying register as the model
+// load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
+// a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
+// inline model-index helper for the object and its parent 22.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1626,6 +1634,14 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the angle through a `real *`, `real *angle = &result`, a dead `&result` pointer, the atan2 in a double
 // local, `return` inside the `if` (275); `volatile real result` gives retail's frame and entry store (187) but
 // zeroes xmm6 instead of xmm0 and so is not kept.
+// Also tried 2026-11-01: the helper as two cross3f calls (193, identical code) or cross3f + cross3f_staged (193,
+// identical); every three-term sum grouped `(a + b) + c` (195: retail computes all three products before adding,
+// so its sums are flattened, j,k,i for case 1/3's y and k,j,i elsewhere, while ours come out i,k,j); dot3f and
+// vector3d_from_points3d for the dots and camera-relative vectors (197, 788 bytes). A compile-only screen (no /GL)
+// showed product operand order and the case 2/4 term orders are canonicalised, while the helper's component order,
+// case 1/3's y term order and the assignment order of `reference` move the schedule; its best (perpendicular
+// i,k,j, case 1/3 y i,k,j, case 2/4 reference j,i,k) scored 206 in the real build (776 bytes), since that harness
+// returns on x87 and does not model the result slot.
 // Shared first cross ordinary/staged, ordinary first with ordinary/staged second, staged first with
 // ordinary/staged second, and both staged-second graphs with shared point differences:
 // 193/193/193/193/193/193/193/193. Result stack home and SSE producer allocation remain; original arithmetic
@@ -2263,7 +2279,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 132 (was 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
@@ -2275,6 +2291,15 @@ s_cached_input_list g_5234e8[4];
 // `comiss depth, 0; jae`); the depth as `g_4b9e14.right.k * x + up.k * y + forward.k * z + position.z`
 // 133 | 68. The view/count slots are swapped against retail as in 0x33400 (view is register-assigned
 // at the clamp's join, then spilled: `xor eax, eax` for the zero arm and a dead reload).
+// Round 109 (plain checks, positional | LCS-aligned, base 132 | 61): the three forms that matched sibling 0x33400
+// (`&g_5234e8[view]` at both calls in place of the `state` local, the depth sum written `g_4b9e2c * y + g_4b9e20 * x
+// + g_4b9e38 * z`, `!(depth >= 0.0f)`) give retail's clamp stores, view/count slots and xmm5-xmm7 constants:
+// 130 | 54, not kept (a 2-point gain). What is left is a register permutation: ours keeps `list` in EBP (pushed at
+// entry, spilled for the entry pointer and reloaded after 0x3e9c0), index in EDI (0x31590's argument register),
+// object in ESI; retail spills `list` (reloaded into EAX at the loop top), keeps index in EBX (copied to EDI for
+// 0x31590), object in EDI, i/entry in ESI and the cursor in EBP. On those forms: object read before the definition
+// 130 | 54; `shape` declared before index 130 | 54; `view` declared before `count` 128 | 55; g_547f98 read at
+// each use (no list local, 556 bytes) 118 | 65.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2822,13 +2847,13 @@ void function_30c60(dword handle, point3f *position, long *out);
 
 PRIVATE __forceinline real object_view_distance(point3f const *position)
 {
-    double x = (double)position->x - g_4b9da0.x;
-    double y = (double)position->y - g_4b9da0.y;
-    double z = (double)position->z - g_4b9da0.z;
+    real x = position->x - g_4b9da0.x;
+    real y = position->y - g_4b9da0.y;
+    real z = position->z - g_4b9da0.z;
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
-// score 175 (was 194): the alpha is read from function_4baf0's second output (the byte pushed
+// score 177 (was 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -2842,6 +2867,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // the fade at [ecx+0x2b0] straight from memory at every use of the first clamp (no local); spelled
 // that way (a repeated inline helper or a pointer local) the code matches there but swaps esi/edi
 // (object / table offset) and scores 186-208.
+// Round 109: object_view_distance's differences are `real` locals (they were `double`, which made LTCG keep the
+// stack 8-byte aligned down from 0x335e0); the x87 block is byte for byte retail's either way, only the tail's pop
+// placement moved: 175 -> 177 positional, LCS-aligned 76 -> 73. Its differences as `double` parameters change
+// nothing (175, alignment kept); as one expression with no locals 176.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -2919,39 +2948,12 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
 
 s_cached_input_list g_5246f8[4];
 
-// score 98: retail takes the list pointer in ebx, keeps the write cursor in edi
-// (stepping by 0x14), the object in esi and the selection counter and the
-// element count in memory, and pushes esi/edi only after the count test. The
-// volatile counter and count below put the list pointer on the stack. Without
-// them (list in ebx, as retail) ours steps a cursor too but in esi, with the
-// object in edi, and pushes esi/edi in the prologue; that scores 133 alone, and
-// the same draft scored 115 against 98 for this one in a 11-function check
-// image. Tried: only the counter volatile (98 alone, 115 there), only the count
-// volatile (138), an explicit cursor, a loop index declared before the count
-// (140), an if (count > 0) guard, the view declared first (135), flags read
-// before the object. The plain form with no volatile (what Kirk's review asks for) scores 133
-// alone (130 in the callers' check, 0x335e0 42 -> 38); the same 133 with an explicit cursor, the
-// `if (count > 0)` guard, `view` as if/else or the alpha/special locals hoisted; the list arrays
-// hoisted 149, a pointer-compare limit 145; `view` computed after the loop 124 but the list
-// pointer then moves to ebp.
-// Round 186 (a --fast image with 0x3e9c0's other callers' files reproduces the full build): without
-// the volatiles the body is retail's nearly everywhere (aligned 45 against 76) but esi/edi are pushed
-// in the prologue, the clamp's zero comes from eax with a dead reload and selected/view swap slots:
-// 130. On that base: clamp re-assigned 134, `g >= 0 ? (g <= 3 ? g : 3) : 0` 129, if/ternary clamp 130,
-// if/else-if clamp 134, clamp at the tail 114 (list back on the stack), `if (count > 0)` 130,
-// `!(depth >= 0.0f)` 130 (retail's comiss order), camera-field depth 129, selected renamed 130,
-// declaration orders 132-137. On this form: `!(depth >= 0.0f)` 98, camera fields 100, both 100,
-// `&g_5246f8[view]` at both calls 99. Cause of the entry pushes: LTCG keeps the stack 8-byte aligned
-// down to 0x3d7f0 (object_view_distance's `double` locals; see 0x335e0's note). With those as real
-// (diagnostic only, 0x3d7f0 gets worse) the volatile-free body pushes esi/edi after the count test as
-// retail does (aligned 25); then only the clamp's zero arm, its dead reload and the selected/view
-// slots remain (130 positional from the two-instruction shift).
 // @retail 0x33400
 long function_33400(byte const *list, s_cached_input *output, long mode)
 {
-    long volatile selected = 0;
+    long selected = 0;
     long view = g_4b9ed4 < 0 ? 0 : g_4b9ed4 > 3 ? 3 : g_4b9ed4;
-    long volatile count = *(short const *)(list + 4);
+    long count = *(short const *)(list + 4);
     for (long i = 0; i < count; ++i)
     {
         long object_index = (*(long const **)(list + 0xc))[(short)i];
@@ -2969,8 +2971,8 @@ long function_33400(byte const *list, s_cached_input *output, long mode)
                 entry->data[1] = object_index;
                 entry->data[2] = object_index;
                 *(real *)&entry->data[3] = alpha;
-                real depth = g_4b9e38 * position.z + g_4b9e20 * position.x + g_4b9e2c * position.y + g_4b9e44;
-                if (depth < 0.0f) depth = 0.0f - depth;
+                real depth = g_4b9e2c * position.y + g_4b9e20 * position.x + g_4b9e38 * position.z + g_4b9e44;
+                if (!(depth >= 0.0f)) depth = 0.0f - depth;
                 if (!(depth > 0.1f)) depth = 0.1f;
                 *(real *)&entry->data[4] = (g_4b9ed0 / depth) * radius * 2.0f;
                 ((byte *)entry)[0] = function_3e9c0(object_index);
@@ -2980,9 +2982,8 @@ long function_33400(byte const *list, s_cached_input *output, long mode)
             }
         }
     }
-    s_cached_input_list *state = &g_5246f8[view];
-    function_4a7c0(state, output, selected);
-    return function_4ac30(state, output, 4, 0.005f);
+    function_4a7c0(&g_5246f8[view], output, selected);
+    return function_4ac30(&g_5246f8[view], output, 4, 0.005f);
 }
 
 struct s_sort_record;
@@ -3022,6 +3023,11 @@ real g_525980[3];
 struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
+// score 4 (was 4): only the frame slots of `table` and `definitions` are swapped (retail: table at the lower
+// slot). This body matched in lane 13 round 38's full image and matches on the --fast image; adding almost any one
+// other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
+// Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
+// with the table and assigned after the early return; declared before the table; both as `byte const *`.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -3426,18 +3432,6 @@ bool __stdcall function_32350(long index, real alpha);
 extern byte g_485a46;
 byte g_509413;
 
-// score 42 (was 42): the remaining difference is the callees' conventions, not this body.
-// Retail passes function_01ddd0's width and height in ESI/EDI and function_33400's list in
-// EBX (both still unmatched), where ours uses EAX plus a stack word and EDX; retail also
-// zeroes the flags from the loop's zero register. Reading the two gates as `if (!a || !b)`
-// and storing literal true saves 4 bytes (143 to 139) but leaves the score at 42.
-// Round 186: ours pushes at entry because LTCG keeps an 8-byte aligned stack down to function_3d7f0
-// (via function_33400): object_view_distance's `double` locals. With them as real (diagnostic) or the
-// distance through the existing distance3d (0x3ea30), the gates come before the pushes as in retail
-// (40), but 0x3d7f0 gets worse (177, 189), so neither is kept. With 0x33400 volatile-free (list in EBX)
-// this body is retail's except the frame (0x284: the alignment), the entry pushes and 0x1ddd0's ESI/EDI
-// arguments. Also tried: `if (a && b) { ... }` 42, the records declared before it 42, two separate
-// early returns 42.
 // @retail 0x335e0
 void __stdcall function_335e0(long mode)
 {
@@ -3763,7 +3757,7 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
-// score 182: only difference left is one stack slot. Retail's frame is 4 bytes larger: it stores
+// score 88 (was 182): only difference left is one stack slot. Retail's frame is 4 bytes larger: it stores
 // a second zero (the register that also holds the loop index) at [esp+0x1c] before the guard,
 // never read in the loop, and compares the count against that register (`cmp edx, ecx`) where
 // ours folds to `test`. Tried: the index declared before the loop, an explicit running group
@@ -3779,6 +3773,13 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // draw_light_source_pass (177; 0x31170 278 -> 274), with it `first_group + i` as a named group index (177),
 // `rendered` declared last (177), direct g_4ba074[i] reads with no entry pointer (177), first_group declared
 // first (174; without the helper change 179).
+// 2026-11-01: the extra slot was 0x133790's counter argument: retail passes the address of a `long` set to 0 before
+// the loop (as matched 0x133720 does), not the bounds; `long counter = 0;` passed as `&counter` gave retail's frame
+// (182 -> 88). Still different: a one-register rotation in the group-field copy, the entry->x push and the `&counter`
+// push; 0x494b0's arguments are set up ecx-then-eax (its parameters swapped everywhere, window first, gives retail's
+// eax-then-ecx and 0x494b0 still matches, but only 86); pass 11's dead g_485898 load and late `enabled` store (BLOCKED-BY
+// 0x44370). Also tried (88 unless noted): `counter` declared first (97), direct g_4c1a48[1] field accesses, a named
+// `group_index = first_group + i`, the `group` reference declared before the loop.
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -3786,6 +3787,7 @@ void function_30ed0()
     byte *state = (byte *)g_4c0b78.state;
     byte *list = *(byte **)(state + 0x14);
     long first_group = g_4c19ac;
+    long counter = 0;
     for (long i = 0; i < g_4ba134; ++i)
     {
         s_flag_entry const *entry = &g_4ba074[i];
@@ -3809,7 +3811,7 @@ void function_30ed0()
         if (r[1] > *(real *)(frustum + 0xa4)) r[1] = *(real *)(frustum + 0xa4);
         if (!(r[2] > *(real *)(frustum + 0xa8))) r[2] = *(real *)(frustum + 0xa8);
         if (r[3] > *(real *)(frustum + 0xac)) r[3] = *(real *)(frustum + 0xac);
-        function_133790((s_bit_vector_pool *)state, index, false, (long *)&bounds3d, first_group + i, true);
+        function_133790((s_bit_vector_pool *)state, index, false, &counter, first_group + i, true);
         function_44ac0(3, 2, first_group + i);
         function_0494b0(clip, (real const *)&bounds3d);
         draw_configured_pass_r18(10);
@@ -3848,19 +3850,6 @@ void function_133720(s_bit_vector_pool *visibility, bool enabled);
 void function_44720();
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool special, real weight);
 
-// score 186 (was 186): retail keeps `parent` in ebx and the walk's `root` in
-// edx through the loop, reads `definition` as a dword (`mov ecx,[ebp]; test cl,0x20`) and spills the light index to a
-// local at [esp+0x34] (a ninth frame slot: ours is 4 bytes smaller, 0x1504 against 0x1508, and the record cursor takes
-// ebx while `parent` is spilled; retail keeps the cursor and the counter in memory). Tried: `light_index` as a plain
-// copy with the definition flags read once before the walk (171 in a fast check, but 210 in the full build, so not
-// kept; the code is then 724 bytes against 720), re-reading the record at each use (190-210), a
-// `dword flags = *(dword *)definition` local alone (181, frame 0x1500), the flags local after
-// the walk (182), a second flags read after the parent block for the special/bsp/mask tests (190-208), the light
-// index declared after the parent block (182), root assigned in the walk instead of after it (202), parent/root
-// declared in the other order (189), an explicit record pointer with an up- or down-counting loop (180).
-// Index snapshot, shared vector sum, dword field observations, pairs/all, then direct root:
-// 179/180/184/179/184/184/184/200 fast; coherent weight snapshot, with index/sum/dword forms 199/201/201/186
-// fast. Reduced baseline 180; full frame already 0x1508. Cursor/parent/definition allocation remains.
 // @retail 0x31c80
 void function_31c80()
 {
@@ -3868,7 +3857,7 @@ void function_31c80()
     long count = function_31910(records);
     for (long i = 0; i < count; ++i)
     {
-        long const &light_index = *(long const *)(records[i].data + 1);
+        long light_index = *(long const *)(records[i].data + 1);
         if (!(*(real *)(records[i].data + 3) > 0.07000000029802322f)) continue;
         byte *light = g_4e030c->data + (light_index & 0xffff) * 0x110;
         long parent = NONE, root = NONE;
@@ -3880,12 +3869,12 @@ void function_31c80()
             for (long current = parent; current != NONE; current = *(long *)(((s_scalar_object_header *)g_4e0300->data)[current & 0xffff].object + 0x14))
                 top = current;
             root = top;
-            if ((definition[0] & 0x20) && !(*(dword *)definition & 0x40000))
+            if ((*(dword *)definition & 0x20) && !(*(dword *)definition & 0x40000))
             {
-                long node = function_b8c40(parent, *(short *)(light + 0x54));
-                first_person_weapon_get_marker(parent, node, (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8));
-                point3f *position = (point3f *)(light + 0x84);
                 vector3f *offset = (vector3f *)(light + 0xac);
+                point3f *position = (point3f *)(light + 0x84);
+                long node = function_b8c40(parent, *(short *)(light + 0x54));
+                first_person_weapon_get_marker(parent, node, position, offset, (vector3f *)(light + 0xb8));
                 point3f *endpoint = (point3f *)(light + 0x90);
                 endpoint->x = position->x + offset->i;
                 endpoint->y = position->y + offset->j;
@@ -3897,9 +3886,9 @@ void function_31c80()
         function_c17f0(light_index, (s_light_shape_ab *)shape, true);
         if (g_509440 < 8) g_4c6b00[g_509440++].index = light_index;
         s_bit_vector_pool *parent_visibility = g_4ba010 ? 0 : &g_547f88;
-        bool special = !(definition[0] & 8) && g_4ba020 && *(real *)(light + 0xf8) > 0.0f && *(short *)shape != 0;
+        bool special = !(*(dword *)definition & 8) && g_4ba020 && *(real *)(light + 0xf8) > 0.0f && *(short *)shape != 0;
         long bsp = *(short *)(light + 0x48);
-        if (bsp == NONE && (definition[0] & 0x20) && (*(dword *)definition & 0x40000)) bsp = g_4b9ee4;
+        if (bsp == NONE && (*(dword *)definition & 0x20) && (*(dword *)definition & 0x40000)) bsp = g_4b9ee4;
         long mask = (*(dword *)definition >> 12) & 0x400;
         short projection_count;
         function_c1d90((s_light_frame_ab *)(light + 0x84), (s_light_shape_ab *)shape, (s_light_projection_ab *)projections, &projection_count);
@@ -3942,7 +3931,7 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte
     if (enabled) { function_44550(); function_445d0(); }
 }
 
-// score 165 (was 213): the pass flag is now tested as retail does (and al,1 stored to the stack slot, then
+// score 165 (was 165, 213): the pass flag is now tested as retail does (and al,1 stored to the stack slot, then
 // reassigned from the extra gate), and the volatile store on it is gone. What still differs: retail stores
 // the constant 1 into that slot late (after the cull call, passes 3 and 16 only) where we store it early on
 // every enabled path; retail keeps a dead load of g_485898 in the passes that never cull; function_14b60
@@ -3959,6 +3948,12 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte
 // out of line), the helper with a cull-mode parameter and `if (mode == 3 || mode == 16) enabled = true;`
 // (180), the same with 0x44370's mode-based gate (187: passes 3 and 8 exact, cull arms reversed) and with
 // `cull_mode && (...) ? 1 : 0` (187).
+// Also tried 2026-11-01: 0x14b60 written in place of its stub so its flags go in eax (250: the body needs an 8-byte
+// stack-alignment pad and this function then realigns its frame with `and esp,-8`); passes 1, 3, 7 and 16 through
+// draw_light_source_pass (204: pass 1 then matches, but 3 and 16 lose retail's late store), only passes 1 and 7
+// through it (192), with draw_light_source_pass's cull argument as `g_485898 >= 4 && g_485898 <= 7 ? 0 : (normal_cull
+// ? 1 : 0)` (211: the dead load still folds away, and 0x32350 rises to 587); the gate as `if (!extra_enabled)
+// enabled = 0;` (191; 0x41cc0 186, 0x2bcd0 362); every pass as draw_configured_pass_r18 also with the mode table const (842).
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
@@ -3989,7 +3984,7 @@ void __stdcall function_15720(real x, real y);
 extern byte g_4ba018;
 extern dword g_4b843c;
 
-// score 278 (was 300): the camera is now a register parameter (the `&camera` alias that forced it onto the stack is gone, so the
+// score 237 (was 278, 300): the camera is now a register parameter (the `&camera` alias that forced it onto the stack is gone, so the
 // stack arguments are retail's four and the epilogue is `ret 0x10`), the pass-13 test is retail's two separate bit tests and the
 // pass-30ed0 test is retail's `shr 2` form. What still differs: (1) retail keeps the stores to g_4ba014 that precede a conditional
 // branch (the initial 0, after the bit-1 step, after the 0x24 step) and tests the flags through `mov cl, al`, as if g_4ba014 could be
@@ -4010,6 +4005,12 @@ extern dword g_4b843c;
 // to provoke the store before the branch (no change to the store). A dword bit-field view of g_4ba014 (cast of its
 // address, not kept) scores 274 and 264 with the inlined sets, but still drops the store before `test bl,bl` and turns the bit-0
 // read into `mov al,[g]`; no spelling tried reproduces that store, so the 54-byte shortfall (and the shifted compare after it) stays.
+// 2026-11-01: bits 1 and 3 set through the existing bit_vector_set(&g_4ba014, ...) (237): g_4ba014 is then address-taken, so the
+// initial 0 store and the store before the definition read appear and the `>` chain gets retail's layout; still one store short
+// (retail also stores after the bit-1 step, before `test bl,bl; je`, then tests bit 0 through `mov cl, al`). Also tried on top of
+// that (all 237): bit 0 tested with bit_vector_test in the `enabled` test or in the last pass's test, every constant bit
+// operation (|= 0x24, &= ~0x2c, &= ~0x10) as bit_vector_set calls, the bit-1 test as a named `moving` bool, the `enabled`
+// test inverted (`!enabled || bit 0` clears). g_4ba014 defined in a non-LTCG object instead (diagnostic) changes nothing (278).
 // @retail 0x31170
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
 {
@@ -4022,13 +4023,11 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
     if ((!g_510c50 || !((byte *)g_510c50)[5]) && *(short *)(definition + 4) == 0)
         g_485950.i = g_485950.j = g_485950.k = 0.0f;
     g_4ba014 = *(short *)camera == 0 ? 1 : 0;
-    if (g_485950.i > 0.009999999776482582f || g_485950.j > 0.009999999776482582f || g_485950.k > 0.009999999776482582f) g_4ba014 |= 2;
-    else g_4ba014 &= ~2;
+    bit_vector_set(&g_4ba014, 1, g_485950.i > 0.009999999776482582f || g_485950.j > 0.009999999776482582f || g_485950.k > 0.009999999776482582f);
     if (enabled && !(bool)((g_4ba014 >> 0) & 1))
     {
         g_4ba014 |= 0x24;
-        if (g_485a40 > 0.0f && *(short *)(definition + 0x14) != 2) g_4ba014 |= 8;
-        else g_4ba014 &= ~8;
+        bit_vector_set(&g_4ba014, 3, g_485a40 > 0.0f && *(short *)(definition + 0x14) != 2);
     }
     else g_4ba014 &= ~0x2c;
     g_4ba014 = g_4ba014 & ~0x10;
@@ -4445,7 +4444,7 @@ PRIVATE __forceinline real absolute_32350(real value)
     return value >= 0.0f ? value : 0.0f - value;
 }
 
-// score 492 (was 623, 506): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
+// score 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
 // non-success exit; the flag 3d7f0 writes is the byte at [esp+0x13]), so a special object returns false; the draft
 // returned the flag. 31f50's 5th output feeds the depth, its 4th the *2 field (the draft had them swapped), the
 // two cross products are separate branches (cmov before), the frame points come from g_47fd18+0xc, and the final
@@ -4466,6 +4465,15 @@ PRIVATE __forceinline real absolute_32350(real value)
 // *(point3f *)(g_47fd18 + 0xc) = *origin;` gives retail's exact store sequence, 527; through a local copy 608
 // with the cross arms laid out the other way round; later xmm numbers move, so the score rises), every order of
 // the three dot-product terms (the compiler picks k, j, i anyway).
+// Also tried 2026-11-01: a single exit (`result = true` on success, the g_509413/g_509414 stores once after the
+// `!special` block, `else if` for the special arm, one `return result`; 552 in a fast check, 1758 bytes: the exits
+// merge and result stays in al); absolute_32350 as a function-like macro (497: gives retail's two abs diamonds and
+// the re-evaluated arms, but the registers differ and the listing shifts), the same with `largest` as one
+// conditional expression (497); `bool result = false;` declared first (492); `fabs(dot3f(&forward, axis))` (492).
+// The constant 1 that retail keeps in ebx through pass 11 and the result byte sharing that pass's `enabled` slot
+// both come from 0x44370 inlined there with its mode table folded (retail's table at 0x43fa1c is in .rdata;
+// ours, g_render_modes_storage, is a non-const global; making it const changes nothing here and 0x44370 still stays out of
+// line, 842 for 0x423c0 with every pass calling it), BLOCKED-BY 0x44370.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {

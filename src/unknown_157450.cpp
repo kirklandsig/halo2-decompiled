@@ -481,17 +481,17 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// score 32 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
+// retail; the comparison and the update of the two masks use different registers, and the input
+// counter loop uses different ones too. Retail keeps the word mask in a register after the loop
+// (reloaded into ecx before the first test, shared by the compare and the OR for the store);
+// every word-mask form here reads it from memory at each use.
 // Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
 // becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
 // both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
 // but splits the tail into a 16 bit load for the compare and a 32 bit one for the update; taking
 // the present teams out of the volatile local gives the shared 32 bit reload, but the player loop
 // then keeps them in a register and loses the load/or/store.
-// score 32 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
-// retail; the comparison and the update of the two masks use different registers, and the input
-// counter loop uses different ones too. Retail keeps the word mask in a register after the loop
-// (reloaded into ecx before the first test, shared by the compare and the OR for the store);
-// every word-mask form here reads it from memory at each use.
 // Tried: team-bit carrier 29 (the loop then matches; below the keep threshold); carrier with the
 // engine lookup hoisted 29; carrier with the mask compare swapped 29 (the mask load leads the
 // compare but is still not shared with the update); two-width union view of the mask 90; union
@@ -599,6 +599,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the dword mask read and stored straight through globals 130 (374 bytes: even the zero-extended copy folds into
 // field re-reads). Diagnostic, not kept: a present-only bit local with the engine lookup ahead of the stores 29
 // (the player loop is then retail's; left: the word mask entry and its post-loop register).
+// Round 39 (fast): the present update written `(1 << team) | present` 32 (same code), on the word mask 77; the
+// word mask with `(flags & 2) == 0` 77, updated in place then stored through the pointer 77; the word mask read and
+// stored straight through globals 129 (375 bytes, either test order, `|=` or the bit-first form), the dword mask
+// read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
+// (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
+// follow it here (the LTCG loop keeps present in a register).
 // @retail 0x158140
 void function_158140(void)
 {

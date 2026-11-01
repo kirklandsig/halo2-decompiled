@@ -352,6 +352,11 @@ void function_07b3e0(void)
 // non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
 // retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
 // file's /Ob1 keeps them out of line here: a flags decision).
+// Round 129 (m3 lane 6, fast): the scan and the datum index both reading the global at each use (no pool
+// local) 45 (126 bytes: LTCG hoists the two reads into one EBP and drops the final reload); with
+// index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);
+// diagnostic file-local step copies passing `iterator->data` to the scan and using a `data` copy for the
+// datum, and the reverse, 58/58 (the copies coalesce into one pool register, as the iterator form).
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1100,6 +1105,7 @@ bool function_1934f0(s_surface_description *variant);
 long function_1931a0(long count, s_surface_description *variant);
 long function_193250(s_surface_description *variant);
 long function_1932c0(s_surface_description *variant);
+long network_session_get_maximum_players(c_class_58d20 *session);
 bool balance_teams_by_count(long player_count, const long *parties, long team_count, long maximum_team_size,
 	bool flag_parties, long minimum, long maximum, bool use_parties, long *imbalance);
 bool balance_teams_can_add(long player_count, const long *parties, long extra_count, long team_count,
@@ -1188,7 +1194,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
-// score 766 (was 766): Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
+// Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
 // Earlier: retail's frame is 0xb4 and it takes the session in EAX and the output pointer
 // on the stack, while ours has a 0xd4 frame and takes both on the stack; retail also calls the matched
 // 0x192e60 out of line, ours inlines it.
@@ -1272,18 +1278,22 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // T47: Uniform session-state observations / membership maximum selection / flattened
 // complete type dispatch subsets 766/766/766/888/888/888/888; all with dword histogram
 // 931. Original body, selectors and all protected declarations restored.
+// Round 40 (lane 13, fast): the opening through the matched accessors (get_value_49c8, get_data_4a00,
+// network_session_get_maximum_players) 766 (same code, kept: their bodies were written out here). Ours
+// calls the capacity switch (this file's helper, or 0x193300) out of line where retail inlines it (jump
+// table), and inlines whichever 0x192e60 call comes first: the getter called in the player loop 857
+// (top inlined, loop called); the capacity helper `__forceinline` 906 (2872 bytes); both 859 at 2828 bytes
+// with retail's seven out-of-line calls but top/loop reversed; that with a long histogram 869 (frame 0xb4,
+// 2792 bytes); the matched accessors 0x193440/0x1933d0/0x1933a0/0x193400/0x1934d0/0x1934b0/0x193470 for
+// this file's helpers 904 (0x193300 too) / 840 with the capacity helper forceinline (2828 bytes, aligned
+// 447 against 515) / 869 with the loop getter; every helper `__forceinline` 906, with the loop getter 859.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
-	long variant_index = NONE;
-	long local_0 = session->state;
-	if (local_0 > 2 && local_0 <= 8) variant_index = session->value49c8;
+	long variant_index = session->get_value_49c8();
 	s_surface_description *variant = function_192e60(variant_index);
-	const s_ratings_summary *summary = NULL;
-	if (local_0 > 2 && local_0 <= 8 && session->flag49fd)
-		summary = (const s_ratings_summary *)session->data4a00;
-	long capacity = 16;
-	if (local_0 > 2 && local_0 <= 8) capacity = session->value4994;
+	const s_ratings_summary *summary = (const s_ratings_summary *)session->get_data_4a00();
+	long capacity = network_session_get_maximum_players(session);
 	bool result = true;
 	memset(out, 0, sizeof(*out));
 	if (!summary || summary->player_count > capacity || !variant ||

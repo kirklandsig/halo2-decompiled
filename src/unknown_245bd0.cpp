@@ -347,6 +347,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
 // vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
 // file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
+// Round 28 (m3 lane 2, fast with 0x2461a0/0x245bd0/0x245d80): the sphere helper defined after this function
+// (prototype ahead) 57 (same code: the operand order is not parse order); the scale helper taking the vector
+// by value 397 (456 bytes, sphere helper outlined); `real scale;` declared first in the helper with the dot's
+// inputs swapped and the unit-z zeros stored separately 61 (every product still multiplies a copy of the scale,
+// so declaration order does not set it); length_sq3f(&d) with scale declared first 152; the difference copied
+// to the plane normal, then the existing vector3f_scale on the normal in place 397 (helper outlined).
+// The permuter cannot help here: it rewrites this function's body, and every difference is in the inlined helper.
 // Round 65 (lane 12, fast with 0x2461a0): the scale helper taking the vector by value 397 (456 bytes,
 // sphere helper outlined; 0x2461a0 84); the difference made in the plane's normal with the j,k,i sum
 // read from it and the scale in place 181 (693 bytes); the difference copied to the normal before the
@@ -422,46 +429,8 @@ PRIVATE inline real shape_dot_reverse(vector3f const *a, vector3f const *b)
 	return a->k * b->k + a->j * b->j + a->i * b->i;
 }
 
-// score 4 (was 4): only b's sum order differs: retail adds the k product before the j product
-// (i, k, j, each a copy of the difference times the direction's memory operand); ours sums i, j, k.
-// The discriminant is compared with the literal 0.f (retail's 0x45dbd8 is the 0.0 constant), which
-// gave retail's radius/c/zero registers (40 -> 4).
-// Tried before that, at 40: existing offset/scale/plane-product force-inline declarations, all
-// seven combinations 40; native result byte 69; b in i,k,j statements 42; radius square subtracted
-// inline after the sum 51, named after the sum 40, first 40; `c <= 0.f` 40; a radius local squared
-// after the sum 49, plain 40; c as one expression 53, terms reversed 49; length_sq3f/dot3f for c
-// 55/57; length_sq3f for a, named distance square, result before *t: 40; dot3f for b 42 (with
-// dot3f for a 40); reverse dot for b/a 42/42 (b with dot3f for a 40); result declared late 67
-// (caller 0x2469b0 170); arms swapped 63; b as i,k statements plus j 46, i plus k,j 46, through the
-// reverse dot 42; compile-only: radius-square declaration at five places, a 60-form screen of c, b
-// and a through the existing helpers.
-// Round 11, at 4: b as statements i, k, j 7 (434 bytes: the last product loads direction->j first);
-// j + (i + k) 11 (the same load); dot3f for b 6 (also flips the plane dot's last product);
-// length_sq3f for a 4 (same code); radius square written in the subtraction 18. Compile-only: every
-// flat term order, every dot helper and five spellings before the sum give i, j, k; extra
-// arithmetic before the sum rotates it only among i,j,k / j,i,k / j,k,i; the difference computed
-// j, i, k by hand (diagnostic) gives i, k, j but moves other registers (13).
-// Round 13 (exact LTCG harness, ~800 forms): b and a parenthesized `(i + k) + j` and `(j + k) + i`
-// give retail's b order but the j product then loads direction->j (a byte longer) 7; so do
-// `j + (i + k)` and `b = i + k; b += j` 7; product parentheses and operand orders, c's statement
-// orders and groupings, parenthesized c, plane-dot forms 2-14 in the harness; dot3f(&d, direction)
-// with dot3f(&plane->n, center) 4; a center pointer local used twice 8; radius local 105;
-// declaration and comparison spellings 4; the difference helper with a pointer return, forced
-// inline, output first 4 (by value 121). Only the three differences written out as plain
-// assignments (diagnostic) give retail's whole b block. Permuter (68 tries): 4.
-// Round 205: the shared difference helper with scale one 4; with direction length/self-dot 4/4;
-// separation-first/direction-first/reverse projection helpers 4/4/4; shared final scaling 4;
-// normal-first plane product 6. The vector addition helper with a negative step 16 (435 bytes),
-// with normal-first plane product 18 (435). All restored; the projection still sums i,j,k.
-// Round 21 (lane 14): the difference vector renamed 4 (same code); `(i + k) + j` with the j product's
-// operands swapped 11 (the j product still loads direction->j first); b computed right after c,
-// before the c test 61 (435 bytes); b computed before c 102 (428); the hit normal through
-// vector3d_from_points3d(&d, &scaled) 4 (same code).
-// Round 447: Existing difference helper first/second input copies and complete scalar publication,
-// seven subsets 140/171/186/4/140/171/186; native vector publication 184. Projection sum order remains.
-// Original executable source and all trial helper/interface changes restored.
-// Array views for the difference, direction, c, a and their combinations 4 each; the grouped array
-// projection 11 (434 bytes); the shared scaled-difference helper with an array projection 4. Body restored.
+/* the fraction of direction at which point, moving along it, first touches the sphere (0 when it
+   starts inside), with the sphere's tangent plane there */
 // @retail 0x2461a0
 bool function_2461a0(
 	s_sphere const *sphere,
@@ -473,10 +442,11 @@ bool function_2461a0(
 	bool result = false;
 	vector3f d;
 	vector3d_from_points3d(point, &sphere->center, &d);
+	real d_j = d.j;
 	real radius_squared = sphere->radius * sphere->radius;
 	real c = d.k * d.k;
 	c += d.i * d.i;
-	c += d.j * d.j;
+	c += d_j * d_j;
 	c -= radius_squared;
 	if (0.f >= c)
 	{
@@ -486,7 +456,7 @@ bool function_2461a0(
 	else
 	{
 		/* retail sums these in this order */
-		real b = direction->i * d.i + d.k * direction->k + d.j * direction->j;
+		real b = direction->i * d.i + d.k * direction->k + d_j * direction->j;
 		if (b > 0.f)
 		{
 			real a = direction->j * direction->j + direction->k * direction->k + direction->i * direction->i;
@@ -508,7 +478,7 @@ bool function_2461a0(
 		vector3f scaled;
 		shape_scale3d(direction, *t, &scaled);
 		plane->i = scaled.i - d.i;
-		plane->j = scaled.j - d.j;
+		plane->j = scaled.j - d_j;
 		plane->k = scaled.k - d.k;
 		if (function_30bf0(&plane->n) == 0.f)
 		{

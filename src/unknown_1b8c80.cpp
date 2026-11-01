@@ -1340,7 +1340,7 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-// score 134 (was 198): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
@@ -1447,6 +1447,13 @@ void function_1f86a0(long actor_index);
 // joint index declared first 134 (all the same code). Retail's frame is mask byte F+3, entry home F+4, actor F+8,
 // iterator F+0xc; ours has entry F+0, actor F+4, iterator F+8 (same order) with the mask in BL, so the open
 // difference is the callee-saved choice (retail gives EBX to the entry), not slot order.
+// Round 39 (m3 lane 14, fast): the FORMS-slot-data-block form (the state read through `slot->unknownc` as a data
+// struct with offsets 0xc lower, its bool and the +0x24 short through it) 134 (same code), declared between the
+// actor and the unit 134; the iterator declared at the top 134; joint_index and entry declared at the top 134; the
+// decline test as an if/else-assigned bool 134 (same code); the fallback assigned straight to joint_index (no
+// element local) 233. In retail EDI keeps the actor through the loop
+// untouched and EBX takes the entry (spilled at F+4, briefly the first 0xbaf40 result); ours gives BL the mask and
+// uses EDI for that result, reloading the actor.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

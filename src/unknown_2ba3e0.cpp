@@ -764,6 +764,11 @@ real g_55e618;
 // 0x10c frame, so the collision record escapes in retail as in ours and the early argument read is not
 // escape-driven. Re-measured in the env only (listed above): the velocity pointer, with dot3f, with
 // vector3f_scale 183/102 each.
+// Round 67 (lane 12, same env; positional/aligned): the tangent through the existing vector3f_assign 74/84 (same
+// code); with the perpendicular through vector3f_scale 76/87; the final velocity through vector3f_assign 175/77
+// (1545 bytes); the velocity pointer with perpendicular/tangent/final setters, with dot3f, or with only the final
+// setter 184/103 each (1541 bytes, frame 0x118: perpendicular still gets no home); the pointer declared at the
+// loop top and used for the displacement too 279/201 (1567 bytes).
 // Round 36 (lane 13, fast): retail's homes follow its spills (tangent.i/j spilled twice each sit low at +0x38,
 // perp.k once at +0xa4 under the collision); it holds the three position sums in xmm1/xmm4/xmm2 until after
 // impact.index, so only perp.i/j, tangent.k and keep cross the call. On the velocity pointer form (194): dot3f
@@ -794,6 +799,21 @@ real g_55e618;
 // dot or the perpendicular products in the other text order 179/179 (same code), the dot read from the
 // particle fields 189, keep computed after the velocity pointer 188; the normal as a union member read
 // directly 605 (h0, copy form), 651 (on the 179 form).
+// Round 30 (lane 2, fast): retail loads every normal/point component and the placement's last argument
+// above the position stores and reuses the dot's normal registers for the position; ours reloads the normal
+// after each position store, so our particle stores may alias the collision record. The particle's +2 word read
+// as a struct field (identifier/flags words) in place of the flags pointer 99 (the flags test after the call
+// then hoists above the velocity stores as retail; three-point gain, not kept); on that body the impact declared
+// at the hit block's top 99, the velocity pointer 196. Position stores before the dot 116 (frame 0x118); a
+// position local stored after impact.index 286 (1594 bytes); a normal copy with real_point3d_set after
+// impact.index 269; the normal as a union member 605.
+// Round 126 (lane 5, fast; 0x2ba3e0 and 0x2b8da0 match throughout): perpendicular and tangent declared at
+// function scope 102; the impact at function scope 102; the impact declared and its index stored right after
+// the normal pointer 102 (all the same code); the sweep at function scope 110; the collision word stored
+// before the start stores with perpendicular/tangent at function scope 100, with the early impact 100 (two
+// points, not kept); the velocity pointer form re-measured 194 (1541 bytes), with the dot through a
+// forceinline pointer helper 194 (identical: the helper's loads still merge, so the twice-read velocity.i of
+// retail is not an inline-boundary effect).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -148,6 +148,10 @@ void function_213970(void);
 // the call; the re-read getter alone: load after the clears in EAX, copied to ESI before the compare. On the
 // separate globals (--fast): no pragma + re-read getter 153; with the helpers 153; helpers under the size
 // pragma stay out of line. Still BLOCKED-BY the block definitions above.
+// Round 67 (lane 12, fast, separate globals): a file-local language getter returning the re-read global, under
+// the size pragma 131; one compare-and-set helper (field address, value) for both preference fields with the
+// header getter 131; helper with the re-read getter 131; the same two without the size pragma 153/158. Still
+// BLOCKED-BY the block definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
 // Round 36 (lane 13, fast): the language query and both preference updates in their own block 131 (same
 // code), without the size pragma 158; one dirty store after both tests behind a changed flag 173 (259 bytes);
 // block B's scalar zero stores ahead of its header clear 131; the version compared as a dword 131; the
@@ -159,11 +163,20 @@ void function_213970(void);
 // With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
 // the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
 // Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
+// Round 126 (lane 5, fast): the language local on the left of its comparison 131; the NONE/enable stores
+// ahead of the scalar zero stores 131; the version as a named const local 131; the dirty flag set before
+// each preference store 131; the handle reset first among the scalar stores 131 (all the same code). The
+// block definitions are now in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
+// src/unknown_2148b0.cpp and src/unknown_12be90.cpp.
 // Round 50 (lane 10, fast): the file built /O1 without the size pragma (diagnostic, restored) 131, the same code
 // (the language getter stays out of line there too, so retail's inline getter is not /O1 alone); one forced-inline
 // compare-and-set helper for both preference updates under the pragma 131 (same code), with a forced-inline
 // redeclaration of the getter 131 (the getter still called); the NONE/flag stores after the language query 131;
 // the dirty flag set before each field store 131; block A's NONE store right after block A's clears 131.
+// Round 69 (lane 12, fast): the progress record cleared by copying a zeroed local record 135 (232 bytes); the language
+// test through a named `changed` bool 131; the two requests cleared one memset each 144 (237 bytes); the enable flag
+// stored after the last NONE store 131; the copies cleared before the files 131. Still BLOCKED-BY the block
+// definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
 // @retail 0x2136c0
 void function_2136c0(void)
 {
