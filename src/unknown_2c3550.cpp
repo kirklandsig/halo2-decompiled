@@ -195,6 +195,14 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
 // 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
 // its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
+// Round 122 (lane 6, fast): the dot and both crosses through the existing dot_product2d/cross_product2d (vector2f
+// casts, direction locals dropped) 152 (634 bytes); with the subtraction through vector2d_from_points2d and the
+// normalizer's single exit (distance zeroed in an else) 106 (634: retail's early `movss xmm0, [y]` preload, its
+// distance/zero registers, dot, first cross and loop entry, but y and the inverse swap XMM0/XMM1 and the second
+// cross loads other.x where retail multiplies y in place); with the first cross by name 107; with the second
+// cross by name 149 (630 bytes, the preload is lost); with the normalizer's distance zeroed in the then-arm 114.
+// Compile-only screen: the preload appears only when y is read through the helpers' pointers after the
+// subtraction helper; product orders, store orders, sum order and the helpers' argument orders change nothing.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)

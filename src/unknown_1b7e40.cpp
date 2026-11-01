@@ -156,6 +156,12 @@ bool function_25d9b0(long prop_index);
 // priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
 // Round 465: default-first/branch-complete property acquisition result, short/long priority,
 // existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
+// Round 122 (lane 6, fast, file and callees in the image, control 86): `short result = 0` at the label with
+// `result = priority` on success and a long priority 117 (554 bytes); the `goto done` zero-epilogue form with node
+// declared first 91 (554), with the fallback through actor->prop_index 91 (in both the priority is spilled to the
+// argument slot and the state kept in ESI); the loop's object compare written node-field first 87; the node's
+// near distance read once into a local for both range tests 90 (541). The recorded goto form with an initialised
+// priority and with a long priority re-measured 91 each.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
