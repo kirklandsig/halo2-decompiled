@@ -217,6 +217,9 @@ short __stdcall function_2551c0(long actor_index)
 // named dot, without/with complement 67/67. Original helper and callback restored.
 // Round 446: native projection/cross/angular scalar precision, seven subsets 392/392/392/72/392/392/392;
 // all with complete score storage precision 414. Exact-only forms restored with original helper and body.
+// Round 494: native slot data block with complete vector/axis/output component arrays 89;
+// vector/axis/both/output/vector-output/axis-output/all component-array roles
+// 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

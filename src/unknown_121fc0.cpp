@@ -172,6 +172,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // unique (five orders) never moves their slots; the slot order matches the count of memory references (retail:
 // cursor 5, size 5, next 4, count 4, unique 3; ours gives size 3, so it sits after count), so the size home
 // follows from the memory-resident clamp.
+// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
+// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
+// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
 // Round 20 (lane 17, fast): round 60's `long size = 0` passed as `(dword *)&size`, re-measured with round
 // 33's counters declared before the token array, 122 (the gain is the zero store, which retail does not
 // have); the counters before the token array alone re-measured 126; diagnostic, the token loop hand-inverted (`if (token) do ... while (token)`) 128

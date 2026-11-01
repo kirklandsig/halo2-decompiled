@@ -337,6 +337,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 328: Complete playback case orders 021/120/201/210 across all four
 // switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
 // case order restored; direction/frame/flags and interpolation carriers remain.
+// Round 494: one native restart mask at all policy sites, with disposal/restart operand
+// priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
+// Mask forms shorten away from retail and regress; all original policy tests and body restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

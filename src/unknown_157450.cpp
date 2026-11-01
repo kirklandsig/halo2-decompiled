@@ -628,6 +628,8 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
 // (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
 // follow it here (the LTCG loop keeps present in a register).
+// Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
+// receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4491,6 +4493,8 @@ void function_15fe20(long team_index, color3f *color);
 // Round 480: Filled team-color output objects, rival/own/both, with native publication
 // 302/552/564; with library copies 302/552/564; overlap-safe publication 423,
 // complete individual palette copies 564. Original body restored; native color transfers remain.
+// Round 496: Standard forward color ranges, rival/own/both team/all four publications
+// 563/236/569/588; backward ranges 568/544/567/592. Original aggregate copies and body restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5617,6 +5621,9 @@ void __stdcall function_d6bc0(long object_index);
 // Round 266: eight dependency-safe initial tag/preset/rate/scenario declaration orders
 // 233/231/231/233/233/231/231/231. Original input observations and full body restored;
 // frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Round 496: Countdown value owning both zero scheduling and positive expiry, short/long
+// storage with word/Boolean schedule and short/byte-kind plus word/long modifier:
+// 156/168/169/176/161/172/183/190. Original timer observations and body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

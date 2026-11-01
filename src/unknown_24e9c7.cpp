@@ -217,6 +217,9 @@ struct s_24e9c7_bounds
 // separate side scalars, `0.0f -` 143 (742 bytes, frame 0x44, side y at -8), with unary minus 148 (746); across
 // and side as separate points with `0.0f -` 139 (742); that with up as scalars 139 (742); across built in side
 // scalars scaled in place with scalar up and a back point, `0.0f -` 138 (739).
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
 // Round 35 (lane 15, fast): ours spills back's y (pair at -0x18/-0x14), retail side's y (pair at -0xc/-8, above
 // result). back renamed reverse_side / away, side renamed width_offset, up renamed upward 125 each (names do not
 // order the struct homes either); corners as full sums `x + up.x + back.x` 229 (664 bytes); scale read before size

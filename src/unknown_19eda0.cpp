@@ -395,6 +395,8 @@ PRIVATE inline long polygon_round_19f(real value)
 // Earlier at 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
 // the distance to the centre is now computed and compared in double, so the
 // Earlier 379: frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
+// Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
 // Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
 // radius keeps retail's xmm3; our fade block is still one instruction shorter than
 // retail's, and the call to function_4b2d0 still passes three stack arguments.
@@ -461,6 +463,9 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 287: Native homogeneous-position/RGBA/both/UV/position-UV/RGBA-UV/all emitted records
 // 426/319/426/316/426/319/426; all with top declared first 426. All record forms require an exact match;
 // complete original output storage, cursor, parameter home and body restored.
+// Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
+// results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
+// Original factor literal, bound, inherited parameter home, cursor and complete body restored.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

@@ -3689,6 +3689,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
 // Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
 // the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
 // Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
 // early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
 // `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave

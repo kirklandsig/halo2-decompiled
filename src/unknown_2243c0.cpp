@@ -360,6 +360,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // EBP (arg_4 takes EBX) and LTCG then passes it on the stack, where retail keeps it in EBX from EAX.
 // Retail's group read (add then load), unfused stage element (lea then movzx) and dead pass-element lea
 // look like tag/block accessors inlined at link time; no out-of-line accessor exists here to call.
+// Round 495: Native standard predicate search with signed/unsigned result, cache-zero
+// boundary and fallback-mask combinations 199/199/203/203/211/211/210/210. Original body
+// restored; fallback normalization and stage/pass homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

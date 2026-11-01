@@ -243,6 +243,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // +0x1f0, portals +0x2f0, clusters +0x3f0; ours portals, indices, clusters, gains).
 // Round 446: native persistent/query/search scalar lexical homes, seven subsets
 // and all with Boolean local roles 886 each. Original scalar names, body and helpers restored.
+// Round 494: short persistent target count with native long query/choice and
+// bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
+// recover 3327 bytes but regress; all original counter domains, helpers and body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
