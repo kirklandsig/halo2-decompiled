@@ -991,6 +991,8 @@ bool __stdcall function_2399da(long controller_index)
 // identity test as a guard return (`if (!xuid || !xuid->qwUserID) { deny; return; }`) 90. One-file LTCG harness
 // (this file + online_teams.cpp): only a rank use fewer (the store from a constant) or one identity use more
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
+// Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
+// for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

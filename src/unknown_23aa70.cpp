@@ -338,6 +338,11 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // indexed with `*node = 0` (nothing live after the decode) still flips, so the late node read is not the
 // cause; a node read through the buffer pointer (buffer live across the decode) keeps retail's convention;
 // build flags do not move the convention.
+// Round 107 (lane 7): one `vertices` byte base (data + offset) before the switch for every case 201 (588 bytes,
+// flipped, 0x14a8e0 269); formats 3 and 4 indexed with a trailing `return;` 175; format 4 indexed with the buffer
+// data in its own local 175, with a braced node store and format 1 as pointer + index 175, with the node byte read
+// into a long before the decode 174 (0x14a8e0 283). All flipped as before: the node takes EBX and the switch
+// temp/case-4 base EDI, where retail gives that web EBX and the node EDI.
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)
