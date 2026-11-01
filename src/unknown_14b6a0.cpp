@@ -323,6 +323,12 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 334: first +0xf reserves 0x50 versus 0x3c; point/recipient sharing,
+// readiness homes and scalar spill order remain. Plain ordered traversal of the two
+// adjacent marker indices, long/short counter and separate/shared probe-bounds
+// workspace, 311/305/311/305; with native result-tested recipients
+// 304/302/307/305. Original separate probes, returned relocation output,
+// selected unit, observations and both player traversals restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

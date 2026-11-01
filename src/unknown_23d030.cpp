@@ -279,6 +279,11 @@ struct s_free_state_23d260
 // forward/up pointers declared before the side vector and used for the side and up cross too 289
 // (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
 // pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
+// Round 334: Frame 0x4c agrees; first +9 is zero XMM3 versus XMM1, then side
+// normalization and up/roll allocation. Uniform named product parts at the actual
+// up-cross/roll-cross/rolled-row expressions, subsets 1/2/3/4/5/6/7,
+// 315/312/129/312/114/257/291; all parts const 291. Every parallel row uses
+// the same form; original arithmetic trees and store phases preserved. Original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
