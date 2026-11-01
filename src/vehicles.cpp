@@ -1112,7 +1112,9 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
+// score 597 (was 597): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// and scalar/SSE homes remain.
+// Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
 // double (LTCG had pushed its 8-byte alignment need onto 0x2056e0's callers).
 // Physics-state branch scope, separate velocity outputs and both 715 each; final default-array
@@ -1132,6 +1134,10 @@ long function_10f5f0(long object_index);
 // Round 469: Sixteen-point short/word/signed-byte/byte ordinals with three native axis bounds
 // 612 each; those four ordinals with the original buffer 612 each (2220/2264 bytes).
 // Frame 0x1990 still exceeds 0x1984; original complete body and local qualifier restored.
+// J222: Native position field 597; existing offset-vector producer and field/producer 595/595; complete
+// position observation alone and with field/producer/both 637 each; best field/producer with actual six-real
+// buffer 595. Two-point forms rejected; every original field view, buffer, body and inherited qualifier
+// restored. No calibrated loss.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1488,7 +1494,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
+// score 40 (was 40): Frame 0x9c and extent agree; two header SIB operands, join reloads, cross/dot operand
+// ranks and constructor/graph-load scheduling remain.
+// Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
 // retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
 // channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
 // (ours: EAX), which moves the iterator/channel init, the kind-loop value/counter homes and the cross block; and VC
@@ -1539,6 +1547,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // fraction (no `speed` local) 40. Diagnostics: `iterator.animation_id = c_type_709360()` after the index 149 (a
 // temporary copy); the function channel declared before the iterator 44; the sum's source order is ignored (VC
 // always forms (i + j) + k here, retail keeps k, j, i).
+// J222: Complete up/forward/both cross inputs 404/420/442; twice-read header address 525, with up/forward/both
+// inputs 533/532/554; next graph produced before constructors and after each iteration 142 (exact-only). All
+// original executable source restored; no calibrated loss.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3808,7 +3819,11 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
+// score 197 (was 206): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
+// still +0x5a.
+// Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
+// Earlier at 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
 // every frame slot now retail's; left: the override search's exit (retail tests the found
 // element out of line, threaded from the loop; ours re-tests i < count), the permutation pointer's load order,
 // integer registers in the ray copies, the scale products (ours copy the scale, retail scales in place), the
@@ -3877,6 +3892,14 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // cursor, predicate-owned cursor and indexed while searches 251/257/257/251;
 // the four searches with the original displacement 251/257/257/251. Original body restored;
 // frame 0xec agrees, metadata load order and found-index retest remain.
+// J222: Translated-point setter, reused change and both 206/206/206; promoted current sample alone and with
+// point/change/both 245 each; point/change/scale plus named compression and travel 205 (one point, restored).
+// Original complete executable body and all helper declarations restored; no calibrated loss.
+// J222: Fresh compression/travel parts with the recorded three-use negative factor 199; adding late change-flag
+// initialization 197; the same pair on the translated-point/reused-change graph 199/197. The expression parts
+// add no further gain on these graphs. Selected the simpler joint 197 source (nine points from round baseline
+// 206), already ordinary whole-program confirmed without a loss; no isolated seven/two/one-point form kept.
+// Failed all-root comparisons t10/t11 excluded; exact-source fallbacks t13/t14 and final t15 are archived.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -3891,9 +3914,9 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 		long permutations;
 		s_graph_iterator3c iterator;
 		real largest_change = 0.0f;
-		bool changed = false;
 
 		function_ba690(vehicle_index, &permutation_count, NULL, NULL, &permutations);
+		bool changed = false;
 
 		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
@@ -3936,15 +3959,16 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 				}
 
 				s_vehicle_ray ray;
+				real reach = 0.0f - length;
 
 				ray.point = marker.matrix.position;
 				ray.vector = vehicle->up;
 				ray.point.x += ray.vector.i * offset;
 				ray.point.y += ray.vector.j * offset;
 				ray.point.z += ray.vector.k * offset;
-				ray.vector.i = ray.vector.i * (0.0f - length);
-				ray.vector.j = ray.vector.j * (0.0f - length);
-				ray.vector.k = ray.vector.k * (0.0f - length);
+				ray.vector.i = ray.vector.i * reach;
+				ray.vector.j = ray.vector.j * reach;
+				ray.vector.k = ray.vector.k * reach;
 				if (!marker.node_index)
 				{
 					if (update && (g_510c54->game_time + index) % 4)
@@ -3961,7 +3985,10 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 							function_182800(&ray, NONE,
 								(void *)havok_component_get(vehicle->havok_component_index)->unknown9c))
 						{
-							value = PIN(1.0f - (ray.t * length - rest) / (length - rest), 0.0f, 1.0f);
+							real compression = ray.t * length - rest;
+							real travel = length - rest;
+
+							value = PIN(1.0f - compression / travel, 0.0f, 1.0f);
 						}
 						else
 						{

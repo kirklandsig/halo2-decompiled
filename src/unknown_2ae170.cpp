@@ -745,7 +745,9 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 }
 
 // MiniMax R (10-31): no new form, no lower score.
-// score 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
+// score 370 (was 370): Frame 0xc and input roles agree; selected-level/right-destination homes and integer/SSE
+// staging remain. Dispatcher must stay exact.
+// Earlier at 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
 // Earlier: retail copies the input level into a dead argument slot through a
 // frame 0xc agrees; retail copies the input level into a dead argument slot through a
 // Frame 0xc agrees; selected-primary storage, destination construction and integer-bit/SSE staging differ.
@@ -867,6 +869,9 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // input level copied once into a real local for the else branch's sums 411 (dispatcher lost); the
 // first branch's two selected levels as long bits 377 (aligned 161 -> 152, but level then sits in EBX and
 // the right bin is spilled); the first level as a real/long union 370 (same code).
+// J222: Special input bits 412; front subtotal 412, input/front 423; rear 412, input/rear 423; front/rear 422;
+// all 432; all with boosted offset 416. Every form loses dispatcher 0x2af7b0 and is rejected; all original
+// arithmetic, observations, helpers, declarations and executable body restored.
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
