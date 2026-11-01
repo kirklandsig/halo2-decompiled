@@ -1143,6 +1143,9 @@ bool function_68670(byte *source, long size, void *block);
 // (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
 // live from the test into the cases (reloaded after the payload read); ours coalesces it with the
 // long size in ESI.
+// Round 285: Existing shared prefix initializer with sequence-copy, short-copy-guard and loop-payload
+// subsets: 120/156/119/154/135/142/139/146. Header/sequence homes, DX size and prefix-store order remain;
+// original memset, payload scope, helper calls and body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

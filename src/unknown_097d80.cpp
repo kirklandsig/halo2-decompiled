@@ -52,7 +52,7 @@ struct c_aggregate : c_child
 };
 
 
-// score 31 (was 45): the release reads the allocator global again (allocator_globals_release, retail's
+// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
 // for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
@@ -186,6 +186,9 @@ struct c_aggregate : c_child
 // Retail's slot 0x10 holds produced, the dispatch child cursor and the cleanup countdown, slot 0x14 the
 // children base, the inner count and the block pointer; ours groups the temporaries the same way but keeps
 // produced apart. Still BLOCKED by the build flag.
+// Round 285: Shared callback output with fixed short/unsigned-short collection and dispatch ordinals,
+// scratch after counters/before arrays: eight at 161 (406 bytes). Frame and callback/loop temporary homes
+// remain; complete body and original signed ordinals restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

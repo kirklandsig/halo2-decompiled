@@ -222,11 +222,15 @@ static inline void quaternion_transform_vector(
 // native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
 // frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
-// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
 // with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
 // 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
+// Round 285: Native direct-plus-projection vector with final shared scaled-cross addition,
+// ordinary/shared dot and ordinary/staged cross, cross-first/direct-first:
+// 305/349/309/336/295/338/321/330. Frame and quaternion/cross spill overlap remain; complete helper and
+// body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -866,6 +870,9 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
