@@ -993,6 +993,9 @@ bool __stdcall function_2399da(long controller_index)
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
 // for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 325: Permission flag read at every use (shift/mask), crossed with all-use own-rank fields
+// and direct full-identity member presence: 142/163/142/163/142/163/142/163. All restored;
+// the changed flag lifetime shortens the body and changes saved-register ownership.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

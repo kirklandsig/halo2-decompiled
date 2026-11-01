@@ -573,6 +573,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
 // first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
 // before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 325: Complete native surface snapshot at dispatch, crossed with both difference setters,
+// ordinary result and actor-valid direction scope: 387/397/365/366/397/401/373/380.
+// All restored; root retention is not recovered and most frames/extents grow.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

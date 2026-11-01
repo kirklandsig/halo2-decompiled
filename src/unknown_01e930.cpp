@@ -449,6 +449,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 325: Actual inlined status/clock temporary identities in both lexical orders, with
+// coordinated consumer-clock identities, all eight 244 at 1098 bytes. All original
+// helper and consumer identities restored; frame 0x3c/0x40 and early homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
