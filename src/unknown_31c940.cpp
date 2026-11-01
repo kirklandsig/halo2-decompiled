@@ -447,32 +447,50 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 
 	iteration_solved:
 		// Save the first iteration's velocities, then accumulate later ones.
+		// Retail consumes consecutive kind-2 bodies before checking the sentinel.
 		solver_velocity_31c940 *body = bodies;
 		if (iteration == 0)
 		{
-			while (body->kind != 3)
+			for (;;)
 			{
-				if (body->kind == 2)
+				switch ((signed char)body->kind)
 				{
-					body->accumulated_angular = body->angular;
-					body->accumulated_linear = body->linear;
-					++body;
+				case 3: goto bodies_done_0;
+				case 2:
+					do
+					{
+						body->accumulated_angular = body->angular;
+						body->accumulated_linear = body->linear;
+						++body;
+					} while (body->kind == 2);
+					break;
 				}
 			}
+			bodies_done_0:;
 		}
 		else
 		{
-			while (body->kind != 3)
+			for (;;)
 			{
-				if (body->kind == 2)
+				switch ((signed char)body->kind)
 				{
-					body->accumulated_angular = _mm_add_ps(body->accumulated_angular, body->angular);
-					body->accumulated_linear = _mm_add_ps(body->accumulated_linear, body->linear);
-					++body;
+				case 3: goto bodies_done_1;
+				case 2:
+					do
+					{
+						body->accumulated_angular = _mm_add_ps(body->accumulated_angular, body->angular);
+						body->accumulated_linear = _mm_add_ps(body->accumulated_linear, body->linear);
+						++body;
+					} while (body->kind == 2);
+					break;
 				}
 			}
+			bodies_done_1:;
 		}
 		// The third operation byte classifies the residual row layout.
+		{
+		// This pass keeps B in a register across consecutive residual rows.
+		solver_velocity_31c940 *b;
 		op = operations;
 		goto residual_header;
 		for (;;)
@@ -542,6 +560,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 			case 2: op += op[1]; break;
 			}
+		}
 		}
 	iteration_done:;
 	}
