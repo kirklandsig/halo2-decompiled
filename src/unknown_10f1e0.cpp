@@ -504,6 +504,18 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,
 // mask-first load/OR/store again); visited and both markers as one record cleared by its own member
 // (diagnostic for lane 1's escaped aggregate) 42: the frame stays 0x104, but the set is load/OR/store.
+// Round 68 (lane 9, fast): with the mask test the split set reloads the word as an array element
+// (`mov ecx, [esp + eax*4 + 0x14]` beside `lea eax, [same]`), i.e. it reuses the test's values. Any opaque
+// call (through a volatile function-pointer local; diagnostic, reverted) between the test and the set, taking the marker, a const pointer to
+// the target or nothing at all, gives retail's fused index-first set (diagnostics 70-78, call included);
+// the markers as `markers[2]` with the mask test still split (42). So our LTCG knows the second 0xb8d30
+// call and 0x1d90e0 leave the marker alone, and retail's compiler did not; retail's fresh reloads of
+// iterator->b after the first query and of the tag table at the back edge fit the same reading. Every
+// callee under both calls matches (0x120220 at 2), none is __asm except 0x142a60 (which only sees the
+// target), and retail's call graph has no cycle through here. Trials: `found` as a byte 37; the marker
+// declared before the definition and visited before the target 37; both with the mask test 42; the
+// markers scoped to the iterator-pair block with the mask test 42, with the shift test 37; a 600 s
+// permuter run, best 36 (a short render-model read, a byte `found` and declaration moves; not kept).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -2545,15 +2557,15 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
-// MiniMax R (10-31): no new form, no lower score.
 // score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
-// score 666 (was 666): this round found no gain - retail re-reads the request pointer from the stack three
+// MiniMax R (10-31): no new form, no lower score.
+// Earlier (666): this round found no gain - retail re-reads the request pointer from the stack three
 // times and never registers it, spills the control pointer to [esp+0x24] and keeps the state in EBP, while
 // ours caches the request pointer in EBP and the state in ESI, giving a 0x88 frame; spelling the argument as
 // a const reference gains 3 but costs the two callers, so it was dropped.
-// score 666 (was 666): Frame 0x80 agrees; request/control homes, validity expansion and ret 4 versus ret 8 remain.
+// Earlier (666): Frame 0x80 agrees; request/control homes, validity expansion and ret 4 versus ret 8 remain.
 // Earlier: frame 0x80 agrees; request/control homes, selected validity calls and ret 4 versus ret 8 differ.
 // frame 0x80 agrees; request/control homes, selected validity calls and ret 4 versus ret 8 differ.
 // Round 55: retail never enregisters the request pointer (esi holds the control pointer, spilled to
@@ -2671,6 +2683,18 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // bit sets in a forceinline helper 702 (every validity test then inline, 47 calls as retail); the request
 // read through its address at every use 663 (ret 8; callers 0xdd360 282, 0xefde0 721), with the bit-set
 // helper 691.
+// Round 68 (lane 9, fast; aligned = difflib over the listing's instructions, baseline 705 instructions
+// against retail's 703, opcode ratio 0.790): BLOCKED-BY 0xe6b00 too: retail's 0xe6b00 takes the unit index
+// in EBX, ours in ESI, so its three call sites differ (its file was held by another lane this round). The
+// channel-clear test `local_5 == 0x7000101 ? unknown7c == 0x400000c : local_5 == 0x400000c` always
+// materialises a sete (also as its own enclosing if, 666, same code); retail's threaded branches come from
+// `((local_5 == 0x7000101 && unknown7c == 0x400000c) || local_5 == 0x400000c)`, which gives retail's exact
+// shape and instruction count (703) but 2553 bytes and 688 positional (opcode ratio 0.794); with the
+// validity of channel 0 computed before the change flag as well (retail's order) 690 (ratio 0.804). The
+// select compared once, `(local_5 == 0x7000101 ? unknown7c : local_5) == 0x400000c`, 714 (no threading);
+// the existing vector3d_from_points3d for the node offset 699. Retail also re-tests the state's frozen bit
+// before each channel update (ours drops it as already tested) and threads each block's frozen exit to the
+// end; the four-block pattern is the same knowledge difference as in 0x113980.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -3066,6 +3090,11 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // default and the lookup's test 207; only the result declared first 207; the lookup table read at each use
 // 44 (same code); the overlay pointer declared before the flags 44 (same code). The return-type fix stays
 // blocked: 0xe70b0's caller 0xc98a0 is contributor code.
+// Round 68 (lane 9, plain checks; --fast gives 218-219 at 687 bytes for any edit, even one giving the same
+// code): 0xe70b0 and 0xc98a0 now count as ours, but 0xe70b0's definition sits in a file another lane held this
+// round, so the class return (frame 0x38) waits for the next round. The overlay test through the file's
+// channel-validity helper 44 (same code); the `type < 3` test as its own enclosing if 44; the force decisions
+// as an else-if ladder 44; play flags as a ternary 99; the selected mode as a ternary 205.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
