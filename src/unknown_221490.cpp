@@ -637,6 +637,9 @@ bool sound_driver_voice_create_buffer(
 // Round 331: Complete final-value descriptor initializers first/spatial/both 176/157/211;
 // spatial-first counterparts 200/197/211; both with count before construction 211, also spatial-first
 // 211. Original memset boundaries and executable body restored; Boolean and zero/input homes remain.
+// Round 333: Complementary nonspatial bool/byte, optional play normal/complementary
+// 154/156/154/156; nonspatial-first 152/155/152/155. Caller preserved; spatial/play and descriptor
+// carriers remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

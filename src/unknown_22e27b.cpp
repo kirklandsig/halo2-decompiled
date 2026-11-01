@@ -311,6 +311,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 328: Complete playback case orders 021/120/201/210 across all four
 // switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
 // case order restored; direction/frame/flags and interpolation carriers remain.
+// Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
+// 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
+// frame/timing and original shared fraction restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
