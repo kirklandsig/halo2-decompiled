@@ -190,6 +190,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 460: Complete mutable/immutable view-depth carriers with original/branch/conditional/
 // immutable-conditional weight producers, 221/221/249/249/221/221/249/249. Original helper and body restored;
 // extra frame word and coefficient/result homes remain.
+// Round 468: Pure cone-test schedules 102345/013245/012354/014523/023145/145023/032154/105432
+// 221/223/221/266/261/261/261/264. Depths 0/1, first x/y 2/3, second x/y 4/5; original bounds
+// and comparison order restored. Extra frame word and coefficient/result overlap remain.
+// Round 471: Uniform weighted-point second/first product and sum producers, seven
+// nonempty combinations 222/222/224/221/222/222/224; complete producers with earlier
+// blend-scale storage 224. Original expression producers, helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

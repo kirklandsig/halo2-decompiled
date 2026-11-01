@@ -229,6 +229,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // them in our order (indices, clusters, gains, portals). The arrays renamed three ways 886 each; declared one per
 // line in four orders 886 each; declared at function scope 886; the count declared before them 886 (all the same
 // code: neither names, declaration order nor scope moves the slots).
+// Round 470: unsigned raw decibel words in choice/target/datum records, all
+// seven subsets 886 each; all with unsigned helper transport 886. Original
+// records, helpers and body restored; entry zero and target/query/count homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -480,7 +483,7 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 	function_189fe0(&request, tag);
 }
 
-// score 159 (was 223): frame 0x148 agrees; BSP/count homes +0x10/+0x14
+// score 159 (was 159): frame 0x148 agrees; BSP/count homes +0x10/+0x14
 // are exchanged, camera/query and request publication scheduling remain.
 // Earlier 154 (was 223): the transition definition read through the local bsp and the missing-query fill
 // order; the entry test and scan match retail's, but the position copy (retail loads x, the cluster, y and
@@ -594,6 +597,10 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // count declared at active scope: 159 each. Seven position/environment/angle output
 // workspace entry subsets and all three at active-camera scope: 159 each.
 // All original identities, workspaces and producers restored; BSP/count homes remain.
+// Round 26 (m3 lane 2, fast): the request stores in retail's order (transition, index, fade) 158 (retail walks the
+// requests from `.index`, the init loop's base; aligned 61 -> 53: the lead for the next round); on it the
+// transition definition through the global 278 (BSP takes retail's +0x14 home but loses ESI), the camera fetched
+// before the first-listener test 201, `count` at function scope 158, the position copy before the cluster 229.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

@@ -403,6 +403,10 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // count EAX, result CL, list EDX); that with `long index = list->count++;` 51; the pointer helper with a named
 // `room` test and the index copy 49; the pointer helper as a list member function (`list->new_entry()`) 20 (same
 // code); the bool helper as a list member function 51.
+// Round 65: a bool reservation with the caller copying at count - 1 53; a named room in the pointer
+// helper 20, before the pointer result 20; caller room with an unchecked pointer 54, with the checked
+// pointer 54; a caller index across a bool reservation 51; a conditional pointer return 20; the slot
+// declared before the name call 20.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

@@ -571,6 +571,12 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 46 (m3 lane 10, fast): the emitter's next index read right after the emitter lookup 318 (1150
 // bytes), with scale first 318; the 0xf80f particle mask computed right after the emitter mask read 263
 // (1117 bytes), with scale first 261; the emitter mask read from the definition at both uses 239 (1136 bytes).
+// Round 59 (lane 16, fast with callees and 0x2243c0): one flags local for the six flag tests 292 (1157 bytes);
+// the emitter mask declared just before its first use 236, at the emitter loop's scope 220; indexed
+// definitions with the flags local 297 (1159 bytes); the particle mask inline at its call 42 (identical). A
+// compile-only screen of 190 combinations (indexed, flags local, mask at each use, scale/colour/result pointers
+// first, mask scope, `+=` translation) shows five whole-function rotation states; the mask read at each use is
+// the only one with retail's rows i and j in both rotations (row k then left/forward/up), none is retail's.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1018,6 +1024,11 @@ public:
 // kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
 // negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
 // tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
+// Round 105 (lane 7, fast): the spawn location assigned before its scale 248 (same count); the parent colour in a
+// local before the child definition call 262 (1363 bytes); the name tests as an if/else chain 277; the particle
+// typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
+// the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
+// returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1371,7 +1382,7 @@ bool function_17afd0(long effect_index, long value);
 // availability flag lives in bl because its NONE sentinel lives in ebp and frees ebx; ours keeps
 // the sentinel in ebx, so the flag lands in al and the same-view in bl instead of a stack byte.
 // The sentinel's register and the Boolean homes remain.
-// score 102 (was 102): frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
+// Frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // (coalesced; later NONE tests use immediates) and the availability flag in bl; ours keeps the
 // sentinel in ebx, the owner in edi and the flag in al, and tests the definition's bit 9 as a
 // byte instead of a shifted word. Owner/NONE coalescing and Boolean homes differ.
@@ -1431,6 +1442,13 @@ bool function_17afd0(long effect_index, long value);
 // use 148/148, with the if/else owner 150/150, with the shifted bit 9 138/138 (510 bytes); the effect index read
 // from the field at each use 106; one-expression availability + view at each use + shifted bit 9 + if/else owner
 // 113 (498 bytes; owner in ESI, view in EBP, NONE in EBX), without the owner form 123.
+// Round 105 (lane 7, fast): with the view global at each use, the shifted bit 9 and one-expression availability
+// 123 (496 bytes; NONE stays in EBX, so owner = NONE is a copy, not retail's EBP coalescing); availability
+// false-then-set (retail's `xor bl, bl` before the query) 138 (508 bytes, availability spilled, same-view in
+// BL), with the owner in an if/else 138, with same-view in an if/else 138, with the camera flag declared
+// before the owner 138; one-expression availability with the if/else owner 113 (498 bytes); owner declared
+// before the effect index 125; availability declared at the loop top 123. Retail keeps -1 in EBP until the
+// owner takes EBP; ours keeps -1 in EBX all through, so five values compete across the view query.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

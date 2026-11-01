@@ -1625,6 +1625,7 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // alone does, and no spelling or term order of the distance moves it) but drop the frame to 0xb958 and keep the
 // dot product summed (x*i + z*k) + y*j (all 48 term orders compile the same) where retail has (x*i + y*j) + k*z;
 // retail also keeps the ternary clamp's select (`mov ecx, 8; jg; mov ecx, eax`).
+// J218: Native point setters for paired sum initialization/averages/accumulations, seven subsets, then result before query storage: 646/552/646/553/646/553/646/646. Original complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
