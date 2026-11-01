@@ -1237,7 +1237,7 @@ long function_2197f0(real gain);
 // difference keeps XMM2 where retail keeps XMM3 and every use of it differs; a named local for the scaled
 // product, a second local for the scaled-out product, a local for the elapsed-minus-hold difference and a
 // local for the whole product all compile to the same code.
-// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// Earlier at 137: the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
 // the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then
@@ -1307,6 +1307,12 @@ long function_2197f0(real gain);
 // reciprocal computed before the fade-out tests 187 (656 bytes).
 // N round 257: Native real/aggregate ducking gains and endpoints, real/aggregate returns, expression/accumulator 322/322/322/322/198/198/198/198.
 // Original value types, helper and complete body restored.
+// Round 117 (m3 lane 8, fast): /Op around the function (diagnostic) 191 (643 bytes: the value's `time / fade_in`
+// stays a divss as retail, but the product still takes fade_out before the inverse); the test and the value both as
+// divisions 207 (636); `t = time / fade_in; if (!(1.0f > time * inverse)) t = 1.0f;` 138 (the value is still
+// `inverse * time`); no index local 179 (670); the hold sum through decibels_add 163 (686); the hold branch's
+// ducking gain through a long local read as a real 127 (682 bytes: that branch is then retail's exactly, retail
+// reinterprets a by-value copy of the long gain, but a one-use local is kept only on a match).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2835,8 +2841,14 @@ static inline short sound_voice_find_available_channel(char type)
 // the not-found exit past a block that sets the driver default, which no form here reproduces.
 // A `long` buffer index on the kept form 93 (433 B, gain of three: not kept), on the 107 form 109.
 // Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
-// scores 113/113/113/109/139/139/139/133.
+// giving 113/113/113/109/139/139/139/133.
 // Original executable source restored; no qualifying gain.
+// Round 117 (m3 lane 8, fast): bool result with `result = true` before the success goto 122 (430 bytes; the head's
+// registers rotate and the failure block follows the search loop); on it the driver default before the channel test
+// 153 (409 bytes: retail's block order, but the search index and the channel stop sharing EDI and the driver goes to
+// the stack), both defaults there 128 (431), that with `~status & DSBSTATUS_PLAYING` 142 (430), the driver default
+// before the search 147 (406), result declared first 146 (409); `else result = true` for the early path 135 (433); the
+// search returning from inside its loop on these 122/136 (416)/135/133; the 122 form with `~status` 121 (430).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3280,6 +3292,15 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // (78 or 164). Fast: for/continue 78; with the update test inverted (pending arm first) 132; `case 1: case 2:
 // continue;` 17; 0x128020's while + `skip_to_next:` with `case 1: goto skip_to_next;` 214 (592 bytes); index and mode
 // declared at function scope 78.
+// Round 117 (m3 lane 8, fast unless noted): round 40's harness 24 confirmed (fast 24, plain 24): the for loop with
+// `case 1: continue;` and the range computed above the mode (before the first class lookup): every register, the
+// `sub eax, 0` switch and the pool reload are retail's, only the range computation sits above the mode (retail:
+// inside case 0).
+// The range between the mode and the switch 99; in case 0 78 (EBX/EBP swapped from the entry), with a class pointer
+// local 78, nested ifs 78, case 1 first 78; the sound pointer read once at the loop top 167; range, sound_index or
+// voice renamed to sort first or last 78 each (names do not break the tie); case 0's work as an inline helper 251
+// (474 bytes, called), forceinline 228 (604); the mode from an inline getter with two returns 113 (540, called),
+// forceinline 214 (592 bytes: the class lookup inlines with it).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
