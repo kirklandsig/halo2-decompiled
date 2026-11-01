@@ -477,6 +477,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
 // stays shared and EBP caches the last argument); the second virtual call on the local index 81;
 // `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
+// Round 51 (lane 10, fast): the entity index stored inside the NONE test (NONE in its else) on the long result 93
+// (194 bytes), on the early bool 68 (179 bytes); the field cleared to NONE before the creation call and the index
+// stored only in a `index != NONE && !flagged` success arm, long result 79 (191 bytes), early bool 72 (176 bytes:
+// the arm store between the test and the object read reloads the table data with the global kept in EDX as
+// retail, but the index arithmetic stays shared as `shl ecx, 2` and EBP caches the last argument); that with the
+// object and attach through the stored field 71 (176 bytes; the field is forwarded for the object read and
+// reloaded for the attach).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

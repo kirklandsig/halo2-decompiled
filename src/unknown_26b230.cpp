@@ -1944,6 +1944,11 @@ void function_269250(long clump_index, long actor_index);
 // the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
 // into a register and leave the selection in memory as retail: the selection wins the callee-saved register
 // only through the call in the walk plus its post-loop uses.
+// Round 51 (lane 10, fast): one `clump_index` local for both the selected and the created clump 89 (482 bytes), with
+// the in-arm compare 126 (480); that with the selection stored before the best score 89, in-arm 126; the in-arm
+// compare with the score declared at the top of the walk body 126; the group declared in the while condition 89.
+// Retail never gives the selection a register (stored from ESI in the walk, reloaded after the post-loop calls,
+// unlike the created index in EDI), so the walk's pool field is scalarised into EBX; ours gives EDI to the selection.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

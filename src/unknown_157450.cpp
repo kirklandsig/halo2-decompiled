@@ -592,6 +592,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // reloads); the word copy from the field with the store through the pointer 129; the word copy
 // through the pointer with direct stores 77 (the engine-index load then moves up past one store).
 // Round 216: Final signed-char/byte/short/word counters 97 each; with word saved mask 93 each. Word mask read-only, signed present, both signed accumulators, and read-only/both signed 77 each. All restored; shared post-loop mask reload remains.
+// Round 51 (lane 10, fast): the engine globals read through the getter at each use (no globals local), a word
+// mask and a plain present 139 (368 bytes: the mask copy folds into field re-reads, present takes EDI and globals
+// is re-read after the loop); the same with the mask read and stored through a field pointer 63; one `team` local
+// declared at the top for both loops 32 (same code); the added mask computed after the two stores 32 (same code);
+// the dword mask read and stored straight through globals 130 (374 bytes: even the zero-extended copy folds into
+// field re-reads). Diagnostic, not kept: a present-only bit local with the engine lookup ahead of the stores 29
+// (the player loop is then retail's; left: the word mask entry and its post-loop register).
 // @retail 0x158140
 void function_158140(void)
 {

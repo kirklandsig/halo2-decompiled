@@ -1441,6 +1441,12 @@ void function_1f86a0(long actor_index);
 // as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
 // `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
 // root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
+// Round 51 (lane 10, fast; control 134): the decline decided in an if/else into a named bool 134; the decline
+// test negated with the join attempt first and the decline in the else 134; the decline arm ending in `continue`
+// 134; entry/element/specified renamed (slot_entry, joint, has_object: same-size slots sort by name) 134; the
+// joint index declared first 134 (all the same code). Retail's frame is mask byte F+3, entry home F+4, actor F+8,
+// iterator F+0xc; ours has entry F+0, actor F+4, iterator F+8 (same order) with the mask in BL, so the open
+// difference is the callee-saved choice (retail gives EBX to the entry), not slot order.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
