@@ -1191,6 +1191,19 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
+// score 96 (was 123): logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
+// 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
+// copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
+// minimum, the state 3 inside clamp (0.015625 as a double) and the memcpy of the view's points, the four 1/256 inflate
+// steps and the corner order, the view[0x84] cull and the pool recount agree; no behaviour difference found. What
+// still differs: retail stores pool->count and tests result->state before it stores result->points, the count and
+// field_0 (ours stores points first); `mov [esp+0x1c], ecx` (step * 8) comes after the `lea edx` in ours; the clamp
+// (retail: fld const, fld distance, compare, pop both, reload the winner; ours keeps a copy: one extra fld), which
+// shifts everything after it by one line; the inflate (retail adds/subs the constant in xmm0 one box field at a time,
+// ours interleaves them) and the register of the final count recompute. Tried: `++pointer` before `index += step`
+// (123 -> 96, kept); every order of the four stores points/pool count/count/field_0 (124-131); points through a
+// local pointer after the pool count store (128); `distance <= c ? distance : c` (124), `c < distance` (same code),
+// if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1242,8 +1255,8 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.y1 = point->y;
 					real distance = 0.0f - local_cb4759->z;
 					result->distance = result->distance > distance ? distance : result->distance;
-					index += step;
 					++local_cb4759;
+					index += step;
 				}
 				if (result->state == 3)
 				{
