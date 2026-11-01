@@ -203,6 +203,9 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// J228: one object pointer across collection/dispatch or all three phases, crossed with a shared
+// query output and a common fixed-child ordinal: eight at 31/373. Shared output recovers 0x8020
+// but exchanges the loop homes; separate outputs retain 0x8024. Original body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

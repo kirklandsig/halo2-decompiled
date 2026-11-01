@@ -1283,6 +1283,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round I (MiniMax lane I, fast): its 42 came from dropping the function_119bc0 call and passing the flag
 // uninitialised (a behaviour change, not kept); with the call kept and the squared length summed as three
 // statements 92, as one expression 94. Original body restored.
+// J228: query/reset inline contracts singly and paired 94/94/94; each with all three squared
+// components named 94/94/94; the pair with the existing final flag setter, alone/staged, 94/94.
+// All five matched controls survive. Original declarations and body restored; the byte force
+// contract still needs coordinated declarations in protected contributor files.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

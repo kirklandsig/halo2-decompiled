@@ -1173,6 +1173,10 @@ bool function_68670(byte *source, long size, void *block);
 // and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
 // first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
 // header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
+// J228: reader order count/destination/offset, or destination/count/offset, coordinated at both
+// declarations, definition and calls: original/header-loop/separate-copy/both 71/118/138/138
+// each. Matched reader and three controls survive; the one-point gain is rejected. Original
+// reader contract and target body restored; header exposure and DX lifetime remain.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

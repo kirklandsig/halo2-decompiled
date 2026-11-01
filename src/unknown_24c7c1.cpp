@@ -567,7 +567,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
+// score 114 (was 114): frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
 // bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
 // (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
@@ -648,6 +648,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
 // (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
 // count` 197 (1883 bytes).
+// J228: rectangle-helper orders bounds/result/top/text/left and top/bounds/result/text/left
+// each 114; swapping the output order each 116; each with shared flash/post-pow row scale
+// 275/276. Every reordered helper loses its match (4/10), so all contracts and bodies restored.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

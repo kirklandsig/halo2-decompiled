@@ -299,6 +299,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
 // break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
 // declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
+// J228: existing indexed scaled-difference helper with shared scaled-point/scalar interpolation
+// subsets 281/281/283/283; each with fraction first 261/261/263/263. The delta loop stays
+// rolled under size optimization and grows the frame/body. Original helpers and body restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
