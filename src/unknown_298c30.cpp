@@ -443,6 +443,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // crossed with separate transformed-forward output and separate phase cosines,
 // 763/763/763/763/769/769/769/769. Original output ownership and helpers restored;
 // frame 0x124/0x114, eager radius and trace/pivot homes remain.
+// Round 476: Native indexed endpoints, paired long/short/word/unsigned-long coordinate loops 782/749/749/782; separate endpoint loops 738/819/819/738.
+// All frames remain 0x124 versus 0x114; lengths 3356/3372/3373/3403 do not yield a gain. Original sample producers, complete body and helper contracts restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

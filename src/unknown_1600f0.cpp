@@ -1365,6 +1365,8 @@ PRIVATE inline long score_string_list_1608e0()
 // height 718. Frame improves to 0x794; viewer/clamp/color homes remain, 2906/2879 bytes. Coordinator review: the
 // field aggregate is a copy of the global kept only with a match (the natural copies give 687) and it moves the
 // size off retail's, so the body is back to its earlier form (680).
+// Round 476: On the shared-caption rectangle graph, title/caption/team-localization lifetime subsets 1-7 and all with decoder declaration at consumption: eight forms 680 each at 2879 bytes.
+// Frame 0x790, viewer/panel roles, clamp and color/coordinate homes stay unchanged. Original body and all existing scalar qualifiers restored.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

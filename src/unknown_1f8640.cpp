@@ -465,6 +465,8 @@ struct s_1f8a70_actor
 // EDI is pushed before the first test); unit_mode renamed a_mode/z_mode 270 each (same code: the slot
 // stays at +0, so retail's +2 is not name order). Retail's route_mode is a dword slot read as a word
 // (movsx/cmp word) and its result a memory byte everywhere but the first exit (BL).
+// Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
+// Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

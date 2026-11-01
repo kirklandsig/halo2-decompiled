@@ -106,6 +106,8 @@
 // external-storage bit view 456/454; native allocation-count view 456/454;
 // aligned whole-plane publication with bit/count or mask 480/480. Header and
 // body restored; cleanup tests/preloads recover but entry roles and length regress.
+// Round 476: Distance-before-normal graph, original/eight-byte storage, scalar/shared normal scale and direct/whole-plane output: 463/461/441/442/457/455/457/458.
+// Scalar forms shrink to 1716; shared scale recovers 1742 but regresses. Original zero-scale behavior, whole body and header restored; entry/table and plane/list homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
