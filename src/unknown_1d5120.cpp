@@ -174,10 +174,13 @@ void function_1d56f0(s_havok_component *component)
 // that tail but the lookup's SIB order. A byte offset local added first, the component through a const
 // reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
 // 77 each (still `[eax + edx + 0x40]`).
-// score 77 (was 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// Earlier: this round no new source form of this body was found: the 19 aligned differences stay in
 // the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
 // cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
 // The body was left as it is.
+// Round 292: complete component/body, query filter/shape and step/count/output parameter
+// identities in seven subsets and alternate complete roles 77/77/77/77/77/77/77/77.
+// Original formal identities restored; lookup operand order and setter transport remain.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

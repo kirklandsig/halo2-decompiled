@@ -59,7 +59,7 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 	arg_2->k = arg_0->k * arg_1;
 }
 
-// score 354 (was 383): frame 0x58 versus 0x64 and magnitude/vector/query homes remain; actor EAX and stack input now agree.
+// score 354 (was 354): frame 0x58 versus 0x64 and magnitude/vector/query homes remain; actor EAX and stack input now agree.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -214,6 +214,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // early magnitude result/root-initialized magnitude/planar result/current plus planar 393/445/355/355.
 // Keep the complete history vector with the native working/query aggregates: 354 fast/plain,
 // 1863/1863 bytes; original private math helpers, arithmetic groups and game-call roles retained.
+// Round 292: on the retained history graph, native working/query copies and coordinate history
+// in seven subsets 413/372/401/365/399/371/396; shared constant-vector observation 410.
+// Original aggregate/native producers and all helpers restored; frame and magnitude homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

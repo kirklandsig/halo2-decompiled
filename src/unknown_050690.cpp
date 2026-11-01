@@ -208,6 +208,9 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 // Round 122: no __stdcall 680 fast, with the flag last 680 fast (still ret 0x1c, flag from the stack);
 // `standard` marker 680 plain (realigns, frame 0x148c, 2466 bytes); with whole-array memset fills 666, plus sums
 // declared first or renamed 666/666 (sums stay at +0x80 where retail has +0x870).
+// Round 292 reduced control 680: complete double accumulation results in all six evaluation
+// orders 680 each; native real results 680; symmetric weighted-coordinate parts 691.
+// Original complete accumulation and all producers restored; full frame/mode gap remains.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

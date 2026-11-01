@@ -148,6 +148,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Round 283: complete session/voice/both visibility stores 391/444/453; coherent final
 // flags alone/session/voice/both 330/389/426/436; all with constructor-owned initial clear 436.
 // Coherent flags alone: 2327 bytes, count 330; original body and stores restored.
+// Round 292: native six-state suffix cases reversed, five rotations, odd/even and
+// middle-out orders 330 each; original complete cases restored; homes and re-derivations remain.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
