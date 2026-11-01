@@ -768,6 +768,9 @@ void swarm_leader_detach(long actor_index);
 // 0x18, 0x54) through it 291 (974 bytes); the prop-list clear through it 290; 0x1e1740's slot-local
 // loop 261 (same code). 0x258600 takes the actor index in EDI in both builds. Still BLOCKED-BY
 // 0x26ed40 (inlined in retail, kept out of line by its file's flags).
+// Y488: native actor members at 0x10/0x1c/0x3f4, seven subsets and
+// all with short bounded cleanup ordinal, eight 261 against fast control 261.
+// Real type and complete body restored; ordinary 285, frame/actor/cleanup homes remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
