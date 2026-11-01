@@ -3528,6 +3528,15 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
 // fast; all three with the native machine-address field copy 131. Original declarations,
 // machine copy, result qualifier and full body restored; full starting count remains 119.
+// Round 114 (lane 8, fast; check it with 0x59e50 in the same run: with 0x630f0 alone the control reads 131,
+// with 0x59e50 the full 119): `result` declared after the machine copy 133 (control 131; its store moves
+// after the word store); the machine copy through memcpy 119 (same code); one shared `channel == NONE`
+// failure after both attach paths, the else arm closing only an attached channel, 141 at 463 bytes (indexed
+// flag read and an ECX reason-5 tail as retail, but the shared test is laid out after the else arm); the copy
+// and lookup in an inline identity helper 119 (same code); failures through an inline helper that sets its
+// false result before the reason store 119 (same code). Diagnostic: one extra early register temp rotates
+// every later block by one (attach EDX/EAX, reason pointer ECX), so the scratch choice is a round robin and
+// retail sits two allocations further on with identical code before the first attach.
 // Round 21 (lane 17, fast with 0x630f0/0x59e50): the machine copy by `memcpy` from `identity + 0xa` 119 and from the
 // XNADDR `abEnet` 119 (same code); through a named byte source pointer with `memcpy` 151 (463 bytes, as the named
 // source pointer: first attach and merged reason-7 tails retail's, the copy's `lea` folded, the member path, tails
@@ -3689,6 +3698,22 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
 // word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
 // identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
+// Round 47 (m3 lane 13, fast; aligned counts in brackets, baseline [30]): constant true/false exits 116 [29];
+// with the guarded leave 123 [29]; the guarded leave alone 131 [30]; identity source before the memset 101 [27];
+// constant exits with the reply member pointer before the id 116 [23]; those three together 123 [23];
+// `if (peer) {...; return true;} return false;` with the guarded leave and member pointer first 121 [15]: every
+// block but the timed-out call setup (retail's owner spill and split member-state lea, 3 instructions more)
+// and the announcement's member offset (retail scales it before the memset) is then retail's, but the 3-line
+// shift there keeps the positional count up. Keep that form for when the timed-out call is solved.
+// Round 22 (lane 18), fast (aligned difflib counts in brackets, start 101 [38]): an early `return false`
+// with the guarded leave and the reply pointer first 123 [31]; `result = false` ... `result = true` with both
+// 119 [19]; `if (is_peer) { ...; return true; } return false;` with both 121 [17] (exits, leave and reply
+// blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
+// address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
+// only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3790,6 +3815,12 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
 // address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
 // key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
+// Round 114 (lane 8, fast with 0x5c720/0x630f0/0x63080): the address tested through its typed fields
+// (`address.address_length`, `address.ipv4_address`) in place of a byte pointer to the whole local 136 (same
+// code, kept); the clock read into a named `now` 136 (same code); the identity copied with memcpy 136 (same
+// code); the address test joined to the 0x7ab10 call's test with `&&` 136; the clock `__forceinline`
+// declaration with the typed fields 145 (581 bytes); the remote record zeroed by `= { 0 }` 136 (the clear then
+// starts at +4, `mov ecx, 0x6a`, where retail's memset clears the whole record).
 // Round 34: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): address declared at
 // function top 138; identity copy after the key release 167; resolved bool for 0x7ab10's result 138; result
 // declared just before the g_4cf792 test 156; identity copy at function top 191 (559 bytes).
@@ -3827,8 +3858,7 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
    s_type_99af70 address;
    if (function_07ab10(session->value38, &address, local, 0x3e9, (const XNADDR *)host))
    {
-    const byte *raw_address = (const byte *)&address;
-    if (*(word *)(raw_address + 0x12) != 4 || *(dword *)raw_address != 0x7f000001)
+    if (address.address_length != 4 || address.ipv4_address != 0x7f000001)
     {
      long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)host);
      if (channel != NONE)
@@ -4526,10 +4556,19 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
 // `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
 // an `owner` local 374 (scratch copy; loaded at the top).
+// Round 287: Shared timeout identity publication with conditional reason and original/newer/
+// equal/both selection predicates 322/331/324/330; explicit reason arms with those same four forms
+// 322/331/324/330. Original timeout publication, selection producers and body restored.
 // Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
 // acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
 // state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
 // code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
+// Round 215: complete decision outputs recover result +b; dword/byte/short counts
+// on that graph 298/314/299; native received packet 298, with those domains 298/314/299;
+// complete native stored fields 323. Seven Boolean-home name combinations 298 each;
+// all names without redundant selection defaults 298. Seven-point leads rejected;
+// original body, packet types, output states and held interfaces restored.
+// Identity/selection byte homes and acknowledgement/rejection placement remain.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

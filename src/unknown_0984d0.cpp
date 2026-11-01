@@ -417,6 +417,18 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
 // (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
 // index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 49 (lane 11, fast), all without the volatile reads: 0x991d0 called directly with `local_10[0]`/`local_10[4]`
+// 207; the notify loop walking the same items cursor variable 220 (520 bytes); the count-one tail reading the
+// handle from the request (diagnostic) 221 (the handle is then not spilled, but the items cursor still takes EDI:
+// retail's choice is the cursor's weight, not the handle conflict); a dword handle 207; the data cursor as
+// `void *const *` over data.v 207. The volatile form's extra `mov edx, eax` (item loaded into EAX) shifts every
+// later line by one, which is most of its 115.
+// Round 285: Test-set inline validator result, success/failure initialization with
+// both/size-only/handle-only/no input producers: 115/134/138/137 in both orders. Items/data carriers and
+// validation-loop entry remain; complete helper and body restored.
+// Round 287: Native byte/signed-byte/word/long validation results on the original
+// case priority, all-valid/rejected polarity: 115/115/206/160/124/124/188/91. Cursors and loop entry
+// remain; native long rejection 91 also plain, restored as an unmatched flag form.
 // Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
 // 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
 // 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison
@@ -437,6 +449,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // tie-breaks left besides the loop: the count after the loop in EAX (retail ECX, so the chain call's register
 // temporaries rotate), case 2/4's index*5 in ECX (retail EAX: state read through the scaled index before the entry
 // address is formed), case 5's table in EDX (retail reloads it into EBX).
+// Round 261: existing element producer reports failure, neither/size/handle/both input producers
+// 137/134/138/115; with full-width rejection 202/200/202/91. The 91 flag form remains exact-only.
+// Original helper and body restored; items/data carriers and loop-entry reload remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

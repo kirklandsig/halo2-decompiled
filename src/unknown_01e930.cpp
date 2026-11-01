@@ -453,6 +453,27 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 49 (lane 11, fast): the first loading query in a `bool loading` local 239 (its test becomes retail's
+// `cmp al, bl`); the same local also holding the second query 238 (both tests retail's; 6 points, under the keep
+// bar); skippable as `!query` 273; on the 238 form: size and movie flags tested on `flags & 0x100` directly 267
+// (retail's and/or/shl size, but the mask lands in EDI where retail spills it to the 0x40 frame's extra dword);
+// `dword large = flags & 0x100` 271 (1102 bytes); the retry counter at function scope 260; the format-field size
+// query 245 (1100 bytes); the allocation result declared after the start time 256 (the last two are the listed
+// scores of those forms alone, so the loading local's gain cancels in them). Lead: the loading local is retail's
+// for both queries, so it may count once the frame's mask slot is found.
+// Round 46 (lane 14, fast): retail's start clock sits below its elapsed clock (ours the other way round);
+// elapsed renamed waited 244, start renamed clock_start 244, both 244 (homes unchanged); the retry counter
+// renamed retries 244; block declared before the size test 256 (the listed 256 form), with waited 256.
+// Retail's SSE code (movss 1.0f stores, fld/fcompi timeout) still needs /arch:SSE, which this file lacks.
+// Round 325: Actual inlined status/clock temporary identities in both lexical orders, with
+// coordinated consumer-clock identities, all eight 244 at 1098 bytes. All original
+// helper and consumer identities restored; frame 0x3c/0x40 and early homes remain.
+// Round 275: explicit word-unit allocation masks, long/dword mask and size carriers, ternary/per-arm
+// open 269/278/269/278/269/278/269/278; retained byte-unit masks 272/280/272/280. Exact-only
+// arithmetic producers restored; frame 0x3c/0x40, zero/clock/output homes and instruction policy remain.
+// Round 277: standard elapsed bound/volume fills/material pair fills, subsets 1..7,
+// 301/278/332/258/322/300/352; all with volume declarations first 352. All file
+// controls survive; original body restored, frame and clock/output homes remain.
 // Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
 // neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
 // allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start

@@ -21,6 +21,7 @@ extern real g_4c9798[36];
 // score 197 (was 226): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
+// the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
 // Earlier frame: 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
@@ -154,6 +155,19 @@ extern real g_4c9798[36];
 // Round 279: Complete immediate scalar results for projection/near/far row families,
 // seven nonempty subsets and all with both plane-distance results, 230 each. Original
 // compound updates and entire body restored; mode/size homes and rounding reloads remain.
+// Round 44 (lane 14): retail rounds the width (size / aspect) first into ESI and the height into EDI
+// and passes them to 0x1ddd0 in ESI/EDI with the index in ECX; ours keeps 0x1ddd0's width on the stack
+// (BLOCKED-BY 0x1ddd0). Width rounded first with the fix-up on the width 238; with long mode and height
+// limit 250; with long mode only 239; border as 0.75 * width / maximum or width / maximum * 0.75 230
+// each (every spelling compiles to the divide first; retail multiplies by 0.75 first). With 0x1ddd0 in
+// retail's convention (not kept: 0x1ddd0 21 -> 24, its caller 0x2d140 637 -> 686): 226; width first
+// 218; width first with long mode 189 (fast); with long mode and height limit 245; long height limit 240.
+// Round 325: Entry declaration families for both dimension results, all integer/real limits and
+// the actual point/normal workspaces, seven subsets and complete role identities, all eight
+// 230 at 1487 bytes. Original declarations restored; flags/mode/sizing and rounding homes remain.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

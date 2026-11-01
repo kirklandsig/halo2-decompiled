@@ -568,6 +568,12 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 489: signed byte alpha input with word/long helper result, long/word fills
 // and byte/full parity, eight combinations 201/205/205/205/201/209/205/205.
 // Original alpha type, helper, fill values and complete decoder restored.
+// Round 324: persistent color as word/short, each with original/full parity and
+// long/word fill pixels, 94/107/201/208/94/107/201/201. Original helper and body
+// restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 331: Count accumulation before two-pixel/single-and-literal/ordinary-run production, subsets
+// 1-7: 133/172/209/176/170/178/213; all with full-width pixel helper 204. Original count lifetimes,
+// helper and decoder restored; alpha extension, literal assembly and two-run reuse remain.
 // Round 275: Pointer stores in switch/ordinary/both fill loops 172/172/164; full parity 228/228/236; both with word pixels 166, full parity and word pixels 240.
 // Original executable source restored; alpha extension, literal assembly and two-run reuse remain.
 // Round 277: Complete alpha-only pixel helper with word/long result and byte/numeric parity, OR
@@ -577,6 +583,14 @@ static inline word font_character_pixel(long alpha, long color)
 // production orders 201/201/195/195; complete opacity field with byte/numeric
 // parity, word/dword 211/201/239/195. Exact-only records, helper and full decoder
 // restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 489: signed byte alpha input with word/long helper result, long/word fills
+// and byte/full parity, eight combinations 201/205/205/205/201/209/205/205.
+// Original alpha type, helper, fill values and complete decoder restored.
+// Round 216: Plain packed-alpha triplet loop, long/short shift counter with word/long helper result and byte/full parity:
+// 164/218/172/222/238/222/183/230. Original executable source restored.
+// Round 285: short fill counters switch/ordinary/both 181/172/191; word counterparts
+// 181/172/191; both byte/signed-byte 178/178. Original helper, decoder and counters restored;
+// alpha extension, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

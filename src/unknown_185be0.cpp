@@ -302,6 +302,10 @@ union s_185be7
 // 935/935/800; default before lower bound/selected record 735/735; the three
 // branch-owned forms with exponent declaration at range scope 935/935/800.
 // Original fraction producer, exponent observation and complete body restored.
+// Round 270: Unsigned controlled/parent/attached datum carriers, seven subsets 731 each;
+// all four datum carriers 731. Minimum/range/fraction scalar identities on the shared-exponent
+// graph, seven subsets 731 each; exponent identity too 731. Original carriers, names and full
+// body restored; control-root/NONE, settings/zero homes and flag joins remain.
 // Round 487: plain mapping loops for independent bindings / action masks / both / movement masks /
 // bindings+movement / action+movement / all 725/725/725/731/725/725/725; all with native output
 // initialization 1027. Bindings or action masks with the two-use short inactive predicate 723/723;
