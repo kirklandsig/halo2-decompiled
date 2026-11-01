@@ -78,7 +78,7 @@ void function_2232a0(void)
 // score 109 (was 109): this round: the tail call still needs 0x2b5d0's own body (it takes the mode
 // in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
 // a file this lane may not edit: BLOCKED-BY 0x2b5d0.
-// score 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
+// Earlier at 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
 // it anywhere later every count-one path threads straight to the layout stores); the slot scan uses
@@ -208,6 +208,17 @@ void function_2232a0(void)
 // Round 81: combined entry/found source clears in do/for traversal 124/120; entry clear with
 // original arms 109/138; entry clear without the empty-arm store 122/158; entry clear without
 // the final null-arm store 123/160. Original source assignments and traversal restored.
+// Round 42 (lane 14, fast): 0x2b5d0 is now this machine's; activating its disabled body (stub removed) gives
+// 0x2234e0 106 (three points), but 0x13b90 stops matching (33: its call to 0x1dc40 pushes the argument
+// retail passes in EBX) and 0x223240 too (19: its EBX save moves); with 0x2b5d0's formals as count,
+// players, layout, source, mode (retail's own bytes: count EAX, mode ECX, the other three on the stack,
+// `ret 0xc`) and only the source's address taken, the same 106 and 0x1dc40 itself also changes (55,
+// 121 bytes). Ours still takes the mode in EAX. Both reverted. Retail's 0x2b5d0 self-aligns its frame
+// (`and esp, -8`), the case DECOMPILING.md allows `standard` for once it matches. In this body: the
+// player scan as `++local_1; while (local_1 < 4 && !local_player_exists(local_1)) ++local_1;` 266 (426
+// bytes); as `while (++local_1 < 4 && !local_player_exists(local_1));` 284 (414 bytes); the empty scan
+// arm storing the NONE index before the slot data 117. Still BLOCKED-BY 0x2b5d0 (its activation breaks
+// the conventions of 0x1dc40/0x13b90, a contributor's file, and 0x223240).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

@@ -1340,6 +1340,17 @@ bool function_0bfe60(dword const *flags, long bit);
 // the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
 // 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
 // 66; status and total declared at function scope 52.
+// Round 42 (lane 14, fast): a compile-only screen (it gives ours: counter EDI, test index EBP) of 131
+// random combinations of the index (ternary, if/else, negated ternary), three test-index spellings, the
+// row named or passed straight to the call, six orders of the test/status/row declarations, the compare
+// order, PIN or if/else clamp, the push pointer with or without volatile, the counter declared at the
+// loop or before it, the device at the query block top, a drawn local and two slot spellings: none gives
+// retail's EBP counter (pushes EBP, EBX, ESI, EDI). Real: row at the call and named at the store, with
+// device at the query top and `slot->b == player` 122 (465 bytes); with the index from an if, `set + 3 *
+// index` and `slots + index` 122; status, then `set + index * 3`, then the row, with the if/else clamp,
+// the counter declared before the loop, `slots + index` and `slot->b == player` 53; index from an if,
+// status/row/test order, device at the query top and the counter before the loop 150 (483 bytes); the
+// push pointer without volatile with the if/else clamp and `slot->b == player` 56.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

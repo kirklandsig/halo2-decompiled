@@ -262,6 +262,15 @@ void player_action_initialize(s_player_action *arg_0);
 // only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
 // below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
 // found: the inlined order needs a cause outside this body.
+// Round 42 (lane 14, fast): lane 9's round-53 score-1 source rebuilt on today's file still scores 1 (only
+// the inlined 0xcbec0 count read [edx + edi] against [edi + edx]); with `#pragma inline_depth(8)` after
+// the player_action_initialize wrapper (as 0x84750/0x825e0/0x874c0 use) in place of 255, still 1. On it,
+// latch spellings without the toggle flag (the release arm stays inline, retail's is after the return):
+// `if (pressed && !held) { held = true; toggle; } else if (!pressed) held = false;` 146 (the masked
+// byte is kept and stored as the release value); the same with the toggle before the held store 145;
+// as two ifs (the release test after the toggle block) 147; with a named pressed bool 140; the nested
+// latch with the release store only when held 136. BLOCKED-BY 0xcbec0 (a contributor's function inlined
+// here), and the toggle flag set inside the test needs a byte match to be kept.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

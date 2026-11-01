@@ -277,6 +277,16 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
 // next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
 // 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
+// Round 42 (lane 14, fast): fraction first (diagnostic base) 207; the fraction written as the
+// interpolation helper's argument and again in the scale (no t local) 153 (660 bytes); diagnostics
+// (a throwaway store before the loop, inside it or at the end) never move the loop's first scratch off
+// EAX, so the rotation is not a temporary count. On fraction first: restart as `if (type == 0) restart =
+// (bit 1 || bit 2); else restart = false;` 207; `restart = false;` then `if (type == 0 && (...)) restart =
+// true;` in both boundary blocks 193 (656 bytes): next time stays at [ebp-0xc] and the loop head is
+// retail's (direction ECX, frame EDX, flags EDX/EAX, zero in EBX), but the false store comes before the
+// test (retail stores it on the false path) and the timing setup computes next time first; on that form
+// the elapsed assignment first / between frame time and next time 198/193. Inline restart and disposal
+// predicates taking (type, flags), restart/disposal/both 255 (614 bytes)/207/255.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

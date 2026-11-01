@@ -159,6 +159,12 @@ void function_213970(void);
 // With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
 // the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
 // Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
+// Round 42 (lane 14, fast): grouped by retail block, block A's clears and NONE store, then block B's clears
+// and its scalars in address order 131; block B (clears, scalars) before block A 131; block B's scalars
+// between its header clear and its string/request clears 145 (242 bytes); the first form with the existing
+// wrapper 0x11cae0 at the test and the store 129 (232 bytes, two points); the zero scalars first, then the
+// five clears, then the NONE/flag stores in block order 131. Still BLOCKED-BY the separate definitions in
+// src/unknown_12be90.cpp and src/unknown_2141f0.cpp (both held by other lanes this round).
 // @retail 0x2136c0
 void function_2136c0(void)
 {
