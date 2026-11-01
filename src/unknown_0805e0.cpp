@@ -137,6 +137,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
 // Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
 // `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
+// Round 28 (m3 lane 2, fast with 0x1a303b/0x2b393c): `while (!result && *iterator != NONE)` indexing through
+// the iterator 79 (102 bytes: the mask is hoisted into AL, but the loop reloads the iterator, which moves to
+// EBX with `ret`, both callers lose); the `!result` loop with `index = *iterator` re-read at the end 42 (iterator
+// in EBX, player on the stack, callers lose); `!result` loop with a successor local, result declared after the
+// index 37 (the listed form: player on the stack, ret 8, `!result` not threaded, mask an immediate); the same
+// with `index != NONE && !result` 53; a for loop stepping `index = *iterator` with `break` 51 (convention kept,
+// index and successor share ECX, mask an immediate).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1030,6 +1037,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
 // cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
+// Round 28 (m3 lane 2, fast with 0x80330/0x80490): on the current body, the count path assigning upper before
+// lower 50; the zero-initialized bounds declared above the full-cache test 49 (same code: their zero values are
+// threaded away, so they never interfere with the count and upper still shares its register); `cache_full`
+// kept with `removed` set to NONE and assigned inside the test 370 (1162 bytes); the flag declared before the
+// bounds 49; the shift test written `lower < upper` 49. Retail's upper takes ECX because the backward copy's
+// index `i = upper - 1` gets EAX (`lea eax, [ecx - 1]`); ours puts upper in EAX and decrements it in place.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

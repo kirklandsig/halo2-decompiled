@@ -584,6 +584,10 @@ bool sound_driver_voice_create_buffer(
 // `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
 // both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
 // code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
+// Round 28 (m3 lane 2, fast with 0x191420): play defined inside the 3D branch (only the 3D flag before it) 158
+// (flags then arrive in EAX and move to EBX; 0x191420 differs, 1); the 3D test inverted (`if (!three_d)` with the
+// NULL store first) 132; `long flags` (definition and 0x191420's declaration) 71 (same code); the 3D flag first,
+// result assigned after the 3D branch and the failure returning NONE 186 (597 bytes); that with play first 97.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
