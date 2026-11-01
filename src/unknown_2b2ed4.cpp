@@ -74,6 +74,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// score 330 (was 330): merging the two XONLINE_FRIEND copies into one local in the status block
+// left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
 // score 330 (was 330): the block order follows retail's apart from a few blocks, but stack offsets
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's

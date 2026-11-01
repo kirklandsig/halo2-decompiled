@@ -367,6 +367,8 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // round's further forms (the index declared before the loop, the comparison written the other way
 // round, the seat pointer after the count, an explicit positive-count guard around the scan) score
 // 8, 9, 108 and 135, so the body is unchanged
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
 // score 8 (was 11): the seat count minus one goes into a local, which puts the count in ESI and
 // the index in EBP as retail does; what is left is the guard's shape (a sign test on the
 // decremented count where retail compares the count against the index) and the loop's zero
@@ -1421,6 +1423,14 @@ void function_1f86a0(long actor_index);
 // the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
 // the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus
 // `byte specified = flags & 0x20` (retail's masked byte, spilled to F+3) 238.
+// Round 45 (lane 10, fast): 1..16 unused locals at the top 198 each (no numbering ties); the unit test through
+// `unit->parent_index` 198 (same code), with object_get written in the test and no unit local 198 (same code);
+// the slot/selection pointers after the early return 261 (877 bytes), with the inline test 261; the slot/selection
+// pointers before the actor with the inline test 201. Retail re-reads g_4e0300 at the later lookups, so a named
+// header-table local for all three lookups would differ there; the FORMS-slot-data-block form is the
+// "typed slot payload 198" above (no change).
+// Round 217: Mirrored read-only root equality with member/original payload and bool/byte/word/long
+// comparison-result domains: 198/198/198/198/202/202/201/201. Original equality, payload and carriers restored.
 // Round 62 (fast, confirmed plain): plain iterator and entry locals, a byte mask, 0x1bead0's fallback
 // element local assigned after its test and the radii through the selection (s_seat_selection grown to
 // +0x14, as 0x1ba5c0 also reads them) 156 (kept); one 0x1fb7e0 call per seat type 135 (kept, retail's

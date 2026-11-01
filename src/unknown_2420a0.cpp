@@ -524,6 +524,13 @@ long function_243b10(long key_b, bool team_only, long *second)
 // count stays in ECX and the index in EAX where retail keeps the count in EAX and spills the index);
 // sqrtf 173. The table local at the loop top or in the marker block (169, 717 B) hoists the table to
 // EDI and moves the slot to EBP from the stack, so it is not retail's allocation either.
+// Round 186 (fast, with 0x1e5bb0/0x1e2a90/0x29b00 in the image): a loop-invariant marker-entries pointer
+// read before the inner loop 170 (702 bytes; frame 0x44 as retail and the first difference moves to +0x20,
+// but the pointer takes the spilled slot retail gives the inner index, and the index stays in EAX), with the
+// accumulated distance 170, with an options local for the clauses 170, with both 170; the table read through
+// the global at each use with the accumulated distance 200 (688 bytes). Retail keeps the table in EBP across
+// the inner loop and reuses it after the 0x19ec40 call (LTCG knows the call leaves g_51ec80 alone); ours
+// reloads the table for the x updates and borrows EBP for the entries base, so the index keeps a register.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1200,6 +1207,16 @@ void c_game_engine_markers::v21(long object_index)
 // against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
 // at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
 // matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
+// Round 186 (fast): on the team at each call, a second player pointer for the else arm's team 95
+// (431 bytes: retail's unfolded players-data load, player pointer before the flag test and team after
+// the compare, but the options pointer still held in EDX from entry, so the type test takes ESI/EDI),
+// with an early return on the mode 95, a second pointer for both teams 119; the object in a local after
+// the type test 119 (428 bytes); the unit looked up through the header expression in place 40 (same
+// code); the team through a second lookup in the kept form 40 (same code, reduced image).
+// Round 108 (lane 8; round 100's one-file LTCG harness still exact, each re-run as a real fast trial): a const unit
+// pointer 40 (same code); on the team at each call (119, 430 bytes): a const unit 119, a const player 119, the flag
+// read into a named bool before its test 119, the event block's slot range tested before the player index 119, the
+// slot read through the typed header array 119. The options pointer keeps EDX from entry in every per-call form.
 // Round 59 (fast): 1-8 unused locals at the top (constant or parameter copies; diagnostic) change nothing
 // on this body or on the team at each call; a slot-table local as in v24 (`g = g_51ec80`) 50, with the
 // team at each call 119; v30's per-arm team with a const player 119; early returns for the mode and the

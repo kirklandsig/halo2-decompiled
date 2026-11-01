@@ -979,6 +979,13 @@ void function_1d1540(s_havok_component *component);
 // Round 250: One body receiver with conditional post-reset refetch: constructor copy, flag/fixed-
 // first and bool/byte refresh 81/81/81/81 at 220 bytes; set copy 85/85/86/86 at 231. Frame/component
 // convention remains; every matched control survives.
+// Round 13 (lane 18, fast, with 0x1d0c20/0x1d1b60/0x1d5120/0x1d3fc0): retail's argument setup at both
+// callers is ECX (index), then EBX (component), then EAX (transform), so the setup-order rule gives
+// (transform, component, index): on this body 81 (0x1d1b60 lost at 2), on the 88 body (set copy, body
+// pointer, m_fixed first) 88; the 88 body with a const body pointer 88; the transform by reference 88;
+// the component by reference 88 (the 88 forms keep 0x1d5120 at 73, 0x1d0c20 40). A /Gd compile-only first
+// pass of this body keeps the component in ESI and never touches EBX, yet LTCG still stacks it, so the
+// first pass alone does not predict the EBX parameter.
 // Round 41 (lane 11, fast, with 0x1d0c20/0x1d1b60/0x1d5120): the 88 body again 88 (0x1d0c20 40, 0x1d5120 73);
 // on it the plain struct copy in place of set() 85 at 220 bytes (rep movsd, component still loaded from
 // [ebp + 0xc] into EBX; 0x1d0c20 38, 0x1d5120 77); the fixed arm refetching into the body pointer and
@@ -2307,6 +2314,21 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // Round 464: success-boundary velocity/speed/other-contact default subsets
 // 339/192/305/284/412/337/411; velocity and speed at material admission with
 // late other-contact zero 411. Original default lifetimes and helpers restored.
+// Round 60 (lane 16): a compile-only screen reproduces our velocity block exactly; over ~60 forms (four
+// loop-sum forms, normalize3d / own length + vector3f_scale / an inverse shared with the normal block,
+// three product orders, three else arms, three length expressions, declaration order, scaled set) only
+// the shared inverse hoists the velocity loads, and then all three (retail: j and k only). LTCG: the
+// setter building its word first 155 (aligned 25 -> 22: only the velocity block and loop padding
+// remain); the shared inverse with an own velocity length 199 (the normal block changes from +0x53),
+// with the word-first setter 192; vector3f_add velocity sums + shared inverse + word-first setter 404,
+// with the length as sqrt(dot3f) 404.
+// Round 14 (lane 17, fast): the length kept from normalize3d in a named local 91; the speed products'
+// operand order (v * s for all three, s * v for all three) 91/91; the material count cast to real 91;
+// the result pointer declared before the normalization 263 (1403 bytes). Diagnostics (written-out
+// normalization, not kept): the scale as (s * i, j * s, k * s) 91 (identical code: operand order is
+// not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
+// k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
+// unscaled else), reloading only i; ours reloads all three in each arm.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

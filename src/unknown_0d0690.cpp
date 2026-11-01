@@ -1435,6 +1435,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 555/555/553/553/553/553; immutable/native component-publication 555/555.
 // Frame remains 0x2c; every form puts caller at 442 versus 364. Original
 // input observations, native vector, length expression and complete body restored.
+// Round 268: shared final color-scale scalar pairs 1-2/1-0/2-0/all, original luminance
+// workspace 567 each; split luminance producers 529/529/529/567. Frame stays 0x2c;
+// caller 364 and exact caller survive all eight. Original scalar graph and body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1953,7 +1956,8 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
-// score 595 (was 595): frame 0x90 agrees and the first arm matches retail instruction for instruction
+// score 555 (was 595): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// Earlier: frame 0x90 agrees and the first arm matches retail instruction for instruction
 // except its stack homes (lightmap +0x20 versus +0x34, mesh +0x2c versus +0x20, result/part, normal,
 // u/v/bsp/material slots: retail packs them jointly with the second arm's colours and normals); the
 // direct sample pointers are pushed as built (retail builds a, b, c in order, sharing vertices[0] * 5
@@ -2069,6 +2073,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // packed publication, base/dynamic or dynamic/base: 628/628/622/622/622/622;
 // base-only/dynamic-only before RGB 614/628. Frames 0x8c versus 0x90; original
 // producer phases, calls, complete body and matched caller controls restored.
+// Round 473: all three five-value sample element offsets shared across real/short formats; long/dword,
+// ascending/reverse declarations and model/entry validity lifetime: 603/821/555/773/603/821/555/773.
+// sample_offset names 555; plain 555 kept. Each offset has both format consumers; all sample objects,
+// helper bodies, call roles and arithmetic grouping stay fixed.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
@@ -2160,11 +2168,15 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                 if (block)
                 {
                     byte *data = *(byte **)(block + 0xc) + *(long *)(block + 4);
+                    // Each format stores five values per sample.
+                    long sample_offset_c = vertices[2] * 5;
+                    long sample_offset_b = vertices[1] * 5;
+                    long sample_offset_a = vertices[0] * 5;
                     if (block[0] != 0x39)
                     {
                         dynamic_valid = function_0241c0(*(long const *)(record + 8), *(long const *)triangle->unknown2c,
-                            &dynamic_normal, *(long const *)(record + 0x1c), (s_sample_point *)(data + vertices[0] * 20),
-                            (s_sample_point *)(data + vertices[1] * 20), (s_sample_point *)(data + vertices[2] * 20),
+                            &dynamic_normal, *(long const *)(record + 0x1c), (s_sample_point *)(data + sample_offset_a * sizeof(real)),
+                            (s_sample_point *)(data + sample_offset_b * sizeof(real)), (s_sample_point *)(data + sample_offset_c * sizeof(real)),
                             triangle->u, triangle->v, (vector3f *)&dynamic_color);
                     }
                     else
@@ -2172,9 +2184,9 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                         s_sample_point point_a;
                         s_sample_point point_b;
                         s_sample_point point_c;
-                        surface_sample_unpack((short *)(data + vertices[0] * 10), &point_a);
-                        surface_sample_unpack((short *)(data + vertices[1] * 10), &point_b);
-                        surface_sample_unpack((short *)(data + vertices[2] * 10), &point_c);
+                        surface_sample_unpack((short *)(data + sample_offset_a * sizeof(short)), &point_a);
+                        surface_sample_unpack((short *)(data + sample_offset_b * sizeof(short)), &point_b);
+                        surface_sample_unpack((short *)(data + sample_offset_c * sizeof(short)), &point_c);
                         dynamic_valid = function_0241c0(*(long const *)(record + 8), *(long const *)triangle->unknown2c,
                             &dynamic_normal, *(long const *)(record + 0x1c), &point_a, &point_b, &point_c,
                             triangle->u, triangle->v, (vector3f *)&dynamic_color);

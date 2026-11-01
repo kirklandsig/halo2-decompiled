@@ -128,6 +128,10 @@ point2f *function_13bec0(s_tag_data const *function, byte range_index, byte poin
 // helper that multiplies by the estimate passed in 16; the root through a long pointer out
 // parameter 12. Screened: names and declaration orders of the root, the copy and the reciprocal
 // never move the slots; any root the asm reads takes the numerator's slot.
+// Round 62: union root result 221 (1972 bytes); root bits read from the numerator 15; reciprocal declared first 15;
+// denominator after the root 8 (retail's store order and denominator home; low root/reciprocal homes exchanged and
+// the high result home differs), rejected as only three points without a match; implicit x87 return 12; separate
+// result local 46; parameter result 225 (1984); denominator before the root 15. Opening helper restored.
 // @retail 0x13b390
 real function_13b390(void const *function, real input, real range)
 {

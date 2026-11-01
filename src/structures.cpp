@@ -286,6 +286,16 @@ static __forceinline bool structure_bsp_collision_available()
 // retail function finds no other `mov r8, 1; jmp` to a `test r8, r8` past a call: only 0x14af40 shares it.
 // N round 257: Complete native collision output on the inverted probe graph, byte/bool result and bool/byte found, raw/native triangle sentinel 53/53/53/53/63/63/63/63.
 // Original record declarations, byte buffer and complete body restored.
+// Round 25 (m3 lane 2, fast; a compile-only /O2 screen of this file reproduces the threading): `found = false;`
+// placed at the join before `if (!excluded)` around the requery, the && flag guarding 0xbf9a0, 77 (263 bytes:
+// the store is sunk into the excluded arm and both tests thread); `result = false;` at the join with
+// `if (excluded) return result;` 102 (302 bytes: the flag test stays un-threaded, `mov al, 1; jmp`, but the
+// store stays, the flag is spilled and NONE takes EBP); `found = !excluded;` at the join with `if (found)`
+// around the requery 86 (291 bytes: un-threaded, but sete and a spilled flag); that with the collision read
+// through `source.collision` at every use 86 (same code); with the model result stored in `result` first
+// 92 (296 bytes). The screen keeps the flag test only when the flag-test block's predecessor on the excluded
+// edge is not the arm that sets the flag (a computed value or a memory test first); every such form that
+// keeps the semantics adds code at the join, and the flag is then spilled where retail spills the collision.
 // Round 61 (m3 lane 9, fast): the flag set in the scenery arm with 0xbf9a0 in its else-if and `point3f const
 // *point = &collision->point;` named at the join before `if (excluded) return result;` 62 (the address sinks
 // first; still threaded), with the requery under `if (!excluded)` and `else found = false;` 77 (263 bytes);
@@ -293,6 +303,15 @@ static __forceinline bool structure_bsp_collision_available()
 // bytes: 0x10a0b0 called twice); a `done` flag set by the exclusion and by the model path (`result =
 // 0x14a8e0(...); done = true;`) tested before the requery 68 (272 bytes); the positive test (`type != 6 ||
 // 0x10a0b0 == 2`) holding the probe and requery with `else found = false;` 77 (263 bytes).
+// Round 27 (m3 lane 2, fast): `found = false; if (!excluded) found = requery;` with the collision assigned after
+// that if 79 (288 bytes: retail's `mov cl, 1; jmp` and an un-threaded `test cl, cl`, but `xor al, al` at the
+// join, the flag spilled and NONE in EBP); with a bool result 81 (286 bytes); with the collision published
+// through `source.collision` 79; `found = !excluded; if (found) found = requery;` with the assignment after the
+// if 86 (291 bytes); an inline helper returning 0/1/2 (excluded/model/none) for the object part 160 (225 bytes,
+// out of line); an inline `type == 6 && policy != 2` helper with `if (!excluded) requery else return result` 105
+// (245 bytes, out of line). Compile-only: /O1, /Os, /G7, /Ob1, /Ob0, /Op and /Ox all thread the flag too, and so
+// do helpers returning the exclusion (early returns, single-exit result, &&), `found = excluded ? ...`,
+// `found = !excluded && requery` and an `__assume` at the join.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -854,12 +873,27 @@ done:
 // `ret 0xc`, matched caller 0xd2a50 56), plus `(void)&parameter` 126 (0xd2a50 56); the parameter read in
 // the retry test 124 (471 bytes, 0xd2a50 kept; LTCG keeps the read); the two exclusion tests as one
 // nested if 125 (same code), with the object branch first 130.
+// Round 34 (m3 lane 14, fast): the exclusion flag homed in the unread bool parameter (result a local) as an &&
+// expression or if-set 126/126 (LTCG drops the parameter, `ret 0xc`, 0xd2a50 lost; flag still threaded); the
+// policy through the existing `function_10a0b0(object_index) != 2` 162 (450 bytes, 0xd2a50 lost); `if
+// (!excluded) { if (!0xbf9a0) requery; else 0x14a8e0; }` 130 at 470 bytes (0x14a8e0 laid out last as retail,
+// but the structure lookup call is duplicated where retail shares one between the no-object and requery
+// paths); both 151; one shared structure lookup under a `found` flag, model query inverted or not 163/164 (448
+// bytes, 0xd2a50 lost).
 // Round 185 (lane 3, fast): the grouped state replaced by plain flags/attempts/collision locals 157
 // (456 bytes, matched caller 0xd2a50 97); one 0x14ac60 call reached through a `found` flag 164 (0xd2a50
 // 72); a compiled-out `do {} while (false);` at the requery join 125 (same code: VC drops it before
 // threading); the existing 0x10a0b0 called, with `inline` on its definition, 162 (stays out of line,
 // 0xd2a50 99); the flag and a `modeled` result set in if/else arms (false and the 0xbf9a0 result in
 // the eligible arm) 125 (same code).
+// Round 25 (m3 lane 2, fast): the exclusion named in two parts (`bool scenery = ...; bool excluded = scenery &&
+// ...`) 125 (same code); as `object[0xaa] == 6 ? policy != 2 : false` 133 (470 bytes, setne/test, still
+// threaded); the retry test as `if (result || !(flags & 1) || ++attempts >= 3) break;` 125; the flag inverted
+// (`bool lightmapped = type != 6 || policy == 2`) 125; no flag, the model query and requery nested under
+// `if (type != 6 || policy == 2)` 125 (same code: the source's flag is threaded away completely). Diagnostic
+// only (it requeries after a failed model lookup, so not keepable): `if (!result && !excluded)` in front of the
+// requery keeps retail's `mov bl, 1; jmp` / `test bl, bl`, NONE in EBX with the back edge's `or ebx, -1` and
+// the result in its parameter slot in a compile-only screen, but 157 (488 bytes) in the real build.
 // Round 61 (m3 lane 9, fast): the object branch first with the probe inverted (`if (!excluded && !0xbf9a0)`
 // requery, `else if (!excluded)` 0x14a8e0, the no-object lightmap in the else) 145 (456 bytes); the same
 // inverted probe with the no-object case first 130 (470 bytes, retail's length; the 0x14a8e0 arm stays
@@ -868,6 +902,11 @@ done:
 // found = true;` (cleared for objects, set from the requery) with the model and requery under `if
 // (!excluded)` 164 (448 bytes; 0xd2a50 72); the result parameter written through `bool *const
 // result_reference = &result;` 125 (same code).
+// Round 27 (m3 lane 2, fast): a `found` local (`object_index == NONE`, set by the requery) with one shared
+// lightmap call after the object part 157 (455 bytes, matched caller 0xd2a50 67); that with the excluded arm
+// clearing `found` 159 (453 bytes, 0xd2a50 72); the flag declared at function scope and cleared before the loop
+// 125 (same code); the object part as an if/else-if chain with an empty excluded arm 125 (same code);
+// `excluded = false; if (scenery) excluded = policy != 2;` 133 (470 bytes, setne, threaded).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

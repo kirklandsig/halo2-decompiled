@@ -99,6 +99,32 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
 // ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
 // restored; early EBP and read-size/count/cursor homes remain.
+// Round 64 (lane 12; one-link LTCG env with the stand-in caller, equal to the full listing; env positional/
+// aligned 120/51 for this body): the clamped size in a new local used as the index 202/53 (763 bytes); the clamp
+// before the token table's initialisation 121/59; both 203/58; the clamp written inside the subscript 202/53;
+// the done flag set at the block top (diagnostic) 185/68; the next pointer initialised to NULL and the
+// terminator stored through pointer arithmetic: identical code.
+// Round 36 (lane 13, fast): retail reads the size three times around its clamp (an unconditional select and
+// store, then a reload for the terminator), the reads of a size that is never held in a register; that extra
+// weight would also put its home under next/count as retail has it. Every non-volatile form here keeps it in
+// EAX. The clamped size in a separate `length` for the terminator 216 (763 bytes); the clamp and terminator
+// before the token array and counters 129; the done flag set right after the wait 154 (766 bytes); the
+// counters declared and zeroed at the block top 127 (zeroed before the read call); with the token array too
+// 221 (756 bytes); NULL first token with the loop after the success block 127 (EBP still pushed at the loop).
+// Round 33 (lane 14, fast): the token loop after the success test with a NULL first token at block scope 127
+// (the NULL path is threaded to the end, EBP still saved at the loop guard); the success test as one goto to
+// the block's exit 128; next declared at the block top 128 (same code); counters declared before the token
+// array 126 (retail's zero-store order: counters, first, last element); with 0x1a1480's size and success
+// parameters swapped (retail's ebx/eax/ecx setup) 126. Diagnostic only (reverted at once): the three read
+// outputs volatile 102, size then takes retail's lowest home and three-read clamp, so the clamp and the size
+// home need a volatile size, a form the rules forbid; EBP's late save is independent of it.
+// Round 60 (lane 16, fast): retail treats the read size as an unpromoted memory variable (read, select
+// `mov eax, 0x7ff; ja`, reload in the else arm, store, reload for the index); ours promotes it after the
+// wait (the compile-only build does too, so it is not a callee summary). `if (!success) goto` the block end
+// 128; the size as `long` passed as `(dword *)&size` 128; the read and wait in an inline blocking-read
+// wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
+// initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
+// 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

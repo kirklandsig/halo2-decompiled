@@ -212,6 +212,14 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (plane, normal, point) 151: the normal copy, the d store through the normal's base `[eax+0xc]` and the call
 // argument are then retail's, only the dot's i term loads the point first, but every corner product's operand
 // order changes with it (the order follows something global, not the corner's own source).
+// Round 62 (lane 12, fast): edges typed `vector2f` (the file's duplicate `struct vector2f` dropped for the
+// header's union) with both squared lengths through the existing dot_product2d, the determinant through the
+// existing cross_product2d and an if/else inverse 176 (965 bytes: the four edge stores come first and the
+// determinant is retail's but for reloading e1.j; the squares go in place where retail copies first, and the
+// shared zero moves from XMM3 to XMM1, reordering every corner's products); that with the determinant written
+// out 160 (969 bytes: e1.j then stays in a register as retail); that with the ternary inverse 206; the current
+// body with an if/else inverse 140 (the zero path stores XMM3 as retail, the edge stores still interleave);
+// the plane's d as dot3f(position, normal) 144.
 // Round 104 (lane 8): a compile-only screen reproduces the corner product operand orders exactly; they
 // shift with the function's symbol numbering (1-8 unused locals at the top or in the corner helper,
 // diagnostic only, give 7-24 product mismatches against the current 10), so they follow how many
@@ -714,6 +722,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // original endpoints, pivot timing, helper operations and complete body restored.
 // Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
 // 704/594/727/669/726/660/742/755. Original complete executable source restored.
+// J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -70,7 +70,7 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // retail calls 0x5b080 where this body expands it and expands the elapsed-time helpers 0x75870/0x75890
 // where this body calls them, retail's frame is 0x3e4 against our 0x3e8, and the result byte and the
 // getter/readiness handling are still the ones the rows below describe.
-// score 439 (was 439): retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// Earlier at 439: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
 // Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // Retail stores the tested session state to a dead stack slot before each early exit (the idiom
@@ -174,6 +174,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 247: distinct strict/fallback imbalance outputs with phase/entry cost and
 // readiness storage, 439/439/439/439; the same four with identifier storage at entry
 // 442/442/442/442. Original shared output, declarations and entire body restored.
+// Round 259: persistent settings across all four solver uses: team count, capacity, party
+// flag, minimum, maximum, capacity pair, party triple and all five,
+// 467/474/451/455/455/499/472/455. Original queries, receivers and full body restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

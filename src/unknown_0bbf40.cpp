@@ -304,8 +304,8 @@ s_object_gc_entry_ab g_440570[6] =
     {0, false, 0, 0}
 };
 
-// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 and the prologue pushes
-// EBP where retail pushes EBX.
+// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 (ours spills the level)
+// and the prologue pushes EBP where retail pushes EBX.
 // our loop is rotated (the action test copied to the bottom); retail's stays
 // top-tested, re-reads the state at its top and duplicates the loop setup into each level path.
 // Only nested loops (outer per entry, inner `do ... while (again)`) stay top-tested here: 171, with
@@ -346,12 +346,27 @@ s_object_gc_entry_ab g_440570[6] =
 // VC inverts the loop, testing the first entry's action at its constant address); that with an
 // `advance = !again` flag 181, with the query in the while condition 181; the index walk with
 // `advance = !again` on this body 131 (400 bytes).
+// Round 186 (fast): `if (level != NONE)` around `while (entry->action && function_bf1c0(...))` with
+// an `advance = !again` flag and one final clear 176 (333 bytes; the frame 0x2a04, prologue, level in
+// EBP, state in ESI and the whole loop body are retail's, but the loop is inverted with its first
+// action test peeled and the three exits share one clear); the query as a break inside 176; both
+// tests in one break 176; this body's loop with the advance flag and an early NONE return 122 (393
+// bytes, the gathered flag spills); the state re-read at the loop end with the clear after the loop
+// through it and the query exit breaking 156 (361 bytes).
 // Round 61: no retail code or data takes the address of g_4de2f4 or g_4de2ec, so the failure exit's
 // reload is the allocator's: the loop-top state lives in ESI, which the 0xbf1c0 call takes for its
 // output argument, and the level keeps EBP; ours keeps the state value in EBP and spills the level
 // (the frame's extra dword). The action-null exit as a break to the final clear 179 (330 bytes); the
 // level computed through g_4de2f4 at each use 110; the query failure clearing and returning in place
 // 110; the level declared before the buffers 110; the action-null exit clearing through g_4de2f4 125.
+// Round 108 (lane 8; a one-file LTCG harness with the build's ballast object gives 110 exactly): with no state
+// local in the loop (the action-null exit clearing through g_4de2f4, or a state local inside that exit block)
+// the prologue is retail's through +0x19 (frame 0x2a04, EBX/EBP/ESI pushes, g_4de2f4 in ESI, the level in EBP,
+// EDI pushed late), but the loop is rotated and the NONE exit sits inline: 125, 374 bytes (real); with `again`
+// uninitialised 124 (real). The level as a short 117 at 393 bytes (real), with `bool next = !again` 117 (real).
+// Harness: no globals local 110; state declared before the loop with the action-null exit breaking to a clear
+// through it 110; a diagnostic passing a global pointer as the query's output (the call may then write anything)
+// still keeps the state in EBP and spills the level (146), so the query's side effects are not the cause.
 // Round 59 (fast): round 44's index walk + `advance = !again` rebuilt 122 (393 bytes: frame 0x2a04, level in EBP,
 // +8 entry pointer and sete as retail; the state stays in EBX across the 0xbf1c0 call, so gathered spills, and the
 // loop is rotated). On it: the query failure clearing and returning in place 122 (same code); `while (action)`
