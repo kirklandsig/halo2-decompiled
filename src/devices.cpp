@@ -746,6 +746,11 @@ struct s_device_machine_view
 // length because the block shrinks by the zero store's size: there the table base and index are
 // computed after the machine flags load and the word load folds the address (`mov ax, [esi + eax*4 +
 // 2]`), so the 16-bit load shares EAX only once the address computation sinks below the machine test.
+// Round 46 (m3 lane 10, fast): the machine test as `(flags & 1) || (flags & 4) || (flags & 8)` on the lane S
+// form 34 (same code), on word-local masks + the 0x1200055f zero store 122; `function_value = 0.0f;` at the
+// top of both 0x1200055f arms (hoisted above the `je` exactly like the single zero store) on the lane S form
+// 117 (657 bytes), on word-local masks 122; a byte machine-flags local with masks + zero store 122 (the
+// pointer still takes the pushed ESI, popped right after `test al, 1`).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1034,6 +1039,9 @@ bool function_108530(long device_index, long name)
 // in the inner block 122; the half ramp-up time named before the half ramp-down 123; the cruise time named
 // right after the remaining-time clamp 140 (the remaining time dies early, a `push ecx` frame, 0x108600 31 ->
 // 26, 0x108670 13 -> 28; still ret 0x18); the motion's duration stored first among the reset fields 121.
+// Round 46 (m3 lane 10, fast, with both callers): `distance = target - position` with delta copied from it
+// 123; the denominator staged with two `+=` 121; the velocity staged (difference, then `/= denominator`) 121;
+// both delta swap and staged velocity 123; the reset stores as two chained assignments 121 (identical code).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

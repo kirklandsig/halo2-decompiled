@@ -328,6 +328,12 @@
 // top, result[5] `band2 * y * z`, sqrt5 first, result[6] first or inverse_sqrt_pi first, result[7] unstaged.
 // Real builds on this body: const inputs 59; result[5] `band2 * y * z` 59; sqrt5 set first 59; result[6] with
 // inverse_sqrt_pi first 59.
+// Round 46 (m3 lane 10, fast; 0x146020 matched in each): lane 4's 2-point form rebuilt 2; on it the direction
+// copied into a vector3f local first 160 (651 bytes); x, y and z declared together then assigned 2; zz defined
+// right after sqrt5 2; result[6] as `(zz * 3.0f - 1.0f) * sqrt5 * ...` 2; sqrt5 initialised at its declaration
+// 2. Diagnostics (not kept): result[6] shortened to `sqrt5 * zz` keeps `fld z; fmul z` together (so the zz
+// chain's length is not what orders them); matched 0xfbd40 shows the compiler does split such a pair for an
+// independent SSE load.
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

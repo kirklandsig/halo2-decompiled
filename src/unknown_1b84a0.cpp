@@ -404,6 +404,13 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with early returns 287 (folds); scratch declared in the search block 113, with entry 141, entry alone
 // 141; available/success declared at the search block's top, available alone, available at function
 // scope 113 each; has_markers declared after result or first 113 each (slots unchanged).
+// Round 46 (m3 lane 10, fast): lane 14's sibling single exit rebuilt (`bool result = true; if (prop_index ==
+// NONE) result = false; else if (ready) { body } return result;`) 182: frame 0x162c, the result byte at 0xf
+// beside has_markers and retail's `mov al, 1; mov [esp+0xf], al; jne; xor al, al` opening, but the actor
+// offset in EAX (spilled at 0x20; retail ESI at 0x18) and the view/character homes swapped (ours 0x1c/0x14,
+// retail 0x14/0x1c). On it: result declared before the actor 195; the ready test nested inside a
+// prop-index test with `else result = false` 277; the body's locals declared at function scope 182, with
+// has_markers first 182.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
