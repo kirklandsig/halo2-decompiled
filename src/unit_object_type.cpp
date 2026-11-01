@@ -2592,6 +2592,7 @@ struct s_unit_placement
 // Round 204: 0xcaa60 inline; shared flag-6 setter alone/inline; initial flag-12/15
 // setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
 // eight forms 10 each. Original callee declaration and all flag operations restored.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0xc42e0
 void __stdcall function_c42e0(long unit_index, void const *placement)
 {
@@ -3332,6 +3333,7 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // bytes and an unsigned short one 13; a short loop variable 83 and an unsigned short one 18;
 // the root loop over the root itself 22; the loop variable outside the `for` 12; the root index
 // in a nested block 12; the rigid-body index declared before the root index 12.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -4292,6 +4294,7 @@ store:
 // Round 204: existing random-range call 38; raw generator, force-inline step declaration,
 // named normalized fraction, shared velocity addition and first/second/both library copies 4 each.
 // Frame and all other instructions agree; the cone argument setup remains.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {

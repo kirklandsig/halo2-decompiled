@@ -183,6 +183,7 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 115 (after 0x17170 matched; the tail is still BLOCKED-BY 0x18a90): chain table read into a pointer
 // before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
 // `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
+// MiniMax R (10-31): no new form, no lower score.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
