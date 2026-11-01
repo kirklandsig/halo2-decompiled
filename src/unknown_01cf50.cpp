@@ -5500,6 +5500,9 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
+// flag drives the table test, as retail does; left is our ebx zero register against retail's
+// edi, the loop counter in edi against retail's esi, and the permutations in eax at 0x3e380.
 // score 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
 // higher (the context buffer at [esp+0x44] against retail's [esp+0x3c], the indices at [esp+0x38]
 // against [esp+0x30]), so every reference in the body is at another offset.
@@ -5519,11 +5522,12 @@ void function_4c690(long tag, transform4x3f const *nodes)
     if (function_3e320(tag, (byte const *)indices))
     {
         long handle = function_3e380(tag, 4, nodes, (byte const *)indices, &node_count, 0);
+        *(long *)(context + 8) = handle;
         bool available = handle != NONE;
         if (available)
         {
             s_shader_transform_table *table = 0;
-            if (handle != NONE && handle >= 0)
+            if (available && handle >= 0)
                 table = (s_shader_transform_table *)(g_487b18.data + (handle & 0x0fffffff));
             g_485a5c = table;
             function_1bd50(context);

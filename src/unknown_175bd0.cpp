@@ -1981,6 +1981,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
+// (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
 // tried native slot scalar 159 (a one-use copy of the field; not kept without a match); cursor/request/transform names and late settings receiver 166 (fast control 166);
@@ -2305,6 +2307,8 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
+// and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
@@ -3116,6 +3120,10 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	return next_index;
 }
 
+// score 12. MiniMax C (11-01) reached 3 with a second copy of the point helper whose rows sum
+// left*y + forward*x + up*z (the shared helper's order is what the matched 0x179fb0 and 0x17a380 need):
+// all three rows then match and only the loads differ (retail x, y, z; ours z, x, y). Not kept at review
+// (a copied helper body without a match); a match through it would keep it.
 // score 12 (was 12): only rows x and y of the node point transform differ: retail sums them as
 // left*y + forward*x + up*z (row z as written), the function-wide reassociation order. Round 170: the
 // single exit (`result = true; goto done;`) gave the early BL, and 0x152450's `next` player search the rest.
