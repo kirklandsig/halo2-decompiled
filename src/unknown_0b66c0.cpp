@@ -301,6 +301,8 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // with original/direct source construction: 53/53/53/53/55/55/55/55; both matched caller and shared-
 // find sibling lost in every trial. Original helper/body/interface restored; restored control 40, both
 // siblings 0.
+// Round 217: shared bounded-length short/word/int/unsigned-int counter, then nonzero-only
+// input advance: 40/40/40/40/58/58/60/60. Original helper, body and all matched callers restored.
 // Round 21 (lane 17, fast with 0xb5f10/0xb61d0): on the lead with nested sign tests, a named length and an early
 // one-use `source = string + start` (21: entry and colours retail's; the scan walks in ECX and counts in EDX, and the
 // add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the

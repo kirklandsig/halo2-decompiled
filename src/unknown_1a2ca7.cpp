@@ -909,6 +909,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // so the difference is still 0x63d00's parameter order and clobber set in another lane's file.
 // score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
 // BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
+// BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
 // that never writes EDX) all reload EDX, as for a callee built without LTCG; ours keeps the exclusion cursor in
 // EDX across it, so the sender takes EDI where retail spills it to [ebp+0x6c]. Round 129 (lane 5, plain,
 // diagnostic only): a copy of xuid_equal in a temporary /GL- file called from this loop: 121 at retail's
@@ -918,6 +919,12 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // getter tests fold), with a message pointer stepped at the body's end 160 (439 B). Lead for the user:
 // 0x63d00 built without LTCG (a flags decision); retail keeps the getter null test on `&messages[i]`.
 // Earlier: the listing was re-read only. Retail keeps the excluded-XUID
+// BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
+// only. Retail keeps the excluded-XUID
+// MiniMax R (11-01): no new form, no lower score; retail keeps the excluded-XUID cursor in EDI
+// and passes it to 0x63d00 in EDX, while our LTCG keeps the cursor in EDX and passes it in ECX,
+// so the difference is still 0x63d00's parameter order and clobber set in another lane's file.
+// Earlier, 81: the listing was re-read only. Retail keeps the excluded-XUID
 // cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
 // in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
 // Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
@@ -982,6 +989,13 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // (diagnostic) 145, test still folded: ours knows the message cursor is non-null, retail tests it at both
 // getter uses (`test ecx, ecx; cmovne esi, ecx` before the copy); an indexed if-set exclusion loop 135 (448
 // bytes); the cursor, remaining and flag declared in reverse 81; `messages + i` 81.
+// Round 71 (lane 9, fast): the flag test as `if (!...) continue;` 81; the player record and name buffers at
+// function scope 81; a named reference-record pointer for the player index store 81; the friend name result
+// in a named bool 81; the format and gamertag buffers at function scope 81. Flags lead (a scratch copy of the
+// tree, not this one): 0x63d00 takes ECX, EDX and one stack byte (`ret 4`), the /Gr __fastcall shape; built
+// alone in a `/O2 /Ob1 /Gr /GL-` file it still matches, and this function reaches retail's length (121 at 462
+// bytes; with the if-set exclusion 66 at 458 bytes, without the volatile message read 148), while 0x1a460f and
+// 0x1a4692 move 0 -> 7 and 0x19ad39 0 -> 41 (fast). A flags decision for the user.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1489,13 +1503,22 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // score 117 (was 117): BLOCKED-BY 0x63d00. Retail keeps &player->xuid in ESI across 0x63d00 in the
 // clan-list loop (it treats 0x63d00 as clobbering EDX), so j takes EDI and the presence cursor spills to
 // [ebp-4], the friend count's earlier home; the early count homes follow from that.
+// BLOCKED-BY 0x63d00 (a non-LTCG fastcall function in retail, see 0x1a4441's note).
+// Round 71 (lane 9, fast): the user record declared before the presence arrays 117; the merge as
+// `clan |= friend; friend = clan` 122; one function-scope iterator for both friends-list walks 120; the counts
+// set by if statements 242 (839 bytes); the presence task index in a named local 220 (829 bytes). Flags lead
+// (scratch copy of the tree): with 0x63d00 alone in a `/O2 /Ob1 /Gr /GL-` file this scores 10, and with the
+// friend count read first plus the argument roles (&clan_presences[j].xuid, &friend_presences[i].xuid),
+// (&friend_->xuid, &friend_presences[j].xuid) and (&player->xuid, &clan_presences[j].xuid) it matches (fast).
 // MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
 // pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
 // the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
 // score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
+// count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
 // Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
 // reloads remain; still BLOCKED-BY 0x63d00.
 // Earlier, 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
+// Earlier, 117: frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
 // off 1206; bounded friend search 230; bounded member search 219; both 211; indexed merge-record pointer
 // 162.
 // Completed friend/member/both flag results 159/218/218; signed friend/member results
@@ -1551,11 +1574,13 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // membership flag reloads remain.
 // Earlier, 117 (was 117): this round: the two member counts in a local two-member struct (both kept
 // Earlier score 117 (was 117): this round: the two member counts in a local two-member struct (both kept
+// Earlier, 117: the two member counts in a local two-member struct (both kept
 // in memory) give 124, the same as exchanging the two declarations; the score stays 117. The
 // member count is still read into ESI and pushed where retail keeps it in EAX, and the count
 // homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
 // 0x63d00 and 0x2b642e, whose files belong to other lanes.
 // Earlier, 117 (was 117): this round: the listing was re-read to place the first difference; the
+// Earlier, 117: the listing was re-read to place the first difference; the
 // member count is still read into ESI and pushed where retail keeps it in EAX, and the count
 // homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
 // 0x63d00 and 0x2b642e, whose files belong to other lanes.

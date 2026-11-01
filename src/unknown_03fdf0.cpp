@@ -431,6 +431,16 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
 // with `current = first + count` 176 (477); mode read once through its address on the block / indexed form 54/144
 // (same codes: mode is already on the stack and cache_index's register does not move).
+// Round 230: signed/unsigned-word entry ordinals with byte/word material and byte/dword weight
+// carriers, scores [166, 68, 164, 106, 175, 127, 167, 120].
+// Indexed receivers with the same bounded ordinal/material/weight domains [179, 138, 175, 133, 185,
+// 145, 184, 145].
+// Initial copy/advance count owned as long on the word-ordinal indexed graph [134, 130, 141, 141];
+// exact-only field snapshots restored.
+// Original executable source restored. Scaled-index ownership and the first-index spill remain.
+// Round 288: field-major resets across groups in all six field orders, then
+// count/first/flags and flags/count/first with reversed group order, 54 each.
+// Original stores and executable body restored; index/count/zero and copy homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

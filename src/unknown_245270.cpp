@@ -521,6 +521,9 @@ void function_245400(s_source_245400 const *source, long index,
 // 239/239/211/211/239/239/211/211. Original side producers, material carriers, cross call and complete body restored.
 // DH round 265: complementary facing rejection with bool/byte/word/long sides, original/staged cross:
 // 211/211/211/211/211/211/211/211. Original complete body restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

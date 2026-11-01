@@ -628,6 +628,8 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
 // (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
 // follow it here (the LTCG loop keeps present in a register).
+// Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
+// receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2166,6 +2168,8 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
 // allocation in the inlined equipment lookup, and changing the matched release_entry would risk
 // the 0x15b1e0 match.
+// MiniMax R (11-01): no new form, no lower score; a 42-try permuter run left the lookup's swapped
+// registers alone.
 // score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
 // and scaling the object index; retail scales the index first, so the scaled index gets its own
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
@@ -2591,6 +2595,8 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics, lo
 // MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
 // retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
 // 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
+// MiniMax R (11-01): no new form, no lower score; the 0x1e9df0 call's register setup and the
+// 0x1967d0 delta rotation stay as they are.
 // score 44 (was 44): frame 0x10 agrees. BLOCKED-BY 0x1967d0 (the options reload after it follows
 // what the compiler thinks 0x1967d0 writes: a 0x4e6948 store there gives the reload) and the
 // 0x1e9df0 call's register setup (retail sets counter, field, then statistics last; ours
@@ -4063,6 +4069,7 @@ static __forceinline long nonnegative_15ce70(long value)
 // award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
 // attacker parameter is still copied into EDX in the entry block.
 // Earlier score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
+// Earlier at 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
 // tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
 // Frame 0xe4 versus 0xe0; attacker/NONE/category homes remain. Existing tick conversion 480; direct one-second minimum 549; lives clamp before decrement 535; first cause setter 563; shared initial ticks 528 (fast).
@@ -4138,6 +4145,9 @@ static __forceinline long nonnegative_15ce70(long value)
 // N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
 // 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
 // Round 264: Independent native first/second/both event entry lifetimes, marker combinations, subtype declaration and direct elapsed publication: 456/455/536/456/455/536/536/536. One-point leads rejected; original event scopes/names, all producers and complete body restored. Extra frame word and attacker/category/NONE homes remain.
+// M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
+// 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
+// first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
@@ -4492,6 +4502,11 @@ void function_15fe20(long team_index, color3f *color);
 // Round 480: Filled team-color output objects, rival/own/both, with native publication
 // 302/552/564; with library copies 302/552/564; overlap-safe publication 423,
 // complete individual palette copies 564. Original body restored; native color transfers remain.
+// Round 496: Standard forward color ranges, rival/own/both team/all four publications
+// 563/236/569/588; backward ranges 568/544/567/592. Original aggregate copies and body restored.
+// M283: Native color/palette output initialization subsets 1-7 via aggregates 610/560/626/552/686/620/684;
+// all outputs via memset 671. Original output objects, return-pointer copies and complete body restored;
+// frame 0x48c and early homes agree, but native team-color transfers, sentinel reuse and byte shift residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5436,6 +5451,8 @@ void function_161420(long player_index, real alpha);
 // MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
 // x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
 // ours loads EDX first.
+// MiniMax R (11-01): no new form, no lower score; the two-instruction order before the 0x161420 call
+// stays as it is.
 // score 2 (was 2): final player register setup precedes the x87 argument store; frame and other instructions agree.
 // value-initialized iterator 158; entry workspaces 42; draw dimensions 24; immutable user 24;
 // frame pointer 173; global optimization disabled 242; float consistency 42; force-inline fraction 24.
@@ -5521,6 +5538,8 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
+// MiniMax R (11-01): no new form, no lower score; retail's extra frame slot for the timer pointer
+// and its shift-then-test flag reads stay out of reach here.
 // score 144 (was 144): Frame 0x14 versus 0x18; timer spill and entry-base reloads remain.
 // Frame 0x14 versus 0x18 and timer/base homes remain; delay/reset/radius
 // inline or noinline declarations, separately and together, all 167.
@@ -5618,6 +5637,11 @@ void __stdcall function_d6bc0(long object_index);
 // Round 266: eight dependency-safe initial tag/preset/rate/scenario declaration orders
 // 233/231/231/233/233/231/231/231. Original input observations and full body restored;
 // frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Round 496: Countdown value owning both zero scheduling and positive expiry, short/long
+// storage with word/Boolean schedule and short/byte-kind plus word/long modifier:
+// 156/168/169/176/161/172/183/190. Original timer observations and body restored.
+// M283: Retained divisor/scenario/preset lexical spill-home subsets 1-7 score 144 each; all three with the initial tag receiver renamed 144.
+// Original names and body restored; frame 0x14/0x18, independent timer home and entry-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
