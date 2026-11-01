@@ -984,6 +984,9 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // Round 459: Unsigned state/channel/both flag domains 210/210/210; uniform phase mask with
 // original/state/channel/both domains 337/337/337/337; all with retained phase predicate 315. All
 // executable trial forms restored.
+// Round 262: Existing library lower/upper selection at fraction only 318/318;
+// phase only 323/323; all four phase/fraction order combinations 337 each.
+// Original conditional clamps, identifier scopes, byte result and all query contracts restored.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

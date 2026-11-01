@@ -684,8 +684,6 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 384 (was 384): this round: no new form; the frame and the length agree, and the early false exit's
-// place, the object/magnitude homes and the query scalar homes still differ.
 // score 384 (was 384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
 // `goto local_7` jump; ours puts it last. `bool local_2 = !f13 && !f14 && !f2d; if (local_2) {...} return
@@ -792,6 +790,9 @@ static __forceinline long real_to_long(real value);
 // result declared true before it 510 (frame 0x54: the result folds); the facing pointer declared
 // after the flag and vector 384 (identical); the near-facing flag set before its copy 384
 // (identical); that copy read from the view directly 397.
+// Round 262: Returned admission predicate with entry declarations of query speed/time/direction,
+// their three pairs/all, and all plus actual request: 517 each (1926/1904, frame 0x54).
+// Original result, scopes, input/output query aliases, arithmetic and complete body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

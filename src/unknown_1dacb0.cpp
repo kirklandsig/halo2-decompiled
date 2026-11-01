@@ -1160,6 +1160,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 459: Resolved-output defaults after corresponding key stores,
 // mode/class/both/type/mode-type/class-type/all 828/828/828/828/828/828/828; all after traversal defaults
 // 826. Original initialization restored. All executable trial forms restored.
+// Round 262: Ordinary inline metadata on existing private resource levels: outer alone 3524
+// (310/2825); middle/inner and all remaining pairs/triple 828 each; all with forced existing
+// animation-resource expansion 828. All provider metadata, target body and request tuples restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

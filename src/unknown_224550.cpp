@@ -251,6 +251,9 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // Round 457: complete four-channel modulation then/fused with clamps, input-first/tint-first
 // products, original/looped seed RGB: 426/430/426/430/426/428/426/428.
 // Frame remains 0x50; original complete tint producer and all UV captures restored.
+// Round 262: Library copies of definition/selected-frame bounds/both 381/381/381;
+// geometry-array copy alone/with definition/with selected/with both/with encoded UV copy 478 each.
+// The original arrays and all input-before-store UV captures are restored; frame/cache homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
