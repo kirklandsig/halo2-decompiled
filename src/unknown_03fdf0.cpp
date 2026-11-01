@@ -444,6 +444,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 288: field-major resets across groups in all six field orders, then
 // count/first/flags and flags/count/first with reversed group order, 54 each.
 // Original stores and executable body restored; index/count/zero and copy homes remain.
+// Round 500: complete entry attributes/flags/both observations, block/indexed receivers
+// 54/163/87/144/141/141; bounded selection with attribute observation 112/138.
+// Original executable body restored; scaled-index entry and first-index/copy homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -164,6 +164,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // canonical-magnitude/entry-result normalizer exits 807/754/811/750; matching float-absolute
 // forms 807/754/811/750. All at retail length but frame 0x8c; original input, helper and body
 // restored; early handle/heading and memory-product homes remain.
+// Round 500: direct input and normalizer output orders ikj/jik/jki/kij,
+// 804 each; with real absolute-length storage 748 each (two-point gains rejected).
+// Original input access, helper and full body restored; early input/heading homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

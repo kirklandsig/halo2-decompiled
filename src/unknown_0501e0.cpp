@@ -238,6 +238,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 499: First/second/both source-coordinate cursors with long/dword ordinals
 // 222/222/223/222/222/223; both source-end !=/< forms 276/582. Original input walks and body
 // restored; extra frame word and coefficient/result homes remain.
+// Round 500: native ordinal !=3/<=2 with long/dword/short/word domains
+// 409/221/401/221/400/399/400/399. Equality bounds change unrolling but regress;
+// extra frame word and coefficient/input/result homes remain. Original helper/body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
