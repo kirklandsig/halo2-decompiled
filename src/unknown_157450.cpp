@@ -2168,6 +2168,8 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
 // allocation in the inlined equipment lookup, and changing the matched release_entry would risk
 // the 0x15b1e0 match.
+// MiniMax R (11-01): no new form, no lower score; a 42-try permuter run left the lookup's swapped
+// registers alone.
 // score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
 // and scaling the object index; retail scales the index first, so the scaled index gets its own
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
@@ -2593,6 +2595,8 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics, lo
 // MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
 // retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
 // 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
+// MiniMax R (11-01): no new form, no lower score; the 0x1e9df0 call's register setup and the
+// 0x1967d0 delta rotation stay as they are.
 // score 44 (was 44): frame 0x10 agrees. BLOCKED-BY 0x1967d0 (the options reload after it follows
 // what the compiler thinks 0x1967d0 writes: a 0x4e6948 store there gives the reload) and the
 // 0x1e9df0 call's register setup (retail sets counter, field, then statistics last; ours
@@ -5445,6 +5449,8 @@ void function_161420(long player_index, real alpha);
 // MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
 // x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
 // ours loads EDX first.
+// MiniMax R (11-01): no new form, no lower score; the two-instruction order before the 0x161420 call
+// stays as it is.
 // score 2 (was 2): final player register setup precedes the x87 argument store; frame and other instructions agree.
 // value-initialized iterator 158; entry workspaces 42; draw dimensions 24; immutable user 24;
 // frame pointer 173; global optimization disabled 242; float consistency 42; force-inline fraction 24.
@@ -5530,6 +5536,8 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
+// MiniMax R (11-01): no new form, no lower score; retail's extra frame slot for the timer pointer
+// and its shift-then-test flag reads stay out of reach here.
 // score 144 (was 144): Frame 0x14 versus 0x18; timer spill and entry-base reloads remain.
 // Frame 0x14 versus 0x18 and timer/base homes remain; delay/reset/radius
 // inline or noinline declarations, separately and together, all 167.
