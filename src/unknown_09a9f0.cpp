@@ -445,6 +445,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // `result && value` 77; bool result declared after the creation call 80 (158); a header-pointer local
 // for the test on the long result 49 (same code); the flagged arm first on the long result 52. The EBP
 // cache of the last argument follows the shared header address (fewer live registers at the test).
+// Round 42 (lane 11, fast), all with the early bool result set after the attach: a header pointer from
+// `index != NONE ? header : NULL` tested for NULL, then for the flag 72 (the NULL test stays); the same
+// set in an if 72; the flag test indexed through `(word)index` 72; the flagged index cleared in an
+// `index != NONE && flag` test indexed through `(word)index`, then `if (entity->object_index != NONE)`
+// 48 at 176 bytes (the object read is then retail's exactly: data reloaded from the kept global, index
+// recomputed; left: the memory retest, EBP caching the last argument, the false exit as `xor al, al`
+// and the movzx index); the object read through a second header pointer on `(word)index` 71.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

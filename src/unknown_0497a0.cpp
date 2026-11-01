@@ -931,6 +931,12 @@ void __stdcall function_43720(s_43740_input *input)
 // through it 62; with the tag as a typed field 62; the typed tag alone 62; a second index local copied
 // from the tag for the call and lookup 62; an early return on the field with the tag local after it 62;
 // the tag as a dword 62 (all identical code); the lookup through `(word)tag` harness 60, aligned 53 (204 bytes).
+// Round 42 (lane 11, fast): the field test with the tag local inside the block and the normal flag read
+// back through the stored `input.vertices.shader + 0x2c` 67 (213 bytes; it still folds to the definition's
+// +0x68, the definition becomes a stack argument in EBP, the tag takes EBX and 0x42b20 drops to 62); that
+// with the record filled in retail's store order 67 (0x42b20 62); the field test with the tag local
+// inside and the normal read from the definition 62, plus retail's fill order 62, plus the record declared
+// at the top 62 (0x42b20 matched in each).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
