@@ -26,6 +26,8 @@
 #include "visibility_slot.h"
 #include "geometry_cache.h"
 #include "unknown_0494b0.h"
+#include "normalize3d.h"
+#include "vector_products.h"
 
 
 
@@ -736,7 +738,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 
 // score 26 (was 26): retail reloads g_4858c4 after function_1bd50 (no saved register, no
 // push/pop esi); ours keeps it in ESI across the call. Tried: a local for the first read,
-// a local for the tag (both 26).
+// a local for the tag (both 26). Also tried (all 26): an early return, the test in a bool local,
+// a pointer to the +0xe0 field for the tests, `NULL`/`true` spellings of the arguments, a local for
+// the second tag read after the call. Retail never takes g_4858c4's address, so its reload means
+// retail's 0x1bd50 counts as writing it (the same symbol as a global 0x1bd50 stores, a structure?).
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1107,50 +1112,23 @@ struct s_vector_perturbation
 	real step;
 };
 
-extern "C" void _ReadWriteBarrier(void);
 __declspec(noinline)
-#pragma intrinsic(_ReadWriteBarrier)
-// score 6 (was 11): the second and third _ReadWriteBarrier() calls were not needed and are gone.
-// What still differs: after the normalize call retail loads perturbation.i before it forms
-// magnitude * magnitude_fraction (ours forms the product first), and retail adds
-// perturbation.k to velocity.k as `[velocity] + [edi + 8]` where ours loads the perturbation
-// first. Tried: a local for the i load (6), the product written out per component (38, no CSE),
-// perturbation-> or locals for the velocity sums (5 to 16; a local vj with perturbation->j
-// gives 5 but k stays flipped), declaring the perturbation pointer earlier or later (31 to 85),
-// and removing the first barrier (15).
 // @retail 0x4b3d0
 void function_4b3d0(s_vector_perturbation *state)
 {
 	state->speed_fraction = function_36a40(state->speed_fraction, state->speed_spread * g_509418, 0.0f, 1.0f);
 	real speed = (state->speed_maximum - state->speed_minimum) * state->speed_fraction + state->speed_minimum;
-	vector3f *velocity = &state->velocity;
-	velocity->i = state->direction.i * speed;
-	velocity->j = state->direction.j * speed;
-	velocity->k = state->direction.k * speed;
+	vector3f_scale(&state->direction, speed, &state->velocity);
 	state->first_fraction = function_36a40(state->first_fraction, state->direction_spread * g_509418, -1.0f, 1.0f);
 	state->second_fraction = function_36a40(state->second_fraction, state->direction_spread * g_509418, -1.0f, 1.0f);
 	state->magnitude_fraction = function_36a40(state->magnitude_fraction, state->magnitude_spread * g_509418, 0.0f, 1.0f);
-	_ReadWriteBarrier();
-	real first = state->first_fraction * state->direction_scale;
-	state->perturbation.i = (real)(state->first_axis.i * first) + state->base_direction.i;
-	state->perturbation.j = (real)(state->first_axis.j * first) + state->base_direction.j;
-	vector3f *perturbation = &state->perturbation;
-	perturbation->k = (real)(state->first_axis.k * first) + state->base_direction.k;
-	real second = state->second_fraction * state->direction_scale;
-	perturbation->i = (real)(state->second_axis.i * second) + perturbation->i;
-	perturbation->j = (real)(state->second_axis.j * second) + perturbation->j;
-	perturbation->k = (real)(state->second_axis.k * second) + perturbation->k;
-	function_30bf0(perturbation);
-	real magnitude = state->magnitude * state->magnitude_fraction;
-	perturbation->i *= magnitude;
-	perturbation->j *= magnitude;
-	perturbation->k *= magnitude;
-	velocity->i += state->perturbation.i;
-	velocity->j += state->perturbation.j;
-	velocity->k += state->perturbation.k;
+	vector3f_add_scaled(&state->base_direction, &state->first_axis, state->first_fraction * state->direction_scale, &state->perturbation);
+	vector3f_add_scaled(&state->perturbation, &state->second_axis, state->second_fraction * state->direction_scale, &state->perturbation);
+	function_30bf0(&state->perturbation);
+	vector3f_scale(&state->perturbation, state->magnitude * state->magnitude_fraction, &state->perturbation);
+	vector3f_add(&state->velocity, &state->perturbation, &state->velocity);
 	state->step = state->step_scale * g_509418;
 }
-#pragma function(_ReadWriteBarrier)
 
 struct s_33a0b_view;
 extern s_33a0b_view *g_485a58;
@@ -1245,70 +1223,49 @@ struct s_slot_key
 long function_0209b0(s_slot_key *key, void const *data, long size);
 void function_020b40(long value, long index);
 
-// score 97: retail takes the tag in ecx, the direction in edi and the position
-// on the stack (kept in ebp, with the result stored in the position's slot);
-// ours takes the position in ecx and the tag on the stack, so every use of
-// the tag and the position differs. Tried without effect on that choice:
-// dropping the volatile result, reading the position through a volatile
-// pointer (108), copying the position into a local first (129), hoisting the
-// deltas to the top (112). Also tried: the plain form with no volatile at all (`bool result`,
-// `alternate` used directly) scores 101 and moves the register arguments (alternate in ecx,
-// position in ebx), which raises the callers 0x41980 (146 -> 194), 0xc3340 (109 -> 132) and
-// 0x179880 (88 -> 343), so the volatile pair stays until the function matches; a second tag test
-// or a second definition lookup changes nothing (101). Retail's registers look like the callee's
-// own allocation: tag (ecx) and direction (edi) are forwarded unchanged in 0x2e230's registers,
-// the position is loaded into ebp from the stack (ebp is never a parameter register),
-// `alternate` is read from memory twice (a branchy ternary) and the result byte is spilled
-// into the position's dead stack slot.
 // @retail 0x2dba0
 bool function_2dba0(long tag, vector3f const *direction, bool alternate, long c, long d, long e, point3f const *position, color3f const *color, real alpha, real amount, real scale)
 {
-    bool const volatile *alternate_input = &alternate;
-    bool result_value = 0;
-    bool volatile result = false;
+    bool result = false;
     if (g_4b9ed4 != NONE && tag != NONE && alpha > 0.0f)
     {
         byte *definition = g_4e3b44[tag & 0xffff].bytes;
-        if ((amount > 0.0f || !(definition[0x2a] & 1)) &&
-            !(definition[0x28] & (*alternate_input ? 8 : 4)))
+        if (amount > 0.0f || !(definition[0x2a] & 1))
         {
-            real delta_i, delta_j, delta_k;
-            delta_i = position->x - g_4b9da0.x;
-            delta_j = position->y - g_4b9da0.y;
-            delta_k = position->z - g_4b9da0.z;
-            real near_distance = *(real *)(definition + 0x18);
-            real far_distance = *(real *)(definition + 0x1c);
-            if (near_distance == far_distance || far_distance >
-                delta_k * g_4b9dac.k + g_4b9dac.j * delta_j + g_4b9dac.i * delta_i)
+            bool hidden = (alternate && (definition[0x28] & 8)) || (!alternate && (definition[0x28] & 4));
+            if (!hidden)
             {
-                s_slot_key key;
-                memset(&key, 0, sizeof(key));
-                key.a = *alternate_input;
-                key.b = g_4b9ed4;
-                key.c = c;
-                key.d = d;
-                key.e = e;
-                s_2e3f0_record record;
-                function_2e230(tag, position, direction, color, alpha, amount, scale, &record);
-                long index = function_0209b0(&key, &record, sizeof(record));
-                if (index != NONE)
+                vector3f delta;
+                vector3d_from_points3d(&g_4b9da0, position, &delta);
+                if (*(real *)(definition + 0x18) == *(real *)(definition + 0x1c) ||
+                    *(real *)(definition + 0x1c) > dot3f(&delta, &g_4b9dac))
                 {
-                    long next = NONE;
-                    if (*(short *)(definition + 0x16))
+                    s_slot_key key;
+                    memset(&key, 0, sizeof(key));
+                    key.a = alternate;
+                    key.b = g_4b9ed4;
+                    key.c = c;
+                    key.d = d;
+                    key.e = e;
+                    s_2e3f0_record record;
+                    function_2e230(tag, position, direction, color, alpha, amount, scale, &record);
+                    long index = function_0209b0(&key, &record, sizeof(record));
+                    if (index != NONE)
                     {
-                        key.c = 4;
-                        next = function_0209b0(&key, &record, sizeof(record));
+                        long next = NONE;
+                        if (*(short *)(definition + 0x16))
+                        {
+                            key.c = 4;
+                            next = function_0209b0(&key, &record, sizeof(record));
+                        }
+                        function_020b40(next, index);
+                        result = true;
                     }
-                    function_020b40(next, index);
-                    result = true;
                 }
             }
         }
     }
-    { result_value = result; goto return_exit; }
-
-return_exit:
-    return result_value;
+    return result;
 }
 
 extern bool g_4ba019;
@@ -1317,7 +1274,11 @@ long function_baf80(long object_index);
 // score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
 // `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
 // load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
-// (22), the same with byte-offset addressing (22).
+// (22), the same with byte-offset addressing (22). Also tried: `[parent & 0xffff]` written directly (22,
+// 459 bytes: retail loads g_4e0300 into EAX after the mask, ours into ECX before it), the parent object
+// and definition in one expression (22), `(word)parent` inline (12), the model read without the
+// definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
+// `parent` declared before the model test (12), definition/model declared at the top (12).
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -3751,6 +3712,11 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // differences are in the inlined last pass (also seen in 0x31170): a dead `mov eax, [g_485898]` before
 // `xor eax, eax; call 0x15680` and a `mov byte [esp+0x13], 1` after that call; five spellings of the
 // `normal_cull && (g_485898 ...)` argument fold them away (182).
+// The last pass is 0x44370's mode 11 inlined: its `case 11: enabled = true; function_0496f0();` is the
+// late store (BLOCKED-BY 0x44370, see 0x423c0). Also tried: `enabled = true;` before the filter call in
+// draw_light_source_pass (177; 0x31170 278 -> 274), with it `first_group + i` as a named group index (177),
+// `rendered` declared last (177), direct g_4ba074[i] reads with no entry pointer (177), first_group declared
+// first (174; without the helper change 179).
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -3918,6 +3884,16 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte
 // takes its first argument in eax in retail (mov eax, 1) but is pushed here (callee not matched).
 // Tried: a byte gate with the byte globals passed directly (no setne, 209 because the dead load is missing),
 // reversed/ternary/non-short-circuit forms of the cull test (213-216), a local copy of g_485898 (165).
+// Cause: each pass is `if (function_44370(mode)) { function_44550(); function_445d0(); }`; retail inlines
+// 0x44370 into passes 1, 3, 8, 7, 2 and 16 (its mode table folded per mode) and calls it for 15 and 21. The
+// late store is 0x44370's `case 3: case 16: enabled = true;`, the dead load its
+// `g_485898 >= 4 && g_485898 <= 7 ? 0 : settings->cull_mode` with a cull mode of 0 (BLOCKED-BY 0x44370: it
+// and its table live in a contributor file). Also tried: the cull test reversed (165), the raw byte gates
+// (209: pass 8's gate exact, the rest shifts), `if (enabled && !extra_enabled) enabled = 0;` (200),
+// `bool enabled = ... && extra_enabled` (235), every pass as draw_configured_pass_r18 (842: 0x44370 stays
+// out of line), the helper with a cull-mode parameter and `if (mode == 3 || mode == 16) enabled = true;`
+// (180), the same with 0x44370's mode-based gate (187: passes 3 and 8 exact, cull arms reversed) and with
+// `cull_mode && (...) ? 1 : 0` (187).
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {

@@ -1032,6 +1032,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // first and no flag store 355 (1162 bytes); the current body with that block-local count 49 (identical); the current
 // body's three-way test as `position > removed` 50; the plain entry with the bounds and flag declared above the
 // removal block 378.
+// Round 140 (lane 4): on the current body, lower as `removed <= position ? removed : position` 49 (same code);
+// upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
+// `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
+// cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
