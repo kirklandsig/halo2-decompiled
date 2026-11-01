@@ -279,6 +279,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // fog/weighted/color/fog-weighted/fog-color/weighted-color 616/621/622/616/618/622; all is the same
 // fog-weighted form. All with byte palette 705; all zero-prefix clears 724. Original initialization
 // and body restored; palette/record and SIMD accumulator carriers remain.
+// Round 444: Double scalar-contribution/merge-fraction/color-contribution result domains,
+// subsets 1/2/4/3/5/6/7 then all with complete publication reciprocals: 838/839/772/823/867/828/833/927. Original helper
+// precision, alias-safe source-weight capture and full body restored; palette/record and SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

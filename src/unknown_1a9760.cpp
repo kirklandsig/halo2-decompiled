@@ -109,6 +109,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
 // [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
 // alone [66].
+// Round 444: Double magnitude/inverse/both signed-projection domains, subsets 1/2/4/3/5/6/7,
+// then all with untruncated sqrt: 194/196/228/199/237/241/243/243. Original scalar precision, complete body and inline boundary restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
