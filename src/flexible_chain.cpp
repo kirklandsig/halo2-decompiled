@@ -321,6 +321,10 @@ void __stdcall function_1160c0(real dt)
 // stiffness computed after the tick increment about 183 (harness 165); the axis scaled with *= 179 (same code).
 // Round 53: the axis j/k (or all three) scaled with `*=` 179/179 (same code); the segment index in a short
 // local 290; `definition->segments + (...)` 179; length declared then assigned 179.
+// Lane 18 round 17 (an LTCG link of this file's generated unit, 180 objects, equal to the full listing; 172
+// there for 179): the physics tag in a one-use local 172 and the physics index in a local used for the test and
+// the lookup 172 (both identical; the tag address is still formed before the -1 push); 1/dt before the loop 182;
+// a long loop index 289 (1358 bytes); the root test as `fabs(length) < .0001f` 172.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

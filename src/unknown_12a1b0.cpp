@@ -1302,6 +1302,11 @@ struct s_looping_detail_request
 // a call (124 with the extra compare), so the cause is still the call site's static frequency.
 // Round 254: Reduced common finalization with unavailable-player/completed-request exit and
 // bool/byte/char/long result carriers 139/168/168/185/139/168/168/185. All restored.
+// Lane 18 round 17 (an LTCG link of this file's generated unit, 85 objects, equal to the full listing): the skip
+// loop as `while (skip-- != 0)` 127; the count test `!= 0` 127; `player` declared before the draw 127 (all three
+// identical, the query stays inlined); the skip as the for's own counter harness 121 against the control's 110
+// (533 bytes); `result = true` at the arm's top harness 177. The query's body (0x14dde0) sits in a file another
+// lane holds this round, so its inline cost was not tried from the callee side.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1529,7 +1534,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 305 (was 307): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
@@ -1579,6 +1584,20 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 254: Reduced shared full request type with no/first/second/both long range counts,
 // first/second/both short counts and both byte counts 479/491/497/363/465/451/469/508. All restored.
 // Ordinary full-request/two-long-count form 370 at 1923 bytes; rejected against full 307.
+// Lane 18 round 17 (plain where marked, else an LTCG link of this file's generated unit with 133 objects that
+// reproduces the full listing, 304 there for 305): what retail shows is (a) a count local per pitch-range loop
+// (`for (long i = 0, count = ...; i < count;` 363; read once and reassigned 364/429), (b) the sounds cleared with
+// memset(sounds, NONE, sizeof(sounds)) (the iterator loop is then retail's: count in ESI, pool in EDX, NONE as an
+// immediate; 367 with (a)), (c) the mask bit tested at each use in the second loop, which CSEs into EDI after jump
+// threading and is tested twice as retail (440 with (a)/(b); the `active` local as dword spills, as bool 353), (d)
+// gains[i] copied into a long before `*(real *)&` (retail's copy in track_definition's slot) 247, plain 246 at
+// 1923 bytes (kept nothing: (c) and (d) are kept only on a match). On that 246 form: all 24 orders of iterator,
+// memset, gains and mask 246-250; gain stores as two gets 353, entry + get 366, through decibels_add 303-458;
+// without the modifier bounds pointer and named lower (0x21b940's form) 252; the bounds as a {lower, upper} sub-struct
+// pointer (retail's `lea ebx, [..+2]`, same count); the 0xa0 request (same count); arm 1 nested, created-arm orders,
+// no short cast 247-367; track_definition/current/count declarations moved 247. Diagnostic (volatile reads of
+// index and track_index at the creation call, reverted) 323: the frame becomes 0x128 with retail's homes, but the
+// creation constant takes EBP where retail holds NONE in EBX and track_definition in EBP; renames move no home.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2114,8 +2133,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // clear uses retail's store form (retail stores [ebp+0xc4..] from eax), the energy loop keeps its
 // padding jump in retail, the track loop holds the state in EBX and the track in EBP, and the
 // impulse bits are still tested twice unmerged with the field_c_4 = 0 reload.
-// score 615 (was 615): entry and homes retail's through the creation call; the gains clear (memset's
-// lea form, retail stores [ebp+0xc4..] from eax), the energy loop's padding (jmp + 8 bytes in retail), state held
+// Same causes, as an earlier note put them: entry and homes retail's through the creation call; the gains
+// clear (memset's lea form, retail stores [ebp+0xc4..] from eax), the energy loop's padding (jmp + 8 bytes in
+// retail), state held
 // in EBX and track (not track_definition/i) in EBP in the track loop, the impulse bits tested twice unmerged and
 // the field_c_4 = 0 reload still differ.
 // Round 166 (kept): single exit with `else result = true` last, lookup_identifier in place of reassigning
@@ -2162,6 +2182,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (retail swaps their dead-parameter homes 0x54/0x60); impulse states from `(byte)flags & 1` 699; memset on
 // &listener_gains 615; the seed as a ternary 653 (aligned 221 against 249, NONE moves to ESI as retail);
 // next_definition/local_2e47c8 at the loop top 698.
+// Lane 18 round 17 (an LTCG link of this file's generated unit, 86 objects, equal to the full listing; 611 there for
+// 615): the gains cleared by four `= 0.f` stores 641 at 2516 bytes (retail's direct [ebp+0xc4] stores, but from
+// xorps/movss where retail stores eax = 0 as integers, so the clear is not a float store); memset with
+// `4 * sizeof(real)` 611 (identical); `(definition->flags & 0x80) != 0` 611; `created = true` before the creation
+// call 611; re-measured: memset of &listener_gains[0] 611 (listed above as memset on &listener_gains).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

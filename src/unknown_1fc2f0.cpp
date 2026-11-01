@@ -200,7 +200,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
-// score 32 (was 43): the limit test is written the other way round, so the comparison matches
+// score 32 (was 32): the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
 // in other registers and the limit is computed before the squared length. Converting the ticks
@@ -369,6 +369,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (369 bytes); velocity declared after the tick scale 32 (identical); each rate chain as one expression
 // `v.c = s.c * rate + p.c - q.c` 107 (345 bytes); the conversion between the velocity copies and the chains
 // 72 (369 bytes); the delta through the existing vector3d_from_points3d 77.
+// Lane 18 round 17 (an LTCG link of this file's generated unit with its callee closure, equal to the full listing,
+// 33 there for 32): new, all identical code: `correction` declared with the other locals 33; a named `limit_squared`
+// 33; the root named before the scale 33. Re-measured listed forms (same results as listed): the delta scaled in
+// place then summed 33; tick products written `tick_scale * v` with the conversion at the top 33; dot3f for the
+// length 33; deltas k, j, i 79 (359 bytes) and i, k, j 34. No untried natural form is left here.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
