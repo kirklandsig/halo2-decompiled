@@ -364,6 +364,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (369 bytes); velocity declared after the tick scale 32 (identical); each rate chain as one expression
 // `v.c = s.c * rate + p.c - q.c` 107 (345 bytes); the conversion between the velocity copies and the chains
 // 72 (369 bytes); the delta through the existing vector3d_from_points3d 77.
+// Round 105 (lane 7, fast): the rate read from the global at each chain 97 (375 bytes); the conversion after the
+// chains (ticks read at the top) 73 (369 bytes); the conversion read straight from the global 32 (identical); the
+// rate products and adds j, i, k, then the conversion, the subtractions, the tick products and the deltas as
+// i, j, k / i, j, k / j, i, k 93 (378 bytes) and k, j, i / i, j, k / i, j, k 76 (369 bytes).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
