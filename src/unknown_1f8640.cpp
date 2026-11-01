@@ -456,6 +456,15 @@ struct s_1f8a70_actor
 // graph 430/308/434/442/449/442/449; all with explicit failed false 435. The mode
 // result recovers frame 0x80 and pool/data entry order at 442, first +0x33, but the
 // first false still lacks BL and length grows to 1672. Original body restored.
+// Round 120 (lane 6, fast), on the value-fixed graph (case 3 as case 5's tail with route_mode = 1, a
+// real route default storing false, `failed: result = false;`: 270, aligned 70 against the original's
+// 82): unit mode tested through e70b0's returned pointer with the first exit's `result = false;` in
+// its branch and no initializer 333 (route_mode then takes EDI and the properties pointer spills,
+// frame 0x84), that with a short route_mode 432; the whole body after the first exit in an `else`
+// with one final `return result;` 437, without the initializer 437 (the first false still folds and
+// EDI is pushed before the first test); unit_mode renamed a_mode/z_mode 270 each (same code: the slot
+// stays at +0, so retail's +2 is not name order). Retail's route_mode is a dword slot read as a word
+// (movsx/cmp word) and its result a memory byte everywhere but the first exit (BL).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
