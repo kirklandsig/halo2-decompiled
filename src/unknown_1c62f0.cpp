@@ -732,6 +732,11 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93
 // (same code); the non-looping end frame as `next_frame = last_frame` 91 (531 bytes only because that arm loses
 // retail's recomputed frame count; every later line still differs).
+// Round 113 (m3 lane 7, fast): callback and user as one by-value pair struct (callers build it, no pointer or
+// volatile) 124 (frame 0x10; the first callback load is reused at the second dispatch and kept in EBX through the
+// third, the animation spilled at the variant join); that with a volatile third read of the pair's callback 130 (539
+// bytes); `&user` taken instead of `&callback` with the callback read plainly 128 (callback in EAX, callers lost); the
+// plain pointer read first and volatile reads at the second and third dispatches 93; volatile reads at all three 93.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

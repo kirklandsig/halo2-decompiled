@@ -330,6 +330,11 @@ static __forceinline bool structure_bsp_collision_available()
 // the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
 // (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
 // { requery }` 75 (295 bytes).
+// Round 113 (m3 lane 7, fast): the existing `object_get` for the object lookup 53 (same code); the object index
+// read before `found` 97; the requery assigning `collision` only, 0x14a8e0 given `collision` 53 (same code); a failed
+// requery returning `result` at once 108; the tail as `if (!found) return result; return lightmap(...)` 129 (257
+// bytes); if/else exclusion arms (flag set true, or false with the model query returning 0x14a8e0) and `if (excluded)
+// return result;` 62 (threaded).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -935,6 +940,11 @@ done:
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
 // existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
+// Round 113 (m3 lane 7, fast): the existing `object_get` for the object lookup 125 (same code); the probe copy
+// first, then flags, the NONE short and `result = false` 128; the result parameter typed `byte` at the definition only
+// 119 at 470 bytes (the caller's `bool` declaration no longer resolves, 0xd2a50 96; result still in BL: an artefact);
+// a shared force-inline exclusion helper (object lookup + 0x10a0b0) for this and 0x14b120 125 (0x14b120 106); the
+// requery's result as `result = query && lightmap(...)` 174 (505 bytes).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

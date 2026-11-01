@@ -580,6 +580,13 @@ done:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
 // bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
 // after it 54; `if (globals != NULL)` 54.
+// Round 113 (m3 lane 7; an LTCG env link reproduces the build, without the whole-program objects 186
+// bytes): the natural one-copy form with the getter's call, the tag read and the fallback written in that order
+// (diagnostic, it writes out the existing getter) 54 at 173 bytes (fast): tag load and selector exactly retail's, only
+// the EBX hoist of 0x55c6e4 left; on it 18 spellings of the buffer at the translator and the copy, with `goto done`
+// or a NONE guard, env 60 each (identical); an early `if (!globals) goto done;` identical; the translator in each case
+// env 58 (171 bytes); the natural form with the tag read before the getter env 59 (167 bytes); the current form with
+// the written-out getter env 48 (the base's figure).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

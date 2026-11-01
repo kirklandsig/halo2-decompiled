@@ -276,6 +276,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 691; w,colours,i,d,h,m 691; w,m,i,d,h,colours 687; i,d,h,colours,w,m 691; reversed 691; colours,w,i,d,h,m 691;
 // the weight parameter bound first or second (diagnostic) 616 (same code); the clamped weight in a new local
 // 617; weight-first products 616; the three scalars named in locals first 617.
+// Round 113 (m3 lane 7, env link = check): char slot with `long slot_index = palette_slot;` at the top of the branch,
+// the NULL record assigned in the else arm before the table test and the source index re-read from the byte 683 (3832
+// bytes; widening in retail's block, but index and record share EDI); that with the source index from `slot_index`
+// 756 (3849 bytes); with the slot read before the flag and source stores 683; the normalization helper reading the
+// weight, or the intensity, into a named local first 616/616 (same code). Diagnostic: the fog accumulators escaping
+// to an out-of-line call still leave the normalization stores interleaved (retail keeps load-multiply-store order).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

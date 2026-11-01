@@ -258,6 +258,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
 // declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
 // retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
+// Round 113 (m3 lane 7, fast): `bool const valid = handle test; success = valid; if (success)` 55 (351 bytes); the
+// file copy and success declared at function scope 42; the long open result declared at function scope 42; the handle
+// read into a `void *` local with the by-value file built from it in the branch 42 (same code each); a dword result
+// with `success = (byte)opened; if (opened != 0)` 43.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
