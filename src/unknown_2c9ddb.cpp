@@ -135,6 +135,13 @@ extern long g_55c154;
 // Two load arms with the named count: 179 (`this` in ESI and spilled, EBX holds a zero constant, `saved`
 // and the &g_54e4a0 address in turn); with the count named for both calls 179; with the variant global as
 // its own extern symbol 179 (same allocation).
+// Round 149 (lane 4, fast; all on two load arms with the named destination, 179): a fresh local for the second
+// half's selection 179; the named destination shared by both arms' 0x238c69 calls 179; the game type read once
+// into a local for the three calls 168 (573 bytes; `this` moves to EDI unspilled, frame still unbiased); the
+// controller index read once into a local 176 (576); the default arm with its own failure call 179. In every
+// two-arm form the callee-saved registers rotate (`this` ESI and spilled, entry EDI, saved EBX, EBX also caching
+// zero in the first half and &g_54e4a0 in the second, where retail pushes immediates): retail's EBX `this`,
+// ESI entry, EDI saved only appear with the one-load body.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

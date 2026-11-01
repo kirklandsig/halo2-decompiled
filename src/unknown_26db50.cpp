@@ -609,6 +609,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the angle, sine and cosine before the direction copy 246 (1104 bytes), the angle alone before the copy 246, the radius
 // as a `real const` local without the reference 222 (1083 bytes); on the current body the angle and trig first 101,
 // the `real const` radius 211 (1092 bytes).
+// Round 150: distance terms swapped (ring product first) 90; angle terms swapped (ring term first) 90; both 90;
+// the distance without the explicit double cast 90; the rotation's dot as dot3f(vector, axis) 90 (all the same
+// code: the ring still converts with fild).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -1468,6 +1468,13 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // at its declaration 126; the three queries (mode, teams, values) declared before the count locals 94;
 // `(void)&index_count` 83 (same code: the slots are not set by an address taken this way). An LTCG env link
 // with the direct callees' objects does not reproduce this function (callee clobber sets reach further).
+// Round 149 (lane 4, fast): the top-level test inverted (branch two first) 83 (same code); the comparator as one
+// conditional expression 102 (433 bytes); `mode == 3 && (teams || values)` with one qsort taking a conditional
+// comparator 121 (432); the three qsort calls written out 119 (retail's three push arms and tail-merged call
+// exactly; the extra instruction is `mov edi, index_count` before the push, since branch two keeps index_count in
+// memory); on that, `item_count = player_count;` before the mode-one test with no else 112 (432). Every
+// difference traces back to branch two holding the 0x199ef8 result in EDI where retail reloads it after the
+// 0x19a9b4 calls (all of whose callees match): the same reload 0x25042d shows after 0x53b40.
 // Round 129 (m3 lane 6, fast): both fills as `for (long j = index_count; j < 16; j++)` 172 (420 bytes); with
 // for-scoped scan counters 172; and the allocation loop's counter for-scoped too 172; item_count declared
 // first with both index fills 172; branch two's index fill with mode queried first 110 (437). The reload of
@@ -2645,6 +2652,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // alone: declared first in the function 92, the last loop with its own counter 92, the colour array at function
 // scope 92. The last loop's extra bytes stay: retail gives bitmap_a EBX, ours spills it and reloads the screen
 // into EBX once per pass.
+// Round 149 (lane 4, fast): the slot helper's default arm chained (`*text_a = *text_b = NONE; *bitmap_b =
+// *bitmap_a = NONE;`, retail's third-loop copies) 92 (925 bytes; the bitmaps still stay in memory and the screen
+// in EBX); all four chained 93; text/bitmap chains the other way round 95; chained with the indices declared once
+// at function scope 91; chained with a separate `slot` counter for the second loop 90 (the first loop's element
+// pointer moves to retail's -8), plus function-scope indices 91, `slot` also for the third loop 90, no_team before
+// team_index 90, second-loop indices declared in reverse 90, a separate first-loop counter 90.
 // Round 129 (m3 lane 6, fast): the first loop's item fields written through list.items[i] (no item
 // pointer) 250 (930 bytes); the first loop's search counter declared in its for 95 (same code); player
 // looked up before the item pointer is formed 95 (same code); that with a separate second-loop counter
@@ -3100,6 +3113,12 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // on this body 48. Diagnostics on the identical-branch 13 form (not keepable): the counter renamed, or a separate
 // row counter declared after / before `text`, 13 each (names and declaration order do not move the row loop's
 // ESI/EDI pair); the row bitmap flag as `squad && i < count` 36; the row compares reversed 15.
+// Round 149 (lane 4, fast): `searching = !A; if (searching) searching = !(B || C);` 50; `A ? false : !(B || C)`
+// 48 (same code); a false default set true under `!A && !B && !C` 161; a true default with `if (A) searching =
+// false;` then `if (searching && (B || C)) searching = false;` 13 at 877 bytes (the late EDI push and the BL tail
+// as retail, only the row loop's i/text ESI/EDI swap left; not kept: a flag set in a test and tested later); on
+// that 13 form: i declared first 13, row-scoped text/bitmap locals 15 (the row bitmap leaves [ebp-8]), the
+// counter renamed 13, bitmap declared before text 13, the row bitmap's value as `squad && i < count` 36.
 // Round 129 (m3 lane 6, fast): per-section title/map text and bitmap variables on the variable flag 171 (879),
 // with row-scoped row widgets too 171, on the expression flag 63; `searching = !A; if (searching) searching =
 // !B && !C;` 50 (881); `searching = !A; if (searching && B) searching = false; if (searching && C) searching =
