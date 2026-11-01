@@ -201,6 +201,14 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // the field_08 clear 230 (876 bytes), the count increment 200 (860 bytes; 0x248cc0 then 15 in the reduced image),
 // the list-head link 243 (878 bytes); field_10 last with the fifth sample through 0x248076's reference straight
 // into field_38 70 (same code); the count increment moved before the 0x173ba0 call 159 (860 bytes; 0x248cc0 15).
+// Round 186 (fast): aligned against retail, field_10 first differs only in the split compare (+2 bytes, which
+// adds the child-loop pad) and the child loop's registers (the parent loaded once for both list addresses,
+// the effect/tag/vtable loads rotated), the kept form in the field_10 order and the same child-loop rotation
+// (aligned 51). The fifth draw split into its seed step and its scaling with field_10 between 143 (876
+// bytes); field_10 first with the compare as `== ... ; else` 133; re-measured: field_10 first 133, with the
+// cache flags stored first 129 (863 bytes), with the sample in a named local 133. On field_10 first, the child
+// loop: the effect index read into a local before the loop 131 (875 bytes), the parent stored before the link
+// and both list addresses taken through the child's parent 128 (872 bytes), the child test as `continue` 133.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

@@ -304,8 +304,8 @@ s_object_gc_entry_ab g_440570[6] =
     {0, false, 0, 0}
 };
 
-// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 and the prologue pushes
-// EBP where retail pushes EBX.
+// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 (ours spills the level)
+// and the prologue pushes EBP where retail pushes EBX.
 // our loop is rotated (the action test copied to the bottom); retail's stays
 // top-tested, re-reads the state at its top and duplicates the loop setup into each level path.
 // Only nested loops (outer per entry, inner `do ... while (again)`) stay top-tested here: 171, with
@@ -346,6 +346,13 @@ s_object_gc_entry_ab g_440570[6] =
 // VC inverts the loop, testing the first entry's action at its constant address); that with an
 // `advance = !again` flag 181, with the query in the while condition 181; the index walk with
 // `advance = !again` on this body 131 (400 bytes).
+// Round 186 (fast): `if (level != NONE)` around `while (entry->action && function_bf1c0(...))` with
+// an `advance = !again` flag and one final clear 176 (333 bytes; the frame 0x2a04, prologue, level in
+// EBP, state in ESI and the whole loop body are retail's, but the loop is inverted with its first
+// action test peeled and the three exits share one clear); the query as a break inside 176; both
+// tests in one break 176; this body's loop with the advance flag and an early NONE return 122 (393
+// bytes, the gathered flag spills); the state re-read at the loop end with the clear after the loop
+// through it and the query exit breaking 156 (361 bytes).
 // @retail 0xbf380
 void function_bf380()
 {
