@@ -103,6 +103,15 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// This round (score 6, was 6): the entry block still loads the index before
+// the radius constant, and the loop still materialises the vertex address
+// before the x store; a fresh address expression for the point helper, the w
+// and mask stores written from separate expressions, the pointer written as
+// vertices_raw + count * 4 and a point3f pointer all compile identically.
+// Also this round: the member stores reordered (surface_index before kind, and
+// surface_index first) and the vertex pointer taken as a point3f pointer all
+// leave the two differences in place, and the w store written through the array
+// again is worse (38).
 // score 6 (was 6): radius/index loads swap; vertex x uses the completed
 // address before its store. Derived count/kind/value initializers 33; all
 // member initializers 6; index/count/kind initializers 6; const source 6;
@@ -152,9 +161,6 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
-// Round 16: retail's frame is 0x90 against our 0x84: it preloads the ray start's components,
-// keeps the shape in ESI and lets the compiler unroll the polygon copy four ways, ours copies
-// the origin vertex with integer moves and writes the unroll out.
 // score 192 (was 192): frame 0x84 versus 0x90: retail keeps origin.x/y in xmm6/xmm7 until the
 // offset (ours re-reads all three from the shape), so it spills first.i/second.i into homes and puts
 // the found byte at +0x38 and the plane at +4; every later stack offset differs by that. Retail also
@@ -168,6 +174,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // fields, found at top/after the normalize, offset before the plane/edges or after the dot, `&&`
 // range test, call count without the cast, hit-point product orders, normal before fraction, offset
 // from ray->start, dot3f operand order: 192-335, none lower.
+// Round 16: retail's frame is 0x90 against our 0x84: it preloads the ray start's components,
+// keeps the shape in ESI and lets the compiler unroll the polygon copy four ways, ours copies
+// the origin vertex with integer moves and writes the unroll out.
 // Before round 81 (247): frame 0x7c versus 0x90; retail reloads `result` from its stack slot and
 // shrink-wraps ebx/ebp/edi into the hit block, where ours keeps `result` in ebp (pushed at entry)
 // and duplicates the early failure exits. Retail's unrolled copy loop counts down with a
@@ -275,6 +284,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 454: Existing scaled-add hit-point producer 196, with native normal publication 275;
 // entry hit-point storage 196/275. Existing scale/add producers 202/272, with entry point
 // storage 202/272. All frames remain 0x84; original point products, normal stores and body restored.
+// Round 462: One complete ray value with direct native start versus duplicate start, native/library
+// copy before/after origin: 248 in all eight forms, 1001/1001 bytes but frame 0x98 versus 0x90.
+// Original input observations, separate start and complete body restored.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

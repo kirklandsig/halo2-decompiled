@@ -285,6 +285,15 @@ struct s_z_state_world
 	long state;
 };
 
+// score 11 (was 11): this round: the fast check reads 11 at 120/120 bytes again and no new form was
+// tried; the difference is still the database pointer in ECX where retail keeps it in EDX and the
+// active byte folded as `mov cl, [eax + edx + 0x20b2]`.
+// score 11 (was 11): this round: reading the active byte from the array element with the database
+// read early still folds the byte as retail does (`mov cl, [eax + edx + 0x20b2]`) and keeps the
+// database in EDX, but the database load is hoisted above the object lookup and the record address
+// comes out as `add eax, edx` with the 0x20ac folded into every field offset (19). Taking the record
+// pointer before the active test does not change that (19). A named world pointer moves the world to
+// ECX and the state to EDX (21). Still the database pointer in ECX where retail keeps it in EDX.
 // score 11 (was 11): the entity pointer is materialised in EAX and the record is read through it;
 // retail folds the address into the load itself.
 // The fold is the scheduler's rewrite of `lea; mov cl, [eax+6]`; ours can't do it because the
@@ -296,6 +305,10 @@ struct s_z_state_world
 // edx swapped (world and database in ecx), 18 in every spelling: state local, identifier declared
 // first, object local, database and index locals, state-test helper, unsigned identifier, entity
 // table types; database read from the global in the state block 11 (sunk past the test).
+// Round 60: the records inside a nested table struct at 0x2098 11; the record by pointer addition
+// 11; the active test and the dispatch joined in one condition 13; an object pointer local for the
+// identifier read 11; the size and data read into named locals before the dispatch 35 (the callers'
+// convention flips: 0xa9640, 0xa96d0, 0xa9770, 0xa98b0, 0xa9940 and 0xa9570 lose their match).
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -330,7 +343,12 @@ bool function_a9820(long *block, long index)
 // (same code); the identifier read before the state test 22; the world local used for both reads 18
 // (the database is then updated in place, but in ECX with the world). A permuter run produced no
 // variant below 11. Still the database pointer in ECX where retail keeps it in EDX.
-// score 11 (was 11): the database pointer takes ECX where retail keeps it in EDX, and ours takes the
+// MiniMax G (10-31): the database pointer is still loaded into ECX where retail loads
+// it into EDX, and the active byte is still read through the materialised record address instead
+// of the array; a database local with the byte read from the array, the same with the record
+// address taken inside the test, a world local, the record read without any pointer at all, the
+// modulo and mask index forms and the database read before the state test all score 14 or worse.
+// Earlier: the database pointer takes ECX where retail keeps it in EDX, and ours takes the
 // record address before the active test and reads the byte through it (`lea eax, [eax + ecx + 0x20ac]`,
 // `mov cl, byte ptr [eax + 6]`), while retail reads the byte from the array and takes the address after.
 // Early definitions 31; direct dispatch 13; const record 11; record reference 11; separate index mask 11;
@@ -348,6 +366,7 @@ bool function_a9820(long *block, long index)
 // The permuter could not finish a run here: it builds the whole program for its baseline and the
 // machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
 // builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
+// Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
 // @retail 0xa99f0
 void function_a99f0(long index, long *block)
 {

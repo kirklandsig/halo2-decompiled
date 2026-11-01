@@ -808,6 +808,12 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 	return datum != 0;
 }
 
+// score 43 (was 43): the 44 differing lines are 34 real ones (the rest are the
+// unmatched callees and the relocated globals): the datum address is computed in
+// EBX where retail computes it in EDI, and the two are used the other way round.
+// The walk reads the first parent before the loop and keeps the root in a local,
+// retail's inlined 0xbaf80 keeps the entry test and the root in its register:
+// BLOCKED-BY 0xbaf80 (another file), so the swap is not ours to fix.
 // score 43 (was 43): the record pointer is kept in EBX here and in EDI in
 // retail, and the two are used the other way round after the index is masked;
 // the walk differs (retail's starts from the unit with the root preset to NONE and keeps its entry test,
@@ -1289,6 +1295,13 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
+// uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
+// zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
+// outputs declared and assigned separately and the timers cleared with a memset the score is 43,
+// but the constant stays a mov in every form tried (a struct of the two outputs, one and two
+// declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
+// keep threshold and the original body is restored.
 // score 46 (was 46): NONE materialization and the zero/flag store schedule differ; success BL agrees.
 // Round 39: joint/dependent output initialization 75/75; chained word/flag clears 75/75;
 // result before/after the final reset 60/75; after field_198/before the user tests 46/46;
@@ -2865,6 +2878,12 @@ struct s_unit_flags_14d8b0
 	word bit8 : 1;
 };
 
+// score 9 (was 9): the nine differing lines have one root cause: the last g_4e6948->mode test
+// keeps the options pointer in EDX where retail keeps it in ECX, and that single allocation
+// cascades into the game-engine block (EAX and ECX where retail has EDX and EAX) and into the
+// root walk's global load (EDX where retail has ECX); the callee 0x1521d0 splits its own
+// globals and data registers the other way round as well. A half-hour permuter run over the
+// function (59 variants) left the score at 9, so the choice is not reachable from its statements.
 // score 9 (was 9): late mode, reset-slot and root-pool scratch registers remain.
 // Earlier: frame 0xc8 and retail length agree; tick/rate scheduling, the damage-tag
 // pointer load and scratch registers in the later mode, slot and root blocks remain.

@@ -149,6 +149,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
+// and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
+// and our link inlines, in src/unknown_221490.cpp.
 // score 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
 // retail homes the request in EBX and reloads the state flags after the first 0x221810 call,
 // ours forwards them across it and builds the flag word in EDX where retail builds it in EAX.
@@ -219,6 +222,12 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // declaration 110; state/tag declarations swapped 110; tag pointer renamed 110; immutable tag
 // pointer 110; early uninitialized flags 110; split tag declaration/assignment 110. All restored;
 // first query expansion, initial tag spill and playback convention remain.
+// score 110 (was 110): this round: no new form. The first class lookup is still expanded here and
+// called in retail: our link inlines 0x221810 (src/unknown_221490.cpp, matched) into it, so our
+// compiler forwards the state flags across that call, while retail treats the call as opaque and
+// reloads them. Suppressing the inline (inline depth zero) costs six matched callers of this
+// function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
+// state registers decide where the request is homed.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -651,6 +660,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Success result/pop order remains. Request/forward/distance/combined scope endings 2 each plain;
 // projection component loop 2 plain; difference/paired component loops fast 4/4;
 // projection library clear fast 161. Reduced exact results need plain confirmation.
+// Round 11 (lane 17, plain): without the inline_depth pragmas 269 (callees inlined, 733 bytes); the
+// success result set before the final call 181; length_squared reused for the second length 160;
+// dot3f for the projection length 166, for the perpendicular distance 158. The sources that bring the
+// swap (0xfc330, 0x10c880, 0x17a8a0, 0x184440) are all callers of 0x1895f0 that ignore its result.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

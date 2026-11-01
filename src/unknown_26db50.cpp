@@ -576,6 +576,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 457: shared vector scales and sum with ordinary/staged cross, projection/cosine
 // scale order, original/named ring phase: 244/244/243/243/258/258/257/257.
 // All inputs precede stores; original complete rotation and body restored.
+// Round 104 (lane 8, fast): the named ring phase renamed angle_offset/phase/twist 143/143/143 (names
+// move no slot); the dead pathfinding store dropped 204 (1056 bytes; retail has the store, sharing
+// the sine's slot); the sector index read at the trace call 265; the rotation helper __forceinline
+// 90 (identical); the pathfinding pointer as a ternary 217.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
