@@ -1981,6 +1981,10 @@ void function_27dd10(void)
 // the alternate existing node lookup 2; rotation and translation cases swapped 2; vector blending
 // through interpolate_real 155; scale blending through interpolate_real 42; root scaling through
 // interpolate_real 2; blend-1 and blend-2 arms swapped 2. All restored.
+// Round 99: the blend fraction by const reference 338; a source pointer local 307; quaternion source
+// and destination parameters swapped 2; the saved fraction declared first 2; the orchestration output
+// and cursor declarations swapped 2; a const in-place predicate 2; output selection as if/else 2;
+// a constant-initialized blend-weight local 2. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
