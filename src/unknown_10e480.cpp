@@ -144,15 +144,6 @@ void function_10ec00(long object_index, s_animation_state *state, long unused, d
 extern real g_547648;
 void c_animation_channel_data_get(c_animation_channel const *channel, s_animation_data *data);
 
-// score 137 (was 137): the pointer walk stays the best form found; this round's trials were all
-// worse and are reverted: the walk as an index loop over the two member arrays 174-216, the frame
-// compare widened with an int local 185, and the data struct moved into the sampled block 189.
-// score 137 (was 174): the twelve-sample walk is now a pointer walk, so the frame is 0x2c as retail has it
-// and the first difference moved to +0x38; the sample frame compare is still 16-bit, the weight multiply
-// order still differs and the weight is still spilled to a different slot.
-// score 174 (was 207): the animation getter is now called out of line in both arms, as retail calls it,
-// and the function is now exactly 940 bytes; the frame is still 0x30 versus 0x2c, the twelve-sample walk
-// still uses a pointer with a spilled counter, and the sample frame compare is still 16-bit.
 // score 207 (was 207): Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
 // Round 87: the cause is our inlining of 0x1c6440 in the weighted arm (retail calls it there and in the
 // third arm). With the getter out of line (noinline in its header, diagnostic only) the entry and the first
@@ -284,13 +275,18 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 460: Positive admission bool/byte/short/long, then paired positive/nonzero admissions,
 // 207/207/207/207/343/343/337/337. Original direct frame tests, constructors and body restored;
 // frame 0x30/0x2c, weighted getter and ordinal homes remain.
+// Round I (MiniMax lane I, fast): the getter called through a member-function pointer local (only to keep
+// it out of line, which the noinline ruling rules out) with the twelve samples walked by a frames pointer
+// that reads each weight as sample[12] 137 (frame 0x2c as retail's); the getter called directly with that
+// walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
+// 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
+// in the sampled block 189. Original body restored.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
 {
 	long const &unused_reference = unused;
 	(void)&unused_reference;
-	s_animation *(c_animation_channel::*animation_of_channel)() const = &c_animation_channel::function_1c6440;
 	s_vibration_object_view *object = ((s_vibration_object_header *)g_4e0300->data)[object_index & 0xffff].object;
 	s_vibration_sample_view *vibration = (s_vibration_sample_view *)((byte *)object + object->vibration_offset);
 	real frame = vibration->frame;
@@ -309,20 +305,17 @@ void function_10e530(long object_index, s_animation_state *state, long unused, d
 		s_animation_data data;
 		if (vibration->weighted_animation.index != NONE && state->channel_play(&channel, vibration->weighted_animation, 0))
 		{
-			s_animation *animation = (channel.*animation_of_channel)();
+			s_animation *animation = channel.function_1c6440();
 			bool sampled = false;
-			char const *sample = vibration->frames;
-			char const *const last_sample = vibration->frames + 12;
-			while (sample != last_sample)
+			for (long i = 0; i < 12; i++)
 			{
-				real weight = sample[12] * g_547648 * vibration->frame;
-				if (*sample < animation->frame_count && !(fabs(weight) < 0.0001f))
+				real weight = vibration->signed_weights[i] * g_547648 * vibration->frame;
+				if (vibration->frames[i] < animation->frame_count && !(fabs(weight) < 0.0001f))
 				{
-					channel.set_frame_position((real)*sample);
+					channel.set_frame_position((real)vibration->frames[i]);
 					channel.sample(weight, node_mask, node_count, transforms);
 					sampled = true;
 				}
-				sample++;
 			}
 			if (sampled)
 			{
@@ -341,7 +334,7 @@ void function_10e530(long object_index, s_animation_state *state, long unused, d
 	else if (vibration->weighted_animation.index != NONE && vibration->countdown > 0 && vibration->countdown < 7)
 	{
 		c_animation_channel channel;
-		if (state->channel_play(&channel, vibration->weighted_animation, 0) && (channel.*animation_of_channel)()->frame_count > 17)
+		if (state->channel_play(&channel, vibration->weighted_animation, 0) && channel.function_1c6440()->frame_count > 17)
 		{
 			real weight = vibration->countdown >= 3 ? (7 - vibration->countdown) * 0.25f : vibration->countdown * (1.0f / 3.0f);
 			channel.set_frame_position(17.0f);
