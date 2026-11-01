@@ -1628,7 +1628,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
-// score 193: the statements match retail (cross products, dot-product operand order, atan2 tail).
+// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
 // tail, one shared `movss xmm0, [result]` at the end, frame 0x18); ours keeps the zero in xmm0,
 // returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
@@ -1638,6 +1638,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the angle through a `real *`, `real *angle = &result`, a dead `&result` pointer, the atan2 in a double
 // local, `return` inside the `if` (275); `volatile real result` gives retail's frame and entry store (187) but
 // zeroes xmm6 instead of xmm0 and so is not kept.
+// Shared first cross ordinary/staged, ordinary first with ordinary/staged second, staged first with
+// ordinary/staged second, and both staged-second graphs with shared point differences:
+// 193/193/193/193/193/193/193/193. Result stack home and SSE producer allocation remain; original arithmetic
+// restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3491,6 +3495,12 @@ extern s_record_pool *g_509434;
 extern long g_4ba050;
 long __stdcall function_3ddd0(long object_index);
 
+// score 1 (was 1): indexed byte-load encoding remains.
+// Native previous-level short/long, four-byte byte/signed-char table pointers, selected byte/signed-char element
+// pointers, read-only table with char/short previous; pointer advance mutable/const, exhaustive null branches,
+// late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
+// base/index order; original loads and arithmetic restored.
+// A 480-second annealed search: 45 attempts, none below 1.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -3796,7 +3806,7 @@ void function_133720(s_bit_vector_pool *visibility, bool enabled);
 void function_44720();
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool special, real weight);
 
-// score 186 in the full build (180 in a fast check; was 195): retail keeps `parent` in ebx and the walk's `root` in
+// score 186 (was 186): retail keeps `parent` in ebx and the walk's `root` in
 // edx through the loop, reads `definition` as a dword (`mov ecx,[ebp]; test cl,0x20`) and spills the light index to a
 // local at [esp+0x34] (a ninth frame slot: ours is 4 bytes smaller, 0x1504 against 0x1508, and the record cursor takes
 // ebx while `parent` is spilled; retail keeps the cursor and the counter in memory). Tried: `light_index` as a plain
@@ -3806,6 +3816,9 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
 // the walk (182), a second flags read after the parent block for the special/bsp/mask tests (190-208), the light
 // index declared after the parent block (182), root assigned in the walk instead of after it (202), parent/root
 // declared in the other order (189), an explicit record pointer with an up- or down-counting loop (180).
+// Index snapshot, shared vector sum, dword field observations, pairs/all, then direct root:
+// 179/180/184/179/184/184/184/200 fast; coherent weight snapshot, with index/sum/dword forms 199/201/201/186
+// fast. Reduced baseline 180; full frame already 0x1508. Cursor/parent/definition allocation remains.
 // @retail 0x31c80
 void function_31c80()
 {
