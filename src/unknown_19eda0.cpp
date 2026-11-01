@@ -385,12 +385,19 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// score 316 (was 316): the distance to the centre is now computed and compared in double, so the
+// MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
+// comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
 // score 316 (was 379): the distance to the centre is now computed and compared in double, so the
+// the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
 // bound is still one product where retail has two and the frame is 0x34 versus 0x30.
-// score 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// Earlier at 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// the distance to the centre is now computed and compared in double, so the
+// Earlier 379: frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
+// Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
 // Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
-// the fade clamp now computes a single radius*1.5 product, so the
 // radius keeps retail's xmm3; our fade block is still one instruction shorter than
 // retail's, and the call to function_4b2d0 still passes three stack arguments.
 // Round 194: Named real radial denominator at division/loop boundary, with ternary/explicit
@@ -421,11 +428,44 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 415: ordinary variant/body cursor step with native current/previous vertices and
 // top-first declarations, seven subsets 429/416/396/432/429/416/396; all with CRT input copies 396.
 // Both matched callers lose two in every trial; complete executable body restored.
+// Round 132 (lane 6, fast): the variant parameter read directly, without the volatile reference,
+// 401 (both matched callers lose, 2 each); read once through a plain const address 400 (frame 0x30,
+// aligned 128 against 157, but pass moves to EDI and the callers lose, 8 and 11); the double distance
+// with `1.5f * radius` written at both uses 391; the attribute scan indexed as `types[i]` 395; the
+// material default as an if/else 316 (same code). Retail's colour temporary reuses the spread slot
+// (0x14) because its radial denominator sits in the dead perimeter slot; ours keeps a reciprocal in
+// the spread slot through the loop, which is the extra frame dword.
 // Round 122 (fast): retail also inlines 0x1ccb0(59)/0x1cd90 here (both in an /Ob1 contributor file; inline
 // declarations here 379). Ours keeps &vertices[index].y in EBP, so the step and fade denominator lose retail's EBP and
 // perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner
 // radius at its use 430; on the uv form: bottom by fields 374, bottom right after the index 375 (step in EBP,
 // pointer spilled instead), edge with one cast 374, top from the vertex 377, top.z assigned 375.
+// Round 42 (lane 14, fast; "aligned" = differing lines after a sequence alignment, base 157): retail's 1.5 is
+// not a literal but a .data float at 0x47ff94 (between g_47ff90 and g_47ff98, read only here). With
+// `real g_47ff94 = 1.5f;`, the distance as `real distance = (real)sqrt(...) - radius;` and the bound written
+// as `g_47ff94 * radius` in the clamp and the divisor, the fade block is retail's (the global loaded once,
+// fst into the dead radius slot, the second product in place) but for the xmm numbering and the clamp's
+// arm order: 384 (aligned 144, 1501 bytes); with the radial denominator written in the division,
+// `/ (maximum_distance - spread)`, our compiler divides by the hoisted value as retail does (a named
+// denominator, in the loop or before it, becomes a reciprocal multiply): 389 (aligned 136, 1495 bytes).
+// Neither is kept: the base's longer x87 fade block happens to offset the missing inline of 0x1ccb0(59)
+// (retail inlines it; BLOCKED-BY 0x1ccb0 in a contributor's /Ob1 file), so every shorter fade block
+// raises the positional count. Also: the float distance with one bound local 374 (1501 bytes); with
+// `1.5f * radius` written twice 388, as `radius * 1.5f` 388 (same code: the literal is commuted);
+// the global with the original double distance 390; the inline denominator on the base 370 (aligned
+// 155); the alpha divided in double, on the base/on the global form 399/350 (hoisted in double);
+// diagnostic float-consistency pragma 500 (1605 bytes). Next: keep the global, float distance and
+// inline denominator once 0x1ccb0 inlines here.
+// Round 214: mixed-precision real result before tests 421; zero-first result 395;
+// separate distance/factor 316, with zero-first 395; upper-first result 316;
+// factor expression 316; explicit distance arms then factor 316; scalar role names 316.
+// Earlier selected count 316 from 379.
+// Round 287: Native homogeneous-position/RGBA/both/UV/position-UV/RGBA-UV/all emitted records
+// 426/319/426/316/426/319/426; all with top declared first 426. All record forms require an exact match;
+// complete original output storage, cursor, parameter home and body restored.
+// Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
+// results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
+// Original factor literal, bound, inherited parameter home, cursor and complete body restored.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

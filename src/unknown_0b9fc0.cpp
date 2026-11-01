@@ -668,6 +668,11 @@ struct s_component_property_view
 	bool function_1d3550(long key, bool *positive, real *value) const;
 };
 
+// MiniMax lane E (11-01): argument locals for the value, the positive flag and the key, the index
+// named in a local, the index term first in the address and a 240 s permuter run all score 13; no
+// lower score.
+// MiniMax D (11-01): the arguments pre-read into named locals compile identically (13); no new
+// form, no lower score.
 // score 13 (was 13): retail reads value into edx before it looks up the
 // component and reads key into ecx last, just before the call; ours reads key
 // first, value last, and loads g_51e9b8 through ecx (93 bytes against 92).

@@ -322,6 +322,14 @@ static __forceinline bool structure_bsp_collision_available()
 // (245 bytes, out of line). Compile-only: /O1, /Os, /G7, /Ob1, /Ob0, /Op and /Ox all thread the flag too, and so
 // do helpers returning the exclusion (early returns, single-exit result, &&), `found = excluded ? ...`,
 // `found = !excluded && requery` and an `__assume` at the join.
+// Round 32 (m3 lane 2, fast): the && flag with the collision re-read from the source at the join 62 (the copy goes
+// first; threaded); with a pointer to the query buffer named at the join 62; g_4687bc read into a local at
+// the join 95 (296 bytes: the flag survives, `mov cl, 1; jmp` and the flag cleared just before 0xbf9a0 as in retail,
+// but it is spilled, NONE takes EBX and the object index EDI); the source re-read through its address at the join
+// 62 (folded); the join load with `if (!excluded) requery; else found = false;` 79 (286 bytes, same spill). A
+// compile-only screen of 13 more flag forms (if-set, set after the probe, long, `== false`, struct-held, ternary
+// requery, address-taken pointer parameter reassigned, parameter re-read at the join) threads every one; only a
+// real load at the join keeps the flag, and it stays ahead of the test. The permuter's baseline link stalled.
 // Round 39 (m3 lane 15, plain): the flag preset true and cleared in the not-excluded arm, `if (excluded) return
 // result;` before the requery 62; the && flag with g_4687bc read into a local at the join and the requery and
 // model reading the source's collision 95 (296 bytes: the flag survives but is spilled, &triangle->c takes EBX);
@@ -329,6 +337,31 @@ static __forceinline bool structure_bsp_collision_available()
 // done` exit 89 (294 bytes, NONE in EBP); the preset-true flag with the join load 85 (293 bytes, still spilled).
 // Compile-only, all threaded: preset-true in four placements, a positive requery flag, a negated or widened copy
 // of the flag tested at the join, and the source as a class with a constructor or a destructor.
+// Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
+// jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
+// into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
+// `excluded = false`, `excluded = scenery_excluded;` at the join and a final `found && !excluded`. Real builds of
+// that: 77 (295 bytes: a second flag test, `found` spilled across the probe, the probe block laid out last); with
+// the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
+// (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
+// { requery }` 75 (295 bytes).
+// Round 113 (m3 lane 7, fast): the existing `object_get` for the object lookup 53 (same code); the object index
+// read before `found` 97; the requery assigning `collision` only, 0x14a8e0 given `collision` 53 (same code); a failed
+// requery returning `result` at once 108; the tail as `if (!found) return result; return lightmap(...)` 129 (257
+// bytes); if/else exclusion arms (flag set true, or false with the model query returning 0x14a8e0) and `if (excluded)
+// return result;` 62 (threaded).
+// Round 286: Complete collision object-handle observations with cached/direct header,
+// cached/per-use source and bool/byte found, eight forms 53 each. Original field
+// snapshots and complete executable body restored; exclusion/source-slot join remains.
+// Round 63 (m3 lane 16, fast): compile-only, the join test also threads as a switch on the flag, behind an
+// `excluded || !0xbf9a0` guard, as a counter, as a parameter, and as `!!`, `== true`, `!= false`, `(char)`,
+// `(long)`, `? true : false`, `| false`, `^ false`, `& 0xff`; the C front end and a constructed/destructed
+// collision record thread it too. Only a bit-and join test keeps it: `if (excluded & 1)` 96 (297 bytes:
+// retail's `mov r8, 1; jmp` and unthreaded join, but `test r8, 1`, the flag spilled into the collision's
+// slot and NONE in EBX); that with the collision read through the source at every use 96; a plain
+// non-inline exclusion helper 103 (240 bytes: LTCG keeps it out of line); the kept form with the collision
+// read through the source at every use 53 (same code); a `short policy = 2` local set by 0x10a0b0 for
+// scenery and tested `== 2` before 0xbf9a0 and `!= 2` before the requery 62.
 // Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
 // jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
 // into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
@@ -408,6 +441,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
+// 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
+// section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
@@ -752,6 +788,10 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // 0x11e800's registers), before the section pointer 223, before the region-list declarations (ahead of
 // 0xba690) 230, before the object lookup 78; the listed placement before the 0x12de70 test still gives 9.
 // Each moves a read ahead of calls (kept only with a match); BLOCKED-BY 0x11e800.
+// score 4 (was 70): the vertex-bounds read moved before the geometry-block call (retail reads it there
+// and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
+// second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
+// them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -781,6 +821,7 @@ bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 		long section_index = *(long *)((byte *)triangle + 0x14);
 		if (section_index == 0xff) goto done;
 		byte *section = *(byte **)(model + 0x28) + section_index * 0x5c;
+		s_vertex_bounds_23ac30 const *bounds = *(s_vertex_bounds_23ac30 const **)(model + 0x18);
 		if (!function_12de70((s_geometry_block_info *)(section + 0x38), 3)) goto done;
 		byte *object = *(byte **)(g_4e0300->data + (COLLISION_OBJECT_14A8E0 & 0xffff) * 12 + 8);
 		point3f point = collision->point;
@@ -792,10 +833,10 @@ bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 			matrix = (transform4x3f *)(*(byte **)(model + 0x4c) + (*(short *)((byte const *)collision + 0x46)) * 0x60 + 0x28);
 			function_142700(matrix, &point, &point);
 		}
-		s_vertex_bounds_23ac30 const *bounds = *(s_vertex_bounds_23ac30 const **)(model + 0x18);
 		s_lookup lookup;
-		if (!lookup.initialize(COLLISION_OBJECT_14A8E0)) goto done;
-		byte *surface_set = (byte *)function_1efd80((s_table_holder *)&lookup,
+		s_lookup *lookup_pointer = &lookup;
+		if (!lookup_pointer->initialize(COLLISION_OBJECT_14A8E0)) goto done;
+		byte *surface_set = (byte *)function_1efd80((s_table_holder *)lookup_pointer,
 			*(dword *)((byte const *)collision + 0x48));
 		byte *section_groups = *(byte **)(model + 0x80) + *(long *)((byte *)triangle + 0x14) * 8;
 		byte *section_mesh = *(byte **)(section + 0x34);
@@ -938,6 +979,12 @@ done:
 // clearing `found` 159 (453 bytes, 0xd2a50 72); the flag declared at function scope and cleared before the loop
 // 125 (same code); the object part as an if/else-if chain with an empty excluded arm 125 (same code);
 // `excluded = false; if (scenery) excluded = policy != 2;` 133 (470 bytes, setne, threaded).
+// Round 32 (m3 lane 2, fast; 0xd2a50 in brackets): the surface parameter read once through its address in place
+// of the pointer to the triangle local 125 (identical code [kept]); result as a local with the unread parameter
+// read into it (a dead read) 126, or dead-written, 126 (LTCG drops the parameter either way, ret 0xc [56]); the
+// result reset moved to just before the loop 136; the probe copy before the flags computation 128. Retail never
+// reads that stack parameter (orig+0xc, the caller pushes 1) and spills the result into the surface pointer's
+// dead slot; only 0xd2a50 calls it.
 // Round 39 (m3 lane 15, plain): the flag preset true and cleared by the positive test 125 (same code); the flag set
 // from the unread third stack parameter in the scenery arm with result a local 133 (471 bytes: the parameter is
 // read and threaded on, no constant propagation); `direction` read once through its address at the join 125
@@ -949,6 +996,29 @@ done:
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
 // existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
+// Round 113 (m3 lane 7, fast): the existing `object_get` for the object lookup 125 (same code); the probe copy
+// first, then flags, the NONE short and `result = false` 128; the result parameter typed `byte` at the definition only
+// 119 at 470 bytes (the caller's `bool` declaration no longer resolves, 0xd2a50 96; result still in BL: an artefact);
+// a shared force-inline exclusion helper (object lookup + 0x10a0b0) for this and 0x14b120 125 (0x14b120 106); the
+// requery's result as `result = query && lightmap(...)` 174 (505 bytes).
+// Round 286: Native collision storage 125; unsigned flags 125; bounded short/byte attempts
+// 124/129; native handle observations 125; separate flags/all scalar workspace 157/157
+// (caller lost); direct triangle 158 (caller lost). Original storage and executable body restored.
+// Round 63 (m3 lane 16, fast): a bit-and join test (`else if (!(excluded & 1))`, diagnostic) keeps the flag
+// unthreaded and gives retail's allocation (flag in BL with `mov bl, 1; jmp` and `xor bl, bl` before 0xbf9a0,
+// the direction reloaded into ESI, NONE in EBX with `or ebx, -1` at the back edge, the result in its
+// parameter slot) but `test bl, 1` and a different layout: 149 (477 bytes); with one lightmap call reached
+// through a `found` flag 139 (471 bytes); either with the existing availability helper 148 (470 bytes: the
+// failure exit inline as retail's, but ESI pushed after it) / 150; the plain form with `*probe = *point`
+// before the flags computation 128.
+// Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
+// local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
+// first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
+// existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
+// DH round 264: Result-owned pretested retries with independent flags/long-short-word-byte attempts
+// and native collision fields 157/156/156/160; with the existing initial point setter
+// 144/145/145/157. All regress; original record layout, grouped state, triangle access and
+// body restored; result/NONE/exclusion allocation and direction reloads remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

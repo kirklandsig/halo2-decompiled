@@ -116,6 +116,9 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // zeroed by an initializer 221; the entry lookup as a ternary 29; blend terms entry-first 11;
 // the blend accumulator zeroed by `= {0}` 216 (1256 bytes). 1-8 unused locals at the top (diagnostic) 11 each:
 // the slot tie does not follow the symbol count.
+// Round 104: outer-index preincrement/compound increment 11/11; index renamed local_2/cluster_ordinal
+// 11/11; function-scope index before the result/between result and table/after the table 11/11/11;
+// initialized at its declaration 11; on that scope, result preincrement/full assignment 11/11. Restored.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

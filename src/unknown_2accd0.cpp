@@ -748,9 +748,49 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Lane 12 r72 (fast; 0x2adb10 in brackets): the signature case as `default:` with no `__assume(0)` arm
+// 177 (688 bytes); `parameters->task->state = 4;` ahead of the total 232; the body case's position
+// written at both uses with no local 213; the signature case's likewise 221 (694 bytes); the getter
+// returning the buffer with the size through `dword *` (owner, size, flag from the buffer field) 34
+// [279, 944 bytes]. Compile-only: both positions written at both uses 111, with no total local 101;
+// about 450 random rewrites of the current form found nothing below it.
+// Round 23 (lane 17, fast; 0x2adb10 129 throughout): the getter returning a two-field (buffer, size)
+// record by value 170 (695 bytes); a scratch-arm `buffer_size` local with one function-scope position for
+// both cases 160 (689; sums header first again); the signature position written at both uses (no local)
+// 221 (694); the body position at both uses 213; the signature case as the switch's `default:` label 177
+// (688). Diagnostic: 1-7 dead long temps leave the code byte-identical (34), so these colour ties do not
+// follow the temp count.
 // Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
 // conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
 // declared with buffer/size and assigned later: 34 each (same code). All restored.
+// Round 442: complete output-task/file-handle/signature-handle observations, seven subsets
+// 196/169/177/255/252/245/255; complete graph with conversion after state publication 255.
+// Original handles, observations and body restored; total and seek/size coalescing still differ.
+// Round 64 (lane 16, fast): the signature state as the switch's `default:` 177 (688 bytes); the scratch clamp
+// through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
+// code); the total converted after the task state store 42; the seek position written at each use in the
+// signature case / body case / both 221 (694 bytes) / 213 / 221 (695 bytes).
+// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
+// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
+// declared with buffer/size and assigned later: 34 each (same code). All restored.
+// Round 69 (lane 16, fast; 0x2adb10 in brackets, 129 at the start): getter statement orders owner, buffer, flag,
+// size 34 [138]; buffer, flag, size, owner 36 [131]; buffer, flag, owner, size 36 [139]; buffer, size, owner, flag
+// 34 [129]; owner, size, buffer, flag 34 [129]. Getter restored.
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 44 (lane 13, --fast): the total folded into its conversion (no total local) 88; the buffer arms swapped
+// (`if (!parameters->body)` first) 41; the file position computed before the buffer arms 224; a body-case
+// `remaining` set in each arm (direct arm `size = remaining;`, scratch arm `if (size > remaining) size =
+// remaining;`) 161 (689 B, entry sum header first and no dispatch hoist); that with `body_size > body_offset`
+// and the signature position summed body first 35 (687 B, the hoist returns in ESI). All restored.
+// Round 64 (lane 16, fast): the signature state as the switch's `default:` 177 (688 bytes); the scratch clamp
+// through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
+// code); the total converted after the task state store 42; the seek position written at each use in the
+// signature case / body case / both 221 (694 bytes) / 213 / 221 (695 bytes).
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -976,6 +1016,32 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Lane 12 r72 (fast; 0x2ad7c0 in brackets): the getter returning the buffer with the size through
+// `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
+// memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for
+// both arms 129, with the `void *` parameters view as well 129.
+// Before round 23 the first line read 129 (was 134).
+// Round 23 (lane 17, fast; 0x2ad7c0 34 throughout): the `void *` view with the current getter 129
+// (byte-identical; the extend sums stay header first); the header memset's count from the record's size
+// field 272 (952 bytes); the extend arm's memset before its offset 301 (948); its chunk size before its
+// memset 262; the zero clamp as `if (offset < 0) offset = 0;` 268. Dead temps 1-7: identical code.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
+// Round 64 (lane 16, fast): the header-site memset count read from the record's size field (diagnostic)
+// 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
+// `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the
+// extend offset clamped from a named unclamped excess 129 (same code).
+// Round 69 (lane 16, fast; 0x2ad7c0 in brackets, 34 at the start): the getter's statements reordered so the flag
+// is computed before the size is read: owner, buffer, flag, size 138 [34]; buffer, flag, size, owner 131 [36];
+// buffer, flag, owner, size 139 [36]; also buffer, size, owner, flag 129 [34] and owner, size, buffer, flag
+// 129 [34]. Our scheduler hoists the size load into EBX at the header site in every order.
+// Round 484: native I/O header-failure/extension-admission/signature-admission joins,
+// subsets H/E/S/HE/HS/ES/HES and HES with explicit byte-count failure
+// 301/129/129/301/301/129/301/301; frame/capacity/offset homes remain. Original body restored.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

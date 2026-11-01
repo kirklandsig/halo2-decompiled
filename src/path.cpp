@@ -368,7 +368,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 315 (was 315): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// score 295 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // Round r4 (lane 17): our extra frame word is the links cursor (strength-reduced long link count); retail indexes
 // links[link_count] with a short count. Short link count 368 (1368 bytes, frame 0xe4); with count assigned after
 // the init loop and special set false-then-true 389; count after the init loop 379; separate increment after the
@@ -461,6 +461,15 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // link count with the type named once 349 (1388 bytes, frame 0xe4); on it count zeroed after the init loop
 // 354, the link count incremented after the copy 349, `special` false then set by an if 349; local names
 // (two placeholder orders, diagnostic) leave the slots unchanged.
+// Round 62 (m3 lane 16, fast/plain): the link test's edge bit as TEST_FIELD_BIT((flags >> 7) & 1) 295 (kept, plain;
+// ours `sar dl, 7; test dl, 1`, retail `movsx; shr eax, 7; and al, 1` stored to the special byte); the same through a
+// dword cast 353, a long cast 295, without the bool 315; on the kept form: short link count 366 (1368 bytes, frame 0xe4,
+// aligned 273 -> 210: retail's `inc dword ptr [esp + 0x1c]` with `cmp dx, word ptr [max]` and `movsx ecx, dx` is a short
+// count), increment split from the copy 305, both 367, special false then set by an if 298, one pathfinding-data local
+// for the whole function 392 (0x270930 loses its match), for the node loop 353; the previous-point ternary as if/else
+// 315; special declared at the top 315; complete initialized after the init loop 321. Retail also loads the
+// pathfinding pointer before the `unknown10 != NONE` test (`mov ecx, [ebx + 0x8c]` ahead of `jne`), as if an inlined
+// link predicate took it as an argument.
 // Round 60 (m3 lane 9, fast with 0x270930; the convention already agrees, ret 0x24): on the short link
 // count, the type named once 349 (1388 bytes, frame 0xe4) and the one flag shared by the link test and the
 // special test 362 (1371; aligned 189, the best structure seen), both together 349 (366 instructions and
@@ -474,6 +483,21 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // long count 365/272 (1406); `special` declared false at the else arm's start on those 351/266 and 365/272;
 // the short count with only that early `special` 368/216 (1368: retail's special sequence, best aligned);
 // that with the link count incremented after the copy 369/214.
+// Round 64 (m3 lane 16, fast; positional/aligned against 295/240, 0x270930 kept throughout): short link count
+// 366/210 (1368 bytes); with the type named once 347/290 (1388); the type alone 344/311; short count with `special`
+// false at the in-range arm's start and set by an if 363/190 (retail's special sequence); that with count declared
+// after the init loop 371/211, with the type 349/293, with the increment split from the copy 367/214; early special
+// alone 315/217, with the type 338/309. New lead: the link test as an inline predicate taking the pathfinding data
+// first (a new helper: diagnostic only) puts retail's pathfinding load ahead of the `jne` (short + early special
+// 363/214, alone 313/269); with a result variable in it (`if (type != NONE) return true; bool result = false; if
+// (valid) result = bit; return result;`) retail's `and al, 1; mov [esp + 0xf], al` store into the special slot appears,
+// 361/186 (1374 bytes); its plain/dword/long bit spellings 361/352/361, on the long count 355, with the late count
+// 365, with the named type 351, with the split increment 360.
+// Round 66 (m3 lane 16, fast; 0x270930 kept): the special test through a surface-test helper shared with 0x271630's
+// case 2 295 (same code), with special false then set by an if 298; short link count 366 and with the increment
+// split after the copy 367 (ours keeps the count in EDX and increments it before the store; retail keeps `previous`
+// in EDI, uses EDX for the copy and increments the count in memory); the link copy as a struct assignment 305, on
+// the short count with the split increment 367.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -506,7 +530,7 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 		s_path_node_key_view *node = &lookup->nodes[node_index];
 		if (link_count < maximum_links && (node->unknown10 != NONE ||
 			(node->unknown14 >= 0 && node->unknown14 < ((s_path_links_data_view const *)state->pathfinding)->edge_count &&
-			(((s_path_links_data_view const *)state->pathfinding)->edges[node->unknown14].flags & 0x80))))
+			TEST_FIELD_BIT((((s_path_links_data_view const *)state->pathfinding)->edges[node->unknown14].flags >> 7) & 1))))
 		{
 			memcpy(&links[link_count++], &node->unknown10, sizeof(*links));
 		}
@@ -867,6 +891,13 @@ bool function_2715a0(byte *buffer)
 // (same code); both link flag tests as plain masks 522 (2052 bytes); state read once through its address
 // (diagnostic) 486 (same code). The four-way rotation (state/node/link/count EBX/ESI/EBP/EDI for retail's
 // EBP/EBX/EDI/ESI) and the shrink-wrapped pushes remain.
+// Round 62 (m3 lane 16, fast): retail tests the two link bits as masks (`test ah, 0x10`, `test byte ptr [edi], 2`):
+// bit 12 as `& 0x1000` 497, bit 1 as `& 2` 497, both 522 (2052 bytes); the location-flags test through
+// `state->location.unknown00` 498. Diagnostic (a new one-caller helper, not kept): the heap pop as a forceinline
+// `short pop(state)` returning NONE when the heap is empty, looped as `while ((index = pop(state)) != NONE)`, 512 but
+// LCS-aligned 530 -> 405: the loop becomes un-rotated with every push at the top as retail; left: state in EBX where
+// retail keeps EBP (node EBX, link cursor EDI), the result byte's slot, a `jmp` over the loop-head pad, and the
+// inlined insertion (0x271fd0) retail expands.
 // Round 106 (fast): retail also takes the link length's root before the 0x210be0 call (stored, divided
 // in SSE after it; ours sinks it past the call into an x87 divide) and tests `(short)link->type != NONE`
 // before the penalty switch. Both link points through a point-along-vector helper 486; sqrtf root 486;
@@ -878,6 +909,11 @@ bool function_2715a0(byte *buffer)
 // stores 481 (cases 1/5/6 and default take retail's shape; five points, not kept); case 2 as if/else stores
 // 566 (2136 bytes; node moves to EBX, state to ESI), with the child's stored index 566, its ternary 481;
 // per-case stores with the pop-or-NONE loop 502; per-case stores with native flag masks 512 (2060 bytes).
+// Round 66 (m3 lane 16, plain; retail's case 2 reads the surface index back from the child and joins its +1 path
+// to the default's `inc`): case 2 on `surfaces[child->unknown14]` with the ternary 486 (same code); as if/else 523
+// (2100 bytes); per-case child depth stores with case 2 if/else 566 (2136 bytes); per-case depth local with case 2
+// `if (clear) { +2; break; }` falling into the default 528 (2104 bytes); the surface test through a helper shared
+// with 0x270d90's special test 486 (same code), with case 2 as if/else 523.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

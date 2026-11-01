@@ -144,7 +144,7 @@ void function_10ec00(long object_index, s_animation_state *state, long unused, d
 extern real g_547648;
 void c_animation_channel_data_get(c_animation_channel const *channel, s_animation_data *data);
 
-// score 207 (was 207): Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
+// score 207 (was 207): Frame 0x30 versus 0x2c, transforms/ordinal homes and getter expansion remain.
 // Round 87: the cause is our inlining of 0x1c6440 in the weighted arm (retail calls it there and in the
 // third arm). With the getter out of line (noinline in its header, diagnostic only) the entry and the first
 // arm match retail (edi is the zero register, transforms is read from the stack): 174 at 940 bytes. Its
@@ -278,6 +278,9 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 266: existing sample success before frame positioning or between positioning/sampling,
 // each in bool/byte/short/long storage, 276/276/279/278/276/276/279/278. Original result stores,
 // constructors and complete body restored; frame, getter and ordinal differences remain.
+// Round 270: Native countdown identifier copy/assignment, with direct base, weighted
+// identifier and both input policies: 296/296/284/284/327/327/301/301. Original
+// identifiers, separate constructors and body restored; frame, getter and ordinal homes remain.
 // Round I (MiniMax lane I, fast): the getter called through a member-function pointer local (only to keep
 // it out of line, which the noinline ruling rules out) with the twelve samples walked by a frames pointer
 // that reads each weight as sample[12] 137 (frame 0x2c as retail's); the getter called directly with that
@@ -295,6 +298,25 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // separate weighted channel 360; weighted id in a twice-used local 306; animation declared at the positive
 // block's top 207; sampled flag before the getter 276; data struct in the sampled block 215; the frame read
 // from the field at both tests 260 (retail's reload at the second test, 955 bytes).
+// Round 111 (lane 7, fast): one function-scope animation pointer for the weighted and countdown getters 207;
+// the frame field read at both tests (no frame local) 260 (955 bytes); the base id read from the field (no id
+// local) 256 (940 bytes, getter still inlined); the weighted play as a nested test returning on failure 207;
+// the weight test as `fabs(weight) >= 0.0001f` 257. Retail calls 0x1c6440 out of line in both arms yet inlines
+// the data getter after the weighted loop, so its refusal is not a plain size budget taken in source order.
+// Round 227: Target inline/stdcall/both 207 each; channel getter, frame setter and sampler inline
+// singly, getter/setter and getter/sampler pairs 207 each; complete playback inline declarations 207.
+// All declarations and original bodies restored; weighted getter expansion and spilled induction remain.
+// Round 275: Real two-identifier touch loop with four native channel initializations 268 each; all with long sample frame 202 each (five-point lead rejected); pointer traversal with bool/long flag/long count/short count 224/231/223/222.
+// Original executable source restored; frame 0x30 versus 0x2c, getter expansion and ordinal homes remain.
+// Round 277: Twice-used real/double sample frame, direct/named weight product 273/273/289/289; each
+// with publication-owned weighted output 281/281/300/300. Original frame observations, constructors
+// and body restored; frame, getter expansion and ordinal homes remain.
+// Round 131 (m3 lane 6, fast; both builds now end `ret 0x18`): diagnostic, the first arm written twice 496
+// (1120 bytes) and the weighted arm still inlines the getter and the data get, so the getter's inlining does
+// not follow a budget used up by the first arm. The getter called in the loop condition 284 (992 bytes); a
+// const animation pointer 207; the existing channel validity test 0xb6760 after the weighted play 239 (954
+// bytes); in 0x1c6440 itself, its graph in a named local 207 (getter still matches), an early NULL return
+// 207 (getter 15).
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

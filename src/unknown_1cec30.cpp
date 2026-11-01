@@ -998,6 +998,9 @@ void function_1d1540(s_havok_component *component);
 // and flag tests nested with a return in the reset arm 88; the transformed flag read before the copy 88.
 // It is on the object/havok call cycle (0x1d1260 and 0x1d1540 reach it again through 0x1d1b60 ->
 // 0x1d0c20 without any stubbed function), so where LTCG enters that cycle may decide its convention.
+// Round 26 (lane 17, plain): 0x1d1260/0x1d1540 declared at the top of this file 81 (same code); that with the
+// 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
+// the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2910,6 +2913,9 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // the head kind code in a named local 7; a rigid-body local for the head test 8; the velocity pair
 // declared with the change vector 7; the 0xbba20 call before the change vector 22; the index named
 // rigid_body_index as in the siblings 7.
+// Round 66: reversed subscript at all five reads 10; data+index and index+data pointer reads 10 each;
+// direct data reads at the first two 7, the late three 10, the late kind/fixed pair 7; explicit array
+// operator calls 10; one shared element reference 156 (680 bytes). Opening body restored.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {
@@ -2969,6 +2975,8 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
+// MiniMax D (11-01): no new form tried, no lower score; the round-41 merge rewrote this body,
+// so its score is now 346 against the 206 the task started from.
 // score 206 (was 206): Frame 0xb4 and extent agree; body base/stride and protected relative-call
 // input registers remain. BLOCKED-BY 0x1d83e0 (contributor code): retail passes the component to it
 // in EAX and loads the component into EAX at entry; ours passes it in ECX, and the EAX/ECX roles

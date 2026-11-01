@@ -413,6 +413,22 @@ short *function_e70b0(long unit_index, short *value);
 // Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
 // lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
 // mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
+// Round 55 (fast): `now` declared at function scope 49; `long const now` with a named `real const elapsed`
+// and `10.0f < elapsed` 49; the final mode read through the entry actor pointer 132 (423 bytes);
+// `state->ticks -= 1;` 49; the unit index through a `long const &` 49.
+// Round 132 (lane 6, fast with 0xe70b0 in the image): the actor pointer renamed to sort after the
+// index 49; the timer read once into a short local and stored back 49; the final guard named as a
+// bool 49; the slot view and that timer local read before the actor lookup 123 (index still ECX); a
+// plain `inline` declaration of 0xe70b0 here 49. In every block retail's scratch registers sit one
+// allocation on from ours, as if one more temporary came first.
+// Round 287: Parameter-index/slot/both, inline-output/index-output/slot-output/all lexical
+// identities 49/49/49/49/49/49/49; all three alternate identities 49. Original names and body
+// restored; actor/index ECX/EDX and final setup remain.
+// Round 334: four-byte frame and 443-byte extent agree; first +2 exchanges
+// actor/index ECX and EDX and changes final setup. One complete clock receiver,
+// original/native slot data block, entry/timed-block declaration and mutable/const
+// view combinations, all eight 124 at 443 bytes. The shared receiver makes the EBP
+// save unconditional. Original data view, global observations and full body restored.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
@@ -612,6 +628,9 @@ struct s_1af5c6
 // buffer in one block and the probe's vector and result in another 44 (frame stays 0x80, but the point
 // copy goes below the NONE/source pair), the same with the point copy renamed 44; one category result
 // in 0x1c8df0's if/else-if form 20.
+// Round 101 (plain): NONE-initialised resolved index 20; repeated actor lookup 174; typed object
+// pointer 20; word second subscript 132; second lookup as pointer arithmetic 20; unsigned datum index 20;
+// early distance-vector declaration 20; direct actor predicate 115 (568 bytes); sqrt(length_sq3f) 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

@@ -2407,6 +2407,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 251 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
 // ((inverse ? 8 : 0) << 8), which gives retail's and/shl pair instead of a single 0x800 mask.
@@ -2484,6 +2485,9 @@ dword __cdecl function_131fc0(real alpha);
 // default rectangles built first, source/destination selected after 256/256 (1711 bytes); with the macros
 // 256; the RGB output word through PS_COMBINEROUTPUTS 247. Retail reads inverse from its home each time
 // (EBX carries 0x144f0's fallback), ours caches it in EBX: BLOCKED-BY 0x144f0.
+// Round 133 (ret 0x34 already agrees): both alpha clamps in 0x2a2f0's shape 247 (four points, not
+// kept); defaults built unconditionally, source first, then selected 260 (1711 bytes); both 256;
+// clamps with reciprocal-first UV products 247, with the defaults too 256 (same code each).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2776,11 +2780,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 282 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
 // Round 139: the first difference (+0x194, the stage loop's constants 2/3 in EBP/EDI where retail
 // has EDI/EBP and 0 in EBX) follows from the 0x144f0 call: retail passes the fallback in EBX, so
-// its 0 lives there. 0x144f0 sits in a contributor file this round; no new form tried.
+// its 0 lives there. No new form tried (0x144f0 in src/unknown_01cf50.cpp is machine 3's per m3_owner.py, open to a later round).
 // The stage call is BLOCKED-BY 0x144f0: retail passes tag in EAX, stage in ECX and the fallback in EBX
 // (ret 0xc), and reads the first bitmap formal as a full dword (cmovne). Round 73: for loop 334;
 // stage-nonzero ternary 334; selected bitmap local 294 at 2001 bytes (strength-reduced sampler table);
@@ -2863,7 +2868,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // is in a contributor file.
 // Round 43: the alpha clamps already have retail's store-then-overwrite shape; renaming the inlined
 // 0x131fc0's scale local (diagnostic) leaves its param-home slots (scale 0x6c, pixel 0x70; retail the
-// reverse) unchanged, 282. Stage loop still BLOCKED-BY 0x144f0 (contributor file).
+// reverse) unchanged, 282. Stage loop still BLOCKED-BY 0x144f0 (machine 3's, src/unknown_01cf50.cpp).
+// Round 133: 0x131fc0's locals declared pixel-first 282 (0x131fc0 then differs, 2); scales normalized
+// in their parameters 343 (2013 bytes); with half extents 368 (2007); half extents alone 334 (2022);
+// coordinate arrays declared second-first 282; declared just before the bounds 282.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3161,6 +3169,9 @@ PRIVATE __forceinline long filter_quantized_byte(real value, bool direct)
     return (long)function_2b480(value);
 }
 
+/* blending and depth states of the filter passes; retail calls every one of these
+   state writes out of line, and each caller writes the depth bias itself */
+#pragma inline_depth(0)
 PRIVATE __forceinline void set_filter_blending(bool additive)
 {
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
@@ -3171,10 +3182,14 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
     function_0222d0(D3DRS_ZENABLE, 2);
     function_0222d0(D3DRS_ZWRITEENABLE, 0);
     function_0222d0(D3DRS_ZFUNC, 0x203);
-    function_0222d0(D3DRS_ZBIAS, 0);
 }
+#pragma inline_depth(255)
 
-// score 226 (was 949): length and prologue agree; mode zero and one still inline the
+// score 31 (was 227): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// selectors (retail loads small into CL first and computes input before the alpha selector), the
+// constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
+// first), and modes one to three's quantizer inputs in shift's home where retail uses clip's.
+// Earlier 226 (was 949): length and prologue agree; mode zero and one still inline the
 // blending helper's ZENABLE write (VC's inline budget: retail inlines only the first seven
 // state writes, ours one more cheap one), the small selector is loaded after the fraction move,
 // and the quantizer temporaries of modes one to three take shift's home where retail takes clip's.
@@ -3291,6 +3306,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // function_14f60(0, 3) as retail passes it (EDI still holds the bound 3, as in 0x25e50 and 0x26e50) 935
 // [27] (prologue and registers now agree); the four selector/split declarations in all 24 orders
 // 226..980 (alpha before input 227 [41], kept); floors through 0x2b460 again 227/228.
+// Round 133: the blending helper under a file-scope inline_depth(0) pair 250 (4812 bytes: ZBIAS
+// called too); with its ZBIAS write moved to the four callers 31 (4828, kept); the redundant pair
+// around DEPTHCLIPCONTROL removed 31 (kept). On that: the quantizer input by reference 31, a
+// function-scope input shared by all quantizers 31, both 31 (the slot stays shift's); fixed/
+// whole/fraction/alpha/input orders fwria 939, fiwra 965, fwira 976, fiawr 35, faiwr 950,
+// iafwr 43, aifwr 959, frwia 771, frwai 452, fawri 31; alpha selector at its use 947; both
+// selectors at their uses 975.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3371,9 +3393,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         function_0222d0(D3DRS_ZFUNC, 0x207);
 #pragma inline_depth(255)
         function_0222d0(D3DRS_ZBIAS, 0);
-#pragma inline_depth(0)
         function_0222d0(D3DRS_DEPTHCLIPCONTROL, 0x10);
-#pragma inline_depth(255)
         function_1cc30(12);
         function_1c710(g_51f0f0);
     }
@@ -3413,7 +3433,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         bool extra_texture = configuration == (byte const *)NONE;
         if (extra_texture)
         {
-            if (!skip_state) set_filter_blending(true);
+            if (!skip_state)
+            {
+                set_filter_blending(true);
+                function_0222d0(D3DRS_ZBIAS, 0);
+            }
             g_484f68.PSTextureModes = 0x21;
             g_484f68.PSAlphaInputs[0] = 0x19140000;
             g_484f68.PSAlphaOutputs[0] = 0x90;
@@ -3458,7 +3482,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         second.red = FILTER_PIN(*(real const *)(configuration + 0x5c));
         second.green = FILTER_PIN(*(real const *)(configuration + 0x60));
         second.blue = FILTER_PIN(*(real const *)(configuration + 0x64));
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSAlphaInputs[0] = 0x8200000;
         g_484f68.PSAlphaOutputs[0] = 0x40;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
@@ -3486,7 +3514,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     else if (mode == 2)
     {
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSTextureModes = 0x21;
         g_484f68.PSConstant0[4] = small ? 0x7f0000ff : 0;
         g_484f68.PSRGBInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
@@ -3526,7 +3558,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     else if (mode == 3)
     {
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSTextureModes = 0x8421;
         g_484f68.PSConstant0[4] = pack_color3f((color3f const *)(configuration + 4));
         g_484f68.PSConstant1[4] = pack_color3f((color3f const *)(configuration + 0x10));
@@ -3896,71 +3932,9 @@ void function_147af1(long first, long second, c_render_window *window);
 struct s_2f800_view;
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 
-// score 8 (was 34): two store orders differ (the tail and 0x13680's call now agree). The counter
-// g_4ba038 is stored after the kind byte, and the g_4ba010 clear sinks past the camera copy; both land where
-// retail puts them once g_4ba038 and g_4ba010 are address-taken (diagnostic only, 26), so
-// retail keeps them in an address-taken struct (0x4ba074 is the only immediate retail takes
-// in 0x4ba000-0x4ba07f) whose members are defined in other lanes' files. The tail pushes the
-// flag as a dword where retail passes it to 0x13680 in bl (BLOCKED-BY 0x13680).
-// Tried: flag clear before the first copy 34; counter increment one statement earlier 34;
-// kind stored after the sky index 37; flag clear as the first store 34; camera default as a
-// named source local 153; mode-word/auxiliary-word/final-byte frame field widths, subsets
-// 1-7 and unsigned mode bits, 34 each (auxiliary-word forms lose the caller 0x2b790);
-// geometry copied into the frame-record block 34; whole camera/projection storage operands
-// 34; counter increment first 153; frame declared at the top 34; one shared final call 34.
-// the stores to g_4ba038 and g_4ba010 land in other places than retail's (the
-// counter before the kind byte, the flag clear between the two block copies). Both stores are placed
-// by the compiler, not by the order of the statements: with the addresses of g_4ba038 and g_4ba010
-// taken anywhere in the program they land exactly where retail puts them (probed by taking them in
-// src/unknown_02c560.cpp, which takes this function to 26), so retail keeps them in an address-taken
-// struct whose definitions are in other lanes' files. The flag is loaded as a dword where retail loads
-// a byte, and the tail calls 0x13680 with the flag pushed where retail passes it in bl; both follow
-// 0x13680's convention, which retail has as one bool in bl and a plain ret (BLOCKED-BY 0x13680).
-// Tried: the flag passed from the frame's copy 34. Round 93: flag clear before the first copy 34;
-// counter increment one statement earlier 34; kind stored after the sky index 37; flag clear as the
-// first store 34; camera default as a named source local 153. Round 187: native mode-word/
-// auxiliary-word/final-byte subsets 1/2/3/4/5/6/7 and all unsigned-mode bits 34 each (auxiliary-word
-// forms lose a caller). Round 83: flag clear as `false` 34; counter as `+= 1` 34; kind stored before
-// the counter 34; flag clear after the view copy 34; `enabled != false` passed to 0x13680 40.
-// the stores to g_4ba038 and g_4ba010 land in other
-// places than retail's. Both stores are placed by the compiler, not by the
-// order of the statements: with the addresses of g_4ba038 and g_4ba010 taken
-// anywhere in the program they land exactly where retail puts them (probed
-// by taking them in src/unknown_02c560.cpp, which takes this function to 26),
-// so retail's program took those addresses somewhere this tree does not.
-// The flag is loaded as a dword where retail loads a byte, and the tail calls
-// 0x13680 with the flag pushed where retail passes it in bl; both follow
-// 0x13680's convention, which retail has as one bool in bl and a plain ret
-// (BLOCKED-BY 0x13680). The flag passed from the frame's copy 34.
-// Round 93: both store orders (the counter before the kind byte, the flag
-// clear between the two block copies) are retail's once g_4ba038 and
-// g_4ba010 are address-taken (diagnostic only, 26): retail keeps them in an
-// address-taken struct, whose definitions are in other lanes' files. Flag
-// clear before the first copy 34; counter increment one statement earlier
-// 34; kind stored after the sky index 37; flag clear as the first store 34;
-// camera default as a named source local 153.
-// Round 187: Native mode-word/auxiliary-word/final-byte subsets 1/2/3/4/5/6/7 and all unsigned-mode bits 34 each; auxiliary-word forms lose caller. Original declarations restored; shared-store alias and protected flag convention remain.
-// Round 18 (lane 11): counter increment first or after the sky index 34/34;
-// flag clear after the second block copy or before the kind store 34/34 (the
-// compiler places both stores the same way); the flag passed from the saved
-// frame record 96.
-// the stores to g_4ba038 (the counter lands after the kind byte) and g_4ba010
-// (the flag clear sinks past the camera copy) land in other places than retail's, and the tail
-// calls 0x13680 with the flag pushed (loaded as a dword) where retail passes it in bl (one bool in
-// bl, plain ret: BLOCKED-BY 0x13680). Both store orders are placed by the compiler, not by the
-// statements: with the addresses of g_4ba038 and g_4ba010 taken anywhere in the program they land
-// exactly where retail puts them (diagnostic only, 26), so retail keeps them in address-taken
-// storage whose definitions are in other files. Tried: flag clear before the first copy 34, as the
-// first store 34, after the camera copy 34; counter increment one statement earlier 34, as the
-// first store 34, after the sky index 34; kind stored after the sky index 37; camera default as a
-// named source local 153; the flag passed from the frame's copy 34; native mode-word/auxiliary-
-// word/final-byte parameter widths 34 (auxiliary-word forms lose caller 0x2b790); the whole camera
-// struct as the copy destination 34; the frame-records field as the first copy's destination 34.
-// Round 26 (lane 14, fast; g_4ba010 sits right after g_view_context_storage and both are defined
-// in src/unknown_02c560.cpp, so the address-taken block can't be declared here: BLOCKED-BY the
-// storage definitions there): the camera default moved down to the frame copy 113 (loses 0x2b790);
-// counter as `g_4ba038 = g_4ba038 + 1` 8; the first copy into frame_records with its sizeof 8; flag
-// clear after the three render calls 23; the view copy before the scalar stores 80 (loses 0x2b790).
+// MATCH (was 8): the frame counter and the flag live in storage whose address retail takes, so
+// their stores keep their place among the other render-global stores and block copies; they are
+// written through their own addresses here for that (the full check loses nothing).
 // @retail 0x2ba10
 void function_2ba10(s_2f970_view const *view, long cluster, long player,
     byte const *camera, bool enabled, long leaf, bool invalid, vector3f const *sky_color,
@@ -3975,11 +3949,11 @@ void function_2ba10(s_2f970_view const *view, long cluster, long player,
     g_4b9ee8 = invalid;
     g_4b9ed8 = object;
     g_4b9edc = object_index;
-    ++g_4ba038;
+    ++*(dword *)&g_4ba038; /* address-taken in retail: see above */
     g_4b9ee9 = kind;
     g_4b9eec = sky_index;
     memcpy(&g_4b9ef0, geometry, 0x120);
-    g_4ba010 = 0;
+    *(byte *)&g_4ba010 = 0; /* address-taken in retail: see above */
     memcpy(&g_4b9da0, view, 0x74);
     function_2fd90((s_2f800_view const *)&g_4b9da0, (box2f const *)sky_color, (byte *)&g_4b9e14);
     function_3d2c0();

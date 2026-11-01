@@ -359,6 +359,10 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 11), coordinator review 11-01: MiniMax R put the seat count minus one in a local declared
+// after the seat pointer again (8: the seat count in ESI and the short index in EBP as retail; left
+// are the guard's shape and the home of the loop's zero); a one-use local is kept only with a match,
+// so the loop is back to its earlier form
 // score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
 // back to its earlier form
 // score 8 (was 8): the seat loop's preamble still differs in the guard's shape (a sign test on the
@@ -387,6 +391,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // round's four trials in this file (the index initialised in the enclosing block, a
 // count local, a function-scope seat pointer and a plain recompile) gave 14, 14, 67
 // and a byte-identical body, so the body is unchanged
+// score 11 (was 11): the seat loop still keeps the seat count in EBP and the index in
+// ESI here while retail keeps the count in ESI and the index in EBP, so the loop's
+// preamble (the two pushes, the zero the guard compares against and the first store)
+// is laid out differently; the body after the preamble matches; this round's index
+// declared before the loop keeps the same split and scores 11 as well, and the
+// permuter was stopped by the harness's time limit three times without a result
 // score 11 (was 11): the seat loop still keeps the seat count in EBP and the index
 // in ESI here while retail keeps the count in ESI and the index in EBP, so the loop
 // preamble is laid out differently; this round's count-in-a-local trial compiles
@@ -981,6 +991,13 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 
 /* invites the clump members to the joint, the nearest first, when the
    object has more than one seat to take */
+// score 17 (was 17): retail still loads the element pool's data right after the table
+// pointer into EDX and keeps the element record in ECX, ours loads the data later into
+// ESI and the record into EAX; this round's declaration-order trials (the element
+// pointer before or after the actor) move the whole prologue instead, and the body
+// after the call matches
+// MiniMax R (11-01): no new form, no lower score; the record read directly in the call 31 and the
+// element access first 22/30 all move the record's register further from retail's ECX.
 // score 17 (was 17): the element pointer is still formed after the call's argument
 // pushes, so the element pool's data has to survive them and lands in ESI with the
 // record in EAX; retail forms it before the pushes, so the data stays in the
@@ -1441,6 +1458,21 @@ void function_1f86a0(long actor_index);
 // as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
 // `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
 // root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
+// Round 116 (lane 8, fast): the found entry's index read after the loop 134 (same code); the mask declared before
+// the element 240 (862 bytes); `const byte` mask 134; first entry fetched before the loop with the step at its bottom
+// 134; diagnostic `long` mask 248 (873 bytes: the mask leaves BL but the CSE'd flags byte takes it; the entry stays in
+// memory). The entry loses EBX to every byte candidate.
+// Round 51 (lane 10, fast; control 134): the decline decided in an if/else into a named bool 134; the decline
+// test negated with the join attempt first and the decline in the else 134; the decline arm ending in `continue`
+// 134; entry/element/specified renamed (slot_entry, joint, has_object: same-size slots sort by name) 134; the
+// joint index declared first 134 (all the same code). Retail's frame is mask byte F+3, entry home F+4, actor F+8,
+// iterator F+0xc; ours has entry F+0, actor F+4, iterator F+8 (same order) with the mask in BL, so the open
+// difference is the callee-saved choice (retail gives EBX to the entry), not slot order.
+// Round 20 (lane 17, fast): the element index read once into a local and reused for the joint index at
+// the break 244; a plain break with `if (entry != NULL) joint_index = entry->unknown4;` after the loop
+// 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
+// first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
+// as the subscript base 134 (same code, so the head's early header load is not evaluation order).
 // Round 39 (m3 lane 14, fast): the FORMS-slot-data-block form (the state read through `slot->unknownc` as a data
 // struct with offsets 0xc lower, its bool and the +0x24 short through it) 134 (same code), declared between the
 // actor and the unit 134; the iterator declared at the top 134; joint_index and entry declared at the top 134; the
@@ -1448,6 +1480,11 @@ void function_1f86a0(long actor_index);
 // element local) 233. In retail EDI keeps the actor through the loop
 // untouched and EBX takes the entry (spilled at F+4, briefly the first 0xbaf40 result); ours gives BL the mask and
 // uses EDI for that result, reloading the actor.
+// Round 20 (lane 17, fast): the element index read once into a local and reused for the joint index at
+// the break 244; a plain break with `if (entry != NULL) joint_index = entry->unknown4;` after the loop
+// 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
+// first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
+// as the subscript base 134 (same code, so the head's early header load is not evaluation order).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

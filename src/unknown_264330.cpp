@@ -534,6 +534,14 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // inline alone does not move the convention); sample/update declared at function scope 420; the maximum test
 // as `(short)maximum < field` 421; the 0x25d610 test nested under `sample && update` 420; the sampler result
 // clearing the flag with the 0x264b50 call in its else arm 458 (1656 bytes).
+// Round 45 (lane 13, fast with 0x1e34e0): iterator walk 443 (1616 bytes, frame 0x9c; index copy in EBX,
+// actor copy in EDI, retail the reverse); iterator.index at each use 443 (same code); with maximum a plain
+// word 442; with sample/update at function scope 442; with sampled_one declared first 442. The actor's
+// stack passing may come from the build's stand-in caller (a second call site passing a buffered argument).
+// Round 215: terminal maximum publication through native reset/count arms 420;
+// twice-used elapsed values on that graph 420; each with plain word maximum 472/472;
+// terminal reset result bool/long 440/444, each with plain word maximum 448/448.
+// Exact-only reset-result forms and every executable change restored; frame and actor homes remain.
 // Round 66 (lane 9, fast): retail's 0x2683f0, 0x1e2150 and 0x25ac00 take the actor index in EBX, where retail
 // keeps it for the whole function; ours reloads EBX from the stack argument before each. Case 1's 0x25c820 call
 // and the release one made a single call (a `release_only` label) 431 (frame 0xa0, 1616 bytes, the three flags go
@@ -541,6 +549,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `iterator.index` at every use 443 (identical to the listed 443); the 0x25d510 step made an extern function and
 // inlined across files 443 (identical; 0x25d510/0x25d580/0x25dac0/0x25b440 still match); the single call with
 // 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
+// Round 229: timer/view-first case orders 30421/34021/34201/34210/30241/32401/32104/34102
+// give 437/434/431/461/441/431/433/452. Fast frame 0xa0 recovered, actor input stays stacked;
+// all original cases, qualifiers, call boundaries and executable body restored.
+// Round 260: tail completion bool/byte/short/long at finalization/entry 437 each;
+// exact-only flags restored; frame 0xa4 and stacked actor input remain.
+// Round 263: Independent native-long sample/update/sampled-one subsets 433/424/430/425/452/425/430; all long with ordinary maximum 445.
+// Original while traversal, Boolean flags, maximum qualifier, workspaces and complete body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

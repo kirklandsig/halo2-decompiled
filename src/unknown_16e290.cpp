@@ -390,9 +390,6 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // with live/captured/padded/aligned count ownership, 135/135/135/135; those four with
 // propagation-local byte extent 236/236/236/233 (810 bytes). All regress; original input,
 // count/byte lifetimes and complete body restored. Padded-count and scalar homes remain.
-// Round 43: base before bytes 136; entry convergence result, count name and split byte calculation
-// 111 each; byte expression at uses 240; iterator/cluster-output/both entry lifetimes 111 each.
-// Original body restored.
 // Round 90 (fast): bytes as ((count + 31) >> 5) << 2 111 (folded back to the same code); as
 // ((count + 31) >> 5) * 4 238 (retail's `lea [words*4]` head, aligned 82 for 86, but later code
 // shifts), with the word count as bytes / 4 238 (821 bytes); every local renamed (three name sets) 111
@@ -1571,9 +1568,9 @@ struct s_camera_clip_reference_16ebf0
 	byte field_14[4];
 };
 
-// score 120 (was 120): frame 0x98 and state/forward/up/point homes now agree.
-// Left: forward/position saved registers, cross-product carriers and the stacked clipping flag.
-// score 120 (was 120): frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
+// score 87 (was 87): frame 0x98, vector homes and forward/position EBX/EBP now agree;
+// Left: cross-product carriers, clipping-result production and interpolation scheduling.
+// Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and
 // position pointers take EBP/EBX for retail's EBX/EBP, the cross product's forward.j/up.k xmm0/xmm1
 // colouring, and the clipping call: retail passes the flag in DL and the end point in ESI, ours pushes
 // the flag and passes the point in EDX. That is 0x171d00's own convention (BLOCKED-BY 0x171d00, a held
@@ -1709,6 +1706,17 @@ struct s_camera_clip_reference_16ebf0
 // 203, with forward/up pointer locals 203/206; a typed observer view (position/forward/up/flags
 // fields) 120 (identical code) in every pointer form; position through the pointer at each subset
 // of its four uses (copy, call, interpolation, store-back): only the interpolation decides, 119/220.
+// N271: signed-byte reference with byte/bool/signed-byte/long truth 112/87/112/115;
+// short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
+// inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool
+// truth, plain 87 at 953 bytes. Cross carriers, clipping producers and interpolation still differ.
+// Round N274: On signed-reference/bool homes, false-first result 105; native high-bit test 87;
+// false-first with high-bit 105; table fields at use 87; fields with false-first/high-bit/both
+// 105/87/105; all with entry constant result 243. Original clipping-result and cross graph restored.
+// Round 278: Existing real-vector interpolation scale/add-scaled or scale/scale/add, direct cross with
+// native/CRT point publication 88 each; staged cross with both pipelines and both publications 91 each.
+// Exact 953-byte lengths but no gain; original interpolation, helper graph, includes and complete body
+// restored. Native frame/pointer homes agree; first cross carriers and clipping-result production remain.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
@@ -1763,18 +1771,18 @@ void function_16ebf0(long user_index)
 	{
 		s_location location;
 		function_11bed0(&location, &point);
-		byte narrow;
+		bool narrow;
 		if (location.cluster_index != NONE)
 		{
 			s_16e210_match_view *geometry = (s_16e210_match_view *)g_4e0348;
-			byte reference = geometry->clusters[location.cluster_index].cluster_reference;
-			if (reference != 0xff)
+			signed char reference = geometry->clusters[location.cluster_index].cluster_reference;
+			if (reference != NONE)
 			{
 				s_camera_clip_reference_16ebf0 *entry =
 					&((s_camera_clip_reference_16ebf0 *)geometry->references)[reference & 0x7f];
 				if (entry->index != NONE)
 				{
-					narrow = !(reference & 0x80) ||
+					narrow = reference >= 0 ||
 						entry->plane.j * point.y + entry->plane.k * point.z + entry->plane.i * point.x - entry->plane.d < 0.0f;
 				}
 				else narrow = false;

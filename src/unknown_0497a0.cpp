@@ -167,6 +167,24 @@
 // Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
 // 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
 // shape/basis homes and thirteen excess bytes remain.
+// Round 286: Native library maximum boundaries in first/second/final producer
+// masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
+// component-maximum production 771. Original maxima, includes and body restored.
+// Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
+// then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
+// original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
+// Round 211: existing double-factor scaler for complete primary/depth/displacement
+// families and combinations 632/694/699/684/702/682/694; all with both wave scalers 768.
+// The primary/depth pair reaches 2622 bytes at 684, frame 0x64; no frame 0x60 recovery.
+// Original producers, shape/basis homes and sixth-product conversion restored.
+// Round 259: Entry uninitialized scaled-product/maxima/wave-scalar storage, seven subsets, then all plus the existing truncation carrier
+// 581/581/581/581/581/581/581/581. Original body and producer sites restored.
+// Round 444: Double inverse/paired camera shifts/complete projection factors, subsets
+// 1/2/4/3/5/6/7 then all with both wave factors: 774/665/716/815/820/750/877/878. Original precision, helper graph
+// and sixth-component integer conversion restored; frame and shape/basis homes remain.
+// Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
+// then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
+// original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -495,6 +513,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// score 265 (was 276): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
+// case 0's first.y as retail, one slot lower); the first point and the half width take XMM5/XMM6/XMM4 and XMM3
+// where retail has XMM6/XMM5/XMM3 and XMM4; local slots are permuted (vertex cursor and state width swapped,
+// pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // score 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
@@ -639,6 +663,33 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
 // native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
 // only forms all restored; frame and geometry/color homes remain.
+// Round 66 (m3 lane 16, fast, kept form confirmed plain; 0x42c50/0x42b20 matched each time): the edge points named
+// positive/negative, declared second-first, both 276 (same code); per-component pairs in cases 0, 1/2 and 4
+// first-first 385, second-first 464 (2584 bytes); pairs in cases 1/2 and 4 only first-first 385, second-first 274
+// (frame 0xa8, second in XMM0-2 as retail); on that case 0 second-first 464, per-component 274, y before x 274,
+// `half_width + z` 274; case 1/2 y pair before x second-first 270 (first-first 272 at 2596, frame 0xa0), with dy
+// scaled first 270, x before y with dy scaled first 274; case 0's first point z before x or y 265 (kept: case 0
+// then loads z twice and adds the half width as retail), first.z last 270, second block first 465; on 265 case 4
+// pairs y,x,z 269, z,y,x 271, x,z,y 356, z,x,y 264; case 1/2 dx/dy scaled by the half width in place 376 (2604);
+// case 1/2 z pair first or between 564 (2588), first-first z pair last 266. Case 0's first set z, y, x and z, x, y
+// give identical code (z, x, y kept). The difflib-aligned count rose 178 -> 200 with the kept form (case 4 and the
+// vertex stores worse; cases 0-2 and the second point's XMM0-2 better), so the next round should start there.
+// Round 280: complete per-channel interpolation results in initial/next/transition
+// loops, all seven subsets, then all with the complete width interpolation result,
+// 276 each. Original entire body and helpers restored; frame 0xa0, native homes
+// and first-edge Y spill remain.
+// Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
+// flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
+// slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
+// and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
+// code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// Round 68 (m3 lane 16, fast; 0x42c50/0x42b20 MATCH each time): case 0 still gives the first point XMM5/XMM6/
+// XMM4 and the half width XMM3 (retail XMM6/XMM5/XMM3 and XMM4; retail's first x/y are movaps copies of the
+// second's). The edge points and normal declared before the half width 265; the second-vertex pointer before
+// the half width 265; normal declared before the edge points 265; the edge points and the half width declared
+// at the loop top 265 (identical code each); the second vertex's u/v stored through vertex[1] 278 (aligned
+// 200 -> 212).
 // Round 36 (lane 15, fast; 0x43740 62 and 0x42b20 matched in each): case 4's view/direction/side, the
 // tint, or the next state's colour declared at the loop top 276 each (same code: slots follow lifetimes,
 // not scopes); case 0's normal.i before normal.j in the previous arm 271, in both arms 426 (2592 bytes);
@@ -647,6 +698,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // on that, half_width computed just before the switch 276, `second, first` declared 269 (same code), case
 // 4's edge points y first 275, case 1/2's 373 (2604 bytes). Retail's tail colours second x/y/z XMM0-2,
 // first.z XMM3, half_width XMM4, first.y XMM5 (spilled at +0xb4 in case 0), first.x XMM6.
+// Round 280: complete per-channel interpolation results in initial/next/transition
+// loops, all seven subsets, then all with the complete width interpolation result,
+// 276 each. Original entire body and helpers restored; frame 0xa0, native homes
+// and first-edge Y spill remain.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
@@ -746,7 +801,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         switch (definition->mode)
         {
         case 0:
-            first.x = point->position.x; first.y = point->position.y; first.z = point->position.z + half_width;
+            first.z = point->position.z + half_width; first.x = point->position.x; first.y = point->position.y;
             second.x = point->position.x; second.y = point->position.y; second.z = point->position.z - half_width;
             if (input->normal)
             {
@@ -791,8 +846,9 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     real inverse = 1.0f / length;
                     dx *= inverse; dy *= inverse;
                 }
-                first.x = point->position.x + dy * half_width; first.y = point->position.y + dx * half_width; first.z = point->position.z;
-                second.x = point->position.x - dy * half_width; second.y = point->position.y - dx * half_width; second.z = point->position.z;
+                second.y = point->position.y - dx * half_width; first.y = point->position.y + dx * half_width;
+                second.x = point->position.x - dy * half_width; first.x = point->position.x + dy * half_width;
+                second.z = point->position.z; first.z = point->position.z;
                 if (input->normal) normal = *g_4687b0;
             }
             break;
@@ -821,8 +877,9 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     real inverse = 1.0f / length;
                     side.i *= inverse; side.j *= inverse; side.k *= inverse;
                 }
-                first.x = point->position.x + side.i * half_width; first.y = point->position.y + side.j * half_width; first.z = point->position.z + side.k * half_width;
-                second.x = point->position.x - side.i * half_width; second.y = point->position.y - side.j * half_width; second.z = point->position.z - side.k * half_width;
+                second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
+                second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
+                second.z = point->position.z - side.k * half_width; first.z = point->position.z + side.k * half_width;
                 if (input->normal)
                 {
                     cross3f(&direction, &side, &normal);
@@ -977,6 +1034,12 @@ void __stdcall function_43720(s_43740_input *input)
 // with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
 // 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
 // split tag below both parameters in retail's colouring is open.
+// Round 66 (m3 lane 16, fast; 0x42b20 checked each time): the tag assigned inside the test 62 (same
+// code); the count named first with the record filled in retail's store order (shader, normal, slot,
+// tag, position, then source, definition, count, bitmap) 64 (0x42b20 4); a long slot index with the
+// named count for the field and the call 64 (0x42b20 4); the call's count recomputed 62 (again);
+// the position computed before the record is declared 62. No matched retail function has this
+// head's one-value EAX test / EBP copy.
 // Round 31 (m3 lane 2, fast; 0x42b20 checked each time): on the split form (tag field tested, the
 // index call on the field, a tag local for the group lookup and the record: 40, retail's head through
 // the index call, a mix of field and local reads kept only with a match): the normal flag through the
@@ -993,6 +1056,22 @@ void __stdcall function_43720(s_43740_input *input)
 // the local for the call and lookup and the record from the field 62 (same code); the call argument from the
 // field and the rest from the local 63; test, call and lookup on the field with a record-only local 50 (212
 // bytes: frame 0x24, the tag spilled; positional).
+// Round 68 (m3 lane 16, fast; 0x42b20 and 0x43720 checked each time): `long bitmap` declared ahead of the
+// tag 62; the texture test as `!= NULL` 62 (same code each); test and call on the field with the tag local
+// after the call 63; round 26's split re-measured (tag local read before the call, test and call on the
+// field, the local for the lookup and the record) 40 (retail's head through the call; left: the tag kept for
+// the record, so the lookup copies EBP into ECX, the slot index in EAX against retail's EBP, the normal flag
+// at +0x68 and the count/position schedule; a mix of field and local reads, kept only with a match); that
+// with the record's tag read through the stored definition pointer 68 (the definition takes ESI, the source
+// goes to the stack: ret 8, 0x42b20 60).
+// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
+// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
+// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
+// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
+// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
+// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
+// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
+// split tag below both parameters in retail's colouring is open.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

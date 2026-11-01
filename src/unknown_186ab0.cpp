@@ -150,6 +150,11 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
+// operand order, cold clear and output/angle scheduling differ.
+// Earlier: frame 0x54 and selection inputs agree; comparison order,
+// MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
+// and a one-caller forceinline wrapper of 0x14d040; the retail callees stay out of line at inline_depth(0)).
 // score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
 // byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
 // MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
@@ -266,6 +271,21 @@ void player_action_initialize(s_player_action *arg_0);
 // a named count-array pointer in place of the unit pointer 309; the first count test as `(short)... == 0` 134
 // (still `mov al; test al, al` against retail's movsx/test ax); the 0x60 and 0x4630200 masks tested apart
 // alone 174 (1493 bytes); the cycle index as a long 183.
+// Round 50 (m3 lane 11, fast, all on round 27's score-1 form, reproduced at 1): 1-8 unused locals at the top 1
+// each; permuter 600 s, 21 tries, nothing (its reduced image scores the form 289); one unit-index local for the
+// whole selection block 366; the first unit lookup through a header pointer 1; the cycle result through a named
+// local 1; the cycle call's unit index masked at the call 1; the NONE test ahead of the request bit 348.
+// Round 42 (lane 14, fast): lane 9's round-53 score-1 source rebuilt on today's file still scores 1 (only
+// the inlined 0xcbec0 count read [edx + edi] against [edi + edx]); with `#pragma inline_depth(8)` after
+// the player_action_initialize wrapper (as 0x84750/0x825e0/0x874c0 use) in place of 255, still 1. On it,
+// latch spellings without the toggle flag (the release arm stays inline, retail's is after the return):
+// `if (pressed && !held) { held = true; toggle; } else if (!pressed) held = false;` 146 (the masked
+// byte is kept and stored as the release value); the same with the toggle before the held store 145;
+// as two ifs (the release test after the toggle block) 147; with a named pressed bool 140; the nested
+// latch with the release store only when held 136. BLOCKED-BY 0xcbec0 (a contributor's function inlined
+// here), and the toggle flag set inside the test needs a byte match to be kept.
+// Round 278: standard signed-counter lower/upper bounds with built-in or native
+// long predicates, eight non-original combinations: 263/285/259/281/301/277/299/299. Original counter restored.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

@@ -55,6 +55,8 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation
+// classification spill and the expanded string copy remain.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
@@ -67,7 +69,7 @@ extern long g_55c154;
 // 0x216a50 call that follows; our link inlines the copy into a wcsncpy call plus a terminator store, and 0x13fac0
 // lives in another lane's file. The two-arm rewrite again 174 (595 bytes, `this` in EDI spilled to [ebp-4], EBX
 // takes the 1<<index shift, `variant` moves to [ebp-0x154], the frame flips to `mov ebp,esp` with `sub esp,0x254`).
-// score 61 (was 61): biased 0x250 frame agrees; creation classification spill
+// Earlier at 61 (from 61): biased 0x250 frame agrees; creation classification spill
 // and expanded string copy remain. File-type result 61; word classification 69;
 // direct source argument 61; unsigned saved handle 61; result plus word 69.
 // creation classification spill and copy inline boundary;
@@ -133,6 +135,18 @@ extern long g_55c154;
 // Two load arms with the named count: 179 (`this` in ESI and spilled, EBX holds a zero constant, `saved`
 // and the &g_54e4a0 address in turn); with the count named for both calls 179; with the variant global as
 // its own extern symbol 179 (same allocation).
+// Round 149 (lane 4, fast; all on two load arms with the named destination, 179): a fresh local for the second
+// half's selection 179; the named destination shared by both arms' 0x238c69 calls 179; the game type read once
+// into a local for the three calls 168 (573 bytes; `this` moves to EDI unspilled, frame still unbiased); the
+// controller index read once into a local 176 (576); the default arm with its own failure call 179. In every
+// two-arm form the callee-saved registers rotate (`this` ESI and spilled, entry EDI, saved EBX, EBX also caching
+// zero in the first half and &g_54e4a0 in the second, where retail pushes immediates): retail's EBX `this`,
+// ESI entry, EDI saved only appear with the one-load body.
+// Round 69 (m3 lane 9, fast): retail's two load arms on the plain body 174 (595 bytes: EBX takes the constant
+// 1 in the first half and `saved` in the second, `this` moves to EDI and spills, unbiased frame); on it: the
+// first half's selection in its own local with a fresh `selected` in the second half 174, entry->variant read
+// directly in the second half 174, the name buffer declared just before the second half 174, `saved`
+// declared at the top 174 (all the same code).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

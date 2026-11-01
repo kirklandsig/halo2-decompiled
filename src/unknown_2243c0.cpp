@@ -320,6 +320,25 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
+// Lane 9 round 67 (fast, which reproduces 117): the stage and pass elements bound to `void const *const &` locals
+// with all four cache zero stores after the material lookup 118: retail's unfused ordinal load, its dead pass-element
+// `lea` and its zero grouping all appear, but arg_3 stays in EBP (retail ESI, arg_4 EBP), block 2's address is
+// loaded early and the material index is not copied through ESI; with the flags read just before 0x173ba0 the check
+// hung in Wine (unmeasured).
+// Round 48 (m3 lane 11, fast; control 117): the fallback through the existing TAG_GET with the original group test
+// 152 (the same code as `local_tag & 0xffff`: in-place mask as retail, but the tag table moves into ECX ahead of the
+// frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
+// 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
+// the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
+// Round 230: In-place fallback normalization with original/root/directory/nested/before-cache
+// lifetimes 152/152/152/152/152; original handle with root/directory/nested scopes 117/117/117.
+// Lane 18 round 16 (fast): the fallback through the existing TAG_GET 152 (table leaves EDI); the four zero stores
+// grouped after the third lookup 120; that with the TAG_GET fallback 149; the group test as a two-case switch on the
+// instance's group with the fallback as default 165; the fallback read through the same instance pointer 168.
+// Env only (first 82 instructions, control 53): the switch with a `& 0xffff` fallback 75, through TAG_GROUP/TAG_GET
+// 75, a const group local with a `& 0xffff` fallback 75.
+// Round 230: In-place fallback normalization with original/root/directory/nested/before-cache
+// lifetimes 152/152/152/152/152; original handle with root/directory/nested scopes 117/117/117.
 // Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
 // the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
 // element's field through a named `long const *` 117 (same code); the pass block's address named right
@@ -334,6 +353,18 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // cache zeros grouped 149 (head and stage in ESI as retail, but the tag table goes to ECX above the frame
 // where retail keeps it in EDI); the grouped zeros with the second ordinal read through a named element
 // pointer 120 (still fused); on the 149 form the sums written parameter first 149, the root handle named 149.
+// Round 277: standard find with original/final zeros and word/masked fallback 132/155/136/153;
+// standard equality-predicate search on the same four graphs 199/211/203/210. Original body restored.
+// Round 193 (lane 3, fast; control 117): the flags read at each use (in the call's mask and the cache
+// update after it) 166 (re-read after the call; arg_0 leaves EAX); TAG_GROUP test, TAG_GET fallback and
+// the four cache zeros grouped 163; the late flags local through the stored definition (local_0.field_0)
+// 149, declared first and assigned late 149, as long 149: with the read late our allocator gives arg_0
+// EBP (arg_4 takes EBX) and LTCG then passes it on the stack, where retail keeps it in EBX from EAX.
+// Retail's group read (add then load), unfused stage element (lea then movzx) and dead pass-element lea
+// look like tag/block accessors inlined at link time; no out-of-line accessor exists here to call.
+// Round 495: Native standard predicate search with signed/unsigned result, cache-zero
+// boundary and fallback-mask combinations 199/199/203/203/211/211/210/210. Original body
+// restored; fallback normalization and stage/pass homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

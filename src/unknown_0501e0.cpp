@@ -201,6 +201,37 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 471: Uniform weighted-point second/first product and sum producers, seven
 // nonempty combinations 222/222/224/221/222/222/224; complete producers with earlier
 // blend-scale storage 224. Original expression producers, helper and full body restored.
+// Round 35 (m3 lane 2, fast): both camera offsets through the existing vector3d_from_points3d 221 (1147 bytes),
+// with the orthographic segment through it too 224 (1148 bytes); the segment alone through it 221 (1145 bytes);
+// both offsets through it with the depth limits written in the condition 233 (1153 bytes); the first offset alone
+// through it 222 (1146 bytes). Retail computes each depth limit lazily after the two `k < 0` tests (`mulss` by the
+// 4.0 in memory); ours hoists both limits and the 4.0 into registers ahead of the tests.
+// Round 111 (lane 7, fast; a one-file LTCG harness with src/unknown_01cf50.cpp and src/unknown_030290.cpp
+// reproduces the build, 221 at 1145 bytes): retail scales with the scale as destination (`movaps xmm0,xmm6;
+// mulss xmm0,xmm1`, the unscaled copies made before the test) where ours scales in place. A camera-pointer
+// helper with `i *= camera->scale` and the component loop 224 (1148 bytes), with an explicit three-row body 306;
+// the scaled locals set in an if/else 305 (1078); a caller `real scale = g_4b9e14.scale;` declared first 253
+// (1136 bytes), declared at the calls 252; a scaled vector copy through vector3f_scale in place 283 (1160), from
+// the input 309; explicit rows with (real) product casts 306 (1081), grouped 301; locals declared k-first
+// 258, scaled k-first 245; the per-component ternary scale 256 (1136, three tests).
+// Round 131 (m3 lane 6, fast): each view transformed right after its own offset loop 309 (1079 bytes);
+// with each depth limit right after its view 295 (1094 bytes); the view vectors declared before the
+// offsets 221 (same code); the blend divisor as `local_4 + local_5` 221 (same code); the depth limits
+// grouped `k * (k * 4.f)` 226 (1148 bytes).
+// Round 477: Native input-vector scale induction long/dword/short/word with cursor 312/312/355/355; indexed rows 309/309/358/358.
+// Original scalar snapshots, scale producers, separate offset loops, output cursor and entire body restored; frame and coefficient/input/result homes remain.
+// Round 483: coherent radius from output/producer, branch/common publication
+// and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
+// All regress; initial stores, alias-sensitive reads, original helper/body restored.
+// Round 131 (m3 lane 6, fast): each view transformed right after its own offset loop 309 (1079 bytes);
+// with each depth limit right after its view 295 (1094 bytes); the view vectors declared before the
+// offsets 221 (same code); the blend divisor as `local_4 + local_5` 221 (same code); the depth limits
+// grouped `k * (k * 4.f)` 226 (1148 bytes).
+// Round 47 (m3 lane 14, fast): retail's extra frame word is not a view temporary: retail keeps all three second
+// offsets in [esp+8]/[esp+0xc]/[esp+0x10] from the start (the orthographic segment reuses those same slots) and
+// spills nothing in the second view, ours keeps the second offset's i in xmm7 and spills a second-view partial
+// sum at [esp+8]. Segment vector declared at function scope after the offsets 221, before them 221, after the
+// views 221, at the top of the projection block 221; view vectors declared with the offsets 221 (same code).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

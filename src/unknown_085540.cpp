@@ -1030,7 +1030,10 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// score 72 (was 72): earlier: the case-0 copy of the header value, block- and function-scoped,
+// header/sequence homes, the size register, forwarded read position and prefix stores differ.
+// frame 0x14454 agrees; header/sequence homes, short-size register and cursor reload remain.
+// Earlier: the case-0 copy of the header value, block- and function-scoped,
 // scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
 // ring cursor stays in esi across the first read and the used count is updated through a register,
 // so the read's offset is still forwarded in edx instead of reloaded and the header size still
@@ -1125,6 +1128,20 @@ bool function_68670(byte *source, long size, void *block);
 // address forced to escape restores retail's reloads and late header load (retail behaves as if the
 // read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
 // stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 45 (lane 11, fast): retail's frame is the 72 form's plus a case-0 copy (ours pads 4 bytes below
+// the header; the compile-only listing shows no other local), and retail's header is address-exposed:
+// its size loads only after the start/used stores and the first read reloads the ring fields. Grouping
+// the header and the case-0 message in one struct (diagnostic only, a grouping form) gives both: 39 at
+// retail's 553 bytes, leaving the header-size register (SI, retail DX, so retail reloads the start before
+// the payload read and interleaves case 1's stores) and case 0's copy store, which retail schedules after
+// the channel load. On that diagnostic: the size declared before its test 122; a short size 39; the
+// header size at each use 125; case 0 written out under the channel test 36 (helper body by hand, the
+// copy store then lands after the branch). Real forms: the view-address line after the header and
+// payload declarations 72 (same frame); `standard` (self-aligned entry) without the view-address line 168
+// (519 bytes, the view is then held in a register), with the case-0 copy 154, with the grouping 154; a
+// ring read member (read_wrapped, start advance, used update) inline in this file's ring declaration
+// 72 (identical), with the case-0 copy 137; the same member out of line in the ring file 243 (not
+// inlined, 466 bytes). What exposes the header in retail without sending it is the open question.
 // Round 34 (lane 15): an inline `view_buffer_read(c_simulation_view *view, long count, void *destination)`
 // (read_wrapped, then start and used updated; it derives the ring from the view) for both reads, case 0 sending a
 // `long value` copy of header.value and no `view_reference` line: 24 at 553 bytes (aligned 11). The header becomes
@@ -1175,12 +1192,26 @@ bool function_68670(byte *source, long size, void *block);
 // (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
 // live from the test into the cases (reloaded after the payload read); ours coalesces it with the
 // long size in ESI.
+// Round 49 (lane 11, fast): the ring read helper 0x1a19a0 writing through a named byte destination pointer
+// (still matched) changes its whole-program summary: with case 0 sending a block-local copy, the first read
+// then reloads the ring start as retail does (132, 562 bytes), but the header size still loads before the
+// start/used stores and used is updated through a register (retail's header is treated as aliased); on the
+// 72 form that helper form 72 (identical); with the header declared in the loop 118 (553 bytes); with the long
+// payload count declared before its test 106 (553 bytes, start still forwarded through EAX); those two are the
+// listed scores of the same forms without it, so the helper form is inert there; with that count and the case-0
+// copy 123. All restored.
 // Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
 // header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
 // 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not
 // kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
 // difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
 // the copy count from header.size too 79.
+// Round 285: Existing shared prefix initializer with sequence-copy, short-copy-guard and loop-payload
+// subsets: 120/156/119/154/135/142/139/146. Header/sequence homes, DX size and prefix-store order remain;
+// original memset, payload scope, helper calls and body restored.
+// Round 287: Case priorities 021/102/120/201 with function/loop header homes:
+// 72/72/72/72/118/118/118/118. Header/sequence homes, DX size and reader knowledge remain;
+// original case priority, header lifetime and complete body restored.
 // Round 31 (m3 lane 2, fast): case 2 as the switch's default (no __assume) 144; the case-0 copy
 // with the payload count declared before its test 129; the payload read using header.size at each
 // use 116 (554 bytes); the count decrement as the for loop's step 171 (483 bytes); payload declared
@@ -1190,6 +1221,9 @@ bool function_68670(byte *source, long size, void *block);
 // homes and in-memory ring updates). Left there: the size in SI where retail has DX, because ours
 // forwards the stored ring start (EDX) into the second read where retail reloads it, and the case-0
 // copy scheduling and 0x68670 argument order that follow from it.
+// Round 490: payload memmove with sequence-copy/header-lifetime subsets 104/132/128/128;
+// native memcpy with the header size at every case-1 guard/copy/send consumer, same subsets,
+// 95/119/131/131. Original copies, size consumers, header lifetime and complete body restored.
 // Round 41 (lane 13, --fast): the header declared in the loop 118 (553 bytes: its size takes DX and case 1's interleaved
 // stores are retail's, but view/size swap ESI/EDI, `used` is updated through a register and the start is forwarded
 // through EAX), at any point of the loop 118, with the payload in the loop too 118; in the loop with the header's `used`
@@ -1197,6 +1231,22 @@ bool function_68670(byte *source, long size, void *block);
 // and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
 // first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
 // header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
+// J228: reader order count/destination/offset, or destination/count/offset, coordinated at both
+// declarations, definition and calls: original/header-loop/separate-copy/both 71/118/138/138
+// each. Matched reader and three controls survive; the one-point gain is rejected. Original
+// reader contract and target body restored; header exposure and DX lifetime remain.
+// Round 328: Separate sequence output with complete case orders 021d/102d/120d/201d/210d/
+// d012/d201/1d02, all 137 at 561/553 bytes. Exact-only copy forms restored; original header,
+// dispatch, ring observations and body retained. Header/sequence homes and size register remain.
+// Round 282: Received-header aggregate/memset initialization at function/loop scope,
+// direct sequence 171/159/170/161; separate sequence 191/186/176/167.
+// Initialization does not recover the header home or DX size; original executable body restored.
+// Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
+// header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
+// 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not
+// kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
+// difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
+// the copy count from header.size too 79.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

@@ -103,6 +103,40 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax R (11-01, fourth round): no new form, no lower score. The x store still does not fold
+// the vertex address into the store. This round: the x store through the array element while y
+// and z go through the pointer scores 112; three separate stores through the pointer score 106;
+// the x store through the pointer with y and z through the array score 136; the helper followed
+// by a duplicate array x store scores 125. Storing all three components through the array does
+// not compile (vertex undeclared) and writing them through the point3f union's array members
+// does not compile either (C2679).
+// MiniMax R (11-01, third round): no new form, no lower score. The entry still loads the index
+// before the radius constant and the loop still materialises the vertex address before the x
+// store. This round: an x store with an address expression of its own (the array element, a
+// local index, the array mixed with the pointer) changes the frame and scores 119, 118, 118 and
+// 119; the helper called with a fresh array address scores 132; the three components written
+// through the union's array members score 106; the vertex taken as an __m128 pointer does not
+// compile (C2679); moving the value assignment to the top of the body leaves the code unchanged
+// (6) and to the end changes the store order (120).
+// MiniMax R (11-01, second round): no new form, no lower score. The entry still loads the index
+// before the radius constant and the loop still materialises the vertex address before the x
+// store. This round: the six orders of the four member stores (vertex_count, kind, surface_index
+// and value) score 6, 33, 35, 33, 22 and 23, and the five ways of forming the vertex pointer
+// (pointer arithmetic, the m128 accessor, a point3f pointer, the w store written through the
+// pointer and the count read into a local) score 6, 6, 6, 58 and 58; writing the three
+// components straight onto the point3f union does not compile (C2679).
+// MiniMax R (11-01): no new form, no lower score. The entry still loads the index before the
+// radius constant and the loop still materialises the vertex address before the x store. This
+// round: an x store with an address expression of its own folds the base, but the y and z values
+// held in locals change the loop's loads and the frame (65); a second x store beside the helper
+// changes the frame as well (119/125); the helper called with the array address still
+// materialises the address (25/38) and moves the w store to a folded [eax+ecx+0x2c]; the member
+// store at the end of the body and the surface read through the member leave the code unchanged
+// (6).
+// MiniMax R (11-01): no new form, no lower score. The entry still loads the index before the
+// radius constant and the loop still materialises the vertex address before the x store; the x
+// store through the array, the helper called with the array, the point3f pointer, the separate
+// component stores, the member's surface pointer and the member in the loop test score 6 to 122.
 // This round (score 6, was 6): the entry block still loads the index before
 // the radius constant, and the loop still materialises the vertex address
 // before the x store; a fresh address expression for the point helper, the w
@@ -296,15 +330,24 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 269: Fraction numerator/reciprocal/both/reversed producer order, mutable and const,
 // 192 each in eight forms. Frame 0x84 and retained-origin/edge-I homes remain. Original
 // fraction expression, all geometry helpers and complete body restored.
+// Round 23 (lane 18, fast; re-measured on the 192 base, earlier numbers were on 247): found declared
+// first 192 (same code); plane d cleared before normalizing 200; fraction as one conditional 259; the
+// clamp as an if/else-if on a copy 256; the hit block's fraction stored after the normal and d 192
+// (same code: retail's fraction-first store order is scheduling).
 // Round 68 (lane 12): start copy first with the direction from the copy 230 (retail's single start loads,
 // exact LCS 132 against 133, but origin is still re-read from the shape, so no edge spills); copy first
 // with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
 // writes with `found = true` last 239 (1045 bytes); a short count local for the call 297. Unused-local
 // probes +1/+2/+3/+4/+8/+12 all 192 (diagnostic: no symbol-numbering effect here).
+// Round 114 (m3 lane 7, fast): `point3f ray_start = ray->start; point3f ray_end = ray->end;` aggregate copies with
+// the direction from them 286 (1023 bytes), with the copies ahead of origin 286; origin as an aggregate copy of the
+// first vertex 282 (frame 0x94); producer orders ODSAB 193 and OABDS 193.
 // Round 40 (m3 lane 15, fast = plain): retail loads the ray's start and end once each before any store. Start copy
 // first with the direction from it 230; direction as three scalars (diagnostic, helpers written out) 226 (991 bytes);
 // both 225 (991); start copy first with the offset from ray->start 223 (991); start and end copied and the direction
 // from both copies 196 (all six loads before the subtractions, start.z first as in retail; the end copy is one-use).
+// DL220: Scalar origin with native difference constructors, crossed with scalar start, ray constructor and staged cross:
+// 192/195/192/195/192/195/192/195. Original complete body restored; original frame and register homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

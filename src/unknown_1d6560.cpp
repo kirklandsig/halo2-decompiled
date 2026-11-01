@@ -160,6 +160,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes
 // to the stack); on that form the body array first 118, the model first 122, a byte shift in case 0 124, int type
 // 124, result first 124, the rigid body at each use 97 at 260 [122], the rigid body after the kind-7 path 103.
+// Round 32 (m3 lane 2, fast, caller 0x1d5bf0 in brackets): one byte type read with the kind test inverted (main
+// switch first, the kind-7 switch in the else) 89 at 256 bytes [13] (component ECX, index EAX); the header array read
+// first and shared by the type and case 0 124 at 228 [209]; one read with the kind-7 path as an if/else single exit
+// 104 at 240 [13] (sbb select); the two-read body with the kind test inverted 103 at 268; one read for the main switch
+// with the kind-7 switch re-reading the header expression 94 at 256 [13] (CSE'd into the one-read form).
 // Round 33 (lane 15, fast): o,t,r with the kind-7 ternary re-measured 96 at 256 bytes [0] (rigid body computed
 // in place in ECX where retail copies the index to ESI, header data in ESI for retail's EDX, branchless kind 7);
 // on it the kind-7 path as `if (type == 1) return 0xc; return 1;` 96 (folded to the same select), case 0 as
@@ -170,6 +175,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // type_value, rigid_body renamed body 124/124/124; kind, level or component renamed 124/124/124 (names order no
 // register); the main switch inside `if (kind != 7)` with the kind-7 switch after it 115 at 272 [194]; per-case
 // returns with no result 124. On this body: case 0 as `(byte >> 2) & 1` or `(byte)(byte >> 2) & 1` 96/96 [0].
+// Round 64 (lane 16, fast; caller 0x1d5bf0 in brackets): one type read as a byte 94 [13], as a long 96 [13];
+// on the one-read body the owner read once through `&owner` 96 [13], the level through `&level` 96 [13], the kind
+// through `&kind` 65 at 260 bytes [194: kind on the stack, ret 0xc], the rigid body as `base + index * sizeof`
+// byte arithmetic 96 [13]. Every one-read body takes component in ECX and the index in EAX.
 // Round 39 (lane 15, fast): one type read with a `dword` object_index 94 at 256 [13] (component ECX, index EAX);
 // one read with the kind-7 switch listing cases 0/7/11 and an `__assume(0)` default 121 (284) [13]; two reads with
 // the main switch's through `component->object_index` 91 at 256 [146] (component on the stack, kind EDX), with
@@ -399,6 +408,9 @@ struct s_physics_component_walk : s_havok_component
 // ESI for EDX, body index ECX for EBX, replaced BL for CL); on it the mask test `body->flags & 0x20` 279 [144],
 // with both flags declared first 302 [185], the model read through owner at both uses 252 [129], the model local
 // before the body index 275 [188]; the clamp bound named `last` 242 [154].
+// Round 484: explicit empty-group return with mask/late availability/admitted policy
+// lifetime subsets 241/279/252/279/258/296/277/296. Frame stays 0x18; status,
+// model and promoted-neighbor homes remain. Complete original method restored.
 // Round 39 (lane 15; fast screens, kept forms confirmed plain): on the 241 body, round 35's lead re-measured 252;
 // with the mask test 279; a separate output index declared first 295 (934 bytes), with the mask 269 (output
 // spilled, available in BL); declared after the flags 279 (copy-propagated); output/available/replaced with the
