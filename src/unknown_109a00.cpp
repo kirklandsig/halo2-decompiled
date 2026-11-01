@@ -453,6 +453,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // products up-first as retail); dot3f in either order, the first two terms parenthesised, the terms i, j, k
 // 101 each; cross3f_staged(up, forward, left) 101, cross3f 113; with the `+=` dot: the scaled terms as one
 // vector3f 124 (918 bytes), updated in place 122, `up->i = up->i - scaled_i` 99.
+// Round 60 (m3 lane 9, fast with 0xb7060; real builds of round 40's screened forms): the dot as `dot = k;
+// dot += j; dot += i` 110 (k and j products up-first as retail), with the three axis pointers declared
+// together before the normalize calls 109, with `up->i = up->i - scaled_i` 110; the center through
+// carrier_vector_from_havok with the `+=` dot and the axis pointers 153 (264 instructions as retail, object
+// index in EAX, entry index on the stack); the loop's body pointer declared before the outer loop 112.
+// Retail's call in 0xb7060 sets ECX (entry) before EAX (object), as the declared order implies.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

@@ -576,6 +576,13 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
 // g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
 // datum-index `continue` as a nested if 47 (same code).
+// Round 60 (m3 lane 9, fast): on the if/else flag with `special = false` closing the scan arm (190, frame
+// 0x30: the unspilled flag leaves the dead actor slot to the seat object), the seat object declared bare
+// at the function top or the outer block top and assigned NONE before the call 190/190 (same code); it
+// declared with its NONE at the function top 209 (it moves to the frame, the seat short then takes the
+// actor slot, frame still 0x30); `special = false` also opening the scan arm (diagnostic) 190 (dead, dropped);
+// the `&&` flag with allow_exit declared after the actor lookup 201 (872 bytes); the if/else flag with
+// `special = false` right after the 0x1b8d40 exit (live across the rest of the scan) 200 (872 bytes).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

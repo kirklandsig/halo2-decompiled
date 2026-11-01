@@ -584,6 +584,10 @@ bool sound_driver_voice_create_buffer(
 // `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
 // both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
 // code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
+// Round 60 (m3 lane 9, fast with 0x191420): the 3D flag defined first with the count stored before the
+// descriptor clear 181 (599 bytes); both bools in one declaration, play first 71 (same code), the 3D flag
+// first 182 (599); the result declared after the voice index 71 (same code), with the 3D flag first 182;
+// the 3D flag before the voice reference and play after it 183 (599).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

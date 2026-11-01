@@ -450,6 +450,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // code), the node type named once (`short type = node->unknown10;` for every test and store) 349
 // (1388 bytes, frame 0xe4; the special test then threads straight into the first arm); the named
 // type on the original long-count body 354 (1395 bytes). Original body restored.
+// Round 60 (m3 lane 9, fast with 0x270930; the convention already agrees, ret 0x24): on the short link
+// count, the type named once 349 (1388 bytes, frame 0xe4) and the one flag shared by the link test and the
+// special test 362 (1371; aligned 189, the best structure seen), both together 349 (366 instructions and
+// 1388 bytes as retail, aligned 246), with that flag declared in the loop 349 (same code); the named type
+// and shared flag on the long count 369 (1405); `origin = &input->start` for the delta block declared after
+// the margin 400 (1418, caller 0x270930 lost at 260); that on the short count with the type and flag 361
+// (1374, aligned 175), with the type alone 387 (0x270930 lost). Retail also reads the start depth through
+// a `lea` node address, keeps previous in EDI and stores the start/end conversion copies in swapped homes.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
