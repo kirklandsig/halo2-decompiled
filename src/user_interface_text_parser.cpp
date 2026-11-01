@@ -547,12 +547,24 @@ done:
 // before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
 // the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
 // its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 108 (lane 8; a one-file LTCG harness with the callee files and the ballast object gives this code
+// exactly): the variant getter's fallback written as a ternary 48 (178 bytes; parse_variant stays matched); one
+// shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;
+// a named pointer to the tag field read at the translator call 45 (178 bytes, globals in EBX); the tag declared
+// at function scope 32 (identical). All real (fast).
 // Round 14 (lane 17, fast; parse_variant stays matched), on the natural one-copy form (54): the shared
 // getter's fallback as a ternary 54 (same code: the tag load stays after the fallback join), with the tag
 // read before the variant call 57 (171 bytes; the tag loads before the call); the selector read into a
 // local before the tag 54; numeric case order 49 (173 bytes); numeric order with the tag read first 55
 // (171 bytes). Retail's tag load sits between `test eax, eax` and `jne` in the call's block, so in its IR
 // the tag read precedes the fallback branch.
+// Round 13 (lane 18, fast; parse_variant stays matched): a compile-only /O1 screen hoists 0x55c6e4 exactly
+// when the translator path uses that address twice (a different buffer at the copy removes it), and the
+// matched siblings here hoist theirs in retail too, so a file-flag change would not fit them (the earlier
+// favour-speed diagnostic stays a flags lead only). Real: numeric-to-retail case order with the tag read in
+// the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
+// with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
+// named once for the translator and the copy 32; the tag read in the translator call alone 45.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

@@ -34,6 +34,13 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
+// score 86 (was 86): the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
+// (other files), and MSVC always loads the limit product's cap global before the scale global whatever
+// order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses
+// `not al; and al, 1`, and the team is still copied into edx where retail uses ecx.
+// score 86 (was 95): the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
+// retail reloads it, and the limit product loads its two globals in the opposite order; the
+// completion-bit stores and the team's re-extension now match.
 // score 95 (was 95): the object-pool data pointer is spilled across 0xcbd50/0x101280 where
 // retail reloads it, and the completion bits are set through AL where retail uses DL and CL;
 // the frame 0x3c agrees.
@@ -189,8 +196,6 @@ void __stdcall function_2403b0(long player_index)
 				game_engine_event_set_cause_player(player_index, &event);
 				function_19eb90(&event);
 				function_a7810(0x200);
-				function_a7810(0x100);
-				return;
 			}
 		}
 		else
@@ -218,9 +223,9 @@ void __stdcall function_2403b0(long player_index)
 				function_242ba0(marker, weapon_index, player_index);
 			else
 			{
-				short team = (short)slot == 8 ? NONE : (short)slot;
+				long team = (short)slot == 8 ? NONE : (short)slot;
 				function_197210(player_index, 1, slot);
-				function_242e00(player_index, team);
+				function_242e00(player_index, (short)team);
 				function_242660(weapon_index, false);
 			}
 		}

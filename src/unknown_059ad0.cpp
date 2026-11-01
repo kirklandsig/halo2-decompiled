@@ -1393,13 +1393,6 @@ static inline char *function_x91aa57(char *destination, const char *source, dwor
 	return destination;
 }
 
-// score 9 (was 9): the host arm's exit: retail pops EDI before the update count's store and the
-// failed tests jump to the request arm's exit; ours falls from the host arm into the shared exit.
-// The host arm written first (as 0x5b8e0) gives retail's block order, but the string then
-// arrives in EBX (callers 0x63f50 17, 0x71480 227). Tried: host arm first with the existing
-// helpers 91; with the explicit copy 89; the copy helper in the request too 91; the copy before
-// the stores 91; earlier rounds: count before the copy 95, explicit copy 15, `return true` from
-// the host arm 85, result set in each arm 91, early `return false` 92, request at function scope 9.
 // @retail 0x5b790
 bool network_session_parameters_set_value4d08(c_class_58d20 *session, long value4d08, long value4d0c, const char *string)
 {
@@ -1407,24 +1400,21 @@ bool network_session_parameters_set_value4d08(c_class_58d20 *session, long value
 
 	if (session_state_is_live(session) && function_058d50(session))
 	{
-		if (!session->function_058d20())
-		{
-			s_network_message_parameters_request request;
-			parameters_request_initialize(session, &request);
-			request.change_value4d08 = true;
-			request.value4d08 = value4d08;
-			request.value4d0c = value4d0c;
-			strncpy(request.string4d10, string, sizeof(request.string4d10));
-			request.string4d10[sizeof(request.string4d10) - 1] = 0;
-			network_session_send_to_host(session, _network_message_type_parameters_request, sizeof(request), &request);
-		}
-		else
+		if (session->function_058d20())
 		{
 			session->value4d08 = value4d08;
 			session->value4d0c = value4d0c;
 			function_x91aa57(session->string4d10, string, sizeof(session->string4d10));
 			session->update_count++;
+			return true;
 		}
+		s_network_message_parameters_request request;
+		parameters_request_initialize(session, &request);
+		request.change_value4d08 = true;
+		request.value4d08 = value4d08;
+		request.value4d0c = value4d0c;
+		function_x91aa57(request.string4d10, string, sizeof(request.string4d10));
+		network_session_send_to_host(session, _network_message_type_parameters_request, sizeof(request), &request);
 		result = true;
 	}
 	return result;
@@ -3535,6 +3525,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // folds to [ebp + edx*4 + 0x72dd]. Non-volatile result 157; result declared after the lookup 136;
 // member arm first 145 (463 bytes); state flag/time read at each use 153; state pointer after the
 // flag test 153; pointer kept with the flag read directly 153 (pointer sunk). Opening body restored.
+// Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
+// fast; all three with the native machine-address field copy 131. Original declarations,
+// machine copy, result qualifier and full body restored; full starting count remains 119.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3662,6 +3655,17 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 422: shared member-state base 101; shared identifier source 101; both native sources
 // 101; const reply id 101; state base/const reply 101; id source/const reply 101; both
 // sources/const reply 101; shared sources after lookup 101. Opening body restored.
+// Round 30: identity source pointer before the memset 101; `if (state == 7) leave = flag != 0;` 132;
+// `was_host = true` before the announcement 124; leave declared first 103; identity by structure
+// assignment 101. Diagnostic owner argument through a temporary wrapper: passed at the call 101 (no
+// spill), from a local read beside the state 124 (spill at the top, not before the call).
+// Round 32: in a scratch copy an unused owner parameter on 0x769a0 alone leaves 101 (one use: nothing keeps
+// the owner live across the call; 0x769a0 then keeps its observer on the stack without its `&observer` local);
+// the store needs a second owner consumer after the call, as 0x62640/0x627e0 have. Timed-out channel read
+// through `session->member_index` at the call 104; `result` declared unset at entry 101; state range without
+// the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
+// Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
+// the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3753,6 +3757,16 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // needs a one-use key_index local read before the key release (138 without it), a test-set loopback flag
 // (164 without it) and network_session_time_now as __forceinline (145 with plain inline); not kept
 // (match-only forms, no match), body restored. Remaining with it: session kept in ESI, host staged in EBX.
+// Round 30: typed single-exit loopback helper 136; with the clock forceinline 147; with channel failure
+// first too 138 (573 bytes, only the 0x7ab10 host/session staging left once aligned). On that composite:
+// 0x5fb00's definition moved below this function 138 (same staging: definition order does not hide its
+// register summary); host pointer local at both calls 138; key index local 168; success `return true`
+// 173. Typed address fields in place with clock and channel failure first 142; success `return true` on
+// the opening body 194. Opening body restored.
+// Round 32: retail's 0x5fb00 preserves ESI (0x75a90 saves it; XNetQosListen is a library call) and 0x7ab10
+// never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
+// address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
+// key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4466,6 +4480,15 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // explicit identity-result arms on those three 304/306/300; both outputs with delayed
 // selection declarations/entry identity declaration 300/300. Both output homes with
 // all/initial-state shared exits 318/302. The 300 form recovers result +b but gains only five; dropped.
+// Round 30: the timeout call also lacks retail's dead owner spill (BLOCKED-BY 0x769a0, held file).
+// Acknowledgement as a forceinline helper at both sites 506 (1121 bytes: the inline_depth(0) region keeps
+// it out of line); with every exit through `done:` 498; written out at both sites 622 (1478 bytes, no
+// cross-jump); selected-index compare through `map` 317 (1244 bytes); tie-break compare through `map` 317.
+// Round 32: an unused owner parameter on 0x769a0 alone does not give the owner store (305, scratch copy);
+// an owner-taking channel-state accessor after the call stays a call (305). `better`/`same` at the top of
+// the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
+// `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
+// an `owner` local 374 (scratch copy; loaded at the top).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4682,7 +4705,6 @@ bool __stdcall function_05d9e0(c_class_58d20 *session, const void *message_)
 
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update);
 
-// score 110 (was 122): frame 0x9148 versus retail 0x914c and mask homes remain; held mark-message owner spill is missing.
 // Earlier: missing owner spill leaves frame 0x9148 versus 0x914c (BLOCKED-BY 0x76930:
 // retail passes the owner to the mark-message call as an unused argument; its file is held);
 // mask/counter role names 122, first-loop cursor 122, eligibility guard 122,
@@ -4696,24 +4718,34 @@ void __stdcall function_60400(c_class_58d20 *session, const byte *current, const
 // Round 299: member-entry channel/observer/both/sequence/channel-sequence/observer-sequence
 // snapshots 138/110/137/137/134/137; native unsigned sequence 122; all snapshots
 // with unsigned sequence 136. Uniform observer snapshot 110 plain, 417/416 bytes, kept.
+// Round 30: second-loop member-state pointer at the body's top 123 (416 bytes, retail's flag-byte walk);
+// masks declared delta first 111; observer read after the eligibility tests 122; with the pointer 123;
+// with the mask order 123. Opening body restored.
+// Round 32 (scratch copy; src/unknown_075870.cpp is held): the owner store is a spill of the owner live across
+// the readiness call for the mark call, left behind when LTCG deletes both unused arguments. Inline wrapper
+// with an unused owner (by value / const reference) 110/110; unused owner on 0x768b0 only (by value / const
+// reference) 110/110; on 0x768b0 and 0x76930 108; with a two-use `owner` local 108; with that local, the
+// observer read after the eligibility tests, the second loop's member-state pointer and the masks declared
+// delta first: MATCH. Applied in the tree (coordinator, round 32): MATCH, 0 lost.
 // @retail 0x62640
 void function_62640(c_class_58d20 *session)
 {
- dword full_mask = 0;
  dword delta_mask = 0;
+ dword full_mask = 0;
  byte delta[0x489c];
  byte full[0x489c];
  for (long i = 0; i < session->member_count; i++)
  {
   s_network_session_member_state *state = &session->member_states[i];
-  s_network_observer *observer = session->observer;
-  if (state->flag1 && !state->flag3 && observer->channels[state->unknown04].state == 7 &&
+  if (state->flag1 && !state->flag3 && session->observer->channels[state->unknown04].state == 7 &&
    state->unknown08 != session->value4c)
   {
    long channel = state->unknown04;
+   s_network_observer *observer = session->observer;
    long sequence = state->unknown08;
-   if (network_observer_channel_ready(observer, channel, 0x19))
-    network_observer_mark_message(observer, channel, 0x19);
+   long owner = session->value10;
+   if (network_observer_channel_ready(observer, owner, channel, 0x19))
+    network_observer_mark_message(observer, owner, channel, 0x19);
    else if (session->state != 8)
    {
     if (sequence != NONE && sequence == session->value24e0)
@@ -4729,6 +4761,7 @@ void function_62640(c_class_58d20 *session)
   function_60400(session, (const byte *)&session->value4c, (const byte *)&session->value24e0, delta);
  for (long j = 0; j < session->member_count; j++)
  {
+  s_network_session_member_state *state = &session->member_states[j];
   byte *message;
   if (delta_mask & (1 << j))
    message = delta;
@@ -4736,13 +4769,13 @@ void function_62640(c_class_58d20 *session)
    message = full;
   else
    continue;
-  session->member_states[j].unknown08 = session->value4c;
+  state->unknown08 = session->value4c;
   network_session_send_to_member(session, j, 0, 0x19, 0x489c, message);
  }
  memcpy(&session->value24e0, &session->value4c, 0x2494);
 }
 
-// score 98 (was 98): the two masks are cleared in the other order and live in
+// Earlier (98): the two masks are cleared in the other order and live in
 // the other stack slots, the frame is four bytes shorter, the bit is shifted
 // in the other register and merged in a register instead of in memory, and the
 // second loop walks the member states from the flag byte
@@ -4765,11 +4798,19 @@ void function_62640(c_class_58d20 *session)
 // NULL-initialised message with one `continue` 98 (same code); masks declared delta
 // first, buffers swapped, renamed masks and counter (same slots); arms inverted (same
 // code); compared operands swapped and the sequence read first (one-file harness worse).
+// Round 30: observer read once before the eligibility test 128; long masks 98; one bit local for both
+// arms 133 (407 bytes); readiness test negated with the mark call in the else arm 95 (aligned worse, the
+// arms move); equality-first sequence compare 97; negated test with it 95, with long masks 95.
+// Round 32 (scratch copy; src/unknown_075870.cpp is held): unused owner on 0x768b0 only (by value / const
+// reference) 98/98; on 0x768b0 and 0x76930 35 (frame 0x29c4, but the field's address spilled); with a
+// two-use `owner` local 34 (the owner store exact); plus the second loop's member-state pointer 2 (only the
+// order of the two mask clears); plus the masks declared delta first: MATCH. Applied in the tree
+// (coordinator, round 32): MATCH, 0 lost.
 // @retail 0x627e0
 void function_627e0(c_class_58d20 *session)
 {
- dword full_mask = 0;
  dword delta_mask = 0;
+ dword full_mask = 0;
  byte delta[0x14d8];
  byte full[0x14d8];
  for (long i = 0; i < session->member_count; i++)
@@ -4781,8 +4822,9 @@ void function_627e0(c_class_58d20 *session)
    long channel = state->unknown04;
    s_network_observer *observer = session->observer;
    long sequence = state->unknown0c;
-   if (network_observer_channel_ready(observer, channel, 0x21))
-    network_observer_mark_message(observer, channel, 0x21);
+   long owner = session->value10;
+   if (network_observer_channel_ready(observer, owner, channel, 0x21))
+    network_observer_mark_message(observer, owner, channel, 0x21);
    else if (session->state != 8)
    {
     if (sequence != NONE && sequence == *(long *)((byte *)session + 0x5e28))
@@ -4798,6 +4840,7 @@ void function_627e0(c_class_58d20 *session)
   function_609e0(session, (const byte *)&session->update_count, (const byte *)session + 0x5e28, delta);
  for (long j = 0; j < session->member_count; j++)
  {
+  s_network_session_member_state *state = &session->member_states[j];
   byte *message;
   if (delta_mask & (1 << j))
    message = delta;
@@ -4805,7 +4848,7 @@ void function_627e0(c_class_58d20 *session)
    message = full;
   else
    continue;
-  session->member_states[j].unknown0c = session->update_count;
+  state->unknown0c = session->update_count;
   network_session_send_to_member(session, j, 0, 0x21, 0x14d8, message);
  }
  memcpy((byte *)session + 0x5e28, &session->update_count, 0x14b0);
@@ -4855,13 +4898,18 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
-// score 697 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
+// score 569 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
 // Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
 // First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
 // Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
 // with first/second/both result passes 798/662/809; all with member-mask role names 809.
 // Second pass without the implied result-loop test 748; complete admission predicates with
 // player fields/original player snapshot 767/750. The 662 form required the implied test and was dropped.
+// Round 467: Native first/second/player record graphs, seven subsets, 696 each fast;
+// all with signed-short member ordinals 669 fast, 680 plain. Original records with
+// first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
+// Necessary result-controlled error-continue loops first/second/both 696/704/732;
+// with signed-short ordinals 718/715/724. Original records and validation exits retained.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
@@ -4884,7 +4932,7 @@ bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 		if (*(const long *)(update + 0xc) != NONE)
 			for (long i = 0; i < session->member_count; i++)
 				old_to_new[i] = i;
-		for (long i = 0; i < *(const short *)(update + 0x10); i++)
+		for (short i = 0; i < *(const short *)(update + 0x10); i++)
 		{
 			const byte *entry = update + 0x14 + i * 0x104;
 			if (*(const short *)entry == NONE)

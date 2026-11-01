@@ -638,6 +638,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 }
 
 /* Callback access through a local pointer preserves the stack-only entry convention. */
+// Earlier at 97 (MiniMax S, 10-31): retail loads the flags word before the byte clear (movzx edx, word ptr
+// [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
+// clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
+// volatile slot, kept one load but changed the register allocation (133, 132, 141).
 // score 93 (was 97): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
 // one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
@@ -713,6 +717,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // uninitialised locals declared first 124; the marker on this body 93 (same code). Marker not kept (unmatched).
 // Without the marker: the `&callback` pointer declared just before the first dispatch with plain reads 136, with
 // the volatile first read 93 (same code).
+// Round 470: six lexical orders of the position/limit/next scalars 97 each;
+// first and last float orders with later saved-identity names 97/97. Original
+// names and body restored; adjacent flags scheduling and callback reload remain.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

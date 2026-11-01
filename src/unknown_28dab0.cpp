@@ -19,7 +19,11 @@ long function_1e4990(long arg_0);
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4);
 void __stdcall swarm_delete(long arg_0);
 
-// score 44 (was 44): the tag pointer is in ESI where retail keeps it in EDI and the NONE result in EDI
+// score 33 (was 44): the head now matches (tag pointer EDI, NONE result ESI, a fresh `or ecx, -1` for the
+// NONE stores); retail still spills the creature definition index and keeps the loop limit in EBX with a
+// cmovg, where ours keeps the index in EBX and puts the limit in a stack slot with a branch, and retail's
+// record stores run in its own order (below). Before round 108 (44): the tag pointer was in ESI where retail
+// keeps it in EDI and the NONE result in EDI
 // where retail keeps it in ESI, so NONE stays live into the record stores (retail makes a fresh
 // `or eax, -1`) and the loop's zero takes DI early; and retail keeps the loop limit in EBX with a cmovg
 // and spills the creature definition index, where ours keeps the index in EBX and spills the limit.
@@ -227,10 +231,33 @@ void __stdcall swarm_delete(long arg_0);
 // feeds the compares and record stores); the definition index after the stores, before/after the limit 96/96;
 // with the original store order 93, the index after the stores 90. A compile-only screen does not reproduce
 // the record-first head (tag/NONE swap in all 64 placements: head window 6-10).
+// Round 108 (lane 8; a one-file LTCG harness with the callee files and the build's ballast object gives this
+// body except the 0x28dbd0 call setup): writing the record stores in reverse field order (spawn flag, gather
+// flag, gather point, event count, first creature, initial count, count, position, actor) with the definition
+// index read after the swarm pointer gives retail's head exactly (tag EDI, NONE ESI, first difference +0x4b;
+// the late NONE stores then take a fresh `or ecx, -1`): ternary limit 42, if-form limit with the index read
+// after the stores 44 (both plain). Retail's store order with the index read first: ternary 53, if-form limit
+// 92 (plain; retail's spill and cmovg EBX, but NONE kept in EDI for the stores); the NONE pair placed after the
+// count, initial count, position and event count with the if-form limit 46 (plain). Harness only: the NONE
+// pair after 1-7 of the other stores 51-58; the result as a dword, the stored NONE as `(long)0xffffffff` or -1,
+// nested head tests, the result declared after the tag, a named type-test flag, the allocation inside its test
+// all leave the NONE reuse (92 on retail's order). Kept (plain 44 -> 33): the position copy written first
+// and the definition index read just after the swarm pointer (both needed: the copy first alone 58, the index
+// moved alone 47 in the harness); any order with the position first and the gather point last gives 38-39 in the
+// harness (36 pair swaps of a searched order). On the kept form: the if-form limit 90 (289 bytes), with the NONE
+// pair after the zero pair 89; the index read after the stores with the if-form limit 44 (harness).
 // Round 14 (lane 17, fast; all on s2, 92, identical code each): a const tag pointer with `NONE != field`;
 // the allocation folded into the head condition; the allocation pool read once into a local for the
 // allocation and the record address; the result declared uninitialised and set NONE after the tag
 // pointer; the record pointer declared at function scope.
+// Round 13 (lane 18, fast; callee caveat): on the record-first form (swarm pointer, then the definition
+// index, retail's store order, if-form limit: 81, 289 bytes) the NONE result does take ESI and the tag
+// EDI as retail, but -1 becomes its own value in a pushed EBX (init copy `mov esi, ebx`, both compares,
+// both record stores) and the word zeros merge with the loop counter in EDI, where retail re-forms
+// `or eax, -1` / `xor eax, eax` after ESI passes to the swarm pointer. On that form: the tag field
+// compared against the result 81 (same code); the result declared after the tag pointer 81 (same
+// code); the delete path returning NONE 82 (287 bytes); the `> 0` count arm first 77; a separate
+// allocation local assigned to the result on success 98 (299 bytes).
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {
@@ -241,8 +268,9 @@ long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 		local_0 = record_pool_allocate(g_5044c8);
 		if (local_0 != NONE)
 		{
-			long local_2 = local_1->field_18;
 			s_swarm *local_3 = swarm_get(local_0);
+			long local_2 = local_1->field_18;
+			local_3->position = *g_468788;
 			local_3->gather_position_valid = false;
 			local_3->spawn_slot_reference = true;
 			local_3->creature_count = 0;
@@ -250,7 +278,6 @@ long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 			local_3->event_count = 0;
 			local_3->actor_index = NONE;
 			local_3->first_creature_index = NONE;
-			local_3->position = *g_468788;
 			local_3->gather_position = *g_468788;
 			short local_4 = arg_1->field_2e > 0 ? arg_1->field_2e : 10;
 			for (short local_5 = 0; local_5 < local_4; local_5++)

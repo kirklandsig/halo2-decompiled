@@ -736,6 +736,16 @@ struct s_device_machine_view
 // load refuses it). Diagnostics: no machine test 108 (the table base then takes ESI), the machine
 // test after the group test 113. Matched 0x1bb1d0 and 0x1c7450 do load 16 bits into a pointer's own
 // register across a branch, so the conflict is not the load width alone.
+// Round 13 (lane 18; compile-only /FAs screen reproduces both 34 and the pushed ESI): with the masks and the
+// zero store the 16-bit flags value takes EAX before the group pointer, and the pointer, whose last use is
+// that load, then avoids EAX. Any third reference to the pointer (a compare of it or of a field, before
+// or after the machine test, even inside its arm) makes the pointer win and gives retail's `lea eax` /
+// `mov ax, [eax+2]` with no pushed ESI; a pointer loaded from memory or `data + constant` also shares
+// EAX, so the two-reference `lea [base+index*4]` web is what loses. Names (20 pairs), a named table base
+// with `group += index`, a field pointer, a `const &` group, a byte offset, an index local, an inline
+// both-bits helper and a 16-bit bitfield view all keep ESI. Real (masks + zero store): `const &` group,
+// index local with typed pointer arithmetic, inline both-bits helper, bitfield view, byte-offset pointer
+// 122 each (656 bytes). A second test through a re-derived group pointer gives EAX but two memory tests.
 // Round 41 (lane 11, fast; on the word-local masks + 0x1200055f zero store, 122): the group pointer named
 // for the power group 122; the flags local named `flags` 122 (names never move the pushed ESI); a named
 // delay-time local in case 0x5000561 131; a named position-speed local in case 0xf00055e 136; a named
@@ -746,6 +756,11 @@ struct s_device_machine_view
 // length because the block shrinks by the zero store's size: there the table base and index are
 // computed after the machine flags load and the word load folds the address (`mov ax, [esi + eax*4 +
 // 2]`), so the 16-bit load shares EAX only once the address computation sinks below the machine test.
+// Round 46 (m3 lane 10, fast): the machine test as `(flags & 1) || (flags & 4) || (flags & 8)` on the lane S
+// form 34 (same code), on word-local masks + the 0x1200055f zero store 122; `function_value = 0.0f;` at the
+// top of both 0x1200055f arms (hoisted above the `je` exactly like the single zero store) on the lane S form
+// 117 (657 bytes), on word-local masks 122; a byte machine-flags local with masks + zero store 122 (the
+// pointer still takes the pushed ESI, popped right after `test al, 1`).
 // Round 14 (lane 17, fast; on the masks + 0x1200055f zero-store form, 122): the case labels in numeric
 // order, in retail's block layout order and with the 0x6000560 case first 122/122/122; the machine block
 // behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
@@ -1032,6 +1047,12 @@ bool function_108530(long device_index, long name)
 // the half time or the deceleration test, and `(void)&` of it: 121 each (identical code, the address
 // folds away); the inner block's locals, or position/delta/distance, or both, declared uninitialised
 // at the top: 121 each (identical code).
+// Round 13 (lane 18, fast with both callers, which stay 31/13): the up-time limit as an if 121 (same
+// code); the per-branch cruise-velocity store re-measured 134 (aligned 82 against 135 rows: retail's
+// acceleration/deceleration blocks, the ramp-down still enregistered and the xmm colours rotated), with the
+// up-time if 134, with the ramp-down limit as `if (!(remaining > ramp_down_time))` 134; both ramp-down
+// clamps as negated ifs on this body 121 (same code); the per-branch store with the cruise velocity read
+// back once into the velocity local for the acceleration block 137 (527 bytes).
 // Round 41 (lane 11, fast, with both callers): retail's clamp/pin phase keeps the ramp-down time only in its
 // stack slot and uses seven xmm registers (duration 5, ramp-up 7, remaining 1, one 4, position 3, target 2,
 // zero 0), leaving xmm6 free for the initial velocity; ours holds the ramp-down in xmm1 and fills all eight.
@@ -1039,6 +1060,9 @@ bool function_108530(long device_index, long name)
 // in the inner block 122; the half ramp-up time named before the half ramp-down 123; the cruise time named
 // right after the remaining-time clamp 140 (the remaining time dies early, a `push ecx` frame, 0x108600 31 ->
 // 26, 0x108670 13 -> 28; still ret 0x18); the motion's duration stored first among the reset fields 121.
+// Round 46 (m3 lane 10, fast, with both callers): `distance = target - position` with delta copied from it
+// 123; the denominator staged with two `+=` 121; the velocity staged (difference, then `/= denominator`) 121;
+// both delta swap and staged velocity 123; the reset stores as two chained assignments 121 (identical code).
 // Round 14 (lane 17, fast, with both callers): the deceleration through the velocity local and the
 // acceleration through the motion field 121 (same code); the three target stores chained 121; the half
 // ramp-down time computed before the position pin 129; the denominator written out in its test and
@@ -1200,7 +1224,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the animation as a const reference 203; sampled declared after the time 2; time before the animation 2.
 // Round 30: sampled at function scope 39; the animation direct-initialised 2; time declared beside speed and
 // assigned in the block 2; time computed after the first sample call 20; had_animation set before the node
-// lookup 31.
+// lookup 31. Round 99: existing vector subtraction/length helpers 2; seconds divided by 30 2;
+// sampled renamed 2; start renamed 2; an independent duration matrix 13; step declared beside speed 2;
+// a forceinline distance helper 2; one shared distance local 33. All restored.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

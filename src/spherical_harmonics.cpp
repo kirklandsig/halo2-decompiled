@@ -321,6 +321,11 @@
 // 56 (fixes +0x50); with the cubic statements in the 9, 10, 12, 11, 13 order 56, plus xx_3yy after result[12] 56;
 // result[11] staged as `zz5_1 * band3_21`, `*= inverse_sqrt_pi`, `*= y` 69 at retail's 660 bytes; both cubic X/Y
 // accumulators from inverse_sqrt_pi first 139 (653 bytes).
+// Round 105 (m3 lane 8, fast; 0x146020 matched in each): the direction components declared in retail's
+// load order y, z, x 124 at retail's 660 bytes (xmm colouring follows the declarations: y xmm6, z xmm1,
+// x xmm3), reversed z, y, x 124 (660 bytes); with the named float sqrt(3) root on y, z, x 122 (660
+// bytes); `real const sqrt15` 59 (same code); result[13] with x first 59 (same code, the product
+// still shared with result[11]).
 // Round 22 (m3 lane 2, fast; 0x146020 matched in each): lane 4's 2-point form rebuilt 2; permuter on it (anneal,
 // 600 s, 52 tries) best 2. Compile-only on the 2-point form, the quadratic sqrt15 load stays after `fmul z` for:
 // the five other input load orders, const inputs, one input declaration, the 23 other first-block store orders,
@@ -328,6 +333,19 @@
 // top, result[5] `band2 * y * z`, sqrt5 first, result[6] first or inverse_sqrt_pi first, result[7] unstaged.
 // Real builds on this body: const inputs 59; result[5] `band2 * y * z` 59; sqrt5 set first 59; result[6] with
 // inverse_sqrt_pi first 59.
+// Round 122 (lane 5, fast, 0x146020 matched in each): zz named after the sqrt(5) root 59; band1 as
+// `(real)(inverse_sqrt_pi * sqrt(3.0))` 59; the inputs read in retail's load order y, z, x 124 (660
+// bytes); `xy = x * y` 59; result[12] as `(zz5 - 3.0f) * sqrt7 * ...` 59.
+// Round 46 (m3 lane 10, fast; 0x146020 matched in each): lane 4's 2-point form rebuilt 2; on it the direction
+// copied into a vector3f local first 160 (651 bytes); x, y and z declared together then assigned 2; zz defined
+// right after sqrt5 2; result[6] as `(zz * 3.0f - 1.0f) * sqrt5 * ...` 2; sqrt5 initialised at its declaration
+// 2. Diagnostics (not kept): result[6] shortened to `sqrt5 * zz` keeps `fld z; fmul z` together (so the zz
+// chain's length is not what orders them); matched 0xfbd40 shows the compiler does split such a pair for an
+// independent SSE load.
+// Round 59 (lane 16, fast; 0x146020 matched in each): lane 4's 2-point form still 2. On lane 12's named-sqrt3
+// / band3_35-first form (55 again): result[11] staged 72 (662 bytes); result[13] before result[11] 55
+// (identical); result[13] staged 64 (662 bytes); both staged 70 (662 bytes); result[15] first, right after
+// xx_3yy 147 (647 bytes).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

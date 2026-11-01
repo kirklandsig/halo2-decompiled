@@ -122,6 +122,10 @@ short __stdcall function_272af0(s_match_globals *structure, point3f const *point
 // address); a destination point pointer taken before that read 2; the read
 // after the view store 140; the local declared at the top of the view block 2;
 // the scratch buffer released in each arm 2.
+// Round 63: member-wise position copy 135; direct entry source for only the copy 15;
+// typed source pointer 2; +0x72 before the copy 14; both scalar stores before the copy 66;
+// scalar stores before the state 140; +0x72 first with state before the copy 140 (both
+// +0x74 positions).
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {

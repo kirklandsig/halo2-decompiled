@@ -567,7 +567,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
+// score 115 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
 // Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
 // bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
 // (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
@@ -607,6 +607,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 54 (lane 16, fast; base 114): the tutorial colour as `!flag_1384 && (b6 & 1) ? a8 : a4` 114 (same code);
 // `left` declared `short const` at its assignment 114 (same code); both 114; both with a bool timer 191 (1888
 // bytes); the tutorial colour reading g_510c94 at each use (no `globals` local) 114 (same code).
+// Round 62 (lane 12, fast; base 114): the two colour locals declared once at function scope 133; the
+// rectangles declared before origin 115; `field_24` declared before `color` in each phase 115; `color`
+// renamed (diagnostic) 115 with its home unchanged at -0x2c (retail -0x34); the rectangles at function
+// scope 115. The one byte the bool timer loses is `left`: retail stores it as a 16-bit memory local
+// (`mov word ptr [ebp-0x3c], ax`) where ours spills a dword, so the bool timer needs that form too.
 // Round 40 (lane 11, fast; unchanged source 115 fast, 114 plain): retail stores `left` once with a word move
 // (`mov word ptr [ebp-0x3c], ax`), so it is a memory local there, not a spilled register (ours spills it as a
 // dword); with the bool timer that word store is retail's missing byte (the bool form is otherwise retail's
@@ -616,6 +621,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
 // (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
 // block top / first 115/115; bool timer with the loop index at the block top 191.
+// Round 142 (lane 4, fast; control 114): with the bool timer (191, 1888 bytes) the flags land at
+// -0xe/-0xd with scripted at -2 beside split_screen (retail -0xf/-0xe/-0xd, -2..-4 unused); there
+// split_screen renamed to sort last 191, scripted renamed to sort first/last 191/191, split_screen declared
+// at function scope 191 (114 with the long timer), the timer or all three flags as `byte` 191/191: names,
+// scope and byte/bool type do not move the byte slots.
 // Round 16 (m3 lane 17, fast; unchanged source 115 fast): `left` renamed to sort first 115 (same code: it
 // is a spill slot, so slot-name ordering does not reach it); `left` declared before `top` 115 (same); the
 // HUD state global read at each use 115 (same); the text buffer declared first 115 (same); `top` as a long
