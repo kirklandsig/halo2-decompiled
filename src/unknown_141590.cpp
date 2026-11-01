@@ -120,7 +120,6 @@ static inline void quaternion_transform_vector(
 /* the rotation that takes one unit vector to another */
 // score 200 (was 200): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
-// Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
 // lands in the matrix parameter's home slot [esp+0x38], so the halves are two separate locals and not a struct.
 // Tried: the halves as plain locals 290 and with the clamp in place 290 (the sine half does take the parameter
@@ -227,6 +226,12 @@ static inline void quaternion_transform_vector(
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
 // with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
 // 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
+// Round 30 (lane 2, fast): retail computes the transform's scalar (w*w*2 - 1) before the identity copy and the
+// doubled w after the first dot, and gives the cross terms slots of their own (ours spill them into the dead
+// quaternion). Transform dot in i/k/j text order 200 (same code); scalar cross terms 265 (1300 bytes, frame
+// 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
+// 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
+// computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
