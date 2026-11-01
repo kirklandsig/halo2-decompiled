@@ -13,6 +13,10 @@ struct s_1badc0
 real normalize2d(point2f *arg_0);
 
 // score 211 (was 211): frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// Round 132 (m3 lane 5, fast): the output-parameter address read is what keeps the output on the stack
+// (without it 274, 996 B). That read at the 0x26d100 call instead of the entry self-assignment, reference at the
+// top/just before the call 211/211; the input point copied after the object lookup 211 (1005 B); the result-flag
+// clear before the actor lookup 261; the far path's output index before the point 217.
 // Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // Round 30 (lane D): the permuter's best variant scores 194 against its own 195 baseline (one point,
 // below the retention margin). What still differs: this body loads the output pointer into EBX before

@@ -85,28 +85,28 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // state 0 copies the request before the path call, states 7 and 9 keep the handle in another
 // register, state 11 swaps the completed and limit registers, state 16 sets the state before the
 // memset, and state 19 clears the slot before the buffer release.
-// score 37 (was 39): state 11 writes the chunk size to g_55bcf4 before the positioned-copy call
+// Earlier, 37 (was 39): state 11 writes the chunk size to g_55bcf4 before the positioned-copy call
 // and reads the slot into a named local, which puts the buffer in ESI as retail has it. Left:
 // state 0 copies the request before the path call, states 7 and 9 keep the handle in another
 // register, state 11 swaps the completed and limit registers, state 16 sets the state before the
 // memset, and state 19 clears the slot before the buffer release.
-// score 39 (was 47): state 14 reads the slot's file handle into a named local before the write
+// Earlier, 39 (was 47): state 14 reads the slot's file handle into a named local before the write
 // call, which puts that load right after the clock call where retail has it; states 13 and 14
 // now match retail exactly. Left: state 0 still copies the request before the path call, states 7
 // and 9 keep the handle in another register, state 11's registers differ (buffer in EDX, limit in
 // ESI, chunk in ESI, slot in EAX), state 16 sets the state before the memset, and state 19 clears
 // the slot before the buffer release.
-// score 47 (was 114): state 11 keeps the chunk size in a local and writes it to g_55bcf4 after the
+// Earlier, 47 (was 114): state 11 keeps the chunk size in a local and writes it to g_55bcf4 after the
 // positioned-copy call, which makes that block exactly retail's length (99 bytes) so every later
 // block lines up again. Left: state 11's registers differ (buffer in EDX, slot in EAX, file in ECX,
 // handle in EDX), state 0 still copies the request before the path call, and states 7/9/13/14/19
 // differ in register choice and statement order.
-// score 114 (was 161): state 11's no-buffer path now assigns state = 11 explicitly, so the compiler
+// Earlier, 114 (was 161): state 11's no-buffer path now assigns state = 11 explicitly, so the compiler
 // materialises `mov esi, 0xb` and merges the exit into state 10's tail (retail's short je); the body is
 // retail's length (1720) again and every case offset, the jump table and its entries match. Left:
 // state 0 still copies the request before the path call (retail calls 0x214db0 first and re-forms
 // 0x55bf28), and states 7/9/11/12/14/16/19 still differ in register choice and statement order.
-// score 161 (was 367): state 0 copies the request before the path call (retail calls 0x214db0 first and
+// Earlier, 161 (was 367): state 0 copies the request before the path call (retail calls 0x214db0 first and
 // re-forms 0x55bf28 after it, BLOCKED-BY 0x214db0: ours keeps the constant in EDI, 3 bytes short; copying first is
 // the only order whose block has retail's length, which lets round 85's retail forms below count). Left: state 7/9/14
 // file-handle registers (ECX/EDX), state 11's buffer in EDI (retail ESI) and argument order, state 10/16/19 constant
@@ -211,6 +211,11 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
 // chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
 // EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
+// Round 131 (lane 5, fast): state 11's clamp `remaining < g_55bd1c ? remaining : g_55bd1c` 37 (same
+// registers); the size computed into chunk and clamped by `if (chunk > g_55bd1c)` 38, `if (chunk >= g_55bd1c)`
+// 38, `if (g_55bd1c <= chunk)` 37 (retail's `cmp limit, chunk; jg`, but total/completed/limit rotate to
+// ecx/edx/eax against retail's eax/ecx/edx); `g_55bd1c <= remaining ? g_55bd1c : remaining` 37 (same code as
+// the opening ternary). Retail's 0x214db0 takes the map name in EDI and the path in EBX.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

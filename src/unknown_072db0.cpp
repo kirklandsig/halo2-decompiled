@@ -1215,7 +1215,7 @@ void function_7e100(long current, const s_member_quality_collection *collection,
 long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
-// score 6 (was 15): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
+// score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
 // field and leaves one more pad byte. Earlier: the group-identity copy matches retail's
@@ -1236,6 +1236,10 @@ long function_1931a0(long count, s_surface_description *variant);
 // stores plain in the old order (0x78, 0x68, 0x60, 0x7c, 0x80, 0x6c) 19; 32 plain store orders 8-19,
 // best available, maximum, minimum, average, add mask, group mask 8 (kept: plain 15 -> 6, no volatile
 // left; the summary block and both masks then match); on it, minimum read after the capacity 8.
+// Round 129 (lane 5, fast): diagnostic only, 0x7e210 compiled with no inlining (an inline-depth pragma
+// around it): this function matches (0x7e210 then takes the session in EAX, retail's head) while 0x7e210
+// goes 766 -> 1593. Ours inlines 0x192e60 into 0x7e210 and calls 0x193300 from an inlined callee; retail
+// calls 0x192e60 and never 0x193300. The body here is complete; the fix is in 0x7e210's inlining.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {

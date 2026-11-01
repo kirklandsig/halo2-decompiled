@@ -811,6 +811,11 @@ void c_session_client::function_06dbc0()
 // a member pointer local 47; a `client` copy of this 47; cases 2/4/6 grouped 47. The file is /O2 /Gr and
 // 0x58d90's own file /O2 /Ob0, which keeps it out of line here where retail inlines it (a flags lead for
 // the user, not tried).
+// Round 131 (lane 5, fast), on separate case 7 and 8 bodies (direct table, re-measured 47): mode, type and
+// id tests in one condition 47; an early return on mode/type 47; an equal-id early return 47; case 7/8 as
+// `if (!flag) break; return;` 65 (148 bytes); the type tested before the mode 49. `mov ecx, 2` is the
+// `repe cmpsd` count reused for the mode compare (ours has it too); retail allocates as if the compare
+// clobbered EDX (this in EBX, id in EBP). Original grouped body restored.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

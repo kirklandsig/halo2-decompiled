@@ -356,6 +356,10 @@ void __stdcall function_1160c0(real dt)
 // before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
 // difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
+// Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
+// cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position`, `sin_angle`/`cos_angle` names 179
+// each (all identical code: neither names nor declaration order place these homes).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

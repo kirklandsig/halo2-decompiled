@@ -461,6 +461,12 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier 129; data_iterator.h's four-field iterator and data_datum_iterator_next_inlined with the pool local
 // 133; the iterator aggregate-initialised 122 (same code); `animation` declared in the while condition 122
 // (same code).
+// Lane 5 r130 (fast): ours loads g_4e0300 into EBP in the prologue and keeps it across the loop (reloaded
+// after calls); retail reads it at each use. The object array read only after the NONE test 154 (still
+// hoisted); the getter's result filled in an if/else, without the barrier 161; a four-field datum-iterator
+// step reading iterator->data at each use (data_find_index scan) 162 with the barrier (frame 0x10, g_4e0300 no
+// longer hoisted, but the pool forwarded into EDI for the scan and the element), 152 without it; the lookup
+// through the existing function_badc0(object_index, 3) 122 (inlined, the same code).
 // @retail 0x1fb510
 void function_1fb510(void)
 {

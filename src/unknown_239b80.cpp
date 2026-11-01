@@ -474,6 +474,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
 // score 203 (was 203): Frame 0x14 agrees; count/departure homes, scan bound, equality and compaction differ.
+// Round 132 (m3 lane 5, fast): index store and increment as two statements 203; `best_distance` declared
+// after the index store 203; departure as `if (!left_start && !points2d_equal(...)) left_start = true;` 227
+// (767 B); NONE exit tested before the current/heading updates 273 (753 B); the two equality exits joined
+// with `||` 203. Retail's compaction is the CRT call 0x320890 and its hull loop has no entry guard.
 // Round 27 (lane 9): memmove for the compaction (retail calls the CRT) with a bool flag and the heading set before the scan gives
 // retail's count home +0x10, scan bound EDX and early heading/flag stores, but points takes EBP and the flag lands in points' home
 // (retail: indices in EBP, the flag in its home) 265 (759 B); with the flag declared first 265; long flag 242; memcpy kept 250;
@@ -723,6 +727,18 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
+// Round 132 (m3 lane 5, fast): the previous side's register is the one cause of the entry and loop-head
+// differences. `previous_inside = inside;` moved from the loop end to just before `if (inside)` spills it
+// (its life then crosses the append's `shl cl` shifts): count is then loaded once into ECX (`mov ecx,[count];
+// movsx edi,cx ... test cx,cx`), `points` is loaded into ECX at the loop head and the pad is `mov edi,edi`, all
+// as retail, but the copy merges into the inside test (157); with the fraction as if/else as well, retail's
+// XMM4/XMM5 constants and the shared zero-fraction block (164; zero XMM1, dy/fraction XMM2/XMM0 remain).
+// No form with the copy at the loop end spilled it: `points[i]` at each use (no `current`) 129 (same code);
+// the previous side declared uninitialised with the flags 129; both sides declared first 129; on the if/else
+// fraction those and `inside` at function scope 249 each; a separate source pointer for the alias copy
+// 170/172 (points arrives in ECX); zero-denominator arm first 198, on the moved copy 223; if/else-if clamp
+// 249, on the moved copy 164. Diagnostics: a volatile previous side 246; a two-element side array 147
+// (scalar-replaced, back in CL).
 // Earlier: Retail length and the mask update agree; retail keeps the previous side in memory
 // (ours CL across the back edge, one instruction short from the side test on), loads count once into ECX
 // for the scaled index and the guard, and keeps zero in XMM2. Earlier: count/stride/prior homes remained

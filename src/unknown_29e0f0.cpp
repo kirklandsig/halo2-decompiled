@@ -85,6 +85,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
 // and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
 // score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Round 132 (m3 lane 5, fast): root-table test nested under the count test with the pointer declared there
+// (no NULL default) 398; overall result declared first 399; best distance before the selected defaults 398;
+// group bitmap declared before the record/group pointers 412; record pointer after the marker call 420.
 // Earlier: frame 0x68/0x64, induction/endpoint homes and x87 scheduling differ.
 // Earlier: table-pointer roles now agree; frame 0x68/0x64, outer-loop reload placement, inner-loop registers and x87 square order remain.
 // Complete initial guard exits 458; CRT output point copy 416; distance second point by value 569;

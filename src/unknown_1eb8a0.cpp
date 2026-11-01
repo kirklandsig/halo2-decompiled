@@ -183,7 +183,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 642 (was 642): frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
+// and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// Earlier: frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // The stack layout agrees with the matched caller 0x1eb6f0 (out, dt, d, q, pos; state ESI, update AL, a ECX,
 // b EDX); retail loads q into EBX at entry (and again after the first normalize), ours d.
 // Earlier (merged stacked note, was 642 -> 642), MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
@@ -278,6 +283,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
 // then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
 // inherited counter qualification, body and exact caller restored; direction/sample homes remain.
+// Round 129 (lane 5, fast, caller checked): both activation length sums written j, k, i 642 (same x87 order:
+// it follows the delta components' first assignment); the first clamp's 12/8 factor before t 718 (2861 B,
+// caller lost); the first clamp as PIN with the cap inline 761 (2914 B); the activation target through a
+// point-along-vector helper 668 (2883 B), with the direction refresh through vector3d_from_points3d 670
+// (both blocks then store through eax/edi as retail, EBX unchanged); both direction refreshes through
+// vector3d_from_points3d 665 (2888 B).
 // Round 66 (lane 9, fast, caller 0x1eb6f0 matched in each): d read through `vector3f *const *` at every use 673
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter

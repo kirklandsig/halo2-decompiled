@@ -709,6 +709,12 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // first 77; the fills paired by index re-measured 76. With 0x1883e0's 4th/5th parameters as the material
 // class (diagnostic) 56 (346 bytes): this takes retail's inputs, so the input split follows 0x1883e0's
 // convention; left are the second scan (retail: dword index in EDI, scale in EBP) and the `or esi, -1` slot.
+// Round 131 (lane 5, fast): effect value read once through its address 89 (346 bytes; forward then arrives
+// in ECX as in retail and the stack count is retail's, but EBX holds the effect value from entry where
+// retail loads 0x1883e0's tag into it); the six defaults as one plain loop 342 (536 bytes); on the address
+// form a dword/long second scan 87/87 (344 bytes: retail's indexed loop with scale hoisted after the
+// compression call, registers rotated: index ESI, NONE EBP, scale EDI); that with the location copied
+// before the velocity 88. Still BLOCKED-BY 0x1883e0's declarations. Original body restored.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

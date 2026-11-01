@@ -308,15 +308,19 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 }
 
 #define sound_effect_delete function_21dcf1
+
+/* starts a sound from a play state (src/unknown_124f90.cpp) */
+struct s_looping_detail_request;
+long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+
 // MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
 // the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only
 // form that fixes that moves 0x189fe0's request into EDX and loses its eight matched callers in
 // src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
-// score 204 (was 204): this round: no new in-file form moves it; the request has to reach 0x189fe0
-// in EAX or eight matched callers lose their match, and that body is in src/unknown_189010.cpp:
-// BLOCKED-BY 0x189fe0.
-// score 204 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
+// score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
+// Earlier (204): no new in-file form moves it; the request has to reach 0x189fe0 in EAX or eight
+// matched callers lose their match, and that body is in src/unknown_189010.cpp: BLOCKED-BY 0x189fe0.
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost
 // (0x189fe0 then expands the first class lookup and keeps the request in EDX; retail calls both
 // lookups); with the parameters declared tag first, consistently at the caller and header, the same;
@@ -423,6 +427,19 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 // same blocker as the 0x125f70 route); the rate-limit test negated with no NONE arm 204; the platform
 // handle computed after the definition/effect declarations 221 (0x189fe0 132); sound_index declared
 // at the top 204; the allocation folded into the definition test 204. Still BLOCKED-BY 0x189fe0.
+// Lane 5 r130 (plain unless marked): kept, the no-effect start through the existing 0x125f70 in place
+// of the file's copy of it 193 (468 bytes; 0x189fe0 and its eight callers unchanged), then the
+// priority stored through the same effect pointer 181 (454 bytes; alone on the 204 body it is the listed
+// 220, so the two stand or fall together). The effect-path start still uses
+// the copy, which our build calls out of line: through 0x125f70 as well 142 (state in EAX as retail,
+// but 0x189fe0 135 and its eight callers lost); the copy forceinline 256 (callers lost). The round-72
+// form again 52 (429 bytes): its request reaches 0x189fe0 in EDX and the first 0x221810 lookup expands
+// there; with 0x189fe0 reading the priority from the request 52/135, with its NONE tag as an early
+// return 52/137, callers lost in both. Retail calls 0x221810 out of line everywhere (a stack argument,
+// `ret 4`); keeping it out of line is a build-flags decision (lead: the 52 form then needs 0x189fe0 to
+// home its request in EBX). On 181: the allocation through function_21d2c1 193 (on 193, the same
+// code), the delete out of line 214, start-result arms swapped 180 (fast), one exit 182 (fast), the
+// no-effect path first 200 (fast), the platform handle by an if/else 181 (fast, same code).
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -450,7 +467,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 			s_sound_effect *effect = sound_effect_get(effect_index);
 			effect->type = 1;
 			effect->sound_index = sound_index;
-			sound_effect_get(effect_index)->priority = (short)state->priority;
+			effect->priority = (short)state->priority;
 			function_21d630(effect_index, 0);
 		}
 		else
@@ -459,7 +476,7 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 		}
 		return sound_index;
 	}
-	return sound_start(state, tag_index);
+	return function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
 }
 
 PRIVATE __forceinline long function_21d2c1(s_sound_effect_definition *arg_0)
