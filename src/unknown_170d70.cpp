@@ -728,7 +728,8 @@ void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdca
 // score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
 // retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
 // before the last stack push (`push edx` holding &camera) and ours after it. Tried: a local for the context, a local
-// for the count, a local loop counter, none changed it.
+// for the count, a local loop counter, none changed it. Permuter (25 min on r621): best 9 (full image 10), only with
+// a volatile store to the cluster's first count; not kept.
 // @retail 0x1733e0
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera)
 {
@@ -1126,6 +1127,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 // retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
 // last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
 // `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
+// Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
@@ -1439,6 +1441,7 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 // score 3 (was 3): the same sort_4byte call as function_1733e0: retail computes &scratch in edx, then `lea ecx` for
 // the order array, then `push edx`; ours uses ecx for &scratch and pushes it first. Tried: locals for the order
 // pointer, the count, the unused pointer, any combination (no change); dropping the block around `scratch` (42).
+// Permuter (25 min on r621, about 1150 variants): nothing below 3.
 // @retail 0x173130
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index,
 	s_view_collection_1733e0 *collection)
