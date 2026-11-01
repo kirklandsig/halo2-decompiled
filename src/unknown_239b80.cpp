@@ -345,6 +345,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 188 (fast; a compile-only screen reproduces the integer roles): dot_product2d taking (point,
+// normal) at its definition and both calls 42; case 1 through fabsf 42; the index declared beside the
+// state 42; both of the first two 42; case 1 returning 2 directly 70 (the index takes EDX as in retail,
+// but the extra exit path moves the layout). Compile-only: all 24 declaration orders of first, line,
+// state and the index, each with both dot parameter orders, keep EDX/ESI for state/index.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

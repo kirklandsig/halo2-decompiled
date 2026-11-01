@@ -851,6 +851,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Original transfers and complete body restored; coefficient preload and projection homes remain.
 // Round 100 (lane 8, fast): plane 0's d in every term order with camera-first or normal-first products: operand order
 // never changes the code; i/j/k 146, i/k/j normal-first 115 (same code), j/i/k 149, j/k/i 133, k/i/j 144, k/j/i 133.
+// Round 188 (fast, caller 0x1648d0 matched each time; a one-file LTCG harness gives the same 115):
+// plane 0's negation through vector3f_assign 115 (same code); d negated before the normal 143; the
+// normal copy through vector3f_assign 460 (1819 bytes); d as `near_distance - d` 423; the top
+// locals declared in reverse 115. Harness: all 120 orders of the five top declarations 115 each;
+// near_sum/near_distance/forward/negated declared at the top in all 15 subsets, before or after
+// culled, 115 each; the camera vector copied to a local before the normal copy 463 (1883 bytes).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

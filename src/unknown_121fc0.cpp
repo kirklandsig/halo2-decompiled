@@ -99,6 +99,12 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
 // ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
 // restored; early EBP and read-size/count/cursor homes remain.
+// Round 188 (fast): the code inside the token loop is retail's except that every scalar home sits
+// 4 below (EBP pushed just before the loop, popped at its exit; retail pushes it with ESI/EDI at
+// the block start and joins the failed-read and no-token exits before the pops). A single goto from
+// the success test to the block's exit 128 (same code); the clamp and terminator before the token
+// array and counters 129; before the counters only 129; before the token array only 129; clamp,
+// terminator and first token before all three 177.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

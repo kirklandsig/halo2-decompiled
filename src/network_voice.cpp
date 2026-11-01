@@ -3346,6 +3346,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // before the stride 139; consumed, size, stride order 158 (476 bytes); `*(word *)&packet[1]` with
 // `== 0` 139; the plain arm through the out-of-line talker test 181 (450 bytes, not inlined); one
 // shared kind test before the relay branch 180 (467 bytes).
+// Round 188 (fast, matched caller 0x564c0 checked each time): packet cursor beside the count 164
+// (member index in EBP, channel reloaded, no separate zero-trip exit); the shared clamp helper
+// with a long count 156 (0x564c0 64), with a single result 138 (0x564c0 87), with short parameters
+// 156 (0x564c0 139); each of those with the cursor 163/163/166. All restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
