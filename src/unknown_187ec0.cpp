@@ -56,6 +56,9 @@ static inline s_player_datum *player_get(long player_index)
 // declaration's initializer 3; the record declared before the pointer 3; the index as dword (cast or local) 3,
 // direct with the cast 16; a table-base pointer local at the top 3; the global declared with its size 3; the
 // permuter (58 annealed tries) best 3.
+// Round 102: an independent source index 3; guard/source ownership swapped 3; the source index declared separately 3,
+// at function scope 3, inside the guard 3; a source reference with that copy 3; record before pointer with it 3;
+// the copy initializer with it 3. All compile to the baseline's three instructions.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {

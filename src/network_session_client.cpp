@@ -1025,6 +1025,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // declared first 195, `joining` declared before `current` 199, `&identities[count]` 195, `identities +
 // count` 195, a 12-byte struct copy into `[count++]` 195; the element pointer `identities[count++]` named
 // before the copy 40 (as the plain post-increment form).
+// Round 102: the outer branch inverted 209 (701 bytes); the initial destination indexed by the zero count 9;
+// memset's return as the destination 215 (697); destination assignment in the for initializer 195; declaration
+// before the clear with assignment after it 9; declaration and assignment after the clear 9; the base also used
+// by the request 9; the destination formed before the close call 191 (704). Original restored.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
