@@ -2219,6 +2219,9 @@ struct s_unit_motion
 // step = time` or `step = time > step ? step : time` on a step loaded first. Separate output accumulators
 // alone 69; clamps, phase steps and completion test variants on the stack form 104-126. Retail's time in XMM3
 // probably follows 0xc7840's call site, so look there first.
+// Round 57 (m3 lane 9): the accumulator form with ternary steps 28 (227 bytes) is small enough that LTCG inlines it
+// into both 0xc7840 calls (2786 bytes, 995: the "723 -> 989" above); with the three steps through a forceinline
+// step helper 67 (221 bytes), still inlined. Retail keeps it out of line, so its body costs more than this form.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -2280,25 +2283,6 @@ bool function_c7750(s_unit_motion const *motion, real position, real velocity, r
 
 /* once: sets the unit's flag 21 and a random angle at +0x2d8 around its
    actor's direction (or its own facing) */
-// score 2 (was 5): the angle's temporary now sits in the vector's first component, as in retail, so only the
-// frame differs (0xc against retail's 0x10: retail gives the vector the twelve bytes the actor writes, ours
-// eight, so its frame is four bytes longer). Tried: a twelve-byte vector (vector3f, real[3], a plain
-// three-real struct) 8 (frame 0x14, the vector at esp+0xc); the twelve-byte vector in an inner scope 8; the
-// angle in a separate local 5; a sixteen-byte vector 8.
-// score 5 (was 5): only frame 0xc versus retail 0x10 and the angle temporary home remain; x87 adds now agree.
-// Earlier at 20: Frame 0xc versus 0x10 (retail keeps the atan2 temp in the query buffer's first dword,
-// ours with range) and the last two x87 adds (retail adds the bound before the angle) differ; the query
-// writes a 12-byte vector, which the 8-byte buffer only gets away with here. Native vector, 12-byte scratch
-// and real[3] 23; bool flag 60; native/bool 60; outer workspace 23; field angle 57; random-first native/bool
-// 60; outer angle 23; real flag view 60; native view 60; scoped vector/view/random-first 60; scoped vector 23;
-// scoped view 60; native/scoped bitfield setter 60. Round 151: the set through bit_vector_set with the
-// TEST_FIELD_BIT test 7 (kept); then a vector/12-byte buffer 10/10; buffer before range 7; outer angle 7;
-// the random offset in a named local 5 (fixes the adds; one-use, not kept); range/buffer/angle/offset
-// declared at the top 5 each; range assigned before the atan2/store 50/53/38. Round 89: the buffer as a
-// vector3f/real[3]/point3f 10/10/10 (frame 0x14: no temp packs into a 12-byte local); vector3f with the
-// locals renamed four ways 10; the query test inverted 7; the angle wrap as a ternary 7.
-// Common selected-angle publication with byte/native-vector output, zero-angle initialization and fallback-range
-// initialization combinations 53/53/74/74/60/60/75/76. Original query buffer and body restored.
 // @retail 0xcfec0
 void function_cfec0(long unit_index)
 {
@@ -2317,8 +2301,10 @@ void function_cfec0(long unit_index)
 		}
 		else
 		{
-			/* the angle keeps the vector's first component, as in retail */
-			actor_vector[0] = (real)atan2(unit->forward.j, unit->forward.i);
+			/* the angle keeps the vector's first component, as in retail; the
+			   named double gives retail's 8-byte aligned frame */
+			double angle = atan2(unit->forward.j, unit->forward.i);
+			actor_vector[0] = (real)angle;
 
 			if (actor_vector[0] > 3.1415927f)
 			{
@@ -2848,6 +2834,13 @@ void function_c5740(long unit_index, bool start)
 // scratch copy of 0x188180's definition (not kept): its seventh parameter as a short, alone and with the pool local,
 // moves no closer (the material then sits in EBP; our 0x188180 still takes point, forward and the effect value in
 // other registers than retail's EAX, ECX and stack). BLOCKED-BY 0x188180 (parameter type and register convention).
+// Round 57 (m3 lane 9): retail's 0xcf3d0 also pushes the material's raw dword, so the short parameter here is right;
+// 0x188180's seventh parameter is declared in two held files. Retail holds definition_index in EBP, the tag in EBX,
+// the weapon in ESI and the object array in EDI, re-reading unit and material from the stack. A NONE-initialised
+// weapon index with if/else exits 121 (333 bytes, 0xcf040 11); both sound plays through an inline helper 94; the
+// material path as an inline helper 260 (kept out of line, 0xcf040 6); an early return on a NONE definition 94;
+// `goto done` for the weapon exit 94. Diagnostic (reverted): a global store in 0x1012c0 gives the pool reload but
+// 96 (351 bytes), so that reload is not the main cause.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -7082,6 +7075,15 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // in-place rotations 669 (2411, stack). Every preloading form frees EDI, which then takes the velocity pointer
 // (retail EBX), and `current` is spilled, so LTCG passes it on the stack. Retail keeps `wraps` in a stack byte
 // copied to BL.
+// Round 57 (m3 lane 9): retail reuses slots: the desired-in-frame vector also holds the clamped target and the final
+// direction, and the velocity copy's slot later holds a copy of the current vector for the prediction. The clamped
+// target computed into the desired-in-frame vector 700 (frame still 0x94); also the final direction there and the
+// next direction in the velocity copy 700 (frame 0xa0); the velocity copied into the axis and normalized by the
+// existing normalize_inline (retail's epsilon test, divide and `jnp` order) 706 (frame 0x88, the copy's slot now
+// shared; sum and scale operand orders differ), by normalize3d 708 (0x88). 0xc7750 in retail's XMM convention
+// (accumulators, ternary steps) is inlined here (2786 bytes, 995). Next: the prediction through 0x2551f0's
+// static axis-rotation helper once it can be shared, on top of the axis normalization. The first atan2 as a named
+// double (0xcfec0's fix) 694 (frame 0x98, plain) but caller 0xc60c0 401 -> 447.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

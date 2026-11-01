@@ -55,6 +55,18 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
+// `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
+// g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
+// byte temporary. Two arms with one call each 174 (VC moves `saved` to EBX, spills `this` to [ebp-4] and flips the
+// frame to unbiased); the permuter (26 tries in 300 s) found nothing better than the opening body.
+// Round 32 (second pass): our first half matches retail instruction for instruction; the twelve internal jumps
+// differ only because our second block is six bytes shorter, so the epilogue sits six bytes earlier. Retail's arms
+// are `if (selected == NONE) {default} else {selected}` (the test is `cmp esi,-1` and the jump goes to the
+// out-of-line selected arm). Retail calls 0x13fac0 out of line and reuses its ESI/EDI argument registers for the
+// 0x216a50 call that follows; our link inlines the copy into a wcsncpy call plus a terminator store, and 0x13fac0
+// lives in another lane's file. The two-arm rewrite again 174 (595 bytes, `this` in EDI spilled to [ebp-4], EBX
+// takes the 1<<index shift, `variant` moves to [ebp-0x154], the frame flips to `mov ebp,esp` with `sub esp,0x254`).
 // score 61 (was 61): biased 0x250 frame agrees; creation classification spill
 // and expanded string copy remain. File-type result 61; word classification 69;
 // direct source argument 61; unsigned saved handle 61; result plus word 69.

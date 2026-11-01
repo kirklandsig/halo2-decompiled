@@ -1359,6 +1359,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // 6); flag first with the step in the for statement 111 (channels in EBP, 0x54990 1; flag still BL);
 // a named per-channel size in the arm 94; nested initialized/have-player tests 94; `2 + (flag ? 13 :
 // 11) * value` 94; a countdown counter `remaining = 16 .. > 0` 94 (all four the same code).
+// Round 10 (lane 17): flag, total, cursor 111 (0x54990 1; channels moves to EBP but the flag still takes BL, so
+// channels being live at the flag's definition is not what keeps retail's flag in AL); the flag declared at
+// function entry and assigned in place 94; the getter result named before the compare 94; total, flag, cursor 108
+// (0x54990 1); cursor, flag, total 99 (350 bytes); the cursor `s_voice_channel const *` 94 (same code).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -3111,6 +3115,9 @@ struct s_voice_route_choice
 // Round 112: a named XUID used by both radio-arm engine calls 375 (1288 bytes); with branch radio 418; with a
 // per-choice pointer 385; branch radio, pointer and XUID 417; the same with the NONE-nearest arm first 420
 // (aligned best of a 16-form screen, frame 0x50). Entry and tail rotation (talker EBP, zero EBX) unchanged.
+// Round 462: Consumed next-ordinal choice pointer/reference before headset, original/reused talker
+// mask 1075/1084; after headset 1079/1088; reference forms 1075/1084/1079/1088. All suppress
+// four-way expansion; original body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

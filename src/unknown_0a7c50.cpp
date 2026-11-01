@@ -396,7 +396,15 @@ struct s_slot_event_data
 // retail computes the address first and reads the byte at [ecx]. Tried: the
 // unit and header typed as the weapon slot query's own views, the query doing
 // the NONE test 60, with the slot tested first 50; the header pointer without
-// volatile 48, the selection without volatile 53, read at each use 55
+// volatile 48, the selection without volatile 53, read at each use 55.
+// Round 118 (no volatile, so both reads are cached): the slot stored into the
+// event data before the other fields 59 (the selection spelled three ways, 59
+// each); the slot stored last 59; the header read from the global at the
+// second lookup 60; a char first read with a signed char second read 60; the
+// item's object in a local 59. The volatile selection pointer without the
+// constant (indexed by it at both reads) 27. (Round 118 listing: ours folds 0x212
+// into the address, `lea ecx, [edx+eax+0x212]` then `[ecx]`; retail keeps
+// object+slot in ecx and reads `[ecx+0x212]`, as 0xa9030's note says.)
 // @retail 0xa8f80
 void function_a8f80(long index, short slot)
 {

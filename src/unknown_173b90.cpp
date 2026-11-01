@@ -12,6 +12,7 @@
 #include "globals.h"
 #include "data_array.h"
 #include "effects.h"
+#include "vector_products.h"
 #include "normalize3d.h"
 #include "matrix_transform.h"
 #include <xtl.h>
@@ -558,6 +559,15 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // before the first rotation is retail's, the rotations differ from the helper copy's store order on, ours i first,
 // retail j first); on that, the particle copies swapped 121, declared before the particle lookup and assigned after
 // it 113 (same code).
+// Round 59 (lane 12, fast): the scale product as `scale = ...; scale *= multiplier;` at both scale
+// sites 124 (1138 bytes); that on the indexed form with scale first 119 (1140 bytes, every rotation
+// row reorders); const emitter definition and particle pointers 42; the particle loop as a do/while
+// under its existing `if` 42; the emitter definition computed before the first-particle read 42.
+// Round 140 (lane 4): the reload pairs follow where the emitter definition is formed relative to the
+// emitter lookup: formed first, with scale first, 45 (reloads and 1.0 stores as retail, the outer
+// address computation then leads); the offset advanced before the next index 42 (same code); the
+// offset declared first 42 (same code); the offset as `dword` 42; the transform test read once into a
+// bool for both tests 326 (1156 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -872,13 +882,6 @@ public:
 	void function_248750(s_particle_system_datum *system, real dt, byte *location);
 };
 
-PRIVATE inline void particle_cross_174a30(vector3f const *forward, vector3f const *up, vector3f *out)
-{
-	out->i = up->k * forward->j - up->j * forward->k;
-	out->j = up->i * forward->k - up->k * forward->i;
-	out->k = up->j * forward->i - forward->j * up->i;
-}
-
 class c_particle_tag_view_174a30
 {
 public:
@@ -893,7 +896,7 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
-// score 248 (was 292): 1355 bytes and frame 0x60 as retail (round 27 form, below). Before it (292,
+// score 248 (was 248): 1355 bytes and frame 0x60 as retail (round 27 form, below). Before it (292,
 // 1372 bytes against 1355): our entry stored a `result`
 // slot (retail has none and returns `xor eax, eax` / `mov eax, 1` from the bool expression);
 // ours merges the flag-9 word update with the flag-8 clear (retail stores the word, clears flag 8
@@ -1007,6 +1010,11 @@ public:
 // XMM registers; the fallback's x87 length sums k, j, i (retail j, i, k, a rotation: tuple count) and
 // retail keeps the normalised forward in xmm4/xmm2/xmm5 across the join (ours reloads); retail reads
 // the parent colour before the child definition call.
+// Round 59 (lane 12, fast): the fallback normalisation through the existing normalize_inline 248
+// (different code, same count); the existing cross3f for both cross products 248 (identical code,
+// kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
+// negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
+// tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1056,7 +1064,7 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 					vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
 					function_30bf0(&matrix.forward);
 					function_11d000(&matrix.forward, &matrix.up);
-					particle_cross_174a30(&matrix.forward, &matrix.up, &matrix.left);
+					cross3f(&matrix.forward, &matrix.up, &matrix.left);
 					break;
 				}
 				}
@@ -1086,7 +1094,7 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 					matrix.up.j = 0.0f - matrix.forward.i;
 					matrix.up.k = 0.0f;
 				}
-				particle_cross_174a30(&matrix.forward, &matrix.up, &matrix.left);
+				cross3f(&matrix.forward, &matrix.up, &matrix.left);
 			}
 			matrix.scale = 1.0f;
 			matrix.position = *(point3f *)(particle + 0x1c);
@@ -1354,6 +1362,12 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// score 102 (was 102): this round: the availability flag written as `query(view) == 0` 102 (the
+// same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
+// bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
+// availability flag lives in bl because its NONE sentinel lives in ebp and frees ebx; ours keeps
+// the sentinel in ebx, so the flag lands in al and the same-view in bl instead of a stack byte.
+// The sentinel's register and the Boolean homes remain.
 // score 102 (was 102): frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // (coalesced; later NONE tests use immediates) and the availability flag in bl; ours keeps the
 // sentinel in ebx, the owner in edi and the flag in al, and tests the definition's bit 9 as a

@@ -135,7 +135,10 @@ bool c_session_state_none::update()
 // session's register, which dies there). Retail's case table runs to type 18
 // (16-18 share the type 15 arm). Tried: the kind through a NONE default before
 // the test 5; the kind tests in the 0x58d70 condition 5; the kind read through
-// the member's parameters 5; a named member index 5.
+// the member's parameters 5; a named member index 5. Round 60: an unsigned kind 5;
+// the member index read before the 0x58d70 call 5 (the load is sunk, same code); the
+// kind declared at function scope 5; the switch on a named type local 5; the
+// `default: __assume(0)` label first 65 (the case blocks follow source order).
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {
@@ -218,38 +221,6 @@ void c_session_state_pre_game::enter(long a, long b, long c)
 
 /* ---- start-game ---- */
 
-// score 65 (was 65): the result lives in bl where retail keeps it in a stack
-// byte, because retail's 0x6e720 takes the session in ebx (this function saves
-// ebx around that call) and ours takes it in esi; see the note there. Tried: one
-// && test setting `result = true` in its block 69 (174 bytes), set before the calls
-// 69, `return true` there 75; the 0x58d20 test as an outer if around `result = 6e720
-// && 6e6b0` 62 (its failure joins the common exit as in retail; the other two keep a
-// `xor bl, bl` exit), the success block after it 62, with session_state_is_live 62;
-// the outer if with `result = true` inside 69 (also with session_state_is_live 69);
-// the outer test on 0x58d20 and 0x6e720 with `result = 6e6b0` 75; session_state_is_live
-// alone 65.
-// Round 81: the success test nested under the 0x58d20 test with `result = true` inside 69; one
-// condition with `result = true` inside 69; the 0x6dfa0 result tested in an if/else-if chain
-// 84; owner read at each use 88; the owner and session locals after the 0x6dfa0 call 90.
-// Round 84 (BLOCKED-BY 0x6e720, whose file another lane holds): the type 2 arm first 95 (156
-// bytes); `if (!result)` split from the live test 65; `bool result;` declared first 65; the
-// 0x6e6b0 test as its own `if (result)` 69; one early `return result` for the three guards 63 (183
-// bytes, the same plan with `xor bl, bl; mov al, bl` exits).
-// alone 65. Round 11 (0x6e720's file held by another lane; relink screen, current form 55 there):
-// `result = true` inside one && test 60 (aligned 23 -> 17, 174 bytes); the 0x58d20 test outer with
-// the other two inside and `result = true` 60; the outer test on 0x58d20 and 0x6e720 with `result =
-// 6e6b0` 65; an early `return result` after 0x6dfa0 54 (183 bytes); an early return on a false result
-// in the type-2 arm 55 (same code).
-// Round 84 (BLOCKED-BY 0x6e720, whose file another lane holds): the type 2 arm first 95 (156
-// bytes); `if (!result)` split from the live test 65; `bool result;` declared first 65; the
-// 0x6e6b0 test as its own `if (result)` 69; one early `return result` for the three guards 63 (183
-// bytes, the same plan with `xor bl, bl; mov al, bl` exits).
-// Round 31 (lane 13, fast): with 0x6e720 taking the session in EBX (diagnostic: both 0x6e910 call values
-// named before its member count read, 0x6e720 65) the current body is 63 (183 bytes, result in BL) and
-// `if (058d20 && 6e720 && 6e6b0) { stop; network_session_set_mode; result = true; }` MATCHES (retail's push ebx / mov ebx,
-// esi and stack-byte result); with 0x6e720 as it is (ESI) that form is 69 (174 bytes). Only 0x6e720's
-// session register is left; with 0x6e720 given EBX another way (its 0x49c8 argument as a constant, a
-// diagnostic) that form matches too.
 // @retail 0x6e500
 bool c_session_state_start_game::update()
 {
@@ -264,11 +235,11 @@ bool c_session_state_start_game::update()
 		}
 		else if (a->type == 2)
 		{
-			result = a->function_058d20() && function_06e720(a) && function_06e6b0(a, &flag10);
-			if (result)
+			if (a->function_058d20() && function_06e720(a) && function_06e6b0(a, &flag10))
 			{
 				network_session_stop_countdown(a);
 				network_session_set_mode(a, 4);
+				result = true;
 			}
 		}
 		else
@@ -821,6 +792,10 @@ void c_session_client::function_06dbc0()
 // early return or joined into the condition 45/45 (diagnostic: a hand copy of the helper); memcmp size
 // as sizeof(s_session_id), an equal-id return before the call and a return after it 43 each
 // (identical). BLOCKED-BY 0x58d90: retail inlines that existing helper, ours stays out of line (/Ob0).
+// Round 183 (lane 3, fast): a member pointer named for the memcmp 43; a client copy of this carrying
+// the session read and the call 43; case 7/8 as `if (!flag) break; return;` 43; the mode/type test as an
+// early return before the compare 43; a named differs result with sizeof(s_session_id) 43 (all the same
+// code). The function is virtual (standard thiscall), so no caller or convention lever applies.
 // Round 31 (lane 13): compile-only, a second 0x6d380 call or 0x58d90 called out of line give retail's
 // `push ebx; mov ebx, ecx`; 0x58d90's result-variable switch as a forceinline helper (early return,
 // joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
@@ -1191,70 +1166,13 @@ static __forceinline long function_724a6(s_surface_description *arg_0)
 }
 #pragma inline_depth(255)
 
-// score 7 (was 7): the session member is loaded into ecx (retail eax), the level's address into
-// edx (retail ecx) and the reloaded type into eax (retail edx), one rotation of the scratch
-// registers; the type filter (cmp 5/je, cmp 3/je, cmp 4/jne default) and both arms are retail's.
-// The named condition gives that filter (the || test written in the if lays the default arm
-// first, 98), and 0x1932c0 stays out of line through the out-of-line wrapper above (inlined in
-// the default arm otherwise, 568 bytes; a noinline declaration in its own file also gives 7 but
-// costs 0x1931d0 its match, where retail inlines it). The barrier keeps the inlined 0x193440
-// reloading the type.
-// Goto-filter forms (9): one 5 || 3 || 4 test or its negation (100), case 5/3/4 in one switch
-// (108), cases 1-2 and 3-5 with __assume(0) (134); separate case 3 and case 4 (103); 5 || 3 then
-// a case 4 switch (100); a negated && test before the special block (100); the || test around a
-// case 1-2/3-5 switch with __assume(0) (111); an else-if chain of equality gotos (7). Member at
-// each use 165; member before session root 9; common limit result 190; retained width/minimum
-// results 99/162; typed variant storage/native record copy 9/9; typed storage with helper
-// classification 128; helper classification with fallback noinline 128, without the barrier 145;
-// fallback noinline alone 9; immutable member 9; member after collection 10; immutable variant,
-// summary, values or type 9; unsigned type 9.
-// Named-condition forms: no barrier 86; the type read from the values record 27 (reloads, but
-// loads before the limit store); an unsigned type read 86; summary/selected results as if
-// statements 7/7; member after the collection 8; values first 7; member through an inline getter
-// 7; 0x5c240 called directly is inlined (580 bytes; a noinline declaration here is ignored).
-// retail tests the variant type as cmp 5/je, cmp 3/je, cmp 4/jne default,
-// (MiniMax S run 4: an else-if chain of equality gotos for 5, 3 and 4 gives retail's filter but
-// scores 7, a gain under the bar: the session member, level address and reloaded type stay in
-// the wrong registers.)
-// ours turns the 3/4 cases into a jl/jg range; the session member travels in eax (ours ecx)
-// and the reloaded type in edx (ours eax). Every goto-free form lays the default block out
-// first: one 5 || 3 || 4 test or its negation (100), case 5/3/4 in one switch (108), cases
-// 1-2 and 3-5 with __assume(0) (134); separate case 3 and case 4 (103); 5 || 3 then a case 4
-// switch (100); a negated && test before the special block (100); the || test around a
-// case 1-2/3-5 switch with __assume(0) (111). The table itself is function_193440 inlined.
-// Member at each use 165; member before session root 9; common limit result 190;
-// retained width/minimum results 99/162; typed variant storage/native record copy 9/9;
-// typed storage with helper classification 128. Frame and first +0xe remain unchanged.
-// helper classification with fallback noinline 128; without the barrier 145;
-// fallback noinline alone 9; immutable member 9; member after collection 10;
-// immutable variant 9; immutable summary 9; immutable values 9;
-// immutable type 9; unsigned type 9.
-// Further trials: member/level-address allocation, range dispatch and reloaded type remain.
-// own fallback noinline/held dispatch 9; own fallback noinline/classifier with barrier 7.
-// own fallback noinline/classifier 86; own fallback noinline/classifier with native output 7.
-// own fallback inline/held dispatch 57; own fallback inline/classifier with barrier 128.
-// own fallback inline/classifier 145; own fallback inline/classifier with native output 128.
-// new classifier/uniform session 166; new classifier/collection at use 44.
-// new classifier/session and collection 184; new classifier/session and output 166.
-// new classifier/collection and output 44; new classifier/all roots 184.
-// new classifier/member at use 165; new classifier/all roots and member 153.
-// classifier own inline with barrier 7; classifier own force-inline with barrier 7.
-// classifier own inline without barrier 86; classifier own force-inline without barrier 86.
-// Round 42: current fallback wrapper/existing classifier 7; member through the owning path 7;
-// initialized level 132; collection direct at first/second/third use 7/7/7;
-// first width result as bool/long 7/7. The three-register rotation remains.
-// Entry level/type/shared-variant workspaces and role names 7; width inline 7,
-// force-inline 235. Long/unsigned-long classification results with either
-// or both upper clamps as conditional assignments 7 in all eight forms.
-// Entry level/type declarations and a shared variant workspace, alone and combined: eight forms 7.
-// Width helper declared inline in its own unit and every prototype 7; force-inline 235 (584 bytes).
-// All restored; the member/level-address/type scratch-register rotation remains.
-// Round 14: level declared at function scope (first/after the collection) 7/7; variant or type
-// declared at function scope 7/7; the collection at each of its three uses 44.
+// 0x1932c0 stays out of line through the wrapper above (inlined in the default arm otherwise),
+// and the barrier keeps the inlined 0x193440 reloading the type.
 // @retail 0x72330
 void function_72330(c_session_state_matchmaking *state)
 {
-	c_class_58d20 *session = state->owner->session_a;
+	s_session_owner *owner = state->owner;
+	c_class_58d20 *session = owner->session_a;
 	long member = session->member_index;
 	s_member_quality_collection *members = (s_member_quality_collection *)&session->value4c;
 	s_matchmaking_player_values *values = (s_matchmaking_player_values *)state;
@@ -1832,59 +1750,6 @@ long function_75890(long time);
 
 bool network_session_host_become_leader(c_class_58d20 *session);
 
-// score 48 (was 48): BLOCKED-BY 0x6e720 (retail passes the session to it in EBX, ours in ESI, so
-// EBX holds the pending flag here); retail sets its readiness per arm after the calls (AL: `xor eax,
-// eax` shared with the timer reset, `sete al`) and lays the failure arm first. Tried: cleanup-first
-// mode 90; byte readiness 90; byte completion 94; single state read 90; readiness before countdown
-// 140; shared live-state predicate 90; owner/secondary/primary/paired object references 90;
-// completion from test 129; host return guard 90; paired preparation result 90; reversed timed-type
-// tests 93; shared type/all failure commands 144/128; combined mode-readiness 90 (426 bytes);
-// preparation failure first 90; raw-time readiness 94; unsigned saturated time 90; completion before
-// mode call 90; shared failures with combined gate 129; integer readiness 59 (kept); entry readiness
-// 134; entry integer readiness 135; timed type range 107; four/five/timed arm order 111; completion
-// from readiness 136; test-assigned preparation 90; active predicate value 166; live timer/mode/both
-// fields 59/59/59; integer pending 48 (kept); byte/word pending 90/59; common-tail guard 59; pending
-// with live timer 48; full preparation pending 71; staged/second-call pending 95/96; tail guard 48;
-// wide completion 146; unsigned preparation 71; early/raw pending 128/61; duration pending 91;
-// shared/early countdown seconds 97/107; clock value 90; timed/five arm order with integer pending
-// 117/118; word completion 146; early duration pending 137; bool ready 90; ready with the failure
-// arm first 90; pending set in each arm 52; clamp as an if 129 (the ternary clamp kept: same bytes as
-// the mask form); native int pending, pending/completion/millisecond names and outer pending
-// declaration 48; positive-duration test, full-width pending with failure first and nested
-// preparation 48; unsigned pending/const captured pointers 48; quotient/remainder ceiling 93;
-// separate inline/noinline readiness/preparation declarations 48 each; pending conjunction 92; a
-// bool ready set in each arm, failure arm first/second 96/96; a long ready so 69; a bool ready
-// false at its declaration, set in the timer arm 90; the pending flag set in each arm with the
-// failure arm first 52.
-// Round 76: a bool ready assigned in each arm (`ready = remaining == 0;` / `ready = false;`) 96, aligned
-// 12 -> 11: retail's `sete al` and `test al, al`, only the 0x6e720 setup and the block order left; the
-// same with the failure arm first 96 (same code); the failure stores swapped 96; a long ready 69 (retail's
-// shared `xor eax, eax` for the timer and the flag, but `test eax, eax`); `ready = unknown18 = 0;` 96.
-// Round 159: a named preparation result tested `if (!prepared)` with a bool ready per arm 96 (the
-// failure arm comes first, as in retail, but the join still follows the countdown arm); a bool ready per
-// arm with the failure arm written first 96; a bool ready false at its declaration 90; both 100 (429
-// bytes); the integer pending with the named preparation result 47, tested `if (prepared)` 48, with
-// session_state_is_live 48; session_state_is_live alone 48; a named elapsed time 48; named countdown
-// seconds 48.
-// Round 81: a bool ready with the failure arm written first (`!a || !b`) 96; a bool ready false at
-// its declaration 90; the pending value as the remaining time 91; the integer pending with the
-// failure arm first 48; the same with pending set in each arm 52.
-// seconds 48. Round 11 (0x6e720's file held by another lane): nested ifs with the timer reset in both
-// else arms 48 (same code); the leave arm first (`mode != 3`) worse (51 on a relink screen where the
-// current form is 43); result set before the mode call 48.
-// Round 86: combined mode gate with bool/long/signed-byte/dword readiness 96/86/96/86;
-// NONE duration sentinel 131; preparation and duration in one gate 138; completion nested in
-// the success arm 97; bool readiness with the failure arm first and combined mode gate 96.
-// Original body restored.
-// Round 31 (lane 13, fast): on the EBX diagnostic of 0x6e720 (both 0x6e910 values named before its member
-// count read) the current body is 104 (433 bytes: the integer pending spills); a bool ready set in each arm
-// 62 (424 bytes, only the block order), failure arm written first 62, ready false at its declaration 97;
-// `bool ready = 6e720 && 6e6b0; if (ready) { countdown; ready = remaining == 0; } else unknown18 = 0;`
-// MATCHES (a compile-only screen of 8 arm forms found it as the only one with retail's order: failure,
-// join, mode-3 body, countdown, leave). With 0x6e720 as it is (ESI): that form 94 (426 bytes), with a long
-// ready 63, `long pending = !6e720 || !6e6b0` refined in the countdown arm 71 (435 bytes). Only 0x6e720's
-// session register is left; with 0x6e720 given EBX another way (its 0x49c8 argument as a constant, a
-// diagnostic) that form matches too.
 // @retail 0x72700
 bool c_session_state_start_match::update()
 {
@@ -1901,8 +1766,8 @@ bool c_session_state_start_match::update()
         }
         else if (b->type == 2 || b->type == 3)
         {
-            long pending = true;
-            if (function_06e720(b) && function_06e6b0(b, &unknown14))
+            bool ready = function_06e720(b) && function_06e6b0(b, &unknown14);
+            if (ready)
             {
                 if (!unknown18)
                     unknown18 = function_75870();
@@ -1910,13 +1775,13 @@ bool c_session_state_start_match::update()
                 long remaining = remaining_raw < 0 ? 0 : remaining_raw;
                 network_session_host_become_leader(b);
                 network_session_start_countdown(b, true, (remaining + 999) / 1000, 0, NULL);
-                pending = remaining != 0;
+                ready = remaining == 0;
             }
             else
                 unknown18 = 0;
             if (mode == 3)
             {
-                if (!pending)
+                if (ready)
                 {
                     network_session_set_mode(b, 4);
                     result = true;

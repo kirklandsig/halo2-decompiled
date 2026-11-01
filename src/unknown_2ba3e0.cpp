@@ -730,6 +730,12 @@ real g_55e618;
 // home); with the velocity read at each use 199. Local names do not move the stack homes (compile-only frame
 // listing unchanged for four renames); ours homes sweep, perpendicular, (cache, collision), tangent, retail
 // tangent, sweep, (cache), perpendicular, (collision).
+// Round 43 (one-file LTCG link of this file with the callee closure and the inlining ballast object, equal to
+// the full listing, 74 there): the collision pointer does reach a non-LTCG body (0x244980 stores it in its
+// ray-cast callback and hands that to the Havok cast at 0x2df720), but retail's Havok is the same, so that
+// does not separate the builds. On the velocity pointer form (harness 183, frame 0x118): keep computed after
+// the tangent 187; tangent declared before perpendicular 183; the impact declared at the block's top 183;
+// perpendicular and tangent interleaved per component 183, with keep late 187 (all at least 185 here).
 // Round 116 (lane 6, fast, LTCG build): four rename sets of perpendicular/tangent/sweep (normal/tangent
 // velocity, bounce/slide, travel, along/motion/rebound) 102 each (homes unmoved, so the same-size name order
 // does not apply here); tangent, tangent and perpendicular, tangent at the top with perpendicular after the
@@ -737,6 +743,14 @@ real g_55e618;
 // 200 (frame changes, +0x2); the copy form with that interleave 211. Retail keeps perp.i/j, tangent.k and
 // keep in xmm5/6/7/3 across the placement call (its LTCG callee leaves them) and spills only tangent.i/j and
 // perp.k.
+// Round 40 (lane 11, fast): retail stores the collision record's +0x24 NONE word before the start point's
+// x/z stores; `collision.value.unknown24 = NONE;` ahead of `start.x -= displacement.i;` gives that order
+// 100 (two-point gain, not kept), ahead of the displacement 134. On that order: the velocity read from the
+// particle at each use 197 (frame 0x118), with the position stores after impact.index 197; the position
+// stores after impact.index alone 100 (same code); a `vector3f *velocity = &particle->velocity` pointer
+// (also passed to the placement and used for the final stores) 193 (frame 0x118; the dot's k term and
+// `lea esi` then match retail, but the i product keeps the normal as its destination where retail loads
+// velocity.i, and the perpendicular gets no home).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

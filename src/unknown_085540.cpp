@@ -943,6 +943,11 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // before start 32 (and 0x6a8a0, 0x80e10, 0x18f260 worse). With the barrier: the header memset
 // before `unknownac = 0` 19; `long size` before the count increment 19. A compile-only build
 // gives the +0xc/+8 ring stores and the hoisted header store for every statement order.
+// Round 140 (lane 4): the ring pointer declared first in the block 25; `unknownac = 0` ahead of the
+// ring stores 200 (644 bytes); `header.value` assigned before kind and size 25; the count increment
+// after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
+// wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
+// the reader's local non-volatile 250 (its zero stores vanish).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -996,6 +1001,8 @@ bool function_685f0(void *block, long *size, byte *destination, long capacity);
 // callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
 // off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
 // in edx; its body is contributor code).
+// Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
+// `mov edi, edx`) and this is its only caller, so no caller form was retried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
@@ -1023,6 +1030,14 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
+// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
+// ring cursor stays in esi across the first read and the used count is updated through a register,
+// so the read's offset is still forwarded in edx instead of reloaded and the header size still
+// lands in si. Retail's dx load of the size kills the remainder left in edx by the idiv, which is
+// what forces its reload; ours keeps the remainder for the second read. The permuter ran without
+// finding a better form. The header home, the size register, the forwarded cursor and the grouped
+// case-1 stores remain.
 // score 72 (was 72): retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at

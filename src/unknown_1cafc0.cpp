@@ -373,7 +373,7 @@ c_type_709360 s_animation_state::variant_get(c_type_709360 animation_id)
 }
 
 // @retail 0x1cb410
-bool s_animation_state::channel_start(c_animation_channel *channel, c_type_709360 animation_id, long unknown08,
+inline bool s_animation_state::channel_start(c_animation_channel *channel, c_type_709360 animation_id, long unknown08,
 	char unknown0c, char unknown0d, char unknown0e, dword channel_flags)
 {
 	bool result = false;
@@ -602,6 +602,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // Round 27 (lane 14): fallback query through the existing animation_id 399 (same code); bool success 447;
 // primary/both queries through animation_id 399/399 (same code, copy propagated); fallback into a block-scope
 // initialized local 414 (temps still share the set slot).
+// Round 12 (lane 18): retail's expansion reads the function's own spilled graph (reloaded from its home at each
+// loop preheader and in the inheritance loop's EBP), ours a separate register copy (EBX) that the inheritance loop
+// then reloads per use. 1-7 unused initialised locals at the top and 1-4 before the request 348 each (no numbering
+// tie); the request given a fresh graph_get() 633 (callers lose); the request declaration marked __forceinline 348;
+// `return success != false;` 351 (re-measured); success declared before the graph 348; `if (success != false)` 348;
+// a block-local copy of the graph passed to the request 348; the found names passed as indexed fields 348.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1367,7 +1373,7 @@ bool s_animation_state::update(animation_event_callback callback, long user, lon
 }
 
 // @retail 0x1cb490
-bool s_animation_state::channel_play(c_animation_channel *channel, c_type_709360 animation_id, dword channel_flags)
+inline bool s_animation_state::channel_play(c_animation_channel *channel, c_type_709360 animation_id, dword channel_flags)
 {
 	bool result = false;
 

@@ -1192,6 +1192,11 @@ void c_game_engine_markers::v21(long object_index)
 // absolute index after, object local and cause local 130, with unit inside and cause local 129; on the team at each
 // call: arms swapped 119, one options local for both tests 119, mode and type tests joined 119; slot_object_get
 // with the index first, a header-array local or a pointer add 40 each (same code), `(word)` index 109.
+// Round 43 (one-file LTCG link of this file with the callee closure, 0x101280's file and the build's inlining
+// ballast object, equal to the full listing): the event test with the slot range first about 47 (harness 33
+// against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
+// at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
+// matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
@@ -1518,6 +1523,10 @@ long function_2421d0(long team)
 // ternary 55; nested arms with the peer read after the type 30 (before NONE 35); a plain
 // `else if (enabled)` 35 (193 bytes); NONE in a final else 56; the peer tested first in each && 55;
 // the existing game_engine_get() in each arm 74.
+// Round 139: a peer ternary in each type arm 75 (213 bytes; the arms' scratch registers rotate
+// by one, ecx/edx/eax then edx/eax/ecx); the peer tested first with the type if/else inside 57;
+// the peer local declared before the type 33; the type read at each test, no local 59; the peer
+// as a bool 61.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {

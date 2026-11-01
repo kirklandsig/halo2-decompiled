@@ -204,6 +204,24 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // short local used for the store and the normal index 185; the axis local on the current body 160.
 // Retail's first corner keeps the axis in AX (re-extended at the lookup) and the side in CL; ours
 // keeps one sign-extended axis in ECX and the side in AL, so 4 corners x 2 bytes are missing.
+// Round 10 (lane 17, fast): the corner point through the existing matrix_transform_vector of {x, y, 0} plus the
+// position 444 (1171 bytes: the up terms are not folded); the corner point as a `real point[3]` passed to the
+// existing function_120810 185 (970 bytes); that with the edges through vector2d_from_points2d and an if/else
+// inverse 180 (975 bytes); that with the point built inside the call's first argument 180 (same code: the axis
+// and side loads do not move ahead of the products); the plane set through a small inline helper taking
+// (plane, normal, point) 151: the normal copy, the d store through the normal's base `[eax+0xc]` and the call
+// argument are then retail's, only the dot's i term loads the point first, but every corner product's operand
+// order changes with it (the order follows something global, not the corner's own source).
+// Round 104 (lane 8): a compile-only screen reproduces the corner product operand orders exactly; they
+// shift with the function's symbol numbering (1-8 unused locals at the top or in the corner helper,
+// diagnostic only, give 7-24 product mismatches against the current 10), so they follow how many
+// locals and inline temporaries the source has. Real: bounds typed box2f with named corner fields 138
+// (identical); the corner point as a three-component loop with the table row first 139 (985 bytes);
+// corner helper taking axis/side by value through the existing 0x120810 191 (966 bytes); the
+// component loop through 0x120810 191; corners through quad->corners without the pointer local 193
+// (953 bytes). Screens: 384 helper shapes on 0x120810 19-24 mismatches (only row order counts).
+// Best screen 7 with four extra function-scope locals and one in the helper: retail's body may have
+// more named locals than ours (in combination, not singly).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

@@ -14,6 +14,7 @@ void function_1fa50(short_rectangle2d const *bounds, word const *text, void cons
 #include <xmmintrin.h>
 #include "slot_handler.h"
 #include "input_record.h"
+#include "unknown_157450.h"
 
 real function_1e96a0(short column, short row);
 
@@ -201,6 +202,29 @@ void function_1ea880(long first_player, long player_index, s_object_values *tabl
 // with a twice-used amount 460/483/459; native record cursor
 // without/with amount 473/473. Original result types and body restored;
 // frame, victim/selection/count homes and rounding expansion remain.
+// Round 120 (lane 6, fast = plain): forceinline real_to_long declaration 444 (retail's inline fld/fistp);
+// with the victim through unit_get_player_index 472; with both assist arrays [5] 469 (frame 0x50); with
+// the game time through function_146650 472 (game_time read before the asm as retail); with retail's
+// statement order (NONE defaults first, consider_team cleared after the test, short selected and
+// reported_slot, hostile/threshold/counts after the selection, `if (killer == NONE) ... else if (killer
+// == reported_player)`, friendly through function_15eaf0) 501; with the record fields read as
+// `*(long *)(history + i * 0x10 + 0xc)` 501 (same code); with the history as a typed damage-record
+// array 376; the assist stores and the related player re-reading the field 387 (assist loop alone 418:
+// frame 0x4c); dedupe as `j >= i` 378; dedupe compare as `assists[i] != assists[j]` 376 (same count);
+// as a for loop with break 376; killer read from the record at each use 344 (kept); `if (killer !=
+// NONE) {...} else if (datum...)` 354, with the fallback's stores swapped 354; object as a typed view
+// with history/damage_codes members 344 (cursor still +4); damage read once under a nested time test
+// 440; the killer-team call argument read from the player byte again 362 (retail's movsx si, al), with
+// the != NONE arm order 345; consider_team as one expression 353; friendly as one expression 344
+// (aligned 176 against 169); a walked record pointer in the selection loop 346 (still rebased +4);
+// named victim/killer index locals for the two 0x196dd0 calls 344 (killer first gives retail's
+// EBP/ESI roles there, same count). Kept with consider_team and friendly as single expressions 353:
+// consider_team set true and cleared inside the reported-team test gives retail's store pair and 344,
+// but it is a flag set inside a test (left for a matching round); `reported_player == NONE ||
+// !function_1df560(...)` 353.
+// With all of it 353 (cursor biased +4, killer/victim_team/damage_code in rotated slots, killer kept in
+// EBP, the assist player index in EBX), but only with a file-local __forceinline redeclaration of the
+// header's plain-inline real_to_long (483 without it): an inline twin, kept only with a match; body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -356,6 +380,12 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // field 85 (and 0x15b7c0/0x15b3a0 lose their match through the declaration);
 // the field read after the index 83, or inside the index expression 85; a row
 // pointer indexed by the field at each use 64 (0x15b3a0 and 0x1ea770 lose theirs).
+// Round 11 (lane 17): the team path through the existing function_x340af0() and
+// datum_get_absolute_inlined() (kept: same code, no parameter reuse); the first engine test
+// through game_engine_get() 13; the clamp as two ifs 13, upper bound first 19; a plain delta
+// parameter 18 (its movsx is then hoisted to entry, the field read folds); the field read
+// through its address without volatile 85; the volatile read after the index 83 (statistics is
+// then hoisted), inside the subscript or as a row offset 85 (folded).
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -371,16 +401,10 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	if (g_55e4d0[g_4e9ae8->engine_index] && g_4e9ae8->value28 != NONE)
 		function_b58c0(g_4e9ae8->value28, 1 << index);
 	if (counter != NONE) function_1968b0(index, NONE, counter, *entry);
-	if (by_team)
+	if (by_team && function_x340af0())
 	{
-		by_team = false;
-		if (g_55e4d0[g_4e9ae8->engine_index]) by_team = g_4e6948->flags184.bit0;
-	}
-	if (by_team &&
-		index != NONE && index >= 0 && index < g_4e8c24->high_water_index)
-	{
-		byte *player = g_4e8c24->data + index * g_4e8c24->size;
-		if (*(short *)player && (char)player[0xc0] != NONE)
+		byte *player = datum_get_absolute_inlined(g_4e8c24, index);
+		if (player && (char)player[0xc0] != NONE)
 			function_1e9df0(field, counter, (char)player[0xc0], statistics, delta);
 	}
 }
@@ -751,6 +775,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // Right offset right after its inset 197; bounds copied to a local first 302; the
 // rectangles as short_rectangle2d 2; top inset after the other offsets 123; piece
 // declared before inner 2.
+// Round 41 (lane 10): inset and offset in one expression per edge 207 (1162 bytes);
+// top offset before bottom 2; bounds read directly without the `input` alias 2 (kept);
+// both screen offsets read into named locals first 44; horizontal edges inset and
+// offset before the vertical ones 52. The compile-only harness gives retail's load
+// order for the current source, so the swap comes from link-time scheduling.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
@@ -798,12 +827,11 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 			result = false;
 		if (result)
 		{
-			s_request_screen_bounds const *input = bounds;
 			s_request_screen_bounds inner;
-			inner.left = input->left + 8;
-			inner.top = input->top + 8;
-			inner.right = input->right - 8;
-			inner.bottom = input->bottom - 8;
+			inner.left = bounds->left + 8;
+			inner.top = bounds->top + 8;
+			inner.right = bounds->right - 8;
+			inner.bottom = bounds->bottom - 8;
 			inner.left += g_4b9dd2;
 			inner.right += g_4b9dd2;
 			inner.bottom += g_4b9dd0;

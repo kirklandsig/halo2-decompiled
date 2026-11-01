@@ -361,8 +361,8 @@ static inline void avoidance_bit_set(dword *bits, long index)
 
 static __forceinline point2f *avoidance_scale2d(point2f const *direction, real distance, point2f *scaled)
 {
-	scaled->y = direction->y * distance;
 	scaled->x = distance * direction->x;
+	scaled->y = direction->y * distance;
 	return scaled;
 }
 
@@ -451,16 +451,6 @@ short __stdcall avoidance_expand_obstacle(s_pathfinding_data const *pathfinding,
 	return added;
 }
 
-// score 21 (was 21): the computed distance is stored to the stack and read back here, while retail
-// keeps it in a register.
-// Left: the movement x product (retail copies the distance and folds direction.x; ours loads
-// direction.x). Tried: the scale helper with the distance by reference or pointer and x first 22;
-// the trace declared first or before the direction pointer 21; `&node->direction` passed to it 21.
-// The movement scaled in place from a copy of the direction 162; the point moved through
-// avoidance_point_along2d in place 134; a named distance local with the two products written
-// out 21; the products added straight into the point 134; the helper scaling its output in
-// place 134. A compile-only build gives our load forms for every helper and statement
-// spelling; matched 0x25eea0 gets the copy form from a computed local (`nt * direction->k`).
 // @retail 0x2c3d40
 bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const *pathfinding, bool allow_partial)
 {
@@ -474,12 +464,11 @@ bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const 
 		if ((short)index != NONE)
 		{
 			s_avoidance_node *node = &search->nodes[(short)index];
-			point2f const *direction = &node->direction;
 			short added = 0;
 			s_avoidance_trace trace;
 
 			function_26ccb0(pathfinding, search->obstacles, NONE, &node->position, node->value08,
-				search->value18, direction, search->radius, node->distance, node->parent == NONE,
+				search->value18, &node->direction, search->radius, node->distance, node->parent == NONE,
 				true, search->value29, false, &trace);
 			if (trace.edge == 0xffff)
 			{
@@ -489,7 +478,7 @@ bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const 
 					{
 						point2f point;
 
-						avoidance_point_along2d(&node->position, direction, trace.distance, &point);
+						avoidance_point_along2d(&node->position, &node->direction, trace.distance, &point);
 						search->value1e = avoidance_add_node(search, &point, false, search->value18, NONE, NONE,
 							node->cost - node->distance + trace.distance, (short)index);
 						added = 1;
@@ -497,6 +486,7 @@ bool avoidance_search_step(s_avoidance_search *search, s_pathfinding_data const 
 				}
 				else
 				{
+					point2f const *direction = &node->direction;
 					s_obstacle *obstacle = &search->obstacles->obstacles[trace.obstacle];
 
 					if (allow_partial && trace.group == search->goal_obstacle)
@@ -633,6 +623,10 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
+// callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
+// success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
+// constant, and the path pointer and the obstacle, search and step homes differ.
 // score 675 (was 675): the frame 0x1f88 and the length agree, but retail keeps the success result
 // in a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and
 // the path pointer and the obstacle, search and step homes differ.

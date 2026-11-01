@@ -88,9 +88,13 @@ static inline vector3f *cross3f(vector3f const *a, vector3f const *b, vector3f *
 	return result;
 }
 
-static inline vector3f *function_x84d9e8(vector3f *vector, vector3f const *axis, real sine, real cosine)
+/* the axis and the vector are taken into locals in that order: it sets the order of the cross
+   product's operand loads (0x18c250) */
+static inline vector3f *function_x84d9e8(vector3f *vector_in, vector3f const *axis_in, real sine, real cosine)
 {
 	vector3f cross;
+	vector3f const *axis = axis_in;
+	vector3f *vector = vector_in;
 
 	cross3f(axis, vector, &cross);
 	vector->i = cosine * vector->i + sine * cross.i;
@@ -99,28 +103,6 @@ static inline vector3f *function_x84d9e8(vector3f *vector, vector3f const *axis,
 	return vector;
 }
 
-// score 6 (was 6): cross-product operand preloads and SSE allocation remain.
-// shared cross-product interface 6;
-// plain component rotation loop 47;
-// shared cross product and component loop 47;
-// cosine vector snapshot 35;
-// rotation output vector snapshot 136;
-// shared cross product and cosine vector 35;
-// shared cross product and rotation output 136;
-// shared cross product with distinct rotation input and output 134;
-// void rotation return 6; cosine-in-place i/j/k/i+j/i+k/j+k 12 each;
-// sine-in-place cross i 15; single-precision trig 46; scalar trig results 6;
-// value-returning cross 123; reference cross interface 6; array component cross 6.
-// Axis/input/both scalar snapshots 48/53/56; paired products 34;
-// cross inputs by value axis/input/both 150/157/193; rotation axis by value 150.
-// Round 70: retail loads axis j for the i-row first product and vector i for the j-row one; VC picks
-// the loaded operand itself (all 64 product operand orders and all helper parameter orders give this
-// code or worse). Axis/vector pointer aliases in the helper 11 (fixes those two, flips the k-row
-// second product), vector alias first 12; axis local before the call 39; point-typed helper 6;
-// input alias 13; cross/rotation statement orders 7-39; helper in another file 6; angle wrapper 38.
-// Round 26: components computed k, j, i into locals before the stores 6; both helpers forceinline 6;
-// axis/vector aliases in the cross helper 11 (only the k-row second product then loads the axis),
-// with that product's operands swapped 11; aliases for the i and j rows only 46.
 // @retail 0x18c250
 bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {
@@ -181,6 +163,10 @@ bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker
 // Round 42: named machine object 23; header local in the machine arm 23; indices local 23; object local
 // reassigned from the header 23; one header local for the type and machine reads 137. Only dropping the (word)
 // cast gives retail's cluster lea/base order, but retail zero-extends the index.
+// Round 43 (lane 10): `machine_index & 0xffff` for the cast 23 (same code); the location local at function
+// scope 23; `forward` declared before `matrix` 23; a byte object type 110; a cluster table pointer local
+// 23; 1-3 unused locals at the top (diagnostic, numbering) 23 each. Retail reuses the dying register in
+// both the machine read (EBP) and the cluster sum (EAX holds the row, then the table).
 // @retail 0x18c3b0
 bool __stdcall function_18c3b0(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {

@@ -1936,6 +1936,9 @@ void function_269250(long clump_index, long actor_index);
 // in-arm compare 144, with the common compare 138; the created clump through the existing clump_get
 // 87 (same code), with the in-arm compare 126. A record-pool walk without the datum field is ruled out:
 // retail's 0x268510 passes this walk's iterator to the out-of-line 0x6b380.
+// Round 250: Native actor/group output ownership, then native selected-handle combinations:
+// 104/146/147/147/146/147; both complete-output forms with team-local scoring 129/129.
+// Pool/selection and x87/SSE allocation remain; all matched controls survive.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2161,6 +2164,9 @@ void function_269250(long clump_index, long actor_index)
 // 55 (the prop pool then takes EDI and loads first as retail, but the lookup sinks under the tests: the
 // promoted pools rank by reference count, ties by first reference); the final actor compare through a
 // second prop_get in both 49/115; both actor reads through it in 0x25d770 55/91.
+// Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
+// order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
+// deletion/pool scheduling remain; all matched controls survive.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2384,6 +2390,9 @@ void *actor_get_character_situation_entry(long actor_index);
 // DL round 206: candidate evaluator/collector inline modes 1/0, 0/1, 1/1, 2/0,
 // 0/2, 2/1, 1/2, 2/2 (ordinary, inline, forced) 283/283/283/1749/459/1749/459/3173.
 // Forced evaluator expansion also loses matched neighbours; all declarations and body restored.
+// Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
+// with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
+// allocation remain; all matched controls survive.
 // @retail 0x269870
 void function_269870(long clump_index)
 {

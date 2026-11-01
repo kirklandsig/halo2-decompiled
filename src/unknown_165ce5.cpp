@@ -1379,6 +1379,23 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
+// Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
+// -0x18/-0x1c against retail's -0x1c/-0x18) declared in the other order, with the two
+// initialising calls kept in their original order, compile to byte-identical code (197 at
+// 2197 bytes): MSVC does not order the two homes by the declaration order.
+// Round 31 (lane I, fast): the pitch's rate read through a copy of the settings pointer
+// (`s_game_time_globals *frame_settings = g_510c54;` before the clamp) stops the shared reciprocal,
+// so MSVC keeps retail's two separate divisions, the second reloading `[0x510c54]->rate`; the two
+// clamped look outputs as one s_view_angles local give retail's grouping of them. Fast score
+// 218 -> 200; 2193 -> 2197 bytes (retail 2199). The frame (0x28 versus 0x2c), the look-output homes
+// (ours -0xc/-8, retail -0x2c/-0x28), the swapped unit/mode slots, the ESI/EDI save region and the
+// clamp's register roles still differ. A rate read through a local (a value or a pointer copy)
+// either keeps the shared reciprocal or lands in a stack slot instead of retail's `[eax + 4]`.
+// MiniMax I (10-31) review: round 31's 200 came from the `frame_settings` pointer copy, a one-use
+// local (kept only with a match); without it the s_view_angles local alone 216 against 220, under the
+// 8-point bar, so the body stays as it was.
 // score 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // 0x28 versus 0x2c (look homes), the shared look reciprocal, ESI/EDI saved before the unit test (retail
 // after it, restored at the loop exit) and the channelb8 pointer in ECX remain.
@@ -1572,6 +1589,8 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // one s_view_angles 216 [72] (frame 0x30); that declared first 216 [72]; with unit and mode declared
 // before their assignments 216 [72]; with the pitch as `x * (-1.0f / rate)` 219 [79]; the two look
 // locals' addresses taken as a no-op (diagnostic) 220 [79]; the loop index declared in the for 220 [79].
+// N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
+// All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

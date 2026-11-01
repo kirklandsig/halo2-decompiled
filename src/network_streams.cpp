@@ -620,38 +620,6 @@ void c_network_reliable_stream::mark_received(long sequence)
 	}
 }
 
-// score 7 (was 7): Frame 0x14 agrees; initial message EAX/EDX, copy-before-OR and final delivery branch remain.
-// the first lookup's pointer is in EAX (retail EDX), the flags OR is done in
-// place and copied (retail copies, then ORs: mov eax, edx; or eax, 1), and the last delivery
-// test branches to the skip arm (retail jumps to the delivery arm). Kept: the bit index as a
-// named base minus current (retail's unfolded lea/sub start; every spelling of
-// acknowledged - current - 1 folds it to -1) and the type as an if/else (current EDI and the
-// entry EBX as retail, movzx edi, al). Tried after: type as a ternary 21, as 4 + shift 21
-// (lookup in EDX, type arithmetic differs), from (byte)local_1 86, through the field 93;
-// flags value after the OR as dword 16 (lookup in EDX, movzx eax, dx); previous as a ternary 7;
-// delivery test as an else-if 86, as a pending flag or !(a && b) 7-84; word/short flag types,
-// statement orders and type polarity 7.
-// Earlier at 81: the getter inlined (0x966d0 marked inline) and previous set in an if/else fix
-// the head. Bit index derived from current in four spellings 81 (folded to -1);
-// `(local_1 & 8) ? 5 : 4` 118 (current/message registers then as retail, but no movzx and the
-// first lookup in eax); bit as the loop variable 144; loop over the sequence parameter 174;
-// type after the flag store 120; message variable reused in the loop 81.
-// Earlier at 94, the slot address is kept in EAX here and in EDX in
-// retail, and ours zeroes EAX before the range test, so the loop head differs.
-// Native message-bit predicate/publication/both 117/113/80; native repeated-bit type
-// alone/with predicate/with publication/all 119/127/119/123; arithmetic native type 119.
-// acknowledged/undelivered/both skips, fallback exit and ordinary while 81; iteration-bit value
-// alone/with skips 105/105/105.
-// Actual time operand 142; two-use elapsed 84; later type with actual time/reused elapsed 148/121;
-// original flag type alone/with time 113/143; native type byte with time 142; direct publication/time 143.
-// Read-only first message, fixed first/loop/both pointers, live original flags, live flags with fixed pointers, immutable flag stages and retained-value names all 7.
-// Full-width original signed/unsigned 8/8; both signed/unsigned 9/8; separate flag copy/update 7; one word/dword flags value 68/69; named repeated predicate 7.
-// Default previous 17; reversed message guard 38; in-place previous 7; early message declaration/
-// previous before message 7/7; reset before/after lookup 39/138; reversed fallback order 10;
-// default type 82; field/direct publication 70/70.
-// Last delivery arm as `a ? true : b` 79, as a false default set true by the `||` test 7, as an
-// else-if split 113; the whole decision in one condition 22; the window arm before the bit arm 111;
-// delivered defaulted from current == acknowledged 93.
 // @retail 0x96910
 long c_network_reliable_stream::function_96910(long sequence, long bit_count, dword const *bits, bool complete)
 {
@@ -679,8 +647,7 @@ long c_network_reliable_stream::function_96910(long sequence, long bit_count, dw
 		{
 			long bit = newest_bit - current;
 			s_reliable_message *entry = reliable_stream_get_message(this, current);
-			word local_0 = entry->flags;
-			if (!(local_0 & 1))
+			if (!(entry->flags & 1))
 			{
 				bool delivered;
 				if (current == acknowledged)
@@ -688,17 +655,20 @@ long c_network_reliable_stream::function_96910(long sequence, long bit_count, dw
 				else if (bit < bit_count)
 					delivered = (bits[bit >> 5] & (1 << (bit & 31))) == 0;
 				else
-					delivered = current > m_next_sequence || current > previous;
+				{
+					delivered = true;
+					if (current <= m_next_sequence && current <= previous)
+						delivered = false;
+				}
 				if (delivered)
 				{
 					long start = entry->time;
-					word local_1 = local_0 | 1;
+					entry->flags |= 1;
 					long type;
-					if (local_1 & 8)
+					if (entry->flags & 8)
 						type = 5;
 					else
 						type = 4;
-					entry->flags = local_1;
 					entry->unknown08 = network_time_now() - start;
 					update_round_trip(type, entry->unknown08, current, network_time_now());
 				}
@@ -1321,6 +1291,11 @@ bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb 
 // result declared before `self`, declared then assigned, the count in a local 108 each; forceinline
 // count helper 108; count `> 0` 116; a `window` pointer local 291; the count written out (diagnostic)
 // 248, as `!=` 252 (count then in EAX, result in DL).
+// Round 120 (lane 6, fast; aligned 50): the failure as `result = false; m_unknown05 = true; return
+// result;` 107 (same code); the scan as a while loop with its own increment 107 (same code); the scan's
+// terminal test as `result |= (flags & 2) != 0` 110 (aligned 72); the copy loop's fragment as one
+// ternary 134; the scan stopping at the terminal fragment (`result = (flags & 2) != 0; if (result)
+// break;`) 102 (807 bytes, aligned 78: retail scans on past it).
 // @retail 0x95840
 bool __stdcall function_095840(s_network_stream_header *header, long *message_type, long *message_size, void *message_data)
 {

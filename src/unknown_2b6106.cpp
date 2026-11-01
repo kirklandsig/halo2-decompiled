@@ -658,7 +658,7 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 530 (was 557): Frame 0x864 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain.
+// score 512 (was 512): Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain.
 // Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
 // ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
 // small locals differently.
@@ -758,6 +758,13 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // scan 530. Keep t11 combined actual player/team score-array scans, plain-confirmed 557 to 530 at
 // 1991/2041 bytes; all 11489 baseline matches preserved. No arithmetic, input observation or call
 // tuple changes.
+// Round 461: completed selection on the real score-pointer graph, long/short results,
+// original/branch-owned maximum with direct/cached candidates: 528/520/528/520/520/512/520/512.
+// Keep short selection and both admitted score observations, plain 512 at 2010/2041 bytes;
+// original maximum initialization retained. Frame 0x864 and EBP/flag/clock homes remain.
+// Round 464: activity/team conditional label results, original/branch-complete/default-first
+// non-original pairs 512/578/512/512/578/520/520/584. Original conditional arguments
+// and score-pointer graph restored; unbiased EBP and early flag/clock homes remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
@@ -968,40 +975,50 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                     function_1630e0(message, format, minutes, seconds);
                     show_friend_detail(text[row++], message);
                 }
+                short selected = NONE;
                 for (short i = 0; i < *(short *)(details + 0xa80); i++)
                 {
                     if (xuid_equal((XUID const *)(details + 0xa82), &friend_->xuid, true))
                     {
-                        long best = 0;
-                        long score;
-                        if (!details[0xa74])
-                        {
-                            long const *player_scores = (long const *)(details + 0xf44);
-                            for (long const *player_cursor = player_scores;
-                                player_cursor - player_scores < *(short *)(details + 0xa80); ++player_cursor)
-                                if (player_cursor != player_scores + i && *player_cursor > best)
-                                    best = *player_cursor;
-                            ((c_widget *)this)->function_230134(0xc00027a, format);
-                            score = *(long *)(details + 0xf44 + i * 4);
-                        }
-                        else
-                        {
-                            long team = *(short *)(details + 0xf84 + i * 2);
-                            long const *team_scores = (long const *)(details + 0x10a8);
-                            for (long const *team_cursor = team_scores; team_cursor < team_scores + 8; ++team_cursor)
-                            {
-                                long team_index = team_cursor - team_scores;
-                                if ((*(long *)(details + 0x10a4) & (1 << team_index)) && team_index != team &&
-                                    *team_cursor > best)
-                                    best = *team_cursor;
-                            }
-                            ((c_widget *)this)->function_230134(0xa00027b, format);
-                            score = *(long *)(details + 0x10a8 + team * 4);
-                        }
-                        function_1630e0(message, format, score, best);
-                        show_friend_detail(text[row++], message);
+                        selected = i;
                         break;
                     }
+                }
+                if (selected != NONE)
+                {
+                    long best = 0;
+                    long score;
+                    if (!details[0xa74])
+                    {
+                        long const *player_scores = (long const *)(details + 0xf44);
+                        for (long const *player_cursor = player_scores;
+                            player_cursor - player_scores < *(short *)(details + 0xa80); ++player_cursor)
+                            if (player_cursor != player_scores + selected)
+                            {
+                                long candidate = *player_cursor;
+                                if (candidate > best) best = candidate;
+                            }
+                        ((c_widget *)this)->function_230134(0xc00027a, format);
+                        score = *(long *)(details + 0xf44 + selected * 4);
+                    }
+                    else
+                    {
+                        long team = *(short *)(details + 0xf84 + selected * 2);
+                        long const *team_scores = (long const *)(details + 0x10a8);
+                        for (long const *team_cursor = team_scores; team_cursor < team_scores + 8; ++team_cursor)
+                        {
+                            long team_index = team_cursor - team_scores;
+                            if ((*(long *)(details + 0x10a4) & (1 << team_index)) && team_index != team)
+                            {
+                                long candidate = *team_cursor;
+                                if (candidate > best) best = candidate;
+                            }
+                        }
+                        ((c_widget *)this)->function_230134(0xa00027b, format);
+                        score = *(long *)(details + 0x10a8 + team * 4);
+                    }
+                    function_1630e0(message, format, score, best);
+                    show_friend_detail(text[row++], message);
                 }
             }
             if (8 - row >= (unsigned)*(short *)(details + 0xa80)) value10d8 = 0;

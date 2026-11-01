@@ -92,6 +92,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // outside the count test 128; the clamp as `if (size >= sizeof) size = sizeof - 1` 128; `while (token != NULL)`
 // 128; the token array cleared by memset 256 (724 bytes, rep stosd). Moving the token loop out of the
 // success block (counters set inside it) drops EBP altogether (724 bytes, harness).
+// Round 40 (lane 11, fast): our EBP push sits at the first token's definition and its pop at the loop exit,
+// so the failed-read exit and the no-token exit stay apart (retail joins both before `pop edi` and restores
+// EBP with ESI/EDI at the block end). The tokenizer as __forceinline 128; the next pointer / the token / the
+// count and unique counters / the read size declared at the block top 128/128/128/128 (all the same code).
+// Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
+// ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
+// restored; early EBP and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

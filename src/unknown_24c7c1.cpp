@@ -567,7 +567,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 115 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
+// score 114 (was 115): frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
 // Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
 // bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
 // (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
@@ -604,6 +604,18 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // before the font 114 (same code); as bools so declared 191 (aligned 112 -> 111: timer/tutorial at
 // -0xe/-0xd, scripted still at -2 where retail has -0xf/-0xe/-0xd); tutorial colour as `flag ? a4 :
 // (b6 & 1) ? a8 : a4` 114 (same code); count as `split_screen ? 3 : 4` 479; short height 114 (same code).
+// Round 54 (lane 16, fast; base 114): the tutorial colour as `!flag_1384 && (b6 & 1) ? a8 : a4` 114 (same code);
+// `left` declared `short const` at its assignment 114 (same code); both 114; both with a bool timer 191 (1888
+// bytes); the tutorial colour reading g_510c94 at each use (no `globals` local) 114 (same code).
+// Round 40 (lane 11, fast; unchanged source 115 fast, 114 plain): retail stores `left` once with a word move
+// (`mov word ptr [ebp-0x3c], ax`), so it is a memory local there, not a spilled register (ours spills it as a
+// dword); with the bool timer that word store is retail's missing byte (the bool form is otherwise retail's
+// flag code, bytes at -0xf/-0xe/-0xd but for the scripted flag at -2). Retail frame from EBP down: split
+// screen, bounds/origin, the three flags, line height, loop index with the flash scalar, height, text bounds,
+// colour, top (spilled in the loop), left, player, view, count, message height, font, field_24. Tried: one
+// colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
+// (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
+// block top / first 115/115; bool timer with the loop index at the block top 191.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

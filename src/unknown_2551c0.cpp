@@ -72,6 +72,12 @@ short __stdcall function_2551c0(long actor_index)
 }
 
 // score 43 (was 43): cross-product schedule and score-dot registers still differ.
+// Round 102 (lane 7, fast): the rotation outputs assigned k, j, i 59 (the score dot keeps k, i, j);
+// the direction copied field by field (diagnostic) 167 (792 bytes); the trace result declared before
+// the direction copy 43; the score as distance part times dot part 43; sinf/cosf for the angle 72
+// (820 bytes). Retail's score dot j, k, i is the reverse of the copy's store order (i, k, j), ours
+// k, i, j the reverse of the rotation's output stores (j, i, k); without the rotation (diagnostic)
+// the dot is hoisted before the call, so that lead is unconfirmed.
 // Round 37 (lane 16): the rotation's dot as a named local before the projection 56 (gives
 // retail's early cross_j product a.k*v.i, but the dot then sums i, k); after the cross terms 70;
 // the named dot's terms in the 11 other orders 56 each; the named dot at each position among the
@@ -153,6 +159,10 @@ short __stdcall function_2551c0(long actor_index)
 // and axis-first projection terms 116 (814 bytes); matched 0x11d3b0's form (dot k, j, i) 43. Compile-only
 // (reproduces the pre-call SSE schedule): 216 forms (6 dot orders x 6 cross orders x 3 output forms, named
 // dot or not) never give retail's early a.k*v.i / v.j*a.i products (aligned 11-34 against 14).
+// Round 22 (lane 2, fast): the existing 0xe70b0 call for the tail's state test 70 (820 bytes; the tail
+// and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
+// five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
+// statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

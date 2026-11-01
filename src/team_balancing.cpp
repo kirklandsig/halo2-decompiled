@@ -554,10 +554,24 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
 // last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
 // first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
+// Round 138 (lane 4; a one-file LTCG harness of this file reproduces the build): `continue` on `candidate >
+// reference` and on equal spreads with `candidate cost >= reference cost` 100 (512 bytes, again); the first test
+// as `!(candidate < reference)` with the rest nested under it and a `continue` 67 (same code); a `bool better`
+// set from the first test and refined by the equal-spread cost test 82 (524 bytes); the two first spreads named
+// in one declaration (`long candidate_spread = ..., reference_spread = ...;`) 67 (same code: LTCG still queries
+// the reference first across the comma); the count difference named once (two queries instead of four) 81
+// (496 bytes). Harness only: the spread queries through an inline forwarding member 9 aligned (unchanged order),
+// an inline (candidate, reference) value comparison helper unchanged, a volatile address of the reference or of a
+// candidate pointer (diagnostic) still reference first: no form evaluated the candidate's count_spread first.
 // Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
 // 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
 // condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
 // clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
+// Round 32 (m3 lane 14, fast): not purity: count_spread made to look writing (a store through a copy
+// of `this`, diagnostic, 0x91860 then 38) still queries the reference first, 97 (it takes EDX then);
+// that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
+// helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
+// pointer to the candidate for all six queries 67.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -816,6 +830,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
 // named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
 // written at the open slots, the fill and the call) 74.
+// Round 32 (m3 lane 14, fast): the clamp as `if (excess < 0) excess = 0;` 46; `0 > excess ? 0 : excess` 34;
+// the next party value named in the copy loop 34; the party value named, stored first, then the maximum
+// 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
+// pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
+// into EBX.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

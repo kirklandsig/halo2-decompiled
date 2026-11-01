@@ -1316,6 +1316,13 @@ bool function_0bfe60(dword const *flags, long bit);
 // retail holds the push header only here); the global test as an early-return guard 52; the count
 // reassigned before the set 66; a pointer local to the whole visibility table for count, slots and
 // row 52; the frame counter read at each use 125.
+// Round 185 (lane 3, fast): on round 7's row form (38, only the colours left): `test`/`total` named
+// `test_index`/`drawn` 38; `long const set` 38; the push expansion in a forced-inline helper 38; the
+// three slot tests as nested ifs 38 (all the same code: the counter EDI, test index EBP, device EDI
+// where retail has EBP, EDI, EBX). Round 7's form restored to the baseline body (a mixed read).
+// Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
+// outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
+// tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

@@ -6,6 +6,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1a58b0.h"
+#include "unknown_1cec30.h"
 #include "object_markers.h"
 #include "vector_products.h"
 #include "squads.h"
@@ -800,6 +801,10 @@ void function_25aba0(long actor_index);
 
 // score 29 (was 29): the kind-2 failure pop is `dec [mem]` where retail loads, decrements and stores
 // around the stamp, and the choice-failure pop is split where retail uses `dec [mem]` (aligned 8).
+// Round 96: kind-2 dispatch first 147; the kind test reversed 126; the current-slot ternary inverted
+// 29 (identical); current-slot assigned in an if 242; the default type assigned in an if 166; the
+// next-type test inverted 36; positive next-handler validation 29 and positive enabled dispatch 29
+// (both identical). Original dispatch and failure arms restored.
 // The choice arm's pop before its stamp is not retail's order there: it is kept only because its 5
 // extra bytes balance the kind-2 pop's 5 missing ones, so put the stamp first again once the kind-2
 // pop splits. Before this round only the state-one pop and the `= {0}` workspace remained (aligned 7); earlier: actor/result ESI/EDI (0x1a7b30's result arrives in ESI,
@@ -1252,15 +1257,7 @@ struct s_surface_support_view
 	long component_index;
 };
 
-struct s_surface_component_view
-{
-	byte unknown00[0x74];
-	long body_count;
-	byte unknown78[0xa0 - 0x78];
-};
-
 struct s_object;
-struct s_havok_component;
 s_object *function_badc0(long object_index, dword type_mask);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
@@ -1300,6 +1297,10 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // `mov ecx, esi` follows; its file is held this round). Statement point query with the
 // address 18; point pointer local 18; body re-read at the call 2; statement query plus body
 // re-read 18; velocity pointer local 2.
+// Round 103: the existing component getter and rigid-body count in place of the hand-written lookup 2 (kept,
+// same code); the clamp compare operands swapped 3; the object handle read through its own address for the
+// point query 2; the clamp as matched 0x182020's if/else 2; a named component index 2. Still BLOCKED-BY
+// 0x1d0a20 (its definition file and the held src/impacts.cpp calls).
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {
@@ -1318,12 +1319,12 @@ void function_1a68a0(long object_index, vector3f *velocity)
 				s_surface_support_view *support = (s_surface_support_view *)function_badc0(unit->support_index, NONE);
 				if (support && support->component_index != NONE)
 				{
-					s_surface_component_view *component = &((s_surface_component_view *)g_51e9b8->data)[support->component_index & 0xffff];
+					s_havok_component *component = havok_component_get(support->component_index);
 					long body_index = unit->body_index;
-					long clamped = body_index < 0 ? 0 : body_index > component->body_count - 1 ? component->body_count - 1 : body_index;
+					long clamped = body_index < 0 ? 0 : body_index > component->rigid_bodies.size - 1 ? component->rigid_bodies.size - 1 : body_index;
 					if (clamped == body_index)
 					{
-						havok_component_rigid_body_point_velocity_get(body_index, (s_havok_component *)component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
+						havok_component_rigid_body_point_velocity_get(body_index, component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
 					}
 				}
 			}

@@ -311,6 +311,15 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // returning 175; an unsigned index (definition and declaration) 175; format 4's node byte read into a
 // local before the decode (stored after) 174 (0x14a8e0 283); formats 3/4 returning after their node
 // stores 175. Only the node store's position (before the decode, 73) keeps the convention.
+// Round 10 (lane 17), formats 3 and 4 indexed through `vertices` locals (175, 624 bytes, caller 269): the index
+// parameter as `word` (definition, declaration, call) 154 (628 bytes: retail's convention and EDI node kept,
+// caller 158, but the index is loaded into BX and re-extended per case, so format 4 forms a pointer again); as
+// `dword` 175; the decode written as a macro (no parameter temporaries) 175; the index read once through its own
+// address into a local used by every case 175; the bounds as three lo/hi pairs 175.
+// Round 43 (lane 10), format 4 indexed through `vertices` (175, flipped): case 4 written before case 3
+// 170 (620 bytes, still flipped: node EBX, switch temp/bases EDI, source on the stack); with format 3
+// indexed too 170; with format 2 indexed too 170; case 4 written first of all 175; the index parameter
+// renamed (vertex_index) 175. Format 3 indexed alone 60 again (gain under 3, not kept).
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

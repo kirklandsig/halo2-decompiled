@@ -126,6 +126,21 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // object-bit arms and original/explicit upper-level arms: 96/136/93/136/96/136/93/136.
 // Shared-type forms lose the matched caller; the three-point forms are below the keep gate.
 // Original body and caller convention restored.
+// Round 10 (lane 17): a /Gd first-pass harness loads the rigid-body index into EAX for every one-read-type form
+// (208 orderings, byte/long type, case 0 through the local or the component, header local), into ECX only with the
+// two reads, which is the flip. One read with case 0 through the object_index local 136 (216 bytes, caller 213); the
+// kind-7 test as a plain if 100 (260 bytes, sbb select); parameters (component, owner, level, kind, index) as the
+// caller's setup order implies 96 (same code, caller kept), with the one-read body 136, with a single-exit kind-7
+// path 100 (caller 13).
+// Round 56 (lane 16): a /Gd compile-only screen predicts the register parameters (it agrees with the build for the
+// two-read body, the one-read flip and the form below). Of ~150 one-read forms (orders of object_index, type,
+// rigid body and result; long/byte/short/const type; case 0 through the component or object_index; a header
+// pointer; a split rigid-body pointer; the kind-7 test as a switch, switch with default, single-exit switch,
+// ternary or if/return), only the if/ternary kind-7 tests keep component EAX / index ECX, and they compile to
+// `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
+// kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
+// object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
+// both switches 125 (284 bytes, caller 194).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

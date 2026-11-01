@@ -562,6 +562,20 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // bitwise operands field first 47 (same code); `special = false; if (type == 6 && byte) special = true;`
 // then `if (!special) { scan }` 202 (872 bytes). A compile-only build of this file alone puts NONE in EDI
 // (not predictive for this function).
+// Round 185 (lane 3, fast): the if/else flag (`mov cl, 1` arm, false at the scan's start) with a
+// compiled-out `do {} while (false);` at the tail 200 (872 bytes); one inline delay-minimum helper used
+// by both minimum blocks, on the bitwise flag 218 (762 bytes: the copies merge); the bitwise flag as a
+// byte 47; the proximity exit as `break` with a `nearby` flag tested after the loop (diagnostic) 200;
+// the if/else flag with `special = false` at the end of the scan arm 190 (861 bytes: retail's entry,
+// NONE in EBX, `mov cl, 1; jmp` over the scan, the scan laid out next and the flag in CL at the tail;
+// left: retail stores the 0 at the scan's start and reloads it at the exit, and its frame is 0x34 where
+// ours is 0x30, the seat object taking the dead actor slot retail gives the flag); the false after
+// `allow_exit = true` (live across the team test and the loop) 200 (872 bytes).
+// Round 44 (lane 1, fast): if/else arms with `special = actor->unknown268 != 0` in the special arm and `special =
+// false` opening the scan 200 (872 bytes: the field is re-read at the tail, but the arm stores 1 to the slot and
+// the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
+// g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
+// datum-index `continue` as a nested if 47 (same code).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

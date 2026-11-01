@@ -155,6 +155,10 @@ struct s_handler_slot
 // back-pointer address: 8 bytes short there); plain pairs with the back-pointer memsets 59;
 // the back-pointers as one-member structs with an inline detach() on the handler, the
 // gateway or both 29/29/29 (same code), both with plain pairs 59.
+// KIMI1 r94: guarded gateway 12-byte clear 73; gateway/handler/both 12-byte
+// ranges 29/29/29 (same code); base plus back-pointer field aliases handler/
+// gateway/both 29/29/29 (same code); base plus active-field alias 54;
+// scoped link local 29 (same code); direct first link global read 29 (same code).
 // @retail 0x8dd70
 void function_8dd70(void)
 {

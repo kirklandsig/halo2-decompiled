@@ -313,12 +313,30 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // rebuilt 144 (492 bytes); guard as `0 < count` 144; a `block_index` local for every block access 164; first read back
 // from the stored current 140 (495); `memcpy(&g_4ba138[first], entries, sizeof * count)` 144; entries declared after the
 // copy 168 (479); a long count named before the clears 165, at the top of the `if` 140 (495), with first after it 140.
+// Round 21 (m3 lane 2, fast), indexed form with `long count = field;` for the copy size and advance and the guard and
+// loop still on the field: retail's count handling exactly (short load to AX, `cmp ax, <zero>`, `movsx eax, ax` in
+// place), but the index takes ECX and the zero EDX, so first keeps EDX across the copy and entries is spilled: 140
+// (495); the count declared after `current = first` 166; before the clears 139 (508 bytes, frame 0x4c, zero ESI);
+// entries then count first in the block 140; copy source as the field address, entries after the advance 155; the
+// copy as `sizeof * count` into `&g_4ba138[first]` 140; through the metadata view 140.
 // Round 40 (reduced-relink screen, base 49 on its scale): 36 combinations of the block pointer or indexed
 // blocks, the count as the field, a long at the top of the `if` or a short before the clears, the entries
 // cursor before the copy or after the advance, a separate index or `first + n`, and the block pointer before
 // or after the clears: nothing below the current body; indexed with a short count before the clears and the
 // cursor after the advance 60 (508 bytes; the index arrives in EAX, mode stays on the stack); every
 // `first + n` form 114-124 (aligned 37); indexed with the field at each use 123-146.
+// Round 120 (lane 6, fast): on the block form, `current` set from `previous` and `first` reading
+// `previous` again 130; the block as `blocks + cache_index + 1` 54 (same code); `current` advanced
+// before the copy 167 (490 bytes); the loop index starting from `previous` read again 162 (493);
+// non-const block and entries pointers 54 (same code). Indexed form rebuilt 144 (count CX, zero EAX,
+// first EAX kept across the copy, entries ESI spilled at once); with a named long count 140 (count
+// AX/EAX as retail, but the index arrives in ECX with the zero in EDX, first in EDX); that with the copy
+// source as the field and entries set after the advance 155 (index arrives in EAX, scaled in EBX).
+// Round 34 (lane 13, LTCG harness through 0x404b0, harness positional; base 49 = 54, indexed form 125 at
+// 492 bytes, aligned 30): on the indexed form geometry declared at the loop-body top 125, `geometry !=
+// NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
+// material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
+// declared first 49 (identical, 54).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

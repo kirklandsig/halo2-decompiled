@@ -479,6 +479,23 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
 // the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
 // unmatched: a lead if retail's set needs a call that may write the vector.
+// Round 44 (lane 1, fast): 0x120220 is at 2 (not the blocker); bit_vector_test re-measured 42; on the shift
+// test: the model as `long const *` read as model[1] 37; the entry tests as guard-clause returns 37; the
+// render-model argument named before the call 37; `if (graph && graph->node_count != 0)` for the ternary
+// 121 (520 bytes); each arm breaking on its own call result (no `found`) 37.
+// Round 118 (lane 5, fast with 0x113ba0/0x113c60): the visited words grouped with both markers in one
+// local struct (so the markers' escape covers the vector) with the mask test 190 (frame realigned to 8;
+// the set is still mask-first load/OR/store, so the vector's escape does not give retail's fused set and
+// 0x120220, which can only reach the markers, is a weak lead); a `break` on each arm's iterator call 37
+// (same code); the state parameter renamed to sort before the tag table's name 37 (back-edge reloads
+// unchanged, so names do not order them); that per-arm break with the mask test 42; the graph and
+// iterator setup shared ahead of an if/else call 167.
+// Round 140 (lane 4): with the mask test the set repeats the test's own mask-first sequence before its
+// load/OR/store, and the 0x1d90e0 setup forms the model value early (retail last, after the pushes).
+// Tried: mask test with the set through pointer arithmetic 42; written-out mask test with a direct `|=`
+// set 42 (round 32's form again); visited declared before the markers with bit_vector_test 42; the target
+// marker declared first 37 (same code); `if (found) { one combined test } else break;` 37 (same code);
+// the iterator's weapon class stored before its mode in both arms 44.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

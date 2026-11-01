@@ -103,6 +103,10 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // after the entry value; ours uses EAX and hoists them. `if (result && call)` without the outer else
 // 113; inner update false-first 18; receiver through `peers` 108; `handles[i]` at each use 18;
 // permuter 56 tries, best 18.
+// Round 184 (lane 3): `if (result && call) result = true; else result = false;` 113 (386 bytes);
+// `if (!result || !call) result = false; else result = true;` 113; the inner update as
+// `result = call ? true : false;` 113; the entry index as a local 18 (same code); the inner
+// `if (result)` dropped (the loop condition implies it) 126 (370 bytes).
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {
@@ -312,6 +316,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	long local_1 = arg_1[0];
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
+// score 115 (was 115): frame 0x1c agrees; validation items/data carriers and entry past the items reload differ.
+// Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// this round: no new form; the case 1/3 loop still keeps its cursors in
+// registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
 // score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
@@ -382,6 +390,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Round 214: shared phase ordinal 115; entry chain array 115; positive validity admission 115;
 // ordinal/entry chain array 115; ordinal/positive admission 115; entry array/positive admission
 // 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
+// N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
+// Original dispatch, all validity storage, helper and both local-slot reads restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
