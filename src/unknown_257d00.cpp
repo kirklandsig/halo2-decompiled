@@ -1718,6 +1718,10 @@ void function_b7360(long object_index);
 // Round 331: Common case-thirteen notification with branch/conditional flag values and
 // orientation/point result stores: 471/483/512/521/471/493/519/528. Original terminal cases, output
 // producers and complete body restored; actor/pool/output allocation and length gap remain.
+// Round 223: Native orientation/motion/direct planar values in subsets 1-7
+// 502/470/508/459/495/469/500; all with explicit component construction 500.
+// The direct-field temporary at 459 is exact-only; intrinsic/native direct copies
+// without that temporary both 471. Original producers and complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2201,6 +2205,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // admission/alignment/search workspace names in seven subsets and all with
 // planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
 // First point/prefix recover but later homes regress; original complete body restored.
+// Round 223: Complete search arm before 1/4/7/0/5/9/10/12 gives
+// 630/481/469/489/489/488/464/468; five-point gain rejected. On before-ten graph,
+// first/both request receivers at uses and native bit updates alone/with both receivers
+// 481/481/502/489. Original body restored; actor/state and first point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

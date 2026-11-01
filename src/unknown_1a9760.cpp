@@ -131,6 +131,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
 // original/earlier magnitude 233/237/239/245/85/183/199/210
 // Original executable body and helpers restored.
+// Round 223: Native two-component perpendicular value with aggregate/field
+// construction, direct/stored projection and i/j publication order, all eight
+// combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

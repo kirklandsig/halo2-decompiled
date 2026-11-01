@@ -446,6 +446,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 332: Masks computed at each use with word cache, filled count and inner matrix scope, subsets
 // 0-7: 215/226/202/217/215/226/202/217.
 // Original executable source restored; no eligible gain.
+// Round 223: Existing node-cache publication before tag/after tag/after matrix
+// 182/182/182; with provider-filled count 194/194/192; before-tag short/dword
+// cache 209/182. Original cache timing, count storage and complete body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
