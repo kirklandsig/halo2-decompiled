@@ -547,6 +547,11 @@ done:
 // before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
 // the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
 // its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 108 (lane 8; a one-file LTCG harness with the callee files and the ballast object gives this code
+// exactly): the variant getter's fallback written as a ternary 48 (178 bytes; parse_variant stays matched); one
+// shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;
+// a named pointer to the tag field read at the translator call 45 (178 bytes, globals in EBX); the tag declared
+// at function scope 32 (identical). All real (fast).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

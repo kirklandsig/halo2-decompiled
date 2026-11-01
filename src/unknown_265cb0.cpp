@@ -1236,13 +1236,21 @@ long function_146650(void);
 // score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
 // movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
 // direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
-// score 14 (was 14): the direction and ahead homes are swapped: retail stacks movement, offset,
+// The direction and ahead homes are swapped: retail stacks movement, offset,
 // ahead, target_direction and direction, ours movement, offset, direction, ahead and
 // target_direction. Declaration order, scope, type, initialiser and extra source references all
 // leave the homes as they are.
-// score 14 (was 14): only three vector homes differ: retail stacks movement, offset, ahead,
+// Only three vector homes differ: retail stacks movement, offset, ahead,
 // target_direction, direction upward from esp+0x34; ours movement, offset, direction, ahead,
 // target_direction (12-byte slots; names and declaration places do not move them).
+// Round 108 (a compile-only /FAs screen of this file gives exactly our homes): renaming direction
+// five ways and moving the ahead, target_direction, direction, movement and offset declarations
+// (seven places) leave the homes as they are, so local names do not order these slots here. A new
+// one-use vector lands between offset and direction wherever its use is, and last when declared
+// innermost; one more `&target_direction` anywhere puts it lowest. Real (fast): the 0x267840 result
+// in a named bool 14; the target query nested under `if (check_target)` 14; the larger query result
+// clamped by an if 314 (1934 bytes); the position through a named point pointer for ahead 14; the
+// first query's arguments on one line 14; direction declared with target_direction 14.
 // Tried, round 22 (fast, plain 14): `long ticks` with the decay after the if 99, with `real
 // ticks` 384 (SSE conversion), `double ticks` 394 (qword constant); the volatile decay dropped
 // 415; the shared real_to_long 170; the decay computed in each arm (kept: 26, the rounding is

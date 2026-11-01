@@ -345,6 +345,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // for the first and loop index 166 (cache index back in EAX). The caller 0x404b0 reloads the cache
 // index from its stack slot for the call, so the register is this function's choice. On the block
 // form, the clears as that loop 54 (same code).
+// Round 107 (lane 8, fast; aligned = difflib count, block form 46): indexed form re-measured 144 (index EDX,
+// count CX, zero EAX); with a long count named at the `if` top 140 (index ECX, count AX, zero EDX). On the
+// block form: a long count named at the `if` top for the copy and advance 130 (508 bytes, aligned 41), with
+// the loop on it too 181 (479 bytes); the indexed named count with the loop on it 178 (479); a long count
+// named before the guard and used for it, the copy and the advance 161 (495); the guard as `>= 1` 54 (same
+// code). Retail's `first` lives in EDI (the copy's destination register) and is spilled at once; every form
+// here keeps it in a scratch register across the copy.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

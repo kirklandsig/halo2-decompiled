@@ -200,6 +200,17 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // through `*(bool const *)&success` 55 (351 bytes); the long tested through `*(long const *)&opened` 42 (same
 // code); success declared before the path buffer 42; done and success at function scope 42. Compile-only, a
 // char-cast write and byte/bool-cast reads all forward the stored byte too.
+// Round 105 (m3 lane 8, fast): retail computes the handle test as a 32-bit value (`xor edx, edx; setne
+// dl`), stores its low byte and re-tests the flag in memory, with the handle in ECX copied to EAX for
+// the push (the shape an int result assigned to a char flag would give; no C++ spelling tried keeps
+// it). A `char` flag assigned `(char)opened` and passed as `(bool *)` 55 (folded to a byte setne,
+// forwarded); the long stored through a byte cast of the flag 55; the by-value argument as an explicit
+// `s_file_handle(file)` temporary 42 (same code), with the bool flag 55; `success = opened != 0; if
+// (success)` 55; a long `failed = handle == INVALID` with `success = !failed; if (!failed)` 43;
+// `opened` declared before the file copy 42 (same code); the long test from the array element with the
+// file copied between the flag store and the test 42 (same code). Diagnostic only (volatile, reverted):
+// a volatile flag access, bool or char store of the long, 50/50 (memory test, but a byte setne without
+// the xor and the handle pushed from EAX).
 // Round 22 (m3 lane 2, fast): `_ReadWriteBarrier()` between the success store and its test gives retail's store
 // and memory re-test, but the array element then reloads after it and the handle stays in EAX without the xor:
 // on the long flow branching on success 50; `success = handle != INVALID` 50; branching on the long 42 (same

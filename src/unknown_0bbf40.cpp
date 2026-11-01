@@ -359,6 +359,14 @@ s_object_gc_entry_ab g_440570[6] =
 // (the frame's extra dword). The action-null exit as a break to the final clear 179 (330 bytes); the
 // level computed through g_4de2f4 at each use 110; the query failure clearing and returning in place
 // 110; the level declared before the buffers 110; the action-null exit clearing through g_4de2f4 125.
+// Round 108 (lane 8; a one-file LTCG harness with the build's ballast object gives 110 exactly): with no state
+// local in the loop (the action-null exit clearing through g_4de2f4, or a state local inside that exit block)
+// the prologue is retail's through +0x19 (frame 0x2a04, EBX/EBP/ESI pushes, g_4de2f4 in ESI, the level in EBP,
+// EDI pushed late), but the loop is rotated and the NONE exit sits inline: 125, 374 bytes (real); with `again`
+// uninitialised 124 (real). The level as a short 117 at 393 bytes (real), with `bool next = !again` 117 (real).
+// Harness: no globals local 110; state declared before the loop with the action-null exit breaking to a clear
+// through it 110; a diagnostic passing a global pointer as the query's output (the call may then write anything)
+// still keeps the state in EBP and spills the level (146), so the query's side effects are not the cause.
 // @retail 0xbf380
 void function_bf380()
 {

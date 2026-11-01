@@ -332,6 +332,11 @@ void function_07b3e0(void)
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
 // left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 107 (lane 8, fast with 0x7b650): `if (!g_4cf8d4) return;` guard 39 (same code); the datum index named
+// before the call 39 (same code); the iterator form re-measured 58 (120 bytes); the existing out-of-line
+// record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
+// its end 125 (188 bytes). Lead unchanged: retail's second pool register is the LTCG inline of the real
+// 0x16bb70/0x16bc00, which their file's /Ob1 keeps out of line here (a flags decision).
 // @retail 0x7b430
 void function_07b430(void)
 {

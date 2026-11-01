@@ -240,6 +240,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 0xb5f10 92); `string + start` with `result = true` before the copy 38 (102 bytes, 0xb5f10 6); count
 // tested first with `start + (long)string` 39 (retail's colouring but start arrives unsaved in EDI,
 // 0xb5f10 35); `char const *source = string; source += start;` 27 (start in EDX, 0xb5f10 6).
+// Round 105 (lane 8, fast with 0xb5f10/0xb61d0): the count-first `string + start` lead re-measured 39
+// (start passed in EDI, the sum in a new EAX temp; 0xb5f10 35); count tested first with `start +=
+// string` before the count increment 36 (counter ECX as retail, but start in EDX, walk EDI; 0xb5f10
+// 6); with a plain string parameter: that 49 (92 bytes), start tested first with the add before the
+// increment 49 (92 bytes), count first with `string + start` 46 (103 bytes); the add reading the
+// plain parameter once through its own address (volatile) before the increment, count first or start
+// first, 36/36 (0xb5f10 6 each). Moving the add ahead of the clamp always passes start in EDX.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

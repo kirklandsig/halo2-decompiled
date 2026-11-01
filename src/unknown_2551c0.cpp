@@ -159,6 +159,13 @@ short __stdcall function_2551c0(long actor_index)
 // and axis-first projection terms 116 (814 bytes); matched 0x11d3b0's form (dot k, j, i) 43. Compile-only
 // (reproduces the pre-call SSE schedule): 216 forms (6 dot orders x 6 cross orders x 3 output forms, named
 // dot or not) never give retail's early a.k*v.i / v.j*a.i products (aligned 11-34 against 14).
+// Round 105 (lane 8, fast), the helper in the forms of other matched files' rotations: 0x170d70's
+// (cross_i, then the projection, then cross_j/cross_k) 109 (814 bytes); 0x175bd0's (`(1 - cosine) *
+// dot3f(vector, axis)`, axis-first output products) 72 (820 bytes); weapons.cpp's (a result vector
+// with the cross terms written in the outputs, copied back) 200 (851 bytes); a call to the existing
+// rotate_vector_170d70 in place of the helper 389 (kept out of line, 584 bytes); outputs
+// `v * cos + (projection * axis - cross * sin)` 129 (822 bytes); all three outputs projection-first
+// 43 (same code).
 // Round 22 (lane 2, fast): the existing 0xe70b0 call for the tail's state test 70 (820 bytes; the tail
 // and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
 // five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross

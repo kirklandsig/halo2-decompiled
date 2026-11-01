@@ -2043,6 +2043,8 @@ extern dword g_54d5b8;
 // pushes 0xad, 81), so only one call site with the dialog live in a register can give it. Also: the
 // guard `!g_51ec99 || state != 4` 55 (169) and `!(state == 4 && g_51ec99)` 55; case 4 inside the
 // default as `if (state == 4) { dialog = 0xad; ... }` 59 (158).
+// The NONE dialog for states 0, 2 and 3 and the flag test on the dialog value (not the state) give
+// retail's layout (case 4's block hosting the call and the store); kept only with this byte match.
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2058,7 +2060,11 @@ void c_session_lobby_screen::show_session_state()
 		case 0:
 		case 2:
 		case 3:
-			return;
+			dialog = NONE;
+			break;
+		case 4:
+			dialog = 0xad;
+			break;
 		case 5:
 			dialog = 0xac;
 			break;
@@ -2070,17 +2076,15 @@ void c_session_lobby_screen::show_session_state()
 		default:
 			dialog = 0xab;
 			break;
-		case 4:
-			dialog = 0xad;
-			if (g_51ec99)
-			{
-				goto shown;
-			}
-			break;
 		}
-		dialog_ok_show(3, dialog, 4, user_flags, 0, 0);
-	shown:
-		state_shown_time = g_54d5b8;
+		if (dialog != NONE)
+		{
+			if (dialog != 0xad || !g_51ec99)
+			{
+				dialog_ok_show(3, dialog, 4, user_flags, 0, 0);
+			}
+			state_shown_time = g_54d5b8;
+		}
 	}
 	else if (function_592f0() && state && g_54d5b8 - shown_time >= 3000)
 	{
@@ -3016,6 +3020,15 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // then short/word with row-scoped text and bitmap receivers: 48/96/116/81/109/50/96/110.
 // Original shared ordinal, direct row queries and direct searching expression restored;
 // EDI save staging, row/text registers and the final result carrier remain.
+// Round 107 (lane 8, fast; aligned = difflib count, baseline 30): `bool searching = true; if (A || B || C)
+// searching = false;` then stored 161 (aligned 21: retail's late `push edi`, BL flag and row-loop EDI/ESI,
+// but section 1's bitmap takes ESI and `this` is reloaded through sections 1-2); declared first or after
+// has_game 161/161; the test as `if (A) searching = false; else if (B || C) searching = false;` 13 at 877
+// bytes (only the row loop's i/text ESI/EDI swap left; not kept: identical branches); on that 13 form a
+// separate row counter 13, row-scoped text and bitmap 15, row-scoped text 13; the store in an if/else
+// 67; `searching = !A; if (searching && (B || C))` 163; false default with `!A` then `!B && !C` 53; A
+// false else `!(B || C)` (uninitialised / true default) 46/46; false/true if/else on `A || B || C` 46;
+// row-scoped text/bitmap on the 161 form 171; the expression as `!A && !B && !C` 48 (same code).
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

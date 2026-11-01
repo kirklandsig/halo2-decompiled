@@ -1210,6 +1210,10 @@ void c_game_engine_markers::v21(long object_index)
 // with an early return on the mode 95, a second pointer for both teams 119; the object in a local after
 // the type test 119 (428 bytes); the unit looked up through the header expression in place 40 (same
 // code); the team through a second lookup in the kept form 40 (same code, reduced image).
+// Round 108 (lane 8; round 100's one-file LTCG harness still exact, each re-run as a real fast trial): a const unit
+// pointer 40 (same code); on the team at each call (119, 430 bytes): a const unit 119, a const player 119, the flag
+// read into a named bool before its test 119, the event block's slot range tested before the player index 119, the
+// slot read through the typed header array 119. The options pointer keeps EDX from entry in every per-call form.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
