@@ -1972,6 +1972,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
+// (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
 // tried native slot scalar 159 (a one-use copy of the field; not kept without a match); cursor/request/transform names and late settings receiver 166 (fast control 166);
@@ -2296,6 +2298,8 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
+// and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
@@ -3101,6 +3105,9 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	return next_index;
 }
 
+// score 3 (was 12): the node's point transform now has its own helper (the shared point helper sums the
+// rows in the other order, which the matched 0x179fb0 and 0x17a380 need). All three rows match retail;
+// only the three coordinate loads differ: retail loads x, y and z, ours z, x and y.
 // score 12 (was 12): only rows x and y of the node point transform differ: retail sums them as
 // left*y + forward*x + up*z (row z as written), the function-wide reassociation order. Round 170: the
 // single exit (`result = true; goto done;`) gave the early BL, and 0x152450's `next` player search the rest.
@@ -3173,6 +3180,27 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 // gives retail's rows x/y but loads z first, 11, and breaks matched 0x179fb0/0x17a380); row z follows the
 // symbol count. Point copied then transformed in place 230; through a position local 257; returned
 // pointer for the delta 20; absent-node branch first 149; radius once per player 161.
+/* the node's position through its matrix (0x1778d0): each row sums left*y + forward*x + up*z, the
+   order the shared point helper does not use */
+static inline point3f *effect_matrix_transform_point_1778d0(transform4x3f const *matrix, point3f const *point, point3f *out)
+{
+	real z = point->z;
+	real x = point->x;
+	real y = point->y;
+	real scale = matrix->scale;
+
+	if (scale != 1.0f)
+	{
+		x = scale * x;
+		y = scale * y;
+		z = scale * z;
+	}
+	out->x = matrix->left.i * y + matrix->forward.i * x + matrix->up.i * z + matrix->position.x;
+	out->y = matrix->left.j * y + matrix->forward.j * x + matrix->up.j * z + matrix->position.y;
+	out->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+	return out;
+}
+
 // @retail 0x1778d0
 bool function_1778d0(void)
 {
@@ -3216,7 +3244,7 @@ bool function_1778d0(void)
 							transform4x3f matrix;
 
 							function_17aec0(location->node_index, effect, &matrix);
-							effect_matrix_transform_point(&matrix, &location->matrix.position, &point);
+							effect_matrix_transform_point_1778d0(&matrix, &location->matrix.position, &point);
 						}
 						else
 						{
