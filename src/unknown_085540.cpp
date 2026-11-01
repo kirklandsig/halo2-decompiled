@@ -1174,6 +1174,13 @@ bool function_68670(byte *source, long size, void *block);
 // homes and in-memory ring updates). Left there: the size in SI where retail has DX, because ours
 // forwards the stored ring start (EDX) into the second read where retail reloads it, and the case-0
 // copy scheduling and 0x68670 argument order that follow from it.
+// Round 41 (lane 13, --fast): the header declared in the loop 118 (553 bytes: its size takes DX and case 1's interleaved
+// stores are retail's, but view/size swap ESI/EDI, `used` is updated through a register and the start is forwarded
+// through EAX), at any point of the loop 118, with the payload in the loop too 118; in the loop with the header's `used`
+// update first 76 (553: the `used` update is retail's memory add; left: view ESI / size EDI, the remainder moved to EAX
+// and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
+// first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
+// header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

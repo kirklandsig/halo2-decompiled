@@ -712,6 +712,12 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // Round 470: six lexical orders of the position/limit/next scalars 97 each;
 // first and last float orders with later saved-identity names 97/97. Original
 // names and body restored; adjacent flags scheduling and callback reload remain.
+// Round 126 (m3 lane 5, fast; retail's callback acts as a memory value: loaded at the first dispatch, reused
+// at the second, reloaded after the join at the third): a local taken from the volatile read before the
+// first dispatch, used at the first two 141 (frame 0x10, the zero in EBX), at all three 135; a local from a
+// plain pointer read used at the first two 136; `(void)&callback` with the parameter read at each dispatch
+// 128 (LTCG passes the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); a const reference
+// to the callback read at each dispatch 136.
 // Round 47 (lane 11, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 match unless given): retail treats the
 // callback (and the graph) as memory variables whose register copy is reused: loaded into EBX at the first
 // dispatch, kept for the second, reloaded after the variant join for the third. A plain callback with the
@@ -727,6 +733,11 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // plain pointer read used at the first two 136; `(void)&callback` with the parameter read at each dispatch
 // 128 (LTCG passes the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); a const reference
 // to the callback read at each dispatch 136.
+// Round 70 (lane 12, fast with callers and callees): the callback parameter read plainly at the first
+// dispatch (pointer at the others) 136 (537 bytes); the frame clamp as `0.0f > frame ? 0.0f : frame` 107; the
+// last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93
+// (same code); the non-looping end frame as `next_frame = last_frame` 91 (531 bytes only because that arm loses
+// retail's recomputed frame count; every later line still differs).
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

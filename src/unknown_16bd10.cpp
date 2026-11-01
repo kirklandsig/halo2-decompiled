@@ -736,6 +736,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // the default jump target (the code after the switch) is not where retail puts it, so the
 // four case bodies are laid out differently and the whole switch region differs with it.
 // Earlier: frame 72 agrees; the camera mode and the object index are read into
+// Earlier 236 (was 236): frame 72 agrees; the camera mode and the object index are read into
 // named locals before the switch and the test; direction preload, length/zero XMM roles and
 // flag stores still differ.
 // frame 0x48 agrees; direction preload, length/zero
@@ -836,6 +837,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // *direction` or `= camera->point.left` x plane.d before/after the length (80): best block 35 against
 // 38; n.i always lands in XMM5. Real builds: length terms i,k,j / k,i,j / j,k,i 243/243/238; direction
 // and length declared at their first assignment 236; the four block declarations reordered 236.
+// Round 68 (lane 12): retail carries 0.0 in XMM0 into the timer test from every inner-switch path (the
+// point-category arm's length test leaves it there), which follows from its d.j preload; the double
+// `flags = 8` store is retail's. Timer as an if/else statement 244 (1700 bytes); length summed j-first
+// 238; both 246; distance dot with position first 236 (same code), with the j-first sum 238. Unused-local
+// probes +1/+2/+3/+4/+8/+12 236/245/369/236/236/385 (diagnostic). Original body kept.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

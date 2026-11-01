@@ -558,6 +558,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the index store split from the increment 153; that store before best_distance 153; the hull test before
 // the done flag 201. On the original: the departure flag declared first at function scope, long/bool,
 // 224/218 (767 B; retail's flag sits in the index argument's home, ours gives that home to the hull count).
+// Round 41 (lane 14): retail's first departure test compares the y term with `fxch; fcompi; jb` (the exit
+// test does not). Boolean departure with heading first and the `||` update 264, with memmove 273 (748 B,
+// points/indices in EBP/EBX); that with `|=` 295; long departure with `||` and memmove 236; done-flag
+// diagnostic on the memmove form 229.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -839,6 +843,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // function top with the guard 263; guarded do/while 128; while loop / function-scope index 129 each; previous
 // distance from points[count - 1] 268; count read through its address 129; 1-6 unused locals 129 (diagnostic);
 // previous side volatile 149 (diagnostic, count still read twice; reverted).
+// Round 41 (lane 14): no matched game function has retail's `mov ecx,[count]; movsx edi,cx ... test cx,cx`
+// entry (retail scan). On the if/else fraction (249, 880 B): if/else-if clamp 249; clamp inside the nonzero
+// arm 249; `short last = count - 1` 273; previous side declared before the previous point 249; loop test
+// `i != count` 249; `points + count - 1` 249. Zero-denominator arm first (`== 0.f`) 198 (887 B).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

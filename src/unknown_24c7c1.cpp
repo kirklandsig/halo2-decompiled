@@ -632,6 +632,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
 // tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
 // where retail starts a new group after origin (-0xd).
+// Round 128 (m3 lane 6, fast; control 114): on the bool timer (191, 1888 bytes) `left` is still stored as a
+// dword (retail `mov word ptr [ebp-0x3c], ax`) and the scripted flag still packs at -2: `left` assigned in two
+// statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
+// rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
+// code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
 // Round 48 (m3 lane 11, fast; control 115 fast, 114 plain): a compile-only screen shows VC storing a lone short
 // local's whole register (dword) even when it is volatile or address-taken; only a `left` that shares its dword
 // with another 2-byte member gets retail's `mov word ptr [ebp-0x3c], ax`. Diagnostics with `left` as the first
@@ -645,6 +650,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
 // rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
 // code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
+// Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
+// (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
+// count` 197 (1883 bytes).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
