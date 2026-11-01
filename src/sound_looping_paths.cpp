@@ -475,12 +475,14 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 	function_189fe0(&request, tag);
 }
 
-// score 154 (was 223): the transition definition read through the local bsp and the missing-query fill
+// score 159 (was 223): frame 0x148 agrees; BSP/count homes +0x10/+0x14
+// are exchanged, camera/query and request publication scheduling remain.
+// Earlier 154 (was 223): the transition definition read through the local bsp and the missing-query fill
 // order; the entry test and scan match retail's, but the position copy (retail loads x, the cluster, y and
 // z before it stores), the BSP/count home slots, the cue request tail order and the 0x18ab70 convention remain.
 // Earlier 156 (was 223): the transition definition read through the local bsp; the entry test and
 // first-listener scan match retail's, but the BSP spill slot, the position copy and the cue requests remain.
-// score 159 (was 223): Frame 0x14c versus 0x148; BSP/camera/query homes and duration spill remain.
+// Earlier 159 (was 223): Frame 0x14c versus 0x148; BSP/camera/query homes and duration spill remain.
 // MiniMax A (10-31): local_player_exists entry test, the first-listener test before the camera is formed, the
 // fill loop storing indices/portals/clusters in that order, tag and transition as plain ifs and the definition
 // read through `bsp` 154 with the first listener in a one-use local (not kept); the same as a nested if 159.
@@ -583,6 +585,10 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // 137: left are the BSP spilled to [esp+0x14] in place of ESI, a zero kept in ESI and frame 0x14c); plus
 // the definition read through `bsp` 262 (BSP in EBX, listener EDI, stride ESI: retail ESI/EBX/EDI;
 // aligned 181); plus listener declared before bsp 262 (same code).
+// Round 466: Seven BSP/query-count/camera role-name subsets and all roles with the query
+// count declared at active scope: 159 each. Seven position/environment/angle output
+// workspace entry subsets and all three at active-camera scope: 159 each.
+// All original identities, workspaces and producers restored; BSP/count homes remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

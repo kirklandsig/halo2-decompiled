@@ -3012,6 +3012,10 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // `this`, and the tail reloads `this` into ESI); on it: row-scoped row text/bitmap locals 171, the
 // flag declared with the other locals 317 (886), i declared first 161; the flag written
 // `!a && !b && !c` 48 (same code as the expression).
+// Round 466: Independent bounded row ordinals long/short/word/char/byte/unsigned long,
+// then short/word with row-scoped text and bitmap receivers: 48/96/116/81/109/50/96/110.
+// Original shared ordinal, direct row queries and direct searching expression restored;
+// EDI save staging, row/text registers and the final result carrier remain.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

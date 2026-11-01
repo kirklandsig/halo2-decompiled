@@ -229,6 +229,7 @@ void function_07b3e0(void)
 // record size in ecx and the record data in esi and leaves a dead `add ecx, esi` behind the
 // load, ours keeps the size in edx and the data in ecx and pads the block with two int3 bytes.
 // The scan uses the pool's own index search and datum index, so it keeps
+// Earlier: the scan uses the pool's own index search and datum index, so it keeps
 // retail's do-while shape and the hoisted count and bitmap; retail keeps the pool in two registers
 // (ebx for the scan, a hoisted `mov ebp, ebx` copy for the datum), lays the found path out after
 // the exit and pads the scan loop; ours holds the pool in ebp only and lays the found path first.
@@ -327,6 +328,10 @@ void function_07b3e0(void)
 // retail; left only the found block, where retail materialises the datum pointer, `add ecx, esi`, and
 // holds the data in ESI: the step's shape, which a separate scan local cannot have); the index
 // updated after the call 55 (116).
+// Round 12 (lane 18), the two-local form (one-use `scan` copy for the search, `found` assigned to the index): 13
+// at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
+// declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
+// left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
 // @retail 0x7b430
 void function_07b430(void)
 {

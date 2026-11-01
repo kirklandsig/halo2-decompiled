@@ -87,6 +87,10 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // pointer leaves EBP: 112 with the tail after the loop, 112 with it at the 1.0 case. Compile-only, all
 // still merged: the early test nested, through a named bool, a single-exit result, a forceinline
 // helper for the override test or for everything after it, the 1.0 return through `enabled`.
+// Round 466: Enabled declared after override, declared at entry but initialized after override,
+// initialized on complete name/lookup paths, and that graph with its own one-value exit:
+// 51/51/119/131; with override index scoped to the actual flag branch 51/51/119/131.
+// Original output lifetimes and separate recursive result restored; constant epilogue remains.
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {
