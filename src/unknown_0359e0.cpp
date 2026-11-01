@@ -122,6 +122,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 104 (lane 8, fast): the tail tests without `else` 111 (251 bytes); a named high mask (used
 // twice) 82 (identical); the height logarithm first 100 (0x136140 lost); the y shift folded into each
 // branch's lookup 82 (identical); the branch test on `common_bits <= 6` 82 (identical).
+// Lane 18 round 16 (fast, with 0x136140 and 0x1362b0; one-link env through 0x1362b0, equal to the full listing): a
+// short y copy with x used directly 130 (295 bytes, 0x136140 lost); log2_floor with only x copied (long) 94 (282
+// bytes), with only y copied 93 (279 bytes), with short copies 119 (296 bytes), each losing 0x136140; log2_floor
+// with the minimum as `common_bits = width_bits; if (common_bits > height_bits) common_bits = height_bits;` 87.
+// Env only: that minimum with swizzle_log2 compiles identically to the ternary (cmov either way).
 // Round 16 (m3 lane 17, fast; 0x136140 kept): common_bits declared before the height logarithm 82 (same
 // code); tail tests as `common_bits < width_bits` / `< height_bits` 91; the minimum as `height_bits <
 // width_bits ? height_bits : width_bits` 82 (same code), as `width_bits < height_bits ? width_bits :

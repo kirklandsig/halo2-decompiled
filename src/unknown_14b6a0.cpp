@@ -296,6 +296,15 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
+// points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
+// (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte
+// iterator through 0x6b380, 259 (frame 0x48: centre packs with the first iterator); plus centre/height/radius
+// in their own block 259 (centre joins the probe slot, but the second iterator joins the first iterator's
+// and the alternate stays alone); with the accepted points declared the other way 259; with the position
+// declared at the first block's top 259; renaming the alternate or the iterators changes nothing (259);
+// the first scan on a 12-byte iterator through data_iterator_next_calling 262 (frame 0x44). On the kept
+// body: the unit re-read from the player at the last call 243.
 // Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
 // (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
 // at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with

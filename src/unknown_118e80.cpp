@@ -728,6 +728,15 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // with xor eax,eax before the load); the same without the local 81. On the 35 form the tail predicate as
 // `||` over two named bools 56, `|` over two named bools 48, `||` inline 56, `else if` with the call
 // duplicated 56, the guard inverted with an early `return false` 76. Original body restored.
+// Round 20 (lane 18, fast): the guard as `if (offset != NONE) { ...; return local_4; } return false;` with
+// the +0xb6 word in a one-use word local and `||` on the two named bools 56 (ours widens the word with
+// `mov ax; movzx eax, ax` where retail pre-zeroes with `xor eax, eax`, and folds the `||` into
+// cmp/jne/cmp where retail materializes both bools with setne and tests each); without the word local
+// 95; the two bools computed before the animation call 60 (stack bytes). Diagnostic, not kept: with
+// 0xbc380's size parameter `short` in its definition and our declarations, 0xbc380 matches byte for
+// byte and this guard form (no word local) is 50 with only the `||` tail left; byte-typed bools 50;
+// the `||` stored in a third bool 50. The `short` size also needs src/unit_object_type.cpp's
+// declaration (a contributor's file), so it stays held: BLOCKED-BY 0xbc380.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {

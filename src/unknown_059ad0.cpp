@@ -3533,6 +3533,12 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // source pointer: first attach and merged reason-7 tails retail's, the copy's `lea` folded, the member path, tails
 // and reservation loop one register step behind); the copy declared before the result 121; `return *reason = 7,
 // false;` compiles the same (compile-only); 1-3 dead temporaries (diagnostic) 119 each.
+// Round 18 (m3 lane 18; fast with 0x59e50 and 0x630f0 in the list, which reproduces the full 119; without 0x59e50 the
+// reduced image gives 131 at 480 bytes): the machine address copied with memcpy 119 (same code); `result` declared
+// after the copy 121; both attach failures through one `attach_failed:` label 136 (464 bytes); the membership age
+// through network_session_time_since 119 (same code); the reservation out-pointer declared for the whole loop 119.
+// Round 104's named source pointer re-measured plain 151 (463 bytes, aligned 32 against this body's 42: the first
+// attach and the merged reason-7 tails as retail, the member arm and reservation scratch still one step round).
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3781,6 +3787,14 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // Round 34: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): address declared at
 // function top 138; identity copy after the key release 167; resolved bool for 0x7ab10's result 138; result
 // declared just before the g_4cf792 test 156; identity copy at function top 191 (559 bytes).
+// Round 18 (m3 lane 18, fast with 0x5c720/0x630f0; aligned difflib counts in brackets, this body [61]): the loopback
+// test as an in-place flag (`bool loopback = false; if (length == 4) loopback = ip == 0x7f000001;`, retail's sete/test)
+// 136 [54]; with the channel failure first 152 [28] (554 bytes, the clock still called); with a `__forceinline`
+// declaration of network_session_time_now too 138 [18] (573 bytes; left: the host/session staging at 0x7ab10 and the
+// mode store's scratch); that composite with the flag as one `&&` expression 142 [25] (no sete), with the flag declared
+// before the address lookup 138 [18]. Retail treats 0x5fb00's ESI and 0x7ab10's EBX argument registers as clobbered
+// (it reloads the session and keeps the host in ESI); both callees preserve them and are matched, so this looks like
+// LTCG generating this caller before them: BLOCKED-BY 0x5fb00 and 0x7ab10 (code generation order), not this body.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,

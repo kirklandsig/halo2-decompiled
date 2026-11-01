@@ -247,6 +247,11 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // squares 327 fast (1.0 in XMM6 as retail, first difference +0x8b, direction homes swap) but 374 plain (1894 bytes);
 // named i/j products stored after the k row 339; `opposite.k = 0` after the magnitude 344. Compile-only: no row
 // order, operand order, division, pointer or reciprocal placement gives retail's load-first j row.
+// Lane 18 round 17: a link of this file's generated unit with its callee closure (as the fast build) shrink-wraps
+// ESI as retail but keeps 1.0 in XMM5 and the accumulation colouring, 338 there; adding src/unknown_0350e0.cpp's
+// object to that link does not move ESI to the entry. There: `default: __assume(0)` 443 (1915 bytes); the case
+// samples as if/else 338 (identical); the three memsets before the three `remaining` stores 372; the tag read after
+// the memsets 499 (1904 bytes). `short j` 296 there, plain 338 (1907 bytes).
 // Round 263: Direction/angle library copies and their pair tie fast control 336; sample library clamp with
 // none/either/both copies scores 421; complete graph with the shared accumulator library clamp 1040.
 // Original copies, clamps, angle observations and full body restored; full score 324, entry ESI save and

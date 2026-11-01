@@ -325,6 +325,10 @@ void __stdcall function_1160c0(real dt)
 // (aligned 198 -> 200), sqrtf for the axis length 179 and for the segment-length scale 179 (same code), fabsf
 // for the length test 179, all five together 182. Retail's frame runs length, segment, axis upward from
 // [esp+0x10]; ours axis, segment, length; the axis j/k scaling reloads the stored component in retail.
+// Lane 18 round 17 (an LTCG link of this file's generated unit, 180 objects, equal to the full listing; 172
+// there for 179): the physics tag in a one-use local 172 and the physics index in a local used for the test and
+// the lookup 172 (both identical; the tag address is still formed before the -1 push); 1/dt before the loop 182;
+// a long loop index 289 (1358 bytes); the root test as `fabs(length) < .0001f` 172.
 // Round 35 (lane 13): rest-offset copy at the loop top (before the tick) 289 (1354 bytes; offset still homes
 // above previous); length/axis declared at the loop-body top 179 (same code); previous renamed last_position
 // 179 (no slot moves); the dot named before the complement product 179 (same code); a 600 s permuter run

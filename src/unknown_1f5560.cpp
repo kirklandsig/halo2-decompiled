@@ -936,6 +936,15 @@ real normalize2d(point2f *v);
 // test as its own `if` 182 (919 B). Diagnostics, all reverted: the facing normalization removed 358,
 // the retry removed 485, the type scan removed 496; the result stays memory-homed in all three, so its
 // homing does not come from the retry call, the facing calls or the scan.
+// Round 19 (lane 18): retail's 0x1f84ef `mov al, dl` exit is shared by the result-false, first-type and
+// speed paths, so VC never knew the value there; ours sends result-false to the invalid exit's folded
+// `xor al, al`. A compile-only screen shows VC folds the false exit after any equality test against
+// zero (bool/char/long, early return, goto, else); `> 0` tests do not fold but give jbe; one shared
+// `return` keeps `mov al, bl`. Real (fast): one exit with `result = false` at entry 204 (911 B, result
+// in BL); request arm returning its call with `return valid;` 182 (aligned 41 -> 40: the request
+// store goes, DL caching and the shared exit do not appear); one exit with `bool result = valid;`
+// plus the request return 219; chosen speed declared after the first call 160; result declared first
+// in the valid block 135 (same code).
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1575,6 +1584,15 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // declared after the normalization 305 (1188 B); radius renamed to sort before the stack points 238,
 // `center` declared beside `direction` 238, radius declared before the flag and result 238 (same code).
 // Round 216: Early origin/target/both/facing/origin-facing/target-facing/all point values before lookup 322/311/346/331/351/347/380; all with entry result 380. All restored; zero/radius and native input/vector homes remain.
+// Round 19 (lane 18): retail keeps the 0.0f result in xmm0 from entry (`movaps xmm0, xmm1`) and its
+// type exit jumps past the epilogue's reload, so the normalization uses xmm2/xmm3 and the radius
+// xmm5; retail's fld qword 1.0 confirms the double clamp. The flag as `bool left = <side dot> > 0.0f;`
+// at the side test (VC compiles it as retail's store-1/ja/store-0 after the comiss) 239 (aligned
+// 215 -> 198: length in the origin slot and direction at 0x1c/0x20 as retail), with the side-offset
+// if/else arms 279 (aligned 175, the best structure so far: lateral spill to the type slot, the
+// 0x26ccb0 argument order and the zero exit remain); on the first: result declared after the radius
+// 239, `return 0.0f` at the type exit 239, result declared before the entry lookup 262. The volatile
+// origin read removed 255 (0x29cbb0 300 -> 319). All restored.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
