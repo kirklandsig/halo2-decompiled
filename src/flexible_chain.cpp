@@ -355,7 +355,7 @@ void __stdcall function_1160c0(real dt)
 // sits above the axis in our frame and below it in retail's.
 // Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
 // cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
-// cosine declared before sine 179; both 179; `rest_offset`, `last_position`, `sin_angle`/`cos_angle` names 179
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position` and sine/cosine angle names 179
 // each (all identical code: neither names nor declaration order place these homes).
 // Round 37 (lane 15, fast): every slot is shared alike except two mirrored groups: retail runs length/cosine +0,
 // segment/scale/sine +4, axis +8, rest offset +0x40, previous +0x4c; ours runs axis +0, segment +0xc, length
