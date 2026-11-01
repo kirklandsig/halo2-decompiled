@@ -114,6 +114,9 @@ static __forceinline long real_to_long(real value);
 // owner and per-use cap subsets; scores 373/424/438/350/447/449/449/384.
 // Original executable source restored; no qualifying gain.
 // The 350 form uses one-use early range captures and did not match; restored under the exact-match gate.
+// Round 123 (lane 6, fast): the displacement magnitude stored before the side vector 373; the +0x7c0 zero stored
+// before the +0x7bc copy 416 (1852 bytes); the +0x714 copy before the time store 372; the sign test as
+// `(long)seed < 0` 417; the magnitude's terms in i/j/k order 373.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

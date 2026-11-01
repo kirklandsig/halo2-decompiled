@@ -918,10 +918,6 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
     s_pathfinding_node const *node = &data->nodes[index];
     return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, data));
 }
-// Round 29 (lane A): the direction as two scalars (no address-taken struct) leaves it in registers
-// as retail does: 347 -> 324, 1312 bytes. The frame is still 0x30 against retail's 0x28: ours keeps
-// the normal's x at esp+0x18 and its y at esp+0x34 where retail has the y at 0x2c and the x at
-// 0x34, and ours still spends a slot on the spilled direction.x.
 // score 324 (was 324): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
 // and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
 // zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still
@@ -932,6 +928,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // three times (`xor dl, dl` before the normalisation, `mov dl, 1` per test): the flag form
 // `crossing = false; if (..) crossing = true` x3 reached 318 in earlier rounds (kept out: flag rule);
 // on the 347 and 324 bodies of round 27 it is 371 (1331 bytes).
+// Round 29 (lane A): the direction as two scalars (no address-taken struct) leaves it in registers
+// as retail does: 347 -> 324, 1312 bytes. The frame is still 0x30 against retail's 0x28: ours keeps
+// the normal's x at esp+0x18 and its y at esp+0x34 where retail has the y at 0x2c and the x at
+// 0x34, and ours still spends a slot on the spilled direction.x.
 // Review (coordinator): the two-scalar direction (324) is a hand copy of vector2d_from_points2d's body
 // with no match, so the code stays at main's helper call (347); body copies are kept only with a match.
 // Round 79 kept: the edge's node pair as a real array, the fixed-side tests on the edge's word
@@ -1035,6 +1035,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 252: Common successful output across all three success paths: long/dword/word/native point at entry
 // and after working-edge declaration 459/459/456/401/459/459/456/401. Original complete executable source
 // restored; Frame 0x30 versus 0x28, zero/radius ownership, history homes and crossing allocation remain.
+// Round 123 (lane 6, fast): the offsets as direct products (`origin->x + normal.x * radius`, `* (0.0f - radius)`),
+// as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
+// `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
+// the second offset's vector from the start computed first 349.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

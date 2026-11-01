@@ -1994,6 +1994,21 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // Round 251: Remaining-expression / counter-first / both / compound reserve store / remaining-compound /
 // counter-compound / all / all with magazine roots 180/130/180/124/180/130/180/180. Original restored;
 // magazine/transfer and pooled receiver homes remain.
+// Round 123 (lane 6; one-link LTCG harness of this file with globals, 0x157450, juggernaut and 0x0b58c0, which gives
+// the full image's listing): the retail-shaped body (no definition-index local, taken in the success block) has every
+// block and exit as retail; left are the unit kept in EBP (retail spills it, pool in EBP) and the magazine index /
+// taken in EDI/ESI (retail ESI/EDI). Retail's pool-in-EBP and frame eight appear here only when the 0x1008f0 or
+// 0x106030 call may write the pool global (an impossible-path store of it in either, or a juggernaut test left
+// unresolved or built without /GL); a store in 0xb7360 or of another global does not. Retail's 0x1008f0 holds the
+// pool global in EBP across its own 0x106030 call and 0xb9b90/0x100130/0x1058b0 hold it across 0xb7360, so retail
+// did not see those calls as writing it: the cause is still unknown. Even with that store the ESI/EDI swap and the
+// count held in EDX remain (harness 159 positional). Plain: long first-magazine rounds 123 (586 bytes, as before);
+// slot take tested `>= 1` 139; reserve count added before the store 130; definition compare operands swapped 170;
+// slot tests weapon-first 176. Harness only, on the retail shape: other-weapon pointer, unit-index local, slot-array
+// pointer, pool local, unit/taken declared first, int/dword slot index, unloaded-first take, compound store, `count >
+// taken`, `count <= available`: same code; if-form slot/magazine take, named needed, long unloaded, early false
+// return, the other eleven orders of weapon/definition/available/result and 1-8 unused locals at the top or before the
+// unit: none closer.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
