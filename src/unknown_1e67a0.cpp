@@ -690,6 +690,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Round 293: Plain indexed jitter sign/on, per-coordinate, on-first and branch-selected stages,
 // inherited sample 182/238/165/177; ordinary sample 222/179/218/243. The first and third
 // recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
+// Round 286: independent multi-use directional limits in ijk/ikj/jik/jki/kij/kji
+// producer order 158/160/158/158/160/160; immutable ijk/kji 158/160. Scalar forms
+// shrink the frame to 0x24; original 0x28 vector frame, limits and body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

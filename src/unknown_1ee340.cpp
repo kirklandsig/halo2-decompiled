@@ -346,6 +346,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // first with the direction from it 230; direction as three scalars (diagnostic, helpers written out) 226 (991 bytes);
 // both 225 (991); start copy first with the offset from ray->start 223 (991); start and end copied and the direction
 // from both copies 196 (all six loads before the subtractions, start.z first as in retail; the end copy is one-use).
+// Round 286: CRT origin/start/both copies with original/CRT normal publication
+// 282/307/204/264/270/291; both input copies plus the hit-point setter 270/291.
+// Origin retention and edge homes remain; original copies, stores and body restored.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
