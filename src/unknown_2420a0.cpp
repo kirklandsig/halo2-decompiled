@@ -1197,6 +1197,10 @@ void c_game_engine_markers::v21(long object_index)
 // against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
 // at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
 // matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
+// Round 108 (lane 8; round 100's one-file LTCG harness still exact, each re-run as a real fast trial): a const unit
+// pointer 40 (same code); on the team at each call (119, 430 bytes): a const unit 119, a const player 119, the flag
+// read into a named bool before its test 119, the event block's slot range tested before the player index 119, the
+// slot read through the typed header array 119. The options pointer keeps EDX from entry in every per-call form.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

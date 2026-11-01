@@ -1038,7 +1038,7 @@ bool function_68670(byte *source, long size, void *block);
 // what forces its reload; ours keeps the remainder for the second read. The permuter ran without
 // finding a better form. The header home, the size register, the forwarded cursor and the grouped
 // case-1 stores remain.
-// score 72 (was 72): retail treats the read header as reachable through the ring buffer: it reloads
+// Retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at
 // esp+0x14 (header at esp+0xc, ours at esp+0x10), interleaves the message's zero and value stores
@@ -1123,6 +1123,14 @@ bool function_68670(byte *source, long size, void *block);
 // address forced to escape restores retail's reloads and late header load (retail behaves as if the
 // read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
 // stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 108 (lane 8; a one-file LTCG harness, this file + 0x1a19a0/0x68670/0x75e80 files, gives the build's 72
+// exactly): a compile without whole-program optimization does not give retail's code (retail passes the read and
+// send arguments in registers, so retail's object is LTCG). Real (fast): the payload test written `>= 1` 63 (553
+// bytes, but `cmp si, 1; jl` where retail has `test dx, dx; jle`: alignment only, not kept); the buffer start read
+// into a local for the first read and update 78 (543 bytes); payload declared before the header 72 (identical);
+// the kind read into a short local for the switch 72 (identical); case 0 sending a copy of the value made before
+// the switch 142 (558 bytes). Harness: case 0's block-local copy 137 (header at retail's +0xc, but the start then
+// stays in ESI across the read and `used` is updated through a register), without the view address line 154.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
