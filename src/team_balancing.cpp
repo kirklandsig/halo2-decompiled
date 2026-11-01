@@ -572,6 +572,13 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
 // helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
 // pointer to the candidate for all six queries 67.
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top, before the reference and before the
+// candidate (24 probes) 67 each, same code (not a numbering tie); the candidate in raw `long` storage bound by a
+// reference (balance_teams' pool idiom) 67; the cost test as `candidate.cost() < reference->cost()` 67 (same
+// code); the copy, swaps and test in a forceinline helper (candidate an inlinee local) 67, with a forceinline
+// comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
+// ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
+// `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -835,6 +842,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
 // pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
 // into EBX.
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top and 1/2/3/5 before the imbalance 34 each
+// (same code: the count register exchange is no numbering tie); the fill through a walking `long *slot` 63 (199
+// bytes); the clamp named `clamped` 34; the call given `player_count + extra_count` 34; the imbalance declared
+// bare and set to NONE before the call 34; the party index read once into `party` 73 (frame 0x40, cmovle).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

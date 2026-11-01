@@ -425,6 +425,12 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
 // sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
 // as an aggregate initializer 111 (same code).
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 111 [86]): a `count + 31` local for bytes and
+// base with the word count declared inside the do-loop (hoisted only after CSE), bytes as `* sizeof(dword)`,
+// `* 4` or from a words local 224/224/224 (796 bytes: VC still CSEs both shifts), masked `>> 3` 208 [77]; the
+// three bit loops from a named `last = word_count - 1` 128 [105]; the cluster output declared before the
+// iterator 111, at the arm's scope 111 (same code); `while (true)` with `if (memcmp(...) == 0) return;` and the
+// copy 125 [70] at 810 bytes.
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {

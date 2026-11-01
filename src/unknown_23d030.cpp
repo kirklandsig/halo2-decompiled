@@ -209,6 +209,10 @@ struct s_free_state_23d260
 // rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
 // 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
 // Original body restored.
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 102 [89]): normalize3d with yaw cosine/sine
+// locals re-measured 276 [88]; on it the up components written k,i,j / j,k,i / j,i,k / i,k,j / i,j,k 274/257
+// [86]/283/286/285, up as cross3f 279 [86], as cross3f_staged 289; the forward vector built in a local and
+// copied out, the side read from it, 367 (1367 bytes); forward.k computed after the side vector 288 [109].
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
