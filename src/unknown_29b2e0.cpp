@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 244 (was 255): frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
+// score 244 (was 244): frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // local_11 where retail packs them with the yaw at +0xc, the XMM numbering from the 1.0 constant on and the
 // rotations' register and slot assignment differ; the clamps now have retail's shape.
 // Earlier (255, was 267): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
@@ -221,6 +221,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
 // with complete role names 255/255/255/255/255/255/255/255.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 452: pitch-axis production at successful validation, after signed angles, after angular clamps or
+// after turn updates, original then shared cross: 407/370/364/284/401/351/345/263. Original late axis, helper
+// bodies and full source restored; unity register and magnitude/yaw/pitch homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
