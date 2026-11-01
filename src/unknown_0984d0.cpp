@@ -412,6 +412,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
 // (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
 // index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 147 (m3 lane 4, fast; volatile-read body): the validation counter declared inside the count test's
+// block 203 (524 bytes); both cursors declared at case scope 195; the counter declared before the validity
+// flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
+// switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
+// inverted 109 (544 bytes, branches laid out opposite to retail).
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
