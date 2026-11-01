@@ -652,6 +652,10 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // `32 * (i + 1)` and `32 * i` 9; hill copied into a local at entry 9; `(short)index + 11` 9; a
 // test of index ahead of the count test (diagnostic) 33 with the pair unchanged, so the pair does
 // not follow the next use; const-qualified parameters 9; a 600 s permuter run, 54 variants, none below 9.
+// Round 98: an unsigned index parameter 9 fast; a zero-initialized divisor 9 fast;
+// an inclusive loop bound 64 fast; both guards as `> 3` 12 fast; `index + 0` at the final call
+// 9 fast; a read-only callee index 9 fast; a read-only callee index and pointer 9 fast;
+// the function placed before its callee 9 fast. Full baseline 2; all restored.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
