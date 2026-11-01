@@ -99,6 +99,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 251: Delayed token-table publication / predecessor-first equality / both / exhausted ordinal / delayed-
 // ordinal / equality-ordinal / all / all with returned path 215/130/217/132/236/134/236/234. Original body
 // restored; early EBP and read-size/count/cursor homes remain.
+// Round 36 (lane 13, fast): retail reads the size three times around its clamp (an unconditional select and
+// store, then a reload for the terminator), the reads of a size that is never held in a register; that extra
+// weight would also put its home under next/count as retail has it. Every non-volatile form here keeps it in
+// EAX. The clamped size in a separate `length` for the terminator 216 (763 bytes); the clamp and terminator
+// before the token array and counters 129; the done flag set right after the wait 154 (766 bytes); the
+// counters declared and zeroed at the block top 127 (zeroed before the read call); with the token array too
+// 221 (756 bytes); NULL first token with the loop after the success block 127 (EBP still pushed at the loop).
 // @retail 0x121fc0
 void function_121fc0(void)
 {

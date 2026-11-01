@@ -751,6 +751,16 @@ real g_55e618;
 // (also passed to the placement and used for the final stores) 193 (frame 0x118; the dot's k term and
 // `lea esi` then match retail, but the i product keeps the normal as its destination where retail loads
 // velocity.i, and the perpendicular gets no home).
+// Round 36 (lane 13, fast): retail's homes follow its spills (tangent.i/j spilled twice each sit low at +0x38,
+// perp.k once at +0xa4 under the collision); it holds the three position sums in xmm1/xmm4/xmm2 until after
+// impact.index, so only perp.i/j, tangent.k and keep cross the call. On the velocity pointer form (194): dot3f
+// 194; dot3f with the perpendicular through vector3f_scale 194; dot3f(normal, velocity) with it 194 (all the
+// same code: helpers don't move the dot * normal operand order, ours keeps the normal as the destination);
+// tangent written as `velocity - dot * normal` 207 (1547 bytes); on the copy form 242 (1558 bytes).
+// Then 45 random dependency-respecting orders of the reflection block's 15 statements (keep, copy, dot,
+// perpendicular, tangent, position, impact.index) and of the four updates after the call, a third of them on
+// the pointer form, in a one-file LTCG link equal to the full build: none below this body (link positional
+// 74, aligned 84; the next best 76/100 and 91/93, sizes 1543-1555).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

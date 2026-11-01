@@ -130,6 +130,11 @@ void function_213970(void);
 // after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
 // getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
 // clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
+// Round 36 (lane 13, fast): the language query and both preference updates in their own block 131 (same
+// code), without the size pragma 158; one dirty store after both tests behind a changed flag 173 (259 bytes);
+// block B's scalar zero stores ahead of its header clear 131; the version compared as a dword 131; the
+// existing wrapper 0x11cae0 called in both the language test and the store 129 (232 bytes, two points). Still
+// BLOCKED-BY the separate global definitions (block A in src/unknown_213760.cpp and src/unknown_213d20.cpp).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

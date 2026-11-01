@@ -64,6 +64,12 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // top 104/104/104 (all the same code).
 // Round 251: Native direction input/selection/output memcpy, seven subsets, 104 each; complete memmove 233.
 // Original body and include restored; half/offset XMM allocation and x87/SSE projection scheduling remain.
+// Round 36 (lane 13; compile-only screens of the block up to the first 0x30bf0 call reproduce ours, then fast):
+// the side dot's terms come out in descending first-mention order of the direction's fields (the length's text
+// order moves the j/k-term pair), but the term with the fresh `0 - j` always comes first where retail has it
+// last (k, j, i). The direction scaled i, k, j 178 (989 bytes); the length written k, i, j 106; a separate
+// perpendicular vector for the dot (then copied over the offset) 201 (1015 bytes), declared at the top 201,
+// with the i, k, j scaling 206; the offset computed after the normalization 216 (1013 bytes).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
