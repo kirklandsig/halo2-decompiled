@@ -233,6 +233,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // EDX, so the start arrives in EDX); the copy declared before `result` 28 (0xb5f10 6); the copy with a
 // plain string parameter 41 (104 bytes, 0xb5f10 35); the copy taken inside the sign tests 28 (0xb5f10 6);
 // copies of both start and count 51 (92 bytes, 0xb5f10 104).
+// Round 122 (lane 5, fast with 0xb5f10/0xb61d0): a compile-only stack-parameter build colours a
+// `+=`-modified start in a scratch register in every placement (so not only LTCG's incoming ECX);
+// `string + start` there is retail's body but the sum goes to EAX, never writing start's EDI. Tried:
+// the source as `(char const *)(start + (long)string)` 28 (0xb5f10 6); a long result 48 (95 bytes,
+// 0xb5f10 92); `string + start` with `result = true` before the copy 38 (102 bytes, 0xb5f10 6); count
+// tested first with `start + (long)string` 39 (retail's colouring but start arrives unsaved in EDI,
+// 0xb5f10 35); `char const *source = string; source += start;` 27 (start in EDX, 0xb5f10 6).
 // Round 105 (lane 8, fast with 0xb5f10/0xb61d0): the count-first `string + start` lead re-measured 39
 // (start passed in EDI, the sum in a new EAX temp; 0xb5f10 35); count tested first with `start +=
 // string` before the count increment 36 (counter ECX as retail, but start in EDX, walk EDI; 0xb5f10
@@ -240,6 +247,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // increment 49 (92 bytes), count first with `string + start` 46 (103 bytes); the add reading the
 // plain parameter once through its own address (volatile) before the increment, count first or start
 // first, 36/36 (0xb5f10 6 each). Moving the add ahead of the clamp always passes start in EDX.
+// Round 124 (lane 5): every other parameter order, the definition and both calls changed together, in the
+// real build: 40 for the orders keeping string first and start before count (0xb5f10 0 only for
+// string/start/destination/count and string/count/start/destination), 40-41 for the rest (0xb5f10 2-6).
+// An LTCG env link of this file (entry stub calling 0xb5f10; reproduces 40/28/39 and 0xb5f10 0/6/0) over
+// 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
+// or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
+// colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -413,173 +427,10 @@ bool function_b51b0(s_transport_endpoint *endpoint, s_type_99af70 const *address
 
 bool function_7af40(s_type_99af70 const *address);
 
-// score 32 (was 32): the flag is read before the three endpoint field stores instead of after
-// tried the flag bit set through a byte cast of the flags word, as retail
-// the flag is read before the three endpoint field stores instead of after
-// them, the endpoint pointer is kept in a register here instead of being reloaded from the
-// connection, and the attempt counter is incremented in a register instead of in place. Retail
-// reads connection->endpoint once for the three clearing stores and again for the flag (`or
-// byte`, as `flags |= 0x40` on the word gives) and for the open call.
-// Tried: the flag bit set through a byte cast of the flags word 30 (an address cast: not kept);
-// open inline 32; open noinline 32; valid inline 32; valid noinline 90; both inline 32; open
-// inline/valid noinline 90; open noinline/valid inline 32; both noinline 90; an early
-// invalid-address exit with the failed open closing and returning first 35 (245 bytes); the copy
-// helper as plain inline 32 (identical); the state stored before the counter 33; the endpoint read
-// for the flag and the open call with the existing copy 111 (the split counter takes EBX, the
-// address then arrives in EAX; 0xb40b0 61); with that, the state store first, `++`, `+= 1` and
-// member spellings 111 each, the copy before the counter 35; with strncpy and the terminator written
-// out the counter stays an in-place `inc` and the convention holds 17 (destination ECX and the
-// terminator `[edi + 0xb3]`, retail ESI and `[esi + 0x7f]`; 249 bytes), and on that an early
-// `return false` 17, an inner `return false` 17, an else around the close 17, a single result 106,
-// the address check's loop with a single exit 17; strncpy alone 36; an early `return false` for a
-// bad address 32; `count = count + 1` 32; the failed open closing and returning first 33;
-// `connection->endpoint` read at each use 119 (0xb40b0 61); the endpoint read before the address
-// check 64. A compile-only copy splits the counter whenever the copy's destination survives the
-// call in a callee-saved register, so it cannot screen this.
-// Round 84: the endpoint local for the clears with `connection->endpoint` for the flag and the
-// open call gives retail's endpoint code exactly but splits the counter into EBX (111, 0xb40b0 61);
-// with the copy before the state store the counter is retail's in-place `inc` and only the state
-// store differs (after the call, retail before it): 15 at 245 bytes, but the mixed reads can only
-// be kept with a match. Other orders of the counter, state and copy 35/35/37/111; the flag alone
-// re-read 42; the open alone re-read 109; `= count + 1` 111.
-// tried the flag bit set through a byte cast of the flags word, as retail
-// tried the flag bit set through a byte cast of the flags word, as retail
-// sets it in the low byte, 30 (an address cast for 2 points: not kept); the flag is still read
-// before the three field stores instead of after them, the endpoint pointer is kept in a register
-// here instead of being reloaded from the connection, and the attempt counter is incremented in a
-// register instead of in place. Earlier: the connection state is cleared with the three field
-// stores in a different order here, the flag is written as a word here and or-ed into the field in retail, and the two
-// calls take their arguments in a different order.
-// DL180: open inline 32; open noinline 32; valid inline 32; valid noinline 90; both inline 32;
-// open inline/valid noinline 90; open noinline/valid inline 32; both noinline 90. Original
-// executable body restored.
-// Round 35: an early invalid-address exit with the failed open closing and returning first 35 at
-// 245 bytes (the open test inverts; the false exits then go to the close path's return); the copy
-// helper as plain inline 32 (identical); the state stored before the counter 33; the flag and the
-// open call reading the connection's endpoint again 111 (the split counter takes ebx, the address
-// then arrives in eax and 0xb40b0 stops matching). A compile-only copy without link-time code
-// generation splits the counter even with the copy written out, so it cannot screen this.
-// Round 5: retail reads connection->endpoint once for the three clearing stores and again for the
-// flag (`or byte`, as `flags |= 0x40` on the word gives) and for the open call. Those reads with
-// the existing copy 111 (the counter's split temporary takes EBX and the address then arrives in
-// EAX; 0xb40b0 61); the state store first, `++`, `+= 1` and member spellings 111 each; the copy
-// before the counter 35; with strncpy and the terminator written out the counter stays an in-place
-// `inc` and the convention holds: 17 (the copy's destination is then ECX and the terminator
-// `[edi + 0xb3]`, retail ESI and `[esi + 0x7f]`; and the address check's false exits take a long
-// jump to the final return, where retail's go to the check's own return after its loop: 249
-// bytes); with that form an early `return false` 17, an inner `return false` 17, an else around the
-// close 17, a single result 106; the address check's loop with a single exit 17 (0x7aec0 breaks).
-// strncpy alone 36. A compile-only probe splits the counter whenever the destination survives the
-// call in a callee-saved register (existing copy, a local pointer, an inline wrapper, a separate
-// block), so retail's in-place `inc` with an ESI destination still needs its source form.
-// Lane 8 r79: an early `return false` for a bad address 32; `count = count + 1` 32; the failed
-// open closing and returning first 33; `connection->endpoint` read at each use 119 (0xb40b0 61);
-// the endpoint read before the address check 64.
-// Round 33: with retail's endpoint reads (one read for the three stores, re-reads for the flag and
-// the open call) the body is retail's except the counter, split into load/inc/store in EBX, which
-// moves the address to EAX (111, 0xb40b0 lost); a compiled-out `do {} while (false)` after the
-// increment 32, with the reads 111; the copy helper with a dword size and the reads 111; the
-// failed open closing and returning first with the reads 101.
-// the flag is read before the three endpoint field stores instead of after
-// them, the endpoint pointer is kept in a register here instead of being reloaded from the
-// connection, and the attempt counter is incremented in a register instead of in place. Retail
-// reads connection->endpoint once for the three clearing stores and again for the flag (`or
-// byte`, as `flags |= 0x40` on the word gives) and for the open call.
-// Tried: the flag bit set through a byte cast of the flags word 30 (an address cast: not kept);
-// open inline 32; open noinline 32; valid inline 32; valid noinline 90; both inline 32; open
-// inline/valid noinline 90; open noinline/valid inline 32; both noinline 90; an early
-// invalid-address exit with the failed open closing and returning first 35 (245 bytes); the copy
-// helper as plain inline 32 (identical); the state stored before the counter 33; the endpoint read
-// for the flag and the open call with the existing copy 111 (the split counter takes EBX, the
-// address then arrives in EAX; 0xb40b0 61); with that, the state store first, `++`, `+= 1` and
-// member spellings 111 each, the copy before the counter 35; with strncpy and the terminator written
-// out the counter stays an in-place `inc` and the convention holds 17 (destination ECX and the
-// terminator `[edi + 0xb3]`, retail ESI and `[esi + 0x7f]`; 249 bytes), and on that an early
-// `return false` 17, an inner `return false` 17, an else around the close 17, a single result 106,
-// the address check's loop with a single exit 17; strncpy alone 36; an early `return false` for a
-// bad address 32; `count = count + 1` 32; the failed open closing and returning first 33;
-// `connection->endpoint` read at each use 119 (0xb40b0 61); the endpoint read before the address
-// check 64. A compile-only copy splits the counter whenever the copy's destination survives the
-// call in a callee-saved register, so it cannot screen this.
-// Round 84: the endpoint local for the clears with `connection->endpoint` for the flag and the
-// open call gives retail's endpoint code exactly but splits the counter into EBX (111, 0xb40b0 61);
-// with the copy before the state store the counter is retail's in-place `inc` and only the state
-// store differs (after the call, retail before it): 15 at 245 bytes, but the mixed reads can only
-// be kept with a match. Other orders of the counter, state and copy 35/35/37/111; the flag alone
-// re-read 42; the open alone re-read 109; `= count + 1` 111.
-// Actual open completion from false entry or validity result, bool/long carrier, direct/shared
-// endpoint initialization 106/100/128/124/109/105/131/128. False joins, endpoint flag scheduling
-// and split attempt increment remain; original body restored.
-// Round 109 (lane 5, fast), all on retail's endpoint reads (local for the three stores,
-// `connection->endpoint` for the flag and the open call): the copy's source read once through the own
-// parameter's address 111; the state store inside the copy's destination argument (an inline member
-// returning the path buffer) 111; the path read into a named local between the counter and the state
-// store 111; the copy helper returning void 111; the three stores through an inline taking
-// `connection->endpoint` and the type (the existing private endpoint initializer, without its null
-// test) 111. The counter's load/inc/store split (EBX, address then in EAX) survives each; only a
-// written-out strncpy keeps the in-place `inc` (listed, 17).
-// Round 44 (lane 16, fast with 0xb40b0/0xb5f10): with retail's endpoint reads and the copy before
-// the state store (round 84's 15) only the state store differs: VC puts it after the strncpy call
-// and shares `eax = 1` with the return value. Whenever the state store precedes the call in the
-// source, VC sinks it and the counter's store together to the call, splitting the `inc` (EBX,
-// 0xb40b0 61): with the reads, state stored first 111; the increment through a pointer to the
-// field 111; plain member accesses without the `connection` alias 111; the copy's source as a
-// volatile read of the own path parameter 111. Without the reads, counter/copy/state order 36.
-// Round 36 (lane 10, fast with 0xb40b0), on retail's endpoint reads: the copy's source read once through
-// the own parameter's address 111 (the path load still comes before both sunk stores); counter, copy,
-// state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
-// the return); the destination named before the counter 111; the path read into a named source between
-// the counter and the state store 111. VC splits the counter whenever any store precedes the call.
-// Round 132 (an LTCG env link with 0x7af40's object reproduces the full listing): with retail's
-// endpoint reads, the in-place `inc` survives when `connection` is used after the copy call (a
-// diagnostic store there gives retail's code plus that store); a destination pointer kept across the
-// call with no later use of `connection` splits it into EBX and moves the address to EAX. On the
-// reads: the copy helper with a dword or unsigned size, plain inline, returning void, keeping
-// strncpy's result, writing the terminator through `destination + size - 1` or a pointer computed
-// first, a destination local, or that local declared before the endpoint stores 111 each; a template
-// overload on the array 31 (kept out of line: in-place `inc`, destination ESI); one result carried
-// through the open call 94; the open test inverted with the close and return first 101; the counter
-// after the copy 37; the counter, state and copy in an inline member with the flag alone re-read 30
-// (env); the terminator through `connection` with a destination local 17 (as the written-out copy).
-// Round 54 (lane 12, fast with 0xb40b0/0xb5f10; env link = the build's listing): the copy, then the
-// counter and the state 36 (248 bytes); counter, copy, state 36; the copy first with retail's endpoint
-// reads 35 (252); `flags = flag ? 0x40 : 0` 28 (244; neg/sbb select, not retail's or-byte); a
-// pre-increment 32 (same code). Env only: the three stores through a struct-initialized endpoint copied
-// to `*connection->endpoint` 92 instructions (a stack temporary); the copy's terminator through its
-// returned destination 89.
-// Round 36 (lane 10, fast with 0xb40b0), on retail's endpoint reads: the copy's source read once through
-// the own parameter's address 111 (the path load still comes before both sunk stores); counter, copy,
-// state 15 (245 bytes, 0xb40b0 matches; only the state store after the call remains, sharing EAX = 1 with
-// the return); the destination named before the counter 111; the path read into a named source between
-// the counter and the state store 111. VC splits the counter whenever any store precedes the call.
-// Round 118 (lane 5, fast with 0xb40b0/0xb5f10): with retail's endpoint reads, the counter alone in the
-// open arm, an `opened` flag, and the state store and copy under `if (opened)` before `return opened` 104
-// (the only form so far with retail's in-place `inc` and its state store sunk to the call, but the flag
-// lives in EBX across the copy, the address arrives in EAX and 0xb40b0 differs); that flag form on the
-// current endpoint code 107 (counter split again); the counter alone in the open arm with the close and
-// `return false` in an else, then the state and copy 32 (same code: the blocks merge first); `if
-// (!opened) return false;` before the state and copy 32 (same code); retail's reads with the path read
-// once through its own address into a named source between the counter and the state store 111.
-// Round 42 (lane 1, fast with 0xb40b0/0xb5f10): on retail's endpoint reads the two pre-call stores sink
-// together in source order: state, counter, copy 111 (state stored before the counter at the call); the
-// path read once through its own address into a named source between the counter and the state store
-// 111 (taking the parameter's address does not pin the counter store). Without the reads: the flag folded
-// into the clearing store (`flags = flag ? 0x40 : 0`) with counter, copy, state 32 (243 bytes; the counter
-// still splits, into ECX); that with the open call re-reading `connection->endpoint` 40 (239 bytes), and
-// with counter, state, copy 104 (258 bytes, 0xb40b0 61).
-// Round 105 (lane 8, fast with 0xb40b0/0xb5f10): the exported csstrncpy (src/game_state_lifecycle.cpp)
-// for the copy 37 (240 bytes); that with retail's endpoint reads fast 24 (244 bytes, call unresolved in
-// the reduced image) but plain 111 (LTCG inlines it, the counter splits into EBX, 0xb40b0 61); with the
-// copy between the counter and the state store fast 25 (unresolved call, not confirmed); the state
-// store and the copy in an inline member called after the counter, on retail's reads 111 (0xb40b0 61),
-// on the current endpoint local 32 (same code). Retail's own endpoint initializer (0xb4d50) keeps its
-// null test, so the three clears here are not that helper.
-// Round 22 (m3 lane 2, fast with 0xb40b0/0xb5f10): `_ReadWriteBarrier()` between the counter and the state store
-// keeps the in-place `inc` with the state store before the call: alone 36 (242 bytes, success tail retail's); with
-// retail's endpoint reads 103 (257 bytes: the body is retail's but the address then arrives in EAX, 0xb40b0 61);
-// the barrier before the counter / after the state store with the reads 111/102; counter, barrier, copy, state with
-// the reads 15 (the listed mixed form); single bool result 103; close after an else 103; the three stores through a
-// new inline reset helper on `connection->endpoint` with the barrier 103, with the copy before the state 15.
+/* points the connection at an IPv4 address and port and opens its endpoint;
+   on success counts the attempt and keeps the request path */
+// The endpoint local for the three clearing stores beside `connection->endpoint` for the flag and the
+// open call, and the open result tested twice, are retail's code shape: kept only with the byte match.
 // @retail 0xb5d40
 bool s_http_connection_ab::connect(long address, word port, char const *path, bool flag)
 {
@@ -595,15 +446,18 @@ bool s_http_connection_ab::connect(long address, word port, char const *path, bo
         endpoint->socket = NONE;
         endpoint->flags = 0;
         endpoint->type = 4;
-        if (flag) endpoint->flags |= 0x40;
-        if (function_b51b0(endpoint, &connection->address))
-        {
+        if (flag) connection->endpoint->flags |= 0x40;
+        bool opened = function_b51b0(connection->endpoint, &connection->address);
+        if (opened)
             connection->attempt_count++;
+        else
+            transport_endpoint_close(connection->endpoint);
+        if (opened)
+        {
             connection->state = 1;
             upload_copy_ab(connection->path, path, sizeof(connection->path));
             return true;
         }
-        transport_endpoint_close(connection->endpoint);
     }
     return false;
 }

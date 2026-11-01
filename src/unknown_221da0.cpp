@@ -757,6 +757,10 @@ void __stdcall vector_constructor_iterator(void *arg_0, unsigned arg_1, int arg_
 void *__fastcall function_31bc70(void *arg_0);
 real function_18cac0(long arg_0);
 
+// score 155 (was 155): the frame 0x8ac agrees, but the camera pointer takes ESI where retail keeps it
+// in EBP and the gain table is addressed through a pointer in EBP where retail addresses it from the
+// stack; dropping the memset result frees EBP but makes MSVC align the frame (240) and passing the
+// array instead of the clear result changes the frame again (219), so the clear-result view is kept.
 // score 155 (was 155): frame 0x8ac agrees; camera ESI/EBP and persistent clear-result/side homes differ.
 // Earlier: the camera pointer takes ESI where retail keeps it in EBP, and the
 // clear-result and side locals sit at [esp + 0x14], [esp + 0x18] and [esp + 0x28] where retail
@@ -882,6 +886,9 @@ real function_18cac0(long arg_0);
 // maximum stored only when smaller 541 (493 bytes); the side as a default-1 local with nested tests 233
 // (812 bytes, retail's length, but aligned 104). Retail's extra 15 bytes are its direct `[esp + i*4 + 0xbc]`
 // table accesses, which our build only emits with the frame realignment (a flags lead, recorded above).
+// Round 470: complete-array clear-return view with real backing, retained
+// audibility and camera-cluster continuation interactions 155/155/167/167/155/155/167/167.
+// Original scalar view and complete body restored; camera/clear-result homes remain.
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {

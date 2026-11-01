@@ -126,6 +126,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // Round 247: single remaining-budget admission with maximum/available block-quotient
 // rounding subsets 427/428/430/429; separate raw/aligned capacity counterparts
 // 427/428/430/429. Original tail, counters, result graph and entire body restored.
+// Round 260: Shared threshold/payload/both rounders 428/428/437; separate raw/capped allowance 408, with
+// shared rounders 437; query-phase zero packet result 407, with shared rounders 438, all 438. All
+// restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

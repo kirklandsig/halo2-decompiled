@@ -63,6 +63,10 @@ void function_1d6ad0(s_havok_component *arg_0, s_physics_model_owner *arg_1);
 // declared before its for 9; memset through a forceinline wrapper 9; node list local read before
 // the section call 22. Diagnostics: the first loop from 1 keeps ECX; the memset ahead of the
 // section call gives EAX (shared with its `false` push).
+// Round 63 (plain): section-list result used at both queries 65; per-call result before the
+// clear 49; body count before the clear 156 (696 bytes); clear in the loop initializer 9;
+// model pointer declared at function scope 9; whole-array destination 9; element-size count 9;
+// literal 0x20 count 9.
 // @retail 0x1d5940
 long __stdcall function_1d5940(s_havok_component *arg_0, bool arg_1, bool arg_2, bool arg_3)
 {

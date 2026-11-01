@@ -19,6 +19,7 @@ real normalize2d(point2f *arg_0);
 // saving EBP, retail saves EBP and keeps the pointer there, so the point copy runs through EBP where
 // retail uses EBX; the body is also 21 bytes short of retail. Original body kept.
 // Earlier (merged stacked note): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
+// Earlier 211 (was 211): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // copies the input point a second time (at 0x28, through integer moves) for the two vector
@@ -166,6 +167,9 @@ real normalize2d(point2f *arg_0);
 // in place through vector3d_from_points3d 229 (1027 bytes, aligned 136 against 123), with `2.0f - distance`
 // in the block 242 (1015); the existing 0x30c60 for center and radius 296 (980 bytes: stays a call from its
 // /Ob1 file, so the head changes); no output self-address read with `2.0f - distance` in the block 287.
+// Round 258: Complete center-relative planar/projection-numerator/both-side-sum expression
+// subsets 1..7, then all with an independent adjusted root: 255/211/255/211/255/211/255/255. Original
+// expressions and body restored; output EBP and point/vector/SSE homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

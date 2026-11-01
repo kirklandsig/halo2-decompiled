@@ -175,6 +175,9 @@ bool function_a7670(long object_index);
 // Round 249: Real two-list parent record, indexed/branched arrays and branched/conditional
 // named members 281/181/181/181; those four with indexed cleanup 276/196/196/196.
 // Original parent observations, native child types, cleanup and complete body restored.
+// Round 267: reached-end comparisons for fixed selector, first/second membership, first processing,
+// cleanup, both searches, both processing loops and all five together each score 181.
+// Original loop tests restored; scratch EDX/EAX, list/index/count homes and cleanup induction remain.
 // @retail 0x278f00
 void function_278f00()
 {

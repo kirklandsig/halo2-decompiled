@@ -490,6 +490,9 @@ void function_245400(s_source_245400 const *source, long index,
 // array 207; sides computed inside the plane-index test 209; a named `same_side` comparison 209 (all
 // compile alike: our build sinks both side bits into one xor, retail computes them eagerly into a
 // stack byte and BL and compares bytes).
+// Round 259: complete first/second/both material-code reads at every use, with captured/live
+// table, 237/208/209/208/207/222; both code observations with native signed low-word
+// material field and captured/live table 209/222. Two-point best rejected; original restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -228,6 +228,7 @@ void function_07b3e0(void)
 // loop's padding now match byte for byte. Still differs inside the found block: retail keeps the
 // record size in ecx and the record data in esi and leaves a dead `add ecx, esi` behind the
 // load, ours keeps the size in edx and the data in ecx and pads the block with two int3 bytes.
+// The scan uses the pool's own index search and datum index, so it keeps
 // Earlier: the scan uses the pool's own index search and datum index, so it keeps
 // retail's do-while shape and the hoisted count and bitmap; retail keeps the pool in two registers
 // (ebx for the scan, a hoisted `mov ebp, ebx` copy for the datum), lays the found path out after
@@ -316,6 +317,17 @@ void function_07b3e0(void)
 // initialised from the global 58 (both: retail's code but one pool register). The matched 0x18c060's
 // EBX/EBP pair is the hoisted global plus the iterator copy; this global is aliasable (reloaded at the
 // end in retail too), so retail's EBX here is a local copy.
+// Round 24 (m3 lane 2): the uncoalesced-copy lead tested: with `inline` on the real step and scan
+// definitions (0x16bb70, 0x16bc00; diagnostic) LTCG inlines both into the iterator form here, still
+// one pool register (EBP) and no pad, 58 (120 bytes; 0x16bb70, 0x16bc00 and 0x2b2327 still match);
+// with the index set before the pool 58; data_iterator_next_calling with the scan inline 58; this
+// body through the real 0x16bc00 and 0x16bb50 (both inline) 39 (same code as the header copies); a
+// short index 58 (147 bytes). So LTCG's own inlining of the step does not make the copy either.
+// MiniMax H's two-local form (not kept: a one-use duplicate local) re-measured 13; with the scan
+// local declared first, or the index first, 11 (131 bytes: the copy now follows the index init as
+// retail; left only the found block, where retail materialises the datum pointer, `add ecx, esi`, and
+// holds the data in ESI: the step's shape, which a separate scan local cannot have); the index
+// updated after the call 55 (116).
 // Round 12 (lane 18), the two-local form (one-use `scan` copy for the search, `found` assigned to the index): 13
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
@@ -325,6 +337,21 @@ void function_07b3e0(void)
 // record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
 // its end 125 (188 bytes). Lead unchanged: retail's second pool register is the LTCG inline of the real
 // 0x16bb70/0x16bc00, which their file's /Ob1 keeps out of line here (a flags decision).
+// Lane 14 r36 (fast): the second pool register is a second read of the global, not a copy: `scan = g_4cf8d8`
+// and `pool = g_4cf8d8` read separately give retail's `mov ebx, [g]` ... `mov ebp, ebx` and loop pad, 11 at
+// 131 bytes (a copy of the first local instead, 60, coalesces); with the iterator's pool for the datum and the
+// separate read for the scan 13; the iterator form's scan with a second read for data_datum_index 70 (147
+// bytes); the iterator form aggregate-initialised 58, with the datum named in the while condition 58, with an
+// early return 58. Retail's form needs the iterator step's dead datum `add` together with the two reads,
+// which only the step inlined at link time from its own file gives (unknown_16b570.cpp is /Ob1).
+// Round 124 (lane 5, fast): record_pool_next_used over datum indices 105 (73 bytes, stays a call); the
+// absolute-index scan with index_to_datum_index 44; the datum index named before the call 39 (same code);
+// the iterator form with index_to_datum_index on a pool local 47; MiniMax H's two pool locals with the index
+// stored after the datum index (retail's order) 11 at 131 bytes (only the found block's size/data registers
+// and the dead datum `add` left; one-use duplicate local, not kept). Compile-only diagnostic: file-local
+// non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
+// retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
+// file's /Ob1 keeps them out of line here: a flags decision).
 // @retail 0x7b430
 void function_07b430(void)
 {

@@ -217,6 +217,22 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
 // 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
 // the element or the copy 49/50/50/49.
+// Round 122 (lane 5): a compile-only build of this loop forwards the stored byte to a register test
+// for a volatile read of `done` between the store and the test, a volatile store of `done` there,
+// and a store through `bool *result = &success`; only a volatile success re-reads it. Real builds
+// (fast): `(long)file.handle != NONE` 42 (same code); a long loop index 111 (345 bytes); the long
+// result from the array element with the file copied inside the branch 42; success declared at its
+// assignment 42; `success = opened > 0; if (opened > 0)` 42.
+// Round 106 (lane 7, fast): the handle read into a HANDLE local with the element passed to the call
+// and the long result 44; the long result with the branch on success 55 (351 bytes); the result as
+// dword 42; the comparisons written constant-first 42; the file copy assigned after its declaration
+// 42 (same code each).
+// Lane 12 r66 (fast, 0x2150f0 matched): 0x1a1310 clears `*success` itself before queuing the task, and the store
+// and re-test sit back to back with no join or call between them, so only a volatile success byte (as one
+// `bool volatile done, success;` declaration would give) explains retail's re-read. Tried: `if (success == true)`
+// on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
+// 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
+// opened test on the array element 42.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

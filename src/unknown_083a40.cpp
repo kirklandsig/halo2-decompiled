@@ -682,6 +682,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // harness 23 (aligned 18); the initial count read inside the live-session block harness 50 (1063 bytes); the
 // configuration as `const byte *` 32; the member count in a local for the machine copy 32; the swap's
 // update named in its own block 32 (the last three identical code).
+// Round 24 (m3 lane 2): `configuration` declared inside the branch that compares it 32 (same code); the
+// compare's operands swapped (`memcmp(player->configuration, configuration, ...)`) 157; the first
+// branch's type stored before its index 32; `update` declared at the function top 32, `slot` and
+// `occupied` there 32 (all same code).
+// The remaining spots are the preheader cursor (ECX/EDX), the swap call's `updates` load and the
+// occupied key's association; the calls flagged after it are the one-byte shift, not a callee change.
 // Round 107 (lane 8, fast; aligned = difflib count): the session player's configuration as a real member
 // read at each use (no `configuration` pointer local; the last record's `source + 0xa8` too) 28 (aligned 11,
 // kept: the preheader cursor now takes ECX and is stored at once as retail); left: `updates` loaded before

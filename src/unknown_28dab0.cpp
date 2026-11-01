@@ -254,6 +254,18 @@ void __stdcall swarm_delete(long arg_0);
 // 33 (same code as the ternary); the index read before the swarm pointer 53. Harness only: unsigned
 // NONE stores, nested head tests, the tag field compared against the result, the counter or limit
 // declared at the block or function top and the tag field read at the call change nothing or score worse.
+// Round 14 (lane 17, fast; all on s2, 92, identical code each): a const tag pointer with `NONE != field`;
+// the allocation folded into the head condition; the allocation pool read once into a local for the
+// allocation and the record address; the result declared uninitialised and set NONE after the tag
+// pointer; the record pointer declared at function scope.
+// Round 13 (lane 18, fast; callee caveat): on the record-first form (swarm pointer, then the definition
+// index, retail's store order, if-form limit: 81, 289 bytes) the NONE result does take ESI and the tag
+// EDI as retail, but -1 becomes its own value in a pushed EBX (init copy `mov esi, ebx`, both compares,
+// both record stores) and the word zeros merge with the loop counter in EDI, where retail re-forms
+// `or eax, -1` / `xor eax, eax` after ESI passes to the swarm pointer. On that form: the tag field
+// compared against the result 81 (same code); the result declared after the tag pointer 81 (same
+// code); the delete path returning NONE 82 (287 bytes); the `> 0` count arm first 77; a separate
+// allocation local assigned to the result on success 98 (299 bytes).
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

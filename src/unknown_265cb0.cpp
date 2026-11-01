@@ -515,6 +515,9 @@ real function_30bf0(vector3f *vector);
 // Round 246: native actor basis fields in all seven nonempty subsets, then all
 // with the native occupant basis, 152 each. Original padding, receiver expressions
 // and complete body restored; result/range/projection homes remain.
+// Round 263: Library projection/paired-maxima/plane-copy masks 1/2/4/3/5/6/7 score
+// 307/203/152/316/307/203/316; complete graph with ordinary result 316. Original selectors, plane copy and
+// inherited result restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1856,6 +1859,27 @@ real function_2683f0(long actor_index, long node_index, short type)
 // zero store and loop entry; a 3-point gain, not kept); with a shared iterator-start helper for the
 // file's three prop walks 259 (the walks still match); with the long second counter 260; visibility
 // as one expression or an if/else 450/450 (2841 B).
+// Round 36 (lane 13; plain checks, and a one-file LTCG link of this file with its callee closure and the
+// ballast, equal to the full build; --fast is wrong here, its reduced image builds 0x25d810 differently):
+// the view through the existing 0x25d740 262 (same code); the walk through the existing 0x26be00/0x26be30
+// 262 (same code); the player through the existing ai_player_get/ai_player_index_get 2616 B (ai.cpp is /Ob1:
+// they stay calls, where retail inlines 0x1c8180 here); the slot search alone through ai_player_index_get
+// 2659 B. Retail's search is ai_player_get's shape: player NULL first, a long copy of the short index for
+// its NONE test, a long second counter; written so 408 (2850 B, the whole search then equals retail's, the
+// rest shifts one instruction). `if (established || !(far && slow)) { if (established) {...} positive = score
+// > 0; }` 262 (masked aligned 75 -> 60), with that search 407 (masked 51), with best_level/strongest
+// declared before the memset too (immediate zero store as retail) 364 in the link harness; the same with
+// `visible &&` kept in the outer test 281 (695/695 instructions); no `visible &&` in the old expression 269.
+// Left: retail keeps direction i/j/k in xmm3/xmm2/xmm1 from the relative dot to the facing dot (ours folds
+// each read; dot3f spellings and reordered terms compile the same), established/visible slot order (follows
+// retail's extra established re-test on the hidden path) and the players loop's alignment jump.
+// Round 33 (lane 14, plain; --fast builds this function differently, 2880 B and 199, with a callee caveat):
+// the second player search with a long counter (retail's `cmp eax, 2` pointer loop) 263 (2848 B, aligned
+// 116 -> 114); that plus the player pointer set to NULL before the first search 403; plus best_level and
+// strongest declared before the memset 260 (aligned 112); plus the direction through vector3d_from_points3d
+// 266; plus established/visible renamed 260 (same code: spill slots). The length gap is the scoring block:
+// retail loads direction j/k before the relative test and i in both arms, keeps them for the facing dot,
+// stores visible = false straight to its byte and threads the established test into the not-visible path.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
