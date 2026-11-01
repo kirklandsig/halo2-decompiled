@@ -261,6 +261,13 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // stored j, k, i 72 (stored directly 81). Tried: an explicit time pointer with the current pointer
 // declared before the value pointer (the whole loop then matches, but the code after it changes:
 // 124); declaration orders around it 120-140; a cross product helper for both products 122-140.
+// Second logic walk (c2B, every block, retail 0x170630-0x170ba2): the six groups' tables, the time compare
+// (> 0 / flags & 1 copy path), the t^5..t^1 polynomial and the 0 - velocity * step path, the < 5 add vs the
+// 0x170d70 call, the 1.0 / 0.001 / 0.001 tests and both normalizes agree with retail, no behaviour difference.
+// Also tried (all worse): explicit time pointer with the pointers declared in retail's lea order (target,
+// fifth..first, velocity, constant, time, current, value): the loop is then identical, the prologue's lea order
+// and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
+// product in a local (180) or the tests split into bool locals (123).
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1500,6 +1507,16 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 // (tried 4 orders). Tried: `long narrow` (14: test esi,esi, 130 bytes, but retail's callers load dl),
 // byte/char (19), short (21), `narrow ? a : b` (42), `flags &= ~2` (19), flags/direction statement order (19),
 // early `return true/false` instead of result (41), result set last (41).
+// Why (c2B): the bool is not forced onto the stack; it needs a byte register at entry. With `long narrow` it
+// takes esi (end stays in edx), and without the `result` byte (early returns) it takes bl and end takes ecx.
+// With `result` in bl, start in eax, end in edx and the flags in ecx there is no byte register left, so
+// narrow stays on the stack. Retail has end in esi, so edx is free for narrow and for the `lea edx` that it
+// schedules between the direction components; ours cannot (it holds end in edx until the last component).
+// Parameter position (narrow second, 'long' or bool) did not move any register. Also tried, same score
+// or worse: direction via vector3d_from_points3d (19), k j i order (21), locals for the three differences
+// (19), a pointer local for the result or the direction (19), flags after or inside the direction (23, 29),
+// `flags = narrow ? .. : ..` (42), if/else for flags (31), char result (24). Callers follow this function's
+// convention: `long narrow` raises 0x171830 266 -> 288 and 0x16ebf0 120 -> 169.
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
@@ -1544,6 +1561,11 @@ struct s_camera_reference_171830
 // on the stack. The declared order of the five parameters changes nothing (6 orders tried, same score), and the
 // old `(void)&point` lines were dead code (removed, same bytes). The 0x171d00 call is also set up differently
 // until that function takes narrow in dl and end in esi.
+// c2B: no body trigger found for the convention. Retail keeps position on the stack and copies it into ebp
+// in the prologue (long-lived: loops and calls), and keeps forward and up, which die before the sample
+// loop, in registers; ours keeps position in ebx and copies forward into ebp. The chain through 0x171d00
+// matters (its convention changes this function's score: `long narrow` there gives 288), so this function
+// is probably not fixable before 0x171d00 matches.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
