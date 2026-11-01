@@ -2206,6 +2206,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
 // tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
 // Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 33 (lane 2, fast): the masked object index named before the entry lookup 154 (retail's SIB base
+// in the entry and child lookups; homes unchanged), with the raw offset form 154; the entry through
+// OBJECT() 155; the 0x400000 test as a plain mask 168, with the named index 167 (retail's
+// `test ecx, 0x400000`, but the result is then loaded in both arms and the unit stays in EBP); with the
+// named index, memcmp for the 0x2000 test 213 (retail's two-register compare, no dead add), memcmp plus
+// memcpy 213, memcpy for the copy alone 154. Retail reloads the unit from its home after the slot loop.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
