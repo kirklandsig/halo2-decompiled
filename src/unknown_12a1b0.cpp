@@ -1312,6 +1312,9 @@ struct s_looping_detail_request
 // so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
 // site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
 // bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
+// Round 290: Shared offset/outer selected-player/outer camera workspace subsets 1-7 all 127;
+// complete workspace with native signed count 129. Original declarations and count restored;
+// entry frame/copy agree, detail retention and first-player expansion remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

@@ -1371,7 +1371,7 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 61 (was 92): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
+// score 61 (was 61): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
 // and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
 // the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
 // ECX into the loop head and stores it there, ours keeps it in memory) and the lower zero (retail sets it
@@ -1538,6 +1538,9 @@ struct s_rating_summary
 // inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
 // it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
 // out of line is still unknown.
+// Round 290: On explicit team lower-result production, separate team value/change/level carriers,
+// all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
+// summary scheduling and team counter/cursor homes remain, with exact frame and length.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1860,6 +1863,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // (state == 1 as a request flag set again by the retry test, the getter, the identity copied into a
 // local XUID, an index scan only for type 5) 794 at 2942 bytes (aligned 289); the request flag alone
 // 730 (no flag byte appears; retail's `xor dl, dl` comes with the other parts).
+// Round 290: Indexed property destination from stored pointer/address producer, crossed with native
+// record-count bound and advancement, 780/788/796/770/826/788/812/770 (2750-2814 bytes). Original
+// initializer restored; frame 0xc0, initial cursor/slot/availability and later request homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

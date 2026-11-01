@@ -901,7 +901,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 129 (was 134): with the address-taken scratch record and the two-pointer getter (see
+// score 129 (was 129): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -972,6 +972,9 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
