@@ -238,6 +238,11 @@ struct s_free_state_23d260
 // sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
 // k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
 // 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
+// Round 40 (lane 14, fast): movement.j with the cosine product first 121 (1328 bytes); the rotation's
+// projection and rows each as one expression (0x11d3b0's style) 110 (1330 bytes); the rotation's
+// forward/up pointers declared before the side vector and used for the side and up cross too 289
+// (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
+// pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

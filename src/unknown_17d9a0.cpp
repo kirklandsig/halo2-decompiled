@@ -236,6 +236,13 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
 // locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
 // retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
+// Round 40 (lane 14, fast; caveat: unresolved globals in the reduced image): the 0x120850 axis in a
+// short local for the store and the normal index 160; the side read into a bool at the corner helper's
+// top with the table row formed after the point 146
+// (990 bytes: the side load moves to the corner's start as retail's but is zero-extended there,
+// `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
+// the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
+// the plane distance as dot3f(position, normal) 144.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
