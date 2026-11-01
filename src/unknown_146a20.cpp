@@ -185,6 +185,9 @@ bool g_47f05b;
 // g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
 // sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
 // construction in a typed local published after the pool construction 38 (154 bytes).
+// Round N281: complete fixed/pool construction result locals, derived/base type
+// pairs at production 38/38/38/38; entry declarations with the derived fixed
+// result and derived/base pool result 38/38. Original complete body restored.
 // @retail 0x146a20
 void function_146a20(void)
 {
