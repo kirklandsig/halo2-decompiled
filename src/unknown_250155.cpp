@@ -1470,6 +1470,11 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // BLOCKED-BY 0x596a0 (contributor code): retail reloads every escaped count after 0x19a9b4 as if that chain
 // wrote memory, ours keeps player_count in EDI in branch two, so index_count moves to memory and the
 // slot weights swap index_count/item_count (lane 4 round 91 found the same for 0x56c60).
+// Round 129 (m3 lane 6, fast): both fills as `for (long j = index_count; j < 16; j++)` 172 (420 bytes); with
+// for-scoped scan counters 172; and the allocation loop's counter for-scoped too 172; item_count declared
+// first with both index fills 172; branch two's index fill with mode queried first 110 (437). The reload of
+// player_count after 0x19a9b4 follows the escape of &player_count into contributor 0x594a0 (0x199dc9's
+// callee), as 0x25042d's players[i] reload follows contributor 0x596a0: neither is this body's.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2633,6 +2638,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // 199. Compile-only (no LTCG) gives retail's whole last loop (indices in EAX/EDI/EBX, screen reloaded into
 // EDI, immediate 0 pushes) and retail's players[i] reload, so both come from link-time summaries of the
 // callees (BLOCKED-BY 0x53b40's chain, 0x53de0 -> 0x596a0: another lane's and a contributor's code).
+// Round 129 (m3 lane 6, fast): the first loop's item fields written through list.items[i] (no item
+// pointer) 250 (930 bytes); the first loop's search counter declared in its for 95 (same code); player
+// looked up before the item pointer is formed 95 (same code); that with a separate second-loop counter
+// 93; separate text and bitmap locals for the second loop's lookups 95 (same code).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -2982,6 +2991,122 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 
 /* fills the squad browser: the focused squad's players, its game type title and
    bitmap, its map name and bitmap, the player rows, and whether the list searches */
+// score 48 (was 48): frame 0x754 agrees; with the row text through find_child and the searching flag
+// computed as one expression, the item loop, sections 1-2 and the animation byte are retail's; left: the
+// row loop's counter/text registers (ours ESI/EDI, retail EDI/ESI), EDI saved at entry (retail after the
+// game test), and the flag materialised at the end in AL (retail sets BL to 1 before the tests, keeps it
+// across the two calls and clears it; that variable form gives 161 here because `this` then takes ESI).
+// Tried: category descending 237; title default first 244; bitmap index long 237; title widget scopes
+// 237; separate player row counters 237; existing widget lookups 175; native animation bit 233; widget
+// lookups animation bit 179; map text lookup 237; text lookup helpers 156; bitmap lookup helpers 164;
+// native widget query indices 180; heading widget lookups 237; text helper query indices 164; item
+// pointer walk 301; game result width 309; row counter short 247; direct map names 218; direct search
+// result 172; bitmap exhaustive result fixed 189; offline index range 195; exhaustive bitmap long 189;
+// exhaustive bitmap case order serial 189; exhaustive bitmap range serial 195; game result
+// initialization 310; bitmap result guards 167; offline bitmap first 100; map widget lifetimes 164; all
+// widget phase lifetimes 159; map lifetimes bitmap guards 175; selected squad role 156; search result
+// from acceptance 156; offline native animation bit 115; offline native text index 116; offline row
+// lifetimes 100; offline native bit index 120; name/appearance/team/all item operations force-inline
+// 156 each; unsigned word rows 203; loop-scoped row widgets 157; bitmap category order 156; player-item
+// array home name 156; native/promoted retained item count 100/100; count-tested item while 100;
+// independent item admissions 100; name-only item continue 100; current array-item pointer 294;
+// complete bitmap/title guards on the offline-first body 100/100; row generic query 235; direct text
+// queries 235; game at use 322; team availability 294; native item flags 100; row game observations
+// 314; row team availability 304; row native game 314; game-first bitmap selection 156 (878 bytes,
+// closest structure); with the row text index passed uncast 164 (875); with a separate row counter
+// 164 (identical); with an unconverted bit test 179; with a bool-converted signed bit test 177.
+// complete bitmap/title guards on the offline-first body 100/100. Original body retained.
+// Round 164: row generic query 235; direct text queries 235; game at use 322; team availability 294;
+// native item flags 100; row game observations 314; row team availability 304; row native game 314.
+// Round 166: unsigned rows 100; bitmap presence 106; absent text 100; row while 100; native
+// animation shift 117; unsigned presence/animation 106/117; presence text animation 109;
+// recovered-prefix game-first/query/unsigned/animation 143/171/171/170.
+// Round 183: existing name/appearance/team payloads before validity bits, all seven nonempty
+// combinations 100 each; all three with one current-item receiver 293. Original setter bodies
+// and complete target restored; receiver reload, row query and animation homes remain.
+// Round 204: Real source-table cursors: names 106; appearances 105; both 106; teams 106; names/teams 108;
+// appearances/teams 105; all three 107; all three plus destination cursor 294 at 889 bytes. The seven
+// source-only forms stay 876 bytes. Original indexed body, helper bodies and memcpy restored; receiver
+// reload, row/query and animation roles remain.
+// Round 75: typed appearance assignment 100; typed appearance cursor 105; separate display counter 100;
+// publication screen local 100; row-only generic query 235 (item reload, row registers and movsx agree;
+// the title constant carrier returns); with game-first, map generic query, moved title case 3, separate
+// map widget or explicit heading receiver 237 each. Original field, helpers and complete body restored.
+// Round 303: shared nullable map-name publication, four acquisition graphs 271 each;
+// each with the generic row query 273. All original map publications, lookups and body restored.
+// Round 313: Child-domain 4 with original/shared bitmap/generic text/both queries 112/104/116/110;
+// child-domain 5 with those four APIs 112/104/120/112. Receiver, bitmap and animation gaps remain;
+// original body restored.
+// Round 128: the map bitmap block without its goto (the 0x137550 call written in both arms, which VC
+// tail-merges) gives the same code, kept. Without the inline_depth pair 302 (the item constructor loop
+// inlines); the row text index passed uncast 116; the row text through find_child directly 235 (row
+// loop as retail, but this moves out of ESI and the constant 3 takes it); the map-name block without its
+// goto 206; game-first bitmap selection 156. Diagnostic: with a constant index the row loop's find_text
+// inlines as in retail, so the variable-index call stays out of line on find_text's own cost: lead,
+// 0x22ee17 taking a short index (src/unknown_22e27b.cpp, another lane's file this round).
+// Round 21 (lane 14): find_text(short) with its cast dropped (diagnostic) leaves the row call out of
+// line (116) and breaks four matched callers (0x24ffc9, 0x250155, 0x2501c0, 0x2508a8): retail's takes a
+// long, so the lead is closed; the row index uncast 116 (873 bytes, still called); game-first bitmap
+// selection 156 (the dispatch is retail's, but ours hosts the shared index 1 and 3 blocks in the
+// category switch where retail hosts them in the valuea8 switch); diagnostic without the find_text(3)
+// lookup 327 (the row call stays out of line, so it isn't the inline budget); the row text through
+// find_child directly 240; with row-scoped text/bitmap locals 235; row-scoped locals with find_text 100.
+// Round 24 (lane 15): the setter call written at the end of each bitmap-index branch (category switch
+// first, then the valuea8 switch, and the no-squad arm) 70 (VC hosts the shared index blocks in the
+// first-created switch); with valuea8's case 3 before case 2 (the `pop edx` tail goes to the last-created
+// push block) 61, kept. On it: the row text through find_child 161 (`this` leaves ESI); the animation
+// bit as a plain signed shift 78 (folds to `test byte`); the row bitmap through find_bitmap 74; the row
+// text index uncast 77; the searching flag stored directly 78.
+// Round 136 (lane 4): retail's row lookup is `find_child(6, (short)(i + 4), false)` (every matched variable-index caller
+// calls find_text out of line, and this function's bitmaps already use find_child): 161 (879; item loop, row loop and
+// section 2 as retail, but section 1's bitmap takes ESI from `this` and the tail keeps `this` in ESI); on it: row-scoped
+// text and bitmap / text / bitmap 171/161/171, sections 1-2 through find_child(6, 2/3) 161, declarations bitmap,text,i /
+// i,text,bitmap / i,bitmap,text 161 each, find_bitmap for section 1/2/both 161, the animation bit as `((char)x >> 1) & 1`
+// / `(x >> 1) & 1` / ANIMATION_FLAG of `(char)x` 161 (874) / 161 (874) / 161 (retail's `movsx byte` read is unique).
+// Diagnostics without the item loop / the appearance copy: find_text still called (not the inline budget).
+// Round 56 (lane 9, fast): the flag as one expression alone 78; with the find_child row text 48 (direct store,
+// kept) / 46 (`bool searching = !(...)` then stored: a one-use local, not kept); on the find_child row:
+// `searching = false` default with an `&&` test 161, the flag stored to the list directly with a later
+// clear 177, the flag declared at function scope 161 (variable form) / 46 (expression); on 46: each
+// section's text/bitmap in its own block 171, row-scoped text/bitmap 48, `has_game` as a ternary 173 /
+// as an if 288, i declared first 46.
+// Round 24 (m3 lane 2): `bool searching = true; if (flag || unready || joining) searching = false;`
+// stored after the row loop 161 (EDI's push sinks past the has_game diamond and the tail keeps BL
+// across the two calls with `test bl, al`, both as retail, but section 1's bitmap takes ESI from
+// `this`, and the tail reloads `this` into ESI); on it: row-scoped row text/bitmap locals 171, the
+// flag declared with the other locals 317 (886), i declared first 161; the flag written
+// `!a && !b && !c` 48 (same code as the expression).
+// Round 466: Independent bounded row ordinals long/short/word/char/byte/unsigned long,
+// then short/word with row-scoped text and bitmap receivers: 48/96/116/81/109/50/96/110.
+// Original shared ordinal, direct row queries and direct searching expression restored;
+// EDI save staging, row/text registers and the final result carrier remain.
+// Round 107 (lane 8, fast; aligned = difflib count, baseline 30): `bool searching = true; if (A || B || C)
+// searching = false;` then stored 161 (aligned 21: retail's late `push edi`, BL flag and row-loop EDI/ESI,
+// but section 1's bitmap takes ESI and `this` is reloaded through sections 1-2); declared first or after
+// has_game 161/161; the test as `if (A) searching = false; else if (B || C) searching = false;` 13 at 877
+// bytes (only the row loop's i/text ESI/EDI swap left; not kept: identical branches); on that 13 form a
+// separate row counter 13, row-scoped text and bitmap 15, row-scoped text 13; the store in an if/else
+// 67; `searching = !A; if (searching && (B || C))` 163; false default with `!A` then `!B && !C` 53; A
+// false else `!(B || C)` (uninitialised / true default) 46/46; false/true if/else on `A || B || C` 46;
+// row-scoped text/bitmap on the 161 form 171; the expression as `!A && !B && !C` 48 (same code).
+// Round 129 (m3 lane 6, fast): per-section title/map text and bitmap variables on the variable flag 171 (879),
+// with row-scoped row widgets too 171, on the expression flag 63; `searching = !A; if (searching) searching =
+// !B && !C;` 50 (881); `searching = !A; if (searching && B) searching = false; if (searching && C) searching =
+// false;` 45 (885); `searching = true; if (A) searching = false; if (searching && (B || C)) searching = false;`
+// 13 at 877 (the row loop's i/text swap only; a flag tested afterwards, not kept); on that 13 form a
+// for-scoped `player_index` with row-scoped widgets 15, i declared first 13, i/bitmap/text after has_game 13,
+// row_text/row_bitmap 15, the row bitmap as `squad && i < squad->player_count` 36, the row text's arms
+// swapped (`!squad || i >= count` first) 13; a 600 s permuter run on it found nothing under 13 (49 tries).
+// Round 40 (lane 13, fast): the bitmap flag as `squad && i < count` 51. The tail as `bool searching =
+// true; if (A) searching = false; if (searching && (B || C)) searching = false;` 13 at 877 bytes (the
+// else-if tail without identical branches; a flag tested afterwards, so not kept unmatched). On that 13
+// form: item-loop counter / row-loop counter in their own `for` 13/13; `dword i` 16; the bitmap flag as
+// `squad && i < count` 36 or `squad ? i < count : false` 40 (both give retail's row registers, i EDI and
+// text ESI, but store one materialised bool where retail stores in each arm); the bitmap if/else inverted
+// 25; the text test inverted 13; row-scoped text and bitmap 15; `count > i` in both blocks / the bitmap
+// block 15/14; `4 + i`, `5 + i` 13; `? true : false` in the bitmap arm 13; `if (bitmap && squad) ... else
+// if (bitmap)` 13; declarations i/bitmap/text 13; i/text/bitmap ahead of squad 13; the bitmap arm's
+// comparison named `visible` 13; `if (!bitmap) continue;` ahead of the bitmap if/else 13.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

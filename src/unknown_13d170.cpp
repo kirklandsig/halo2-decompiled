@@ -250,6 +250,13 @@ struct s_block_candidate
 // Round 8 (lane 17): the segment arms as an else-if chain 370 (same code); busy as a ternary on the callback 371;
 // segment pages/time declared before the while 370; `if (!busy) scan else head = tail` 397 (1181 bytes); busy
 // assigned in each arm without an initializer 369.
+// Round 49 (m3 lane 1, fast): lane 14 round 27's busy form rebuilt (busy decided in the in-block arm,
+// `if (busy) { head = tail; continue; }`, the scan unconditional) 377 at 1213 bytes (aligned 355 -> 240);
+// with busy as `proc && proc(current)` 377 (aligned 238); on that: the new candidate's fields stored
+// previous/offset/time/pages (retail's store order) 377 (on the original 370, same code), segment pages/
+// time declared before the while 377, the scan as `for (...; i = next)` 377 (all aligned 238). Left there:
+// retail holds offset in EBX from entry (its zero for the type clamp, so EBX is pushed first and `next` is
+// spilled at +0x4c: frame 0x1054), stores the zero segment time in each arm and keeps current in EDI.
 // Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
 // bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
 // restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
