@@ -565,6 +565,13 @@ done:
 // the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
 // with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
 // named once for the translator and the copy 32; the tag read in the translator call alone 45.
+// Round 63 (m3 lane 16, fast; parse_variant stays matched): a compile-only /O1 screen still caches the buffer
+// with a NONE-guarded translator call and with a `(wchar_t const *)(word *)` copy source; the name from a
+// switch-with-returns inline helper stays out of line. Real: the natural one-copy form with the tag read
+// before the variant call 57 (171 bytes: retail's code but for the EBX buffer and the tag loaded before the
+// call); that with the NONE-guarded call 57; the repeated-copy form with the tag read first 44 (178 bytes);
+// the shared variant getter written with early returns (`if (variant) return variant; return &...;`) on the
+// natural form 54 (same code), on the kept form 48.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

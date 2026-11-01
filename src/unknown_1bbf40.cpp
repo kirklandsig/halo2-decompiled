@@ -611,6 +611,15 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // assigned in place 190 (same code), with a byte flag 190 (same code); the `&&` flag renamed to sort first or
 // last 200/200 (same code); a forceinline tail helper taking the flag and allow_exit by value with the `&&` def
 // 199 (865 bytes), with the if/else def and the false at the scan's start 199.
+// Round 63 (m3 lane 16, fast): preset-true flag with the tail test written `prop_index != NONE && special`
+// 187 (same code as unswapped); the if/else flag (false at the scan's start) with that tail order 200 (872
+// bytes); the preset-true flag as a byte 187; preset true with the false def after the 0x1b8d40 exit 187.
+// Lead: on the if/else flag with the false at the scan's start, `allow_exit = true` moved from after the seat
+// call to the end of the scan arm (diagnostic) gives retail's exact flag code in the real build (`mov cl, 1;
+// jmp` over the scan, 0 stored to the dead actor slot at the scan's start, the slot reloaded into CL at the
+// scan's exit, the scan laid out before the tail) but 233 (839 bytes: allow_exit then lives in BL, so NONE
+// takes EBP and the frame is 0x30). Without a statement at the end of the scan arm the empty join is removed,
+// the tail is laid out after the special arm and the flag stays in memory; retail's IR had something there.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

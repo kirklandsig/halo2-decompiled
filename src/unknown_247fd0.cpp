@@ -230,6 +230,14 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
 // with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
 // `changed` bool, dword-cast pointers, the cache stores swapped.
+// Round 63 (m3 lane 16, fast): compile-only, field_10 first still splits the compare with the sample in a
+// named local, the compare operands swapped, a `cached` record local read just before it, `!(==)`, the
+// sample as `/ 65535.f`, an empty-then if, a flags-word pointer for the update. Real: field_10 first with
+// the `cached` local 133; the owner's flags read once into a `flags` local for the 0x173ba0 mask and the
+// update 61 (870 bytes: the post-call update lines up, but the flags are then read before the call where
+// retail re-reads them after it, so not kept), the same with field_10 first 126; field_10 first with the
+// update through the existing 0x173c10 method 133, with the compare swapped 133, with a named sample 133;
+// field_10 first with `arg_1->field_02++` and `field_44 = field_44 | 0xf80f` 133.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
