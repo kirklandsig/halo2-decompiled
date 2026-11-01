@@ -279,34 +279,22 @@ void __stdcall function_15ec0(long index)
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
 
-// MiniMax E (11-01): the copy count read at the copy site instead of before the allocation
-// scores 76 (was 62); no lower score.
-// MiniMax E (11-01): the copy count read before the allocation reaches retail's 178 bytes;
-// the earlier round dropped this form on the difference count alone (62 against 58).
-// score 58 (was 77): the allocation callee takes its out pointer in ESI here and in EBX in
-// retail, so the frame is one push deeper and the copy count rides in EDI.
 // @retail 0x1d3f0
 bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 {
 	D3DPalette *palette = NULL;
-	long copy_count = g_43e8e8[index];
 	bool result = function_015b10(index, &palette);
 	if (result && colors)
 	{
 		D3DCOLOR *destination = D3DPalette_Lock2(palette, 0);
 		if (destination)
-			memcpy(destination, colors, copy_count * sizeof(D3DCOLOR));
+			memcpy(destination, colors, g_43e8e8[index] * sizeof(D3DCOLOR));
 		D3DPalette_Unlock(palette);
 	}
 	*out = palette;
 	return result;
 }
 
-// MiniMax E (11-01): no new form, no lower score; retail's body keeps a per-stage cache and a
-// dirty mask that this project does not have.
-// score 152 (was 152): retail writes a per-stage cache at 0x404dd0 + stage * 0x80 and a dirty
-// mask at 0x407490 and dispatches through a jump table at 0x158c8; none of those globals or that
-// table exist in this project, so the body cannot be rebuilt from this file.
 // @retail 0x15780
 void function_15780(long stage, long mode)
 {
@@ -2271,7 +2259,6 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 	return comparison > 0;
 }
 
-// MiniMax D (11-01): no new form, no lower score.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
@@ -2313,8 +2300,6 @@ void function_1e370(void)
 	}
 }
 
-// MiniMax D (11-01): the allocator's statement order, an early count store and a records local in
-// the allocator all tie or regress at 8 differences; no lower score.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
 // copy of the payload saves and restores the register that choice leaves free.
 // @retail 0x1e4e0
@@ -2464,8 +2449,6 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
-// MiniMax D (run 37): no new form, no lower score; the second table_entry_data lookup has to
-// stay out of line like retail's, and that is decided in src/unknown_023540.cpp (not my file).
 // score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
 // inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
 // that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
@@ -2535,7 +2518,6 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
     return result;
 }
 
-// MiniMax D (run 37): no new form, no lower score; the maximum as `first <= second ? second : first` gives retail's comiss operand order but still scores 26, the maximum without the round trip through the stack scores 47, the four forms of the maximum (the two ternary orders, the if/else and the initial-value form) score 47 or 48, and retail's own phi copies the maximum into g_4b9fa4's register while ours keeps it in 0.0001f's.
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
@@ -2615,8 +2597,6 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
-// MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
-// seventh parameter to give its count retail's register home.
 // score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
 // in ecx.
 // @retail 0x35b00
@@ -2770,9 +2750,6 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
-// MiniMax D (run 37): no new form, no lower score; the only real difference is that retail
-// folds the record base into the payload pointer one store earlier than we do, the rest of
-// the fast differences are the reduced image's addresses for the globals and the constant.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3018,10 +2995,6 @@ bool g_5093bc;
 // depth format is assigned first; the two flag bytes still come from a register instead of memory.
 // MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
 // casts the global's own address, so it is not kept without a match.
-// MiniMax D (run 37): no new form, no lower score; a memcpy of the settings into the global
-// gives retail's store order (52) but the flag bytes are still taken from the loaded dword
-// instead of memory, the reads through the packed dword give 69 and 72, a dword copy of the
-// first four bytes gives 55 and reading the flag bytes through the global's address gives 52.
 // score 55 (fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // format after the back buffer width and clearing the result before the device pointer gives 68;
 // reading the two flag bytes back through a byte pointer to g_runtime_device_configuration as
@@ -3133,7 +3106,6 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
-// MiniMax D (11-01): no new form, no lower score.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
@@ -3239,12 +3211,6 @@ void __stdcall function_1e930(long opaque)
 
 bool g_55e6bc;
 
-// MiniMax E (11-01): index-based output stores score 143 and a separate near factor ties 87;
-// no new form, no lower score.
-// score 87 (was 87): retail keeps the projection base in ECX and the row counter in EDI and splits
-// the output into a row base (ESI) and an advancing cursor (EDX); ours uses one cursor in ECX, the
-// counter in EDX, and multiplies the near plane in a register where retail folds the global into
-// the multiply.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -3353,8 +3319,6 @@ bool function_14600()
     return result;
 }
 
-// MiniMax D (run 37): no new form, no lower score; the width reciprocal first gives 74, the
-// width first with constants[3] first gives 78 and the full retail order gives 43.
 // score 40 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
@@ -3402,8 +3366,6 @@ void function_1eb00()
     g_4b6294 = true;
 }
 
-// MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
-// tables and caches that this project does not have.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
 // ours divides into xmm3 and multiplies xmm4, retail divides into xmm2 and multiplies xmm0.
 // @retail 0x36580
@@ -4772,8 +4734,6 @@ void __stdcall function_352e0(long target, bool multiple);
 long function_35510(long format);
 void function_1bd50(void *state);
 
-// MiniMax D (11-01): the fallback as a word cast, as a ternary and as a word local all score 15
-// or worse; our load stays a movzx where retail widens the word with an xor.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
@@ -5056,7 +5016,6 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
-// MiniMax D (11-01): no new form, no lower score.
 // score 544 (was 544): our body is 90 bytes shorter than retail's (2316 against 2406) and the
 // setup of the draw calls still differs in the order of the operands and the stores.
 // @retail 0x4e260
@@ -5224,9 +5183,6 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 }
 
 // @retail 0x4ebd0
-// MiniMax D (run 37): no new form, no lower score; the tag without the volatile gives 111 (in
-// the original order 117) and the reordered body gives 101, so the original body is kept even
-// though it keeps a volatile local that the coordinator's rules dislike.
 // score 54 (was 54): retail reads the block base out of the table before it
 // reads the record tag and keeps that tag in a register, ours spills the tag
 // to a stack slot and reloads it, and adds the table's base pointer in after
@@ -5463,7 +5419,6 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->bottom += dy;
 }
 
-// MiniMax D (run 37): no new form, no lower score; the bitmap pointer declared first, the two rectangles swapped and the casts removed all give 60, a short top gives 99 and the clamps written as if/else give 187, the four clamp values as longs or declared first in the outer scope give 122 and 113, and retail's frame leaves sixteen bytes below the rectangles where ours leaves twelve, which the type and the order of the clamp locals do not move.
 // score 60 (was 75): the two rectangles sit four bytes higher in the frame than retail's and the
 // bitmap pointer shares the clip's slot instead of being spilled; the clip branch clamps the left
 // edge with a conditional set instead of retail's branch.
@@ -5806,7 +5761,6 @@ PRIVATE __forceinline void draw_filter_quad(real left, real right, real top, rea
     D3DDevice_SetVertexData4f(0, left, bottom, 16777215.0f, 16777215.0f);
 }
 
-// MiniMax D (11-01): no new form, no lower score.
 // score 694 (was 694): our body is 121 bytes longer than retail's (2628 against 2507); the
 // triangle-fan primitive constants are retail's, but the instruction sequence still differs.
 // @retail 0x46ea0
@@ -6088,8 +6042,6 @@ void function_46ea0(long tag, point3f const *position);
 
 // Tried (MiniMax S run 10): writing the g_4b8438 store through an unsigned int lvalue
 // (*(unsigned int *)&g_4b8438 = 0) scores 73 against 76; not kept (a cast of the global's address).
-// MiniMax D (11-01): no new form, no lower score; the store before the inlined call is only
-// reachable through a cast of the global's own address.
 // score 3 (was 22): the g_4b8438 store is emitted after the range comparison of the inlined call,
 // where retail emits it before.
 // @retail 0x2df00
@@ -6506,10 +6458,6 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
 
-// MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
-// score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
-// frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
-// frame pointer in the prologue, so every stack slot sits four bytes off.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
@@ -7854,9 +7802,6 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
-// MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
-// decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
-// expression for world_effects gives 65; the original 16 is kept.
 
 // @retail 0x13680
 void function_13680(bool skip_effects)
