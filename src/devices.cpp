@@ -766,6 +766,12 @@ struct s_device_machine_view
 // behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
 // Matched retail sites that load 16 bits into the pointer's own register (0x3f500, 0x1c7450, 0x1023d0)
 // use the value in 16-bit compares or a phi, never in byte tests.
+// Round 114 (lane 8, fast; with the 0x1200055f zero store unless noted): the group flags read through the
+// macro at each test, no group local 123 (655 bytes: the address sinks below the machine test into `mov ax,
+// [esi + eax*4 + 2]`, the table base in a pushed ESI); `result` and `function_value` declared before the
+// device and definition with word-local masks 122, the same order on the lane S form without the zero store
+// 34 (same code); `__assume(group != NULL)` after the group pointer (as matched 0x187450) with word-local
+// masks 122 (no colouring change); `(group_flags & 1) == 1 && (group_flags & 2) == 2` 122.
 // Round 127 (lane 5, fast): word-local masks + the 0x1200055f zero store re-measured 122 (pushed ESI);
 // `__assume(group != NULL)` after the lookup on it 122 and on the lane S form 34 (same code: it is no
 // third reference); the lane S bits masked straight from the field 34 (same code). Matched 0x107870

@@ -1452,6 +1452,10 @@ void function_1f86a0(long actor_index);
 // as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
 // `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
 // root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
+// Round 116 (lane 8, fast): the found entry's index read after the loop 134 (same code); the mask declared before
+// the element 240 (862 bytes); `const byte` mask 134; first entry fetched before the loop with the step at its bottom
+// 134; diagnostic `long` mask 248 (873 bytes: the mask leaves BL but the CSE'd flags byte takes it; the entry stays in
+// memory). The entry loses EBX to every byte candidate.
 // Round 39 (m3 lane 14, fast): the FORMS-slot-data-block form (the state read through `slot->unknownc` as a data
 // struct with offsets 0xc lower, its bool and the +0x24 short through it) 134 (same code), declared between the
 // actor and the unit 134; the iterator declared at the top 134; joint_index and entry declared at the top 134; the

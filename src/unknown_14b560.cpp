@@ -2785,6 +2785,12 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
 // 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
 // loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
+// Round 117 (m3 lane 8, fast, where this body builds 592 bytes and 193): last_position declared first, busy
+// declared at the loop-body top, failed at function scope, iterator.datum_index read at each use in loop 2: 193 each
+// (same code); the pool global read at each iterator init 213 (576 bytes). Matched retail callers of 0x6b380 neither
+// confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
+// 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
+// iterator, so our build promotes g_4e8c20 into EDI through both loops.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

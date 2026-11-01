@@ -109,6 +109,10 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
 // [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
 // alone [66].
+// Round 117 (m3 lane 8, fast): `local_6 *= -1.0` (a double) 75 at 996 bytes, but the negation becomes x87
+// `fmul qword` where retail multiplies by -1.0f in SSE, so it cannot match; it shows the else arm then loads -1.0
+// itself as retail does. `local_6 = 0.0f - local_6` 171; `local_6 = -local_6` 171; `*= -1` 85 (same code); the sign
+// test as `local_5 * local_6 < 0.0f` 85 (same code); /Op around the function (diagnostic) 241 (1024 bytes).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

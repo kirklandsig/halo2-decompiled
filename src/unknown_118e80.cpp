@@ -1297,6 +1297,15 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round I (MiniMax lane I, fast): its 42 came from dropping the function_119bc0 call and passing the flag
 // uninitialised (a behaviour change, not kept); with the call kept and the squared length summed as three
 // statements 92, as one expression 94. Original body restored.
+// Round 115 (fast, agreeing with the full count here): BLOCKED-BY 0x1c4b00 still: its long force parameter is
+// declared in three files other lanes hold this round (projectiles.cpp, unknown_0a76b0.cpp, unknown_1eb8a0.cpp).
+// 0x1e5af0's parameters as (physics, up, output, forward), definition, declarations and all five calls, 92: the
+// MOV/LEA order at the first call becomes retail's and 0x1e5af0 and its other callers keep their counts (retail's
+// setups at 0x118700 and 0xe3c90 load EAX, ECX, EDX in that order; 0xdd360's loads ECX first); length_sq3f on a
+// vector3f field at 0x138 of the output 92 (retail's k, j, i loads), through the existing pointer 94; both 90;
+// the countdown at 0x206 in a short local 94; as a word local with `(short)countdown <= 0` 90 (retail's
+// `xor eax, eax; mov ax` load and the first difference moves to +0x1bd, but `add eax, 0xffff` for retail's
+// `dec eax`); a short `remaining = word - 1` local, with or without a word local, 94 (same code).
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
