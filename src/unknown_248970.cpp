@@ -303,6 +303,14 @@ public:
 // 261 (data loaded once, location still EBX); that copy with the location read once through its address 248
 // (location stacked again, frame 8, but held in EBX; 0x175270 21). Retail's link keeps the pool in EBX, NONE in
 // EDI then EBP and reloads the location into EDX; every inlined-link form here keeps the location in EBX.
+// Round 18 (lane 17, fast, with 0x175270): head declared before the child offset 68 (the prologue changes);
+// the existing 0x2483f0 called for the link with `inline` on its definition and its inline_depth(1) pair removed
+// 261 (the link inlines, 712 bytes, but the location becomes an EBX register argument: 0x175270 100; 0x2483f0,
+// 0x248cc0, 0x248d90 still match); that with the location read once through its address 244 (stacked again,
+// but held in EBX all through, frame 8; 0x175270 21); the child table indexed by the counter
+// (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
+// the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
+// offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

@@ -159,6 +159,10 @@ struct s_placement_2bc1
 // Round 55: early return when no object is created 5; the existing game_engine_get() for the engine
 // test 5; the out-of-line event sender 61 (not inlined); tag index read without the definition
 // local 5; event declared at the top of the marker block, filled in place 32.
+// Round 67: short team at both calls 44 (228 bytes; mode tail exact, marker prefix regresses); short team only
+// at the update or at entry with the original marker argument 5 each; event pointer 61 (198 bytes, send not
+// inlined); shared creation pointer 5; full-width team copy 5; shared creation pointer plus earlier object
+// result 5; NONE-initialized object result 5. A 2400 s permuter run timed out during its initial full build.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {
