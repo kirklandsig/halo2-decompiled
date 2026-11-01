@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "unknown_13fd90.h"
 #include "unknown_19c1d0.h"
+#include "matrix_transform.h"
 #include <stdarg.h>
 #include <string.h>
 #include <wchar.h>
@@ -361,12 +362,7 @@ bool g_47ff86 = true;
 
 PRIVATE inline void transform_plane_163db0(transform4x3f const *matrix, s_plane const *source, s_plane *plane)
 {
-	real x = source->normal.i;
-	real y = source->normal.j;
-	real z = source->normal.k;
-	plane->normal.i = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x;
-	plane->normal.j = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x;
-	plane->normal.k = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x;
+	matrix_transform_vector(matrix, &source->normal, &plane->normal);
 	real scale = matrix->scale;
 	real distance = matrix->position.y * plane->normal.j;
 	distance += source->d * scale;
@@ -379,7 +375,7 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 28 (was 32): at retail's length (2833 bytes). Left: the top and bottom planes sum the distance as
+// score 28 (was 28): at retail's length (2833 bytes). Left: the top and bottom planes sum the distance as
 // z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
@@ -596,6 +592,17 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // depth and rectangle loads are retail's, only x0's product folds the load depth-first and is one
 // byte short) x0 written depth-first 83 (same code) and x0 computed last 659; the in-place plane
 // transform of 0x184440's file (one-expression z, y, scale * d, x distance) for planes 2 and 3 730.
+// Round 22 (lane 17, fast): the plane helper's normal rows replaced by the existing matrix_transform_vector 28
+// (identical code; kept); the helper forceinline 28 (identical). Per-plane distance order: retail sums planes
+// 0/1 as y, d, z, x and planes 2/3 as z, y, d, x. Any one-expression sum (all 24 term orders) 56, every order
+// canonicalised to z,x,d,y / y,d,z,x / z,y,x,d / z,x,y,d for planes 0-3; the distance as d * scale + dot3f
+// (24 forms: dot arguments, scale local none/first/after the rows, term and product order) best 33 (scale
+// after the rows: planes 1-3 take retail's z, y, d, x, plane 0 z, d, y, x), others 37/52/58/616; on the
+// existing matrix_transform_vector: dot3f 68/81, with the scale local 40, one expression 79; on that 40 form
+// the plane normals' z inputs through rect: plane 0 40, plane 1 674, both 674, all four 671. Diagnostics
+// (dead copies of depth): before plane 2 with the pinned sum, 1-7 copies 36 each (only the x87 error tests
+// flip); before plane 0 on the dot3f form 58/91/75/50/48/52/51 for 1-7, with the per-plane orders
+// shifting: the canonical sum order is a temporary-numbering effect, so a match needs retail's numbering.
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {

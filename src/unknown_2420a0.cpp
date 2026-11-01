@@ -538,6 +538,11 @@ long function_243b10(long key_b, bool team_only, long *second)
 // array at function scope 172, an options local at function scope for the key and the marker test (as
 // 0x243b10) 169; on 169: the named result index 169, the options local per marker block 172, the inner
 // loop as `while` with `j++` 169, the results array at function scope 169, the marker select as if/else 188.
+// Round 22 (lane 17, fast with 0x19ec40 and its callees 0x1e5bb0/0x1e2a90/0x29b00 in the image, which agrees with
+// the full count; without them the image builds 203): the accumulated distance 173; the table local assigned at
+// the top of each k iteration 169 (717 bytes; the slot parameter moves to the stack, the table is hoisted to
+// EDI and caller 0x240160 drops to 46), with the accumulated distance 169; `long j` declared in the for 173;
+// count declared before the results array and assigned from the query 173.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1233,6 +1238,13 @@ void c_game_engine_markers::v21(long object_index)
 // function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
 // form 40 (same code). In that form only the options pointer's allocation differs (CSE'd from entry and
 // kept in EDX, where retail reloads it into ECX at the compare and the type test takes EDX/ESI).
+// Round 22 (lane 17, fast): both parameters and the slot/unit locals renamed 40 (identical code: names do
+// not steer this body's registers); the absolute index as a word local 90; the mode test removed
+// (diagnostic) 131, and the entry still takes the index in EAX and the header in ECX, so the swap is not
+// from the mode test's CL; the team at each call re-measured 119 (its players-data load folds into the add
+// only because EDX already holds the options pointer: one cause, not two); a named `valid_slot` bool for both
+// slot range tests 106 (plain; the fast image drops the function); the unit through slot_handler.h's object_get
+// 40 (identical).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
