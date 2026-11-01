@@ -498,6 +498,13 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // index); with a found flag 94 (336, retail's threaded exits); without the `next = 0` store (diagnostic) the zero
 // register goes, 92 (the store's constant is what VC shares with the index); definition declared before squad 92;
 // the header stores in another order 92.
+// Round 190 (fast): retail's scan has a dead `lea edi, [ebx+edi*8]` after the type compare (so the index is
+// re-extended at the loop top), count in EBP, entries in EBX, alternate in CL and the index in EDX. An element
+// pointer local for the compare on the found-flag form 94 (336 bytes, no lea: it folds), on the current body 74
+// (same code); count and entries as value ternaries on the flag form 94, with the `!alternate` arm first 94, on
+// the current body with the `!alternate` arm first 75. Diagnostics (flag form, not kept): `next = 1` 85 and a
+// scan starting at one 81 remove the zero register, but the walk keeps squad/definition in EAX/ECX swapped and
+// the scan keeps alternate in BL, count in EAX and the index in EBP with a sign-extended copy in EDX.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2291,6 +2298,14 @@ bool function_1df5d0(short team_a, short team_b);
 // typed squad fields 39; `actor->swarm` 39; count set before health 39. A forceinline add helper taking health
 // by value 82 (copy form kept). Matched in-place field adds add a parameter (0x1c9c80, 0x1e2570), a fresh load
 // (0xdf5f0) or an inline clamp's result (0x187510), never a plain multi-path local.
+// Round 190: unused-local probes (diagnostic, not kept) 1-8 before the squad pointer and 1-8 before health in
+// the real build 39 each (2: 47), 1-16 at both places compile-only: the add never folds, so it is no numbering
+// tie. Compile-only experiments: a single-definition value folds (`addss xmm0, [p+16]`) in or out of a loop; a
+// multi-path local folds outside a loop through a byte or typed local pointer, an indexed element or a stack
+// parameter, but inside any loop (for, while with a call, do-while, body in a forceinline helper, local declared
+// outside) every operand shape loads the field first. Real: count declared at function scope 39; total as
+// `((real *)squad)[4]` 39; the add through a fresh squad_get 217 (861 bytes); a forceinline add helper by value
+// or through a total pointer 217/218 (834/833 bytes).
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2943,6 +2958,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 0x290e20 call, the 0x204d30 call or the last 0x1fb8a0 call given 0 for the index 87/49/54, the reload stays
 // in each. The trigger pointer declared at function scope 50; the optional output, the counter output or the
 // task declared at function scope 59/50/50.
+// Round 190 (fast): a two-use `bool has_definition = flag40 && definition != NONE` for both tests 169 (578 bytes:
+// the follow-up 0x1fb8a0 call gets retail's `mov eax, ebp`, but the bool is materialised at entry and the compute
+// arm re-reads the definition index); the same bool only in the else arm 50 (same code); the trigger part as a
+// forceinline helper taking the squad and index 50 (same code); the trigger guard folded into the local_5 test
+// 111; the definition index as a named local for the arm's test and the 0x290cd0 argument 50 (same code).
+// The callee 0x290e20 (another lane's) still differs at +0x0.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

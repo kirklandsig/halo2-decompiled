@@ -795,6 +795,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // copy (retail keeps two) 228 at 1484 B: retail's order up to its 0x1e3b00 call, but case 1's copy does not
 // cross-jump into it, so the direction/output tail still follows the shared copy; the tail written inside case 2
 // is byte-identical (228).
+// Round 189 (m3 lane 3, fast, control 322): the two flags declared after the other locals, point_valid first and
+// result last, result first and point_valid last 322 each (homes unchanged); `point_valid = result = false` with
+// point_valid declared first 324 (only the entry store order flips); point_valid set once at a new label before the
+// aim test 351, that with the reversed chain 349.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1405,6 +1409,10 @@ struct s_actor_looking_turn_request
 // noinline declaration of 0x1fdd90 here changes nothing): the side test as `if (first == A || first == B)
 // { bool current_side = first == A; ...` 464 (retail's threaded side stores); bool valid 519; that with the side
 // test 517; bool looking_valid 513; both bool 516; both with the side test 515.
+// Round 189 (m3 lane 3): BLOCKED-BY 0x1fdd90: retail calls it (its only retail caller is this function) and
+// our build inlines it (27 calls against retail's 28). Fast (control 548): forced defined inside the 0x2973f0
+// block 544; animation state long 550; forced with the top bools 548; the target-point pair declared after
+// 0x297600 543; forced inside with valid before the direction 544.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
