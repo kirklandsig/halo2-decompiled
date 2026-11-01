@@ -517,6 +517,12 @@ extern point2f *g_468778;
 // Round 249: Repeated actor/request truth snapshots, singly/both 400/401/394;
 // actor-first counterparts 402/425/415; both with late false default, original/actor-first
 // acquisition 426/429. All three predicate calls, early distance and complete original body restored.
+// Round 145: ignoring register names, ours differs from retail in about 100 instructions (entry order,
+// result byte, prop home, facing reads, constant exits). Actor first with `if (...) {...; if (!f14 && !f13
+// && !f2d) return true;} return false;` 413 (1523 bytes); actor first with the result byte 413 (1555);
+// constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
+// settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
+// first facing dot read off the prop view 408 (1556).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

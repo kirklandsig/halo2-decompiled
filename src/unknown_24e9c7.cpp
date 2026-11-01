@@ -192,6 +192,11 @@ struct s_24e9c7_bounds
 // 155 (735 bytes); the same with separate side scalars 155; across built in the side point and scaled in
 // place with scalar back 139 (the listed form; side y spilled at -0x14); that scalar form with scale read
 // first 155.
+// Round 145: a compile-only frame screen shows a spilled scalar homes above result only when the back pair
+// is scalar (frame 0x44, one slot short of retail's two). Real (fast): across scaled in place as side
+// scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
+// side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
+// up/back 139 (742); the half width named and multiplied first 143 (739).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -768,7 +768,7 @@ void function_143250(
 	}
 }
 
-// score 1766 (was 1781): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// score 1766 (was 1766): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
 // Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
 // Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
@@ -845,6 +845,15 @@ void function_143250(
 // Round 255: producer-ready retained columns 1/5, 2/5, 3/5, 4/5, 5/6, 1/4/5, 2/4/5,
 // 4/5/6 score 1772/1768/1768/1772/1771/1802/1801/1783. Original publication graph restored;
 // frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// Round 145: the stacked rotation comes from the number of locals: LTCG passes it in EAX (retail's
+// `ret 4`, order alone on the stack) only while the function declares fewer than about 950 of them
+// (a one-file LTCG probe flips between 950 and 980 unused declarations on a cut-down body; block or
+// struct scope still counts). Plain checks: every term copy propagated (971 terms, rotation still stacked)
+// 1927 (10933 bytes); copies propagated and every single-use term written into its consumer (299 terms,
+// retail's convention) 1886 (10894); the first 400 single-use terms written in, copies kept (941 terms,
+// retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
+// 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
+// 0x23690 508->512 with retail's convention.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

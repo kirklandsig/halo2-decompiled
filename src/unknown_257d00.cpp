@@ -1590,8 +1590,8 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// MiniMax E run 26: score 471 (was 471): retail keeps the object index in EBP and the scaled actor base in EBX and reads the case word through EBX, ours keeps the index in ESI and the base in EDI, so the whole dispatch prologue and the case bodies are four bytes out; the forty-byte length deficit and the pool/actor/output ownership remain.
-// score 471 (was 471): No allocated frame; actor/pool/output acquisition, dispatch layout and forty missing bytes remain.
+// score 471 (was 471): (MiniMax E run 26) retail keeps the object index in EBP and the scaled actor base in EBX and reads the case word through EBX, ours keeps the index in ESI and the base in EDI, so the whole dispatch prologue and the case bodies are four bytes out; the forty-byte length deficit and the pool/actor/output ownership remain.
+// Earlier (471): No allocated frame; actor/pool/output acquisition, dispatch layout and forty missing bytes remain.
 // the body is 40 bytes short; retail loads the actor and cs-datum
 // table globals before the actor index and keeps the actor base in EBX, ours loads the
 // index first and keeps the actor base in ESI.
@@ -1700,6 +1700,12 @@ void function_b7360(long object_index);
 // Round 322: Coupled movement-query publication with positive/negative success-or-fallback admission, bool/byte/short/long: 539/531/533/534 each. Original stores, returns, dispatch and body restored; entry actor/output carriers and length deficit remain.
 // Typed-array actor/command/both acquisitions, original/early actor-object observation, then both acquisition
 // orders: 471/471/471/470/470/470/477/478. Original complete executable source restored.
+// Round 145: retail reads the actor object field at each use (actor base EBX, arg_0 EBP, datum EDI, output
+// ESI), lays the 17/15/16 group out before 3/2/1/19 and repeats the wait call's head on the 1/19 path, and
+// tests the wait result with branches. Actor object read at each use 525 (1812 bytes: actor EBX, datum EDI
+// as retail, arg_0 ESI); `if (local_4) return 0; return 2;` 527 (1800); `if (!local_4) return 2; return 0;`
+// 527; both 541 (1796); the wait block as a forceinline helper called from the 1/19 and 15/16 paths in
+// place of the goto 513 (1872: the call is repeated as retail, but each copy keeps its own tail).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
