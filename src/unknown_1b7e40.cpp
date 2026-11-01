@@ -68,7 +68,9 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
-// score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
+// score 49 (was 49): frame 0xc and actor/node homes agree; the busy test becomes a numeric select,
+// shifting fallback and separate zero/success epilogues.
+// Earlier: the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
 // retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.
@@ -188,6 +190,8 @@ bool function_25d9b0(long prop_index);
 // (`test al, al; je` to a `return priority` placed last) and falls into the shared `xor eax, eax` exit. On that
 // block: `if (!busy) return priority;` 65 (old registers), `if (busy) priority = 0; return priority;` 82, the whole
 // test as one && with an extra `return 0` 65. Left: the select, the success/zero block order and `xor ax, ax`.
+// Round 278: full-width return result at entry/default, entry/complete, evaluation/default,
+// evaluation/complete: short priority 87/64/94/64; long priority 81/53/90/53. Restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

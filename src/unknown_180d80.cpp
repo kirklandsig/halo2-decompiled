@@ -108,7 +108,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
-// score 94 (was 94): BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
+// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// creation-call setup and transform scratch ranks differ.
+// Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // eax: `push -1` for `mov eax, -1` shifts every later offset by 3 bytes). A short strip-loop
 // index gives retail's prologue and count loop but 547 (the loop head's padding grows to a
 // jmp); local names for the count and vertex index 94; vertex index declared first 547;
@@ -133,6 +135,8 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Round 51: count before tag/vector 95; count initialization split 94; unsigned long polygon counter 94;
 // short counter with count before tag/vector 548; with split count 547; with count between tag/vector 547;
 // with outer maximum distance 547; with both count placement and outer distance 548. Original restored.
+// Round 278: standard lower/upper/distance extrema subsets 1-7
+// 698/694/642/522/683/628/636; complete graph with short count 635. Original helpers restored.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

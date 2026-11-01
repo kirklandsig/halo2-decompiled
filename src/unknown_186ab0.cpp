@@ -150,7 +150,9 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
-// score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
+// score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
+// operand order, cold clear and output/angle scheduling differ.
+// Earlier: frame 0x54 and selection inputs agree; comparison order,
 // byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
 // MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
 // for the cycle loop and the field-first selection comparison, both calls inlined only with this function at
@@ -262,6 +264,8 @@ void player_action_initialize(s_player_action *arg_0);
 // only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
 // below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
 // found: the inlined order needs a cause outside this body.
+// Round 278: standard signed-counter lower/upper bounds with built-in or native
+// long predicates, eight non-original combinations: 263/285/259/281/301/277/299/299. Original counter restored.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

@@ -34,14 +34,16 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
-// score 86 (was 86): the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
+// score 86 (was 86): frame 0x3c agrees; pool-data spill across readers, cap-factor load order,
+// low-bit materialization and team scratch rank differ.
+// Earlier: the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
 // (other files), and MSVC always loads the limit product's cap global before the scale global whatever
 // order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses
 // `not al; and al, 1`, and the team is still copied into edx where retail uses ecx.
-// score 86 (was 95): the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
+// Earlier: the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
 // retail reloads it, and the limit product loads its two globals in the opposite order; the
 // completion-bit stores and the team's re-extension now match.
-// score 95 (was 95): the object-pool data pointer is spilled across 0xcbd50/0x101280 where
+// Earlier: the object-pool data pointer is spilled across 0xcbd50/0x101280 where
 // retail reloads it, and the completion bits are set through AL where retail uses DL and CL;
 // the frame 0x3c agrees.
 // Frame 0x3c agrees; pool-data spill and scratch-register ties remain.
@@ -150,6 +152,8 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // callers see it as writing memory) gives retail's reload here, 53; retail's 0x101280 bytes only read,
 // and retail's 0x241520 keeps g_4e6948 in EBP across the same call, so retail treats it as writing
 // pointed-to memory but no globals (BLOCKED-BY 0x101280's side-effect summary, cause unknown).
+// Round 278: standard cap/floor with built-in or native long predicates, all eight
+// non-original combinations: 174/225/270/293/275/276/298/306. Original clamps and body restored.
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {
