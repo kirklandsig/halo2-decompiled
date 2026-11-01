@@ -282,6 +282,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 756 (3849 bytes); with the slot read before the flag and source stores 683; the normalization helper reading the
 // weight, or the intensity, into a named local first 616/616 (same code). Diagnostic: the fog accumulators escaping
 // to an out-of-line call still leave the normalization stores interleaved (retail keeps load-multiply-store order).
+// Round 440: complete immediate contribution products in scalar/merge/color, subsets 1/2/4/3/5/6/7, then
+// all with six-field publication 616/616/615/616/615/615/616/616. The 615 forms gain only one and are
+// rejected. Original product trees, all reads/stores, alias-safe source-weight copy and complete
+// helpers/body restored.
 // Round 270: Existing weighted-result default owned by each source arm, bool/byte/short/long
 // at arm entry 631/631/779/701; after falloff 824/824/828/829.
 // Original default, helpers and complete body restored; palette/record and SSE carriers remain.

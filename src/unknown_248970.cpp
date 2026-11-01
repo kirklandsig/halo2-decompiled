@@ -289,6 +289,10 @@ public:
 // (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
 // the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
 // offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
+// Round 439: head before byte-offset update 54; native pretested while with head/ordinal/offset
+// and ordinal/head/offset latches 49/49, head/offset/ordinal 54; direct remaining-count traversal
+// with head/offset or offset/head updates 142/142; real definition cursor with for/while 243/243.
+// Five-point while gains are below the keep threshold; complete original body restored.
 // Round 31 (m3 lane 2, fast; 0x175270, 0x2483f0 and 0x248cc0 checked each time): the link through the
 // existing 0x2483f0 with a forceinline declaration here 301 (still a call); with 0x2483f0's
 // inline_depth(1) wrapper also dropped 301 (still a call; 0x2483f0 and 0x248cc0 still match); with the

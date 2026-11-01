@@ -763,6 +763,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
 // conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
 // declared with buffer/size and assigned later: 34 each (same code). All restored.
+// Round 442: complete output-task/file-handle/signature-handle observations, seven subsets
+// 196/169/177/255/252/245/255; complete graph with conversion after state publication 255.
+// Original handles, observations and body restored; total and seek/size coalescing still differ.
 // Round 64 (lane 16, fast): the signature state as the switch's `default:` 177 (688 bytes); the scratch clamp
 // through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
 // code); the total converted after the task state store 42; the seek position written at each use in the

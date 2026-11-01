@@ -734,6 +734,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // plain pointer read used at the first two 136; `(void)&callback` with the parameter read at each dispatch
 // 128 (LTCG passes the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); a const reference
 // to the callback read at each dispatch 136.
+// Round 440: distinct initial/completion identity lifetimes at entry/before-dispatch/first-
+// admission/after-publication 166/142/142/142; those four graphs with a const callback slot
+// 166/142/142/142. Extra identity storage grows the frame; complete original identities, callback contract
+// and body restored.
 // Round 47 (lane 11, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 match unless given): retail treats the
 // callback (and the graph) as memory variables whose register copy is reused: loaded into EBX at the first
 // dispatch, kept for the second, reloaded after the variant join for the third. A plain callback with the

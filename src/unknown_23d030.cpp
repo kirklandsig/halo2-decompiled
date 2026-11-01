@@ -295,6 +295,10 @@ struct s_free_state_23d260
 // 269; `j*j + k*k + i*i` with `(1 / m) * i` first 268; the `i*i + (j*j + k*k)` normalizer with cross3f_staged
 // and the forward vector written and read through one `forward` pointer 273 (1330 bytes, first difference +0xa6),
 // with the pointer for the writes only 281.
+// Round 441: existing complete side/up producer with native forward/up ownership and
+// two-use double movement trig values, eight subsets 512/484/474/444/503/477/465/439;
+// separate force-inline declaration 512 (producer remains out of line). Original body and
+// declarations restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -259,6 +259,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // (success)` and the element passed directly (`(bool *)&success`) matches byte for byte; the same with the
 // comparison stored without the `(long)` 48 (byte setne, no `xor edx, edx`), from a long local 48, as
 // `(bool)opened` 48, as a char store 48. The flag is written by the queued task like `done`.
+// Round 440: plain fixed-two-file do-while with short/word/byte ordinals and <2/!=2 latches, then while
+// with short/word ordinals 42/42/42/42/42/42/42/42. Every graph executes indices 0 and 1; all tie.
+// Original for loop, both waits, wide outcome, success store and completion qualification restored.
 // Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
 // result and the call on the array element with no file copy, branching on success 55 (351 bytes);
 // `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast

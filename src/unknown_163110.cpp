@@ -911,6 +911,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // const 115 (same code); the classification index declared in the for 115 (same code); the two planes as
 // separate locals 242 (1830 bytes); the negated forward vector computed before plane 0's copy 426, right
 // after plane 0's copy 133.
+// Round 441: indexed near-final/far-input/far-final normal negation loops, subsets 1..7
+// 259/257/259/259/267/259/113; all plus two-component screen loop 232. Two-point gain
+// rejected; original body restored. Early coefficient preload and projection homes remain.
 // Round 37 (lane 15, fast): that pointer used for all three plane-0 negations 251 (1867 bytes); the j/k-only
 // diagnostic re-measured 113 (the e4.i load stays after the copy: its gain is in the later classification
 // operands); plane 0's d negated before its normal 143; plane 1's negated vector computed before plane 0 426;

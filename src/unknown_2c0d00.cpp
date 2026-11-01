@@ -1090,6 +1090,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // 361 block 426/125, plus the ring-local edge 430/111; flag before the vertex loads with the ring-local edge 296/133
 // (flag in the side slot, frame 0x2c). Retail stores the outer edge to 0x18 at each ring step, so the ring copy is not
 // retail's; left: edge EBX against ESI, side kept in EDI (retail spills it to 0x1c), edge/magnitude homes swapped.
+// Round 443: repeated native byte/word/long/dword side-index values at entry
+// 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
+// radius, traversal, predicates and complete body restored.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1481,6 +1484,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // is chosen, no initialiser 469 (1757 bytes); the one-step arm with its own `return` 444 (same code);
 // the copy-last block after the loop through two gotos 444 (same code: its placement is not source
 // order); the next-step pointer only inside the corner branch, the fallback indexing points[next] 478.
+// Round 443: zero-extended word type with short/word/long/dword link results,
+// at typed selection 493/493/492/492; at native emission with common stores
+// 517/520/517/517. Complete record, signed domains and body restored.
 // Round 479: native positioned-point subobject with short/long type-link
 // combinations 477/488/477/476; native position subobject 474/471/473/471
 // (fast control 444). Original complete record snapshot and body restored.

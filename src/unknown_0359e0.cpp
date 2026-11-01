@@ -137,6 +137,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
 // 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
 // coordinate promotion, height/common homes and minimum selection remain.
+// Round 437: First-axis word/byte/signed-byte counts with short/word common count
+// 90/99, 99/104, 85/97; long first-axis with word/long common count 124/127.
+// Original counts and complete body restored; coordinate promotion and count homes remain.
 // Round 49 (lane 10, fast, 0x136140 kept unless noted): the outputs as a two-entry bits array 82 (same
 // code); a named `common_bits * 2` shift local 100; one inline spread helper for both coordinates 313
 // (kept out of line, 0x136140 1); `mask & x_value` lookups 82; `common_bits << 1` 82.

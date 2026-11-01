@@ -1608,6 +1608,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (no effect: retail's separate look homes and reloaded rate are not an address-taken local).
 // Slot map (ours/retail): unit+flags -0x18/-0x1c, mode -0x1c/-0x18, zoom shares spring d (-0x14) in ours
 // and unit's home in retail, the active byte shares unit's home in ours and spring d's in retail.
+// Round 443: complete overlay-clear/start/idle decision results, seven bool
+// subsets and the complete long set, 220 each (fast control 220, full 218).
+// Original decision expressions, clock reads and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

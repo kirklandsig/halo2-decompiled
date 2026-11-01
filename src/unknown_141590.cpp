@@ -910,6 +910,10 @@ void function_143250(
 // 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading
 // terms and the matrix as plain locals 2236 (frame 0x300 as retail, 10297 bytes), with the matrix pointer kept
 // over a plain array 2235. Retail loads the eight leading terms in declaration order, then rotation[7].
+// Round 439: single-consumer same-type sum/product/copy elision, all seven subsets,
+// 1881/1796/1903/1766/1867/1796/1905; complete graph with matrix receiver renamed 1905.
+// Product elision leaves 943 scalars and recovers rotation in EAX, but frame 0x314 remains;
+// all nine initial loads and explicit precision conversions were retained. Entire body restored.
 // Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
 // 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
 // frame 0x314. On that product graph, native row subsets and late matrix declaration:

@@ -263,6 +263,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // reciprocal`, `reciprocal * k` 324 (same code); `i * reciprocal`, `reciprocal * j`, `k * reciprocal` 324; all
 // `reciprocal * x` 324; the three `remaining = 1.0f` stores after all three memsets 324 (1.0 stays in XMM5); as one
 // chained assignment after the memsets 324.
+// Round 435: whole source/sample/tag values 535/475/564; source+sample/source+tag/sample+tag
+// 526/587/504; all three 559, complete CRT transfers 559 (fast control 336, full 324).
+// All restored; entry ESI save, unit-constant ownership and accumulation scheduling remain.
 // Round 190 (plain; fast still reports "builds differently"): opposite.k cleared before i/j 358; the third
 // remaining weight read before the first/second product 325; the zero-direction test inverted with its arms
 // swapped 324 (same count); the accumulate helper taking the colour by reference 324; its weight sum as the

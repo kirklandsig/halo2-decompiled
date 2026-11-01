@@ -841,6 +841,10 @@ real g_55e618;
 // computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 182; the velocity pointer
 // alone 194; the velocity read at each use 198; real_point3d_set alone 242 (1570 bytes). On the untyped
 // body: the 179 form in retail's computation order 185 (1547 bytes, frame 0x124 again).
+// Round 441: actual shared collision normal member, plus native flags/kind/fraction
+// subsets 102/99/102/99; those four with the existing full response setter 191 each.
+// Three-point reductions rejected. Original particle type, shared collision header and body
+// restored; reflection spill ownership, sweep/collision homes and normal reloads remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

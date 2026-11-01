@@ -611,6 +611,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // origin through a point pointer local read x, y, z / z, y, x 323/322. Diagnostics: the byte test in a bool
 // helper 321 (folds); data test, classifier and byte test in a multi-return bool helper 331 (gives retail's
 // `setne al; test al, al`); the data field as a dword/pointer union read as a pointer for the byte 321.
+// Round 443: phase-specific final/surface/material output receivers, seven
+// pointer subsets and full graph with final reference, 344/393/329/321/344/393/329/329.
+// Original output observations, scalar samples, plane math and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -331,6 +331,9 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 442: null-unit/visited-root/both continues with the cached pool and original reload
+// paths 222/253/253; native recipient counterparts 228/264/264; both guards with shared visit
+// value 253, with native recipients 264. Original output, pool observations and body restored.
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.

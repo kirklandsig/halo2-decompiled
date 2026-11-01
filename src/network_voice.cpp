@@ -1248,7 +1248,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
-// score 94 (was 225): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
+// score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
 // Earlier at 225: scratch 0x10 versus retail 4; absolute-span inner traversal remained rolled, 225/347 bytes.
@@ -1363,6 +1363,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // channels being live at the flag's definition is not what keeps retail's flag in AL); the flag declared at
 // function entry and assigned in place 94; the getter result named before the compare 94; total, flag, cursor 108
 // (0x54990 1); cursor, flag, total 99 (350 bytes); the cursor `s_voice_channel const *` 94 (same code).
+// Round 436: complete conditional contribution 148 (loses 0x54990); selected total 94;
+// whole-scan header bytes/channel count/payload bytes 143/143/143; header and payload totals 132;
+// channel count and payload total 122; unsigned header/payload totals 132. Separate accumulators
+// grow scratch to 8 versus 4 and spill the identity flag. Original restored.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1623,7 +1627,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
-// score 85 (was 94): the second availability byte loads lazily (retail loads both before the muted test and keeps
+// score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
 // word outer/target induction 118/106; word active 97; mask names 94; skip cleared inactive entries 110.
@@ -1664,6 +1668,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // remote from this source (aligned 19 -> 13); only the inlined second port-flag query is then left. Muted mask
 // as one conditional expression 98; memset before the player-mask read 141; `~muted & remote` 85 (same code);
 // the player mask through 0x54b10 182 (386 bytes); through the existing inline twin 85 (same code, kept).
+// Round 436: eager muted gate 105; separate readiness snapshots with short-circuit/eager
+// policy gates 104/132; common eager availability 123, with one mode observation 123;
+// eager native-word muted 106; common eager/native-word 122; common eager/conditional muted 122.
+// Eager gates combine the two tests; snapshots still defer or combine loads. Original restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

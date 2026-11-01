@@ -159,6 +159,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
 // harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
 // 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
+// Round 435: up-first split receiver declarations on the returned-receiver/direct-left graph,
+// crossed with early uninitialized projection/reciprocal and loop-entry receiver lifetimes,
+// eight contexts 110 each. Actual input reads and assignments stay in place; all forms restored.
 // Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
 // helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
 // j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k

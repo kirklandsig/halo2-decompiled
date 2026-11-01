@@ -612,6 +612,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
 // reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
 // count_spread (the newer, higher stack copy) still runs before the candidate's.
+// Round 441: byte/word outer and inner ordinal domains (word/long, long/word, word/word,
+// byte/long, long/byte, byte/byte, word/byte, byte/word) 146/146/151/142/148/150/155/144.
+// All regress; narrowed inner domains also lose the matched caller. Original body restored;
+// reference-first spread queries and the extra two bytes remain.
 // Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
 // `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
 // a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
