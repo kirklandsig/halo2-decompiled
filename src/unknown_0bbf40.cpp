@@ -829,6 +829,10 @@ void __stdcall function_bc300(long object_index)
 // Round 202: entry normalization of size/offset/both/alignment/size-alignment/offset-alignment/
 // all domains 89/57/79/5/89/57/79; size normalization with the zero-size result producer 90.
 // Original parameters, body and result restored; formal narrowing still needs protected declarations.
+// Round 106: pointer-initialized short/word snapshots used at every size read 5/5;
+// a two-byte memcpy snapshot 5; signed/unsigned reference views 5/5; memmove 117;
+// memcpy only for the zero test 5; a pointer-initialized short with nonzero arm first 70.
+// Original parameter, case order and body restored; the initial size load remains dword versus word.
 // @retail 0xbc380
 bool function_bc380(long object_index, long block_offset, long size, long alignment_bits)
 {
