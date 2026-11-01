@@ -950,6 +950,13 @@ void __stdcall function_43720(s_43740_input *input)
 // group pointer written into the image expression 62; the call's count argument recomputed from the
 // point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored
 // last 64 (211 bytes, and 0x42b20 stops matching).
+// Round 31 (m3 lane 2, fast; 0x42b20 checked each time): on the split form (tag field tested, the
+// index call on the field, a tag local for the group lookup and the record: 40, retail's head through
+// the index call, a mix of field and local reads kept only with a match): the normal flag through the
+// stored shader 67 (212 bytes, 0x42b20 62); the record filled in retail's store order (shader, slot,
+// normal, tag, source, definition, count, bitmap) 42; a `long index = slot` for both arrays 40; the
+// position computed before the record 40; the count stored first 41. The tag local for the lookup
+// only 68 (the tag outranks the source: definition ESI, source stacked; 0x42b20 60).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

@@ -125,6 +125,11 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
 // initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
 // 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
+// Round 31 (m3 lane 2, fast): the token walk with one tokenizer call in the while condition (next
+// starting at the buffer) 287 (690 bytes); the done flag declared `bool volatile` as file_read_string
+// 0x121a40 does 128 (same code); that with the size zero-initialised as there 122 (the earlier 6-point
+// form); the walk as a do-while under a first-token test 128 (same code); the new-font arm first
+// (`local_14 == NONE`) 188 (764 bytes). EBP is still saved at the first token's test.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

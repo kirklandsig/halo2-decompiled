@@ -412,6 +412,12 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
 // (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
 // index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
+// 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
+// 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison
+// operands swapped 116; memcmp sized by the request's count (retail's `lea ecx, [edx*4]`) re-measured on
+// this body 178 (520 bytes). 0x991d0's call setup follows its declared order (one register argument,
+// the handle in EDX), so no parameter reorder has retail evidence.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
