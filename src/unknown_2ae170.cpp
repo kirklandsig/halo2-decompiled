@@ -742,6 +742,7 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 	return effects->m_settings.level2c;
 }
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
 // Earlier: retail copies the input level into a dead argument slot through a
 // frame 0xc agrees; retail copies the input level into a dead argument slot through a
@@ -935,6 +936,7 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 	}
 }
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 224 (was 224): Frame 0x20 versus 0x18, mode/input-level homes and the second x87 tail sum remain.
 // Retail loads level, offset and the send level with integer moves (/arch:SSE has no movd, so level
 // in EBP is bounced through a temp before each add) and never shares send + level between appends.
@@ -1165,6 +1167,15 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 	}
 }
 
+// MATCH (was 117): the remaining count, the zero gain and the four endpoint values are computed in
+// retail's order, the front endpoints are full-width longs kept in ebp/ebx, and the run-time -6.0206
+// attenuation sits in a bits/value union reached through a reference to its float member, so the
+// compiler reloads it from the stack slot before each send as retail does.
+// The zero passed as *(real *)&attenuation, the bits/value union and the store in case 0 (remaining
+// is not read after the switch) are retail's code shape and are kept only with this byte match.
+// score 117 (was 137): speaker-mode switch with explicit pair calls, a statement in the mode-0 case for
+// retail's four-entry jump table, the zero gain passed as *(real *)&attenuation and the run-time
+// -6.0206 attenuation through a local bits/value union; the length now matches retail's 396 bytes.
 // score 137 (was 137): Frame eight agrees; source/bin homes, runtime zero attenuation and dispatch remain
 // (on the decibel-struct interface, retail's four-entry jump table needs a statement in case 0).
 // Earlier: frame eight agrees; source/bin ownership, runtime zero attenuation and mode dispatch remain.
@@ -1275,66 +1286,74 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 // @retail 0x2afb80
 void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rear, long mode, s_mixbin_settings *mixbins)
 {
-	bool alternate = ((source->flags >> 3) & 1) != 0;
 	long remaining = 8 - mixbins->mixbins.dwMixBinCount;
-	bool pair_available = remaining >= 2;
-	bool quad_available = remaining >= 4;
-	real gain = 0.0f;
-	unsigned char left = alternate ? 0 : 6;
-	unsigned char right = alternate ? 1 : 7;
+	long attenuation = 0;
+	bool alternate = ((source->flags >> 3) & 1) != 0;
+	long left = alternate ? 0 : 6;
+	long right = alternate ? 1 : 7;
 	long rear_left = alternate ? 4 : 8;
 	long rear_right = alternate ? 5 : 9;
 
-	if (source->speaker_mode == 1)
+	switch (source->speaker_mode)
 	{
-		if (pair_available)
+	case 0:
+		remaining = 0;
+		break;
+	case 1:
+		if (remaining >= 2)
 		{
-			for (long mixbin = left; mixbin <= right; ++mixbin)
-				sound_mixbins_add(mixbins, mixbin, gain);
+			sound_mixbins_add(mixbins, left, *(real *)&attenuation);
+			sound_mixbins_add(mixbins, right, *(real *)&attenuation);
 		}
-	}
-	else if (source->speaker_mode == 2)
-	{
-		if (pair_available)
+		break;
+	case 2:
+		if (remaining >= 2)
 		{
 			if (rear)
 			{
-				for (long mixbin = rear_left; mixbin <= rear_right; ++mixbin)
-					sound_mixbins_add(mixbins, mixbin, gain);
+				sound_mixbins_add(mixbins, rear_left, *(real *)&attenuation);
+				sound_mixbins_add(mixbins, rear_right, *(real *)&attenuation);
 			}
 			else
 			{
-				for (long mixbin = left; mixbin <= right; ++mixbin)
-					sound_mixbins_add(mixbins, mixbin, gain);
+				sound_mixbins_add(mixbins, left, *(real *)&attenuation);
+				sound_mixbins_add(mixbins, right, *(real *)&attenuation);
 			}
 		}
-	}
-	else if (source->speaker_mode == 3)
-	{
+		break;
+	case 3:
 		if (rear)
 		{
-			if (pair_available)
+			if (remaining >= 2)
 			{
-				sound_mixbins_add(mixbins, 2, gain);
-				sound_mixbins_add(mixbins, 3, gain);
+				sound_mixbins_add(mixbins, 2, *(real *)&attenuation);
+				sound_mixbins_add(mixbins, 3, *(real *)&attenuation);
 			}
 		}
-		else if (quad_available)
+		else if (remaining >= 4)
 		{
-			for (long mixbin = left; mixbin <= right; ++mixbin)
-			{
-				sound_mixbins_add(mixbins, mixbin, gain - 6.0206f);
-				sound_mixbins_add(mixbins, mixbin, g_44f710);
-			}
+			union s_decibel { real value; long bits; } level;
+			level.bits = attenuation;
+			real &attenuated = level.value;
+			attenuated -= 6.0206f;
+			sound_mixbins_add(mixbins, left, attenuated);
+			sound_mixbins_add(mixbins, left, g_44f710);
+			level.bits = attenuation;
+			attenuated -= 6.0206f;
+			sound_mixbins_add(mixbins, right, attenuated);
+			sound_mixbins_add(mixbins, right, g_44f710);
 		}
+		break;
 	}
 
 	if (source->mixbin != NONE)
 	{
-		add_send(source->mixbin, mode, gain, mixbins);
+		add_send(source->mixbin, mode, *(real *)&attenuation, mixbins);
 	}
 }
 
+// MiniMax R (10-31): no lower score kept - a settings-gain local in add_send makes the mode-one sends SSE
+// (177 at retail's 606 bytes) but raises 0x2af800 (55 -> 79), so the original body stands.
 // score 200 (was 200): Frame 0x10 versus consumed incoming homes; inherited send x87 sums remain.
 // Tried (MiniMax R run 12): add_send's settings gain read into a named local per send 177 (retail's
 // 606-byte length; not kept, one-use copies); the frame 0x10 versus consumed incoming homes and the tail sums remain.
