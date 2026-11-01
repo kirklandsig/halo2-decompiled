@@ -132,6 +132,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
 // 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
 // coordinate promotion, height/common homes and minimum selection remain.
+// Round 483: six complete width/height/shared count naming orders 82 each;
+// first two naming orders with the existing shared logarithm 87/87. Native
+// count-home allocation does not change; original names and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

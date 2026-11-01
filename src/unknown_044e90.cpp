@@ -111,6 +111,11 @@
 // Round 481: Complete scalar-normal initialization schedules i/j/k, j/i/k, j/k/i on
 // native-four storage 421/420/420; all five non-original schedules on eight-byte storage
 // 417/416/416/417/417. Best five-point form rejected; original body and header restored.
+// Round 483: native-eight storage with complete descriptor publication orders
+// second/first/third/fourth 416; second/first/fourth/third 417; second/third/first/fourth
+// and second/third/fourth/first 418/418; third/second/first/fourth and
+// third/first/second/fourth 417/417; fourth/third/second/first and
+// first/third/second/fourth 418/418. Five-point lead below gate; body/header restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
