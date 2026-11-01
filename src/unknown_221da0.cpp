@@ -889,6 +889,14 @@ real function_18cac0(long arg_0);
 // Round 470: complete-array clear-return view with real backing, retained
 // audibility and camera-cluster continuation interactions 155/155/167/167/155/155/167/167.
 // Original scalar view and complete body restored; camera/clear-result homes remain.
+// Round 112 (lane 8, fast): a real table cleared with the return discarded and indexed directly 240 (816
+// bytes, `and esp, -8` frame; with __declspec(align(4)) as a diagnostic also 240); memset's return named,
+// the maximum loop on the table and the final calls through the return 202 (816, frame 0x8a8); the reverse
+// (maximum loop through the return, final calls on the table) 219 (788; camera in retail's EBP, the final
+// calls' `lea ecx, [esp + 0xc0]` as retail); those two with the batch count read once 198 (812) / 218
+// (784; retail's countdown loop). Compile-only: a memset of any local array of 0x80 bytes or more
+// realigns (variable size, partial clear, struct member, zeroing loop too); only a used memset return
+// avoids it. Retail's caller 0x125b40 does not realign, so no alignment comes from above.
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {
