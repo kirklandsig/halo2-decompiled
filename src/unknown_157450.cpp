@@ -1517,6 +1517,10 @@ struct s_item_collection
 // Ticks initialised to 0 5; int ticks 5; collection pointer local 5; one reassigned short spawn
 // time 31; zero default with a final test 21; dword ticks 30; plain conversion instead of the
 // rounding helper keeps the same registers.
+// Round 43: the group test as a two-case switch 5; ticks declared before the default 5; one
+// else-if chain assigning the collection time in its condition 5; a return per source 84 (169
+// bytes); a named result at the single exit 5; the ten other orders of the equipment/seconds/
+// spawn-time/ticks declarations 5 each.
 // @retail 0x15ac50
 long function_15ac50(long index)
 {
@@ -2341,6 +2345,12 @@ static __forceinline void add_clamped_score(short *score, short delta)
 // operand first 5/5; engine tests through g_55e4d0[globals->engine_index] 5/5/5; player pointer
 // after the add 97, at its use 104. Retail's 0x1e9ce0 has the same engine-test swap, and 0x2422d0
 // rotates three identical engine tests through EAX, ECX, EDX (scratch rotation, not spelling).
+// Round 43: the add and notify through the existing function_1e9ce0 call 142 (kept out of line);
+// the helper as plain inline 121 (called); a long delta parameter with `*score + (short)delta` 5;
+// a named old-score local in the helper 5; a statistics pointer for both score reads 5. In matched
+// 0x15b3a0 (an `inc` add) retail's next engine test is EAX/ECX as here; with a two-operand add
+// retail shares the result register with delta, and the test turns to ECX/EAX. Globals declared
+// before the result with the player before the index 5.
 // @retail 0x15b7c0
 bool function_15b7c0(long delta, long player_index)
 {
@@ -3140,6 +3150,11 @@ void function_15ba20(void)
 // pointer before the event 50, after the initializer 56; team read into a local 56. Retail stores
 // type and f first and loads the data pointer before the NONE stores; every form keeps the
 // initializer's store order (as the matched 0x162d00 and 0x2bc420 do).
+// Round 43: cause team set before the cause player 56; the team through engine_player_get 16; the
+// existing cause setter as a plain call 70 (kept out of line; the zero stores then lead, as in
+// retail); the shared initializer forced inline 16 (0x157de0 then 12); a no-alias diagnostic and the
+// initializer's stores written directly (diagnostic only) both 16 with identical code, so the late
+// player-data load is not an alias or inlined-pointer effect.
 // @retail 0x157ed0
 void function_157ed0(long player_index)
 {

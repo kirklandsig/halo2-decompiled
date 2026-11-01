@@ -1073,6 +1073,10 @@ bool function_14ed80(void)
 // lookup frees. Round 41: the clamp through the file's PIN macro 19 (166 bytes); maximum at
 // function scope 8; globals declared after the index 8; player declared first 8; the bound
 // read from the globals at each use without the maximum local 21.
+// Round 43: all 23 other orders of the first/third/player/globals declarations: globals before the
+// player 49-50, the rest 8-9; no globals local (the global read at each use) 53 (first then takes
+// EDX, the globals EDI); index declared first 8, after the outputs 8; the third-person field assigned
+// first 9; renaming the globals or first local 8 (names do not steer it).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1631,6 +1635,10 @@ struct s_unit_player_assignment
 // renamed 17; the existing first_person_character_from_player for the remap 17, the existing
 // function_a7a30 for both +0xd4 notifications 17, and both 17 (LTCG inlines each: same code);
 // block-scoped unit pointers 17.
+// Round 43: the control-set argument read back from player->unit_index 17; both +0xd4 fields read
+// at each use 17; both together 17; the outer comparison's operands swapped 18; the remap as one
+// conditional expression 17; the unit pointer declared before the player 17. Matched 0x14f190
+// makes the same 0x1682bf call with our schedule.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -1964,23 +1972,15 @@ real function_23ba90(point3f const *point, long player_index, bool deterministic
     s_spawn_influence_list *list, dword *seed);
 bool function_23bb70(long tag_index, point3f const *position);
 
-// score 19 (was 19): the global is read into EDX here and into EAX in retail,
-// and the four values that are pushed for the call are pushed in another order.
-// Round 7: independent getters and a fresh getter only at the increment 71 each;
-// const player/options pointers and const options data 19 each; player/options/both object references 19 each.
-// Round 15: player declared before the options 90 at 303 bytes (retail's load order, aligned 9 against 8:
-// the add before the counter read and the late +0x14 read remain, and the loop loses its padding);
-// counter read through a getter in the seed with the player defined after it 77; seed built in
-// statements 19, with the options field first 19; seed computed before the result/best locals 22.
 // @retail 0x14ef00
 long function_14ef00(long player_index, long tag_index, bool deterministic, bool preserve_counter)
 {
-    s_game_options_view *options = g_4e6948;
     s_player *player = player_get(player_index);
+    s_scenario_starting_profiles_view *scenario = (s_scenario_starting_profiles_view *)g_4e0350;
+    s_game_options_view *options = g_4e6948;
     short result = NONE;
     real best = -1000.0f;
     dword seed = ((1 << (player_index & 0xffff)) ^ options->id_b ^ options->id_a) + player->unknown218;
-    s_scenario_starting_profiles_view *scenario = (s_scenario_starting_profiles_view *)g_4e0350;
     s_spawn_influence_list influences;
     function_23bc40(player_index, &influences);
     for (short index = 0; index < scenario->starting_profile_count; ++index)
