@@ -352,6 +352,11 @@ void function_07b3e0(void)
 // non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
 // retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
 // file's /Ob1 keeps them out of line here: a flags decision).
+// Round 149 (lane 4, fast): the scan and the datum index both on the global (no pool local) 45 (126 bytes);
+// the datum-iterator form with the final valid store through the iterator's pool 64 (114 bytes), the
+// record-pool iterator form likewise 64 (114); the absolute-index scan on the pool local with the datum
+// index on the global 65 (142); `++index` as the scan's start 39 (same code). qos_release (0x7b650) takes
+// the datum index only, so retail's `add ecx, esi` is the inlined step's datum pointer, not an argument.
 // @retail 0x7b430
 void function_07b430(void)
 {

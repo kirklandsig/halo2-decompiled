@@ -1462,6 +1462,13 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // at its declaration 126; the three queries (mode, teams, values) declared before the count locals 94;
 // `(void)&index_count` 83 (same code: the slots are not set by an address taken this way). An LTCG env link
 // with the direct callees' objects does not reproduce this function (callee clobber sets reach further).
+// Round 149 (lane 4, fast): the top-level test inverted (branch two first) 83 (same code); the comparator as one
+// conditional expression 102 (433 bytes); `mode == 3 && (teams || values)` with one qsort taking a conditional
+// comparator 121 (432); the three qsort calls written out 119 (retail's three push arms and tail-merged call
+// exactly; the extra instruction is `mov edi, index_count` before the push, since branch two keeps index_count in
+// memory); on that, `item_count = player_count;` before the mode-one test with no else 112 (432). Every
+// difference traces back to branch two holding the 0x199ef8 result in EDI where retail reloads it after the
+// 0x19a9b4 calls (all of whose callees match): the same reload 0x25042d shows after 0x53b40.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2618,6 +2625,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (same code); `shown_count = 0` before the empty-list call 166 (918 bytes only because the two list-fill
 // calls then tail-merge; the last loop keeps its 8 extra bytes). An LTCG env link with the direct callees'
 // objects does not reproduce this function (the players[i] reload depends on callees further down).
+// Round 149 (lane 4, fast): the slot helper's default arm chained (`*text_a = *text_b = NONE; *bitmap_b =
+// *bitmap_a = NONE;`, retail's third-loop copies) 92 (925 bytes; the bitmaps still stay in memory and the screen
+// in EBX); all four chained 93; text/bitmap chains the other way round 95; chained with the indices declared once
+// at function scope 91; chained with a separate `slot` counter for the second loop 90 (the first loop's element
+// pointer moves to retail's -8), plus function-scope indices 91, `slot` also for the third loop 90, no_team before
+// team_index 90, second-loop indices declared in reverse 90, a separate first-loop counter 90.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -3063,6 +3076,12 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // 67; `searching = !A; if (searching && (B || C))` 163; false default with `!A` then `!B && !C` 53; A
 // false else `!(B || C)` (uninitialised / true default) 46/46; false/true if/else on `A || B || C` 46;
 // row-scoped text/bitmap on the 161 form 171; the expression as `!A && !B && !C` 48 (same code).
+// Round 149 (lane 4, fast): `searching = !A; if (searching) searching = !(B || C);` 50; `A ? false : !(B || C)`
+// 48 (same code); a false default set true under `!A && !B && !C` 161; a true default with `if (A) searching =
+// false;` then `if (searching && (B || C)) searching = false;` 13 at 877 bytes (the late EDI push and the BL tail
+// as retail, only the row loop's i/text ESI/EDI swap left; not kept: a flag set in a test and tested later); on
+// that 13 form: i declared first 13, row-scoped text/bitmap locals 15 (the row bitmap leaves [ebp-8]), the
+// counter renamed 13, bitmap declared before text 13, the row bitmap's value as `squad && i < count` 36.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {
