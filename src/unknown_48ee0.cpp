@@ -19,6 +19,8 @@ extern real g_485a0c[8];
 extern real g_4c9798[36];
 
 // score 197 (was 226): the mode bit loads the flags into edx where retail uses eax, so
+// MiniMax lane E (11-01): no new form, no lower score.
+// score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
 // Earlier frame: 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
@@ -149,6 +151,9 @@ extern real g_4c9798[36];
 // Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
 // long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
 // and call tuple unchanged; mode/size homes and rounding reloads remain.
+// Round 279: Complete immediate scalar results for projection/near/far row families,
+// seven nonempty subsets and all with both plane-distance results, 230 each. Original
+// compound updates and entire body restored; mode/size homes and rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

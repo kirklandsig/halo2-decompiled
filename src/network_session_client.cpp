@@ -581,6 +581,9 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // getter gives the session EBX as in retail, and 0x6e500 and 0x72700 match with it. Left: the opening's
 // second lea after the je (retail's comes before it) and a one-step scratch rotation through the summary
 // lea, the mask temp and the copy loop.
+// Round 105: direct unconditional stored-pointer pair 22 (same code); named missing condition 218; summary declared
+// after the buffers 22; named machine-mask value 22; memcpy machine copy 22; two scalar copies 144;
+// address/member pointer arithmetic 22/22. Original body restored; caller and matched-callee controls preserved.
 // Before (55): aligned frame agrees; the code is retail's apart from the colours. Retail takes the
 // session in EBX (its callers copy it there) and gives the loop temporaries ESI/EDI; ours keeps the session
 // in ESI and the loop temporaries in EBX/EDI. Deleting the whole tail (live test, 0x4994 setter, machine
@@ -1050,6 +1053,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // declared first 195, `joining` declared before `current` 199, `&identities[count]` 195, `identities +
 // count` 195, a 12-byte struct copy into `[count++]` 195; the element pointer `identities[count++]` named
 // before the copy 40 (as the plain post-increment form).
+// Round 102: the outer branch inverted 209 (701 bytes); the initial destination indexed by the zero count 9;
+// memset's return as the destination 215 (697); destination assignment in the for initializer 195; declaration
+// before the clear with assignment after it 9; declaration and assignment after the clear 9; the base also used
+// by the request 9; the destination formed before the close call 191 (704). Original restored.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

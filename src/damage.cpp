@@ -941,6 +941,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // the cached `position` pointer (206). Tried: the player_index/NONE split of the first badc0 use (354, all three
 // inlined); separate `!unit` / `player_index == NONE` tests (209); a squared-distance helper called twice (249,
 // still shared); s_record_pool_iterator + data_iterator_next_inlined for the players (208).
+// Round 273: Outer copy/player ordinal/return-candidate lifetimes, seven subsets,
+// 206/230/230/225/225/233/233; all plus descriptive result names 233. Original body restored;
+// frame 0x1a4 versus 0x1b4, ordinal/result spills and first lookup expansion remain.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1778,6 +1781,10 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // Tried: the flag preset true and cleared inside the loop (284), `if (i < count) {...} else flag = true` after the loop
 // (512), the `?:` operands as `!= 0`, `!!`, `(bool)` or `== mask` (286, 286, 284, 262 with +3 bytes), `region` declared
 // before `object` (275 with the preset flag), a separate loop variable for the second loop (no change).
+// Round 273: Destruction produced by its complete original admission test in
+// bool/byte/short/long storage 234/234/240/241; with entry-initialized shared
+// ordinal 243/243/251/252. Wider decisions reach 958 bytes but leave frame
+// 0x1c versus 0x20 and wrong ordinal/destruction ownership. Original body restored.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -4399,6 +4406,10 @@ struct s_damage_object_creation
 // object_index in esi, hoists the section_mask_a zero-extension into edi and spills the datum offset, so its
 // frame is 4 bytes larger; ours keeps the offset in esi and object_index in edi. Tried: the loop as
 // `if (detached_nodes > 0 && ...) while (detached_nodes != 0)` (236), a `word mask_a` local (221).
+// Round 273: Shared scan ordinal/node-count-first/entry node-state workspace, seven
+// subsets 221/225/225/221/221/225/225; all with entry creation workspace 225.
+// Shared ordinal recovers base-first byte access at 221; frame 0x13dc versus 0x13e0
+// and handle/offset allocation remain. Original complete body restored.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

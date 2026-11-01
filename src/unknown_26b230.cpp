@@ -1944,6 +1944,19 @@ void function_269250(long clump_index, long actor_index);
 // the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
 // into a register and leave the selection in memory as retail: the selection wins the callee-saved register
 // only through the call in the walk plus its post-loop uses.
+// Round 34 (plain checks): in-arm compare with the selection stored first 126; on it `actor->unknown07c != selected`
+// 126, best declared and stored first 126 (both same code), the team read once into a `short` before the scan 168
+// (497 bytes), creation arm first 130.
+// Round 18 (m3 lane 18, fast with 0x269580/0x269040/0x269250/0x2694d0/0x268bb0; this body is 89 fast): the walk's
+// scan (data_next_absolute_index_inlined, data_array.h) returning from inside its loop: this body 89, the in-arm
+// compare 126, the in-arm compare with the iterator's datum index 128 (all three unchanged code: the walk already
+// threads as retail); in-arm compare with `if (score <= best) continue;` 128, with the team test as a `continue`
+// too 128. Re-measured: in-arm with the selection stored first 126 (480 B; found block placed after the loop body,
+// selection in EDI, best stored in the improve block), with the iterator's datum index 128 (pool hoisted and the
+// selection memory-only as retail, but the not-found path threads to the exit and the homes reverse). Plain: the
+// in-arm search as a forceinline function returning the selection 126 (480 B); the in-arm compare with the selection
+// and best declared once for the whole function and reset per actor 126. The fast image swaps 0x269580's two
+// argument registers (0x269580 matches only in the full image): read this function's call setup from plain checks.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
