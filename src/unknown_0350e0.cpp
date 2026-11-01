@@ -593,6 +593,10 @@ extern long g_4858b8;
 // declared parameter order (index, use_depth, element); that callee has 89 call sites, not tried.
 // Tried: swapping function_4c690's parameters (no change), locals for the index/tag read before
 // the first call (40), dropping the (short) cast or using word (17), testing function_3ebd0's result (24).
+// Round 104: callee entries confirm the current signatures; retail's caller temporaries are offset EDX,
+// output ECX and target EAX against our ECX/EAX/EDX. Matrix pointer at the calls/function scope 17/17;
+// direct element-zero address at both/first/last calls 17/17/17; const count 17; late tag/target snapshots
+// 17/17; offset snapshot 17. Original restored.
 // @retail 0x3ede0
 void function_3ede0(void)
 {
@@ -3537,6 +3541,8 @@ long __stdcall function_3ddd0(long object_index);
 // late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
 // base/index order; original loads and arithmetic restored.
 // A 480-second annealed search: 45 attempts, none below 1.
+// Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
+// one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {

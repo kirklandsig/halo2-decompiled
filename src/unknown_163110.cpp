@@ -383,6 +383,10 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
+// Round 103: the existing matrix normal rotation 28 (same code); on the top/bottom 6 form, normal pointers
+// or a named normal i 14 each, source/matrix/output formal ranking 6, the final x product folded into the
+// store, normal-first or x-first reassignment 6 each, final i through source 6, all distance normals through
+// source 560 (2825 bytes). Original helpers and body restored.
 // Round 37 (lane 13, one-file LTCG harness equal to the full build): x0 read through rect like the other three
 // corners 28 (kept: the identifier store and the rectangle loads now follow retail); on it the points local
 // dropped 28 (same code), the position pointer in the transform 40, a normal pointer in the error test 48,
