@@ -970,6 +970,9 @@ real function_30bf0(vector3f *v);
 // Round 189 (m3 lane 3, fast with the three matched callers): two_a from gravity 242 and two_a first with
 // `a = two_a * 0.5f` 230 (both lose every caller's convention); `two_a = a + a` 232 (the SSE reciprocal stays);
 // two_a before the discriminant base 238; delta.k computed with delta.i/j 233.
+// Y492: native real quotient producers optimal/solved/both 232/232/232;
+// double producers 246/273/264, both with entry result/double flight time 267/302.
+// All restored; frame, rounded-root scheduling and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1522,7 +1525,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
-// score 307 (was 315): first +0 is entry scheduling; frame 0xc versus retail 4.
+// score 307 (was 307): first +0 is entry scheduling; frame 0xc versus retail 4.
 // Pool/input and tag receiver allocation still differ.
 // Speed update is still called instead of expanded; 1239/1261 bytes.
 // Native flag tests 380; complete water result 375; both 380; plain velocity-component
@@ -1572,6 +1575,10 @@ PRIVATE inline long projectile_object_root(long object_index)
 // Y488: actual attachment result/random bounds/timer bounds subsets
 // 344/328/328/307/328/330/309; all with shared initial speed 362.
 // Keep only the twice-used timer-bound pair, plain/full 307; other forms restored.
+// Y492: complete timer selectors combined/inverted/equality-first/conditional
+// 339/339/305/339; each with completed attachment result 348/348/346/348.
+// The two-point equality-first lead is below retention; all restored.
+// Entry frame/slot/tag homes and speed-update expansion remain.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -1801,6 +1808,9 @@ real function_17c900(short function_type, real input);
 // Y488: plain lead/turn/drift component loops, seven subsets, 347/358/358/362/362/355/355;
 // all with twice-used drift tick 355. Lead-only reaches 1463 bytes but gains one; restored.
 // Stacked index/output EBX transport and normalization/rotation homes remain.
+// Y492: complete clamped time/lead/turn-amount producers in seven subsets
+// 348/348/348/352/352/352/352; all with clamped drift producer 366.
+// All restored; index/output transport and normalization/rotation homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
