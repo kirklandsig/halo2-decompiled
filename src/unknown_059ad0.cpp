@@ -3766,6 +3766,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // address, xnaddr)/(address, local, port, key, xnaddr) 138/138 (same code: allocation, not order).
 // Retail acts as if it lacked register summaries for 0x5fb00 (session reloaded) and 0x7ab10 (host
 // copied ESI->EBX); no call cycle links them. Opening body restored.
+// MiniMax H (10-31): every failure through one `release:` block reached by gotos 49 (576 bytes), but it
+// needs a one-use key_index local read before the key release (138 without it), a test-set loopback flag
+// (164 without it) and network_session_time_now as __forceinline (145 with plain inline); not kept
+// (match-only forms, no match), body restored. Remaining with it: session kept in ESI, host staged in EBX.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,

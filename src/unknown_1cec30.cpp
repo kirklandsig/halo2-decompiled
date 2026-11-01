@@ -986,6 +986,12 @@ void function_1d1540(s_havok_component *component);
 // the component by reference 88 (the 88 forms keep 0x1d5120 at 73, 0x1d0c20 40). A /Gd compile-only first
 // pass of this body keeps the component in ESI and never touches EBX, yet LTCG still stacks it, so the
 // first pass alone does not predict the EBX parameter.
+// Round 41 (lane 11, fast, with 0x1d0c20/0x1d1b60/0x1d5120): the 88 body again 88 (0x1d0c20 40, 0x1d5120 73);
+// on it the plain struct copy in place of set() 85 at 220 bytes (rep movsd, component still loaded from
+// [ebp + 0xc] into EBX; 0x1d0c20 38, 0x1d5120 77); the fixed arm refetching into the body pointer and
+// returning on its own 88. On the plain-copy body, parameters (transform, index, component) 85 (same code;
+// definition, both declarations and both calls changed together) and (component, index, transform) 85 with
+// matched 0x1d1b60 lost at 2.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

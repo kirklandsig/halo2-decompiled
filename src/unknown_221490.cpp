@@ -712,6 +712,14 @@ extern "C" void _ReadWriteBarrier(void);
 // decibels push (ours ecx, retail eax). Tried: the room clamp as if/else if 90 (it
 // branches); attenuation initialised at its declaration 21; the first barrier after the
 // three float stores 27; lDirectHF after the barrier and first zero 143; the buffer in a
+// local for both calls 42.
+// Round 12 (fast): the scratch registers are VC's EAX -> ECX -> EDX round-robin for temporaries
+// (diagnostic: one extra integer temporary before the call moves decibels to EDX, 131), so retail
+// has one temporary fewer (or two more) than ours between the memset's zero and the decibels load.
+// The first barrier removed 27 (the lDirectHF store sinks, decibels still ECX); `= { 0 }` in
+// place of the memset 175 (the first zero store goes, 672 bytes); the 0x12aff0 call inside the
+// room expression 65 (667 bytes); the voice fields through globals->voices[voice_index] 191; room
+// declared at the top 21 (same code).
 // local for both calls 42. The existing decibel-volume helper 65 (667 bytes); direct global reads 21;
 // direct indexed voice accesses 191 (686); an independent RoomHF PIN 112 (691); a real loss local 57;
 // chained filter zeros 23; the filter at first use 21; a room-base local 99. Body restored.

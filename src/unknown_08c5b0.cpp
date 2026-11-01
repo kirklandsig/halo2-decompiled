@@ -107,6 +107,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // straight 32; an added `kind == 0` test first 32 (103 bytes, but retail's ECX/AX pair); the index read
 // first 5; word/long kind parameter 4/4; inverted `kind != 1` chain 4; `old != setting` 5. Names, a
 // byte-offset read, the dword's high half, a reference parameter: the compare still folds.
+// Round 466: Controller before selector 15; old state before selector 24; controller before kind 14;
+// controller before kind then old state 24; complete controller/old state before kind 24;
+// the latter three early-old-state graphs with direct change-result production 39/38/38.
+// Original acquisition order restored; request/kind registers remain.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
