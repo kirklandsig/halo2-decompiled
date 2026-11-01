@@ -346,6 +346,16 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scale, 283/251/282/251; with all parallel row products 272/257/272/257.
 // All native-coordinate forms rejected; original alias-safe helper, inverse defaults,
 // caller bindings and full body restored. Frame and second-transform spill remain.
+// Round 131 (lane 5, fast): displaced point through the existing vector3f_add, displacement first, 195
+// (same code); locals named so the first point and inverse sort after the second's 195 (same code: names
+// do not move these slots); round 28's direct inverses with y-first displaced point re-measured 206 (971 B:
+// b.x/b.y in retail's xmm7/xmm6, but the second inlined transform still moves x out of xmm7 and spills x
+// and z where retail keeps x in xmm7 and spills only z); on it z, x, y displaced order 204 (971 B);
+// helper coordinates declared z, y, x 218 (966 B). Original body restored.
+// Round 230: Origin/displaced inverse defaults staggered across the first/second transform
+// boundaries: entry-between/between-entry/both-between/entry-before/before-entry/both-before/
+// between-after/after-between 237/237/272/208/208/204/282/274. Both final staggered forms
+// recover frame 0x2c but regress. Original defaults restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

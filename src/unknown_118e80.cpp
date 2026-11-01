@@ -743,6 +743,10 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // Round 288: native output selection/allocation/controller field-family subsets
 // 83/83/83/85/85/85/85, all with native reset timer 85. Original record layout,
 // byte views, body and shared allocator interface restored.
+// Round 227: native controller/counters/selector/all field stores 83/83/83/83;
+// allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
+// same result arms with the existing animation helper 130/120. All restored; post-reset
+// table/object/result homes, native size load and saved-key tests remain.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
@@ -1093,6 +1097,10 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs
 // and all 156 each; all with selected point/normal/location library copies 156. Original
 // expressions and body restored; quotient/query, selected homes and word loads remain.
+// Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
+// complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
+// with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
+// homes, word loads and zero allocation remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
@@ -1246,7 +1254,9 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// score 94 (was 94): retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
+// score 94 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
+// publication differ; the force formal still requires a zero extension.
+// Earlier: retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
 // order at the first 0x1e5af0 call; both callees live in files this lane may not edit
 // (BLOCKED-BY 0x1c4b00 and 0x1e5af0). Frame 0x1f0 agrees; call setup, movement loads and
 // force-call publication still differ.
@@ -1303,6 +1313,25 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round I (MiniMax lane I, fast): its 42 came from dropping the function_119bc0 call and passing the flag
 // uninitialised (a behaviour change, not kept); with the call kept and the squared length summed as three
 // statements 92, as one expression 94. Original body restored.
+// Round 115 (fast, agreeing with the full count here): BLOCKED-BY 0x1c4b00 still: its long force parameter is
+// declared in three files other lanes hold this round (projectiles.cpp, unknown_0a76b0.cpp, unknown_1eb8a0.cpp).
+// 0x1e5af0's parameters as (physics, up, output, forward), definition, declarations and all five calls, 92: the
+// MOV/LEA order at the first call becomes retail's and 0x1e5af0 and its other callers keep their counts (retail's
+// setups at 0x118700 and 0xe3c90 load EAX, ECX, EDX in that order; 0xdd360's loads ECX first); length_sq3f on a
+// vector3f field at 0x138 of the output 92 (retail's k, j, i loads), through the existing pointer 94; both 90;
+// the countdown at 0x206 in a short local 94; as a word local with `(short)countdown <= 0` 90 (retail's
+// `xor eax, eax; mov ax` load and the first difference moves to +0x1bd, but `add eax, 0xffff` for retail's
+// `dec eax`); a short `remaining = word - 1` local, with or without a word local, 94 (same code).
+// J228: query/reset inline contracts singly and paired 94/94/94; each with all three squared
+// components named 94/94/94; the pair with the existing final flag setter, alone/staged, 94/94.
+// All five matched controls survive. Original declarations and body restored; the byte force
+// contract still needs coordinated declarations in protected contributor files.
+// Round 226: overlap-safe library copies at requested/output-basis/velocity masks 1-7:
+// 263/148/272/54/265/154/275; contiguous paired axes 314. Velocity-only memmove 54/1034 not kept:
+// retail copies inline, so the memmove call is one retail does not make. Original copy restored;
+// basis MOV/LEA, component loads and force publication remain.
+// Round 278: final frozen/flag/parent conjunction orders 021/102/120/201/210
+// 101/101/100/96/96; reversed timestamp predicate with 012/201/210 94/96/96. Restored.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

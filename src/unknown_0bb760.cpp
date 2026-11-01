@@ -718,10 +718,12 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 
-// score 91 (was 91): retail keeps the destination pointer in EBX and the source pointer only in its stack
+// score 91 (was 91): retail keeps the destination pointer in EBX and
+// retail keeps the destination pointer in EBX and the source pointer only in its stack
 // slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
 // at the end of this note.
 // Round 31 (lane D): unchanged; retail keeps the destination pointer in EBX and
+// retail keeps the destination pointer in EBX and the source pointer only in its stack
 // a plain for over i with the destination `base + count` named in each pass and the source
 // stepped at the end of the body (round 42; the comma countdown loop is gone): the false result in CL, both
 // false exits and the epilogue are retail's. Left: the destination takes EDI (the 0x131c20 result register)
@@ -738,16 +740,16 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // test 99, the source in a separate variable 179, a byte-pointer destination 179, a temporary copy
 // of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
 // destination 148 and a constant source 91; every one restored.
+// Earlier: retail keeps the destination pointer in EBX and the source pointer
 // Earlier (91, was 91): Retail keeps the destination pointer in EBX and the source pointer
 // Earlier (91): unchanged. Retail keeps the destination pointer in EBX and the source pointer
-// Earlier: retail keeps the destination pointer in EBX and the source pointer
 // only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
 // retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
 // (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
 // instruction sequence does not.
+// Earlier: retail tests the count against zero before it computes
 // Earlier (91, was 91): retail tests the count against zero before it computes
 // Earlier (91): retail tests the count against zero before it computes
-// Earlier: retail tests the count against zero before it computes
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the
 // loop's bookkeeping differ.
@@ -811,6 +813,11 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // destination pointer 186 (556 bytes). Screened: the destination declared before the source but
 // assigned after it identical; the source derived from the destination 164; indexed `current[i]`
 // accesses 135. The destination keeps EDI (the 0x131c20 result register) in every form.
+// Round 38 (m3 lane 14, fast): the destination formed inside the count test, before/after `result = true`,
+// 100/99 (576 bytes: retail's test-first order, but the source is stored before the branch and the
+// destination keeps EDI); the blend output passed as `&base[count]` 209 (609 bytes); the source read as
+// `base[i]` with no source increment 161; a plain `for (i = 0; i < count; i++)` with an indexed source and
+// destination 107; that loop stepping only the destination 161.
 // Round 147 (m3 lane 4, fast): a plain `for (i = 0; i < count; i++)` with `current = &base[count + i]`,
 // `*current = base[i]` and `result = true` after the copy 149 (563 bytes; its loop head equals retail's,
 // source and entry offset in retail's slots, but base takes ECX, so the false result takes BL with EBX pushed

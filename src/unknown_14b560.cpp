@@ -1308,7 +1308,7 @@ static inline s_players_globals *players_globals_14f2e0()
 // but the constant stays a mov in every form tried (a struct of the two outputs, one and two
 // declarations, chained and separate assignments, ~0 and -1 spellings), so the gain is under the
 // keep threshold and the original body is restored.
-// score 46 (was 46): NONE materialization and the zero/flag store schedule differ; success BL agrees.
+// Earlier: NONE materialization and the zero/flag store schedule differ; success BL agrees.
 // Round 39: joint/dependent output initialization 75/75; chained word/flag clears 75/75;
 // result before/after the final reset 60/75; after field_198/before the user tests 46/46;
 // early result with chained NONE 48; with chained words/flags or flags first 46/46/46;
@@ -1345,6 +1345,11 @@ static inline s_players_globals *players_globals_14f2e0()
 // swapped operands, mode local, `result == false`, unit/result declaration order, unit NONE,
 // options pointer local, kept index cleared after its test, hidden-bit local, result set before
 // 0x14cad0; bitfield/unsigned/char mode fields in a small model.
+// Round 34 (m3 lane 2, fast with 0x14cdd0 and its callees in the image): timers cleared by memset 43; with
+// the two NONE outputs in one declaration 43; outputs declared the other way round 45; `if (result) goto
+// done;` before a separate mode test 192 (1041 bytes); `!(mode == 4)` 43. Compile-only: the mode read as a
+// masked word or dword, or as an unsigned byte against `(byte)4`, still narrows to the byte compare and mov.
+// 0xb8540 is still an empty stub here (its retail body makes calls).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2240,10 +2245,14 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
-// score 775 (was 701): the first 0x151b80 call's boolean argument passed through a named local; the
+// score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// Round 439: parent/tag/seat one-use intermediary elision in all seven subsets 701 each;
+// complete graph with all three target field-reference lifetimes at receiver acquisition 701.
+// Original entire body restored; every field observation and protected call boundary retained.
+// At 775: the first 0x151b80 call's boolean argument passed through a named local; the
 // call was no longer expanded, the body shrank to 2636 bytes and the score rose. Reverted; the frame
 // and the two expanded calls remain the blocker.
-// score 701 (was 701): frame 0x4c versus 0x74 and selective call expansion remain.
+// At 701: frame 0x4c versus 0x74 and selective call expansion remain.
 // Earlier: frame 0x4c versus 0x74; request/pointer homes and call expansion remain.
 // frame 0x4c versus 0x74; request/pointer homes and call expansion differ.
 // Frame 0x4c versus 0x74; request/pointer homes and selective expansion remain.
@@ -2759,6 +2768,24 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // carriers 193/193/193/193/193/193/198/190 (fast control 193, 592 bytes);
 // paired long saves only three and is dropped. Existing-sibling control remains
 // 193; full baseline 103. Original predicate domains and body restored.
+// Round 34 (m3 lane 2; `--fast` with 0x14f2e0, 0x14e970, 0x6b380, 0x16bc00, 0xcc170, 0x1ca670, 0xbadc0 and
+// 0xe4050 in the image builds this function as the full build, 103; alone it is 193 at 592 bytes): with an
+// opaque call after the status block (diagnostic, not kept) the prologue is retail's, but loop 1 still swaps
+// the player pointer and the unit (ours ESI/EDI, retail EDI/ESI). The unit index read straight from the
+// iterator's datum (no player local) 103 (same code); the root walk as a while loop 103 (same); `last_unit =
+// unit` 141 (596 bytes); last_position copied before last_unit is set 101 (two, not kept); the root walk
+// starting from the unit's parent 159 (625 bytes).
+// Lane 9 round 67 (plain; fast controls 193 here): loop 1 through the real 0x6b380 180 (562 bytes: LTCG keeps
+// it out of line there too, so the inline copy stays); loop 2 reading iterator.datum_index at each call 103
+// (same code); the busy tests as `a && b` expressions 117; loop 1's unit test as a nested block instead of
+// `continue` 103; single exit (countdown and status tests enclosing, `if (!failed)` store) 103. Diagnostic:
+// 0x6b380 built without link-time code generation 146, ten matched callers lost (it is LTCG in retail).
+// Round 48 (m3 lane 11, plain; --fast gives 193 here): the root walk as a do-while 103 (same code); the
+// final store through `globals` under `if (!failed)` 176 (618 bytes). The hoisted g_4e8c20 load passes
+// only the out-of-line 0x6b380 call: loop 2 stepping through the inline copy (0x16bc00 called directly)
+// gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
+// 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
+// loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
 // Round 50 (lane 1, plain checks): with the final store aimed at another global (diagnostic) 88: the
 // prologue then matches; left are loop 1's datum/unit in ESI/EDI swapped and NONE not kept in EDX after
 // the 0x16bc00 call (retail `or edx,-1; cmp eax,edx`, reused for the NONE store, the last-unit test and
@@ -2777,6 +2804,12 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // index, 103/103/103/103/103/103/103/103. All tie with full-context controls; original bool/long
 // helper, all iterator stores, traversal, copies, globals observations and whole body restored.
 // Global-pointer web and target/point homes remain.
+// Round 117 (m3 lane 8, fast, where this body builds 592 bytes and 193): last_position declared first, busy
+// declared at the loop-body top, failed at function scope, iterator.datum_index read at each use in loop 2: 193 each
+// (same code); the pool global read at each iterator init 213 (576 bytes). Matched retail callers of 0x6b380 neither
+// confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
+// 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
+// iterator, so our build promotes g_4e8c20 into EDI through both loops.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

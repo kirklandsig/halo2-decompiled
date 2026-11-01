@@ -234,12 +234,26 @@ static inline void quaternion_transform_vector(
 // Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
 // native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
 // frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, score
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, scoring
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
 // each gave 332. Original clamp, native identity assignments, staged construction and real scale restored;
+// 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
 // with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
 // 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
+// Round 49 (lane 11): retail computes the transform scalar s = 2w*w - 1 interleaved with the identity copy's
+// setup (before rep movsd) and 2w in place on w after it; its first row sums cross*2w + v*s + q*dot, the other two
+// v*s + q*dot + cross*2w, and its dot sums i, k, j. Fast: only the first row written cross-first 200 (identical
+// code: VC reassociates); the helper computing s first, then dot and 2w, 257 (1305 bytes; s and 2w both hoisted
+// above the copy); s first and 2w after the cross 277 (1331 bytes). Plain: the three transforms through the
+// existing quaternion_rotate_point on the staged-cross/real-scale construction 258 (1303 bytes). 0x11d000 writing
+// through a named result pointer (still matched) 200: its summary does not keep the quaternion's slots unshared.
+// Round 285: Native direct-plus-projection vector with final shared scaled-cross addition,
+// ordinary/shared dot and ordinary/staged cross, cross-first/direct-first:
+// 305/349/309/336/295/338/321/330. Frame and quaternion/cross spill overlap remain; complete helper and
+// body restored.
 // Round 278: Complete independent scalar output production in six row orders 333 each; with staged
 // transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
 // but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
@@ -250,6 +264,14 @@ static inline void quaternion_transform_vector(
 // 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
 // 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
 // computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
+// Round 34 (m3 lane 2, fast): plain halves named `w` and `sine_half` 267 (1297 bytes); the struct's members
+// swapped 200 and the struct renamed `halves` 200 (both the same code: these names do not move its slots);
+// `2.f * sine_half * cosine_half` 200 (same); the scale computed before the cross product 252 (1317 bytes,
+// retail's length, stack-masked aligned 259 against 229).
+// Round 46 (lane 14, fast): retail's rows group as i (cross + scalar) + dot, j/k (scalar + dot) + cross; only the
+// i row written cross-first 200 (same code: the sums are reordered by the compiler), with the i/k/j dot 200 (a
+// repeat of round 30's form), with s/dot/w2 order 257 (1305 bytes); state declared before rotation 200; rotation
+// renamed quaternion 200; state renamed halves 200; its members swapped (sine half first) 200; both 200.
 // Round 278: Complete independent scalar output production in six row orders 333 each; with staged
 // transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
 // but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
@@ -896,6 +918,15 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 46 (lane 14, plain): only terms whose single use is the next statement written into it: the first 420
+// (921 declarations) 1775 at 10763 bytes with retail's convention (rotation in EAX, ret 4; 0x22850 235, 0x23690
+// 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading
+// terms and the matrix as plain locals 2236 (frame 0x300 as retail, 10297 bytes), with the matrix pointer kept
+// over a plain array 2235. Retail loads the eight leading terms in declaration order, then rotation[7].
+// Round 439: single-consumer same-type sum/product/copy elision, all seven subsets,
+// 1881/1796/1903/1766/1867/1796/1905; complete graph with matrix receiver renamed 1905.
+// Product elision leaves 943 scalars and recovers rotation in EAX, but frame 0x314 remains;
+// all nine initial loads and explicit precision conversions were retained. Entire body restored.
 // Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
 // 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
 // frame 0x314. On that product graph, native row subsets and late matrix declaration:
@@ -904,6 +935,9 @@ void function_143250(
 // Round 289: native final matrix-entry chains in bands 5/7/both, left-priority 1774/1791/1786;
 // right-priority 1766/1804/1804; complete chains plus same-type local alias cleanup 1817/1983.
 // The last two recover EAX/ret 4 but frames 0x324/0x314 and caller 508 -> 512 regress; all restored.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

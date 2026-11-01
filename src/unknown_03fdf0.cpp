@@ -375,6 +375,38 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
 // the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
 // combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
+// Round 34 (m3 lane 2, fast; env link aligned counts against 29-30 for the earlier indexed forms): the six
+// clears written in both arms of the count guard give retail's head colouring (scaled index EDX, count AX,
+// zero ECX; aligned 18), but first stays in EDX across the copy where retail loads it into EDI and spills it,
+// and entries is built in ESI and spilled where retail builds it late in EDX (four instructions short):
+// indexed with the clears in both arms and first read back from current 132 (495 bytes); with a long count
+// at the guard's top and first as a local 132 (495); a long count read before the guard 161 (492); the block
+// form with the clears in both arms and first read back 128; indexed with the clears in both arms, the copy
+// source as the field and entries set after the advance 151 (496: index back in EAX/EBX, mode spilled).
+// Env-only on the aligned-18 form: a for loop 22, n/index before the copy 69, entries or first declared at
+// function scope 18/18, index before n 18, `&g_4ba138[first]` 18, current set to first + count 42; a separate
+// loop cursor copied from entries 55; no first local 49.
+// Round 130 (lane 6; LTCG env link through 0x404b0, env positional/aligned, real `--fast` where given): the
+// indexed form with the copy source written as the field, no first local (current set from previous, the copy
+// destination and the loop index read previous) and entries set after the selection: aligned 7, real 131 at
+// 508 bytes: the head is retail's instruction for instruction through +0x5a (index EDX, count AX/EAX, zero ECX,
+// previous loaded into EDI after the pushes, entries built in EDX after the copy, `mov ebx, edx` cursor), and
+// only retail's `mov [esp+0x14], edi` spill of first and its `mov esi, [esp+0x14]` reload at the loop entry are
+// missing (ours re-reads previous there). Every form that keeps first in a local gives it a register: as a
+// local for all three uses 63 (real 164, 492 bytes; both parameters move to the stack), current/destination
+// from previous and first only for the index 19 (real 162: first copied to EBP, mode left in memory where
+// retail keeps mode in EBP and spills first), first read back from current 53, one variable for first and
+// index 39, first or index declared at function/if top 53-64, a dword first 19/63, `first + n` (or `n + first`)
+// per iteration 46-52, the selection at function top/if top/after the copy/before the loop/in the loop body/
+// inline in the test 45-77; local names (first/start/base_index, entries/source/records) never move a
+// register. The current indexed form re-measured 144 (real), with a long count named in the block 140 (real).
+// Round 47 (lane 11, fast): the block pointer renamed to sort after or before the other locals 54/54
+// (same code: its slot stays between n and the weight, where retail has the weight and the scaled
+// index is a temporary after geometry); the count read at each use through the caller's metadata
+// view (`g_4c6b00[cache_index].count`) with the entries from the record view 144 (492 bytes: the
+// indexed form's index EDX, count CX, zero EAX, first EAX, entries ESI spilled at once, where retail
+// has count AX/EAX, zero ECX, first EDI and entries EDX); that with a short count local at the `if`
+// or before the clears 177/177 (480 bytes).
 // Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
 // the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
 // current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),
@@ -397,6 +429,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 288: field-major resets across groups in all six field orders, then
 // count/first/flags and flags/count/first with reversed group order, 54 each.
 // Original stores and executable body restored; index/count/zero and copy homes remain.
+// Round 117 (m3 lane 8): a 600 s permuter run on this body, none below 54; indexed form rebuilt 144 (492 bytes:
+// count CX and zero EAX where retail has AX and ECX, so first stays in EAX across the copy and entries goes straight
+// to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
+// with `current = first + count` 176 (477); mode read once through its address on the block / indexed form 54/144
+// (same codes: mode is already on the stack and cache_index's register does not move).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

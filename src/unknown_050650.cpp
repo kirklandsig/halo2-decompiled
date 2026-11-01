@@ -622,6 +622,19 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // spelling 328, k before j 329 (0x297d30 22/22/22/38, control 22); candidate copy before the draws 327, between
 // them 343; fraction as `((real *)&collision)[1]` 326; best_fraction declared before result 326 (same code).
 // Retail also holds g_4687b0 in ECX across the loop and keeps best.k in a stack slot.
+// Lane 13 r44 (fast): the collision local as a 0x5c buffer (header type plus 0x10 bytes, as unknown_1c20f0.cpp)
+// 331 (frame 0xa8); with it the header normalize3d for all three normalizations 364 (1451 B; the length temp
+// moves to the frame bottom as in retail); the file's normalize helper single-exit (`else magnitude = 0.f;
+// return magnitude;`) 366 (1453 B: temp at the frame bottom, both range and trig temps at retail's offsets);
+// that with `bool clear` 380 (1462 B); with `clear = true` first in each pass 368 (1460 B: retail's prologue,
+// late EBX push, ECX yaw axis, every frame offset, the collision block, latch and both tails; left are the two
+// rotations, about 30 instructions longer with spills through the sine slot, and the pitch normalize's j
+// product order); on that the rotation's cross_j/cross_k before cross_i 368 (same code).
+// Lane 13 r46 (fast = full here): the rotation's dot product as k, j, i 333 (0x297d30 23, unchanged); long `clear = true`
+// first in each pass 327 again (retail's prologue and late EBX push; the rest is the 0x10 frame gap, every stack
+// offset shifted); on it a long attempt counter 326 at 1423 B (retail compares `cmp dx, 0xa`: a short counter), the
+// candidate copy before the draws 334, the single-exit normalize 346 (1449 B), `clear` left uninitialised 327 (same
+// code). In this body the rotations are about retail's length (fsin/fcos/branch at the same listing lines).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -705,7 +718,9 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// score 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
+// score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
+// (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
+// Earlier at 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
 // Earlier at 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
 // against retail's 1444); retail keeps the shared direction/normalise/output chain between case 2 and case 1 and holds
 // two copies of the remembered-prop code (case 1's copy cross-jumps into case 2's) where ours shares one block.
@@ -811,6 +826,21 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // copy (retail keeps two) 228 at 1484 B: retail's order up to its 0x1e3b00 call, but case 1's copy does not
 // cross-jump into it, so the direction/output tail still follows the shared copy; the tail written inside case 2
 // is byte-identical (228).
+// Lane 13 r44 (plain): each case's remembered-prop branch as its own `else if` (case 1 `else if (reference->state >= 1
+// && state->unknown00 != NONE)`, retail's re-test of state < 1) 309 at 1496 B (case 1's copy is retail's code, but
+// ours passes &point to 0x1e3b00 twice through one register, `mov edi, ecx`, where retail recomputes `lea edi`
+// in the merged tail, so the copies never cross-jump); with point_valid set at a label before aim_at_point 314 at
+// 1452 B (0x2967b0 then takes the specification in ECX and 0x297a50/0x297660/0x2980d0 stop matching); with the
+// marker, case 3 and case 5 points as struct assignments 261 (kept: retail's dword copies); with the weapon path
+// as `if (weapon_index != NONE) { ... }` 257 (kept, one goto fewer); on 257: `point_valid = result = false` 259,
+// separate initialised declarations 259, case 1's body under `if (reference)` 257 (same code), the aim test as
+// `if (aiming) { ... }` 257 (same code); the struct copies and then-block on the shared label 324 (1380 B).
+// Lane 13 r46 (plain): case 0's route records written in full 331 (1444 B, but the index is no longer re-read after
+// 0x24590 as retail does); `point_valid = result = false` 259 (homes unchanged); weapon_index/origin in the weapon
+// block 257, case 2's player test inverted 257, `if (!result || !point_valid) goto done;` 257 (all the same code).
+// A compile-only screen shows two spilled bools take their bytes by usage weight (the more-referenced one gets the
+// lower byte), not by name or declaration order: retail's result is the heavier one, ours point_valid (five case
+// stores before cross-jumping), which is why setting point_valid once at the aim label gave retail's homes.
 // Round 189 (m3 lane 3, fast, control 322): the two flags declared after the other locals, point_valid first and
 // result last, result first and point_valid last 322 each (homes unchanged); `point_valid = result = false` with
 // point_valid declared first 324 (only the entry store order flips); point_valid set once at a new label before the
@@ -865,10 +895,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				}
 				s_object_marker marker;
 				if (actor->target_marker && function_b8d30(object_index, actor->target_marker, &marker, 1, false))
-					real_point3d_set(&point,
-						(marker.matrix.position).x,
-						(marker.matrix.position).y,
-						(marker.matrix.position).z);
+					point = marker.matrix.position;
 				else
 					point = *(point3f *)((byte *)state + 0x10);
 				goto aim_at_point;
@@ -881,7 +908,15 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 				point = *(point3f *)((byte *)state + 0x30);
 			goto direction_from_actor;
 		}
-		goto remembered_prop;
+		else if (state->unknown00 != NONE)
+		{
+			function_210850((s_type_c3b527 const *)&state->unknown48, &point);
+			if (aiming)
+				goto local_254539;
+			function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
+			goto direction_from_actor;
+		}
+		goto done;
 
 	case 1:
 		reference = (s_prop_datum *)record_pool_lookup(g_502418, specification->index);
@@ -889,9 +924,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 			goto done;
 		state = function_25d690(reference);
 		point_valid = true;
-		if (reference->state < 1)
-			goto done;
-		if (reference->state <= 2)
+		if (reference->state >= 1 && reference->state <= 2)
 		{
 			long object_index = reference->object_index;
 			s_actor_looking_object *object = actor_looking_object_get(object_index);
@@ -906,13 +939,18 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 			function_1caa40(object_index, &point);
 			goto aim_at_point;
 		}
-		goto remembered_prop;
+		else if (reference->state >= 1 && state->unknown00 != NONE)
+		{
+			function_210850((s_type_c3b527 const *)&state->unknown48, &point);
+			if (aiming)
+				goto local_254539;
+			function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
+			goto direction_from_actor;
+		}
+		goto done;
 
 	case 3:
-		real_point3d_set(&point,
-			(specification->point).x,
-			(specification->point).y,
-			(specification->point).z);
+		point = specification->point;
 		point_valid = true;
 		goto aim_at_point;
 
@@ -923,10 +961,7 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	case 5:
 		if (actor->attention_state <= 0)
 			goto done;
-		real_point3d_set(&point,
-			(actor->attention_point).x,
-			(actor->attention_point).y,
-			(actor->attention_point).z);
+		point = actor->attention_point;
 		point_valid = true;
 		goto aim_at_point;
 
@@ -954,33 +989,25 @@ PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 		goto done;
 	}
 
-remembered_prop:
-	if (state->unknown00 == NONE)
-		goto done;
-	function_210850((s_type_c3b527 const *)&state->unknown48, &point);
-	if (aiming)
-		goto local_254539;
-	function_1e3b00(reference->object_index, 1, &point, NULL, NULL, &point);
-	goto direction_from_actor;
-
 aim_at_point:
 	if (!aiming)
 		goto direction_from_actor;
 local_254539:
 	weapon_index = function_1e1f20(actor_index);
-	if (weapon_index == NONE)
-		goto direction_from_actor;
-	function_1fc710(actor_index, &origin);
-	result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
-		NULL, NULL, NULL, NULL);
-	if (!result)
+	if (weapon_index != NONE)
 	{
-		vector3d_from_points3d(&origin, &point, direction);
-		result = function_30bf0(direction) > 0.f;
+		function_1fc710(actor_index, &origin);
+		result = function_1ffbd0(actor_index, weapon_index, 0, &origin, &point, false, direction,
+			NULL, NULL, NULL, NULL);
 		if (!result)
-			goto done;
+		{
+			vector3d_from_points3d(&origin, &point, direction);
+			result = function_30bf0(direction) > 0.f;
+			if (!result)
+				goto done;
+		}
+		goto output_point;
 	}
-	goto output_point;
 
 direction_from_actor:
 	vector3d_from_points3d(&actor->position, &point, direction);
@@ -1441,6 +1468,19 @@ struct s_actor_looking_turn_request
 // noinline declaration of 0x1fdd90 here changes nothing): the side test as `if (first == A || first == B)
 // { bool current_side = first == A; ...` 464 (retail's threaded side stores); bool valid 519; that with the side
 // test 517; bool looking_valid 513; both bool 516; both with the side test 515.
+// Lane 13 r44 (plain): the animation state through the existing 0xe70b0, which retail inlines here
+// (`short animation_state; function_e70b0(actor->unit_index, &animation_state);`) 544 at 2000 B: retail's 0xc8
+// frame, the actor offset at [esp+0x30] and retail's forward copies, but the state stays in memory (retail
+// forwards it into DI) and 0x1fdd90 is still inlined, which keeps the offset in EDI; as
+// `*function_e70b0(actor->unit_index, &state)` 544 (same code); with bool valid 552; the idle cosines in a
+// block of their own around the query (retail packs them into direction's slots) 544 (same code); direction
+// declared at function scope 544 (same code).
+// Lane 13 r46 (plain): BLOCKED-BY 0x1fdd90: retail calls it from here only (one E8 call, no address taken in the image)
+// and keeps it out of line; ours inlines it, keeping its pool in EBX, and the extra frame dword is `&actor->forward`
+// held in a stack slot across the body where retail rematerialises `lea [ebp + 0x290]` at each use. Tried: the
+// looking output as an if/else 579 (2080 B); the output flags through actor_looking_get at each use 441 (2020 B);
+// a scoped pointer for the two entry forward copies 442; the turn block's forward point declared first 442; the
+// request's forward copied before 0xb9dd0 445.
 // Round 189 (m3 lane 3): BLOCKED-BY 0x1fdd90: retail calls it (its only retail caller is this function) and
 // our build inlines it (27 calls against retail's 28). Fast (control 548): forced defined inside the 0x2973f0
 // block 544; animation state long 550; forced with the top bools 548; the target-point pair declared after

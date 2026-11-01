@@ -452,6 +452,11 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// score 100 (was 100): BLOCKED-BY 0x144f0 (unmatched, in src/unknown_01cf50.cpp): retail calls it with the tag
+// and two zeros in EAX/ECX/EBX and three stack arguments; our tree takes four stack arguments and the priority
+// in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw
+// schedule after the call differs. Round 71: no new form (the remaining colour-byte and manager-order forms
+// below gain 2 at most).
 // score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
 // image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
 // call convention in src/unknown_01cf50.cpp.
@@ -460,10 +465,10 @@ void function_1cf50(void);
 // site was left as it was: the six arguments are still pushed on the stack where retail passes the
 // first three in EAX/ECX/EBX, because 0x144f0's definition (src/unknown_01cf50.cpp) carries no /Gr
 // flag; the colour/draw schedule after the call still differs.
-// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
+// Earlier at 100 (from 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
 // it with tag/stage/fallback in EAX/ECX/EBX and three stack arguments, our tree uses the standard
 // six-argument convention, so the call site and the colour/draw schedule after it differ.
-// score 100 (was 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
+// Earlier at 100 (from 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
 // Earlier: the record index is scaled by 0x40 in retail and by 0x4 here, and the table retail reads is not the one this tree reads
 // Current stride agrees; the hoisted zero, callee convention and color/draw
 // scheduling differ. Record view, byte-channel locals, material/color results,
@@ -480,11 +485,14 @@ void function_1cf50(void);
 // colour global as a dword/byte union read after the store 98, with the manager change 98 (union with anonymous
 // bytes / byte array 98/98); shifts of the global after the store 100; `& 0xff` channels of the global/local 98/100;
 // union colour local copied to the global, channels from either 98/98 (unions get a stack copy, `sub esp, 8`).
-// score 100 (was 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
+// Earlier at 100 (from 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
 // retail calls it with the tag, stage and index in EAX/ECX/EBX and three stack arguments, our tree
 // uses the standard six-argument convention, so the call site and the colour/draw schedule after it
 // differ. (The fast score reads 100 or 101 depending on the size of the reduced image; that is a
 // layout artefact of the reduced build, not a source change.)
+// Round 69 (m3 lane 9): no new form; the first difference (+0x1f) is the loop-wide `xor ebx, ebx` that
+// feeds the zero pushes of 0x144f0's standard six-argument call; retail sets EBX/ECX to zero at the call
+// (0x144f0 takes three register arguments there, ret 0xc). BLOCKED-BY 0x144f0 (a contributor's file).
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
@@ -1497,6 +1505,9 @@ struct s_133f70;
 // Round 122 (plain; fast scores 353 and misleads): type stored through one ternary 175 (aligned 80); named
 // flag-byte pointer 175; header before the count store 176; entry-table test nested 175; one shared cache-index
 // local for both 0x3ddd0 lookups 175.
+// Round 234: Complete twice-used encoded stamp, packed/expression or successive operations 359/359;
+// split/expression or successive parts 342/342; those four with native previous byte 283/283/286/286.
+// Original repeated stamp observations and body restored.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

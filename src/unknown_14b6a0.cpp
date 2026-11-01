@@ -296,6 +296,17 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 53 (lane 10, fast): retail adds the offset to its own position local (read back from +0x20, the
+// destination's slot) after 0xb9dd0, reads the target unit from the player at both calls, and steps the second
+// scan through the out-of-line 0x6b380 on a 16-byte iterator at +0x2c. The position local used directly 245
+// (1048 bytes); the second scan through data_datum_iterator_next 229 (1036); both 238 (1052, frame 0x44); both
+// with the unit read from the player at each call 259 (1048, frame 0x48: position shares the destination's
+// +0x20, the second iterator sits at +0x2c, the alternate at +0x3c, both flags in retail's homes; only the centre
+// sits apart, at +0x48 with the first iterator, where retail puts it at +0x2c and the first iterator at +0x3c);
+// that with the flags declared the other way 254; with one point for both markers and the centre (declared
+// after/before/with destination and alternate) 262/262/262 (frame 0x48, homes reshuffled); with the centre,
+// height and radius in their own block 259 (same code). Retail also re-reads the visit counter at each test
+// where ours keeps the incremented value in ESI and reloads it after 0xb75a0.
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
@@ -308,6 +319,13 @@ void function_14bac0()
 // declared at the first block's top 259; renaming the alternate or the iterators changes nothing (259);
 // the first scan on a 12-byte iterator through data_iterator_next_calling 262 (frame 0x44). On the kept
 // body: the unit re-read from the player at the last call 243.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
 // Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
 // (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
 // at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
@@ -323,9 +341,18 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 442: null-unit/visited-root/both continues with the cached pool and original reload
+// paths 222/253/253; native recipient counterparts 228/264/264; both guards with shared visit
+// value 253, with native recipients 264. Original output, pool observations and body restored.
+// Round 229: repeated recipient handle ownership with native recipient step, actual relocation/destination
+// sharing and repeated visit-stamp ownership: 222/228/222/228/222/228/222/228. All original
+// executable source restored; frame 0x50/0x3c and readiness/recipient sharing remain.
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

@@ -189,6 +189,16 @@ bool g_47f05b;
 // g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
 // sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
 // construction in a typed local published after the pool construction 38 (154 bytes).
+// Round 19 (lane 17, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0/0x146de0/0x146da0/0x147090/0x2d6fc0):
+// the size-only constructor re-measured 35 (140 bytes, only the abstract vtable store missing). On it: a
+// constructor taking the whole block size (buffer `block_size - sizeof(*this)`) 35; the pool placed at
+// `(byte *)g_479894 + 0x15040` 44 (131 bytes); the fixed allocator and its 0x15000-byte buffer as one
+// struct whose constructor passes its buffer member 35; `g_4798b4++` between the two constructions 39
+// (136 bytes); the three global stores after the fixed construction 42 (142 bytes).
+// Round 212: named complete allocator copied into placement, direct/copy initialization:
+// whole-function lifetime 89/89; guarded production 88/88;
+// lifetime ending before the pool 89/89; outer producer with guarded
+// placement 89/89. All restored: a 0x30 frame and an out-of-line copy call.
 // Round N281: complete fixed/pool construction result locals, derived/base type
 // pairs at production 38/38/38/38; entry declarations with the derived fixed
 // result and derived/base pool result 38/38. Original complete body restored.
@@ -202,6 +212,12 @@ bool g_47f05b;
 // (137 bytes); `g_479880 = true` alone after the first construction 39 (its store sinks to the join); the
 // pool through a typed local published after 34 (same code); the pool placed at `(byte *)g_479894 + 0x15040`
 // 44 (131 bytes, no reload at all); the pool address computed into `block` first 34 (same code).
+// Round 24 (lane 17, fast with every function of this file and 0x22c3e0): `g_479880 = g_479890 = 1` 34 (same
+// code); g_479884's NONE stored after the two 1s 39; the abstract loop with a short index 54 (0x146b80 and 0x22c3e0
+// lose); the refcount header named in the abstract constructor's initializer list 34 (same code). Diagnostic only:
+// /Ob1 for this file 34 (0x146b30 74), so the inlining mode does not keep the store. Retail's vtables fold (the
+// abstract and fixed vtables share the destructor 0x1470f0), so a polymorphic fixed base with no overrides would also
+// store 0x453760: the kept store may be that base's rather than the abstract's.
 // Round 19 (lane 17, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0/0x146de0/0x146da0/0x147090/0x2d6fc0):
 // the size-only constructor re-measured 35 (140 bytes, only the abstract vtable store missing). On it: a
 // constructor taking the whole block size (buffer `block_size - sizeof(*this)`) 35; the pool placed at
