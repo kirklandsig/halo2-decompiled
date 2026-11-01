@@ -1038,7 +1038,7 @@ bool function_68670(byte *source, long size, void *block);
 // what forces its reload; ours keeps the remainder for the second read. The permuter ran without
 // finding a better form. The header home, the size register, the forwarded cursor and the grouped
 // case-1 stores remain.
-// score 72 (was 72): retail treats the read header as reachable through the ring buffer: it reloads
+// Also (72): retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at
 // esp+0x14 (header at esp+0xc, ours at esp+0x10), interleaves the message's zero and value stores
@@ -1123,6 +1123,23 @@ bool function_68670(byte *source, long size, void *block);
 // address forced to escape restores retail's reloads and late header load (retail behaves as if the
 // read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
 // stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 34 (lane 15): an inline `view_buffer_read(c_simulation_view *view, long count, void *destination)`
+// (read_wrapped, then start and used updated; it derives the ring from the view) for both reads, case 0 sending a
+// `long value` copy of header.value and no `view_reference` line: 24 at 553 bytes (aligned 11). The header becomes
+// exposed through the helper's pointer argument and the start store is no longer forwarded, so the size takes DX,
+// view EDI and the long size ESI, and case 1's interleaved stores and case 0's copy-after-channel-test order are
+// retail's. Left: the first read keeps start in ESI across the call (retail reloads it) and case 2 sets up the
+// block's ESI before the payload's EAX (retail the other way; 0x68670 is contributor code with no other caller, so
+// its declared order may be the cause; `block.bytes` 21 and `&payload[0]` 21 do not move it). Adding a read of
+// `dst` through its address in read_wrapped (still matches) makes the first read reload start: 21 (aligned 23),
+// but view and the long size then swap ESI/EDI; with that read and the `view_reference` line kept 24 (the case-0
+// order also differs). The helper taking the ring pointer instead (exact mirror of view_buffer_write) 39 with the
+// `&dst` read and the carrier, 132 with the `&dst` read alone; the helper `__forceinline` 21; `used` updated before
+// `start` 143. On the 21 form: `long size` local 21, payload declared first 21, header or payload declared in the
+// loop 21/21, case-0 value at function scope 21. On the 39 base (read_wrapped `&dst` read + case-0 copy, no
+// helper): header in the loop 137, header.size at each use 144, `long size` before the test 122, used update first
+// 127, `short size` 39, payload read through a re-derived ring pointer 44, inline ring `read` method 39, early
+// case-0 copy 110; permuter (54 tries) 39. Helper, copy and `&dst` read are match-only forms: body unchanged.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
