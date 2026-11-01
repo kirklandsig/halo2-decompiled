@@ -3604,7 +3604,7 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 215 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
+// score 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
 // long next-chunk candidate 254; completed-chunk early exit 241.
@@ -3680,6 +3680,12 @@ struct s_128ca0
 // Round 253: Unsigned incoming gain bits with original/reference inner and outer sums and shared scale;
 // scores 215/255/215/255/286/255/286/255.
 // Original executable source restored; no qualifying gain.
+// J224: Native byte views for pending/completed/both/submitted/pending-submitted/
+// completed-submitted/all state units 238/231/242/234/245/239/254; all with native short
+// pitch bounds 254. Completed-byte/all-byte units with reference inner gain and native
+// bounds 278/293; with both reference sums 278/293 (frame 0x494, first +0x44).
+// Original record declaration, body, gain helpers and every call restored; the two
+// extra argument homes and clamp joins remain. One incomplete-image comparison excluded.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

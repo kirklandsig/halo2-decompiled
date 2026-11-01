@@ -2582,7 +2582,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 719 (was 728): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 706 (was 719): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2599,6 +2599,11 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // and `boost * vehicle->speed` 721 each (identical code), boost preset to 1.0f then the conditional 747, boost as
 // one ternary 721 (identical).
 // J221: Friction APIs 726; force producer 755; both 753; with distinct relative output friction/force/both 734/763/760; all with climb 753, velocity role names 760. Original transform plus friction APIs and the actual twice-used climb observation 719 fast/plain, kept; same fields, values, float groups and game-call tuples. All other forms restored.
+// J224: Banked result in the existing up vector 725; directly in desired.up 706 (plain, kept).
+// Each with distinct relative output 733/733; rotation-output role names with the first two
+// 725/706; distinct output plus role names 707 for desired.up (the in-place-up comparison failed).
+// Current matrix before banked products with late sine 710; with late cosine/sine pair 709.
+// The distinct-output forms retain frame 0x104; selected desired.up uses 0xd0, versus retail 0xfc.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2757,15 +2762,14 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	real cosine = (real)cos(bank);
 	real sine = (real)sin(bank);
 	vector3f axis;
-	vector3f banked;
+	transform4x3f desired;
 
 	cross3f(facing, &up, &axis);
-	banked.i = cosine * up.i + axis.i * sine;
-	banked.j = cosine * up.j + axis.j * sine;
-	banked.k = cosine * up.k + axis.k * sine;
+	desired.up.i = cosine * up.i + axis.i * sine;
+	desired.up.j = cosine * up.j + axis.j * sine;
+	desired.up.k = cosine * up.k + axis.k * sine;
 
 	transform4x3f transform;
-	transform4x3f desired;
 	quaternionf rotation;
 	vector3f rotation_axis;
 	real rotation_angle;
@@ -2779,8 +2783,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	transform.position.z = 0.0f;
 	desired.scale = 1.0f;
 	desired.forward = *facing;
-	cross3f(&banked, facing, &desired.left);
-	desired.up = banked;
+	cross3f(&desired.up, facing, &desired.left);
 	desired.position.x = 0.0f;
 	desired.position.y = 0.0f;
 	desired.position.z = 0.0f;
@@ -2849,6 +2852,11 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Round 469: Angular-output/scaled-velocity/heading-pair lifetime scopes in seven nonempty
 // combinations, then all with input declared at consumption: 1053/1053/1053/1053/1053/1053/1053/1053.
 // Every initializer, expression and call restored; frame 0x80 versus 0x74 remains.
+// J224: Live zero-vector receiver 1095; existing setters for both initial outputs 1092;
+// both 1106; incoming-velocity setter 1060; zero/incoming 1113; output/incoming 1089;
+// all 1126; all with one real velocity scratch buffer 1127. Live-zero forms use frame
+// 0x7c versus retail 0x74 but regress. Original complete executable body restored;
+// two incomplete-image comparisons excluded and completed on exact archived sources.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3900,6 +3908,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // add no further gain on these graphs. Selected the simpler joint 197 source (nine points from round baseline
 // 206), already ordinary whole-program confirmed without a loss; no isolated seven/two/one-point form kept.
 // Failed all-root comparisons t10/t11 excluded; exact-source fallbacks t13/t14 and final t15 are archived.
+// J224: Native override records 197; with live iterator index/live count/scalar role names 197/265/197.
+// True-first fallback 207; with records 207; with completed clamp-result assignment 203;
+// all three 203. Original executable source restored; frame and first +0x5a unchanged.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

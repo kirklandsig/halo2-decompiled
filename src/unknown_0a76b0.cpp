@@ -2090,7 +2090,8 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// score 235. Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
+// score 235 (was 235): Frame 0x14 agrees; pool/index/type/name homes remain.
+// Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
 // shared actions receiver 328; single exit with hand/bit 315; per-use speed with hand/bit 302.
@@ -2108,6 +2109,9 @@ __forceinline char unit_action_round(real value)
 // first-person name through EBP/EDI/EBX (ours EDI/EBX/EBP, then type EBP vs EBX), the is_biped/result
 // stack bytes swap (0x13/0x12), `current` in ESI vs EAX, the frame-count products' order and the
 // lunge-speed division from memory.
+// J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
+// Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
+// all with success at the final return 278. Sub-eight forms and all other trials restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
