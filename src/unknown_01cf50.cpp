@@ -2990,16 +2990,17 @@ bool g_5093bc;
 // depth format is assigned first; the two flag bytes still come from a register instead of memory.
 // MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
 // casts the global's own address, so it is not kept without a match.
-// score 70. Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
+// score 55 (fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // format after the back buffer width and clearing the result before the device pointer gives 68;
 // reading the two flag bytes back through a byte pointer to g_runtime_device_configuration as
 // well gives 49. That cast of the global's address is not kept without a match.
+// MiniMax G (run 12): the depth format assigned right after the memset 55 (kept); with the settings'
+// first four bytes copied as one dword into .packed and the switch on (short)(.packed >> 16) instead
+// of g_485aca 52 (both read through the wrong type: not kept without a match).
 // @retail 0x128c0
 bool function_128c0(s_128c0_settings const *settings)
 {
-    g_runtime_device_configuration.packed = *(dword const *)settings;
-    g_runtime_device_configuration.quality = settings->quality;
-    g_runtime_device_configuration.extra = settings->extra;
+    g_runtime_device_configuration = *(s_runtime_device_configuration const *)settings;
     bool result = true;
     D3DPRESENT_PARAMETERS parameters;
     memset(&parameters, 0, sizeof(parameters));
@@ -3010,7 +3011,7 @@ bool function_128c0(s_128c0_settings const *settings)
     parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
     parameters.BackBufferWidth = g_485a8a.a.v3 - g_485a8a.a.v1;
     parameters.BackBufferHeight = g_485a8a.a.v2 - g_485a8a.a.v0;
-    switch ((short)(g_runtime_device_configuration.packed >> 16))
+    switch (g_485aca)
     {
     case 0:
         parameters.SwapEffect = D3DSWAPEFFECT_FLIP;
