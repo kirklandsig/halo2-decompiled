@@ -190,6 +190,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 460: Complete mutable/immutable view-depth carriers with original/branch/conditional/
 // immutable-conditional weight producers, 221/221/249/249/221/221/249/249. Original helper and body restored;
 // extra frame word and coefficient/result homes remain.
+// Round 49 (m3 lane 1, fast): the view helper `static inline` 221 (same code); the two view calls swapped
+// 262 (1154 bytes); the helper rows written to `arg_2->n[component]` 226 (1148 bytes); the orthographic
+// clamp into a fresh named value 215 (retail's per-arm tail; six points, not kept), as an if/else-if
+// clamp 221. On the 215 form the tail differs mostly by the frame's extra dword (every [esp+N] off by 4),
+// which comes from the view region (ours uses six slots there, retail five).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
