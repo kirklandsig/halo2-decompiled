@@ -1215,7 +1215,7 @@ void function_7e100(long current, const s_member_quality_collection *collection,
 long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
-// score 6 (was 15): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
+// score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
 // field and leaves one more pad byte. Earlier: the group-identity copy matches retail's
@@ -1236,6 +1236,10 @@ long function_1931a0(long count, s_surface_description *variant);
 // stores plain in the old order (0x78, 0x68, 0x60, 0x7c, 0x80, 0x6c) 19; 32 plain store orders 8-19,
 // best available, maximum, minimum, average, add mask, group mask 8 (kept: plain 15 -> 6, no volatile
 // left; the summary block and both masks then match); on it, minimum read after the capacity 8.
+// Round 129 (lane 5, fast): diagnostic only, 0x7e210 compiled with no inlining (an inline-depth pragma
+// around it): this function matches (0x7e210 then takes the session in EAX, retail's head) while 0x7e210
+// goes 766 -> 1593. Ours inlines 0x192e60 into 0x7e210 and calls 0x193300 from an inlined callee; retail
+// calls 0x192e60 and never 0x193300. The body here is complete; the fix is in 0x7e210's inlining.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1371,7 +1375,7 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 61 (was 92): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
+// score 61 (was 61): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
 // and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
 // the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
 // ECX into the loop head and stores it there, ours keeps it in memory) and the lower zero (retail sets it
@@ -1511,6 +1515,9 @@ struct s_rating_summary
 // both uses with no named local 92 (no slot moves: the level/compare-cursor order is not the identity
 // local's name); with the key stored first as well 88; the team count switched once before a plain
 // counted team loop 157 (1192 bytes); the team skill as a sign-extended long 102.
+// Lane 12 r72 (fast): on the key stored before the session copy (88, 4 points, not kept): lower declared
+// in each loop 88; the team statistics pointer formed before the change call 88; both 88; level declared
+// in each loop 105 (every slot reshuffles).
 // Round 49 (m3 lane 1): the team loop's lower as `lower = 0; if (value >= 0) lower = ...;` 61 (kept; the
 // team loop then gives EBX to the collection and level as retail, and the player-loop slots fall into
 // place); the same as if/else 92, reversed ternary/if-else 96/96, the zero before the level call 118
@@ -1538,6 +1545,12 @@ struct s_rating_summary
 // inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
 // it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
 // out of line is still unknown.
+// Round 443: native complete team-counter value, original/admission storage,
+// crossed with key-before-session and per-arm lower results, 383/383/389/389
+// in either scope. Original pointer, summary order, lower and full body restored.
+// Round 290: On explicit team lower-result production, separate team value/change/level carriers,
+// all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
+// summary scheduling and team counter/cursor homes remain, with exact frame and length.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1852,6 +1865,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // adjusted pointer, so it is the natural source under /arch:SSE, a file-flag lead); a user record pointer
 // for the users loop 754 (the loop then gets retail's jump over the padding and xuid-relative loads); with
 // online_logon_connected() too 775 (2846 bytes); delay as `> 3 ? 300000 : 2000` 709 (aligned 515 -> 513).
+// Round N274: Library property copy before identity capture 711; readonly identity 711;
+// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
+// Original identity/property order, native buffer lifetime and complete body restored.
 // Round 53 (m3 lane 1, fast; aligned diff of the listing: 308 unaligned lines at 709): the existing
 // online_logon_connected() with the getter 0x192e60 in the users loop 763 (the getter inlines as
 // retail's pointer-range check, but our build hoists the variant count into EBX where retail reloads it
@@ -1863,6 +1879,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round N274: Library property copy before identity capture 711; readonly identity 711;
 // producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
 // Original identity/property order, native buffer lifetime and complete body restored.
+// Round 290: Indexed property destination from stored pointer/address producer, crossed with native
+// record-count bound and advancement, 780/788/796/770/826/788/812/770 (2750-2814 bytes). Original
+// initializer restored; frame 0xc0, initial cursor/slot/availability and later request homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

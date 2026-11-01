@@ -138,6 +138,18 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Round 51: count before tag/vector 95; count initialization split 94; unsigned long polygon counter 94;
 // short counter with count before tag/vector 548; with split count 547; with count between tag/vector 547;
 // with outer maximum distance 547; with both count placement and outer distance 548. Original restored.
+// Round 55 (fast): count and vertex counter renamed a_/z_ either way and with the names exchanged 94/94/94
+// (the spill slots, ours count 0x10 and counter 0x14, retail the other way, do not follow names); the vertex
+// counter declared at the top of the block 94; the count declared just before its loop 624.
+// Round 71 (lane 12, fast): retail pairs the luminance-loop counter with the strip loop's first short in one slot
+// ([esp+0x10]) and the count in the next ([esp+0x14]); ours pairs the count first. Names and the counter's
+// declaration position do not move those slots (compile-only /FAs screen). The short strip-count index re-measured
+// 547 (retail's prologue and count loop; the loop head pad before the luminance loop becomes `jmp` + `lea`, with
+// 0x17cfa0's call still 3 bytes short); the counter declared in its `for` 145, with the short index 567. Transform
+// rows: the y row's left product spelled `local_1 * left.j`, the x row's `left.i * local_1`, both, the x row's up
+// product `local_2 * up.i`, all three 94 each (VC reorders the operands itself: retail keeps `up.i * z` and
+// `y * left.i` in the x row and `left.j * y` in the y row, ours the reverse in each); the point copied z, y, x 104,
+// y, x, z 102.
 // Round 278: standard lower/upper/distance extrema subsets 1-7
 // 698/694/642/522/683/628/636; complete graph with short count 635. Original helpers restored.
 // @retail 0x180d80

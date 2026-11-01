@@ -472,6 +472,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 }
 
 // score 278 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
+// negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
+// 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
 // Earlier (278): frame 0x40 and length agree; early root EBX retention, actor ownership and paired-edge float/vector scheduling remain.
 // Earlier: Frame 0x40 agrees; early root EBX retention and float/vector scheduling remain.
 // Earlier 278 (was 278): frame 0x40 agrees; early pathfinding EBX ownership and float scheduling differ.
@@ -578,6 +581,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
 // first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
 // before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 325: Complete native surface snapshot at dispatch, crossed with both difference setters,
+// ordinary result and actor-valid direction scope: 387/397/365/366/397/401/373/380.
+// All restored; root retention is not recovered and most frames/extents grow.
 // Round 275: complete native vertex values in paired/actor/trace cases 502/337/400;
 // paired-actor/paired-trace/actor-trace/all 526/551/438/575; all with shared
 // differences 583. Exact-only snapshots restored; early root/actor ownership and vector scheduling remain.
@@ -590,6 +600,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
 // `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
 // `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 45 (lane 14, fast), on the b, a, c, d corners with vector3d_from_points3d and both sums through dot3f: the
+// base 274 (aligned 199 -> 158); with case 5's direction declared first 274; case 2's position declared first 280;
+// both 276; both dot3f calls taking `&first` first 274. Left on it: the entry, first.j/first.k and the 1.0/radius*2
+// constants in swapped XMM registers, and the margin formed in the radius register, not in place in the reciprocal's.
 // Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
 // 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
 // of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base

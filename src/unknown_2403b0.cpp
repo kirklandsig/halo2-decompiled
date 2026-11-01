@@ -42,9 +42,11 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // (other files), and MSVC always loads the limit product's cap global before the scale global whatever
 // order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses
 // `not al; and al, 1`, and the team is still copied into edx where retail uses ecx.
-// Earlier: the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
+// Earlier (95 -> 86): the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
 // retail reloads it, and the limit product loads its two globals in the opposite order; the
 // completion-bit stores and the team's re-extension now match.
+// Earlier (95, was 95): the object-pool data pointer is spilled across 0xcbd50/0x101280 where
+// Earlier: the object-pool data pointer is still spilled across 0xcbd50/0x101280 where
 // Earlier: the object-pool data pointer is spilled across 0xcbd50/0x101280 where
 // retail reloads it, and the completion bits are set through AL where retail uses DL and CL;
 // the frame 0x3c agrees.
@@ -154,6 +156,13 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // callers see it as writing memory) gives retail's reload here, 53; retail's 0x101280 bytes only read,
 // and retail's 0x241520 keeps g_4e6948 in EBP across the same call, so retail treats it as writing
 // pointed-to memory but no globals (BLOCKED-BY 0x101280's side-effect summary, cause unknown).
+// Round 38 (lane 15, fast): the team for 0x242e00 as a short 90; `blocked` declared with the event and
+// position 86; the slot-clear helper returning `(~flags & 1) != 0` 86, returning that value as a long 123,
+// force-inline 86. Pool-data reload still BLOCKED-BY 0x101280's summary. Original body restored.
+// Round 23 (lane 17, fast): the +0x10 first difference is a branch target; the first real one is the
+// pool-data load (ours early, kept in a stack slot). The slot-clear helper reading the flag byte into a
+// local 86; as `(flags & 1) == 0` 86; as `((flags >> 0) & 1) == 0` 86; the limit's tick-rate factor in a
+// named local first 86; the seconds in a named local first 86. Diagnostic: 1-7 dead long temps 86 each.
 // Round 278: standard cap/floor with built-in or native long predicates, all eight
 // non-original combinations: 174/225/270/293/275/276/298/306. Original clamps and body restored.
 // @retail 0x2403b0

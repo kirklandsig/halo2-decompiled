@@ -999,6 +999,14 @@ bool __stdcall function_2399da(long controller_index)
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
 // for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
+// with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
+// test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
+// identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
+// rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 325: Permission flag read at every use (shift/mask), crossed with all-use own-rank fields
+// and direct full-identity member presence: 142/163/142/163/142/163/142/163. All restored;
+// the changed flag lifetime shortens the body and changes saved-register ownership.
 // Round 275: one common denial-message result, long/dword/short/byte carriers with zero/NONE
 // representations 172/177/172/177/173/181/161/161. Exact-only message guards restored; frame
 // 0xf00 agrees, identity/rank EAX/ECX ownership and the extra removal move remain.
@@ -1010,11 +1018,19 @@ bool __stdcall function_2399da(long controller_index)
 // tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
 // (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
 // reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
+// Round 45 (lane 14, fast): the identity and the rank each have four uses in the dispatch region (a tie);
+// may_change as `(flags & 0x800) != 0` 90; have_member as one comparison 90; the dispatch inverted with the
+// over-rank and rank-3 returns first and the remove arm last 95 (437 bytes); have_member and may_change each
+// declared at their first assignment 90/90.
 // Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
 // with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
 // identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
 // rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 52 (fast): the rank read once through its address into a local used at every rank use 90;
+// `NONE == rank` 90; `!= NULL`/`!= 0` identity test with a `(DWORD)` rank store 90; the store and set-rank
+// call through a member pointer 90 (lane 7's form again); the permission test read from the membership
+// field with the own-rank local kept for the dispatch 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

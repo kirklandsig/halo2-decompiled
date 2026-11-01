@@ -226,6 +226,19 @@ const dword g_455978[81] = {
 // Round 473: coherent component identity after SSE setup, original/shared filter and per-sample/shared
 // invariant blend: 488/476/512/524; entry identity on the same four graphs 493/521/494/502. Original body
 // restored; optional-state/sample/ray homes and selective location/release expansion remain.
+// Round 65 (lane 16, fast): the exclusion ray's difference through the existing vector3d_from_points3d 298
+// (identical code, kept: it was that helper's body by hand); from arg_9 directly 340 (2112 bytes); round 62's
+// planar form (normalize_inline on a k-zeroed copy) 308 again, with the helper 308; round 87's sample-end copy
+// with in-place adds 407 (2149 bytes), both forms together 338 (2104 bytes). Retail calls 0x11bed0 (location in
+// ESI, point in EDX) at every site and inlines 0x279740 only at the first release; ours inlines 0x11bed0 and
+// calls 0x279740 twice. Earlier diagnostics tie both to 0x279740's /Ob1 file flags (a build-flags decision).
+// Round 67 (lane 16, fast): upper bound as `local_4 + x` in all three rows 298 and the inflated radius as
+// `0.001f + arg_7` 298 (both identical code); round 62's planar form with round 87's sample-end copy 338 again
+// (2104 bytes): the frame homes are then retail's throughout (+0x2c copy, +0x44 length, +0x48 table vector,
+// +0x1c sample end, +0x30/+0x40 optional state), and what is left is colouring: arg_9/arg_10 and the body/shape
+// pair in ESI/EDI swapped against retail, the table cursor spilled from ECX instead of kept in ESI, arg_6/zero/
+// inverse in XMM3/XMM7/XMM2 (retail XMM2/XMM5/XMM3), plus the 0x11bed0/0x279740 inline difference. On it the
+// sample end as `x = x + i` rows 338 and as real_point3d_set on the copy 338 (identical code each).
 // Round 30 (lane 2): retail's radial block is 0x29b2e0's inlined planar normaliser (function_29b32b in
 // src/unknown_29b2e0.cpp): the whole table entry copied, k cleared, x87 sqrt of i*i + j*j, the epsilon test,
 // i scaled by (1 / length) first, and `continue` when it returns 0. That helper moved unchanged into
@@ -314,9 +327,7 @@ bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long
   {
    s_1d48f0 local_20;
    local_20.field_0 = *arg_9;
-   local_20.field_c.i = local_19.x - local_20.field_0.x;
-   local_20.field_c.j = local_19.y - local_20.field_0.y;
-   local_20.field_c.k = local_19.z - local_20.field_0.z;
+   vector3d_from_points3d(&local_20.field_0, &local_19, &local_20.field_c);
    if (function_182800((s_vehicle_ray *)&local_20, local_2, local_1) && !local_0) continue;
   }
   transform4x3f local_21;

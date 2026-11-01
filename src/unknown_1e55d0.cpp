@@ -164,6 +164,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // LTCG cannot inline from its /Ob1 file).
 // Also (fast): the rate on the right of each position product 319; the activity bit in shift form 319;
 // the object lookup and activity read before the position computation 324 (1180 bytes). All restored.
+// Round 54 (lane 10, fast): case 6 rounding straight into the state byte through real_to_long 319 (same
+// code); countdown tested `!= 0` with post-decrement 320; moving test through length_sq3f 319 (same code);
+// same-shape arm last as an if/else swap 319 (same code); current shape read once for both tests 368;
+// the capsule radius clamp as a conditional expression 319 (same code); the ease state as the switch's
+// default instead of case 6 with __assume 336.
 // Round 280: aligned-helper conditional radius selection, matrix-first declaration,
 // result-first lower clamp and consistent minimum-radius snapshot combinations: eight
 // forms 319 each. Original helper and complete body restored; pointer ownership remains.

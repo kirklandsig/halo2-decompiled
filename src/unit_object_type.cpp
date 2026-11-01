@@ -2848,6 +2848,10 @@ void function_c5740(long unit_index, bool start)
 // material path as an inline helper 260 (kept out of line, 0xcf040 6); an early return on a NONE definition 94;
 // `goto done` for the weapon exit 94. Diagnostic (reverted): a global store in 0x1012c0 gives the pool reload but
 // 96 (351 bytes), so that reload is not the main cause.
+// Lane 18 round 24 (fast): separate material/definition tag locals 94 (same code); a NONE-initialised weapon index with
+// the early return kept 121 (333 bytes, 0xcf040 11); the definition tag as a ternary 94 (same code); `if (tag_index ==
+// NONE) return;` before the 0x188180 call 94 (same code); the weapon slot field read at each use 99. Retail sets EAX
+// (point) before ECX (forward) for 0x188180. Still BLOCKED-BY 0x188180 (parameter type and register convention).
 // Round 281: full-width material local 106; full-width slot 110; both 118; early receiver declarations 94;
 // nested weapon gates 94; named admission result 94; early receivers with full-width material 106;
 // immutable definition-argument lifetime 94. Full-width material forms also lose matched 0xcf040 (232).
@@ -7062,6 +7066,7 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
+// score 653 (was 700): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
@@ -7097,10 +7102,16 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // (accumulators, ternary steps) is inlined here (2786 bytes, 995). Next: the prediction through 0x2551f0's
 // static axis-rotation helper once it can be shared, on top of the axis normalization. The first atan2 as a named
 // double (0xcfec0's fix) 694 (frame 0x98, plain) but caller 0xc60c0 401 -> 447.
+// Round 282: motion/prediction scopes, their pair and common-output pair 700/700/700/700;
+// complete planning scopes without/with motion or common output 653/653/653/653; planning with
+// original speed initialization 700; only both speed results initialized at entry 653 (plain kept).
+// Frame 0x94 and direction staging remain; every original vector, arithmetic tree and call is retained.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
 {
+	real yaw_speed = 0.0f;
+	real pitch_speed = 0.0f;
 	vector3f local_263186;
 	vector3f local_0588e7;
 
@@ -7171,8 +7182,6 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 			function_30bf0(&target);
 		}
 	}
-	real yaw_speed = 0.0f;
-	real pitch_speed = 0.0f;
 	vector3f angular_velocity = *velocity;
 	real speed = (real)sqrt(angular_velocity.i * angular_velocity.i + angular_velocity.k * angular_velocity.k + angular_velocity.j * angular_velocity.j);
 	if (!(0.0001f > (real)fabs(speed)) && speed != 0.0f)

@@ -1302,6 +1302,15 @@ struct s_looping_detail_request
 // a call (124 with the extra compare), so the cause is still the call site's static frequency.
 // Round 254: Reduced common finalization with unavailable-player/completed-request exit and
 // bool/byte/char/long result carriers 139/168/168/185/139/168/168/185. All restored.
+// Lane 9 round 67 (from 127; fast alone with 0x21cc60 controls 139 at 543 bytes, the reduced image differs from the
+// one built with 0x21b0e0): the existing 0x20b100 for the draw 127 plain (inlined to the same code); the count read
+// at each use 141 fast; the draw through _random with file and line 139 fast (same code); `player_count != 0` 139 fast;
+// `while (skip != 0)` 139 fast. The query stays inlined in all five. Diagnostic: an extra inlined vector add in the
+// audible arm leaves it inlined too (607 bytes), so it is the call site's static frequency, not an inline budget.
+// Round 48 (m3 lane 11, plain): the file is already /Ob1 and 0x11b350 (an /Ob1 file) inlines the query in retail,
+// so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
+// site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
+// bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
 // Lane 18 round 17 (an LTCG link of this file's generated unit, 85 objects, equal to the full listing): the skip
 // loop as `while (skip-- != 0)` 127; the count test `!= 0` 127; `player` declared before the draw 127 (all three
 // identical, the query stays inlined); the skip as the for's own counter harness 121 against the control's 110
@@ -1313,10 +1322,21 @@ struct s_looping_detail_request
 // 127, every caller unchanged; the count test as `>= 1` 128, as `!= 0` (diagnostic) 127, the query still
 // inlined; the definition index named once for the lookup and the audible arm's call 159; the camera position
 // as one pointer local for the add and 0x11bed0 125 (two points, not kept).
+// Round 226: caller/helper expanded control 127 (narrow control 139); native flag 127, offset setter
+// 151, flag/offset 151, velocity setter 132, flag/velocity 132, both setters 156, all three 156,
+// shared word flag writer 127. Original body restored; query expansion and detail retention remain.
 // Round 48 (m3 lane 11, plain): the file is already /Ob1 and 0x11b350 (an /Ob1 file) inlines the query in retail,
 // so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
 // site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540
 // bytes, query still inlined); accessor and bool together 127; the accessor returning short into a short count 129.
+// Round 69 (lane 16, fast with 0x21b0e0, which agrees with the plain check here; with 0x14dde0 alone the reduced image
+// gives 139 at 543 bytes): `__assume(skip < player_count)` before the query 127 (same code); the random draw, the
+// query and the skip loop in one forceinline helper taking the count 127 (same code); skip and player declared at
+// the top of the else arm 127 (same code); the audible test on the request's copy 170; one offset vector shared by
+// both arms 127 (same code). The query stays inlined in all five.
+// Round 290: Shared offset/outer selected-player/outer camera workspace subsets 1-7 all 127;
+// complete workspace with native signed count 129. Original declarations and count restored;
+// entry frame/copy agree, detail retention and first-player expansion remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1487,6 +1507,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // 13's forms, confirmed); the twice-indexed take alone 146 (confirmed). Diagnostic: 0x2194c0's parameters swapped
 // everywhere 49 (0x21cb90 matches); the 0x2194c0 arm's argument schedule here mirrors the 0x219370 site's, not that
 // cause.
+// Round 442: native byte selected range/full count/full voice-result domains, seven subsets
+// 92/110/125/61/101/109/126; complete graph with result initialized before pitch selection 125.
+// Original scalar domains, shared helpers and body restored; early index/flag scheduling remains.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1597,6 +1620,25 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 254: Reduced shared full request type with no/first/second/both long range counts,
 // first/second/both short counts and both byte counts 479/491/497/363/465/451/469/508. All restored.
 // Ordinary full-request/two-long-count form 370 at 1923 bytes; rejected against full 307.
+// Lane 9 round 67 (plain, from 305): the getter at each use for the range gain store 410 (the pool data
+// is reloaded between the stores; retail forms two entry addresses from one data load); a count local
+// before each pitch-range loop 365 (frame 0x128, first difference +0x39; the update branch through the
+// 0x218f50 call is retail's: track EBX, playback EDI, previous BP); with 0x21b940's bounds-pointer pitch
+// 460 (1939 bytes: the gain step's inlined add flips); with the sounds filled by memset(0xff) instead 374
+// (the 0x2000 block's stores, pool EDX, iterator count ESI and immediate NONE tests are retail's; frame
+// 0x11c; the second loop keeps index and track index in EBX/EBP and &sounds[i] in EDI where retail keeps
+// the track definition in EBP and NONE in EBX, and `active` spills); with that and the 0xa0 request 374
+// (frame 0x12c: the `active` spill is the one extra slot). The pitch sum still adds the lower bound first.
+// Round 48 (m3 lane 11, plain): NONE held in EBP across the whole update block is what pushes the playback
+// pointer out of EDI. Both pitch-range loops declaring `count = playback->pitch_range_count` in the for init
+// 365 (frame 0x128 and retail's EDX/EAX array-initialisation registers, but 20 scalar slots plus the 0x90
+// request where retail has 16 plus 0xa0, first difference +0x39); that with the 0xa0 request 368 (frame
+// differs again); that with the pitch through a bounds pointer and a named lower bound as in 0x21b940 460
+// (1939 bytes); the count in the first loop's init only 427 (1907 bytes); both counts with the gains array
+// declared before the sounds 366.
+// Round 439: entry declarations of detail reason, selected range and current ring result, all
+// seven subsets, 479 reduced each; all three plus the replacement result 479 reduced.
+// Original producers, observations, loops and entire body restored (reduced control 479, full 305).
 // Lane 18 round 17 (plain where marked, else an LTCG link of this file's generated unit with 133 objects that
 // reproduces the full listing, 304 there for 305): what retail shows is (a) a count local per pitch-range loop
 // (`for (long i = 0, count = ...; i < count;` 363; read once and reassigned 364/429), (b) the sounds cleared with
@@ -1625,6 +1667,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // differs again); that with the pitch through a bounds pointer and a named lower bound as in 0x21b940 460
 // (1939 bytes); the count in the first loop's init only 427 (1907 bytes); both counts with the gains array
 // declared before the sounds 366.
+// Round 442: exclusive activity arms, inactive/active order and active-only gain tail
+// 489/489/489 reduced; with independent per-pass counts 492/493/394; active-only tail with
+// complete request storage and both/no count snapshots 394/488. Reduced control 479;
+// active-only tail/counts plain 379 at 1924 bytes (baseline 305/1923), restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2156,10 +2202,17 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
-// score 615 (was 615): the entry and the homes through the creation call still differ, the gains
+// score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
+// padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
+// declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
+// initial result 694 reduced, 597 plain (kept); independent request state 811 reduced;
+// complete geometry output scope 716 reduced (unchanged reduced control 716, full 615).
+// At 615: the entry and the homes through the creation call still differ, the gains
 // clear uses retail's store form (retail stores [ebp+0xc4..] from eax), the energy loop keeps its
 // padding jump in retail, the track loop holds the state in EBX and the track in EBP, and the
 // impulse bits are still tested twice unmerged with the field_c_4 = 0 reload.
+// At 615: entry and homes retail's through the creation call; the gains clear (memset's
+// lea form, retail stores [ebp+0xc4..] from eax), the energy loop's padding (jmp + 8 bytes in retail), state held
 // Same causes, as an earlier note put them: entry and homes retail's through the creation call; the gains
 // clear (memset's lea form, retail stores [ebp+0xc4..] from eax), the energy loop's padding (jmp + 8 bytes in
 // retail), state held
@@ -2209,6 +2262,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // (retail swaps their dead-parameter homes 0x54/0x60); impulse states from `(byte)flags & 1` 699; memset on
 // &listener_gains 615; the seed as a ternary 653 (aligned 221 against 249, NONE moves to ESI as retail);
 // next_definition/local_2e47c8 at the loop top 698.
+// Round 442: alternate inside definition guard, combination result set by its test, creation truth
+// from the lookup result, seven subsets 716/739/725/752/743/758/749 reduced; complete truth graph
+// with alternate inside availability 791 (loses a caller). Reduced control 694, full 597.
+// Original truth producers and body restored; entry flags occupy BL instead of retail's true EBX.
 // Lane 18 round 17 (an LTCG link of this file's generated unit, 86 objects, equal to the full listing; 611 there for
 // 615): the gains cleared by four `= 0.f` stores 641 at 2516 bytes (retail's direct [ebp+0xc4] stores, but from
 // xorps/movss where retail stores eax = 0 as integers, so the clear is not a float store); memset with
@@ -2218,10 +2275,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
 {
+	bool alternate = (flags & 1) != 0;
 	bool result = state == 2;
 	if (definition_index != NONE)
 	{
-		bool alternate = (flags & 1) != 0;
 		if (looping_sound_system_available())
 		{
 			looping_sound_definition *definition = (looping_sound_definition *)g_4e3b44[definition_index & 0xffff].bytes;

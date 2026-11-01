@@ -1063,13 +1063,13 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		point3f const *origin = &data->origin;
 		vector3f *direction = &data->direction;
 		vector3f *node_direction = &data->node_direction;
-		point3f closest_point;
+		point3f surface_point;
 		vector3f surface_normal;
 		bool outside = false;
 		real scale;
 
-		function_baff0(object_index, origin, &closest_point, &surface_normal);
-		vector3d_from_points3d(origin, &closest_point, direction);
+		function_baff0(object_index, origin, &surface_point, &surface_normal);
+		vector3d_from_points3d(origin, &surface_point, direction);
 		data->distance = function_30bf0(direction);
 
 		if (object->node_index == NONE)
@@ -1089,9 +1089,9 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 			vector3d_from_points3d(origin, &node_center, node_direction);
 			function_30bf0(node_direction);
 
-			real dx = origin->x - closest_point.x;
-			real dy = origin->y - closest_point.y;
-			real dz = origin->z - closest_point.z;
+			real dx = origin->x - surface_point.x;
+			real dy = origin->y - surface_point.y;
+			real dz = origin->z - surface_point.z;
 			if (0.05f * 0.05f > dz * dz + dy * dy + dx * dx)
 			{
 				surface_normal.i = 0.0f - surface_normal.i;
@@ -1177,7 +1177,7 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		data->in_unknown_radius = definition->radius68 > data->distance;
 		if (scale > 0.0f || data->in_unknown_radius || data->unknown58 > 0.0f)
 		{
-			if (!child && function_d6f90(object_index, &closest_point, data))
+			if (!child && function_d6f90(object_index, &surface_point, data))
 				return;
 
 			if (g_4e6948->mode == 4)
@@ -1671,13 +1671,16 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
-// score 10 (was 189): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// score 10 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last), and ours pushes the
 // shield-damaged effect before `lea ebx, [edi + 8]` for function_176780 (retail: after). Tried: owner pointer in
 // a local for the function_176780 call (no change), the tail's unknownd4 handle in a long local (12).
 // Also tried: `multiplier = 1.0f` declared at the function top (228) or first in the else-if block (206, both
 // give it a stack home), declared after the in-radius subtraction (38), `multiplier = cond ? d5bc0(...) : 1.0f`
 // (156), the inverse maximum as an if/else statement (10, the same code).
+// Round 489: separate scaled damage / conditional multiplier result / named reciprocal,
+// seven subsets 30/156/160/10/30/156/160; all with named depletion expression 160.
+// Original damage phases, reciprocal expression and whole body restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2601,6 +2604,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // test (5), the team test as an early return before the enemy block (5), the enemy branch scaling `damage` in
 // place with one final return (32), `enemy = team < 0 || team >= 16 || !bfe60(...)` (73). Every `return damage`
 // becomes one block whose damage location (xmm1 or the stack home) the allocator picks; its order follows that.
+// Also tried: damage declared before the random amount (5), team read at every use (5), a positive
+// allegiance predicate (74, frame 4), enemy assigned in the valid/invalid team arms (67, frame 4), one result
+// across both engine/team paths (42, frame 0xc), both paths scaling damage in place (5), the engine product
+// computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4321,6 +4328,9 @@ dword function_db810(long object_index, long node_index)
 // Also tried: `model_index` renamed (4) and every head local renamed (4: names do not steer it), no `object`
 // local with DAMAGE_OBJECT(object_index) at each use (17), `result = lowest_rank = 0x7fffffff` (7), `lowest_rank`
 // declared first (7); the permuter (51 tries) found nothing under 4.
+// Also tried: result before the object lookup (17), rank before it (7), both before it (17), rank after the
+// model lookup (6), a signed-short rank (4), the pointer advanced in the body (4), a count-consuming while
+// with pointer advance in the body (4), read-only physics/rows/node indices (4).
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {

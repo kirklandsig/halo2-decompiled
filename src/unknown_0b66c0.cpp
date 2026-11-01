@@ -254,6 +254,22 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
 // or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
 // colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
+// Round 114 (lane 8, fast with 0xb5f10/0xb61d0): `(long)length >= start + count` 40 (same code); the shared
+// length helper returning `long` 40 (0xb61d0 then 1, `jl` for `jb`); `0 <= start && 0 < count` 40; `0x200 <
+// count` 40; `count <= (long)length - start` 34 (start arrives in EDX, 0xb5f10 6).
+// Round 67 (lane 16, fast with 0xb5f10/0xb61d0): `length - count >= start` 34 (scan counter in ECX as retail,
+// but start in EDX, walk EDI; 0xb5f10 6); that with `string + start` or `start + string` at the copy 29 each
+// (the sum goes to the string load's EAX, retail adds into start's EDI; 0xb5f10 6); `start <= length - count`
+// 34 (0xb5f10 6); `__stdcall` on the definition 40 (identical code).
+// Round 21 (lane 17, fast with 0xb5f10/0xb61d0): on the lead with nested sign tests, a named length and an early
+// one-use `source = string + start` (21: entry and colours retail's; the scan walks in ECX and counts in EDX, and the
+// add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the
+// source declared before the length 37 (0xb5f10 84); 0x11c9a0 with `string + start` after the clamp 28 (0xb5f10
+// 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
+// Round 22 (lane 18): the length helper `static inline` 40 and the copy helper `static inline` 40 (same
+// code); the scan as `string[length]` 60 (83 bytes, 0xb61d0 46); constants on the left of the sign tests 40;
+// the clamp as `count >= 0x201` 40. Retail's matched 0xb61d0 shows the same pattern: the inlined scan takes
+// the start's incoming register (EAX there) and the start moves to EDI.
 // Round 127 (lane 5, fast with 0xb5f10/0xb61d0): the count clamp as a ternary 40; `length >= start +
 // count` 40; the copy helper written out (diagnostic) 40; the scan given a cast of the string 40 (these
 // four same code); start added before the count increment 36 (0xb5f10 6).
@@ -281,11 +297,17 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Round 282: Shared end-pointer scan with a separate signed/unsigned length counter,
 // unequal/ordered end tests, original/direct source: 36/36/36/36/40/40/40/40.
 // Search sibling 19 and caller 6/96 lose their matches; helper and full body restored.
+// Round 283: bounded-helper terminator returns, native signed/unsigned ordinal and return contracts,
+// with original/direct source construction: 53/53/53/53/55/55/55/55; both matched caller and shared-
+// find sibling lost in every trial. Original helper/body/interface restored; restored control 40, both
+// siblings 0.
 // Round 21 (lane 17, fast with 0xb5f10/0xb61d0): on the lead with nested sign tests, a named length and an early
 // one-use `source = string + start` (21: entry and colours retail's; the scan walks in ECX and counts in EDX, and the
 // add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the
 // source declared before the length 37 (0xb5f10 84); 0x11c9a0 with `string + start` after the clamp 28 (0xb5f10
 // 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
+// Round 217: shared bounded-length short/word/int/unsigned-int counter, then nonzero-only
+// input advance: 40/40/40/40/58/58/60/60. Original helper, body and all matched callers restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

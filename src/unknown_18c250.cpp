@@ -681,6 +681,14 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // provider calls, output publication and complete body restored.
 // Round 267: all five other flags/owner/byte entry-publication orders and three native shared-zero
 // chains each score 279. Original initial stores restored; frame 0x8c, datum/tag homes and one spill remain.
+// Round 38 (lane 15, fast; aligned = LCS-aligned differing instructions, 207 at 279): with the
+// root-location callee matching, the spatial/cluster addresses written at each use (no pointer locals)
+// give retail's ESI datum and EBP definition at retail's 1029 bytes but frame 0x84, 288 (aligned 236; the
+// extra dword is the constant 1 kept in EBX from the flag test and spilled, where retail keeps the object
+// in EBX); on that form: the object type read into a local 288; the flag test through TEST_FIELD_BIT 288;
+// the object pointer read before the type test 307 (frame 0x80 as retail, but case 2 is then laid out
+// before case 3 and the case-3 failure byte is no longer stored). The object pointer read early on the
+// original body 309. Original body restored.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

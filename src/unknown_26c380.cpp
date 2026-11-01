@@ -9,6 +9,7 @@
 #include "unknown_1fa590.h"
 #include "unknown_26c380.h"
 #include "path.h"
+#include "vector_products.h"
 
 bool function_270600(long node_index, s_path_location const *location);
 
@@ -31,14 +32,6 @@ static inline void vector2d_from_points3d(point3f const *p0, point3f const *p1, 
 {
 	out->i = p1->x - p0->x;
 	out->j = p1->y - p0->y;
-}
-
-static inline vector3f *cross3f(vector3f const *a, vector3f const *b, vector3f *result)
-{
-	result->i = b->k * a->j - a->k * b->j;
-	result->j = b->i * a->k - b->k * a->i;
-	result->k = b->j * a->i - b->i * a->j;
-	return result;
 }
 
 static inline real magnitude3d(vector3f const *v)
@@ -133,7 +126,8 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 	return success;
 }
 
-// score 443 (was 443): frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// score 410 (was 419): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
 // and EDI, and retail keeps a byte local at [esp+0xe] where ours has a long zero at
@@ -212,6 +206,24 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 259: native returned cross vector, component/aggregate construction, mutable/const
 // normal and explicit/aggregate planar initialization, eight combinations 597 each.
 // All original helper contracts, normal storage and executable source restored.
+// Round 65 (lane 16): the edge-loop first flag as bool (it was a word) 443 -> 419 kept (1605 bytes; byte first
+// the same code); the file's private cross3f copy replaced by the shared vector_products.h cross3f 443 (identical
+// code, kept), shared cross3f_staged 443; last_distance declared with the entry locals 442, on the bool form 418
+// (one point, not kept); on the bool form count as long 419, success as bool 428 (1568 bytes); a redundant
+// `success = false;` before the final tail (retail re-stores its memory byte there; diagnostic) 452. Retail keeps
+// success, first and hit as memory bytes, pathfinding in EBP and the zero in EBX.
+// On the bool form: the one-use edge-index and sector-index locals read in place 419 each and together
+// (identical code, kept); the blocked-flag and vertex one-use locals read in place 429 each, all four 429
+// (1611 bytes); forward as bool 526 (1690 bytes).
+// Round 67 (lane 16, fast; kept forms confirmed plain): retail compares the traversal count as a word (`cmp word
+// ptr [esp+0x18], 0` and `0xc8`, then `inc dword ptr`), so the count is a short: 419 -> 412 kept; the entry
+// result stores in retail's order (FLT_MAX, blocked, sector, edge, distance, unknown1c) 412 -> 410 kept. On
+// those: the count declared at the top `= 0` 429; `bool first = true` at its declaration (retail stores it at
+// the top of each sector iteration) 412; the line normal and distance as a two-member plane (n, d) 454 (1651
+// bytes, frame 0x64); the final tail's stores in retail's order (blocked, edge, sector, distance) 410 and tail
+// C's (blocked, edge, distance) 410 (no gain); `bool success` 432 (1568 bytes); `iterator.forward` read at
+// each use 526 (1696 bytes, 0x26ccb0 209). Retail keeps `hit` in the dead pathfinding parameter slot (+0x74),
+// reaches the hit block only from the edge loop's break, and returns constants from separate tails.
 // Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
 // planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
 // Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
@@ -227,9 +239,9 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 
 	result->unknown20 = 3.4028235e38f;
 	result->blocked = false;
+	result->sector_index = NONE;
 	result->edge_index = (word)NONE;
 	result->distance = distance;
-	result->sector_index = NONE;
 	result->unknown1c = false;
 	real last_distance = -0.1f;
 	if (pathfinding && sector_index != target_sector_index && sector_index >= 0 && sector_index < pathfinding->node_count)
@@ -239,7 +251,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 		cross3f(g_4687b0, direction, &normal);
 		if (magnitude3d(&normal) > 1e-5)
 		{
-			int count;
+			short count;
 			count = 0;
 			vector2f line_normal;
 			real line_distance;
@@ -254,7 +266,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 				long previous_sector_index = current_sector_index;
 				s_pathfinding_node const *sector;
 				s_edge_iterator iterator;
-				word first;
+				bool first;
 				bool hit = false;
 				real distance1;
 				point3f const *point1;
@@ -315,8 +327,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 						point1 = &pathfinding->vertices[iterator.vertex];
 					}
 					distance1 = dot_product2d(point1, &line_normal) - line_distance;
-					word tmp2 = iterator.edge_index;
-					hit = function_26c380(origin, pathfinding, forward, current_sector_index, tmp2,
+					hit = function_26c380(origin, pathfinding, forward, current_sector_index, iterator.edge_index,
 						direction, &next_sector_index, distance0, distance1, point0, point1, result);
 					if (hit)
 					{
@@ -337,8 +348,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					last_distance = result->distance;
 					if (result->distance - distance > 0.0001)
 					{
-						long tmp0 = result->sector_index;
-						if (target_sector_index != NONE && target_sector_index != tmp0)
+						if (target_sector_index != NONE && target_sector_index != result->sector_index)
 						{
 							if (next_sector_index == target_sector_index && result->distance - distance < 0.01)
 							{
@@ -647,6 +657,10 @@ bool function_210690(short output_index, point3f const *point, point3f *out);
 // in contributor code). With this order: point read directly 35, plus start first 2. With this
 // signature: start and result first 37; that through one `point3f const *` read of `&point` 37;
 // point read directly 28 here but five matched callers lose their argument setup.
+// Round 52 (fast only, not kept): an unused last parameter (the pathfinding data, which 0x26d0e0 receives as its
+// unused third argument and 0x26d570 computes before its call) is dropped by LTCG: every caller's code unchanged,
+// 28. Kept only with every call passing it: BLOCKED-BY 0x270400 (two call lines in contributor code); a
+// defaulted parameter would avoid them but needs a ruling. The plain check hit a Wine hang; body restored.
 // @retail 0x26d100
 long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
 {
