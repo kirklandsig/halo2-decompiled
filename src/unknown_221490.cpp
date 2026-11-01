@@ -657,6 +657,9 @@ bool sound_driver_voice_create_buffer(
 // Round 285: bounded short/word/byte/signed-byte first-pair loops, then both
 // pair arrays with the real spatial-bin table 234/234/234/234/234/234/234/234. Original
 // complete body restored; spatial/play split and zero/input scheduling remain.
+// Round 333: Complementary nonspatial bool/byte, optional play normal/complementary
+// 154/156/154/156; nonspatial-first 152/155/152/155. Caller preserved; spatial/play and descriptor
+// carriers remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

@@ -340,6 +340,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 494: one native restart mask at all policy sites, with disposal/restart operand
 // priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
 // Mask forms shorten away from retail and regress; all original policy tests and body restored.
+// Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
+// 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
+// frame/timing and original shared fraction restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

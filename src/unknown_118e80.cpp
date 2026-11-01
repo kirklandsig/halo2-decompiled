@@ -1095,6 +1095,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
 // with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
 // homes, word loads and zero allocation remain.
+// Round 333: Complete selected snapshot memmove with first/second signed-word domains
+// 333/334/334/339; native short-count counterparts 333/334/334/339. Query/sweep and selected homes
+// remain; original body restored.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {

@@ -3640,7 +3640,8 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
-// score 101 (was 101): frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
+// score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
+// Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
 // member-state lea, before the timeout call (BLOCKED-BY 0x769a0, held file; same spill in 0x5e7f0),
 // which shifts everything after it; announcement id/member scheduling also differs.
@@ -3720,6 +3721,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
 // word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
 // identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
+// Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
+// each with original reply order or member before id: 101/94/101/94/101/94/101/94.
+// Seven-point gain rejected; original executable source restored.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {

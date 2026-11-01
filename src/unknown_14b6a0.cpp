@@ -359,6 +359,12 @@ void function_14bac0()
 // Round 219: common reset exit with native recipient, shared probe/bounds and real relocation/destination
 // buffers, masks 0..7: 222/228/233/229/222/228/233/229. Original exit, buffers and both scans
 // restored; frame, point/recipient sharing and readiness homes remain.
+// Round 334: first +0xf reserves 0x50 versus 0x3c; point/recipient sharing,
+// readiness homes and scalar spill order remain. Plain ordered traversal of the two
+// adjacent marker indices, long/short counter and separate/shared probe-bounds
+// workspace, 311/305/311/305; with native result-tested recipients
+// 304/302/307/305. Original separate probes, returned relocation output,
+// selected unit, observations and both player traversals restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
