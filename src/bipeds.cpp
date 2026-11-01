@@ -1305,6 +1305,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // radius/height/center/eye 610, center/height/radius/eye 610; the root distance through a `length` local (retail
 // stores the root to its own x87 temp, [esp+0x38], before the > 0 select) as a ternary 616 (frame still 0xf8),
 // as `distance = 0; if (length > 0) distance = length;` 611 (2828 bytes), with dy*dy + dx*dx 616.
+// Round 339: Full-width airborne result with paired facing setters, existing target-vector producer
+// and material result in both branches, eight subsets 639/651/639/651/692/690/692/690.
+// Original result types, producers and body restored; frame and workspace homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

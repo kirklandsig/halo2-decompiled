@@ -637,6 +637,9 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 // Also tried: the d5b60 result typed as s_damage_info with a named +0xb0 effect (6), the flag set through a fresh
 // DAMAGE_OBJECT lookup (62, reloads the pool), the two stores as side effects of ba7f0's first argument (6, the
 // same bytes: the order is the scheduler's), `maximum > 0 && info` (14), a nested `if (info)` (6).
+// Round 339: byte/word setters and native byte/word masks 31/0/28/6; CRT clear 28/11/28/11.
+// Word setter matches at 124 bytes but loses an outside reload pair (2); include positions
+// and field-pointer forms keep that loss. Original body and includes restored.
 // @retail 0xd6a70
 void function_d6a70(long object_index)
 {
@@ -796,6 +799,9 @@ void __stdcall function_d6bc0(long object_index)
 // return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
 // predicate and current/entry lifetime: four comparison forms 88, four conditional forms 91. Original body
 // restored; shared true epilogue and stack parameter convention remain coupled.
+// Round 339: True-default result with failure-owned gates, player early-return/assignment and
+// direct/conditional team result 80/73/88/71; entry result 78/96/88/92.
+// Original false-default body restored; shared true exit and parameter homes remain coupled.
 // @retail 0xd72e0
 bool function_d72e0(long object_index, s_type_1e6529 const *data)
 {
@@ -1985,6 +1991,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // (accumulator in EAX, old graph); region element pointer 5; one combined guard reading the entry at each
 // use 201 (880 bytes); short region index 201; `!= NULL` guard 5; player test joined into the region test 5;
 // a 600 s permuter run, 12 tries, none below 5.
+// Round 339: Entry declaration swap 41; default-owned reciprocal 196; separate lower region gate 5,
+// separate effect gate 5, coordinated info/object/ordinal/scale names 5; declarations/default 215;
+// both gates/names 5; all forms 215. Original body restored; scheduling remains.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
