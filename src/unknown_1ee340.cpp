@@ -290,6 +290,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 267: Native producer order (O origin, D direction, S start, A/B first/second edge):
 // OBADS/OBDAS/OBDSA/ODBAS/ODBSA/DOBAS/DOBSA/OADBS 192/192/191/191/191/191/191/193.
 // One-point forms restored with every original producer; frame 0x84 and origin/edge homes remain.
+// Round 269: Fraction numerator/reciprocal/both/reversed producer order, mutable and const,
+// 192 each in eight forms. Frame 0x84 and retained-origin/edge-I homes remain. Original
+// fraction expression, all geometry helpers and complete body restored.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
