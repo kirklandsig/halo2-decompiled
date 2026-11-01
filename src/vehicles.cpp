@@ -3338,7 +3338,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
-// score 154 (was 154): Staged cross and native up receiver kept; projection/trig schedules remain.
+// score 145 (was 154): Staged cross, native up receiver and complete rotation setters kept; projection/trig schedules remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
 // coordinated external force-inline 326, with wide angle 359; all original contracts restored.
@@ -3381,6 +3381,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // sine keeps the state slot where retail's takes the result slot).
 // Round 44 (lane 11): sine declared before cosine 154; the axis declared first 154; plain cross3f for the flip axis
 // 154 (all identical code); `double angle` 130 at 786 bytes with either sine/cosine order (exact-only, not kept).
+// Round 226: complete rotated forward/up through vector3f_assign 145 (827 bytes), plain confirmed;
+// input setters 230, both setter groups 215, enclosing axis 154, axis with inputs/rotations/both
+// 230/145/215, all vector setters 220. Original grouping, precision and all row expressions retained.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3429,18 +3432,20 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 			axis.i = 0.0f - result->forward.i;
 			axis.j = 0.0f - result->forward.j;
 			axis.k = 0.0f - result->forward.k;
-			result->forward.i = cosine * result->forward.i + sine * result->up.i;
-			result->forward.j = sine * result->up.j + cosine * result->forward.j;
-			result->forward.k = sine * result->up.k + cosine * result->forward.k;
+			vector3f_assign(&result->forward,
+				cosine * result->forward.i + sine * result->up.i,
+				sine * result->up.j + cosine * result->forward.j,
+				sine * result->up.k + cosine * result->forward.k);
 			goto rotate_up;
 		}
 		cosine = (real)cos(angle);
 		cross3f_staged(&result->forward, &result->up, &axis);
 		sine = (real)sin(angle);
 rotate_up:
-		result->up.i = axis.i * sine + result->up.i * cosine;
-		result->up.j = result->up.j * cosine + axis.j * sine;
-		result->up.k = result->up.k * cosine + axis.k * sine;
+		vector3f_assign(&result->up,
+			axis.i * sine + result->up.i * cosine,
+			result->up.j * cosine + axis.j * sine,
+			result->up.k * cosine + axis.k * sine);
 		cross3f_staged(&result->up, &result->forward, &result->left);
 	}
 	else
