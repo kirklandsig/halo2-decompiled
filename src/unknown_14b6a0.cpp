@@ -296,6 +296,9 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

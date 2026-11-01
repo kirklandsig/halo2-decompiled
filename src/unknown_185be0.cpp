@@ -298,6 +298,10 @@ union s_185be7
 // Round 265: library range / paired axis-duration / paired response-weight-angle
 // selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
 // upper-first nesting 1320. Native frame, original custom clamps and full body restored.
+// Round 270: Unsigned controlled/parent/attached datum carriers, seven subsets 731 each;
+// all four datum carriers 731. Minimum/range/fraction scalar identities on the shared-exponent
+// graph, seven subsets 731 each; exponent identity too 731. Original carriers, names and full
+// body restored; control-root/NONE, settings/zero homes and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

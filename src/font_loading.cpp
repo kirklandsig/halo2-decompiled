@@ -555,6 +555,9 @@ static inline word font_character_pixel(long alpha, long color)
 // pointer-convention changes regress. Alpha width, literal assembly and run-two reuse remain.
 // Round 245: plain two-byte literal parser, word/dword accumulator, with full parity and
 // native word fill interactions 85/85/204/204/107/107/208/208. Original helper and decoder restored.
+// Round 270: Complete branch/case-owned run production with long/word run and pixel,
+// existing fill boundary 92/92/164/164; common post-switch fill 149/149/137/137.
+// Original run producer, switch, pixel helper and decoder restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
