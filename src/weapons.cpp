@@ -2009,6 +2009,12 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // taken`, `count <= available`: same code; if-form slot/magazine take, named needed, long unloaded, early false
 // return, the other eleven orders of weapon/definition/available/result and 1-8 unused locals at the top or before the
 // unit: none closer.
+// Round 35 (fast): a pool local declared in the holder block for the slot lookups, the unit through the
+// macro 170 (586 bytes; 0x102b90 then differs), the unit through the local too 124 (same code: the local
+// is folded back into per-slot global reloads); the slot lookups through the existing weapon_get_102e10
+// 124, every weapon lookup through it 124, a two-use other-weapon local from it with `continue` 124.
+// Ours keeps the count in EDX through the slots (its stack home reused for the unit) where retail rereads
+// it from the stack and keeps the pool in EBP.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

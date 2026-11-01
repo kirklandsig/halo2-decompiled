@@ -2146,6 +2146,10 @@ bool function_1e11b0(long actor_index, bool active);
 // parameter takes EBP (loaded from the stack, so retail's stack convention follows from EBP) and the loop gets
 // retail's EBX/EDI/ESI; with the squad live, only a parameter use ahead of the 0x1e11b0 call each pass gives it a
 // register (then EBX, passed in EBX) and splits the squad pointer as retail does; two uses after the call do not.
+// Round 37 (m3 lane 14, fast), on 0x203d70's inline-step loop with the word flag store and full-width
+// return (71, 191 bytes): iterator declared at function scope 71; actor index declared at function scope
+// 71; loop pointer declared in the while condition 71; squad_get(squad_index) at every squad use 92 (224);
+// early return for the tick test 89 (220).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

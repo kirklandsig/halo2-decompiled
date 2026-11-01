@@ -337,6 +337,13 @@ void function_07b3e0(void)
 // record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
 // its end 125 (188 bytes). Lead unchanged: retail's second pool register is the LTCG inline of the real
 // 0x16bb70/0x16bc00, which their file's /Ob1 keeps out of line here (a flags decision).
+// Lane 14 r36 (fast): the second pool register is a second read of the global, not a copy: `scan = g_4cf8d8`
+// and `pool = g_4cf8d8` read separately give retail's `mov ebx, [g]` ... `mov ebp, ebx` and loop pad, 11 at
+// 131 bytes (a copy of the first local instead, 60, coalesces); with the iterator's pool for the datum and the
+// separate read for the scan 13; the iterator form's scan with a second read for data_datum_index 70 (147
+// bytes); the iterator form aggregate-initialised 58, with the datum named in the while condition 58, with an
+// early return 58. Retail's form needs the iterator step's dead datum `add` together with the two reads,
+// which only the step inlined at link time from its own file gives (unknown_16b570.cpp is /Ob1).
 // @retail 0x7b430
 void function_07b430(void)
 {

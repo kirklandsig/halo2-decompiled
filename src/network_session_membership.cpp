@@ -788,6 +788,9 @@ union s_60403
 // (1513 bytes); the member loop reading new_to_old[i] at each use in place of the element pointer 149 (same
 // code). In every form ours gives current EBX and previous EBP at entry (retail the reverse), and with them
 // the swapped count homes (retail previous count +0x18, current +0x1c) and the member loop's register roles.
+// Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
+// count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
+// loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

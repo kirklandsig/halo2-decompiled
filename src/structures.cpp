@@ -864,6 +864,13 @@ done:
 // `ret 0xc`, matched caller 0xd2a50 56), plus `(void)&parameter` 126 (0xd2a50 56); the parameter read in
 // the retry test 124 (471 bytes, 0xd2a50 kept; LTCG keeps the read); the two exclusion tests as one
 // nested if 125 (same code), with the object branch first 130.
+// Round 34 (m3 lane 14, fast): the exclusion flag homed in the unread bool parameter (result a local) as an &&
+// expression or if-set 126/126 (LTCG drops the parameter, `ret 0xc`, 0xd2a50 lost; flag still threaded); the
+// policy through the existing `function_10a0b0(object_index) != 2` 162 (450 bytes, 0xd2a50 lost); `if
+// (!excluded) { if (!0xbf9a0) requery; else 0x14a8e0; }` 130 at 470 bytes (0x14a8e0 laid out last as retail,
+// but the structure lookup call is duplicated where retail shares one between the no-object and requery
+// paths); both 151; one shared structure lookup under a `found` flag, model query inverted or not 163/164 (448
+// bytes, 0xd2a50 lost).
 // Round 185 (lane 3, fast): the grouped state replaced by plain flags/attempts/collision locals 157
 // (456 bytes, matched caller 0xd2a50 97); one 0x14ac60 call reached through a `found` flag 164 (0xd2a50
 // 72); a compiled-out `do {} while (false);` at the requery join 125 (same code: VC drops it before

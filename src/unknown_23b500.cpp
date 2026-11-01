@@ -177,6 +177,11 @@ struct s_spawn_scenario_23aea0
 // (not a numbering tie); one type loop through `globals->types[type - 2]` real fields 105 (same code), dword
 // fields 254 (278 bytes, not unrolled); the nested loops through `globals->types[i * 6 + j]` dword fields 105;
 // a `s_spawn_influence_type *weights` element pointer 252 (278), an element reference 252 (278).
+// Round 37 (m3 lane 14, fast): the override type read once into a local 122 (367 bytes; retail re-reads
+// it per store); the inner loop over type (`type = i * 6 + 2; type < i * 6 + 8`) 226 (313); one
+// function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
+// nested loops through a named source record pointer 123. No other retail function uses this
+// integer-offset store idiom, so no matched sibling shows its form.
 // @retail 0x23aea0
 void function_23aea0()
 {

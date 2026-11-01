@@ -1870,6 +1870,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Left: retail keeps direction i/j/k in xmm3/xmm2/xmm1 from the relative dot to the facing dot (ours folds
 // each read; dot3f spellings and reordered terms compile the same), established/visible slot order (follows
 // retail's extra established re-test on the hidden path) and the players loop's alignment jump.
+// Round 33 (lane 14, plain; --fast builds this function differently, 2880 B and 199, with a callee caveat):
+// the second player search with a long counter (retail's `cmp eax, 2` pointer loop) 263 (2848 B, aligned
+// 116 -> 114); that plus the player pointer set to NULL before the first search 403; plus best_level and
+// strongest declared before the memset 260 (aligned 112); plus the direction through vector3d_from_points3d
+// 266; plus established/visible renamed 260 (same code: spill slots). The length gap is the scoring block:
+// retail loads direction j/k before the relative test and i in both arms, keeps them for the facing dot,
+// stores visible = false straight to its byte and threads the established test into the not-visible path.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

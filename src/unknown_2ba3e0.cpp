@@ -490,6 +490,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // declared first 10. Compile-only screen of the tail (~900 forms): an expression sum in the maximum
 // branch always turns the minimum's j/k scale sequential; k read first with i,j,k statements gives the
 // whole tail, but no vector-squared body with it keeps 0x2b98b0 (its first normalize needs k,i,j).
+// Round 33 (lane 14): the back-edge reloads follow the prologue order in ours (first, next, definition)
+// and run reversed in retail. Loop over the index parameter with the head in a local 79 (1524 bytes);
+// index/head names 10 (same code); change zeroed i first 19; change declared at the loop top 10 (same
+// code); unsigned index 10 (same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

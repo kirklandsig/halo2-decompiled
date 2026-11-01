@@ -111,6 +111,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // before the token array and counters 129; the done flag set right after the wait 154 (766 bytes); the
 // counters declared and zeroed at the block top 127 (zeroed before the read call); with the token array too
 // 221 (756 bytes); NULL first token with the loop after the success block 127 (EBP still pushed at the loop).
+// Round 33 (lane 14, fast): the token loop after the success test with a NULL first token at block scope 127
+// (the NULL path is threaded to the end, EBP still saved at the loop guard); the success test as one goto to
+// the block's exit 128; next declared at the block top 128 (same code); counters declared before the token
+// array 126 (retail's zero-store order: counters, first, last element); with 0x1a1480's size and success
+// parameters swapped (retail's ebx/eax/ecx setup) 126. Diagnostic only (reverted at once): the three read
+// outputs volatile 102, size then takes retail's lowest home and three-read clamp, so the clamp and the size
+// home need a volatile size, a form the rules forbid; EBP's late save is independent of it.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

@@ -1918,6 +1918,12 @@ struct s_filter_rows
 // Round 40: same-file forceinline/inline helper taking the slot pointer 17/17,
 // with only the 0x1c590 call 17; `__forceinline` declaration of 0x1cc30 at file
 // or block scope with function_1cc30(12) 28/28 (not inlined).
+// Round 35 (fast): a slot pointer read for 0x1c590 and again for an ignored 0x1cb70 call 25 (the call
+// stays; the first read still folds to +0x64 and the add is built apart); the same with 0x1cb70's result
+// in an unused local 17 (the call is dropped at link time, the read still folds); `function_1cc30(12)`
+// here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
+// an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
+// inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {

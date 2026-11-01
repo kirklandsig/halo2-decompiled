@@ -461,6 +461,11 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // the margin 400 (1418, caller 0x270930 lost at 260); that on the short count with the type and flag 361
 // (1374, aligned 175), with the type alone 387 (0x270930 lost). Retail also reads the start depth through
 // a `lea` node address, keeps previous in EDI and stores the start/end conversion copies in swapped homes.
+// Round 37 (m3 lane 14, fast, positional/aligned against 315/273): the short link count with the node
+// type named once 360/411 (1395 bytes); that with `special` false then set by an if 351/266 (1388), on the
+// long count 365/272 (1406); `special` declared false at the else arm's start on those 351/266 and 365/272;
+// the short count with only that early `special` 368/216 (1368: retail's special sequence, best aligned);
+// that with the link count incremented after the copy 369/214.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

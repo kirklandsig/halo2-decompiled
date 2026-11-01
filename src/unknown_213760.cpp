@@ -1312,6 +1312,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `written` initialised by assignment 114; a HANDLE local for the close test with a member-built close handle
 // 168, a member-built close handle tested in place 168 (both 946 bytes, frame slots shift). A handle local
 // before the resize moves its handle to EAX; one only at the write lets VC drop the close's copy.
+// Round 35 (fast), on round 56's 6 form (rebuilt from its saved file: 6, the other seven functions of the
+// file match): the size query and write handles as locals with the resize handle passed directly 6 (the
+// same six: the resize handle still takes EAX); the resize handle local declared before the remove-later
+// test 15; declared right after `bool resized;` 6; the write handle local at the top of the resized block
+// 6; declared before `written` 121 (917 bytes). Left: the resize handle EAX for ECX, the header address
+// ECX for EDX and the close copy EDX for ECX.
 // @retail 0x213970
 void function_213970(void)
 {

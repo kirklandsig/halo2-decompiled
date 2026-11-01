@@ -124,6 +124,12 @@ void function_213970(void);
 // 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
 // definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
 // src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
+// Round 33 (lane 14, fast; still BLOCKED-BY the separate global definitions): progress record / file handle
+// reset by value-initialized assignment 171/165; constant-first version test 131 (same code); every scalar
+// reset before the five clears 131 (aligned 44 against 35); progress record and handle both by memset 145.
+// Diagnostic, size pragma removed 158: the preference tail is then retail's (version loaded to EAX, NONE
+// stores after the clears), but the language load is hoisted into ESI above the clears and ESI/EDI are
+// pushed at entry, where retail pushes EDI around its two block clears only and ESI after the language join.
 // Round 40 (lane 11, fast): without the size pragma (diagnostic) 158: the shape after the clears is retail's
 // (`or eax, -1`, the NONE stores among the language test, inlined getter calls) but the language read is
 // hoisted above the clears into ESI, where retail reads it into EAX after them and copies it to ESI only
