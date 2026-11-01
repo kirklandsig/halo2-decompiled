@@ -333,6 +333,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
 // with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
 // frame 0x30 versus 0x2c and the second transform spill remain.
+// Round 25 (lane 18, fast): orthographic arm first 215 (repeat); the direct-inverse graph with b.y first
+// re-measured 206 (b.x/b.y in retail's xmm7/xmm6, but the second transform's x and z take xmm4/xmm7 where
+// retail has xmm7/xmm4, so ours spills both and retail only z, into the scale slot); on it the helper reading
+// z, x, y 213; the displaced point as a copy plus compound adds 303; the orthographic arm first 205.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

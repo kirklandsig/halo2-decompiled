@@ -161,6 +161,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // four differences 534; `fabsf` on all six 532; an inline previous/current compare helper on all six 617, on the
 // four differences 585 (one call stays out of line). Diagnostic only (flags are the user's call): the file without
 // /Op 723 (1728 bytes: inline fabs without rounding, but `fld input; fsub [stored]` and no xmm bounce).
+// Round 25 (lane 18): the voice sends as `switch (mode) { case 1: add; case 0: add; }` (case 1 falling into
+// case 0) 542 plain (not kept, three under the bar); the gain compare with a `(real)` cast 545 (same code); with
+// the double fabs called directly, a CRT call (547 fast). Retail writes every flag-bit test (shr/and r8, 1) into
+// one stack byte (+0xe, shared with the direct flag) and keeps 0 in EBP for the voice branch's zero arguments;
+// a shared function-scope bool 549 fast and a set helper with a bool parameter 545 fast both stay in registers.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
