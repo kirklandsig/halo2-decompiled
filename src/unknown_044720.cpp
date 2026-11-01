@@ -292,7 +292,8 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
         }
     }
 }
-// score 182 (was 182): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
+// score 182 (was 182): Frame 0x1094 agrees; entry/index spill and center/query/bound homes remain.
+// Earlier: Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
 // retail also keeps a separate center point (+0x30) beside the sphere query (+0x20).
 // Round 81 (fast): a `visible_word` pointer for the test and both marks 190 (same code); one marking
 // site after the bound branch with `if (!(r * r >= d)) continue;` 210 (the marks become retail's single
@@ -435,6 +436,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 330: Native entry section/instance-ordinal/instance-bit views in seven nonempty
 // subsets all 182; complete views with read-only selector input 182. Actual entry type,
 // helper and complete body restored; entry/index spill and point/query homes remain.
+// Round 332: Masks computed at each use with word cache, filled count and inner matrix scope, subsets
+// 0-7: 215/226/202/217/215/226/202/217.
+// Original executable source restored; no eligible gain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
