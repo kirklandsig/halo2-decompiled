@@ -344,6 +344,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
+// `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
+// size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
 // score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // the retry ordinal as a function-scope local 239 (MiniMax E run 12; under the keep bar, restored).
 // Round 231: shared retry helper/native byte block/both/shared audio arrays/helper-arrays/byte-

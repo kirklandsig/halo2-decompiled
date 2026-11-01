@@ -80,6 +80,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
+// MiniMax S (10-31): no new form, no lower score. The frame agrees (0x64), but retail parks its loop
+// index and point index in memory (frame 0x2c and 0x80) where ours keeps them in registers, its three
+// NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
+// and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
 // score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Earlier: frame 0x68/0x64, induction/endpoint homes and x87 scheduling differ.
 // Earlier: table-pointer roles now agree; frame 0x68/0x64, outer-loop reload placement, inner-loop registers and x87 square order remain.
