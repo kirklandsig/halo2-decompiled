@@ -278,6 +278,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (long)text + start`, and with the existing 0x11c9a0 for the length 27 each (0xb5f10 6 each). Hybrids:
 // the text read before `count++` 31 (0xb5f10 6); nested length local, text read before the compare and
 // `start += (long)text` after the clamp 40 (0xb5f10 35); the first lead with a named `end` 21 (same code).
+// Round 283: bounded-helper terminator returns, native signed/unsigned ordinal and return contracts,
+// with original/direct source construction: 53/53/53/53/55/55/55/55; both matched caller and shared-
+// find sibling lost in every trial. Original helper/body/interface restored; restored control 40, both
+// siblings 0.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

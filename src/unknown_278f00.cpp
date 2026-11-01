@@ -184,6 +184,9 @@ bool function_a7670(long object_index);
 // instead of `continue` 181; the body count read before the flag is cleared 181; the index stepped back
 // after the flag store 181; the index declared outside its loop 181 (all same code); the retry counts
 // declared ahead of the flag test 186 (966 bytes).
+// Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
+// all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
+// selector/list/count homes, BL admission and indexed cleanup remain.
 // @retail 0x278f00
 void function_278f00()
 {

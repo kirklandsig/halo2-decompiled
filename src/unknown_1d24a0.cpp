@@ -227,6 +227,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Original kernels and full body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
 // linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 283: reverse scale short/long/signed-byte 902/929/902; reverse short scale with reverse
+// add/subtract/both 1086/1060/1158; with forward add/subtract loops 1157; all reverse long 1239.
+// Original producers, accepted angular consumers and full body restored; frame and entry homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

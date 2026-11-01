@@ -177,6 +177,9 @@ void function_213970(void);
 // test through a named `changed` bool 131; the two requests cleared one memset each 144 (237 bytes); the enable flag
 // stored after the last NONE store 131; the copies cleared before the files 131. Still BLOCKED-BY the block
 // definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
+// Round 283: previous language/version/both at their comparisons, mutable/immutable, all six 131; both
+// immutable before query 141; both with per-use requested language 139. Exact-only captures restored;
+// protected two-block allocation and original body retained.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
