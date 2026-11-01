@@ -524,6 +524,12 @@ long function_243b10(long key_b, bool team_only, long *second)
 // count stays in ECX and the index in EAX where retail keeps the count in EAX and spills the index);
 // sqrtf 173. The table local at the loop top or in the marker block (169, 717 B) hoists the table to
 // EDI and moves the slot to EBP from the stack, so it is not retail's allocation either.
+// Round 126 (m3 lane 6, fast with 0x1e5bb0/0x1e2a90/0x29b00/0x19ec40 in the image; alone it builds 203 at 690 B),
+// all on the accumulated distance (aligned difference 58 -> 53, still 173): the inner index declared in its for 173,
+// at the marker block's top 173; with the y-first copy helper function_2417a1 for the marker position 172, plus the
+// index in the for 172 or at the block top 172; the table local at the loop top with the select's else arm through
+// the global 169 (717 B, caller 0x240160 46). Retail's count stays in EAX and is stored straight to its slot; the
+// spilled inner index and the EBP table remain.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1197,6 +1203,10 @@ void c_game_engine_markers::v21(long object_index)
 // against 26), the initialized event in a named pointer 40 (same code), the cause player read from the unit
 // at both uses 40 (same code); the same three on the team at each call 119 (harness 109, 430 bytes each). The
 // matched sibling v24 holds the options pointer in EDX from entry as the team-at-each-call form does here.
+// Round 126 (m3 lane 6, fast): on the per-arm team (119; the options pointer then held in EDX from entry, so the
+// players' data load folds): the type test's result in a short local 119, the players' data named once and indexed
+// by the absolute index 120, the event block reading the unit's player index at both uses 119, a char team per arm
+// 119; on the kept form the players' data local alone 87.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
