@@ -472,6 +472,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);
 // `found` declared before the default body 119. The dot written k/j/i up-first, forward-first, all up-first or as
 // i, j, k terms: same code (env). A /Gd compile loads the object index into EAX and the entry index into EBP.
+// Round 150 (0xb7060 checked): center through carrier_vector_from_havok 149 (0xb7060 11; entry pointer EBP,
+// component EBX); with a statement-sum dot k, j, i 151; the failure stores as one chained assignment 112 (same
+// code), with the center change 149; the center change with the search's body pointer declared before the outer
+// loop 149. Compile-only: 1-32 unused-local probes before the axis pointers or after the inverse never change
+// the dot's k, i, j term order (only its registers).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

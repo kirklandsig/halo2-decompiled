@@ -32,6 +32,25 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// Round 150 lead (best 2, not kept: needs a match): forward's k preload follows how later code reads
+// forward.k. One read of the matrix field `local_1[0].forward.k` in the projection's k row (or the dot's k
+// term), with the i/j rows through `forward`, gives retail's whole forward block (j, i preloaded, `mulss
+// xmm6, [k]`, skip-path k reload, sum j, i, k). On it, one helper for all four with the squared length in
+// its own local (`real squared = dot3f(v, v); real length = sqrt(squared);`) gives every sum and the
+// projection retail's order: 2 at 922 bytes (plain), left only the dot's i term (retail `forward.i * up.i`,
+// ours up first). Not kept: the k row read through the field while i/j use the pointer is a mixed read.
+// Real: k-row field read alone 64 (926 bytes); with a k,j,i statement-sum second helper for up/left 11
+// (923); the squared-length helper alone 154. Compile-only on the 2-form: all six dot term orders x
+// operand orders, statement-sum dots, the k field read in the dot instead, 1-32 unused-local probes before
+// forward/up/dot/projection/cross (move only the term order), renamed pointers, the helper's scale order
+// and operand order (48), else/`>=`/division/sqrtf/`*=`/vector3f_scale bodies, the cross written out or
+// cross3f_staged, the pointer taken after the normalization: the i term stays up-first every time.
+// Direct field reads of forward.i/j anywhere in the block (dot, projection or cross) drop their preloads.
+// A 600 s permuter run on the 2-form got 8 tries (machine load), nothing better. Real on the 2-form:
+// helper `inline` 2, dot3f(up, forward) 2, the field read in the dot's k term instead 2, forward and up in
+// one declaration 2, a left pointer for the cross and its normalization 4 (compile-only). A field read
+// anywhere in the function (even a dead one in another branch) drops that field's preload; a read of
+// another array element's forward.k does nothing.
 // Earlier: magnitude order, reciprocal/SSE carriers and projection schedule remain.
 // Retail sums the forward magnitude j,i,k (k loaded late, reloaded on the short-vector path) and the
 // other three k,j,i; in this /Ob1 file every sum compiles i,j,k whatever the source order (dot3f,

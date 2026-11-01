@@ -435,6 +435,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 264: False-first single result, library movement minimum/two-use location index/
 // explicit marker-result masks 0..7 281/274/281/274/271/271/271/271. The first restores frame
 // 0x162c/result +0xf but regresses; original complete body and request producers restored.
+// Round 150: 0x25d690 called directly in the 0x1ac610 argument (no inline wrapper) 113 (same code: the call
+// still follows the first two pushes); has_markers typed byte 113 (same code); sibling result shape 182, with
+// has_markers byte 182, with the missing-prop path returning false directly 287 (folds); the first two state
+// clears as one chained assignment 115. The compile-only harness gives frame 0x162c here but other registers.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

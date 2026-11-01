@@ -225,6 +225,13 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // function and assigned after the normalize 92 (same code); the cross factors named 92 (same code); direction
 // from vector2d_from_points2d with the locals x first 92. Compile-only (reproduces ours): no direction locals,
 // locals declared at the block top, dot operands swapped, a named dot: none preloads y.
+// Round 150 (compile-only screen is exact for this block): the y preload needs every reference to direction.y
+// to go through a pointer (a pointer local to the whole direction for the subtraction, the normalizer and the
+// direction locals gives it; not allowed); x is never preloaded either way. Real: vector2d_from_points2d +
+// dot_product2d/cross_product2d + single-exit normalizer 106 (634 bytes; y in XMM1, inverse in XMM0, the second
+// cross not in place), with the two-return normalizer 144; single-exit normalizer alone 92;
+// vector2d_from_points2d + single exit 91 (622); that with the dot through dot_product2d 146 (630 bytes, loop
+// entry layout as retail, no preload). Any direct read of direction.y (the cross written on the fields) drops it.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)

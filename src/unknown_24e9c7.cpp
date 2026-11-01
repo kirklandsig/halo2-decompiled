@@ -206,6 +206,9 @@ struct s_24e9c7_bounds
 // scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
 // side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
 // up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 150, each on the early-across form (`size * (0.0f - forward_j)`): side products across-first 138 (739
+// bytes); a named real half width for both side products 134; up computed before the half width 134; up as
+// `0.0f -` products 147 (735); the across pair declared right after size 138.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
