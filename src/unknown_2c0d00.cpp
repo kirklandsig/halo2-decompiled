@@ -276,6 +276,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // through vector3d_from_points3d/length_sq3f too 899 (3690 bytes). Retail lays the type-0 arm's
 // other-actor branch out before the join (the offset/radius test) and its `else if` branch and types
 // 1/7/11 after it; ours keeps source order.
+// Round 121 (m3 lane 5, plain): aligned by opcode, the bodies differ in one moved block: retail's
+// other-actor branch falls into the join (offset/radius test, no-obstacle bit, classification start)
+// and the second type-0 branch and the type 1/7/11 arms sit after the classification's first `jmp`;
+// ours ends each inflation path with `sete bl; jmp` (skip flag in BL, tail-duplicated) where retail
+// keeps the flag at [esp+0x12]. Retail also re-reads the type byte at each later use (range test,
+// `1 << type`, sphere loop). The type read at each use, no type local 903 (3695 bytes); that without
+// the unit_index volatile 938, without the actor volatile 978, without both 999; that with the skip
+// flag assigned before each inflation block 949.
 // Post-admission restricted/classification/device default subsets 1..7:
 // 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
 // Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
@@ -1035,6 +1043,28 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 252: Common successful output across all three success paths: long/dword/word/native point at entry
 // and after working-edge declaration 459/459/456/401/459/459/456/401. Original complete executable source
 // restored; Frame 0x30 versus 0x28, zero/radius ownership, history homes and crossing allocation remain.
+// Round 47 (m3 lane 1, fast; positional count, aligned diff tracked too: baseline 283): the -radius scale
+// before the +radius one, each with its origin add, 353 (1281 bytes, aligned 234: frame 0x28, radius in XMM4
+// and retail's in-place `0 - radius`); both scales first then the adds 351 (aligned 233), with the other
+// offset's y add first 410; the adds as `offset.x += origin->x` 324 (same code); the offsets per coordinate
+// as `normal.x * radius + origin->x` (and `* (0.0f - radius)`) 360 (1268 bytes, aligned 172: the whole
+// normalisation/offset/difference block then matches retail), origin first 360, -radius pair first 368;
+// on that per-coordinate form the crossing as three `crossing = true` sets 347 (1312 bytes, aligned 161) or
+// as `first | second | (first_vertex == NONE)` 347 (1312 bytes, aligned 137). Retail evaluates all three
+// crossing tests into one flag (DL), so the || form keeps it 44 bytes short.
+// Round 121 (m3 lane 5, fast): the offsets per coordinate as the matched 0x2c2910/0x2c2740 write them
+// (`origin->x + normal.x * radius`, `* (0.0f - radius)` for the other side, no negative-radius local)
+// 360 (1268 bytes), but the whole float block is then retail's (frame 0x28, the zero in xmm0 consumed by
+// `0 - radius`, radius xmm4, direction xmm7/xmm6, no spills); with the crossing as one flag set by three
+// ifs 347 (1312), plus first_vertex declared first 345 (1312); per-coordinate offsets plus first_vertex
+// first 358, plus the flag declared before the normal (retail's `xor dl, dl` inside the x87 length) 361
+// (edge slot 0x18 as retail); that flag at the loop top 341, before the vertex loads 304 (frame 0x2c),
+// before the start pointer 347; vertex by if/else 361; edge, vertex0/1 or vertex declared at the loop
+// top or function scope 361 (same code). Left on the matched float block: ours re-reads vertex1 from
+// the edge at the select where retail keeps it in EBX, so ours holds the widened side in ESI (retail
+// spills it to the magnitude slot) and the edge pointer takes EBX (retail ESI). Also: direction renamed
+// segment 324 (same code); edge declared at function scope 324; the portal search as a while with
+// nested ifs and the step at the bottom 379 (1288).
 // Round 123 (lane 6, fast): the offsets as direct products (`origin->x + normal.x * radius`, `* (0.0f - radius)`),
 // as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
 // `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
@@ -1421,6 +1451,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 501 (1707 bytes), the differences alone 501; delta as a vector3f with length_sq3f 444 (same code); no
 // output_index volatile 486, no source_radius volatile 469 (round 79's numbers after this round's
 // 0x2c3030/0x2c0d60 changes).
+// Round 121 (m3 lane 5, fast = full here): retail sets next/edge/found together at the loop top, at
+// the scan's typed step (a second `mov ebx, 0xffff`) and at a candidate's success. `edge = 0xffff`
+// also in the scan's `end < count` block 471 (gives that second store); edge assigned only where next
+// is chosen, no initialiser 469 (1757 bytes); the one-step arm with its own `return` 444 (same code);
+// the copy-last block after the loop through two gotos 444 (same code: its placement is not source
+// order); the next-step pointer only inside the corner branch, the fallback indexing points[next] 478.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

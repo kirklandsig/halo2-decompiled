@@ -2009,6 +2009,19 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // taken`, `count <= available`: same code; if-form slot/magazine take, named needed, long unloaded, early false
 // return, the other eleven orders of weapon/definition/available/result and 1-8 unused locals at the top or before the
 // unit: none closer.
+// Round 35 (fast): a pool local declared in the holder block for the slot lookups, the unit through the
+// macro 170 (586 bytes; 0x102b90 then differs), the unit through the local too 124 (same code: the local
+// is folded back into per-slot global reloads); the slot lookups through the existing weapon_get_102e10
+// 124, every weapon lookup through it 124, a two-use other-weapon local from it with `continue` 124.
+// Ours keeps the count in EDX through the slots (its stack home reused for the unit) where retail rereads
+// it from the stack and keeps the pool in EBP.
+// Round 62: nested other-weapon pointer as in 0x1008f0 with the slot test on weapon->definition_index
+// (no definition-index local) 198 (571 bytes; fast 175 at 585); magazine-offset local 177 (fast);
+// definition read in the range test 198 (fast, 568 bytes); available before weapon/definition 182 (fast);
+// unit-index local 124; first-block take without the short local 124. One-link diagnostic: with the
+// entry weapon read not touching the pool global, the slots take retail's pool-in-EBP/unit-spilled
+// shape (aligned 83), so the entry read joins the loop's pool range; no source form found that splits it.
+// Round 62, later: `taken` as a short 209 (fast, 611 bytes).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

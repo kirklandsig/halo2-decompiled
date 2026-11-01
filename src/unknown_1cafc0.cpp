@@ -858,6 +858,12 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
+// transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
+// with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives
+// retail's slots but leaves its constructor at the entry (353); re-initialising it in the block adds the
+// block-entry stores but the entry constructor stays (353); no C++ scoping gives both. Blend-query lifetime
+// (retail keeps the blend byte in memory across 0xe6800) and the result/loop byte homes also differ.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; ID homes and blend-query lifetime still differ.
 // Round 15: inline channel query 210; early success with separate name comparisons 256; separate comparisons
 // with late success 265; bitwise separate comparisons 256; inline transition-find 210 (callee still matched);
@@ -988,6 +994,9 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // Round 459: Unsigned state/channel/both flag domains 210/210/210; uniform phase mask with
 // original/state/channel/both domains 337/337/337/337; all with retained phase predicate 315. All
 // executable trial forms restored.
+// Round 262: Existing library lower/upper selection at fraction only 318/318;
+// phase only 323/323; all four phase/fraction order combinations 337 each.
+// Original conditional clamps, identifier scopes, byte result and all query contracts restored.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

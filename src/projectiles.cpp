@@ -1775,6 +1775,11 @@ real function_17c900(short function_type, real input);
 // bytes); the wander amount as one nested ternary 348; the up pointer declared after the axis 348. Retail keeps the
 // index on the stack (re-read and shifted in the wander branch, its home then reused for the yaw) and the output in
 // EBX; the wobble path pops and writes the output itself.
+// Round 16 (m3 lane 17, fast): salt declared at entry and assigned in the wander branch 365 (1469 bytes), with
+// the output written at the three exits 382 (1480 bytes); to_target declared first 348 (same code); salt
+// products as `3 * salt` / `7 * salt` 348 (same code); the wander amount as one conditional expression 348
+// (same code). Retail's caller sets the output with `lea ebx, [esp+0xc4]` and pushes only the index, and
+// this body saves only EBP/ESI/EDI: the output arrives in EBX and is never written there.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

@@ -497,6 +497,12 @@ bool function_22acb4(long player_index);
 // before/after the first, with the third 283 each; `(char)flags` then `&= 1`, `(word)(char)`, `(short)(char)` 283
 // each; word `(word)(char)` 232; long `(short)(char)` 287; long second 287 (aligned 18, `and ecx, edi` but
 // zero-extended into CL); `*first_out` stored right after the first mask 263 (878 bytes, status in EDI).
+// Round 258: Previously untried complete result-phase schedules 2143/2413/2431/3142/3412/4132/4312/4321
+// 288/268/274/284/283/254/273/290. Original phase/query/output order restored; extra second-mask spill
+// and persistent constant homes remain.
+// Round 264: Whole-word OR expressions for second/third/fourth families, subsets
+// 1/2/4/3/5/6/7, then all four masks 306/271/316/299/348/333/364/387. Original
+// mutable producers, pure query and aliased output order restored; second spill remains.
 // @retail 0x13a050
 void function_13a050(byte const *status, long user_index, long type, s_13ad48_item const **item_out,
 	word *first_out, word *second_out, word *third_out, word *fourth_out)

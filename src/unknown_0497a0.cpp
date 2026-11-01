@@ -18,6 +18,7 @@
 // flags on the stack); retail holds the secondary shape in EDI, the primary shape at [esp+0x14]
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
 // [esp+0x14], and our frame is eight bytes short of retail's.
+// MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
 // score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
 // thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
@@ -634,6 +635,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // 276's graph); on the both-arms graph case 0 edge points as struct copies then `z +=`/`-=` 455 (2668
 // bytes), second.z first 549, both z last 407, `half_width + z` 407; second point first in case 0
 // alone 450.
+// Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
+// native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
+// only forms all restored; frame and geometry/color homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -936,6 +940,12 @@ void __stdcall function_43720(s_43740_input *input)
 // through it 62; with the tag as a typed field 62; the typed tag alone 62; a second index local copied
 // from the tag for the call and lookup 62; an early return on the field with the tag local after it 62;
 // the tag as a dword 62 (all identical code); the lookup through `(word)tag` harness 60, aligned 53 (204 bytes).
+// Round 42 (lane 11, fast): the field test with the tag local inside the block and the normal flag read
+// back through the stored `input.vertices.shader + 0x2c` 67 (213 bytes; it still folds to the definition's
+// +0x68, the definition becomes a stack argument in EBP, the tag takes EBX and 0x42b20 drops to 62); that
+// with the record filled in retail's store order 67 (0x42b20 62); the field test with the tag local
+// inside and the normal read from the definition 62, plus retail's fill order 62, plus the record declared
+// at the top 62 (0x42b20 matched in each).
 // Round 124 (fast, 0x42b20 checked each time): the image pointer written into the texture call 62; the
 // group pointer written into the image expression 62; the call's count argument recomputed from the
 // point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored

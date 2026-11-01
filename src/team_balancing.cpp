@@ -567,6 +567,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
 // condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
 // clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
+// Round 23 (m3 lane 2, fast): an inline `operator<` on the solution (`candidate < *reference`) 188 (420 bytes, not
+// inlined under /Ob1), as a free inline operator 185 (422 bytes); the equality named first as a bool 67; the candidate
+// through a `s_balance_solution const *trial = &candidate;` pointer 67; the test as a forceinline optimizer member taking
+// the candidate (reference selected inside) 67. The candidate's count_spread still runs last.
 // Round 32 (m3 lane 14, fast): not purity: count_spread made to look writing (a store through a copy
 // of `this`, diagnostic, 0x91860 then 38) still queries the reference first, 97 (it takes EDX then);
 // that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
@@ -577,6 +581,25 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // body 70; nested ifs in place of the two continues on this body 67; the selection through a forceinline
 // optimizer member returning `improved ? &best : &current` 67; party_b's pointer declared before party_a's
 // 67 (the last three identical code). The candidate's count_spread still runs second.
+// Round 25 (m3 lane 2, fast): a placement-new candidate (`*new (storage) s_balance_solution(current)`, as 0x91fc0
+// builds its optimizer) 67 (same code); the candidate default-built and filled by memcpy 204 (560 bytes, the
+// team constructors run; 0x91dd0 9); count_spread declared first in the solution 67; the cost test as
+// `reference->cost() - candidate.cost() > 0` 36, not kept (VC distributes it into 7 * (t - t') + 3 * (r - r'),
+// unlike retail's two-cost compare, and the code is 510 bytes plus two int3: only the tail realigns; the count
+// pairs still run reference first); as `candidate.cost() - reference->cost() < 0` 67 (508 bytes); the first
+// test as `reference->count_spread() - candidate.count_spread() > 0` 72 (516 bytes, reference still first).
+// Round 61 (m3 lane 9, fast): the first test as `reference->count_spread() - candidate.count_spread() > 0`
+// 72 (516 bytes); nested `if (candidate <= reference) { if (candidate < reference || cost) ... }` in the
+// real build 100 (512 bytes); the equality spelled `!(candidate > reference)` 67 and `candidate <=
+// reference` 67 (same code); the reference selected once before the loops and set to `&best` after an
+// improvement 125 (spilled to the stack, still queried first).
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top, before the reference and before the
+// candidate (24 probes) 67 each, same code (not a numbering tie); the candidate in raw `long` storage bound by a
+// reference (balance_teams' pool idiom) 67; the cost test as `candidate.cost() < reference->cost()` 67 (same
+// code); the copy, swaps and test in a forceinline helper (candidate an inlinee local) 67, with a forceinline
+// comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
+// ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
+// `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -835,6 +858,15 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
 // named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
 // written at the open slots, the fill and the call) 74.
+// Round 23 (m3 lane 2, fast): the function moved ahead of 0x91e30 34; the maximum updated through a
+// forceinline `long *` helper 34 (the address is promoted); `unsigned long` total 35 (`jae`); the fill value
+// copied into its own local 34 (propagated); the fill as a pointer walk 63 (199 bytes, no rep stosd);
+// `(dword)` on the fill value 34. A permuter run (42 tries) reached 8 only with a value-changing
+// `(short)next_party` fill and swapped call arguments. Diagnostic, not keepable: `(short)next_party` in the
+// fill alone gives 7 with retail's roles (player count EAX, extra count EDX, every loop register as
+// retail); adding the clamp written as `(imbalance - open_slots < 0 ? 0 : imbalance - open_slots)` gives 5
+// (left: `lea ebx, [eax + edx]` against `[edx + eax]`, the movsx and its byte). So the roles follow whether
+// the rep stosd value is the maximum variable itself (ours) or a separate value loaded at the fill (retail).
 // Round 32 (m3 lane 14, fast): the clamp as `if (excess < 0) excess = 0;` 46; `0 > excess ? 0 : excess` 34;
 // the next party value named in the copy loop 34; the party value named, stored first, then the maximum
 // 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
@@ -844,6 +876,26 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (real build) 71, with the sum extra first 71 (player count still EDX; next party then in EAX with a
 // cmovle); total and open slots `const` 34; the locals as `int` 34; the excess as `imbalance -=
 // open_slots` in place 34 (all three identical code).
+// Round 25 (m3 lane 2, fast): extra-first sum with the clamp's subtraction written in place 45 (192 bytes); a
+// `short` next_party local 76 (197 bytes); open slots as `team_count * maximum_team_size - player_count -
+// extra_count` 71; the last party index tracked from NONE and the fill writing `last_party + 1` 82 (173 bytes);
+// the clamp compare as `maximum_imbalance >= (excess < 0 ? 0 : excess)` 35.
+// Round 61 (m3 lane 9, fast; the caller's file was on another lane's list, so no parameter orders): the
+// clamp as `excess = imbalance > open_slots ? imbalance - open_slots : 0;` then `result = excess <=
+// maximum_imbalance;` 65 (205 bytes); the copy bound `i != player_count` 35; open slots as `team_count *
+// maximum_team_size - player_count - extra_count` 71; `long i = 0;` with `for (; i < player_count; i++)` 34
+// (same code); next_party first, then the total, then `open_slots = team_count * maximum_team_size;
+// open_slots -= total;` 34 (same code).
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top and 1/2/3/5 before the imbalance 34 each
+// (same code: the count register exchange is no numbering tie); the fill through a walking `long *slot` 63 (199
+// bytes); the clamp named `clamped` 34; the call given `player_count + extra_count` 34; the imbalance declared
+// bare and set to NONE before the call 34; the party index read once into `party` 73 (frame 0x40, cmovle).
+// Lane 12 r66 (fast, with 0x91e30 matched): the result as `excess < 0 || excess <= maximum_imbalance` 48
+// (193 bytes); the maximum as one ternary assignment per party 34 (same code); the fill as
+// `while (extra_count-- > 0) parties[i++] = next_party;` 70 (the party list moves to the stack); the
+// excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
+// 35. Re-measured: copy before the maximum 82, open
+// slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

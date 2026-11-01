@@ -200,6 +200,17 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // through `*(bool const *)&success` 55 (351 bytes); the long tested through `*(long const *)&opened` 42 (same
 // code); success declared before the path buffer 42; done and success at function scope 42. Compile-only, a
 // char-cast write and byte/bool-cast reads all forward the stored byte too.
+// Round 105 (m3 lane 8, fast): retail computes the handle test as a 32-bit value (`xor edx, edx; setne
+// dl`), stores its low byte and re-tests the flag in memory, with the handle in ECX copied to EAX for
+// the push (the shape an int result assigned to a char flag would give; no C++ spelling tried keeps
+// it). A `char` flag assigned `(char)opened` and passed as `(bool *)` 55 (folded to a byte setne,
+// forwarded); the long stored through a byte cast of the flag 55; the by-value argument as an explicit
+// `s_file_handle(file)` temporary 42 (same code), with the bool flag 55; `success = opened != 0; if
+// (success)` 55; a long `failed = handle == INVALID` with `success = !failed; if (!failed)` 43;
+// `opened` declared before the file copy 42 (same code); the long test from the array element with the
+// file copied between the flag store and the test 42 (same code). Diagnostic only (volatile, reverted):
+// a volatile flag access, bool or char store of the long, 50/50 (memory test, but a byte setne without
+// the xor and the handle pushed from EAX).
 // Round 22 (m3 lane 2, fast): `_ReadWriteBarrier()` between the success store and its test gives retail's store
 // and memory re-test, but the array element then reloads after it and the handle stays in EAX without the xor:
 // on the long flow branching on success 50; `success = handle != INVALID` 50; branching on the long 42 (same
@@ -213,6 +224,22 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // but 50 positional (alignment padding moves); the same with the struct built in the branch by member or
 // `{ handle }`, built before the barrier, the copy with the long `opened`, `success = (bool)opened`,
 // `(long)(...) != 0` and a forceinline bool handle test 50 each (one code).
+// Round 122 (lane 5): a compile-only build of this loop forwards the stored byte to a register test
+// for a volatile read of `done` between the store and the test, a volatile store of `done` there,
+// and a store through `bool *result = &success`; only a volatile success re-reads it. Real builds
+// (fast): `(long)file.handle != NONE` 42 (same code); a long loop index 111 (345 bytes); the long
+// result from the array element with the file copied inside the branch 42; success declared at its
+// assignment 42; `success = opened > 0; if (opened > 0)` 42.
+// Round 106 (lane 7, fast): the handle read into a HANDLE local with the element passed to the call
+// and the long result 44; the long result with the branch on success 55 (351 bytes); the result as
+// dword 42; the comparisons written constant-first 42; the file copy assigned after its declaration
+// 42 (same code each).
+// Lane 12 r66 (fast, 0x2150f0 matched): 0x1a1310 clears `*success` itself before queuing the task, and the store
+// and re-test sit back to back with no join or call between them, so only a volatile success byte (as one
+// `bool volatile done, success;` declaration would give) explains retail's re-read. Tried: `if (success == true)`
+// on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
+// 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
+// opened test on the array element 42.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

@@ -110,6 +110,14 @@ static __forceinline long real_to_long(real value);
 // Round 314: Adjustment distance snapshot with bool/byte/short/long outcomes, without/with motion-
 // scale snapshot: 437/433/437/433/448/444/452/448. Short and long recover frame 0x48 but retain wrong
 // third-input ownership and regress. Original frame 0x4c body restored at 378.
+// Round 121 (m3 lane 5, fast): +0x38 as a named local read with the other limits (used twice) 375
+// (xmm7 loaded before the draws as retail); with all three draws through the random-state local 434;
+// draws 1/3 through it only 423; the 0x70e test nested 373; the prop flag set by an if 415. Probe on
+// round 28's lead (early +0x14/+0x18 locals, lower bounds as arguments, +0x3c per use, the resolver as
+// 0x210850's if/else) with the +0x38 local: 342 at 1861; there the sign test as
+// `(local_11 & 0x80000000) > 0` gives retail's `test eax, 0x80000000 ... jbe` (341; `!= 0`, `>> 31`,
+// `(long) < 0`, `>= 0x80000000` 342/342/347/341). Left on the probe: the cross product's inputs
+// colour xmm3/xmm2/xmm1 where retail has xmm1/xmm4/xmm3 (one extra movaps in retail).
 // Round 253: Retail-backed blend/actor/entry order with early third-range bounds, coherent angular seed
 // owner and per-use cap subsets; scores 373/424/438/350/447/449/449/384.
 // Original executable source restored; no qualifying gain.
@@ -117,6 +125,16 @@ static __forceinline long real_to_long(real value);
 // Round 123 (lane 6, fast): the displacement magnitude stored before the side vector 373; the +0x7c0 zero stored
 // before the +0x7bc copy 416 (1852 bytes); the +0x714 copy before the time store 372; the sign test as
 // `(long)seed < 0` 417; the magnitude's terms in i/j/k order 373.
+// Round 63 (lane 12, fast; an LTCG env link with this file's stand-in caller and the 0x259d0/0x210850/0x1fdce0 files
+// is exact): the third draw's bounds read into locals with the limits before the draws, all three draws through
+// function_259d0(&local_10->unknown0, ...) with the lower bounds as `0.0f - limit` arguments, and the resolver in
+// 0x210850's if/else shape with two copies 266 (1873 bytes, first difference +0x1ad: retail's prologue, ESI third
+// input, ECX random state and single seed store all appear; the copy after the failed 0x2104b0 call is load-load-load
+// then stores in retail, and the up-cross block's XMM numbering differs). Not kept: the bound locals are one-use and
+// the resolver is the helper's body. That form without the resolver change 340 (1844); with the sign test as
+// `(local_11 & 0x80000000) > 0` 269 (1876, retail's `test eax, 0x80000000; jbe`); with +0x38 named once for its two
+// uses 299; with a function_210850 call (stays out of line) 453 (1799). Env: every order of the cross components 181
+// or worse (aligned, 186 base); k * 0 named 192.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
