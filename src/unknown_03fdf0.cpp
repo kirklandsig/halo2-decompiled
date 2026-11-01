@@ -330,6 +330,14 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
 // material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
 // declared first 49 (identical, 54).
+// Round 24 (m3 lane 2), on the indexed form (count read through blocks[cache_index + 1] at each use,
+// re-measured 144 at 492 bytes: the cache index in EDX as retail, but the clears' zero in EAX and the
+// count in CX, so the first index keeps EAX where retail loads it into EDI and spills it): the two
+// clears as a loop over entries 1 and 2 144 (unrolled to the same code); the loop index declared
+// before the counter 145; the selection mask as a long 144; a named long count with one variable
+// for the first and loop index 166 (cache index back in EAX). The caller 0x404b0 reloads the cache
+// index from its stack slot for the call, so the register is this function's choice. On the block
+// form, the clears as that loop 54 (same code).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

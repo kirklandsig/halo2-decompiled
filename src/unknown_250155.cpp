@@ -2036,6 +2036,13 @@ extern dword g_54d5b8;
 // `show` flag cleared by case 4 guarding the call 64 (171); the call under a label in the default with
 // every case jumping to it 37 (the 0xae block still falls into the call); `dialog = 0xab` as the
 // local's initial value without a default 56 (160). Every layout keeps the 0xae block before the call.
+// Round 24 (m3 lane 2): case 4's own call under `if (!g_51ec99)`, then the store and return 81 again (176;
+// `this` moves to ESI). A compile-only build of that form gives retail's layout exactly (the two calls
+// merge whole: there the dialog is a register argument), but under LTCG case 4's copy pushes 0xad and
+// the state register: LTCG folds the case value at IR level (`dialog = state + 0xa9` in case 4 also
+// pushes 0xad, 81), so only one call site with the dialog live in a register can give it. Also: the
+// guard `!g_51ec99 || state != 4` 55 (169) and `!(state == 4 && g_51ec99)` 55; case 4 inside the
+// default as `if (state == 4) { dialog = 0xad; ... }` 59 (158).
 // @retail 0x250804
 void c_session_lobby_screen::show_session_state()
 {
@@ -2920,7 +2927,7 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 	item->value5c = team;
 }
 
-// score 48 (was 61): frame 0x754 agrees; with the row text through find_child and the searching flag
+// score 48 (was 48): frame 0x754 agrees; with the row text through find_child and the searching flag
 // computed as one expression, the item loop, sections 1-2 and the animation byte are retail's; left: the
 // row loop's counter/text registers (ours ESI/EDI, retail EDI/ESI), EDI saved at entry (retail after the
 // game test), and the flag materialised at the end in AL (retail sets BL to 1 before the tests, keeps it
@@ -2999,6 +3006,12 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // clear 177, the flag declared at function scope 161 (variable form) / 46 (expression); on 46: each
 // section's text/bitmap in its own block 171, row-scoped text/bitmap 48, `has_game` as a ternary 173 /
 // as an if 288, i declared first 46.
+// Round 24 (m3 lane 2): `bool searching = true; if (flag || unready || joining) searching = false;`
+// stored after the row loop 161 (EDI's push sinks past the has_game diamond and the tail keeps BL
+// across the two calls with `test bl, al`, both as retail, but section 1's bitmap takes ESI from
+// `this`, and the tail reloads `this` into ESI); on it: row-scoped row text/bitmap locals 171, the
+// flag declared with the other locals 317 (886), i declared first 161; the flag written
+// `!a && !b && !c` 48 (same code as the expression).
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {

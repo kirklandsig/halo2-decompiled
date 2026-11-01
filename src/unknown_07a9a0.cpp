@@ -212,6 +212,13 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
+// score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
+// which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
+// layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
+// through the iterator's own pool field and reads the datum through a copy of it gives the same 58
+// (the copy folds into the iterator's field), the same when the step is left for LTCG to inline, and
+// 64 when the iterator's pool is kept live across the loop; the plain form with two pool locals
+// spills the copy to the stack (65).
 // Not kept (MiniMax H, 10-31): 11 with the pool read out of the global into two locals (a second,
 // one-use `scan` copy for the search; 60 without it) and the index only assigned when a record is found:
 // a one-use duplicate local steering the second pool register, so kept only with a match. Its notes:
@@ -221,14 +228,7 @@ void function_07b3e0(void)
 // loop's padding now match byte for byte. Still differs inside the found block: retail keeps the
 // record size in ecx and the record data in esi and leaves a dead `add ecx, esi` behind the
 // load, ours keeps the size in edx and the data in ecx and pads the block with two int3 bytes.
-// score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
-// which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
-// layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
-// through the iterator's own pool field and reads the datum through a copy of it gives the same 58
-// (the copy folds into the iterator's field), the same when the step is left for LTCG to inline, and
-// 64 when the iterator's pool is kept live across the loop; the plain form with two pool locals
-// spills the copy to the stack (65).
-// score 39 (was 39): the scan uses the pool's own index search and datum index, so it keeps
+// The scan uses the pool's own index search and datum index, so it keeps
 // retail's do-while shape and the hoisted count and bitmap; retail keeps the pool in two registers
 // (ebx for the scan, a hoisted `mov ebp, ebx` copy for the datum), lays the found path out after
 // the exit and pads the scan loop; ours holds the pool in ebp only and lays the found path first.
@@ -316,6 +316,17 @@ void function_07b3e0(void)
 // initialised from the global 58 (both: retail's code but one pool register). The matched 0x18c060's
 // EBX/EBP pair is the hoisted global plus the iterator copy; this global is aliasable (reloaded at the
 // end in retail too), so retail's EBX here is a local copy.
+// Round 24 (m3 lane 2): the uncoalesced-copy lead tested: with `inline` on the real step and scan
+// definitions (0x16bb70, 0x16bc00; diagnostic) LTCG inlines both into the iterator form here, still
+// one pool register (EBP) and no pad, 58 (120 bytes; 0x16bb70, 0x16bc00 and 0x2b2327 still match);
+// with the index set before the pool 58; data_iterator_next_calling with the scan inline 58; this
+// body through the real 0x16bc00 and 0x16bb50 (both inline) 39 (same code as the header copies); a
+// short index 58 (147 bytes). So LTCG's own inlining of the step does not make the copy either.
+// MiniMax H's two-local form (not kept: a one-use duplicate local) re-measured 13; with the scan
+// local declared first, or the index first, 11 (131 bytes: the copy now follows the index init as
+// retail; left only the found block, where retail materialises the datum pointer, `add ecx, esi`, and
+// holds the data in ESI: the step's shape, which a separate scan local cannot have); the index
+// updated after the call 55 (116).
 // @retail 0x7b430
 void function_07b430(void)
 {
