@@ -282,6 +282,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // with original/direct source construction: 53/53/53/53/55/55/55/55; both matched caller and shared-
 // find sibling lost in every trial. Original helper/body/interface restored; restored control 40, both
 // siblings 0.
+// Round 21 (lane 17, fast with 0xb5f10/0xb61d0): on the lead with nested sign tests, a named length and an early
+// one-use `source = string + start` (21: entry and colours retail's; the scan walks in ECX and counts in EDX, and the
+// add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the
+// source declared before the length 37 (0xb5f10 84); 0x11c9a0 with `string + start` after the clamp 28 (0xb5f10
+// 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

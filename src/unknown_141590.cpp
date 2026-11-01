@@ -250,6 +250,10 @@ static inline void quaternion_transform_vector(
 // 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
 // 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
 // computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
+// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
+// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
+// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
+// spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

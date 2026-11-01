@@ -640,6 +640,9 @@ struct s_1f9762
 // score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
 // products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
 // second dot's i term keeps the projection vector in the register where retail has the point.
+// Round 103: on the projection index read through the actor, a second projection pointer, input pointer,
+// projection or input reference, direct comparison and subtract-assignment 2 each; current dot named first 4;
+// input dot named first 2; input dot alone named 4; two-component input product 14. Original body restored.
 // MiniMax G (10-31): the first dot written out by hand (i term projection-first, j and k terms
 // point-first, an order the helper cannot express) 7: an existing helper's body by hand, kept only
 // with a match; both dots projection-first 10 (same code).
@@ -814,6 +817,9 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
+// stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
+// (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -936,6 +942,15 @@ real normalize2d(point2f *v);
 // test as its own `if` 182 (919 B). Diagnostics, all reverted: the facing normalization removed 358,
 // the retry removed 485, the type scan removed 496; the result stays memory-homed in all three, so its
 // homing does not come from the retry call, the facing calls or the scan.
+// Round 19 (lane 18): retail's 0x1f84ef `mov al, dl` exit is shared by the result-false, first-type and
+// speed paths, so VC never knew the value there; ours sends result-false to the invalid exit's folded
+// `xor al, al`. A compile-only screen shows VC folds the false exit after any equality test against
+// zero (bool/char/long, early return, goto, else); `> 0` tests do not fold but give jbe; one shared
+// `return` keeps `mov al, bl`. Real (fast): one exit with `result = false` at entry 204 (911 B, result
+// in BL); request arm returning its call with `return valid;` 182 (aligned 41 -> 40: the request
+// store goes, DL caching and the shared exit do not appear); one exit with `bool result = valid;`
+// plus the request return 219; chosen speed declared after the first call 160; result declared first
+// in the valid block 135 (same code).
 // N271: complete actor/unit/speed-table receiver observations at use, seven subsets
 // 308/135/135/324/308/135/324; all with existing request point setter 336.
 // Original receivers and body restored; DL success retention and movement/request exits remain.
@@ -1578,6 +1593,15 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // declared after the normalization 305 (1188 B); radius renamed to sort before the stack points 238,
 // `center` declared beside `direction` 238, radius declared before the flag and result 238 (same code).
 // Round 216: Early origin/target/both/facing/origin-facing/target-facing/all point values before lookup 322/311/346/331/351/347/380; all with entry result 380. All restored; zero/radius and native input/vector homes remain.
+// Round 19 (lane 18): retail keeps the 0.0f result in xmm0 from entry (`movaps xmm0, xmm1`) and its
+// type exit jumps past the epilogue's reload, so the normalization uses xmm2/xmm3 and the radius
+// xmm5; retail's fld qword 1.0 confirms the double clamp. The flag as `bool left = <side dot> > 0.0f;`
+// at the side test (VC compiles it as retail's store-1/ja/store-0 after the comiss) 239 (aligned
+// 215 -> 198: length in the origin slot and direction at 0x1c/0x20 as retail), with the side-offset
+// if/else arms 279 (aligned 175, the best structure so far: lateral spill to the type slot, the
+// 0x26ccb0 argument order and the zero exit remain); on the first: result declared after the radius
+// 239, `return 0.0f` at the type exit 239, result declared before the entry lookup 262. The volatile
+// origin read removed 255 (0x29cbb0 300 -> 319). All restored.
 // N271: existing normalizer single-result entry-default/exhaustive/reused-magnitude/acceptance
 // graphs, then caller assigned-sign completion: 273/255/275/254; 255/260/265/259.
 // All ordinary-origin forms restored with the original helper; zero/radius and vector homes remain.

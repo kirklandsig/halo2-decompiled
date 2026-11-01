@@ -314,6 +314,8 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
+// block order still needs 0x221810 kept out of line.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.

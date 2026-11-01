@@ -289,6 +289,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the
 // address line 623; the player index as the matched 0x1e83c0's ternary 622; result declared first 620
 // (same code).
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

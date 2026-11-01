@@ -299,6 +299,15 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
+// points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
+// (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte
+// iterator through 0x6b380, 259 (frame 0x48: centre packs with the first iterator); plus centre/height/radius
+// in their own block 259 (centre joins the probe slot, but the second iterator joins the first iterator's
+// and the alternate stays alone); with the accepted points declared the other way 259; with the position
+// declared at the first block's top 259; renaming the alternate or the iterators changes nothing (259);
+// the first scan on a 12-byte iterator through data_iterator_next_calling 262 (frame 0x44). On the kept
+// body: the unit re-read from the player at the last call 243.
 // Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
 // (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
 // at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
@@ -314,6 +323,9 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

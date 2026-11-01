@@ -954,6 +954,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 117: a barrier inside the tick reader after the zero store 3, before it 4 (the zero xor
 // again after the pushes); the header's address taken 3; the page count read before the tick
 // read 17; the reader with external linkage 3.
+// Round 66: bitwise-or write result 53 (240 bytes); file != NULL 3; call-first short-circuit result 47;
+// null-initialized file 3; write-failure early exit 85; NULL != file 3; write == true 5; write != false 3.
+// Opening body restored.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

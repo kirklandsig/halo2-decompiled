@@ -298,6 +298,10 @@ union s_185be7
 // Round 265: library range / paired axis-duration / paired response-weight-angle
 // selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
 // upper-first nesting 1320. Native frame, original custom clamps and full body restored.
+// Round 484: shared-exponent range-result positive/conditional/unordered ownership
+// 935/935/800; default before lower bound/selected record 735/735; the three
+// branch-owned forms with exponent declaration at range scope 935/935/800.
+// Original fraction producer, exponent observation and complete body restored.
 // Round 270: Unsigned controlled/parent/attached datum carriers, seven subsets 731 each;
 // all four datum carriers 731. Minimum/range/fraction scalar identities on the shared-exponent
 // graph, seven subsets 731 each; exponent identity too 731. Original carriers, names and full

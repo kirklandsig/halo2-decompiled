@@ -187,6 +187,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 283: positive type/primary-state/secondary-state admission gates, all seven subsets, each 439;
 // all gates with delayed secondary receiver 457. Original complementary waiting graph, receivers and
 // whole body restored; frame, state stores and getter boundary remain.
+// Round 478: complete strict solver predicate with short/bool/byte/long result
+// 455/458/458/457; both strict and fallback predicates 458/458/458/458.
+// All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

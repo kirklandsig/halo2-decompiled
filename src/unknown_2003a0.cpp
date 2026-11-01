@@ -509,6 +509,10 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // the current body with the `!alternate` arm first 75. Diagnostics (flag form, not kept): `next = 1` 85 and a
 // scan starting at one 81 remove the zero register, but the walk keeps squad/definition in EAX/ECX swapped and
 // the scan keeps alternate in BL, count in EAX and the index in EBP with a sign-extended copy in EDX.
+// Round 272: Completed output observations
+// definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
+// branch-owned next 74/129/129/74/74/129/129/129.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2321,6 +2325,9 @@ bool function_1df5d0(short team_a, short team_b);
 // outside) every operand shape loads the field first. Real: count declared at function scope 39; total as
 // `((real *)squad)[4]` 39; the add through a fresh squad_get 217 (861 bytes); a forceinline add helper by value
 // or through a total pointer 217/218 (834/833 bytes).
+// Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
+// with outer health workspace 39/39/153/153/39/39/153/153.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2983,6 +2990,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // forceinline helper taking the squad and index 50 (same code); the trigger guard folded into the local_5 test
 // 111; the definition index as a named local for the arm's test and the 0x290cd0 argument 50 (same code).
 // The callee 0x290e20 (another lane's) still differs at +0x0.
+// Round 272: Real record selector/pending-
+// state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
+// 50/50/50/50/50/50/50/50.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

@@ -1514,6 +1514,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 364 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // Round 36 (lane 1, fast, 0x3db00 kept; aligned/shape base 320/203): in-place direction2 rotation 435
 // (292/143, frame 0x40, 1870 bytes, first +0x57); with the square right after the direction1 negate 462

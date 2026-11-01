@@ -779,6 +779,12 @@ struct s_device_machine_view
 // Round 285: native real magnitude APIs at the three velocity-case consumers,
 // seven subsets and all with the power-velocity zero default 34/34/34/34/34/34/34/117.
 // Original body restored; native word-load sharing and zero-join scheduling remain.
+// Round 21 (lane 17; compile-only /FAs screen of the file reproduces the listing): on masks + the zero store
+// (122), a two-byte bitfield struct copy tested with `&&` 122, bitfields through a struct-pointer cast of the
+// field 122, a `word const *` to the group's flags 122, a `short` flags local 122, `register` on the group
+// pointer 122 (all the pushed ESI); screens only: `register` on the flags or machine flags, `!= 0` masks, the
+// flags word at its read, machine flags first (ESI); the bitfield copy tested with `&` frees EAX only by
+// spilling the copy to the stack. 1-7 dead temporaries (diagnostic) leave both forms unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

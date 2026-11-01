@@ -7056,6 +7056,8 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
 // score 653 (was 700): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
+// MiniMax D (11-01): no new form tried, no lower score.
+// score 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
 // shared final cross 723; direction plus velocity values 628 (rejected: lose matched 0x1e5af0), with names 628 (unconfirmed);
 // parallel predicted-angle results 723. The angular-velocity value alone preserves all matches.

@@ -344,10 +344,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
 // size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
-// score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // the retry ordinal as a function-scope local 239 (MiniMax E run 12; under the keep bar, restored).
 // Round 231: shared retry helper/native byte block/both/shared audio arrays/helper-arrays/byte-
 // arrays/all/Boolean large-block selection 313/287/313/339/364/339/364/347; separate noinline
@@ -453,6 +453,11 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
 // leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
+// neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
+// allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start
+// time read before the three stores 240 (aligned 200 -> 216) / before the size 242; `dword large = flags &
+// 0x100` with the size ternary on the mask 269. The SSE float code still needs /arch:SSE (flags lead only).
 // Round 276: Explicit signed timestamp returns, no/zero initialization in low-first and high-first output
 // orders 310/286/310/286; each with a one-use end tick at subtraction 310/286/310/286. No-init/zero-init
 // frames 0x30/0x38 regress.

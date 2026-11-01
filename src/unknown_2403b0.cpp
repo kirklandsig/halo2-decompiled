@@ -34,6 +34,7 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
+// MiniMax S (11-01): still 86: the pool data pointer is loaded before the masked index and kept across 0xcbd50/0x101280, where retail loads it again after them.
 // score 86 (was 86): the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
 // (other files), and MSVC always loads the limit product's cap global before the scale global whatever
 // order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses

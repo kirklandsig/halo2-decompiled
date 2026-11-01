@@ -170,6 +170,9 @@
 // Round 286: Native library maximum boundaries in first/second/final producer
 // masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
 // component-maximum production 771. Original maxima, includes and body restored.
+// Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
+// then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
+// original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -496,6 +499,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 }
 
 // score 276 (was 284): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
+// flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
+// slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// score 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
 // differ (state width +0x54 against +0x4c, tint +0x7c against +0x78). The state clamp is now retail's
@@ -648,6 +655,18 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
 // and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
 // code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// Round 36 (lane 15, fast; 0x43740 62 and 0x42b20 matched in each): case 4's view/direction/side, the
+// tint, or the next state's colour declared at the loop top 276 each (same code: slots follow lifetimes,
+// not scopes); case 0's normal.i before normal.j in the previous arm 271, in both arms 426 (2592 bytes);
+// that previous-arm order with case 0's edge points y before x 269 (-7, not kept; retail's case-0 x/y
+// loads, but half_width stays in XMM6 where retail has XMM4, so the edge points keep our XMM homes);
+// on that, half_width computed just before the switch 276, `second, first` declared 269 (same code), case
+// 4's edge points y first 275, case 1/2's 373 (2604 bytes). Retail's tail colours second x/y/z XMM0-2,
+// first.z XMM3, half_width XMM4, first.y XMM5 (spilled at +0xb4 in case 0), first.x XMM6.
+// Round 280: complete per-channel interpolation results in initial/next/transition
+// loops, all seven subsets, then all with the complete width interpolation result,
+// 276 each. Original entire body and helpers restored; frame 0xa0, native homes
+// and first-edge Y spill remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -980,6 +999,14 @@ void __stdcall function_43720(s_43740_input *input)
 // the local for the call and lookup and the record from the field 62 (same code); the call argument from the
 // field and the rest from the local 63; test, call and lookup on the field with a record-only local 50 (212
 // bytes: frame 0x24, the tag spilled; positional).
+// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
+// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
+// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
+// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
+// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
+// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
+// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
+// split tag below both parameters in retail's colouring is open.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

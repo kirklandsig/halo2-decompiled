@@ -1228,6 +1228,28 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
 // Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// this round: retail's record defaults differ from ours in three places - it
+// zeroes the team and the three bytes after it as one dword at 0x7c, it zeroes only two of the three
+// longs at 0x70, and it sets the two bytes at 0x82 to 0xff (our source leaves them at the memset's
+// zero, so our record differs from retail's in the last two bytes). Dropping the third zero long at
+// 0x70 or the zero byte at 0x7d does move the allocation into retail's shape (the parameters test
+// becomes `test edi,edi` and the owner moves to EDX), but the score then rises to 206 and 208, and
+// the parameters pointer moves to ESI where retail keeps it in EDI, so all of them were reverted.
+// Reading the parameters at the call site (the decayed member) and testing them together with the
+// live state gives 186, and passing the current record's name to 0x7f660 instead of the requested
+// one gives 238; retail's `push ebx` shows the requested name is the right one, so that change was
+// reverted as well. The permuter on this function was stopped by its time limit without printing
+// anything. Still differs in the owner, the name count and the zero's allocation and the requested
+// cursor.
+// score 184 (was 184): this round: reading the parameters at the call site instead of through the
+// shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
+// compiles to the very same bytes, so the parameters null test still compares with the zero in
+// EDX (`xor edx,edx`, `cmp edi,edx`) where retail uses `test edi,edi`, and the owner, the name
+// count and the requested cursor keep their places; the original body was restored. Swapping the
+// two wcslen tests in the name test gives 209, and naming the current record's address in the
+// test instead of the `current` pointer gives 184 again, both reverted. Still differs in the
+// owner, the name count and the zero's allocation and the requested cursor.
+// Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
 // than 8, takes the memset path) and reads the parameters through the 0x4db0 member rather than
 // through the session_get_data_4db0 call; adding both was measured at 211 and 222, because MSVC
 // still compares the parameters with `xor edx,edx` where retail uses `test edi,edi`, reloads the
@@ -1364,6 +1386,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // Round 256: Scalar cache test first crossed with bounded byte count, uniform current-field reads
 // and copy-first completion: 222/223/211/226/213/248/238/234. Original cache guard, count,
 // receivers, publication and body restored; owner/count/zero homes remain.
+// Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
+// 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
+// block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
 // Round 273: Complete clear-return/four-element-array/three-element-array
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
