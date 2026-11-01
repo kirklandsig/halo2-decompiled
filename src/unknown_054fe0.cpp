@@ -1235,7 +1235,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // reverted as well. The permuter on this function was stopped by its time limit without printing
 // anything. Still differs in the owner, the name count and the zero's allocation and the requested
 // cursor.
-// score 184 (was 184): this round: reading the parameters at the call site instead of through the
+// Earlier (184, was 184): this round: reading the parameters at the call site instead of through the
 // shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
 // compiles to the very same bytes, so the parameters null test still compares with the zero in
 // EDX (`xor edx,edx`, `cmp edi,edx`) where retail uses `test edi,edi`, and the owner, the name
@@ -1393,6 +1393,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
 // Original body restored; owner/count/zero and requested-record induction remain.
+// Round 285: full record clear before membership; no early defaults/array zeros/byte zeros/
+// array-and-byte zeros/sentinels/array-and-sentinels/byte-and-sentinels/all defaults
+// 181/205/183/203/193/187/193/185. Three-point form rejected; complete body restored.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {
