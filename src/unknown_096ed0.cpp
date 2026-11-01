@@ -13,7 +13,7 @@ long replication_table_find_in_chains(s_handle_peers *peers, long *handles, long
 void replication_table_release(s_handle_peers *peers, long handle);
 void replication_table_release_chain(s_handle_peers *peers, long count, long const *handles);
 
-// score 14 (was 55): frame, slots, receiver and both chain loops' registers agree; left: the
+// score 14 (was 14): frame, slots, receiver and both chain loops' registers agree; left: the
 // chain loops load `table` into ECX/EDX where retail loads it into EAX first, and the active loop
 // increments its index after the call where retail increments at the loop end. Before: selector,
 // cursor/entry/query homes and load scheduling remained. Earlier 170: the peers table is read through a local; the
@@ -245,6 +245,14 @@ void replication_table_release_chain(s_handle_peers *peers, long count, long con
 // combinations (type scope and placement, index/item declarations, blocked placement, size order) all spill
 // the pending index; only the guarded do-while and `handles[i++]` split type. A 600 s permuter run: no
 // better variant (55 tries).
+// Round 144 (lane 4, fast with 0x89d20; a one-file LTCG harness with 0x89d20's file reproduces the build
+// exactly): `type = 3`/`type = 4` before the blocked flags 18; item locals at the arm scope in both chain
+// arms 14; declarations ordered count/type/priority/size 14; the pending loop as a while with `i++` at the
+// end 14; priority/size zeroed before the chain queries 38. Harness only: 400 random combinations of
+// declaration order, item/index scopes, type/zero/blocked placement, peers local or direct and the three
+// active-loop forms, none below 14 and no plain indexed active loop with type split (best 156); an owner
+// local, `this->table`, a handle local or a mask local at either chain call 14 each (same code: the loop
+// heads keep their load order).
 // @retail 0x98150
 long c_handle_table_450cd0::v1(long a1, long max_count, void *output)
 {
