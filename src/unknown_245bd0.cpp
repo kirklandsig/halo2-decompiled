@@ -393,6 +393,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // `d.n[0] * d.n[0] + d.n[2] * d.n[2] + d.n[1] * d.n[1]` 171 (669 bytes: differences and sum run j, k, i);
 // the sphere helper declared before this function and defined after it 57 (same code). Diagnostic (initialised
 // dead long temps at the top, k = 1..7): 57 57 57 57 57 171 57, the products never go in place.
+// Round 49 (lane 10, fast): the depth test folded into the shape tests as `(...) && best_depth < depth` 57 (same
+// code); one difference component copied into a named scalar for the sum (0x2461a0's lever): j or k in the
+// j,k,i sum 57, i 61, j or k in an i,j,k or i,k,j sum 59; the sphere test as `distance_squared < r * r` with
+// length_sq3f, vector3f_scale(&d, 1.f / distance, &plane->n), vector3f_assign(&plane->n, 0.f, 0.f, 1.f) and
+// `distance > 0.f` 152, with the j,k,i sum 61, with shape_scale3d 61. Diagnostic: one to three dead locals in
+// the sphere helper 57 (no symbol-count rotation here).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

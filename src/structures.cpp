@@ -330,6 +330,13 @@ static __forceinline bool structure_bsp_collision_available()
 // compile-only screen of 13 more flag forms (if-set, set after the probe, long, `== false`, struct-held, ternary
 // requery, address-taken pointer parameter reassigned, parameter re-read at the join) threads every one; only a
 // real load at the join keeps the flag, and it stays ahead of the test. The permuter's baseline link stalled.
+// Round 39 (m3 lane 15, plain): the flag preset true and cleared in the not-excluded arm, `if (excluded) return
+// result;` before the requery 62; the && flag with g_4687bc read into a local at the join and the requery and
+// model reading the source's collision 95 (296 bytes: the flag survives but is spilled, &triangle->c takes EBX);
+// that with every collision use through the source 95; with the model result stored in `result` and one `goto
+// done` exit 89 (294 bytes, NONE in EBP); the preset-true flag with the join load 85 (293 bytes, still spilled).
+// Compile-only, all threaded: preset-true in four placements, a positive requery flag, a negated or widened copy
+// of the flag tested at the join, and the source as a class with a constructor or a destructor.
 // Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
 // jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
 // into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
@@ -959,6 +966,13 @@ done:
 // result reset moved to just before the loop 136; the probe copy before the flags computation 128. Retail never
 // reads that stack parameter (orig+0xc, the caller pushes 1) and spills the result into the surface pointer's
 // dead slot; only 0xd2a50 calls it.
+// Round 39 (m3 lane 15, plain): the flag preset true and cleared by the positive test 125 (same code); the flag set
+// from the unread third stack parameter in the scenery arm with result a local 133 (471 bytes: the parameter is
+// read and threaded on, no constant propagation); `direction` read once through its address at the join 125
+// (folded); a long flag 125; the probe result in a `probed` flag tested before `else if (!excluded)` 125.
+// Diagnostic (volatile read of `direction` at the join, reverted): 152 at 480 bytes, but the flag then takes
+// retail's shape exactly (`mov bl, 1; jmp`, `xor bl, bl` before 0xbf9a0, &triangle->c in ESI with the direction
+// reloaded, result in memory), so the threading of the flag is the one blocker.
 // Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the

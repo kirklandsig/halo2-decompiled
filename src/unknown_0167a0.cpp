@@ -189,6 +189,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the entry byte offset named once for both walks 47; parameters published after the definition lookup 193;
 // the pending masks ORed in right after the tables are published 191 (978 bytes); the pass published after
 // the range is computed 118 (974 bytes).
+// Round 38 (lane 15, fast): entry computed into the entry local and stored to its field after the chain
+// lookup 187; tables field read into a restore-tables local before the entry store and used for all
+// three bases 284; `10 * first` 47; the entry as `&base[first * 10]` 47; packed read through a word
+// const view 47. The tail is still BLOCKED-BY 0x18a90 (contributor file). Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

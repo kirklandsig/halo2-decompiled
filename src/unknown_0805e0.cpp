@@ -179,6 +179,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // filters with an early return 55; the `!result` loop assigning the result each pass with the copy after
 // the loop 71 (top-tested, no hoist); the guest test 3rd/4th (diagnostic) 48/47, no hoist; the parameters
 // swapped to (iterator, player) with both callers 43 (identical: player stays in EAX).
+// Round 127 (lane 6, fast, with 0x1a303b/0x2b393c): `while (!result && index != NONE)` with a successor local and
+// `index = next` at the end 37 again (no hoist in this build; player read from the stack, ret 8, callers 15/27);
+// its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
+// 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
+// entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1111,6 +1116,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
 // function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
 // : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
+// Round 37 (lane 15, fast; current body): the backward copy as `long i = upper; while (--i >= lower)` 49, the
+// forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
+// canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
+// entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
 // Round 127 (lane 6, fast with 0x80490/0x80330): a compile-only /Gd harness scored against retail (a normalized diff,
 // 47 for the build's 49) reproduces upper taking EAX; there six declaration orders of lower/upper/downward, upper as
 // `position < removed ? ...`, lower as `position >= removed ? ...`, upper assigned before lower, the count path

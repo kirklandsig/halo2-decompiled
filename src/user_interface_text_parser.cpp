@@ -587,6 +587,10 @@ done:
 // 0x55c6e4 only from these two immediates (no pointer table in its data). Diagnostic, not kept: a speed preference
 // with automatic inlining off pushes the immediate again but LTCG still inlines 0x148350 (224 bytes, 118), so the
 // hoist is the size-preference tie (flags lead only).
+// Round 39 (m3 lane 15, fast; parse_variant stays matched): the selector read into a `dword` local on the natural
+// one-copy form 54 (173 bytes, same as that form), on the current form 32 (same code); with the tag read before
+// the variant call 57 (171 bytes) and 44 (178 bytes); the natural form with the `dword` selector in numeric case
+// order 49 (173 bytes).
 // Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
 // only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180

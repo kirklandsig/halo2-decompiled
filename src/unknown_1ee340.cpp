@@ -304,6 +304,10 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 114 (m3 lane 7, fast): `point3f ray_start = ray->start; point3f ray_end = ray->end;` aggregate copies with
 // the direction from them 286 (1023 bytes), with the copies ahead of origin 286; origin as an aggregate copy of the
 // first vertex 282 (frame 0x94); producer orders ODSAB 193 and OABDS 193.
+// Round 40 (m3 lane 15, fast = plain): retail loads the ray's start and end once each before any store. Start copy
+// first with the direction from it 230; direction as three scalars (diagnostic, helpers written out) 226 (991 bytes);
+// both 225 (991); start copy first with the offset from ray->start 223 (991); start and end copied and the direction
+// from both copies 196 (all six loads before the subtractions, start.z first as in retail; the end copy is one-use).
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

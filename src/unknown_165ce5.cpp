@@ -1597,6 +1597,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // weapon_mode 220 (slots unchanged); look values declared at assignment 220; in their own block with
 // their two spring calls 220; computed then clamped in a second statement 223; spring defaults declared
 // before the unit/mode lookups 236. Original body restored.
+// Round 40 (m3 lane 15, fast control 220, full 218): ours stores the two clamped look values into spring_a/spring_b's
+// dead slots (-0xc/-0x8) where retail gives them -0x2c/-0x28, and retail reloads [0x510c54] after the yaw store (two
+// divisions). Look values renamed, two name pairs, 220/220, spring_a/b renamed 220 (same code); pitch as
+// `-(y / rate)` 459 (2196 bytes, reciprocal still shared); pitch clamped before yaw 221.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

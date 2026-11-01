@@ -244,6 +244,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // to just before the fifth draw 153; the record-list link stores after the flag-bit setup 109; the child
 // reciprocal computed between the parent and owner stores 80. Retail 0x247950 also loads arg_2 twice for the two
 // list addresses at its link call, so that reload is systematic (allocation), not this body's source.
+// Round 39 (m3 lane 15, fast): field_10 first re-measured 133 (876 bytes: the split compare, then a loop-top pad and
+// the child loop's effect-index/vtable registers: retail reuses ECX for the effect index and loads the vtable into
+// EDX before the pushes); the fifth sample as `field_38 = local_9 = ...` 70 (same code), with field_10 first 133;
+// the effect index named in the child loop 73, with field_10 first 134 (878 bytes); `if (local_0 == NONE) return;`
+// for the wrapping if 70 (same code).
 // Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
 // forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
 // does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain

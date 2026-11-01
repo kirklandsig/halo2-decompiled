@@ -1382,6 +1382,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `valid = true` 7 (the round 53 plateau, now with no zero store; left the write's handle load after the flags
 // zero and the checksum compare in EDX); on 7: the write's handle through `file` 7, a named stored-path pointer 7,
 // the checksum as a ternary on the call 15. Restored: the 7 needs three match-only forms.
+// Round 66 (lane 9, fast): the 7 and 6 forms and the write-handle-local form (114, close copy dropped) reproduce.
+// Register reading: in all three the checksum load takes the scratch register one step after the close call's
+// copy (7: ECX/EDX, 6: EDX/EAX, write local: EAX coalesced/ECX), in retail two steps (ECX/EAX), so one more
+// rotating temporary sits between the close and the checksum in retail, whatever the write does. Tried: write local
+// with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
+// *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
+// the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
 // @retail 0x213970
 void function_213970(void)
 {

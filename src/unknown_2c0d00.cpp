@@ -291,6 +291,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Round 479: positive index/visibility/self-vehicle admission subsets 1/2/4/3/5/6/7
 // all 931f (control 931); actual returned object transform 940f. Original gates,
 // defaults, matrix consumers and complete body restored.
+// Round 40 (m3 lane 15, plain; fast misleads): other-actor test inverted (NONE branch first) 886; type-1 skip flag as a
+// conditional set (retail's `mov byte [esp+0x12], 1`) 936; enabled declared with the per-object defaults (retail sets
+// it in the settings-test block) 918; unit/definition no-obstacle bits as `(bool)((*(word *)p >> n) & 1)` 917 (retail's
+// byte shift form; aligned 710 -> 699); that with the inverted test 938. Retail also stores straight = 1 again on the
+// actor == NONE path.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1072,6 +1077,16 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
 // `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
 // the second offset's vector from the start computed first 349.
+// Round 40 (m3 lane 15, fast; positional/aligned, base 324/248): offsets per coordinate plus the three-if flag and
+// first_vertex first 345/149 (frame 0x28, prologue retail's); with the flag declared before the normal 361/119 (the
+// whole float block retail's, 1288 bytes), at the loop top 341/161, before the vertex loads 304/148 (1315); on 361/119:
+// select as vertex1 then an if 365/121, side-first compares 361/119, first_edge/count/vertex declared at function
+// scope 361/119 (same code); the ring walk as a forceinline helper with a local edge copy 323/106 (1276: the selected
+// vertex shares EBX with vertex1 as in retail), a ring-local walking edge pointer without a helper 323/106 (same code),
+// through the pointers 361/119; the parameter as the walking edge alone 416/248, with the flag block 430/142, with the
+// 361 block 426/125, plus the ring-local edge 430/111; flag before the vertex loads with the ring-local edge 296/133
+// (flag in the side slot, frame 0x2c). Retail stores the outer edge to 0x18 at each ring step, so the ring copy is not
+// retail's; left: edge EBX against ESI, side kept in EDI (retail spills it to 0x1c), edge/magnitude homes swapped.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

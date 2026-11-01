@@ -194,6 +194,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // vector-x-axis cross terms subtracted 229 (frame 0x114, no cross spills); cross order j/k/i with
 // the axis term first 229 (same code); cross through cross3f into a local 226 (frame 0x120); separate
 // output vector 251; sine/cosine named in the caller 240. Original helper restored.
+// Round 40 (m3 lane 15, fast = plain): the 0x11c/0x118 frame is the helper's cross vector home (local_3 at
+// +0x24..+0x2f, its .j slot never used), where retail spills scalar cross terms (+0x20, +0x28). Cross scaled by the sine
+// in the sums 193 (1225 bytes); cross3f_staged 173 (same code); scaled cross into a second vector 226; vector x axis
+// subtracted 187; the 0x194a10 scalar form (sine, cosine, P, X.j, X.k, X.i inline) 231 (1192), with dot3f 228 (1194):
+// sine/cosine slots retail's but frame 0x114, heading.k's zero kept in a register and heading.j reloaded from its home.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

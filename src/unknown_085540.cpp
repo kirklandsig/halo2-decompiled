@@ -1156,6 +1156,20 @@ bool function_68670(byte *source, long size, void *block);
 // helper): header in the loop 137, header.size at each use 144, `long size` before the test 122, used update first
 // 127, `short size` 39, payload read through a re-derived ring pointer 44, inline ring `read` method 39, early
 // case-0 copy 110; permuter (54 tries) 39. Helper, copy and `&dst` read are match-only forms: body unchanged.
+// Round 45 (lane 11, fast): retail's frame is the 72 form's plus a case-0 copy (ours pads 4 bytes below
+// the header; the compile-only listing shows no other local), and retail's header is address-exposed:
+// its size loads only after the start/used stores and the first read reloads the ring fields. Grouping
+// the header and the case-0 message in one struct (diagnostic only, a grouping form) gives both: 39 at
+// retail's 553 bytes, leaving the header-size register (SI, retail DX, so retail reloads the start before
+// the payload read and interleaves case 1's stores) and case 0's copy store, which retail schedules after
+// the channel load. On that diagnostic: the size declared before its test 122; a short size 39; the
+// header size at each use 125; case 0 written out under the channel test 36 (helper body by hand, the
+// copy store then lands after the branch). Real forms: the view-address line after the header and
+// payload declarations 72 (same frame); `standard` (self-aligned entry) without the view-address line 168
+// (519 bytes, the view is then held in a register), with the case-0 copy 154, with the grouping 154; a
+// ring read member (read_wrapped, start advance, used update) inline in this file's ring declaration
+// 72 (identical), with the case-0 copy 137; the same member out of line in the ring file 243 (not
+// inlined, 466 bytes). What exposes the header in retail without sending it is the open question.
 // Round 108 (lane 8; a one-file LTCG harness, this file + 0x1a19a0/0x68670/0x75e80 files, gives the build's 72
 // exactly): a compile without whole-program optimization does not give retail's code (retail passes the read and
 // send arguments in registers, so retail's object is LTCG). Real (fast): the payload test written `>= 1` 63 (553
@@ -1183,6 +1197,12 @@ bool function_68670(byte *source, long size, void *block);
 // payload count declared before its test 106 (553 bytes, start still forwarded through EAX); those two are the
 // listed scores of the same forms without it, so the helper form is inert there; with that count and the case-0
 // copy 123. All restored.
+// Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
+// header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
+// 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not
+// kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
+// difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
+// the copy count from header.size too 79.
 // Round 31 (m3 lane 2, fast): case 2 as the switch's default (no __assume) 144; the case-0 copy
 // with the payload count declared before its test 129; the payload read using header.size at each
 // use 116 (554 bytes); the count decrement as the for loop's step 171 (483 bytes); payload declared

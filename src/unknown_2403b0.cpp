@@ -151,6 +151,9 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // callers see it as writing memory) gives retail's reload here, 53; retail's 0x101280 bytes only read,
 // and retail's 0x241520 keeps g_4e6948 in EBP across the same call, so retail treats it as writing
 // pointed-to memory but no globals (BLOCKED-BY 0x101280's side-effect summary, cause unknown).
+// Round 38 (lane 15, fast): the team for 0x242e00 as a short 90; `blocked` declared with the event and
+// position 86; the slot-clear helper returning `(~flags & 1) != 0` 86, returning that value as a long 123,
+// force-inline 86. Pool-data reload still BLOCKED-BY 0x101280's summary. Original body restored.
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {
