@@ -1492,6 +1492,10 @@ struct s_rating_summary
 // pointer formed before the change call 88; the team counters read into first/second/third locals
 // (diagnostic) 212 (the collection moves to EDI from entry, the counters cursor still EBX).
 // On the original source: lower as `lower = 0; if (value >= 0) lower = ...;` in both loops 274.
+// Round 35 (lane 13, fast): the team loop's level computed inside the change-call argument list 131 (MSVC calls it
+// in place during the pushes, after lower; retail calls it right after the change), level and lower both there
+// 138; the team loop as the `type == 5` if-branch 317; the key stored before the session copy 88 (as before);
+// with the key read from the collection at that store 90.
 // Round 103 (m3 lane 7): the player entry's id typed as an XUID at +2 (guest test and 0xbad00000 compare on
 // xuid.dwUserFlags, identity as &player->xuid) 92 (same code); the team statistics pointer formed before the
 // change call 92; a typed 64-bit session field at +0x130 92; level renamed updated_level (sorts after the

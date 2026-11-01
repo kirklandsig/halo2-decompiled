@@ -548,6 +548,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // but the actor load is the first instruction, so LTCG passes pathfinding in EDX, 0x270d90 313, and
 // case 2's 0x26c590 setup is re-coloured). On that graph: result first 299; surface before start_out 299;
 // case 5's direction before its position 295; result without volatile 371; the actor test as an outer if 299.
+// Round 35 (lane 13): result declared first 278; surface pointer declared first 278; corners a, b, c, d 299
+// (1284 bytes: actor_index loaded into EAX at entry and pathfinding moved to EBX as retail, but LTCG then passes
+// pathfinding in EDX); with the surface pointer first 299; with case 5's direction copied before its position 295.
+// Retail's caller sets up ECX, EAX, EDI in the same order as ours, so no parameter reorder is indicated.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -852,6 +852,12 @@ bool function_2715a0(byte *buffer)
 // before the penalty switch. Both link points through a point-along-vector helper 486; sqrtf root 486;
 // margin computed before the call 487; both link flag tests as masks 522 (2052 bytes); the NONE type test
 // before the penalty switch 579 (2128 bytes).
+// Round 35 (lane 13): pop-or-NONE outer loop with the break before/after the node pointer 508/510 (gives
+// retail's top-tested loop and entry pushes; state stays EBX); point-along-vector helper for the midpoint and
+// projection 486 (same code); links declared before result 486; per-case `child->depth = node->depth + N`
+// stores 481 (cases 1/5/6 and default take retail's shape; five points, not kept); case 2 as if/else stores
+// 566 (2136 bytes; node moves to EBX, state to ESI), with the child's stored index 566, its ternary 481;
+// per-case stores with the pop-or-NONE loop 502; per-case stores with native flag masks 512 (2060 bytes).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

@@ -77,6 +77,12 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // the final test in each grouped/ungrouped term order 78-79; short counter 205; the component loop written out
 // 184. Env, without it: the component loop written out 185; the normalization's three stores in the five other
 // orders 97/103/98/169/171; a rotated-vector local copied back 179 (1015 bytes), stored per component 167.
+// Round 36 (lane 13; compile-only screens of the block up to the first 0x30bf0 call reproduce ours, then fast):
+// the side dot's terms come out in descending first-mention order of the direction's fields (the length's text
+// order moves the j/k-term pair), but the term with the fresh `0 - j` always comes first where retail has it
+// last (k, j, i). The direction scaled i, k, j 178 (989 bytes); the length written k, i, j 106; a separate
+// perpendicular vector for the dot (then copied over the offset) 201 (1015 bytes), declared at the top 201,
+// with the i, k, j scaling 206; the offset computed after the normalization 216 (1013 bytes).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

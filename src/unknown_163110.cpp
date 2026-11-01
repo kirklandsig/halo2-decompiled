@@ -379,11 +379,20 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 32 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
-// the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
-// d * scale, x and schedule the k row's first add before its third product, where the other planes
+// score 28 (was 32): at retail's length (2833 bytes). Left: the top and bottom planes sum the distance as
+// z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
+// Round 37 (lane 13, one-file LTCG harness equal to the full build): x0 read through rect like the other three
+// corners 28 (kept: the identifier store and the rectangle loads now follow retail); on it the points local
+// dropped 28 (same code), the position pointer in the transform 40, a normal pointer in the error test 48,
+// the scale read in the sum 36, rect declared first 28, depth read before the identifier store 31, x0 as
+// `depth * rect->x0` 28, the locals declared after the copy 28; the plane normals' z inputs through rect (any
+// of the four) 669 (2838 bytes); `0.0f - depth` for the corner z 676 (2791 bytes); all 24 one-expression
+// distance sums 60. The top/bottom helper (z, y, d * scale, x) with x0 through rect gives 6 (left: the x-term
+// operand order of planes 1-3), with a position pointer in it 10, in both helpers 20, with the error normal
+// pointer 26, scale inline in either helper 37; 1-8 dead copies of depth (diagnostic only) 14 except 8 (6),
+// in the second helper 1-4 dead copies 14/14/14/6: the plane 1-3 operand order is not a numbering effect.
 // Round 51 (lane 16): retail's has-plane arm jumps past the plane-4 transform, so the shared
 // transform after the if/else was a behaviour difference: the transform back in the else arm 99
 // (2818 bytes, the stored unit normal forwarded), with that normal set through vector3f_assign
@@ -598,7 +607,7 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 		result->rectangle = *rectangle;
 		result->identifier = identifier;
 		real depth = camera->depth;
-		real x0 = result->rectangle.x0 * depth;
+		real x0 = rect->x0 * depth;
 		real x1 = rect->x1 * depth;
 		real y0 = rect->y0 * depth;
 		real y1 = rect->y1 * depth;

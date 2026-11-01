@@ -142,6 +142,11 @@ void function_213970(void);
 // the call; the re-read getter alone: load after the clears in EAX, copied to ESI before the compare. On the
 // separate globals (--fast): no pragma + re-read getter 153; with the helpers 153; helpers under the size
 // pragma stay out of line. Still BLOCKED-BY the block definitions above.
+// Round 36 (lane 13, fast): the language query and both preference updates in their own block 131 (same
+// code), without the size pragma 158; one dirty store after both tests behind a changed flag 173 (259 bytes);
+// block B's scalar zero stores ahead of its header clear 131; the version compared as a dword 131; the
+// existing wrapper 0x11cae0 called in both the language test and the store 129 (232 bytes, two points). Still
+// BLOCKED-BY the separate global definitions (block A in src/unknown_213760.cpp and src/unknown_213d20.cpp).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

@@ -104,6 +104,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // before the token table's initialisation 121/59; both 203/58; the clamp written inside the subscript 202/53;
 // the done flag set at the block top (diagnostic) 185/68; the next pointer initialised to NULL and the
 // terminator stored through pointer arithmetic: identical code.
+// Round 36 (lane 13, fast): retail reads the size three times around its clamp (an unconditional select and
+// store, then a reload for the terminator), the reads of a size that is never held in a register; that extra
+// weight would also put its home under next/count as retail has it. Every non-volatile form here keeps it in
+// EAX. The clamped size in a separate `length` for the terminator 216 (763 bytes); the clamp and terminator
+// before the token array and counters 129; the done flag set right after the wait 154 (766 bytes); the
+// counters declared and zeroed at the block top 127 (zeroed before the read call); with the token array too
+// 221 (756 bytes); NULL first token with the loop after the success block 127 (EBP still pushed at the loop).
 // @retail 0x121fc0
 void function_121fc0(void)
 {
