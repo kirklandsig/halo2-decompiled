@@ -608,6 +608,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
 // lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
 // fixed); after the particle mask or the particle lookup 42 (no change).
+// Round 299: Word carried particle mask with indexed definitions, scale-first defaults and early pure mask
+// derivation, masks 0..7: 199/201/197/199/259/260/260/261. Original dword mask, offset/default lifetimes and
+// body restored. Shared rotation/frame providers stay matched; offset/default/reload and row-i input/product
+// residence remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1082,6 +1086,9 @@ public:
 // the flattened squares in reverse spelling order, retail's j, i, k would need a k, i, j spelling no helper has);
 // scale nested in the normalize call in the fallback/default case/both 248 each; the colour in a local before the
 // matrix scale/after the position copy 262/261 (1363 bytes), with a tinted local too 278 (frame 0x5c).
+// Round 299: Retained zxy magnitudes with perpendicular store orders ikj/jik/jki/kij/kji 239/184/258/261/262;
+// native perpendicular result/common publication with ijk/jki/kij producers 431/444/436. Original axis
+// producers and body restored; normalized-j/default-cross and color/tag homes remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1523,6 +1530,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 295: Native system/definition/cluster entry storage in all seven subsets [102, 102, 102, 102, 102, 102, 102].
 // All three plus effect/view entry storage 102. Original producers and body restored.
 // Round 297: Native unsigned owner/iterator/next-slot domains in all seven subsets, then all with owner declared before effect acquisition, 102 each. Original signed domains, declaration scopes, queries and complete body restored; NONE/owner, availability and Boolean homes remain.
+// Round 299: Complete owner-valid/equal/available conjunction orders ACB/BAC/BCA/CAB/CBA 102/102/102/147/147;
+// explicit owner-result arms with ACB/BCA/CBA 149/149/104. Original full predicate order, owner result and
+// body restored; NONE/owner coalescing, BL availability and Boolean homes remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

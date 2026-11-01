@@ -32,21 +32,24 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
 
 PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 {
+	real result;
 	real local_0 = (real)sqrt(arg_0.k * arg_0.k + arg_0.j * arg_0.j + arg_0.i * arg_0.i);
-	return fabs(local_0) < 0.0001f ? 0.0f : local_0;
+	if (fabs(local_0) < 0.0001f) result = 0.0f;
+	else result = local_0;
+	return result;
 }
 PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
 {
+	real result = 0.0f;
 	real local_0 = magnitude2d(arg_0);
 	if (!(fabs(local_0) < 0.0001f))
 	{
 		real local_1 = 1.0f / local_0;
 		arg_0->i = local_1 * arg_0->i;
 		arg_0->j = arg_0->j * local_1;
+		result = local_0;
 	}
-	else
-		local_0 = 0.0f;
-	return local_0;
+	return result;
 }
 PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 {
@@ -59,7 +62,7 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 	arg_2->k = arg_0->k * arg_1;
 }
 
-// score 354 (was 354): frame 0x58 versus 0x64 and magnitude/vector/query homes remain; actor EAX and stack input now agree.
+// score 345 (was 354): frame 0x58 versus 0x64 and magnitude/vector/query homes remain; actor EAX and stack input now agree.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -221,6 +224,11 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // schedules, 354 each; four complete compound-product boundaries 354 each.
 // Original three-use normalizer and complete body restored; frame 0x58/0x64 remains.
 // Round 297: Actual acceleration workspace at entry/settings entry/movement-query entry, scalar stores or existing vector setter, 354 each; original-scope coordinate aggregate/setter 354/354. Original storage, native producers, helper bodies and complete body restored; frame 0x58/0x64 and magnitude/query homes remain.
+// Round 299: On retained native working/query/history graph, magnitude
+// negative-success/root-updated/zero-default/complete-arm results 357/426/380/354; each with planar
+// zero-default result 348/421/420/345. Keep complete magnitude arms plus planar zero-default result, plain
+// 345 at 1866/1863 bytes; all 11610 matches and every other metric preserved. The six-point form 348 is
+// ineligible. Frame 0x58/0x64, initial vector/magnitude and query homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

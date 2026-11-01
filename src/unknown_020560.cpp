@@ -853,7 +853,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 570 (was 570): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
+// score 547 (was 570): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
@@ -892,6 +892,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // bytes). All declarations and original body restored; count/selection/fraction homes and frame
 // remain.
 // Round 297: Nearest/opposite/both ordinal-first candidate publications 570 each; native unsigned selected ordinals with all four publication pairs 570 each; shared true distance reduction 570. Original state updates, ordinal domains, reductions and complete body restored; frame/input and selected-sample/fraction homes remain.
+// Round 299: Nearest/opposite/both selected pointer results 547/803/745; zero-default fraction pairs
+// 547/803/745; both pointers with indexed nearest traversal 763/763. One-use nearest-result aliases restored.
+// Direct actual selected-record state, no alias, 547; keep this ninth form, plain at exact 2122 bytes with
+// all 11610 matches preserved. Original opposite ordinal, traversal, scalar trees and copy/blend paths
+// retained. Frame/input, scan and fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -907,7 +912,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
                 copy_light_sample(samples, order, red, green, blue, direction);
                 return;
             }
-            long nearest = 0;
+            s_light_sample const *first = samples;
             real closest_distance = 1048576.0f;
             s_light_sample const *nearest_sample = samples;
             for (long i = 0; i < count; ++i)
@@ -919,11 +924,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
                 if (distance < closest_distance)
                 {
                     closest_distance = distance;
-                    nearest = i;
+                    first = nearest_sample;
                 }
                 ++nearest_sample;
             }
-            s_light_sample const *first = samples + nearest;
             vector3f delta;
             delta.i = position->x - first->position.x;
             delta.j = position->y - first->position.y;
