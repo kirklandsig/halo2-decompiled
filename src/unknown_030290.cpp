@@ -320,6 +320,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 451: Signed depth intervals at reversed/origin/displaced test subsets 1/2/1+2/3/1+3/2+3/all,
 // then all upper-first: 227/216/248/250/242/244/245/214. Original absolute tests and helper
 // restored.
+// Round 256: Guarded coordinate acquisition xzy/yxz/yzx/zxy/zyx gives 287/293/293/287/293;
+// coherent scale with xyz/yzx/zyx gives 301/301/301. Original shared guard, alias-safe snapshots
+// and body restored; frame 0x30 remains.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

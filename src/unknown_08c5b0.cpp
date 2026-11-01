@@ -112,6 +112,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // bytes); a one-expression ternary helper, plain read 32. One-file LTCG probe (exact here), plain read: a 16-bit
 // bitfield kind, a byte-pointer read, the header type's view, by-reference/pointer parameters, `1 == kind`, the
 // helper written in place: all fold the compare (`cmp word ptr [eax + 0xe], 1`).
+// Round 466: Controller before selector 15; old state before selector 24; controller before kind 14;
+// controller before kind then old state 24; complete controller/old state before kind 24;
+// the latter three early-old-state graphs with direct change-result production 39/38/38.
+// Original acquisition order restored; request/kind registers remain.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

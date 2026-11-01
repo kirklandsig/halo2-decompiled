@@ -1358,6 +1358,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // byte compare); team read from the field at each use 206 (917 bytes); the no-current form again 198 (owner
 // edx, `test`, cursor +0x1138 as retail; the zero takes esi in the second loop and the name count stays in
 // memory), with the PIN clamp 198.
+// Round 256: Scalar cache test first crossed with bounded byte count, uniform current-field reads
+// and copy-first completion: 222/223/211/226/213/248/238/234. Original cache guard, count,
+// receivers, publication and body restored; owner/count/zero homes remain.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

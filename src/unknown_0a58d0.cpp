@@ -285,6 +285,15 @@ struct s_z_state_world
 	long state;
 };
 
+// score 11 (was 11): this round: the fast check reads 11 at 120/120 bytes again and no new form was
+// tried; the difference is still the database pointer in ECX where retail keeps it in EDX and the
+// active byte folded as `mov cl, [eax + edx + 0x20b2]`.
+// score 11 (was 11): this round: reading the active byte from the array element with the database
+// read early still folds the byte as retail does (`mov cl, [eax + edx + 0x20b2]`) and keeps the
+// database in EDX, but the database load is hoisted above the object lookup and the record address
+// comes out as `add eax, edx` with the 0x20ac folded into every field offset (19). Taking the record
+// pointer before the active test does not change that (19). A named world pointer moves the world to
+// ECX and the state to EDX (21). Still the database pointer in ECX where retail keeps it in EDX.
 // score 11 (was 11): the entity pointer is materialised in EAX and the record is read through it;
 // retail folds the address into the load itself.
 // The fold is the scheduler's rewrite of `lea; mov cl, [eax+6]`; ours can't do it because the
@@ -334,6 +343,11 @@ bool function_a9820(long *block, long index)
 // (same code); the identifier read before the state test 22; the world local used for both reads 18
 // (the database is then updated in place, but in ECX with the world). A permuter run produced no
 // variant below 11. Still the database pointer in ECX where retail keeps it in EDX.
+// MiniMax G (10-31): the database pointer is still loaded into ECX where retail loads
+// it into EDX, and the active byte is still read through the materialised record address instead
+// of the array; a database local with the byte read from the array, the same with the record
+// address taken inside the test, a world local, the record read without any pointer at all, the
+// modulo and mask index forms and the database read before the state test all score 14 or worse.
 // Earlier: the database pointer takes ECX where retail keeps it in EDX, and ours takes the
 // record address before the active test and reads the byte through it (`lea eax, [eax + ecx + 0x20ac]`,
 // `mov cl, byte ptr [eax + 6]`), while retail reads the byte from the array and takes the address after.

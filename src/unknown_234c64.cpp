@@ -298,6 +298,9 @@ void c_window_channel::v9()
 // Round 321: The address reload still differs; original derived request, callback and virtual dispatch restored.
 // Round 56: inline definition 3; array-decay id 3; user-mask/channel/window locals 3/3/3;
 // explicit pending receiver 3; explicit callback dereference 3; explicit setter receiver 3.
+// Round 43 (lane 10): plain parameters local with its own field_c store 3; the builder given the
+// first member's address 3; one base pointer for the callback and setter (callback result passed
+// directly) 25; early return with the request at function scope 13, declared after the test 3.
 // @retail 0x23531c
 void c_window_channel::v10()
 {
