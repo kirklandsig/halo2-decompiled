@@ -608,6 +608,14 @@ void function_1537f0(s_profile_record *record);
 // Round 101 (lane 7), `--fast`: identity `= { 0, 0, 0 }` 95 (282 bytes); a const identity `= { 0 }` 67; assigned from a
 // value-initialized temporary 67; memset of its member array 67; the zero identity copied into the entry first and the
 // entry's own identity passed to 0x7f8b0 97 (284 bytes).
+// MiniMax E (10-31): the record's own tail clear and byte sentinel dropped (the record initializer
+// already leaves field 0x7f at 0xff) 78 (238 bytes, plain); the entries walked with a pointer 53 (255 bytes).
+// MiniMax E (10-31): the link words' -1 is the same constant as the globals' NONE and so stays in EBP; retail
+// keeps it in EAX and gives the record's field 0x40 its own register; 45 (259 bytes).
+// MiniMax E (10-31): the identity and the record in one two-member local struct (identity, then record) and the
+// entries walked with a signed index 45 (259 bytes, plain); not kept (a made-up struct that sets the stack homes;
+// no existing type pairs them). The record's field 0x40 then shares a register with the field 0x44 word and the
+// NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
 // @retail 0x7f930
 void function_7f930(void)
 {
