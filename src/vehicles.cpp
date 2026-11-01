@@ -567,6 +567,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Round 103 (first difference: the velocity copy loads x into ECX, retail EAX; then the 1.0 constant): the
 // velocity as an aggregate initializer `{ i, j }` 130; the short-speed fallback as `direction = velocity` 275
 // (1159 bytes); forward, heading or the input vector as aggregate initializers 126 each (identical).
+// Round 13 (lane 17), at 126: the velocity copied x first alone 130 (VC then loads y first and squares it first; the
+// y-first copy loads x first, as retail, but into ECX); the short-speed arm written first (`if (0.0001f > ...)`)
+// 134; `speed` declared with the top locals 126; the normalizer's y product written `inverse * v->y` 126; `left`
+// written y first 126. Retail's normalizers keep the source operand order (x: inverse loaded, y: v->y loaded) where
+// ours loads inverse for both.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1499,6 +1504,17 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // Coordinator review (lane 8 r103): the lane's 40 named each half product in a one-use local (`real half`),
 // kept only with a match; without them 356. Writing the half product into the result (and the loop's value)
 // first and adding 0.5f in a second statement keeps VC from refolding it, 44 with no new local (kept).
+// Round 13 (lane 17), at 44 (left: the two VEHICLE_GET SIB orders 2, the three reloads after the overlay block 3,
+// the cross 8 and forward-speed dot 4 operand orders, the iterator/channel setup 27): the iterator given a
+// constructor in its header (mem-initializers in member order with the 0x28 field as a short, floats in the body;
+// 0xf6670 drops its copy of the init, stays 286; 0x1dceb0 still matches) 40: the iterator's NONE stores then come in
+// retail's member order and the cross's two up.i products load retail's operand, but every channel store still
+// precedes the graph-index load (retail loads it right after the channel's three zero words) and the iterator stores
+// follow it; on that: one forward pointer for the cross and the forward-speed dot 48, `state` declared at function
+// scope (assigned before the channel) 40, `left` declared at block scope 40, the forward speed passed straight to the
+// fraction (no `speed` local) 40. Diagnostics: `iterator.animation_id = c_type_709360()` after the index 149 (a
+// temporary copy); the function channel declared before the iterator 44; the sum's source order is ignored (VC
+// always forms (i + j) + k here, retail keeps k, j, i).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2419,6 +2435,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // first); a nested ternary with the gear assigned inside it 10 (identical). Diagnostics: without the
 // in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
 // weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
+// Round 13 (lane 17), at 10 (the same 8 slot lines and the 2-line zero/reload order after the first fmod): torque
+// renamed `engine_torque` 10 (identical); the period as one named pointer for both wraps 65; the contact and
+// contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
+// rotation declared in each steering branch 186 (frame 0x40).
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {

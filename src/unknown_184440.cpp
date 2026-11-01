@@ -215,6 +215,11 @@ __forceinline bool function_184448(long arg_0)
 // per-face 3D/2D/both polygon arrays 977/977/977; each with late projected bounds 965;
 // all with world bounds declared at initialization 965. Keep only the later projected
 // bounds initialization. Frame 0x11d4 versus 0x11cc and initial geometry homes remain.
+// Round 13 (lane 17): the plane transform reading the three normal components into scalars (no vector copy) 978 at
+// 4557 bytes (frame 0x11cc as retail; the transform's products and adds then follow retail's sequence, one spill
+// slot apart); the per-face bounds initialized at the top of the face loop (retail stores them there) 977; both 1024
+// (4538 bytes); the existing normalize3d for both normalizations 1002 (4542 bytes); the two vector copies before
+// the plane-distance dots dropped (the dots on the originals) 1062 (4477 bytes). Original helpers and body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

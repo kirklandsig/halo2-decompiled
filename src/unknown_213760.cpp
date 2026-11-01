@@ -1302,6 +1302,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
 // the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
 // write handle 120.
+// Round 13 (lane 17), round 53's 7 form rebuilt (7, fast: the write's handle loaded after the flags zero, and the
+// checksum compare in EDX); on it, a file-scope inline getter returning the element's handle as an s_file_handle in
+// place of the casts: at all four calls 118 (917 bytes, the close copy dropped as with locals), at resize and write
+// 6, at query and write 6 (the listed 6: resize handle EAX, header address ECX, close copy EDX, each one register
+// before retail's), at resize, write and close 118; the getter at resize and write with the plain
+// `written = bytes == 0x800` 110. All restored: no match, and a getter with one caller is not kept.
 // @retail 0x213970
 void function_213970(void)
 {
