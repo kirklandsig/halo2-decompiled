@@ -21,6 +21,7 @@ struct c_type_709360
 	short index;
 
 	c_type_709360() : graph_index(NONE), index(NONE) {}
+	bool operator==(c_type_709360 const &other) const { return graph_index == other.graph_index && index == other.index; }
 };
 
 /* a frame event of an animation (type 0 and 1 are the feet) */

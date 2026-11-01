@@ -707,6 +707,24 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
 // before its buffer 34 (all identical code: names do not break these register ties); the body case as
 // an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
+// Round 106 (lane 7; compile-only exact here, aligned in brackets, base [22]): retail's body arm ends in the
+// scratch clamp's `mov edi, ecx` (one `size = remaining` reached from both arms). One size assignment after
+// the arms with a body pointer local, `size = body ? remaining : MIN(size, remaining)`, gives retail's size
+// EDI / position ESI / buffer EBP and the whole scratch arm, 161 (689 bytes) [16: the body arm loads the
+// size first, so the dispatch hoist goes]; the same as if/else 161 [16]; with the local at case scope 161
+// [16]; per-arm remaining with `if (body || size > remaining) size = remaining;` 160 (689) [20: body arm
+// retail's but buffer/size EBP/EDI swapped]; `if (body || size > remaining expression)` 157 (691) [16];
+// the body local alone 161 [25]; capacity from each arm then MIN or if after the join [22-27, cmova];
+// names/declaration order/body-test operand order/total and signature sum orders on these: no change.
+// Diagnostic (a mixed read, not kept): the join plus a body-size local read before the switch for the
+// body test 24 (687 bytes) [12]: the body arm onward is retail's; left the entry total (EAX, retail EDX),
+// the switch in EDX with the load before the first test (retail ECX, load after `dec`), and the
+// signature sum folded into ESI (retail `lea esi, [ecx+edx]`). Without the total local on that [46].
+// Compile-only, no change [22]: position/size at function or switch scope, initialised size or buffer,
+// `size = body_size; size -= offset`, an explicit if clamp, the signature position spelled
+// `p = a; p += b`, as long, declared after the signature buffers or compared reversed, the cases
+// swapped; a forceinline seek helper for either position [31-65]. Flags (diagnostic): /O1, /Ox, /Oy-,
+// /Ob1, no /arch:SSE: none gives retail's colours.
 // Round 42 (lane 11, fast): a separate scratch-size local as 0x2adb10 writes it (`dword buffer_size;`
 // getter into it, `size = MIN(buffer_size, remaining)`) gives retail's body arm (the remaining count in
 // ECX from the body-size load, `sub ecx, eax` jumping into the clamp's `mov size, ecx`; position ESI) but
@@ -717,6 +735,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Compile-only (exact here, base 22 aligned): about 900 combinations of those arms with the total local
 // or none, both test orders, both operand orders of each position, buffer/size declaration and statement
 // orders, the size local's placement and name, and the getter's store orders: none below 22.
+// Lane 12 r66 (fast; a /GL- compile-only screen matched the build): a body_size local read once before the
+// switch for the body test, the direct arm and the signature sum (the scratch clamp still reading the
+// fields after the claim) 33: the body arm becomes retail's (`sub ecx, eax` then the shared `mov reg, ecx`),
+// but the entry sums header first, the dispatch loads it before the header case and size/position stay
+// ESI/EDI (a mixed read, not kept); with the clamp on the local too worse (compile-only); renamed or with the
+// total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
+// clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
+// (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -934,6 +960,10 @@ struct s_signed_file_write_parameters
 // and copies it to EDI and puts the size in EBX, where retail loads the buffer straight into EDI
 // and the size into EAX (copied to EBX before the memset's zero); the 940-byte forms keep retail's
 // buffer register but give the buffer the parameters home (retail the task home).
+// Round 261: Shared WriteFile output for header+scratch/header+direct/header+publication/header+signat
+// ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
+// lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
+// original body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -347,6 +347,28 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
 // vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
 // file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
+// Round 65 (lane 12, fast with 0x2461a0): the scale helper taking the vector by value 397 (456 bytes,
+// sphere helper outlined; 0x2461a0 84); the difference made in the plane's normal with the j,k,i sum
+// read from it and the scale in place 181 (693 bytes); the difference copied to the normal before the
+// radius test and scaled in place there 397 (456); the difference through the existing
+// scaled_difference3f with scale one 57 (same code), with the flat i,k,j sum 61. No existing helper
+// reads only the i and k squares through a pointer (the pointer form's shape).
+// Round 58 (lane 16, fast): the best-* updates stored plane, depth, type, index 63; the root kept as a double
+// with the reciprocal `(real)(1.0 / root)` 397 (456 bytes, sphere helper outlined); the normal copied from the
+// difference and scaled in place on the plane 397 (456); the radius test as `!(distance_squared >= r * r)` 58;
+// the squared distance as a double 397 (456). Repeats: unit-z default before the epsilon test 174 (689 bytes),
+// a radius local after the normal 62 (672 bytes).
+// Round 15 (lane 17, fast with 0x19cb90/0x245bd0/0x245d80/0x2461a0): the sphere passed by reference 57; flat
+// i, k, j sum with the reciprocal in the call 61; a named i + k partial plus the j square 59; the
+// unit-z arm through the normal member, unit z first then separate zeros 61; a scalar point-to-point
+// squared-distance helper (no vector of its own) beside the difference 307 (776 bytes), with the
+// difference made inside the radius test 227 (722): the subtractions are still not merged. Diagnostic:
+// the unit-z arm's 1.0 read from a named global stops the 1.0 hoist (retail's fsqrt block) 153 (681 bytes).
+// Round 17 (lane 17, fast): the difference from a by-value helper 397 (sphere helper outlined, 456 bytes);
+// length_sq3f(&d) with the normal by fields 152 again (every product then in place and 1.0 loaded in each
+// arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
+// 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
+// existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

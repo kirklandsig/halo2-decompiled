@@ -571,6 +571,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // 126 (all identical code); the input rotation before the forward copy 122; forward normalized before the input
 // rotation 270 (1146 bytes). Retail loads the 1.0 constant between the entry magnitude's i/j add and its k
 // product (XMM3; ours after the whole sum, XMM2), and writes blend.y before blend.x.
+// Round 13 (lane 17), at 126: the velocity copied x first alone 130 (VC then loads y first and squares it first; the
+// y-first copy loads x first, as retail, but into ECX); the short-speed arm written first (`if (0.0001f > ...)`)
+// 134; `speed` declared with the top locals 126; the normalizer's y product written `inverse * v->y` 126; `left`
+// written y first 126. Retail's normalizers keep the source operand order (x: inverse loaded, y: v->y loaded) where
+// ours loads inverse for both.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1103,7 +1108,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 597 (was 639): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
+// score 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
 // double (LTCG had pushed its 8-byte alignment need onto 0x2056e0's callers).
 // Physics-state branch scope, separate velocity outputs and both 715 each; final default-array
@@ -1120,6 +1125,9 @@ long function_10f5f0(long object_index);
 // names also has its own block, but the real build keeps 0x1990 (LTCG groups the 12-byte velocity first, so the
 // buffer sits apart and the kill-volume scalars start 12 bytes low). names `= { 0 }` 629, memset 634, both in a
 // block 629.
+// Round 469: Sixteen-point short/word/signed-byte/byte ordinals with three native axis bounds
+// 612 each; those four ordinals with the original buffer 612 each (2220/2264 bytes).
+// Frame 0x1990 still exceeds 0x1984; original complete body and local qualifier restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1516,6 +1524,17 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // channel declared before the iterator 44 (twice, before and after the real-typed fields); linear_velocity
 // declared first 40, `i` declared first 40, the cross result declared at the block top 40 (all identical code).
 // Left: retail schedules the graph index load and the iterator's NONE stores before the channel's NONE stores.
+// Round 13 (lane 17), at 44 (left: the two VEHICLE_GET SIB orders 2, the three reloads after the overlay block 3,
+// the cross 8 and forward-speed dot 4 operand orders, the iterator/channel setup 27): the iterator given a
+// constructor in its header (mem-initializers in member order with the 0x28 field as a short, floats in the body;
+// 0xf6670 drops its copy of the init, stays 286; 0x1dceb0 still matches) 40: the iterator's NONE stores then come in
+// retail's member order and the cross's two up.i products load retail's operand, but every channel store still
+// precedes the graph-index load (retail loads it right after the channel's three zero words) and the iterator stores
+// follow it; on that: one forward pointer for the cross and the forward-speed dot 48, `state` declared at function
+// scope (assigned before the channel) 40, `left` declared at block scope 40, the forward speed passed straight to the
+// fraction (no `speed` local) 40. Diagnostics: `iterator.animation_id = c_type_709360()` after the index 149 (a
+// temporary copy); the function channel declared before the iterator 44; the sum's source order is ignored (VC
+// always forms (i + j) + k here, retail keeps k, j, i).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2433,6 +2452,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // first); a nested ternary with the gear assigned inside it 10 (identical). Diagnostics: without the
 // in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
 // weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
+// Round 13 (lane 17), at 10 (the same 8 slot lines and the 2-line zero/reload order after the first fmod): torque
+// renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
+// contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
+// rotation declared in each steering branch 186 (frame 0x40).
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2805,6 +2828,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // its /Ob1 file; retail inlines it here, x, y and z in registers with only the forward and left rows stored);
 // 0x1427f0 marked inline at its definition 1084 (frame 0x84) but matched 0x210770 then breaks (48); a
 // __forceinline redeclaration here 1238 (ignored). The frame stays 0x80 against 0x74 (a flags lead).
+// Round 469: Angular-output/scaled-velocity/heading-pair lifetime scopes in seven nonempty
+// combinations, then all with input declared at consumption: 1053/1053/1053/1053/1053/1053/1053/1053.
+// Every initializer, expression and call restored; frame 0x80 versus 0x74 remains.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3776,6 +3802,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
 // score 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
+// every frame slot now retail's; left: the override search's exit (retail tests the found
 // element out of line, threaded from the loop; ours re-tests i < count), the permutation pointer's load order,
 // integer registers in the ray copies, the scale products (ours copy the scale, retail scales in place), the
 // clamp/fallback store placement and the final flag writer. Before round 45 (286, was 303): the state/permutation
@@ -3839,6 +3866,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // then retail's (`[eax+ebx+4]` flag read, then `add eax, ebx`), a bool ray-cast helper the same; all of those
 // with reach 181. Left on that set: the world loaded into EAX then moved to ESI (retail loads ESI), the zero
 // hoisting with reach, and the fallback select (retail `movss 1.0 / jne / xorps`).
+// Round 469: Integer-displacement grouping with indexed mismatch-continue, body-stepped
+// cursor, predicate-owned cursor and indexed while searches 251/257/257/251;
+// the four searches with the original displacement 251/257/257/251. Original body restored;
+// frame 0xec agrees, metadata load order and found-index retest remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

@@ -169,6 +169,9 @@ static inline void transform_offset_point(transform4x3f const *frame, real scale
 // (20 now; with one exit 20): the first test written i first 20 or as `<= 0.0f` 22,
 // the target root read from the parameter 20, the placement radius by if 452, the
 // target store after the first test 464, the target header read at its use 174.
+// Round 64: direct target reads with 0x11c5b0 20; separate workspaces with it 20;
+// a result snapshot 20; placement radius after the direction copy 123; named horizontal
+// squared magnitude 20; split radius declaration 123; goto done 20; mixed target reads 20.
 // @retail 0x14e200
 bool __stdcall function_14e200(long player_index, long target_index, point3f const *position, bool detach)
 {

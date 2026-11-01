@@ -209,6 +209,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // and complete output publication 412/412/453/453/458/458/464/464; mixed input
 // constructions 492/488. Native copies gain 31 but demote matched 0x26ccb0;
 // output publication demotes eight controls. Original helper and entire body restored.
+// Round 259: native returned cross vector, component/aggregate construction, mutable/const
+// normal and explicit/aggregate planar initialization, eight combinations 597 each.
+// All original helper contracts, normal storage and executable source restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
