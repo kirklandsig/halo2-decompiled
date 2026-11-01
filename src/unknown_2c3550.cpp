@@ -630,7 +630,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
 // constant, and the path pointer and the obstacle, search and step homes differ.
-// score 675 (was 675): the frame 0x1f88 and the length agree, but retail keeps the success result
+// Earlier: the frame 0x1f88 and the length agree, but retail keeps the success result
 // in a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and
 // the path pointer and the obstacle, search and step homes differ.
 // Round 134: retail's result is a stack byte (ebx = pathfinding, then NONE): bool result 757; radius as
@@ -695,6 +695,8 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 754, 748, 773, 675, 754, 768, 773, 786. Original executable source restored.
 // T47: Input-step cursor / forward inserted-step cursor / repeated blocking-segment receiver
 // subsets 730/728/766/675/730/728/766; all with Boolean success 752. Original body restored.
+// Round 260: Six direction/previous-direction/world-start declaration schedules 675/675/675/675/675/675;
+// reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

@@ -173,6 +173,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // candidate/endpoint short-byte, word-byte, long-byte, byte-short, byte-word,
 // byte-long, short-short and word-word counts 443/443/442/409/409/415/438/438.
 // Byte/short gives 1736 bytes and 0x1c cleanup but frame 0x78. Original helper and body restored.
+// Round 260: Double endpoint differences with byte-byte/short-byte/word-byte/long-byte/byte-short/byte-
+// word/short-short/word-word carriers 437/513/513/510/451/451/515/515. Original distance, counters,
+// helpers and body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
