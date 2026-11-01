@@ -106,6 +106,10 @@
 // external-storage bit view 456/454; native allocation-count view 456/454;
 // aligned whole-plane publication with bit/count or mask 480/480. Header and
 // body restored; cleanup tests/preloads recover but entry roles and length regress.
+// Round 437: Native sixteen-byte storage with the per-part containment output
+// 406 reduced; with const query 406; live flags 442/442; branch-owned query data
+// 448/447, with const query 448/447. Ordinary judgment unavailable; original
+// storage, observations and complete body restored. Frame/list and pointer homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
