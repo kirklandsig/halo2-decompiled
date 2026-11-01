@@ -573,6 +573,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
 // first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
 // before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 275: complete native vertex values in paired/actor/trace cases 502/337/400;
+// paired-actor/paired-trace/actor-trace/all 526/551/438/575; all with shared
+// differences 583. Exact-only snapshots restored; early root/actor ownership and vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

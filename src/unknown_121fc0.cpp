@@ -125,6 +125,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
 // initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
 // 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
+// Round 275: bounded search ordinal in short/word/byte storage 213/213/208; ordinal result
+// in short/signed-byte 139/218; both short 214; byte token/unique counts 236/178.
+// Original body restored; early EBP preservation and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

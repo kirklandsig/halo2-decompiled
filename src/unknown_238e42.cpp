@@ -993,6 +993,9 @@ bool __stdcall function_2399da(long controller_index)
 // moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
 // Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
 // for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 275: one common denial-message result, long/dword/short/byte carriers with zero/NONE
+// representations 172/177/172/177/173/181/161/161. Exact-only message guards restored; frame
+// 0xf00 agrees, identity/rank EAX/ECX ownership and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
