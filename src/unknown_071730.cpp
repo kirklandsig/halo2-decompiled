@@ -204,6 +204,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // both/native long balance/record-balance/setter-balance/all/all with initial memset
 // 439/477/477/454/454/477/477/486. Original record, property construction, short balance
 // and complete body restored; frame/result/state/getter homes remain.
+// Round 241: Shared long balance-output scratch with completed roster count/deadline/final deadline,
+// singles/pairs/all 439/441/439/441/439/441/441; all with first elapsed result 441.
+// Original separate scalar phases and complete body restored; frame and result/state/getter homes remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

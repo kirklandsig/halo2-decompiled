@@ -622,6 +622,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // `mov ax, word ptr [eax]`) 319; the root entity as `root->type == 1 ? root->entity : NULL` then tested 321 (retail
 // loads the type into ECX first; ours still compares memory); both 319; distance computed before the origin
 // reads 322; index/other_index declared before valid 321.
+// Round 241: Complete normal/distance/side multiplicand ownership, seven nonempty
+// subsets 321 each; all with successive original-group normal/distance sums 321.
+// Original producers, helper contracts and complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
