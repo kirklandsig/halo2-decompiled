@@ -272,6 +272,9 @@ struct s_pending_message_storage : s_pending_message_header
 // score 14 (was 14): the frame is 0x1c against retail's 0x18 and the stack-slot offsets
 // differ throughout; retail gives the pump counter and the size the two lowest slots and
 // packs the time stamp's high half into the tick counter's slot, ours gives it its own.
+// Round 103: const capacity, split capacity read, null allocation outside or inside the guard,
+// requested_capacity and worker_allocation 14 each; cached capacity for the request size 80 (287
+// bytes), for the optional size 20 (281). Original body restored.
 // unsigned capacity 14; result after both outputs 85; result after pointer output 85; unsigned
 // capacity and late result 85; published field output 14; published field test 14; both
 // published field consumers 14; allocation-result flow 45. _ReadWriteBarrier before the

@@ -176,6 +176,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Round 260: Double endpoint differences with byte-byte/short-byte/word-byte/long-byte/byte-short/byte-
 // word/short-short/word-word carriers 437/513/513/510/451/451/515/515. Original distance, counters,
 // helpers and body restored.
+// Round 479: complete normalizer-square/distance-square/dot product parts,
+// masks 1/2/4/3/5/6/7: 407/408/407/407/406/407/406; all plus named
+// squared sums 402. One/two/six-point reductions rejected; helpers and body restored.
+// Candidate input retained on normalizer/dot, all-part and named-sum graphs
+// 405/405/405; named-sum graph with signed-word counters 444. Original input
+// observations, helpers, counters and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -446,6 +452,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // crossed with separate transformed-forward output and separate phase cosines,
 // 763/763/763/763/769/769/769/769. Original output ownership and helpers restored;
 // frame 0x124/0x114, eager radius and trace/pivot homes remain.
+// Round 476: Native indexed endpoints, paired long/short/word/unsigned-long coordinate loops 782/749/749/782; separate endpoint loops 738/819/819/738.
+// All frames remain 0x124 versus 0x114; lengths 3356/3372/3373/3403 do not yield a gain. Original sample producers, complete body and helper contracts restored.
 // Round 144 (lane 4, fast; counts are positional, with the mnemonic-aligned count in brackets, base 719 [244]):
 // retail computes the reverse endpoint with one `0 - distance` value used for both products (ours folds each
 // `i * -d + x` into `x - i * d`), and rotates the obstacle direction in x87 from an unrounded angle (`fld; fchs`

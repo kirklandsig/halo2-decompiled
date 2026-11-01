@@ -2182,6 +2182,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // aggregate: 591/506/506/612/600/514/512/513. Turning construction restores actor/state ownership and point +0x10
 // but regresses; constant-first distance/common result exit on turning/all graphs: 591/629/620/616.
 // Original complete body restored; actor/state ownership and first-point home remain.
+// Round 273: On the recovered turning-constructor register prefix, coherent
+// admission/alignment/search workspace names in seven subsets and all with
+// planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
+// First point/prefix recover but later homes regress; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

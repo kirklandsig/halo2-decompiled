@@ -3528,6 +3528,20 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
 // fast; all three with the native machine-address field copy 131. Original declarations,
 // machine copy, result qualifier and full body restored; full starting count remains 119.
+// Round 21 (lane 17, fast with 0x630f0/0x59e50): the machine copy by `memcpy` from `identity + 0xa` 119 and from the
+// XNADDR `abEnet` 119 (same code); through a named byte source pointer with `memcpy` 151 (463 bytes, as the named
+// source pointer: first attach and merged reason-7 tails retail's, the copy's `lea` folded, the member path, tails
+// and reservation loop one register step behind); the copy declared before the result 121; `return *reason = 7,
+// false;` compiles the same (compile-only); 1-3 dead temporaries (diagnostic) 119 each.
+// Round 18 (m3 lane 18; fast with 0x59e50 and 0x630f0 in the list, which reproduces the full 119; without 0x59e50 the
+// reduced image gives 131 at 480 bytes): the machine address copied with memcpy 119 (same code); `result` declared
+// after the copy 121; both attach failures through one `attach_failed:` label 136 (464 bytes); the membership age
+// through network_session_time_since 119 (same code); the reservation out-pointer declared for the whole loop 119.
+// Round 104's named source pointer re-measured plain 151 (463 bytes, aligned 32 against this body's 42: the first
+// attach and the merged reason-7 tails as retail, the member arm and reservation scratch still one step round).
+// Round 482: Independent added/replacement channel results, shared/long/const-long
+// producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
+// Control 119 with related caller retained; original channel join and body restored.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3666,6 +3680,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
 // Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
 // the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
+// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
+// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
+// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
+// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
+// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3767,6 +3787,20 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
 // address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
 // key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
+// Round 34: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): address declared at
+// function top 138; identity copy after the key release 167; resolved bool for 0x7ab10's result 138; result
+// declared just before the g_4cf792 test 156; identity copy at function top 191 (559 bytes).
+// Round 18 (m3 lane 18, fast with 0x5c720/0x630f0; aligned difflib counts in brackets, this body [61]): the loopback
+// test as an in-place flag (`bool loopback = false; if (length == 4) loopback = ip == 0x7f000001;`, retail's sete/test)
+// 136 [54]; with the channel failure first 152 [28] (554 bytes, the clock still called); with a `__forceinline`
+// declaration of network_session_time_now too 138 [18] (573 bytes; left: the host/session staging at 0x7ab10 and the
+// mode store's scratch); that composite with the flag as one `&&` expression 142 [25] (no sete), with the flag declared
+// before the address lookup 138 [18]. Retail treats 0x5fb00's ESI and 0x7ab10's EBX argument registers as clobbered
+// (it reloads the session and keeps the host in ESI); both callees preserve them and are matched, so this looks like
+// LTCG generating this caller before them: BLOCKED-BY 0x5fb00 and 0x7ab10 (code generation order), not this body.
+// Round 482: Five nonoriginal complete payload-copy orders 136/138/137/138/137;
+// three with metadata before payload 138/138/137. Original request construction
+// restored; host/session staging, clock expansion and cleanup placement remain.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4489,6 +4523,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
 // `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
 // an `owner` local 374 (scratch copy; loaded at the top).
+// Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
+// acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
+// state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
+// code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4910,6 +4948,10 @@ struct s_membership_update_snapshot
 // first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
 // Necessary result-controlled error-continue loops first/second/both 696/704/732;
 // with signed-short ordinals 718/715/724. Original records and validation exits retained.
+// Round 482: Persistent member-record cursors first/second/both 697/769/761;
+// first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
+// both with unsigned-word application ordinal 743 (fast; unchanged control 523).
+// Every form regresses; original signed-short validation ordinal and full body restored.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

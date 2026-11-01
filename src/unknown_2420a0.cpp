@@ -542,6 +542,13 @@ long function_243b10(long key_b, bool team_only, long *second)
 // the global at each use with the accumulated distance 200 (688 bytes). Retail keeps the table in EBP across
 // the inner loop and reuses it after the 0x19ec40 call (LTCG knows the call leaves g_51ec80 alone); ours
 // reloads the table for the x updates and borrows EBP for the entries base, so the index keeps a register.
+// Round 20 (lane 17, fast with 0x19ec40's callees in the image): the existing y-first copy helper
+// function_2417a1 for the marker position with the accumulated distance 172 (copy and x87 code
+// retail's; the count still moves to ECX after the call where retail keeps it in EAX and spills j); on it:
+// the result index named 172, the count declared apart and compared as `count > j` 172, the results
+// array at function scope 172, an options local at function scope for the key and the marker test (as
+// 0x243b10) 169; on 169: the named result index 169, the options local per marker block 172, the inner
+// loop as `while` with `j++` 169, the results array at function scope 169, the marker select as if/else 188.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1137,6 +1144,7 @@ void c_game_engine_markers::v21(long object_index)
 // matched v24 119 (the object is then kept, where retail reloads it).
 // Earlier note (40): the entry swaps EAX/ECX for the object index and the header; retail computes the
 // Earlier summary: the entry swaps EAX/ECX for the object index and the header; retail computes the
+// Summary of the same two causes: the entry swaps EAX/ECX for the object index and the header; retail computes the
 // player pointer before the flag test with the players' data load unfolded and reloads the options
 // pointer at the engine-type compare.
 // Round 77: the team at each call again 119 (the options pointer then stays in EDX from entry and the
@@ -1256,6 +1264,11 @@ void c_game_engine_markers::v21(long object_index)
 // before the flag test 89 (aligned 24 against 30: the player pointer and team now precede the test, but
 // the team load stays folded into the player arithmetic where retail materializes the pointer and
 // loads the team after the engine-type compare), with the player before the absolute index 89.
+// Round 20 (lane 17, fast): on the team at each call: the flag test through TEST_FIELD_BIT 119 (same
+// code); the absolute index computed inside the flag block 119; the effect team through the existing
+// function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
+// form 40 (same code). In that form only the options pointer's allocation differs (CSE'd from entry and
+// kept in EDX, where retail reloads it into ECX at the compare and the type test takes EDX/ESI).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

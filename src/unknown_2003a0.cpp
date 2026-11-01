@@ -512,6 +512,10 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // 32-bit guard `0 < count` against the index is what makes VC keep 0 in the index's register), but the compare is
 // 16-bit and the walk keeps squad/definition in EAX/ECX. The palette lookup (both forms load the index before the
 // table base, retail the base first) as `index * 0x38 + base`, `&base[index * 0x38]`, without the (word) cast 74 each.
+// Round 272: Completed output observations
+// definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
+// branch-owned next 74/129/129/74/74/129/129/129.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2324,6 +2328,9 @@ bool function_1df5d0(short team_a, short team_b);
 // outside) every operand shape loads the field first. Real: count declared at function scope 39; total as
 // `((real *)squad)[4]` 39; the add through a fresh squad_get 217 (861 bytes); a forceinline add helper by value
 // or through a total pointer 217/218 (834/833 bytes).
+// Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
+// with outer health workspace 39/39/153/153/39/39/153/153.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2987,6 +2994,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 160 (565 bytes); the follow-up written in both task arms (pending arm with its own 0x202e90 call) 74 at 578 bytes:
 // the 0x1fb8a0 call then gets retail's `mov eax, ebp` (two separate blocks before allocation, their tails
 // cross-jumped after it), but the pending arm loses retail's jump into the shared `cmp ax, 0xffff` follow-up block.
+// Round 272: Real record selector/pending-
+// state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
+// 50/50/50/50/50/50/50/50.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
