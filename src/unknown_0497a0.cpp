@@ -659,6 +659,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
 // and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
 // code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// Round 68 (m3 lane 16, fast; 0x42c50/0x42b20 MATCH each time): case 0 still gives the first point XMM5/XMM6/
+// XMM4 and the half width XMM3 (retail XMM6/XMM5/XMM3 and XMM4; retail's first x/y are movaps copies of the
+// second's). The edge points and normal declared before the half width 265; the second-vertex pointer before
+// the half width 265; normal declared before the edge points 265; the edge points and the half width declared
+// at the loop top 265 (identical code each); the second vertex's u/v stored through vertex[1] 278 (aligned
+// 200 -> 212).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -999,6 +1005,14 @@ void __stdcall function_43720(s_43740_input *input)
 // the local for the call and lookup and the record from the field 62 (same code); the call argument from the
 // field and the rest from the local 63; test, call and lookup on the field with a record-only local 50 (212
 // bytes: frame 0x24, the tag spilled; positional).
+// Round 68 (m3 lane 16, fast; 0x42b20 and 0x43720 checked each time): `long bitmap` declared ahead of the
+// tag 62; the texture test as `!= NULL` 62 (same code each); test and call on the field with the tag local
+// after the call 63; round 26's split re-measured (tag local read before the call, test and call on the
+// field, the local for the lookup and the record) 40 (retail's head through the call; left: the tag kept for
+// the record, so the lookup copies EBP into ECX, the slot index in EAX against retail's EBP, the normal flag
+// at +0x68 and the count/position schedule; a mix of field and local reads, kept only with a match); that
+// with the record's tag read through the stored definition pointer 68 (the definition takes ESI, the source
+// goes to the stack: ret 8, 0x42b20 60).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
