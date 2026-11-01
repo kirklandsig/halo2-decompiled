@@ -746,6 +746,8 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // retail's recomputed frame count; every later line still differs).
 // Round 444: Plain callback transport with complete loop/variant/rate decisions at their tests,
 // bool subsets 1/2/4/3/5/6/7 then full long decisions: 128/128/134/128/134/134/134/128. Original tests, callback slot and body restored.
+// Round 448: Complete identity-test bool results at dispatch guard subsets 1-7
+// and all four guards 93 each. Original direct tests, callback slot and body restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

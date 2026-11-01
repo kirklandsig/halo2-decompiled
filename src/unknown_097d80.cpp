@@ -203,6 +203,9 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// Round 448: Query-only information-output scope with iteration completion,
+// common child/object and common fixed ordinal subsets 31/42/31/42/31/42/31/42.
+// Frame stays 0x8024; original output scopes, carriers and full body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
