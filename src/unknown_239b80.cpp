@@ -354,6 +354,10 @@ short function_239e50(short count, point2f const *points, short *indices);
 // as a struct or field-wise in either order, case 1's dot through the helper, the pointer or by name, and a case-0
 // point pointer: 23 or worse (field-wise copies 28 at 310 bytes). Diagnostic: case 1 without its `state = 2` gives
 // retail's index EDX (state then ESI), so the state/index/point colouring turns on case 1's state store.
+// Round 31 (lane 15, fast): case 1's distance named in a braced case 42; case 0's dot result named 42; state,
+// line, first declared in reverse 42. Diagnostics (not kept): 1-8 unused locals at the function's top 42 except
+// 5 (56: retail's `mulss xmm1, [p.x]` dot fold appears, 4 bytes shorter); at case 0 or the loop top 42. The
+// state/index/pointer rotation follows no symbol count.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

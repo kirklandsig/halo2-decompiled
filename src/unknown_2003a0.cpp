@@ -2150,6 +2150,9 @@ bool function_1e11b0(long actor_index, bool active);
 // return (71, 191 bytes): iterator declared at function scope 71; actor index declared at function scope
 // 71; loop pointer declared in the while condition 71; squad_get(squad_index) at every squad use 92 (224);
 // early return for the tick test 89 (220).
+// Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
+// 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
+// flag store with the short-view return 65 (206).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

@@ -212,6 +212,12 @@ void function_44720(void)
 // transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
 // re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
 // the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
+// Round 32: 0x458d0's matched lookup loads the structure global once above its branch, so the per-branch
+// reloads are this function's own; retail's loop callees reach none of the global's writers. Level test at
+// the call 135 (frame, slots and EDI/EBP/EBX roles retail's); with the lookup given `&g_4ba138[(short)index]`
+// 136 (global hoisted out of the loop into EBX); plus the global read in each lookup branch 136 (still
+// hoisted; 0x45560 246); level test at the call with the transform after the lookup 150; `use_level` once
+// before the outer loop 158.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
