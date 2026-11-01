@@ -206,6 +206,12 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
 // 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
 // the element or the copy 49/50/50/49.
+// Round 122 (lane 5): a compile-only build of this loop forwards the stored byte to a register test
+// for a volatile read of `done` between the store and the test, a volatile store of `done` there,
+// and a store through `bool *result = &success`; only a volatile success re-reads it. Real builds
+// (fast): `(long)file.handle != NONE` 42 (same code); a long loop index 111 (345 bytes); the long
+// result from the array element with the file copied inside the branch 42; success declared at its
+// assignment 42; `success = opened > 0; if (opened > 0)` 42.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

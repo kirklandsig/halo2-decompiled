@@ -328,6 +328,9 @@
 // top, result[5] `band2 * y * z`, sqrt5 first, result[6] first or inverse_sqrt_pi first, result[7] unstaged.
 // Real builds on this body: const inputs 59; result[5] `band2 * y * z` 59; sqrt5 set first 59; result[6] with
 // inverse_sqrt_pi first 59.
+// Round 122 (lane 5, fast, 0x146020 matched in each): zz named after the sqrt(5) root 59; band1 as
+// `(real)(inverse_sqrt_pi * sqrt(3.0))` 59; the inputs read in retail's load order y, z, x 124 (660
+// bytes); `xy = x * y` 59; result[12] as `(zz5 - 3.0f) * sqrt7 * ...` 59.
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {
