@@ -717,6 +717,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // keeps [edi+0x104/0x108]), declared after `up` 297 (1229), declared at function scope 288 (breaks
 // 0x1e5af0). Retail keeps up in XMM5-7 through the state dot and the forward cross and multiplies the
 // forward from memory into its own registers; ours keeps up in XMM4-6 as the destinations.
+// Round 481: Complete fallback plane/forward candidate with publication after normalization,
+// eight independent fallback/forward-phase/active-entry declaration pairs 247 each (1243 bytes).
+// Original in-place fallback and full body restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -1295,6 +1298,8 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // Round 248: coherent complete-state first parameter with initial-point helper views, repeated
 // normal observation and native request/tuning fields 418/418/460/460/418/418/460/460.
 // Caller stays 230; all seven matched file controls survive. Original contract and body restored.
+// Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
+// 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

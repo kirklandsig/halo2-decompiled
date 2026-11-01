@@ -582,6 +582,19 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
 // lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
 // fixed); after the particle mask or the particle lookup 42 (no change).
+// Round 61 (lane 16, fast): `real scale = 1.0f, multiplier = 1.0f;` 40 (the 1.0 stores only, as scale
+// first); indexed definitions with scale first and the emitter mask read at each use 232 (1130 bytes; the
+// register allocation turns over: the definition and particle homes swap), with `+=` translation 232;
+// indexed with scale first and `+=` translation 113 (1136 bytes); indexed with the one declaration 113. A
+// compile-only screen of the helper's copy as memcpy gives the same code as the struct copy; copying from
+// `*out` (the same vector) loses the copy's alias and turns every row.
+// Round 20 (lane 17, fast): permuter 600 s, 58 tries, none below 42. Row i's input copy is stored in the
+// order the row consumes it (ours y, z, x; retail y, x, z), so the copy follows the sum order. Both
+// rotations fed from a separate input copy (`position = translated_position`, rotated into it; the same
+// for the velocity) 123 (1136 bytes, row i unchanged); indexed definitions with scale first 113
+// (re-measured), plus the separate input copies 115 (1138 bytes), with the emitter mask read from the
+// definition at both uses 232 (1130 bytes); the separate input copy for the position rotation only 42
+// (same code: VC folds it into the helper's own copy).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1029,6 +1042,8 @@ public:
 // kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
 // negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
 // tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
+// Round 477: Perpendicular publication ikj/jik/jki/kij/kji 252/247/268/275/275; double absolute magnitudes with ijk/kji/jik 282/297/282.
+// One-point gain rejected; original frame 0x60, helper calls, magnitude types, all axis stores and full body restored. Cross/normalized-component and color/tag carriers remain.
 // Round 105 (lane 7, fast): the spawn location assigned before its scale 248 (same count); the parent colour in a
 // local before the child definition call 262 (1363 bytes); the name tests as an if/else chain 277; the particle
 // typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
@@ -1381,12 +1396,13 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 102 (was 102): this round: the availability flag written as `query(view) == 0` 102 (the
+// score 102 (was 102): an earlier round: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
 // availability flag lives in bl because its NONE sentinel lives in ebp and frees ebx; ours keeps
 // the sentinel in ebx, so the flag lands in al and the same-view in bl instead of a stack byte.
 // The sentinel's register and the Boolean homes remain.
+// Earlier (102): frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // Frame 0x14 agrees; retail keeps the NONE sentinel and the owner in ebp
 // (coalesced; later NONE tests use immediates) and the availability flag in bl; ours keeps the
 // sentinel in ebx, the owner in edi and the flag in al, and tests the definition's bit 9 as a
@@ -1447,6 +1463,14 @@ bool function_17afd0(long effect_index, long value);
 // use 148/148, with the if/else owner 150/150, with the shifted bit 9 138/138 (510 bytes); the effect index read
 // from the field at each use 106; one-expression availability + view at each use + shifted bit 9 + if/else owner
 // 113 (498 bytes; owner in ESI, view in EBP, NONE in EBX), without the owner form 123.
+// Round 61 (lane 16, fast): all 71 combinations of six forms (the view read from the global at each use; bit 9
+// as (bool)(((dword)word >> 9) & 1); the availability as the two-step test, as false-then-set
+// `if (view != NONE && !query(view)) flag = true;` or as one `view != NONE && !query(view)`; the owner in an
+// if/else; same_view set in if/else arms; same_view declared before the availability): none below 102 (the
+// same-view arms and its declaration give the same code). Best at retail's 498 bytes: view at each use, bit 9
+// shifted, one-expression availability and the if/else owner 113 (aligned 63 -> 51; the NONE sentinel stays
+// in EBX where retail has EBP coalesced with the owner); with false-then-set availability 138-148 (the flag
+// spills to a stack byte and same_view takes BL, retail the other way round).
 // Round 105 (lane 7, fast): with the view global at each use, the shifted bit 9 and one-expression availability
 // 123 (496 bytes; NONE stays in EBX, so owner = NONE is a copy, not retail's EBP coalescing); availability
 // false-then-set (retail's `xor bl, bl` before the query) 138 (508 bytes, availability spilled, same-view in
@@ -1454,6 +1478,14 @@ bool function_17afd0(long effect_index, long value);
 // before the owner 138; one-expression availability with the if/else owner 113 (498 bytes); owner declared
 // before the effect index 125; availability declared at the loop top 123. Retail keeps -1 in EBP until the
 // owner takes EBP; ours keeps -1 in EBX all through, so five values compete across the view query.
+// Round 20 (lane 17, fast): the cluster test through the existing bit_vector_test 102 (same code, kept in
+// place of its expression written out); on it, lane 13 r27's retail-length form re-measured as a base (the
+// view global at each use, bit 9 as (bool)(((dword)word >> 9) & 1), one-expression availability and an
+// if/else owner) 113 (498 bytes; NONE in EBX, owner in ESI, view in EBP, availability in AL, same view in
+// BL), and its false-then-set availability re-measured 138 (510 bytes); new on that base: the camera flag
+// declared before the availability 115; the same view false-then-set 121 (501 bytes). On the kept form:
+// the loop as `for (long index = ...; index != NONE;)` (this file's own form above) 102 (same code); the
+// availability as `view != NONE ? !query(view) : false` 107 (485 bytes).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
@@ -1466,7 +1498,7 @@ void __stdcall function_174220(bool view_pass)
         short cluster = system->location.cluster_index;
         if (cluster != NONE &&
             ((*(word *)((byte *)definition + 0x16) & (1 << 9)) ||
-             (g_547f88.flags[cluster >> 5] & (1 << (cluster & 31))) || function_3eb20(cluster)) &&
+             bit_vector_test(g_547f88.flags, cluster) || function_3eb20(cluster)) &&
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;

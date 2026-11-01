@@ -320,6 +320,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
+// Lane 18 round 16 (fast): the fallback through the existing TAG_GET 152 (table leaves EDI); the four zero stores
+// grouped after the third lookup 120; that with the TAG_GET fallback 149; the group test as a two-case switch on the
+// instance's group with the fallback as default 165; the fallback read through the same instance pointer 168.
+// Env only (first 82 instructions, control 53): the switch with a `& 0xffff` fallback 75, through TAG_GROUP/TAG_GET
+// 75, a const group local with a `& 0xffff` fallback 75.
 // Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
 // the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
 // element's field through a named `long const *` 117 (same code); the pass block's address named right
