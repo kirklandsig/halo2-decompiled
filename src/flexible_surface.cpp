@@ -556,6 +556,17 @@ void function_117dd0(long index, vector3f *wind)
 // score 72 (was 80): frame 0x48 and normal.k cursor agree; weight publication, the Verlet x register (retail keeps it
 // in xmm6 to the final add, ours stores it), vector scheduling and the history-loop base remain.
 // Earlier: frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
+// Not kept (MiniMax A, 11-01): the two weights in one two-element local (weight[1] the current, weight[0]
+// the previous) sit in retail's slots: 71, but an array grouping locals to move their stack homes is not
+// kept. Named weights declared before the gravity step, the position scaled before the previous is read
+// and the previous stored after the force step: 73 (fast; a gain of 7, under the keep bar). Left: the loop
+// still reloads the current weight first, the dot-product tree and the vector scheduling differ, and the
+// else loop keeps its own base (previous instead of position).
+// Round 36 (MiniMax A, on the array form): the acceleration as the first addend 112; the else loop through a
+// vertex pointer 108; the Verlet difference and the acceleration split into separate statements 172 (776
+// bytes); the position scale written z, x, y 72; the difference written x, z, y 71 (the same code); the dot
+// written (i + k) + j 103; the permuter run killed with no output. All restored.
+// score 80 (was 80): frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
 // Earlier: 744 bytes and the normal.k cursor agree; retail adds the acceleration as the first operand and
 // keeps position.x in a register through the force step, evaluates the dot as (i + k) + j (ours i, j, k), and its
 // else loop runs through a vertex pointer. Round 28: the projection through the existing vector3f_scale 103, with
