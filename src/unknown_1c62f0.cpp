@@ -768,6 +768,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // callback observations and complete executable body restored; second reload remains.
 // Round 444: Plain callback transport with complete loop/variant/rate decisions at their tests,
 // bool subsets 1/2/4/3/5/6/7 then full long decisions: 128/128/134/128/134/134/134/128. Original tests, callback slot and body restored.
+// Round 237: graph/animation/event lexical homes, seven nonempty subsets 93/93/93/93/93/93/93;
+// all three with earlier uninitialized declarations 93
+// Original executable body and helpers restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

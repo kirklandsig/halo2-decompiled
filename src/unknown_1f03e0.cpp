@@ -1337,6 +1337,8 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // input captures, original exits 555/425/555/419; single-result joins 555/567/555/567.
 // Candidate-dot admission bool/byte/short/long 419 each; rejection 420 each.
 // Original normalizer, comparisons and full body restored; zero/count homes remain.
+// Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
+// 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
@@ -1595,6 +1597,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // reset phases use the same order; original stores and complete body restored.
 // Round 296: Accepted-state support-first, flag-first, scalar-first and interleaved stores, on original
 // and real movement graphs. Scores 221/224/221/221/224/227/224/224. Original complete body restored.
+// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
+// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
+// executable source restored; zero width, reset/selection homes and material-call expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

@@ -228,6 +228,10 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // 38, `if (g_55bd1c <= chunk)` 37 (retail's `cmp limit, chunk; jg`, but total/completed/limit rotate to
 // ecx/edx/eax against retail's eax/ecx/edx); `g_55bd1c <= remaining ? g_55bd1c : remaining` 37 (same code as
 // the opening ternary). Retail's 0x214db0 takes the map name in EDI and the path in EBX.
+// Round 230: On the current chunk-publication/slot graph, completed snapshot with conditional,
+// both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
+// snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
+// 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
 // Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
 // (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
 // after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep

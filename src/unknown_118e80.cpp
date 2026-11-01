@@ -728,6 +728,10 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // with xor eax,eax before the load); the same without the local 81. On the 35 form the tail predicate as
 // `||` over two named bools 56, `|` over two named bools 48, `||` inline 56, `else if` with the call
 // duplicated 56, the guard inverted with an early `return false` 76. Original body restored.
+// Round 227: native controller/counters/selector/all field stores 83/83/83/83;
+// allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
+// same result arms with the existing animation helper 130/120. All restored; post-reset
+// table/object/result homes, native size load and saved-key tests remain.
 // Round 20 (lane 18, fast): the guard as `if (offset != NONE) { ...; return local_4; } return false;` with
 // the +0xb6 word in a one-use word local and `||` on the two named bools 56 (ours widens the word with
 // `mov ax; movzx eax, ax` where retail pre-zeroes with `xor eax, eax`, and folds the `||` into
@@ -1086,6 +1090,10 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 265: library response lower bound / negative-normal setter / response-velocity setter,
 // their pairs and all: 200/157/156/200/200/157/200; all with the existing sweep setter 200.
 // Original full body restored; quotient/query, selected homes and zero allocation remain.
+// Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
+// complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
+// with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
+// homes, word loads and zero allocation remain.
 // Round 275: Existing scalar setters at selected point/normal/both/event-points/point-events/normal-events/all transfers 180/181/192/210/235/236/248; all with sweep setter 248.
 // Original executable source restored; quotient/query, selected homes, word loads and zero allocation remain.
 // Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs

@@ -220,6 +220,9 @@ struct s_24e9c7_bounds
 // Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
 // complete double graph with double returned-height carrier 211. All real carriers restored;
 // early across spill, shifted scalar homes and SSE schedule remain.
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
 // Round 35 (lane 15, fast): ours spills back's y (pair at -0x18/-0x14), retail side's y (pair at -0xc/-8, above
 // result). back renamed reverse_side / away, side renamed width_offset, up renamed upward 125 each (names do not
 // order the struct homes either); corners as full sums `x + up.x + back.x` 229 (664 bytes); scale read before size

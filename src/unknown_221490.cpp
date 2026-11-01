@@ -627,6 +627,9 @@ bool sound_driver_voice_create_buffer(
 // Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
 // with per-phase mixbin values 74. Spatial-first counterparts for the three array families
 // 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
+// Round 226: actual result acquired before capacity admission, short/word/long/dword with
+// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
+// caller; original result lifetime, modes, storage and complete body restored at 71.
 // Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
 // result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
 // spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not

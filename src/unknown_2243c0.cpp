@@ -330,6 +330,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
 // 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
 // the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
+// Round 230: In-place fallback normalization with original/root/directory/nested/before-cache
+// lifetimes 152/152/152/152/152; original handle with root/directory/nested scopes 117/117/117.
 // Lane 18 round 16 (fast): the fallback through the existing TAG_GET 152 (table leaves EDI); the four zero stores
 // grouped after the third lookup 120; that with the TAG_GET fallback 149; the group test as a two-case switch on the
 // instance's group with the fallback as default 165; the fallback read through the same instance pointer 168.
