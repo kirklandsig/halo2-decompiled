@@ -275,6 +275,9 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 460: Positive admission bool/byte/short/long, then paired positive/nonzero admissions,
 // 207/207/207/207/343/343/337/337. Original direct frame tests, constructors and body restored;
 // frame 0x30/0x2c, weighted getter and ordinal homes remain.
+// Round 266: existing sample success before frame positioning or between positioning/sampling,
+// each in bool/byte/short/long storage, 276/276/279/278/276/276/279/278. Original result stores,
+// constructors and complete body restored; frame, getter and ordinal differences remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

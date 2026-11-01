@@ -2592,6 +2592,9 @@ struct s_scenario_scripting_view
 // Round 252: Native candidate/actor/displacement library-copy boundaries, seven memcpy subsets then complete
 // memmove 102/100/130/157/189/186/216/191. Original complete executable source restored; Actor/set/counter
 // homes and delayed scripting-data observation remain.
+// Round 266: native-array differences at direct/resolved/both branches, each with original/loop
+// short counter, then both with typed point access without/with loop counter: 80/80/80/87/87/87/80/87.
+// Original search and includes restored; exact wrapper survives, actor/counter/data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
