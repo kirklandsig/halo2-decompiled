@@ -708,6 +708,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // original endpoints, pivot timing, helper operations and complete body restored.
 // Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
 // 704/594/727/669/726/660/742/755. Original complete executable source restored.
+// J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
