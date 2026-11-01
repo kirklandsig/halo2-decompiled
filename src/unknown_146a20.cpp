@@ -195,6 +195,10 @@ bool g_47f05b;
 // `(byte *)g_479894 + 0x15040` 44 (131 bytes); the fixed allocator and its 0x15000-byte buffer as one
 // struct whose constructor passes its buffer member 35; `g_4798b4++` between the two constructions 39
 // (136 bytes); the three global stores after the fixed construction 42 (142 bytes).
+// Round 212: named complete allocator copied into placement, direct/copy initialization:
+// whole-function lifetime 89/89; guarded production 88/88;
+// lifetime ending before the pool 89/89; outer producer with guarded
+// placement 89/89. All restored: a 0x30 frame and an out-of-line copy call.
 // Round 52 (lane 1, fast with 0x146b80/0x146e30/0x22c3e0/0x22c330): the size-only constructor (buffer at
 // `this + 1`) declared in the header and defined out of line in unknown_22c0a0.cpp, placed at g_479888, 35
 // (140 bytes); the size-only constructor on the fixed base, out of line, placed through `block` 35; that with

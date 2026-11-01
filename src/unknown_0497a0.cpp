@@ -170,6 +170,10 @@
 // Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
 // then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
 // original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
+// Round 211: existing double-factor scaler for complete primary/depth/displacement
+// families and combinations 632/694/699/684/702/682/694; all with both wave scalers 768.
+// The primary/depth pair reaches 2622 bytes at 684, frame 0x64; no frame 0x60 recovery.
+// Original producers, shape/basis homes and sixth-product conversion restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

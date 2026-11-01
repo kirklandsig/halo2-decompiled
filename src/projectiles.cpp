@@ -2679,7 +2679,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
-// score 1190 (was 1197): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// score 1190 (was 1190): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
 // Independent damage scopes 1162 (kept); direct sound/late effects/both/scoped both 1223/1185/1223/1199; role names/chains/external normalization 1185/1185/1323.
 // Full count/potential conjunction/input aggregate/assignment helper/uninitialized direction 1201/1216/1198/1198/1185; array aggregates/plain loop/unsigned index 1166/1348/1185.
@@ -2734,6 +2734,10 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // 1192 (retail's two loads, plus a `not cl`); as a bitfield assignment 1277 (4900 bytes). 0xfd7d0 is the
 // blocker: with 0x1883e0's class parameters (diagnostic) 0xfd7d0 62 -> 69 and this 1220. Retail's velocity in
 // ESI also lets it tail-merge the two `*velocity = *g_4687a4` copies; ours keeps both.
+// Round 215: complete native offset/perpendicular/reflected aggregate producers,
+// seven nonempty subsets 1190 each; all three readonly completed vectors 1190.
+// Original body, vector operands, arithmetic trees, damage scopes and interfaces restored;
+// frame 0x220/0x218 and velocity/request homes remain.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)

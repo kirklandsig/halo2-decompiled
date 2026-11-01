@@ -1640,6 +1640,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 43 (lane 14, fast): long face/edge counts (retail's `test eax, eax; jle; cvtsi2ss`) 572 (2890 bytes,
 // re-measured), as edge count/radius, face count/radius pairs 572, face pair first 571; the edge loop's next
 // index named at the loop top before the first point (retail's early inc/idiv) 602 (2909), with long counts 597.
+// Round 211: existing double-factor scaler for both averages/paired direction rays/normal
+// and combinations 668/651/591/670/660/629/638; all plus count-produced result 661.
+// Complete products reach 2882 bytes at 638 but disturb matched callers. Original word
+// counts, sums, ray producers, result, include and body restored; sum/query-zero homes remain.
 // Round 66 (lane 9, fast): retail's four 4-byte count/radius homes sit together as count, radius, count, radius
 // (frame 0x88-0x94) and the prism cursor is based at plane.j. Tried: the prism fields read as
 // `shapes.prisms[index].field` with no prism pointer 686 (2956 bytes, zero to EBP, no cursor); the distance through

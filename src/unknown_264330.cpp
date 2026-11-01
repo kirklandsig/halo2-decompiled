@@ -538,6 +538,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // actor copy in EDI, retail the reverse); iterator.index at each use 443 (same code); with maximum a plain
 // word 442; with sample/update at function scope 442; with sampled_one declared first 442. The actor's
 // stack passing may come from the build's stand-in caller (a second call site passing a buffered argument).
+// Round 215: terminal maximum publication through native reset/count arms 420;
+// twice-used elapsed values on that graph 420; each with plain word maximum 472/472;
+// terminal reset result bool/long 440/444, each with plain word maximum 448/448.
+// Exact-only reset-result forms and every executable change restored; frame and actor homes remain.
 // Round 66 (lane 9, fast): retail's 0x2683f0, 0x1e2150 and 0x25ac00 take the actor index in EBX, where retail
 // keeps it for the whole function; ours reloads EBX from the stack argument before each. Case 1's 0x25c820 call
 // and the release one made a single call (a `release_only` label) 431 (frame 0xa0, 1616 bytes, the three flags go

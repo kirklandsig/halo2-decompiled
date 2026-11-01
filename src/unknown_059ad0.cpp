@@ -4557,6 +4557,12 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
 // state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
 // code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
+// Round 215: complete decision outputs recover result +b; dword/byte/short counts
+// on that graph 298/314/299; native received packet 298, with those domains 298/314/299;
+// complete native stored fields 323. Seven Boolean-home name combinations 298 each;
+// all names without redundant selection defaults 298. Seven-point leads rejected;
+// original body, packet types, output states and held interfaces restored.
+// Identity/selection byte homes and acknowledgement/rejection placement remain.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

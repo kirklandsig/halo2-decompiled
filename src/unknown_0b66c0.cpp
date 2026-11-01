@@ -299,6 +299,8 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // add precedes the compare): the length through the existing 0x11c9a0 21, the source as `&string[start]` 21, the
 // source declared before the length 37 (0xb5f10 84); 0x11c9a0 with `string + start` after the clamp 28 (0xb5f10
 // 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
+// Round 217: shared bounded-length short/word/int/unsigned-int counter, then nonzero-only
+// input advance: 40/40/40/40/58/58/60/60. Original helper, body and all matched callers restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

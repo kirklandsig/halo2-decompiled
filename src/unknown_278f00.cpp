@@ -191,6 +191,8 @@ bool function_a7670(long object_index);
 // instead of `continue` 181; the body count read before the flag is cleared 181; the index stepped back
 // after the flag store 181; the index declared outside its loop 181 (all same code); the retry counts
 // declared ahead of the flag test 186 (966 bytes).
+// Round 217: native immediate/deferred/both append-end extents, then indexed cleanup,
+// standard deferred search and shared membership result: 312/321/382/319/324/385/360/382. Original counts and body restored.
 // @retail 0x278f00
 void function_278f00()
 {

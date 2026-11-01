@@ -472,6 +472,9 @@ extern "C" void _ReadWriteBarrier(void);
 // directly, 122/122 (copy propagation merges the reads); the unit getter __forceinline 122 (same code); its
 // result filled in an if/else 158 (460 bytes); the object index read once per pass into a named local used
 // by every call 152 (476 bytes); the barrier moved inside the unit test 148 (476 bytes). All restored.
+// DL213: actual four-field iterator call with original suppression 201; ordinary declaration 180;
+// inline iterator and scan 152; forced iterator with ordinary/inline scan 180/152.
+// Forced iterator and scan together unscored. Original body and declarations restored; two pool homes remain.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

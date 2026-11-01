@@ -242,6 +242,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // vector3d_from_points3d without the staging copy 961 (frame 0x1e4, 4235 bytes); split responses with it 968.
 // The body slot index read once into its local everywhere (the angular block's three direct field reads through
 // the local) 941 (4232 bytes); the re-read after the lookup calls dropped 985 (frame 0x1ec); both 999.
+// Round 217: standard slot upper, paired byte bounds and response-fraction bounds, seven subsets,
+// then all with target-level bound: 998/980/1046/963/1006/1067/1131/1135. Original restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

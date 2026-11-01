@@ -102,6 +102,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // re-fetches the unit after its two 0xbadc0 calls, our link proves the callee writes no memory
 // and keeps the entry fetch, so every later register home shifts.
 // Earlier 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// frameless entry saves, fresh unit lookup and late prior-state carrier remain.
+// Earlier: this round: the fast check reads 107 at 362 bytes against retail's 376 again
+// Earlier at 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// Earlier at 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // frameless entry saves, unit reload and sentinel carriers differ.
 // frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // Earlier: frameless entry saves, unit reload and sentinel carriers differ.
@@ -165,6 +169,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // defaulted to NONE with a one-arm assignment 124. Retail treats 0xbadc0 as writing memory (reloads g_4e0300 and
 // its data after the calls while keeping the index register); ours knows it writes none, so no body form here
 // brings the second fetch back.
+// Earlier at 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// Round 215: full salted weapon/sound handle domains and real player-record
+// indexing, seven nonempty subsets 107 each; complete graph with native long user ordinal 110.
+// Original types, both player queries, prior-state lifetime and entire body restored;
+// entry saves, fresh unit lookup and sentinel carriers remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

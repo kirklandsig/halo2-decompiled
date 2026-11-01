@@ -392,8 +392,9 @@ PRIVATE inline long polygon_round_19f(real value)
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
 // bound is still one product where retail has two and the frame is 0x34 versus 0x30.
 // Earlier at 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
+// the distance to the centre is now computed and compared in double, so the
+// Earlier 379: frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
 // Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
-// the fade clamp now computes a single radius*1.5 product, so the
 // radius keeps retail's xmm3; our fade block is still one instruction shorter than
 // retail's, and the call to function_4b2d0 still passes three stack arguments.
 // Round 194: Named real radial denominator at division/loop boundary, with ternary/explicit
@@ -452,6 +453,9 @@ PRIVATE inline long polygon_round_19f(real value)
 // 155); the alpha divided in double, on the base/on the global form 399/350 (hoisted in double);
 // diagnostic float-consistency pragma 500 (1605 bytes). Next: keep the global, float distance and
 // inline denominator once 0x1ccb0 inlines here.
+// Round 214: mixed-precision real result before tests 421; zero-first result 395;
+// separate distance/factor 316, with zero-first 395; upper-first result 316;
+// factor expression 316; explicit distance arms then factor 316; scalar role names 316.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
