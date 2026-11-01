@@ -804,7 +804,9 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // Round 41 (lane 10): match test with the parameters on the left 16 (the font compare then
 // reads the field as its memory operand); iterator index set before its data 14; explicit
 // `(long)` conversions at the uses 14; prediction declared before the iterator 14; return
-// early when the allocation fails 14.
+// early when the allocation fails 14. Round 64: shared pool local 49; allocation pointer
+// arithmetic 14; null-initialized prediction 14; byte entry local 14; non-short-circuit
+// comparison 85; mismatch-continue loop 119; unsigned datum index 14; named masked index 14.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

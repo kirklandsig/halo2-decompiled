@@ -332,6 +332,26 @@ void function_07b3e0(void)
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
 // left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 107 (lane 8, fast with 0x7b650): `if (!g_4cf8d4) return;` guard 39 (same code); the datum index named
+// before the call 39 (same code); the iterator form re-measured 58 (120 bytes); the existing out-of-line
+// record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at
+// its end 125 (188 bytes). Lead unchanged: retail's second pool register is the LTCG inline of the real
+// 0x16bb70/0x16bc00, which their file's /Ob1 keeps out of line here (a flags decision).
+// Lane 14 r36 (fast): the second pool register is a second read of the global, not a copy: `scan = g_4cf8d8`
+// and `pool = g_4cf8d8` read separately give retail's `mov ebx, [g]` ... `mov ebp, ebx` and loop pad, 11 at
+// 131 bytes (a copy of the first local instead, 60, coalesces); with the iterator's pool for the datum and the
+// separate read for the scan 13; the iterator form's scan with a second read for data_datum_index 70 (147
+// bytes); the iterator form aggregate-initialised 58, with the datum named in the while condition 58, with an
+// early return 58. Retail's form needs the iterator step's dead datum `add` together with the two reads,
+// which only the step inlined at link time from its own file gives (unknown_16b570.cpp is /Ob1).
+// Round 124 (lane 5, fast): record_pool_next_used over datum indices 105 (73 bytes, stays a call); the
+// absolute-index scan with index_to_datum_index 44; the datum index named before the call 39 (same code);
+// the iterator form with index_to_datum_index on a pool local 47; MiniMax H's two pool locals with the index
+// stored after the datum index (retail's order) 11 at 131 bytes (only the found block's size/data registers
+// and the dead datum `add` left; one-use duplicate local, not kept). Compile-only diagnostic: file-local
+// non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
+// retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
+// file's /Ob1 keeps them out of line here: a flags decision).
 // @retail 0x7b430
 void function_07b430(void)
 {

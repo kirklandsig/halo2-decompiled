@@ -146,6 +146,9 @@ void function_26c180(long actor_index);
 // by if/else (49), the first reference through a local (29); flag8 as a ternary 27
 // (sete), as a result local set by an if 27, with the bool tested first 31, flag3
 // cleared before flag8 51, scratch acquired after the output declarations 29.
+// Round 44 (lane 10, fast): flag8 as `!(equal || unknown)` 29; the 0x2605d0 result in a reference
+// local passed on to 0x2626b0 29; plain `long other_index; bool flag;` locals 31; the entry declared
+// before the request 29; flag8 as `equal ? false : !unknown` 27 (sete, still reloaded).
 // BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
 // @retail 0x1b0540
 void function_1b0540(long actor_index, s_follow_search_state *state)

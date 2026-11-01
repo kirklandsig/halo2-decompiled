@@ -91,6 +91,13 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // initialized on complete name/lookup paths, and that graph with its own one-value exit:
 // 51/51/119/131; with override index scoped to the actual flag branch 51/51/119/131.
 // Original output lifetimes and separate recursive result restored; constant epilogue remains.
+// Round 107 (lane 8, fast): the zero case as `enabled = false` into the shared return 95 (VC copies
+// the byte-load return into it, store kept, nothing forwarded); also the not-found case as an else
+// setting `enabled = false` 94 (377 bytes); the early path as `enabled = true; return enabled;` with
+// the 1.0 `return true` 117, with the 1.0 case `enabled = true; *value = 1.0f; return enabled;` 117
+// (the early store is gone before the merge, the early `jne` joins the 1.0 block's pops); the 1.0
+// case last after `if (name != 0 && name != 0x030005a6) {...; return enabled;}` with `return true`
+// 117. Every form whose 1.0 return is a constant loses the early return's own epilogue.
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {

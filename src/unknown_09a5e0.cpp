@@ -2202,6 +2202,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 462: Direct zero-based child slot, long/short/dword/word with original cursor/indexed
 // record fields: 218/224/255/255/218/224/255/255. Original ordinal, countdown, cursor and whole
 // body restored.
+// Round 267: dependency-safe child input orders tag/fraction/key/bytes, key/tag/fraction/bytes,
+// key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
+// tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
+// Original observations restored; object/offset homes and low-mask EBP ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

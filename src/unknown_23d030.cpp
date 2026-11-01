@@ -223,6 +223,21 @@ struct s_free_state_23d260
 // between unrelated structs), with normalize3d 261, with normalize3d and the yaw locals 279 (1312 bytes); written
 // properly (a yaw/pitch pair type in both states, the helper taking it, 0x23d790 still matching) 279 (1326 bytes:
 // the same x87 fix, but the side/up SSE colouring follows the type path and is worse). Zero stays in XMM3 in all.
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 102 [89]): normalize3d with yaw cosine/sine
+// locals re-measured 276 [88]; on it the up components written k,i,j / j,k,i / j,i,k / i,k,j / i,j,k 274/257
+// [86]/283/286/285, up as cross3f 279 [86], as cross3f_staged 289; the forward vector built in a local and
+// copied out, the side read from it, 367 (1367 bytes); forward.k computed after the side vector 288 [109].
+// Round 60 (lane 16, fast; aligned counts in brackets, base 102 [89]): the existing cross3f_staged for up
+// 256 [48] (first difference +0xa6: zero XMM1, clamp and side registers as retail); with a file-local
+// normalize (normalize_inline's shape, length as `i*i + (j*j + k*k)`) as well 236 [48]: the x87 squared
+// length, zero XMM1 and the side scale are then retail's exactly, and only the up cross block (retail
+// stores k, j, i as it goes, reloads forward.k/j) and the roll rotation's operand orders remain. Every
+// other cross form loses the zero register again: the cross written out k, j, i 269 [89], cross3f 273 [82], staged locals stored k, j, i 268 [84]; normalize3d
+// or a dot-ordered helper with the staged cross 289 [92]. On that lead: side j, i, k 256 [45]; yaw
+// cosine/sine locals 237 [51]; rotated_k computed before the cross terms 230 [75] (1327 bytes); pitch
+// sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
+// k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
+// 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

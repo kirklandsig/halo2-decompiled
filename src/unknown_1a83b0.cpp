@@ -494,6 +494,10 @@ s_1a8a10 g_4453c0[] =
 // first, no copy, a scalar left i, crossed with term orders, sum order and store order (80 forms) 21-39; the
 // negated j read through a cast, a vector pointer, a real pointer or a fresh lookup 21/21/21/35 (the
 // lookup re-reads j but keeps our addss order); point components as scalars, a named negated j 21.
+// Round 65: the existing actor accessor 150; the copy/actor j reads exchanged 40; the first sum as
+// subtraction 86; the shared dot/cross helpers 114; an 8-byte library facing copy 118; the exchanged
+// reads with the leading dot term 40; a j reference for every read 29, with the copy's j live 17;
+// the rotated point as vector2f 17; a partial vector3f facing copy 17.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

@@ -486,7 +486,6 @@ bool sound_driver_voice_create_buffer(
 }
 
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
-// Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
 // voice offset, the descriptor zero and the input mixbin are swapped (the failure exit now agrees).
@@ -588,6 +587,37 @@ bool sound_driver_voice_create_buffer(
 // (flags then arrive in EAX and move to EBX; 0x191420 differs, 1); the 3D test inverted (`if (!three_d)` with the
 // NULL store first) 132; `long flags` (definition and 0x191420's declaration) 71 (same code); the 3D flag first,
 // result assigned after the 3D branch and the failure returning NONE 186 (597 bytes); that with play first 97.
+// Round 60 (m3 lane 9, fast with 0x191420): the 3D flag defined first with the count stored before the
+// descriptor clear 181 (599 bytes); both bools in one declaration, play first 71 (same code), the 3D flag
+// first 182 (599); the result declared after the voice index 71 (same code), with the 3D flag first 182;
+// the 3D flag before the voice reference and play after it 183 (599).
+// Round 42 (lane 11, fast): the 3D flag defined first 182 (599 bytes: the voice index takes EBP, the zero
+// EBX, both bools spill), with a long result 158 (618: bools as retail, the result a sign-extended copy
+// stored after the range test), plus the count stored before the clear 158; the bools before the voice
+// reference with the count stored before the clear 72; the 3D flag first with the voice index returned
+// in the block (NONE outside, NONE stored on the 3D failure) 154 (628 bytes; 0x191420 1). Compile-only
+// (mixbin passed on the stack as here): 288 orders of the voice reference, bools, mix-bin locals, top
+// declarations, count store and failure-arm order (floor 64 against 66, all play first); result as
+// short/long/word/dword/char, placed at the start/middle/end, with both bool spellings (3D first): the
+// voice index, the input mixbin or play always outranks the 3D flag for EBX; renaming the bools and the
+// voice index changes nothing.
+// Round 65 (lane 12, fast with 0x191420): round 37's 3D-first long-result form rebuilt 158 (618 bytes:
+// retail's BL/stack-byte bool homes, but the result is a separate sign-extended copy where retail stores
+// the voice index's own zero-extended register); that with the result taken as `(word)voice_index` 155
+// (the voice index then takes EBP); with the short result: `voice_count++` for the count 182 (599
+// bytes), the result declared after the voice index 182, play as `(flags >> 1) & 1` 182, both flags
+// defined before the voice reference 183 (599): the voice index takes EBP and both flags spill.
+// Round 58 (lane 16, fast): three_d declared first with the result declared after the voice index 182 (599
+// bytes: the voice index takes EBP, both bools spill); the voice index as a long 161; the globals local
+// dropped (the global at each use) with three_d first 182 (599), with play first 71 (same code); three_d
+// first with the 3D test negated (NULL arm first) 182 (599).
+// Round 17 (lane 17, fast with 0x191420): the 3D flag defined first with a long result 158 (618 bytes: the
+// bools take retail's BL/stack byte and the tail is retail's one instruction late; the prologue differs: the
+// result is a sign-extended copy stored after the range test where retail spills the zero-extended voice
+// index before it, and the count store comes after the zeroing); with a long voice index 184 (597); the
+// short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
+// at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
+// block top with `result = NONE` after the decrement 155.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
