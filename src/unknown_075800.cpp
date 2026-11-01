@@ -1184,6 +1184,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // inline/ordinary, ordinary/inline, inline/inline, noinline/ordinary, ordinary/noinline,
 // noinline/noinline, inline/noinline, noinline/inline: 196/196/196/211/196/211/196/211 fast.
 // Case-18 noinline moves the input roles and loses the matched caller; all declarations restored.
+// Round 336: primary D(0,2,3,4),Q(8,9,10),S(12,13,14),P(22,23,24),C(5,6,7)
+// orders DQPSC/DSQPC/DSPQC/DPQSC/DPSQC/DQSCP/DQCSP/DCQSP:
+// 198/195/193/195/193/199/209/208 fast (control 196; full 153).
+// Three-point preview reductions rejected; original complete classifiers restored.
+// Delayed ESI save, late case layout and full-only handler expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
