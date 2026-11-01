@@ -279,6 +279,10 @@ struct s_free_state_23d260
 // forward/up pointers declared before the side vector and used for the side and up cross too 289
 // (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
 // pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
+// Round 441: existing complete side/up producer with native forward/up ownership and
+// two-use double movement trig values, eight subsets 512/484/474/444/503/477/465/439;
+// separate force-inline declaration 512 (producer remains out of line). Original body and
+// declarations restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

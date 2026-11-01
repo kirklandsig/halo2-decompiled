@@ -801,6 +801,10 @@ real g_55e618;
 // points, not kept); the velocity pointer form re-measured 194 (1541 bytes), with the dot through a
 // forceinline pointer helper 194 (identical: the helper's loads still merge, so the twice-read velocity.i of
 // retail is not an inline-boundary effect).
+// Round 441: actual shared collision normal member, plus native flags/kind/fraction
+// subsets 102/99/102/99; those four with the existing full response setter 191 each.
+// Three-point reductions rejected. Original particle type, shared collision header and body
+// restored; reflection spill ownership, sweep/collision homes and normal reloads remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

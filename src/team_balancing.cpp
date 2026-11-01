@@ -600,6 +600,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
 // ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
 // `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
+// Round 441: byte/word outer and inner ordinal domains (word/long, long/word, word/word,
+// byte/long, long/byte, byte/byte, word/byte, byte/word) 146/146/151/142/148/150/155/144.
+// All regress; narrowed inner domains also lose the matched caller. Original body restored;
+// reference-first spread queries and the extra two bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

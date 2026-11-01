@@ -891,6 +891,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
 // Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
 // operands fixed in the unrolled loop, flipped in the remainder loop).
+// Round 441: indexed near-final/far-input/far-final normal negation loops, subsets 1..7
+// 259/257/259/259/267/259/113; all plus two-component screen loop 232. Two-point gain
+// rejected; original body restored. Early coefficient preload and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
