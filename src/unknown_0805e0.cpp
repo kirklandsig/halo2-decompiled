@@ -145,6 +145,17 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
 // early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
 // do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
+// Round 37 (lane 15, fast): the result assigned from the test chain on every pass (`result = tests;
+// if (result) { copy; break; }`) hoists the mask exactly as retail (`push ebx; mov al, 3` after the guard,
+// false remade at the loop exit) 59, but index and successor still share one register (entry copied into
+// ESI at the loop top) and the loop head gets a jump over 16-byte padding (135 bytes); on it a successor
+// local 59, the successor read through the table first 62 (successor EBX, index ECX), `index = *iterator`
+// at the end 59, a for loop stepping `index = *iterator` 59 or from a successor 59, the entry pointer at
+// function scope 59, every field read through the table 75, the loop over `*iterator` 70 (iterator then
+// passed in a register, callers lose). `while (index != NONE && !result)` with a successor 53; `continue`
+// filters with an early return 55; the `!result` loop assigning the result each pass with the copy after
+// the loop 71 (top-tested, no hoist); the guest test 3rd/4th (diagnostic) 48/47, no hoist; the parameters
+// swapped to (iterator, player) with both callers 43 (identical: player stays in EAX).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1064,6 +1075,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
 // function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
 // : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
+// Round 37 (lane 15, fast; current body): the backward copy as `long i = upper; while (--i >= lower)` 49, the
+// forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
+// canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
+// entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

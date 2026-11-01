@@ -369,6 +369,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
 // 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
 // existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
+// Round 37 (lane 15, fast with 0x2461a0/0x245bd0/0x245d80): ours multiplies copies of the scale for x and z
+// (retail multiplies the x and z differences in place, the helper's written order); the scale renamed
+// inverse_distance 57 and the difference renamed to_point 57 (names do not move the operand order); the sum
+// as `(real)(i * i) + (real)(k * k) + (real)(j * j)` 61; the sum through the array view
+// `d.n[0] * d.n[0] + d.n[2] * d.n[2] + d.n[1] * d.n[1]` 171 (669 bytes: differences and sum run j, k, i);
+// the sphere helper declared before this function and defined after it 57 (same code). Diagnostic (initialised
+// dead long temps at the top, k = 1..7): 57 57 57 57 57 171 57, the products never go in place.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

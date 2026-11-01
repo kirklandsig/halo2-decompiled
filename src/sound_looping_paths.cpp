@@ -1,6 +1,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "main_messages.h"
 #include "unknown_0259d0.h"
 #include <math.h>
 
@@ -453,14 +454,6 @@ struct s_listener_environment_bsp
 	s_listener_environment_definition *environments;
 };
 
-PRIVATE inline long sound_first_listener()
-{
-	long first = NONE;
-	for (long i = 0; i < 4; ++i)
-		if (g_4e8c20->entries[i] != NONE) { first = i; break; }
-	return first;
-}
-
 PRIVATE __forceinline void sound_environment_play_cue(long tag)
 {
 	s_sound_request request;
@@ -596,6 +589,17 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // requests from `.index`, the init loop's base; aligned 61 -> 53: the lead for the next round); on it the
 // transition definition through the global 278 (BSP takes retail's +0x14 home but loses ESI), the camera fetched
 // before the first-listener test 201, `count` at function scope 158, the position copy before the cluster 229.
+// Round 37 (lane 15, plain checks; fast warns that 0x189fe0 builds differently in the reduced image): the
+// private first-listener scan replaced by the existing local_player_first_index() and the index sentinels set
+// by a plain for loop 159 (identical code, kept). Retail scans, then forms the camera, then compares (the camera
+// lea sits between the compare and its branch). On round 26's store order (transition, index, fade) 158: the
+// missing-portal scale as `tag == NONE ? 0.0f : 1.0f` 158 (retail stores 0 then 1.0 when a tag exists; that
+// region then matches); on it the scan result in a one-use local before the camera 153, the same with the
+// comparison named (`bool primary = listener == local_player_first_index();`, camera, `if (primary)`) 153: the
+// camera block then matches; left are the position copy order, the transition definition (retail re-reads
+// g_4e0348 there while tag and radius use the local), the 0x18ab70 argument setup and the BSP/count homes. On
+// 153: the transition through g_4e0348 279 (1037 bytes, a zero kept in ESI), position copied before the cluster
+// 210, bsp declared before the tags 153, the angles declared at the request-loop top 153.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
@@ -606,7 +610,7 @@ void __stdcall function_18bb80(real elapsed)
 	{
 		if (local_player_exists(listener))
 		{
-			if (listener == sound_first_listener())
+			if (listener == local_player_first_index())
 			{
 				s_local_camera *camera = local_camera_get(listener);
 				if (camera->active && camera->index != NONE)
@@ -632,8 +636,9 @@ void __stdcall function_18bb80(real elapsed)
 						if (portals[0] == NONE) portals[0] = portals[1];
 					}
 					s_sound_environment requests[2];
-					long i = 0;
-					do { requests[i].index = NONE; ++i; } while (i < 2);
+					long i;
+					for (i = 0; i < 2; ++i)
+						requests[i].index = NONE;
 					for (i = 0; i < count; ++i)
 					{
 						long index = indices[i];
