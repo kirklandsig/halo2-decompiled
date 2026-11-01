@@ -741,6 +741,8 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 235: native signed/unsigned word/long exit-result producers at final observation
 // and entry-declared with original-site assignment: 89 each. Original final global
 // observation and complete body restored; initial unit-call scratch rotation remains.
+// Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
+// pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -191,6 +191,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 494: complete point-input copies inside squared/length metrics, first/second/both
 // in each alone, then both squared with first/both length: 439/437/473/558/555/787/677/892.
 // Original input reads, metric helpers and entire body restored; selected homes and table roles remain.
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

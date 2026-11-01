@@ -308,6 +308,8 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
 // original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
 // with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 263: Real state layout with typed current/reset/input observation subsets 620/620/620/620/620/620/620; all with ordinary player 786.
+// Original state declaration, raw observations, case graph, inherited qualifiers and complete body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

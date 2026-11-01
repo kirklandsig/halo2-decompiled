@@ -1007,6 +1007,10 @@ done:
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
 // existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
+// DH round 264: Result-owned pretested retries with independent flags/long-short-word-byte attempts
+// and native collision fields 157/156/156/160; with the existing initial point setter
+// 144/145/145/157. All regress; original record layout, grouped state, triangle access and
+// body restored; result/NONE/exclusion allocation and direction reloads remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
