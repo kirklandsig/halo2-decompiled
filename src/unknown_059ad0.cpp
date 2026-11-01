@@ -3708,6 +3708,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
 // address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
 // only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {

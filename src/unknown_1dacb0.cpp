@@ -1167,6 +1167,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator field order 828 (code changes); both 1040; iterator outputs declared after the iterator initialisation
 // 826 (two-point gain rejected); that with 0x1dc790's field order 828. Retail gives found_mode's dead parameter home
 // to the per-attempt candidate (ours to iterator_mode) and the no-result path its own epilogue.
+// Round 489: chained candidate/result assignment in the named branch, native iterator, late constant
+// candidate and missing name branch first, combinations 978/976/984/982/991/989/984/982.
+// All reach 2825 bytes but regress; original complete producer, iterator and body restored.
 // Round 53 (m3 lane 1): 736 of the 810 differing lines are one inserted instruction per resource
 // request: retail holds a zero in EBP from the fifth type request (all keys 0x30000d9) through the
 // inheritance loop's index/offset stores (`cmp eax, ebp`, `mov [home], ebp`), ours tests with
@@ -1317,6 +1320,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // iterator field order 828 (code changes); both 1040; iterator outputs declared after the iterator initialisation
 // 826 (two-point gain rejected); that with 0x1dc790's field order 828. Retail gives found_mode's dead parameter home
 // to the per-attempt candidate (ours to iterator_mode) and the no-result path its own epilogue.
+// Round 489: chained candidate/result assignment in the named branch, native iterator, late constant
+// candidate and missing name branch first, combinations 978/976/984/982/991/989/984/982.
+// All reach 2825 bytes but regress; original complete producer, iterator and body restored.
 // Round 53 (m3 lane 1; zero-carrier/argument-home analysis in the note above 0x1db170): `for (;;)`
 // with both breaks 998; early `return c_type_709360();` with result scoped in the block 988 (2825
 // bytes); the sibling 0x1dc8c0's iterator store order (graph, step, entries, keys) 828 (stores

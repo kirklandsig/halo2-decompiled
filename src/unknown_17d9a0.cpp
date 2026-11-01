@@ -634,8 +634,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
-// score 564 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 is the definition-pointer spill.
-// frame 0x21dc and retail length agree; definition spill +0xac versus +0x94, count/plane homes and rotation spills remain.
+// score 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
+// Earlier: frame 0x21dc and retail length agree; definition spill +0xac versus +0x94, count/plane homes and rotation spills remain.
 // Plane/count homes, initial face-call scheduling and rotation spills remain.
 // Earlier aligned frame 0x21e4 versus 0x21dc, count/plane/axis homes and rotation scheduling remain.
 // The axis uses vector3d_from_points3d with length summed in retail's i, k, j order (written j, k, i), which stores all three components before the sum as retail
@@ -765,6 +766,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
 // 704/594/727/669/726/660/742/755. Original complete executable source restored.
 // J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
+// Round 489: plain normal negation / axis scaling / rotation component loops, seven
+// subsets 589/552/564/603/589/594/559; all with short component ordinals 1157.
+// Keep only the axis scaling loop, confirmed by plain check at 552; other producers restored.
+// On the retained axis loop: staged cross / face count first / both 552 each; all restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
@@ -859,9 +864,8 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				if (!(fabs(length) < 0.0001f))
 				{
 					real inverse = 1.0f / length;
-					axis.i *= inverse;
-					axis.j *= inverse;
-					axis.k *= inverse;
+					for (long component = 0; component < 3; ++component)
+						axis.n[component] *= inverse;
 				}
 				else
 					length = 0.0f;

@@ -485,6 +485,8 @@ struct s_1f8a70_actor
 // `failed: result = false;` 429 (1648 B); with the route switch's real default 428 (frame 0x80, aligned
 // 91 vs 82); with the case 3 fix too 446; that with the unit mode tested through 0xe70b0's returned
 // pointer 451; the default form with the returned pointer 428. All restored.
+// Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
+// Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
 // Round 68 (lane 12): the value-fixed 270 form rebuilt (exact LCS 44 unmatched against the original's 59;
 // EDI holds NONE and route_mode is a memory dword, as retail). Retail evidence on it: the unit mode is
 // tested through 0xe70b0's returned pointer (`cmp word ptr [eax], 5`), route_mode is read as a signed

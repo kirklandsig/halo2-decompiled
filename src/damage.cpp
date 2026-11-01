@@ -1661,13 +1661,16 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
-// score 10 (was 189): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// score 10 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last), and ours pushes the
 // shield-damaged effect before `lea ebx, [edi + 8]` for function_176780 (retail: after). Tried: owner pointer in
 // a local for the function_176780 call (no change), the tail's unknownd4 handle in a long local (12).
 // Also tried: `multiplier = 1.0f` declared at the function top (228) or first in the else-if block (206, both
 // give it a stack home), declared after the in-radius subtraction (38), `multiplier = cond ? d5bc0(...) : 1.0f`
 // (156), the inverse maximum as an if/else statement (10, the same code).
+// Round 489: separate scaled damage / conditional multiplier result / named reciprocal,
+// seven subsets 30/156/160/10/30/156/160; all with named depletion expression 160.
+// Original damage phases, reciprocal expression and whole body restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

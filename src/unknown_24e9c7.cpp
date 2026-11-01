@@ -232,6 +232,9 @@ struct s_24e9c7_bounds
 // Round 150, each on the early-across form (`size * (0.0f - forward_j)`): side products across-first 138 (739
 // bytes); a named real half width for both side products 134; up computed before the half width 134; up as
 // `0.0f -` products 147 (735); the across pair declared right after size 138.
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

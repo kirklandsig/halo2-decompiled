@@ -172,6 +172,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
+// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
+// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

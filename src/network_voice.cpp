@@ -3389,6 +3389,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 156 (0x564c0 139); each of those with the cursor 163/163/166. All restored.
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
+// Round 485: Native wire header/relay/direct records, seven subsets 139 each;
+// all records with independent cursor 164. Actual record types and full body restored;
+// channel/cursor/member ownership and route homes remain.
 // Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
 // 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
 // the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the

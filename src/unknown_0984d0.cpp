@@ -434,6 +434,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
 // switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
 // inverted 109 (544 bytes, branches laid out opposite to retail).
+// Round 490: existing producer returns long/unsigned long/short/word/byte/signed char, 115 each;
+// long result with direct size/handle input 138/134. Producer result width canonicalizes; restored.
 // Round 42 (m3 lane 13, fast): case 2/4's state test as an `if` of its own around the handle/state test 115 (same
 // code); the chain-length test written `local_9 == info.count` with memcmp sized by info.count 178 (520 bytes); the
 // validity flag declared before the switch 142; the validation loop as a plain `for` over the counter (volatile

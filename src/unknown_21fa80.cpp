@@ -165,6 +165,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // byte_flags_set 532 fast (identical code: the flags stay in a register, retail updates them in memory and stores
 // each bit's bool to one byte slot); changed computed after the gain bits 577 fast; direct declared just before
 // the send block 545 fast.
+// Round 479: shared native active-mixbin workspace for first/submix, first/routing,
+// submix/routing and all phases, declared before updates 535/542/532/542;
+// at entry 535/542/532/542 (fast control 532). Original workspaces and body restored.
 // Round 66 (lane 9, fast control 532, full 545): retail's x87 difference compares never round (no fstp/fld after
 // the subtraction or after fabs) and load the stored value first (`fld stored; fld input; fsub st(1); fabs;
 // fstp st(1)`); the two magnitude compares bounce the input through xmm0. Ours (float fabs under /Op) rounds twice.

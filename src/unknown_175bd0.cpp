@@ -2056,6 +2056,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // assigned plane result 379 each (producer outlined). Forced existing expansion on
 // plane/point/both/zone/zone-point/assigned graphs 281/240/358/340/400/405. All input objects, original
 // arithmetic, helper and body restored.
+// Round 493: complete point/plane/both values, mutable then const, 379/379/379/379/379/379;
+// complete point and plane with named distance, mutable/const 379/379. Original zone producer
+// restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
+// Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3128,6 +3132,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // (0x176f60 25), with the spawn cursor too 112 (0x176f60 25); spawn with the particle system looked up
 // before the effect 113; spawn with both colours declared inside the type-query block and the next index
 // read after the definition call 95.
+// Round 493: native unsigned system/effect/successor handle subsets 93/93/93/93/93/93/93;
+// native-int system on the unsigned effect/successor graph 93. Original input and result
+// domains restored; frame 0x4c/0x54 and system/successor/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3420,6 +3427,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // bytes). Compile-only: a 179880-only point helper with a scale local, `*=`, `x * scale`, deferred
 // declarations, `!(scale == 1.0f)` or a vector local all give our y-in-place code; naming position.z
 // alone (or with y) moves z instead, naming x changes nothing: retail names position.y and not z.
+// Round 493: native indexed point input/output/both and complete direction access 74/74/74/74;
+// each with default-before-color scale 270/270/270/270. Original helpers and body restored;
+// scale prefix and point Y-copy remain.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

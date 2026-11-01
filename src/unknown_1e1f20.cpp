@@ -788,6 +788,9 @@ void swarm_leader_detach(long actor_index);
 // 352 (1028 bytes: frame 0x20 and the cursor spilled to +0x14 as retail, but the actor offset and index fold into
 // one `index * 0xb6 + i` multiply instead of retail's spilled offset plus an i*12 IV); that with a short memory
 // index 371 (1044 bytes); the bit tested as `*definition & 8` 285; 0x203ed0's argument as `value != 0` 285.
+// Y488: native actor members at 0x10/0x1c/0x3f4, seven subsets and
+// all with short bounded cleanup ordinal, eight 261 against fast control 261.
+// Real type and complete body restored; ordinary 285, frame/actor/cleanup homes remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

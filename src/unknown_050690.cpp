@@ -215,6 +215,9 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 // `fmul (1/65535); fadd st(0), st(0)`. The exponent clamp as `exponent - 2 < 0 ? 0 : exponent - 2` 633;
 // the random real as `/ 65535.f` 626 (still folded, the same code); the level counter without volatile
 // 652; the weights or the sums cleared by memset 635/635.
+// Round 491: native-pair additive/all seeded phase loops, per-sample/shared output pairs 630/762/630/762
+// reduced; ordinary-level counterparts 644/778/644/778 (control 680). Best additive loop 757 plain,
+// 2239/2384, rejected; original complete body restored.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

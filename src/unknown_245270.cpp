@@ -512,6 +512,9 @@ void function_245400(s_source_245400 const *source, long index,
 // second code, but the sides still fold into the branch); that with the second material read first 225; that
 // with the plane table read after the edge vector 227 (and 0x245aa0 113: the source then arrives in EDX); the
 // facing dot through dot3f 237 (755 bytes).
+// Round 493: all three facing projection parts in ijk/ikj/jik/jki/kij/kji order 208/208/208/208/208/208;
+// sequential accumulation with complete parts in kji/ijk order 209/209. Original expression
+// restored; frame 0x24/0x2c, side bytes and delayed matrix load remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

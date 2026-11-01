@@ -2238,6 +2238,8 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
 // read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
 // flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
+// Round 491: actual four-record end traversal != with long/short/word/byte ordinal 286/283/283/280; <
+// counterparts 286/283/283/280. Original countdown, cursor, ordinal and complete body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

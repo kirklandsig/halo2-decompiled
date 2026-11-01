@@ -152,6 +152,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // evaluated once through a conditional expression (retail's single fcompi branch) 850. Swapping the names of two
 // vector locals moves no home. Retail keeps the object index in EDI and pushes EBX late for the heading pointer;
 // ours holds the input pointer in EBX from the prologue.
+// Y492: direct-input native planar input/heading/both copies 813/813/821;
+// with normalized-input setter 758/758/766; both planar copies with initial-heading
+// setter, without/with normalized-input setter 820/823. All restored; early
+// input/heading and normalizer memory-product homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

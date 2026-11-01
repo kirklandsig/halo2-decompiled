@@ -20,6 +20,7 @@ extern real g_4c9798[36];
 
 // MiniMax lane E (11-01): no new form, no lower score.
 // score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
+// the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
 // Earlier frame: 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
@@ -157,6 +158,9 @@ extern real g_4c9798[36];
 // Round 279: Complete immediate scalar results for projection/near/far row families,
 // seven nonempty subsets and all with both plane-distance results, 230 each. Original
 // compound updates and entire body restored; mode/size homes and rounding reloads remain.
+// Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
+// long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
+// and call tuple unchanged; mode/size homes and rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
@@ -175,7 +179,13 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
     g_4c9798[5] = 0.0f - ((vector3f const *)(matrix + 0x28))->j;
     g_4c9798[6] = 0.0f - ((vector3f const *)(matrix + 0x28))->k;
     g_4c9798[7] = 0.0f;
-    short mode = (bool)((~(g_4c1a80 >> 10)) & 1) ? 2 : g_485a40 > 0.0f && *(short const *)(tag + 0x14) == 0 ? 1 : 0;
+    long mode;
+    if ((bool)((~(g_4c1a80 >> 10)) & 1))
+        mode = 2;
+    else if (g_485a40 > 0.0f && *(short const *)(tag + 0x14) == 0)
+        mode = 1;
+    else
+        mode = 0;
     real extent = *(real const *)(state + 4);
     if (*(real const *)(state + 0xc) > 0.0f)
         extent += (real)tan(*(real const *)(state + 0xc) * 0.5f) * distance * 2.0f;
