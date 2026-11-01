@@ -258,6 +258,7 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
 // the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
 // the plane distance as dot3f(position, normal) 144.
+// Round 447: native plane/corner-array/edge-array references before both copies, subsets 1..7: 201/138/201/160/206/160/201; complete bindings after the copies 159. Original body and helper restored; plane receiver, selectors and inverse schedule remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

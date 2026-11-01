@@ -909,6 +909,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // goes through integer registers to the frame); plane 1's negated vector declared at function scope 115 (same code).
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 119 135 130 242 246 135 127, first difference
 // always +0xbb (the e4.i load does not follow the temp count).
+// Round 447: double near-sum/near-distance/screen-factor storage, subsets 1..7: 444/434/443/439/444/429/435; single-use clamp at its offset addition 208. Original domains and body restored; coefficient preload and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
