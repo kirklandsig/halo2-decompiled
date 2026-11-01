@@ -784,6 +784,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // `remaining` set in each arm (direct arm `size = remaining;`, scratch arm `if (size > remaining) size =
 // remaining;`) 161 (689 B, entry sum header first and no dispatch hoist); that with `body_size > body_offset`
 // and the signature position summed body first 35 (687 B, the hoist returns in ESI). All restored.
+// Round 64 (lane 16, fast): the signature state as the switch's `default:` 177 (688 bytes); the scratch clamp
+// through a forceinline unsigned-min function 161 (689 bytes); the body-case I/O tests as nested ifs 34 (same
+// code); the total converted after the task state store 42; the seek position written at each use in the
+// signature case / body case / both 221 (694 bytes) / 213 / 221 (695 bytes).
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -3711,6 +3711,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Y492: complete bool/long/short/byte admission results all 101;
 // each with reply-member-before-id production 94. Seven-point leads rejected;
 // all restored. Held timeout owner spill and message/reply allocation remain.
+// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
+// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
+// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
+// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
+// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
+// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
