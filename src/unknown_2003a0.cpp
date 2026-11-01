@@ -498,6 +498,10 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // index); with a found flag 94 (336, retail's threaded exits); without the `next = 0` store (diagnostic) the zero
 // register goes, 92 (the store's constant is what VC shares with the index); definition declared before squad 92;
 // the header stores in another order 92.
+// Round 272: Completed output observations
+// definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
+// branch-owned next 74/129/129/74/74/129/129/129.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2281,6 +2285,9 @@ bool function_1df5d0(short team_a, short team_b);
 // typed squad fields 39; `actor->swarm` 39; count set before health 39. A forceinline add helper taking health
 // by value 82 (copy form kept). Matched in-place field adds add a parameter (0x1c9c80, 0x1e2570), a fresh load
 // (0xdf5f0) or an inline clamp's result (0x187510), never a plain multi-path local.
+// Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
+// with outer health workspace 39/39/153/153/39/39/153/153.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2928,6 +2935,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 0x290e20 call, the 0x204d30 call or the last 0x1fb8a0 call given 0 for the index 87/49/54, the reload stays
 // in each. The trigger pointer declared at function scope 50; the optional output, the counter output or the
 // task declared at function scope 59/50/50.
+// Round 272: Real record selector/pending-
+// state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
+// 50/50/50/50/50/50/50/50.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

@@ -199,6 +199,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 269: Independent yaw/pitch delta/limit/both 265/255/255; entry declarations 265/255/255;
 // per-axis scopes without/with entry declarations 255/255. Keep separate multi-use step limits,
 // plain 255; magnitude/yaw homes and XMM numbering remain. All other forms restored.
+// Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
+// with complete role names 255/255/255/255/255/255/255/255.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
