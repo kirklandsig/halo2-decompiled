@@ -282,6 +282,13 @@ static inline real interpolate_linear(real a, real b, real t)
 // bit named in both boundary blocks for the disposal and restart tests: `word` 209 (663 bytes, narrowed through
 // DL), `short` 209, `long` 111 (655 bytes; the flags then load into EDX as retail but the bit takes ECX and is
 // compared 32-bit), `dword` 111; the flags as a `long` local in both blocks 208 (651 bytes).
+// Round 131 (m3 lane 6, fast): fraction right after the elapsed clamp re-measured 207 (post-loop registers
+// and order become retail's; next time takes EBX and the per-pass zero goes); the disposal test in the
+// loop condition (`while (!dispose && time >= next_time)`, no per-pass reset) 166 (652 bytes), with the
+// fraction first 212 (645 bytes); the restart predicate of all three sites as a `static inline` helper 294
+// (577 bytes, kept out of line by /O1), as `__forceinline` 96 (same code), with the fraction first 207;
+// the restart and disposal predicates both forceinline 96, with the fraction first 207; a 600 s permuter
+// run (54 tries) none below 96.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

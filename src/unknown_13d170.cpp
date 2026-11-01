@@ -253,6 +253,10 @@ struct s_block_candidate
 // Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
 // bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
 // restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
+// Round 131 (m3 lane 6, fast): `long offset = 0;` as the first statement 373 (push/pop order and the pages
+// register become retail's, the zero moves to EDI, frame still 0x1050); offset declared after the result,
+// before the clamp 400 (1231 bytes); the clamp as an if/else-if chain 370 (same code); both 373; offset
+// first with the candidate stored previous/offset/time/pages 372.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

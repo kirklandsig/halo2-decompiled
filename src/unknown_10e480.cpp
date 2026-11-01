@@ -284,6 +284,12 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
 // 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
 // in the sampled block 189. Original body restored.
+// Round 131 (m3 lane 6, fast; both builds now end `ret 0x18`): diagnostic, the first arm written twice 496
+// (1120 bytes) and the weighted arm still inlines the getter and the data get, so the getter's inlining does
+// not follow a budget used up by the first arm. The getter called in the loop condition 284 (992 bytes); a
+// const animation pointer 207; the existing channel validity test 0xb6760 after the weighted play 239 (954
+// bytes); in 0x1c6440 itself, its graph in a named local 207 (getter still matches), an early NULL return
+// 207 (getter 15).
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
