@@ -85,28 +85,28 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // state 0 copies the request before the path call, states 7 and 9 keep the handle in another
 // register, state 11 swaps the completed and limit registers, state 16 sets the state before the
 // memset, and state 19 clears the slot before the buffer release.
-// score 37 (was 39): state 11 writes the chunk size to g_55bcf4 before the positioned-copy call
+// Earlier, 37 (was 39): state 11 writes the chunk size to g_55bcf4 before the positioned-copy call
 // and reads the slot into a named local, which puts the buffer in ESI as retail has it. Left:
 // state 0 copies the request before the path call, states 7 and 9 keep the handle in another
 // register, state 11 swaps the completed and limit registers, state 16 sets the state before the
 // memset, and state 19 clears the slot before the buffer release.
-// score 39 (was 47): state 14 reads the slot's file handle into a named local before the write
+// Earlier, 39 (was 47): state 14 reads the slot's file handle into a named local before the write
 // call, which puts that load right after the clock call where retail has it; states 13 and 14
 // now match retail exactly. Left: state 0 still copies the request before the path call, states 7
 // and 9 keep the handle in another register, state 11's registers differ (buffer in EDX, limit in
 // ESI, chunk in ESI, slot in EAX), state 16 sets the state before the memset, and state 19 clears
 // the slot before the buffer release.
-// score 47 (was 114): state 11 keeps the chunk size in a local and writes it to g_55bcf4 after the
+// Earlier, 47 (was 114): state 11 keeps the chunk size in a local and writes it to g_55bcf4 after the
 // positioned-copy call, which makes that block exactly retail's length (99 bytes) so every later
 // block lines up again. Left: state 11's registers differ (buffer in EDX, slot in EAX, file in ECX,
 // handle in EDX), state 0 still copies the request before the path call, and states 7/9/13/14/19
 // differ in register choice and statement order.
-// score 114 (was 161): state 11's no-buffer path now assigns state = 11 explicitly, so the compiler
+// Earlier, 114 (was 161): state 11's no-buffer path now assigns state = 11 explicitly, so the compiler
 // materialises `mov esi, 0xb` and merges the exit into state 10's tail (retail's short je); the body is
 // retail's length (1720) again and every case offset, the jump table and its entries match. Left:
 // state 0 still copies the request before the path call (retail calls 0x214db0 first and re-forms
 // 0x55bf28), and states 7/9/11/12/14/16/19 still differ in register choice and statement order.
-// score 161 (was 367): state 0 copies the request before the path call (retail calls 0x214db0 first and
+// Earlier, 161 (was 367): state 0 copies the request before the path call (retail calls 0x214db0 first and
 // re-forms 0x55bf28 after it, BLOCKED-BY 0x214db0: ours keeps the constant in EDI, 3 bytes short; copying first is
 // the only order whose block has retail's length, which lets round 85's retail forms below count). Left: state 7/9/14
 // file-handle registers (ECX/EDX), state 11's buffer in EDI (retail ESI) and argument order, state 10/16/19 constant
@@ -211,6 +211,15 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
 // chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
 // EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
+// Round 71 (lane 9, fast), state 11 (retail: chunk shares EAX with the remaining bytes, completed ECX, limit EDX,
+// slot EDX early, file EAX late): `long chunk = remaining; if (g_55bd1c <= remaining) chunk = g_55bd1c;` 37
+// (retail's `cmp limit, remaining; jg` shape, registers rotated); `g_55bd1c <= remaining ? g_55bd1c : remaining`
+// 37 (same code); the chunk as the difference clamped in place 38; the if-clamp with the slot local first 38,
+// between clamp and store 38, after the store 37; the if-clamp or difference clamp without the slot local 115
+// each (chunk EAX and completed ECX as retail, but buffer and limit swapped and the slot read late, which
+// breaks the checker's global pairing); a named buffer local for g_55bd18 with ternary/if clamp, with and without
+// the slot local 37/37/115/115; an `s_cache_file *file = &g_557c90[g_55bd10]` pointer in place of the slot local
+// (ternary, if, after the store, first) 250/250/250/275 (1724 bytes).
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

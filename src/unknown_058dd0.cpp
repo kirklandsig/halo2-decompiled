@@ -811,6 +811,12 @@ void c_session_client::function_06dbc0()
 // a member pointer local 47; a `client` copy of this 47; cases 2/4/6 grouped 47. The file is /O2 /Gr and
 // 0x58d90's own file /O2 /Ob0, which keeps it out of line here where retail inlines it (a flags lead for
 // the user, not tried).
+// Round 71 (lane 9, fast): a `client` copy of this passed to the call 43; a member pointer declared with
+// `s` before the switch 48 (with separate case 7/8 bodies 49); the id compare as a named bool 43; an early
+// return on mode/type before the compare 43; a local pointer for the memcmp's first operand 43; a return
+// after the call 43. Compile-only diagnostic: a second identical 0x6d380 call after the first gives retail's
+// whole head (this in EBX, id in EBP, mode and index in EDX), so retail allocated this as if live across a
+// call; the only candidate is the busy-state switch, which retail inlines and ours keeps out of line.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
