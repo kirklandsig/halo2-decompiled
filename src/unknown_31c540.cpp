@@ -5,6 +5,16 @@
 // Validation data is supplied separately; no retail key material is embedded.
 char g_415448[64];
 
+// Advance the running mixer in place and expose that same value to the sum.
+// The salt reference preserves the retail signed-byte load order.
+static __forceinline unsigned long &advance_hash_state(unsigned long &state,
+	char const volatile &salted, char const &supplied)
+{
+	state *= 2;
+	state ^= (salted + supplied) * 0x1010101UL;
+	return state;
+}
+
 // @retail 0x31c540
 unsigned long __cdecl function_31c540(char const *text)
 {
@@ -35,13 +45,8 @@ unsigned long __cdecl function_31c540(char const *text)
 		multiply = 1 - multiply;
 		for (long j = 0; j < i; ++j)
 		{
-			// Keep the signed salt read ahead of the input read.
-			char const volatile &salt_value = salt[j];
-			long salted = salt_value;
-			long supplied = input[j];
-			state = (state * 2) ^ ((salted + supplied) * 0x1010101UL);
 			// Retail keeps the running sum in memory during this mixing loop.
-			*(volatile unsigned long *)&hash += state;
+			*(volatile unsigned long *)&hash += advance_hash_state(state, salt[j], input[j]);
 		}
 	}
 	return hash;
