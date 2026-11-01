@@ -544,6 +544,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
 // other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
 // and case 2's declaration orders, compile identically (286-290).
+// Round 125 (m3 lane 5, fast): retail's caller sets ECX (surface index), EAX (pathfinding), EDI (entry)
+// in that order, as ours already does, so no parameter reorder has evidence. a, b, c, d re-measured 299
+// (1284 bytes: actor index loaded into EAX at entry and pathfinding homed in EBX as retail, but
+// pathfinding arrives in EDX); on it the surface declared first 299, the result declared first 299,
+// a, b, d, c 314, one `vertices` base for the four corners 295.
 // Round 106 (fast): the corner pointers a, b, c, d now 299 at 1284 bytes (aligned 142 -> 94, case 5 exact,
 // but the actor load is the first instruction, so LTCG passes pathfinding in EDX, 0x270d90 313, and
 // case 2's 0x26c590 setup is re-coloured). On that graph: result first 299; surface before start_out 299;
@@ -576,6 +581,19 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Round 275: complete native vertex values in paired/actor/trace cases 502/337/400;
 // paired-actor/paired-trace/actor-trace/all 526/551/438/575; all with shared
 // differences 583. Exact-only snapshots restored; early root/actor ownership and vector scheduling remain.
+// Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
+// round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
+// a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21
+// 349-353 (1280 B); only a,b,c,d / a,b,d,c load actor_index at entry, and both then take pathfinding in EDX.
+// b,a,c,d with the result declared first 274.
+// Round 128 (m3 lane 5, fast): retail passes the actor index in EAX to 0x270400 in case 5 straight from the
+// entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
+// `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
+// `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -132,6 +132,14 @@ point2f *function_13bec0(s_tag_data const *function, byte range_index, byte poin
 // denominator after the root 8 (retail's store order and denominator home; low root/reciprocal homes exchanged and
 // the high result home differs), rejected as only three points without a match; implicit x87 return 12; separate
 // result local 46; parameter result 225 (1984); denominator before the root 15. Opening helper restored.
+// Round 127 (lane 6, fast): retail lets the denominator reuse the numerator's slot (in the end length's home)
+// and gives the root its own slot; a compile-only build (/FAs) shows the slots are coloured with the caller's
+// locals, inline temps last. One asm operand holding the numerator, then the denominator after the root 18
+// (retail's sharing and store order, but the shared slot takes the start length's home and the high range's
+// differences flip); a root helper with a result local and an asm helper multiplying by the root, the root
+// named 16, passed straight 16; the denominator copied before the root 12; the shared operand with a real root
+// written through its address 18. Screened only: root/reciprocal/denominator names, `ratio` folded into the
+// pow call, the ratio code written in the caller (the frame grows to four slots).
 // @retail 0x13b390
 real function_13b390(void const *function, real input, real range)
 {

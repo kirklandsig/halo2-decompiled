@@ -985,6 +985,12 @@ bool __stdcall function_2399da(long controller_index)
 // rank-3 dialog, set) 90; one `team_xuid` pointer for both calls 90; own rank read before the identity
 // test 90; early return when there is no friend request 189 (450 bytes); the rank stored first and the
 // rank-3 test reading the stored field 89 (one rank use fewer, a gain of 1).
+// Round 146 (lane 4, fast): the 89 form forwards the stored field back into the rank register (`cmp eax, 3`),
+// so the rank keeps every register use; the post-membership block as a forceinline helper taking the identity
+// first 90 (same code); the rank copied into a local at the function top 90 (same code); the over-rank and
+// no-permission refusals sharing one block through `goto denied` 116 (432 bytes, but the zero and controller
+// registers swap ESI/EDI and the identity stays in ECX). Diagnostic: the identity test without the 64-bit
+// check 105 (the identity is then compared in memory and never loaded).
 // Round 122 (lane 6, fast with 0x2399da, 0xac050, 0xac360): the non-remove arm as one block with the over-rank
 // and rank-3 guard returns 90; the dispatch as `switch (rank)` with a NONE case and a default 95 (437 bytes); the
 // store through a pointer to the member's properties 90; a set-rank inline helper shared with 0x2399da 90; the
@@ -996,6 +1002,19 @@ bool __stdcall function_2399da(long controller_index)
 // Round 275: one common denial-message result, long/dword/short/byte carriers with zero/NONE
 // representations 172/177/172/177/173/181/161/161. Exact-only message guards restored; frame
 // 0xf00 agrees, identity/rank EAX/ECX ownership and the extra removal move remain.
+// Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
+// own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
+// permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an
+// if/else chain 101 (440 bytes; 0x239a3d 0 -> 42, restored).
+// Round 128 (m3 lane 5, fast): the identity local renamed to sort before `rank` 90 (same code: no name
+// tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
+// (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
+// reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
+// Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
+// with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
+// test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
+// identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
+// rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
