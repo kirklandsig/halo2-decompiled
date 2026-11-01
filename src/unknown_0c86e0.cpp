@@ -195,6 +195,9 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Round 332: Retained absolute header ordinal long/dword/word/int, each with entry or late false
 // result: 107/107/109/107/122/122/124/122.
 // Original executable source restored; no eligible gain.
+// Round 284: reset/sound domain without the implied keep retest, crossed with early preserve
+// exit, producer prior-state lifetime and sound sentinel exit: eight forms 134 each.
+// Original complete body restored; fresh current-unit observation and late prior-state home remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

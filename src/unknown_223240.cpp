@@ -240,6 +240,9 @@ void function_2232a0(void)
 // traversal 138/138. All controls preserved. Original body, every declaration and initializer
 // restored. Exact count/layout prefix, outer pretest, loop-entry source zero and outside tail
 // transport remain.
+// Round 284: native multi-use options receiver with a complete positive layout result,
+// bool/byte/short/long on the recovered source graph: do 109 each; pretested for 138 each.
+// Original complete body restored; outer pretest, optional-source home and tail transport remain.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

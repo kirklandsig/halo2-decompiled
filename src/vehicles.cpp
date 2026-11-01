@@ -1112,7 +1112,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 597 (was 597): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 588 (was 597): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1138,6 +1138,9 @@ long function_10f5f0(long object_index);
 // position observation alone and with field/producer/both 637 each; best field/producer with actual six-real
 // buffer 595. Two-point forms rejected; every original field view, buffer, body and inherited qualifier
 // restored. No calibrated loss.
+// M283: Ascending point cursor with indexed/postincrement/countdown/pointer-distance bounds 588/588/616/578;
+// with six-real output 588/588/616/578. Keep the indexed cursor, plain full confirmed 597 -> 588;
+// pointer-distance bounds introduce signed division per iteration, absent in retail, so are diagnostic only. Original buffer retained; frame 0x19ac/0x1984 and flag-result stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1238,8 +1241,12 @@ bool __stdcall function_efde0(long vehicle_index)
 					real total = 0.0f;
 					long i;
 
+					s_vehicle_physics_point const *point = state.points;
 					for (i = 0; i < count; i++)
-						total += state.points[i].value;
+					{
+						total += point->value;
+						++point;
+					}
 					vehicle->unknown3fc = count ? total / (real)count : 0.0f;
 
 					if (((*(byte *)&vehicle->flags_c0 >> 6) & 1) && ((1 << definition[0x1f0]) & 0x28) &&
@@ -1550,6 +1557,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // J222: Complete up/forward/both cross inputs 404/420/442; twice-read header address 525, with up/forward/both
 // inputs 533/532/554; next graph produced before constructors and after each iteration 142 (exact-only). All
 // original executable source restored; no calibrated loss.
+// M283: Frame 0x9c and extent agree; first +0x2d is header SIB ownership, with join reloads and constructor/graph scheduling still different.
+// Native header ordinal long with normal/early iterator/early channel/both constructors 114/518/552/530;
+// word ordinal with the same lifetimes 205/527/590/561. All eight bodies restored; original 40 retained.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

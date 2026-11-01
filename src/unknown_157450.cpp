@@ -4061,10 +4061,10 @@ static __forceinline long nonnegative_15ce70(long value)
 {
 	return value < 0 ? 0 : value;
 }
-// score 456 (was 470): the mode dispatch written as an if/else chain instead of a switch, and the
+// score 456 (was 456): the mode dispatch written as an if/else chain instead of a switch, and the
 // award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
 // attacker parameter is still copied into EDX in the entry block.
-// score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
+// Earlier at 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
 // tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
 // Frame 0xe4 versus 0xe0; attacker/NONE/category homes remain. Existing tick conversion 480; direct one-second minimum 549; lives clamp before decrement 535; first cause setter 563; shared initial ticks 528 (fast).
@@ -4139,6 +4139,9 @@ static __forceinline long nonnegative_15ce70(long value)
 // Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
 // 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
+// M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
+// 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
+// first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
@@ -4495,6 +4498,9 @@ void function_15fe20(long team_index, color3f *color);
 // complete individual palette copies 564. Original body restored; native color transfers remain.
 // Round 496: Standard forward color ranges, rival/own/both team/all four publications
 // 563/236/569/588; backward ranges 568/544/567/592. Original aggregate copies and body restored.
+// M283: Native color/palette output initialization subsets 1-7 via aggregates 610/560/626/552/686/620/684;
+// all outputs via memset 671. Original output objects, return-pointer copies and complete body restored;
+// frame 0x48c and early homes agree, but native team-color transfers, sentinel reuse and byte shift residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5624,6 +5630,8 @@ void __stdcall function_d6bc0(long object_index);
 // Round 496: Countdown value owning both zero scheduling and positive expiry, short/long
 // storage with word/Boolean schedule and short/byte-kind plus word/long modifier:
 // 156/168/169/176/161/172/183/190. Original timer observations and body restored.
+// M283: Retained divisor/scenario/preset lexical spill-home subsets 1-7 score 144 each; all three with the initial tag receiver renamed 144.
+// Original names and body restored; frame 0x14/0x18, independent timer home and entry-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
