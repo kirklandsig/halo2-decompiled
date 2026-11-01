@@ -131,6 +131,19 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
 // initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
 // 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
+// Round 31 (m3 lane 2, fast): the token walk with one tokenizer call in the while condition (next
+// starting at the buffer) 287 (690 bytes); the done flag declared `bool volatile` as file_read_string
+// 0x121a40 does 128 (same code); that with the size zero-initialised as there 122 (the earlier 6-point
+// form); the walk as a do-while under a first-token test 128 (same code); the new-font arm first
+// (`local_14 == NONE`) 188 (764 bytes). EBP is still saved at the first token's test.
+// Round 64 (lane 9, fast; a compile-only build reproduces the late EBP save and the slot order): the token loop
+// as `if (token) do { ... } while ((token = next token) != NULL);` 128; `if (!local_7) {} else { ... }` 128;
+// the first token taken in the success block with the loop under `if (token)` at block level 130; a block-
+// level `while (local_7 && token)` with a NULL token 215 (781 bytes); `dword size = 0` with the done flag
+// `bool volatile` as 0x121a40 declares it 122 (as the zero alone), with the counters declared before the token
+// array 122. Diagnostic: the token stored to a global after the loop 149. Compile-only: a use of the token
+// after the success block moves `push ebp` to the block's start (retail's place); renaming the size, next,
+// count and unique locals (four orders, prefixes included) never changes their slot order.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

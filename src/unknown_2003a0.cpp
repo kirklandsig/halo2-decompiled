@@ -885,6 +885,11 @@ done:
 // definition-owner/mode/scenario snapshot subsets 0..7: 193/201/235/236/230/242/225/227.
 // Entry still caches next; some forms also change the iterator register. Original cursor
 // phase, observations, frame 8 and complete body restored.
+// Round 51 (lane 1, fast): the iterator flags as a short (retail's movsx) 175; the exhausted test written
+// as the empty arm (`if (next == NONE) {} else`) 176; the squad looked up with the unmasked long index 176;
+// the first scan's pair through a short pointer 196 (617 bytes, as before); a long result 211 (633, as
+// before). The entry test still loads next into CX for the first pass (retail compares it in memory and
+// reloads it at each loop top), which pushes NONE into EBX.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2149,6 +2154,14 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 125 (lane 5): actor index assigned in the loop test 64; actor and actor index declared at the top 64;
+// iterator declared at the top, before or after the squad pointer, 64/64; flag test as a signed char 64;
+// flag test with an empty then-arm 64; the 0x1e11b0 test as `== false`, with an empty then-arm, through a
+// named bool 64/64/64; game time stored first 64. Diagnostics: pointer renamed (name order) 64; iterator's
+// squad index field stored in the loop 65 (the index becomes a register argument). Flags lead (not
+// applied): with `/Ob1` file flags and no pragma, the existing step helper gives 71 at 191 bytes exactly as
+// the statement-level pragma does, so /Ob1 alone accounts for retail's out-of-line 0x204d30/0x203f60 and
+// unrotated loop; the squad index still never gets a register there (byte return 78).
 // Round 63 (lane 12; an LTCG env link reproduces the build): on 0x203d70's loop (71) an early `return` when the
 // +0x7e test fails 89 (220 bytes); the store from `iterator.squad_index` 78 (185, 0x203d70 drops to 34); a named
 // flag local before the tests 71; iterator/actor declared at the top 71. Same code as the 71 form (env): the
@@ -2164,6 +2177,11 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
 // 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
 // flag store with the short-view return 65 (206).
+// Round 51 (lane 1, fast): on 0x203d70's loop (step helper, statement-level pair around 0x203f60, word flag
+// store, short-view return; 71 at 191 bytes, everything but the squad pointer's split around the loop and the
+// index in EBP): squad_get for the squad 71; an actor index local for the three loop calls 71; the game time
+// stored before the flag 71; the squad as a byte pointer through squad_get 71; the actor initialised NULL 71
+// (identical register roles: the squad keeps EBX, the index stays in its stack home).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2495,6 +2513,11 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // Round 475: Failure-first actor completion, with bitmap pointer scan/short overlap/native
 // offset-vector subsets 0..7: 301/331/320/349/316/346/338/364. All restored; frame
 // 0x48 versus 0x54, early saves, pool/intersection and current-handle homes remain.
+// Round 51 (lane 1, fast): the area iterator, the two points, the wake flag or the location declared at
+// function scope 275 each (identical code: scope never moves the shared homes); a long squad index 275 (as
+// before); the walk through the existing out-of-line record_pool_iterator_step 415 (1007 bytes: the step
+// stays a call, also 0x204b20 202, 0x201df0 139, 0x200d80 158). Retail keeps the walk iterator in memory
+// (data reloaded each pass) as an escaped local would be.
 // @retail 0x201ea0
 void function_201ea0(void)
 {

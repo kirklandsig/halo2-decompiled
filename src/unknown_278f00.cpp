@@ -185,6 +185,12 @@ bool function_a7670(long object_index);
 // indexed cleanup 194 (957 bytes, plain check); the admission as if/else arms 255; the record type read
 // into a byte before the admission 181 (same code); the index decrement after the pending-flag clear
 // 181, the body count read before that clear 181 (same code each).
+// Round 148 (lane 4, fast): retail keeps the island index in ECX and the list in EDX on the unflagged path
+// (no store at the index's zeroing or increment; spilled after `dec` and reloaded where the flagged path
+// ends), so the field byte lands in BL; ours keeps both on the stack. The flagged path as a nested block
+// instead of `continue` 181; the body count read before the flag is cleared 181; the index stepped back
+// after the flag store 181; the index declared outside its loop 181 (all same code); the retry counts
+// declared ahead of the flag test 186 (966 bytes).
 // @retail 0x278f00
 void function_278f00()
 {

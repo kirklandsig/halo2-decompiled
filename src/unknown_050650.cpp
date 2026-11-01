@@ -543,6 +543,8 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 }
 
 // score 333 (was 333): the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
+// An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
+// random/trig and vector schedules still differ.
 // Tried: direct collision Boolean 355; initial best vector before normalization 356; result declared first 354;
 // long sample counter 355; axis/sample/range names 355; shared normalizer 330 (sum order changed, restored);
 // shared random-range helper 360; one result return 377; paired span names 355; names plus one return 377;
@@ -592,6 +594,20 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
 // 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
 // but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Round 126 (m3 lane 6, fast with 0x297660, which stays matched): a long attempt counter 332; that with `clear = true`
+// first in each pass 326 (1423 B; retail compares the counter as a word, `cmp dx, 0xa`, so the long type is not
+// retail's), plus best_fraction or clear declared before result 326/326; a bool clear with the long counter 345, with
+// clear first as well 348; on the short counter best_fraction before result 333, clear before result 333; the
+// retail-faithful bool clear set first in each pass re-measured 349 (aligned difference 195 against the body's 233:
+// retail's prologue and `sbb al, al`, but the rotated candidate is spilled between the two rotations, 1435 B). The
+// frame needs the shared collision-result type at its real 0x5c size, which also changes users in other lanes'
+// files this round (unknown_247fd0.cpp, unknown_2ba3e0.cpp, path_transitions.cpp).
+// Round 109 (lane 8, fast; aligned = difflib count 234): the pitch axis set field by field 333; the collision
+// result declared at function scope 333, the ray at function scope (assigned in the loop) 333, both 333 (all
+// same code: VC packs the frame the same whatever the scopes); `clear = true` first in each pass with the
+// function-scope collision result 327 (the listed long-clear-first form; 1424 bytes). Retail keeps a zero in
+// ECX for the result byte and the attempt counter, and pushes EBX only at the loop (ours at entry, for the
+// default best vector's k).
 // Round 26 (m3 lane 2, fast): bool clear set at the top of each pass with `return true` after the best tail
 // 327 (0x297660 4: the collision flag then passes in BL); that with one `return result` 349 at 1435 B (retail's
 // late EBX push, EBX scratch, EBP/EDI best i/j, AL clear and DL result, the tail is retail's code, but the loop

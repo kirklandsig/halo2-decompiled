@@ -3134,6 +3134,9 @@ struct s_voice_route_choice
 // Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
 // masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
 // original observations, bitwise radio and full body restored; entry/cursor allocation remains.
+// Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
+// radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
+// three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3368,6 +3371,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 156 (0x564c0 139); each of those with the cursor 163/163/166. All restored.
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
+// Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
+// 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
+// the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
+// member bit cleared before the talker test 161 (469 bytes).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

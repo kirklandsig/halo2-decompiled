@@ -1773,6 +1773,16 @@ real function_17c900(short function_type, real input);
 // bytes); on that, the lead field at each use 349, salt named in the wander branch 361, cross3f for the axis
 // 343 (same code), output written at three exits 378, to_target through vector3d_from_points3d 377, the lead
 // and wander adds through vector3f_add_scaled 343/343 (same code).
+// Round 126 (m3 lane 6, fast with 0xf8eb0/0xfa580/0xfbd40/0xf86f0/0xf8db0): the game time named once in the wander
+// branch 348 (same code); that with the salt computed in the branch, after or before the game time, 365/365 (1469
+// bytes); the wander amount as one nested ternary 348; the up pointer declared after the axis 348. Retail keeps the
+// index on the stack (re-read and shifted in the wander branch, its home then reused for the yaw) and the output in
+// EBX; the wobble path pops and writes the output itself.
+// Round 109 (lane 8, fast with 0xf8eb0/0xf86f0; aligned = difflib count 218): `to_target` declared before the
+// aim point 348; `point3f const *center` 348; the drift test as `distance > 0.0001f && flag` 354 (1471 bytes); the
+// up-vector pointer declared after `axis` 348; the lead block's speed through the existing magnitude3d 348 (LTCG
+// inlines it; identical code). The index EAX/output-stack convention (retail: index on the stack, re-read for
+// the salt, output in EBX) still sets every register from the first instruction.
 // Round 16 (m3 lane 17, fast): salt declared at entry and assigned in the wander branch 365 (1469 bytes), with
 // the output written at the three exits 382 (1480 bytes); to_target declared first 348 (same code); salt
 // products as `3 * salt` / `7 * salt` 348 (same code); the wander amount as one conditional expression 348

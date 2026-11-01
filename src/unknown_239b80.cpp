@@ -368,6 +368,16 @@ short function_239e50(short count, point2f const *points, short *indices);
 // by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
 // (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
 // state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
+// Round 64 (lane 9, fast; a compile-only build reproduces the integer colouring exactly): case 0's j store
+// and dot helper through `vector2f *normal = &line.n` 44 (304 bytes), with the normalize through it too 44;
+// case 1's `state = 2` or case 0's `state = 1` as `state++` 50 each (index EDX as retail, state ESI); round
+// 54's 23 form plus case 1's `state++` 31. Compile-only, no colouring change (state EDX, index ESI, point
+// ECX): the index declared at the top or first, state first, a case-0 point pointer, the NONE case last,
+// `state <= 1`, a while loop, a loop-top point pointer, case 1 as `state = ... < eps ? 1 : 2`, as `if (<
+// eps) break; state = 2;`, with `line.d - dot`; the dot helper through `normal` in either term order keeps
+// `mulss xmm1, [p.x]` unfused (92 instructions); stores of the index, the state or the point pointer to a
+// global (diagnostic) at the loop top or in any case leave the index in ESI. In case NONE ours uses three
+// temporaries (scaled index, x, y) beside the live index; retail's y reuses the scaled index's register.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -542,6 +552,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // flag: Boolean departure, heading first, memmove, `||` update and `current` at function scope 253
 // (746 bytes); direct returns 262; short hull count 257; `current` at function scope 245, with the
 // Boolean departure 215; the heading at function scope 231. Original body restored.
+// Round 41 (lane 14): retail's first departure test compares the y term with `fxch; fcompi; jb` (the exit
+// test does not). Boolean departure with heading first and the `||` update 264, with memmove 273 (748 B,
+// points/indices in EBP/EBX); that with `|=` 295; long departure with `||` and memmove 236; done-flag
+// diagnostic on the memmove form 229.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -808,6 +822,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // `points` into ECX at the loop head (ours into EDI, coalesced with the current point), so ECX is never free across
 // the loop there and the previous side stays in memory; a `(void)&` on the previous side, both sides or count changes
 // nothing (env).
+// Round 41 (lane 14): no matched game function has retail's `mov ecx,[count]; movsx edi,cx ... test cx,cx`
+// entry (retail scan). On the if/else fraction (249, 880 B): if/else-if clamp 249; clamp inside the nonzero
+// arm 249; `short last = count - 1` 273; previous side declared before the previous point 249; loop test
+// `i != count` 249; `points + count - 1` 249. Zero-denominator arm first (`== 0.f`) 198 (887 B).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

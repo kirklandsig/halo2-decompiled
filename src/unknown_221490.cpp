@@ -583,6 +583,10 @@ bool sound_driver_voice_create_buffer(
 // `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
 // both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
 // code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
+// Round 28 (m3 lane 2, fast with 0x191420): play defined inside the 3D branch (only the 3D flag before it) 158
+// (flags then arrive in EAX and move to EBX; 0x191420 differs, 1); the 3D test inverted (`if (!three_d)` with the
+// NULL store first) 132; `long flags` (definition and 0x191420's declaration) 71 (same code); the 3D flag first,
+// result assigned after the 3D branch and the failure returning NONE 186 (597 bytes); that with play first 97.
 // Round 60 (m3 lane 9, fast with 0x191420): the 3D flag defined first with the count stored before the
 // descriptor clear 181 (599 bytes); both bools in one declaration, play first 71 (same code), the 3D flag
 // first 182 (599); the result declared after the voice index 71 (same code), with the 3D flag first 182;
@@ -619,6 +623,11 @@ bool sound_driver_voice_create_buffer(
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D
 // first/play first 194/108; play at function scope before the range test 183, the 3D flag there 182, both
 // there after the voice index 93, both before the result 117 (0x191420 1 in three of these).
+// Round 112 (lane 8, fast with 0x191420): the 3D flag declared with play and assigned later in the first
+// block (retail's `and bl, 1` sits among the first creation's pushes): after the zeroing and count store 80,
+// with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
+// code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
+// (anneal, 600 s, 67 tries): best 71.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

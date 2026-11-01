@@ -492,9 +492,6 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
-// Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
-// flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
-// slot, and retail reaches the endpoint handling by a forward branch from the loop.
 // score 276 (was 284): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
@@ -638,6 +635,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
 // native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
 // only forms all restored; frame and geometry/color homes remain.
+// Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
+// flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
+// slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
+// and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
+// code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -954,6 +957,22 @@ void __stdcall function_43720(s_43740_input *input)
 // group pointer written into the image expression 62; the call's count argument recomputed from the
 // point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored
 // last 64 (211 bytes, and 0x42b20 stops matching).
+// Round 31 (m3 lane 2, fast; 0x42b20 checked each time): on the split form (tag field tested, the
+// index call on the field, a tag local for the group lookup and the record: 40, retail's head through
+// the index call, a mix of field and local reads kept only with a match): the normal flag through the
+// stored shader 67 (212 bytes, 0x42b20 62); the record filled in retail's store order (shader, slot,
+// normal, tag, source, definition, count, bitmap) 42; a `long index = slot` for both arrays 40; the
+// position computed before the record 40; the count stored first 41. The tag local for the lookup
+// only 68 (the tag outranks the source: definition ESI, source stacked; 0x42b20 60).
+// Round 64 (lane 9, fast; 0x42b20 checked each time): round 26's split rebuilt (field test and call
+// argument, a tag local for the lookup and the record) 40, 208 bytes (retail's head through the call, but a
+// field/local mix, and the local lives to the record so the lookup copies EBP where retail consumes it); the
+// tag local for the lookup only with the record from the field 68 (retail's tag copy consumed in place, but
+// the source parameter then takes EBP and is passed on the stack: ret 8, 0x42b20 60); that with the normal
+// read through the stored shader pointer 70 (the definition takes EBP instead, 0x42b20 62); field test with
+// the local for the call and lookup and the record from the field 62 (same code); the call argument from the
+// field and the rest from the local 63; test, call and lookup on the field with a record-only local 50 (212
+// bytes: frame 0x24, the tag spilled; positional).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
