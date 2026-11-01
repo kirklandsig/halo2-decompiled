@@ -459,6 +459,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // rotation operands swapped 826 [218] (same code). Next: retail shares slots between sweep and obstacle
 // locals (+0x14 angle/best index, +0x28 sine/best ratio, +0x44 reverse offset/rotation, +0x18 direction/
 // obstacle difference), so its sweep locals end before the obstacle block.
+// Round 282: complete sweep scope, separate forward output, separate phase cosines and both
+// 719/719/716/710; corresponding per-use clearance forms 784/784/802/801. Unscoped output/cosine
+// pair 710 plain, restored as a new unused one-use output workspace; existing reverse/side direction
+// workspaces with separate cosines 767/717. Three- and two-point forms restored; original frame and body retained.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
