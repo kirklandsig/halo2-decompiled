@@ -277,6 +277,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
 // next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
 // 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
+// Round 128 (m3 lane 6, fast; control 96): in the loop retail holds the direction in ECX, the frame and then
+// the flags in EDX and the shared `& 2` bit in EAX (compared again as `cmp ax, bx` for the restart). The `& 2`
+// bit named in both boundary blocks for the disposal and restart tests: `word` 209 (663 bytes, narrowed through
+// DL), `short` 209, `long` 111 (655 bytes; the flags then load into EDX as retail but the bit takes ECX and is
+// compared 32-bit), `dword` 111; the flags as a `long` local in both blocks 208 (651 bytes).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
