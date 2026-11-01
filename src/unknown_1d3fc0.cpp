@@ -113,6 +113,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // alone through the existing normalize_inline 121 (sums i, k, j, still preloads k); the loop's world
 // matrix as its own block-scoped transform 174 (frame 0x170). The preload order (k, j, i into
 // xmm4-6) follows the dot's term order, not the sum. Original body restored.
+// Round 35 (fast): diagnostics: with no k term in the dot and the projection, forward preloads only j
+// and i as retail; with k read by either one it preloads k (so forward's k preload follows how the
+// dot/projection consume forward.k); retail's dot sums j, k, i and its projection rows run k, j, i (ours
+// k, j, i and j, k, i). Projection through the existing vector3f_add_scaled with `-local_10` 156 (929
+// bytes); the up pointer taken before forward's normalization, normalized after it, with dot3f(forward,
+// up) or dot3f(up, forward) 151/151; a const forward receiver 110 (same code); the second up
+// normalization's returned pointer passed straight to cross3f 110 (same code).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
