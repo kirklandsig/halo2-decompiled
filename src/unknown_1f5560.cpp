@@ -310,6 +310,8 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// score 0 (was 11): the animation state is kept in a one-word array, so it is loaded
+// into cx and spilled as a word, as retail does; the plain full-program check matches.
 // Not kept (MiniMax G, 10-31): the state in a named one-member struct local matches (0); that is the
 // one-member struct steering a stack home that Y201 already found here (held, ruled out).
 // score 11 (was 11): the state is loaded with movsx and spilled as a dword;
@@ -332,9 +334,12 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 
 	if (unit->type == 0)
 	{
-		long state = heading_unit_get_state(unit);
+		/* the unit's animation state, kept at its own width for the test after the lookup */
+		unsigned short animation_state[1];
 
-		if ((short)state == 6 || (short)state == 7)
+		animation_state[0] = heading_unit_get_state(unit);
+
+		if (animation_state[0] == 6 || animation_state[0] == 7)
 		{
 			if (unit->movement_type == 4)
 			{
@@ -353,7 +358,7 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 			long second;
 
 			function_10f630(actor->unit_index, &first, &second);
-			if (unit->movement_type == 5 || (short)state == 5 || first == 0x50000cb)
+			if (unit->movement_type == 5 || animation_state[0] == 5 || first == 0x50000cb)
 			{
 				direction->i = unit->forward.i * -1.0f;
 				direction->j = unit->forward.j * -1.0f;
