@@ -320,7 +320,7 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
-// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// Earlier (115): the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
@@ -392,6 +392,15 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
 // N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
 // Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, code equal to the full listing; env positional/
+// aligned 99/55 for this body): retail's loop cursors behave as ordinary spilled variables (the items cursor
+// reloaded on the back edge only, the preheader's EAX used on entry; ESI/EDI untouched in the loop), not volatile
+// reads. New: an index for loop through a forceinline helper taking the block and the index, without the
+// volatile reads, 184/55; the items cursor typed as the field's dword (volatile reads kept): identical; the
+// handle re-read from the request in the count-one tail (diagnostic, natural loop) 184. Re-measured in the env
+// only (listed above): no volatile reads 184/63 (handle spilled before the switch, items cursor in EDI), the
+// loop in a forceinline validator 184, a for loop stepping both cursors 193, an index loop passing element
+// addresses 185.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

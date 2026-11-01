@@ -769,6 +769,15 @@ union s_60403
 // Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
 // at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
 // named `dword bit = 1 << i;` in the emission loop 149 (same code).
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, equal to the full listing; env positional/aligned
+// 141/103 for this body): retail reloads previous into EBX at the members loop's latch and sets the retained mask
+// to zero after that loop. Diagnostic: `!previous ||` added to the members loop's NONE test flips the entry to
+// retail's (previous EBX, current EBP, count homes swapped back) but adds code, 311/156 (1529 bytes); that with the
+// mask declared after the members loop 322/159. New natural forms, entry unchanged: the old member pointer computed
+// at the top of every iteration 331/111; the map value read into a long instead of the entry pointer 208/110; the
+// old member indexed by a fresh map read 167/105. Re-measured in the env only (listed above): the late mask
+// 327/112, the header's previous store first 156/110. Retail weighs previous more than ours somewhere; the late
+// mask only helps once that flips.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
