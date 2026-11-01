@@ -266,6 +266,22 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 264: Library contribution clamp, paired radius caps and paired fallback bounds,
 // subsets 1/2/4/3/5/6/7 and full upper-first clamp 2071/836/848/2166/2161/942/2251/2228.
 // All enlarge code; original selections, input captures and complete body restored.
+// Round 111 (lane 7; an LTCG env link of this file, the caller's file and its callee closure reproduces the full
+// listing, checked against a plain build at 683): retail keeps the record base in ESI through the arm and
+// re-reads the slot byte at the source_index store (`movsx edx, byte [esi+0x6f]`), compares the slot as a byte
+// (`cmp cl, al`, NONE in EAX, the 0x130f60 result moved to EDX), and keeps the palette record in EBX. The slot byte
+// read from the record at every use 683 (3832 bytes, plain); a char slot with the store re-reading the byte 683;
+// a named cluster-index local 616 (same code), with the byte reads 683; accumulator statement orders in the
+// three-scalar helper: m,w,colours,i,d,h 616; colours,w,m,i,d,h 616; colours,i,d,h,m,w 703; colours,i,d,h,w,m
+// 691; w,colours,i,d,h,m 691; w,m,i,d,h,colours 687; i,d,h,colours,w,m 691; reversed 691; colours,w,i,d,h,m 691;
+// the weight parameter bound first or second (diagnostic) 616 (same code); the clamped weight in a new local
+// 617; weight-first products 616; the three scalars named in locals first 617.
+// Round 113 (m3 lane 7, env link = check): char slot with `long slot_index = palette_slot;` at the top of the branch,
+// the NULL record assigned in the else arm before the table test and the source index re-read from the byte 683 (3832
+// bytes; widening in retail's block, but index and record share EDI); that with the source index from `slot_index`
+// 756 (3849 bytes); with the slot read before the flag and source stores 683; the normalization helper reading the
+// weight, or the intensity, into a named local first 616/616 (same code). Diagnostic: the fog accumulators escaping
+// to an out-of-line call still leave the normalization stores interleaved (retail keeps load-multiply-store order).
 // Round 440: complete immediate contribution products in scalar/merge/color, subsets 1/2/4/3/5/6/7, then
 // all with six-field publication 616/616/615/616/615/615/616/616. The 615 forms gain only one and are
 // rejected. Original product trees, all reads/stores, alias-safe source-weight copy and complete
@@ -279,6 +295,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // fog/weighted/color/fog-weighted/fog-color/weighted-color 616/621/622/616/618/622; all is the same
 // fog-weighted form. All with byte palette 705; all zero-prefix clears 724. Original initialization
 // and body restored; palette/record and SIMD accumulator carriers remain.
+// Round 286: Existing unit-interval producer lower/upper early returns 661/660;
+// lower/upper separate result 615/621; lower/upper conditional result 661/660;
+// lower/upper default guarded result 646/711. Original helper and body restored.
 // Round 444: Double scalar-contribution/merge-fraction/color-contribution result domains,
 // subsets 1/2/4/3/5/6/7 then all with complete publication reciprocals: 838/839/772/823/867/828/833/927. Original helper
 // precision, alias-safe source-weight capture and full body restored; palette/record and SIMD carriers remain.

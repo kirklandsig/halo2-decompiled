@@ -557,6 +557,10 @@ done:
 // selector local 54 (parse_variant stays matched); the variant declared at function scope 54; an explicit
 // `else goto done;` on the globals test 54. Retail's .text holds 0x55c6e4 twice and no data table holds
 // any parse buffer; the matched siblings each hold their buffer constant once (cached in ESI).
+// Round 126 (m3 lane 6, fast; parse_variant stays matched): the shared getter as a ternary on the 32 form 48 (the
+// select copies the variant into ECX, the tag still loads after the range compare), with the tag read before the
+// variant call 44; on the one-copy form (default skipping the translator) the ternary getter 54 (173 bytes; buffer
+// address still hoisted into EBX), with the tag read first 57 (171 bytes), with a NONE-defaulted name and a guard 54.
 // Round 108 (lane 8; a one-file LTCG harness with the callee files and the ballast object gives this code
 // exactly): the variant getter's fallback written as a ternary 48 (178 bytes; parse_variant stays matched); one
 // shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;
@@ -575,11 +579,33 @@ done:
 // the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
 // with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
 // named once for the translator and the copy 32; the tag read in the translator call alone 45.
+// Round 32 (m3 lane 2, fast; parse_variant stays matched): the natural one-copy form re-measured 54 at 173 bytes
+// (only the EBX hoist and the selector/tag schedule it moves); on it a caller-side `if (tag_index != NONE)` guard
+// around the translator 61 (178 bytes) and an early `goto done` for a NONE tag 61 (178 bytes); on the kept form the
+// tag read in the translator call with the cases in numeric order 41; the one-copy form with both 45 (171 bytes);
+// the kept form with `if (!globals) goto done;` and the tag read before the variant call 44. Retail references
+// 0x55c6e4 only from these two immediates (no pointer table in its data). Diagnostic, not kept: a speed preference
+// with automatic inlining off pushes the immediate again but LTCG still inlines 0x148350 (224 bytes, 118), so the
+// hoist is the size-preference tie (flags lead only).
+// Round 39 (m3 lane 15, fast; parse_variant stays matched): the selector read into a `dword` local on the natural
+// one-copy form 54 (173 bytes, same as that form), on the current form 32 (same code); with the tag read before
+// the variant call 57 (171 bytes) and 44 (178 bytes); the natural form with the `dword` selector in numeric case
+// order 49 (173 bytes).
 // Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
 // only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
 // bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
 // after it 54; `if (globals != NULL)` 54.
+// Round 113 (m3 lane 7; an LTCG env link reproduces the build, without the whole-program objects 186
+// bytes): the natural one-copy form with the getter's call, the tag read and the fallback written in that order
+// (diagnostic, it writes out the existing getter) 54 at 173 bytes (fast): tag load and selector exactly retail's, only
+// the EBX hoist of 0x55c6e4 left; on it 18 spellings of the buffer at the translator and the copy, with `goto done`
+// or a NONE guard, env 60 each (identical); an early `if (!globals) goto done;` identical; the translator in each case
+// env 58 (171 bytes); the natural form with the tag read before the getter env 59 (167 bytes); the current form with
+// the written-out getter env 48 (the base's figure).
+// DL218: Zero-default name results with local/entry initialization and complete signed/unsigned
+// arms tie 32 with the repeated exit, 54 with one copy. No reduction of entry EDI save or scratch-
+// buffer cache; original complete parser and all call values restored.
 // Round 63 (m3 lane 16, fast; parse_variant stays matched): a compile-only /O1 screen still caches the buffer
 // with a NONE-guarded translator call and with a `(wchar_t const *)(word *)` copy source; the name from a
 // switch-with-returns inline helper stays out of line. Real: the natural one-copy form with the tag read
@@ -587,6 +613,11 @@ done:
 // call); that with the NONE-guarded call 57; the repeated-copy form with the tag read first 44 (178 bytes);
 // the shared variant getter written with early returns (`if (variant) return variant; return &...;`) on the
 // natural form 54 (same code), on the kept form 48.
+// Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
+// only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
+// the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
+// bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
+// after it 54; `if (globals != NULL)` 54.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

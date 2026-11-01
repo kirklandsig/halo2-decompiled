@@ -241,6 +241,17 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
 // locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
 // retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
+// Round 45 (lane 13, fast, 0x120810 listed), on 0x120810 per corner with axis/side by value, edges through
+// vector2d_from_points2d and an if/else inverse: a short axis local for the store and normal index 183 (974
+// bytes; corner 0 then reuses the extended ECX axis); bounds by value 197; bound values named at the helper's
+// top 198; side parameter typed byte 180 (same code as bool); side bound before axis 180.
+// Round 40 (lane 14, fast; caveat: unresolved globals in the reduced image): the 0x120850 axis in a
+// short local for the store and the normal index 160; the side read into a bool at the corner helper's
+// top with the table row formed after the point 146
+// (990 bytes: the side load moves to the corner's start as retail's but is zero-extended there,
+// `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
+// the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
+// the plane distance as dot3f(position, normal) 144.
 // Round 29 (m3 lane 2, fast): the plane's d written k, j, i on the copied normal 158; the side computed into a
 // `bool positive` local then stored 150; four named bound pointers (x0, x1, y0, y1) passed to the corners 156;
 // the corner lookup without the axis locals 188 (957 bytes); the corner point as a `real point[3]` 138 (same code).
@@ -251,6 +262,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // inline (diagnostic, x and y by value) 188 (986 bytes: the axis and side loads move ahead of the products as in
 // retail, but the side load stays one folded `movzx edx, byte`); on the 0x120810 form a `plane3f *plane` for
 // the normal copy, dot and d store 198 (965 bytes), on the current body 166 (984 bytes).
+// Round 45 (lane 14, fast): the corner helper taking `short axis, byte side` by value with 0x120810's own lookup
+// body (`long index = side + axis * 2`, horizontal/vertical locals), y stored first 187 (970 bytes, aligned 152 ->
+// 213), x first 187; both squared lengths written in the condition 152; the epsilon tests as `0.0001f < length`
+// 138; only the second length named 138. Retail's corner 0 re-extends the axis from AX (`movsx edx, ax`) and keeps
+// the side in CL, so the side flag is formed in ECX; ours keeps the extended axis in ECX and the flag in EAX.
 // Round 40 (lane 14, fast; caveat: unresolved globals in the reduced image): the 0x120850 axis in a
 // short local for the store and the normal index 160; the side read into a bool at the corner helper's
 // top with the table row formed after the point 146
@@ -258,7 +274,14 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `movzx ecx, byte`); the same with a byte local 146; each corner through the existing 0x120810 with
 // the side read into a byte local before the point 189 (966 bytes, the local is propagated to its use);
 // the plane distance as dot3f(position, normal) 144.
+// Round 52 (fast): the side flag as `> 0.0f ? true : false` 142, as an if/else of true/false stores 167;
+// the table row indexed directly (`g_440b94[axis * 2 + positive][0]`/`[1]`) after the point, no row pointer,
+// 158 (962 bytes); the determinant in natural cross order 138 (same code); the edges read through
+// quad->corners instead of the corner pointer 179 (953 bytes).
 // Round 447: native plane/corner-array/edge-array references before both copies, subsets 1..7: 201/138/201/160/206/160/201; complete bindings after the copies 159. Original body and helper restored; plane receiver, selectors and inverse schedule remain.
+// Round 219: complete parallel products, planar subtotals, running coordinates and native aggregate
+// construction, each with the existing point setter: 152/152/156/158/152/152/138/142. Original
+// four-use helper restored; plane-store base, selector/publication and inverse scheduling remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -615,8 +638,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
-// score 564 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 is the definition-pointer spill.
-// frame 0x21dc and retail length agree; definition spill +0xac versus +0x94, count/plane homes and rotation spills remain.
+// score 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
+// Earlier: frame 0x21dc and retail length agree; definition spill +0xac versus +0x94, count/plane homes and rotation spills remain.
 // Plane/count homes, initial face-call scheduling and rotation spills remain.
 // Earlier aligned frame 0x21e4 versus 0x21dc, count/plane/axis homes and rotation scheduling remain.
 // The axis uses vector3d_from_points3d with length summed in retail's i, k, j order (written j, k, i), which stores all three components before the sum as retail
@@ -746,6 +770,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
 // 704/594/727/669/726/660/742/755. Original complete executable source restored.
 // J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
+// Round 489: plain normal negation / axis scaling / rotation component loops, seven
+// subsets 589/552/564/603/589/594/559; all with short component ordinals 1157.
+// Keep only the axis scaling loop, confirmed by plain check at 552; other producers restored.
+// On the retained axis loop: staged cross / face count first / both 552 each; all restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
@@ -840,9 +868,8 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				if (!(fabs(length) < 0.0001f))
 				{
 					real inverse = 1.0f / length;
-					axis.i *= inverse;
-					axis.j *= inverse;
-					axis.k *= inverse;
+					for (long component = 0; component < 3; ++component)
+						axis.n[component] *= inverse;
 				}
 				else
 					length = 0.0f;

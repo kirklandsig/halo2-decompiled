@@ -1480,6 +1480,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Upper-first ternary, sequential bounds, lower/upper-first conditional clamped-result construction:
 // 179/134/134/140; same four with exhaustive result production 201/177/177/177. Zero sharing and pre-loop
 // scheduling remain; original source restored.
+// Round 287: Actual membership/clamp return producers, expression/branch/both,
+// 192/167/179/170/197/170; membership/both producers without entry zero 198/199.
+// Independent result zero and capacity-failure epilogue remain; original body restored.
 // Round 480: Complement low-bit mask at both count observations, with original/shared
 // recipient-bit consumers and original/native recipient accumulation: dword 138/158/174/181,
 // word 179/158/183/182. Original mask expressions, field accumulation and body restored;
@@ -1487,6 +1490,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 485: Serialized recipient-result word/dword, branch/conditional, original/per-mode
 // first-byte publication 132/166/132/166/132/166/132/166. Two-point gains rejected;
 // original serializer and capacity/result graph restored.
+// Round 287: Actual membership/clamp return producers, expression/branch/both,
+// 192/167/179/170/197/170; membership/both producers without entry zero 198/199.
+// Independent result zero and capacity-failure epilogue remain; original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2303,6 +2309,9 @@ long voice_players_share_team(long other, long player)
 // tests with the mask inside 56; the mask declared after the mode 25 (same code). Diagnostic: a write to
 // an unrelated global added to 0x53c30 does not end the mode's availability (56): the link tracks
 // which globals a callee writes.
+// Round 71: global test with inline membership 56; inline session/both 56 (membership 97, rejected);
+// mask before mode 56; inner mode getter 56; mask outside 25; const mode 56; force-inline mode 56.
+// Original body and helper declarations restored.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
@@ -3152,6 +3161,9 @@ struct s_voice_route_choice
 // Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
 // radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
 // three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
+// Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
+// with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
+// Original executable body and helpers restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3386,10 +3398,16 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 156 (0x564c0 139); each of those with the cursor 163/163/166. All restored.
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
+// Round 485: Native wire header/relay/direct records, seven subsets 139 each;
+// all records with independent cursor 164. Actual record types and full body restored;
+// channel/cursor/member ownership and route homes remain.
 // Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
 // 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
 // the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
 // member bit cleared before the talker test 161 (469 bytes).
+// Round 236: Uniform delivery-index observations at iteration/delivery/entry/loop-storage scopes,
+// each with original/independent packet cursor: 203/195/192/193/203/195/203/195.
+// Original complete body restored; channel/cursor/member/route allocation remains.
 // Round 36 (lane 15, fast): the packet cursor beside the count re-measured 164 (478 bytes; the member
 // takes EBP, the channel is reloaded into ESI per relay arm); the packet pointer declared at function
 // scope and set per iteration 139 (same code); on the cursor form, the member bit cleared before the
@@ -3398,6 +3416,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 485: Native wire header/relay/direct records, seven subsets 139 each;
 // all records with independent cursor 164. Actual record types and full body restored;
 // channel/cursor/member ownership and route homes remain.
+// Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
+// 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
+// the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
+// member bit cleared before the talker test 161 (469 bytes).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

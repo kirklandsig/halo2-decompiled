@@ -28,6 +28,7 @@
 #include "unknown_0494b0.h"
 #include "normalize3d.h"
 #include "vector_products.h"
+#include "unknown_033a0b.h"
 #include "bit_vector.h"
 
 
@@ -69,7 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
-// score 356 (was 372): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
+// score 356 (was 356): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
 // difference: both matrices (forward axis angle step*0.5 from 0x485624.., up axis angle step*0.3 from 0x485630..,
 // constants 0.5 / 0.3 / 1.0 read from the XBE), all nine entries of each, and the up*k + left*j + forward*i sum order
 // of the vector rotation (0x3a148-0x3a2f0, 0x3a37c-0x3a526) agree with the source. Only scheduling and registers differ.
@@ -86,6 +87,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // to SSE where retail keeps both angles on the x87 stack), in place with the squares before sine/cosine (390), in place
 // with named sine products (356), in place with each rotated vector stored right after its own local (368); on the
 // in-place + named-angles form: the matrices declared second, first (353), the angles declared before them (353).
+// Round 487: first-turn results at declaration 376; with direct final publication 376; final publication
+// alone 357; diagonal-first matrix stores 367; alias-safe explicit output with staged components 380;
+// that output form with global first-turn inputs 472; native returned-vector initialization with late
+// inputs 376; diagonal-first/late-input/direct-final combination 390. All eight forms and existing helpers
+// restored. Frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain. Earlier score was 372.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1137,13 +1143,13 @@ void function_4b3d0(s_vector_perturbation *state)
 	state->step = state->step_scale * g_509418;
 }
 
-struct s_33a0b_view;
-extern s_33a0b_view *g_485a58;
 extern real g_485a6c;
 real g_485a30;
 real g_4e69c0[4];
 real g_4c19b0, g_4c19b4;
 
+// a scalar for a selector: constants, frame values and their products, the clamped luminance of the
+// view's two summed colours, an object value, a fade fraction or a per-player value
 // score 88 (was 89, 153): the first colour is copied and the second added to it, green first (the other five
 // orders of the three `+=` score 88 to 167, the six orders of the copies 89 to 166).
 // What still differs: retail adds each second component straight from memory
@@ -1165,64 +1171,66 @@ real g_4c19b0, g_4c19b4;
 // @retail 0x336f0
 real function_336f0(long selector)
 {
+    real result;
     switch (selector)
     {
-    case 0: return 0.0f;
-    case 2: return 0.0f;
-    case 13: return 0.0f;
-    case 38: return 0.0f;
-    case 16: return 1.0f > g_485a30 ? g_485a30 : 1.0f;
+    case 0: result = 0.0f; break;
+    case 2: result = 0.0f; break;
+    case 13: result = 0.0f; break;
+    case 38: result = 0.0f; break;
+    case 16: result = 1.0f > g_485a30 ? g_485a30 : 1.0f; break;
     case 23:
         if (g_485a58)
         {
-            real const *values = (real const *)g_485a58;
-            color3f summed;
-            summed.red = values[4];
-            summed.green = values[5];
-            summed.blue = values[6];
-            summed.green += values[13];
-            summed.red += values[12];
-            summed.blue += values[14];
-            real value = summed.blue * 0.114f + summed.green * 0.587f + summed.red * 0.299f;
-            return 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
+            vector3f summed;
+            vector3f_add(&g_485a58->vector10, &g_485a58->vector30, &summed);
+            real value = summed.i * 0.299f + summed.j * 0.587f + summed.k * 0.114f;
+            result = 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
         }
-        return 1.0f;
-    case 12: return 1.0f;
-    case 22: return 1.0f;
-    case 17: return g_485a30;
-    case 10: return g_485774;
-    case 24: return g_485774;
-    case 3: return g_4857f8;
-    case 33: return g_4857f8;
-    case 4: return g_485864;
-    case 25: return g_485864;
-    case 18: return g_485864 * g_485774;
-    case 27: return g_485864 * g_485774;
-    case 19: return g_485858 * g_4857f8;
-    case 36: return g_485858 * g_4857f8;
-    case 20: return (1.0f - g_485858) * g_4857f8;
-    case 35: return (1.0f - g_485858) * g_4857f8;
-    case 21: return g_485a6c;
-    case 26: return (1.0f - g_485864) * g_4857f8;
-    case 28: return g_48578c;
-    case 29: return g_485868;
-    case 30: return (1.0f - g_485868) * g_48578c;
-    case 31: return g_485868 * g_485774;
-    case 32: return g_4857a4;
-    case 34: return g_485858;
-    case 37: return function_33670(*(long *)g_485a58);
+        else
+            result = 1.0f;
+        break;
+    case 12: result = 1.0f; break;
+    case 22: result = 1.0f; break;
+    case 17: result = g_485a30; break;
+    case 10: result = g_485774; break;
+    case 24: result = g_485774; break;
+    case 3: result = g_4857f8; break;
+    case 33: result = g_4857f8; break;
+    case 4: result = g_485864; break;
+    case 25: result = g_485864; break;
+    case 18: result = g_485864 * g_485774; break;
+    case 27: result = g_485864 * g_485774; break;
+    case 19: result = g_485858 * g_4857f8; break;
+    case 36: result = g_485858 * g_4857f8; break;
+    case 20: result = (1.0f - g_485858) * g_4857f8; break;
+    case 35: result = (1.0f - g_485858) * g_4857f8; break;
+    case 21: result = g_485a6c; break;
+    case 26: result = (1.0f - g_485864) * g_4857f8; break;
+    case 28: result = g_48578c; break;
+    case 29: result = g_485868; break;
+    case 30: result = (1.0f - g_485868) * g_48578c; break;
+    case 31: result = g_485868 * g_485774; break;
+    case 32: result = g_4857a4; break;
+    case 34: result = g_485858; break;
+    case 37: result = function_33670(*(long *)g_485a58); break;
     case 39:
         if (g_4b9f5c != NONE && g_4b9f84 > g_4b9f80)
-            return 0.0f - (1.0f / (g_4b9f84 - g_4b9f80)) * g_4b9f80;
-        return 0.0f;
+            result = 0.0f - (1.0f / (g_4b9f84 - g_4b9f80)) * g_4b9f80;
+        else
+            result = 0.0f;
+        break;
     case 40:
         if (g_4b9ed8 >= 0 && g_4b9ed8 < 4)
-            return g_4e69c0[g_4b9ed8];
-        return 1.0f;
-    case 41: return g_4c19b0;
-    case 42: return g_4c19b4;
+            result = g_4e69c0[g_4b9ed8];
+        else
+            result = 1.0f;
+        break;
+    case 41: result = g_4c19b0; break;
+    case 42: result = g_4c19b4; break;
     default: __assume(0);
     }
+    return result;
 }
 
 struct s_slot_key
@@ -1730,6 +1738,10 @@ real game_time_get_seconds();
 // as retail does (2285 bytes = retail's, definition in ebx and NONE in ebp as retail) but scores 512 because the stack
 // slots still differ (retail's frame is 0x94; aligned differences 439 -> 370); `if (!(visibility > 0.0f))` gives
 // retail's comparison order (506; 511 with the member form).
+// J225: point-difference helper 507; projection dot helper 507; scalar-output role names 507; vector-output
+// role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
+// directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
+// member vertex API 524. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2194,7 +2206,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 147 (was 182; earlier 193, 324): PIN reevaluates the clamped expression as retail does (the target's
+// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2207,7 +2219,8 @@ real magnitude3d(vector3f const *v);
 // cross terms (the 0x11d3b0 shape, 194), vector3f_scale for both normalizations (199), the six normalized components
 // interleaved first.i, second.i, first.j, first.k, second.j, second.k (188; per component 190), a named length local
 // before the PIN with magnitude3d (282); the two dot products through the existing dot3f (182, same code, kept).
-// Round 435: shared axis cross 147 (kept), staged axis cross 147; shared/staged rotation tangent 196;
+// Round 435: shared axis cross (cross3f(&first, &second, &axis)) 147, held 11-01: in the full LTCG build it makes
+// 0xc2d00 (unknown_0bffa0.cpp) lose its match (DIFF at +0x12e), so the axis stays written out; staged axis cross 147; shared/staged rotation tangent 196;
 // both cross boundaries in all four pairings 154. Raw current length reused by clamp/guard with
 // axis-only/both boundaries 255/276; both raw lengths reused 330/342. Frame remains 0x34 vs 0x38.
 // @retail 0x3e5a0
@@ -2229,7 +2242,9 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
     {
         real angle = (real)(acos(dot) * step);
         vector3f axis;
-        cross3f(&first, &second, &axis);
+        axis.i = second.k * first.j - second.j * first.k;
+        axis.j = first.k * second.i - second.k * first.i;
+        axis.k = second.j * first.i - first.j * second.i;
         function_30bf0(&axis);
         real sine = (real)sin(angle), cosine = (real)cos(angle);
         real projection = dot3f(&axis, &first) * (1.0f - cosine);
@@ -2305,6 +2320,9 @@ s_cached_input_list g_5234e8[4];
 // 0x31590), object in EDI, i/entry in ESI and the cursor in EBP. On those forms: object read before the definition
 // 130 | 54; `shape` declared before index 130 | 54; `view` declared before `count` 128 | 55; g_547f98 read at
 // each use (no list local, 556 bytes) 118 | 65.
+// Round 226: native shape/list/output-record reference subsets and enclosing native shape each 136 on a
+// reduced control of 136; native shape/list plain 132. Coordinated callee inline 136 reduced, 139 plain
+// (549 bytes); restored. The list/cursor register split remains; original body and contracts restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2409,7 +2427,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
-// score 317 (was 405, 424 originally): the logic was walked against retail block by block (0x4ac30-0x4b159) and
+// score 317 (was 317): the logic was walked against retail block by block (0x4ac30-0x4b159) and
 // agrees: the four passes (pairs to the front, first flagged entry, drop of just-created flagged entries, duplicate
 // key removal), both sorts (modes 1 and 2), the decay loop, the growth loop and the output copy. What is left is
 // register allocation. Retail keeps `first` in edx and the state in ebp for the first three loops and reloads `first`
@@ -2425,6 +2443,17 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // declaration order of first/last/requested/found/i (317-319), per-loop `long i` (317), an `entries` alias (317),
 // a copy of `first` for the later calls (370), found set before/after the swap (360/318). Without the
 // "last >= i" forms 390; "limit <= i" stops the unrolling (802).
+// Round 487: persistent-count / ordinal / paired / complete role names 317 each; no separate found flag 436;
+// prefix count initialized before admission 331; separate named phase ordinals 317; retained-only removal
+// cursor advancement 318. All eight executable forms restored; frame 0x30 agrees, early prefix/state
+// register roles and the two counter homes remain exchanged. Earlier scores were 405 and 424.
+// Round 36: a compile-only build reproduces this listing (aligned 131 against retail); `first` takes EBP in all 60
+// random combinations of declaration order, loop tests, flag order, per-loop counters, an entries alias and the
+// clamp spelling, in renames, and even with its address taken (diagnostic), so the EBP/EDX choice is not a spelling.
+// Retail's growth loop computes `elapsed + step`, stores it and re-reads elapsed for `initial + elapsed`; a pointer to
+// `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
+// Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
+// second loop as a search with the swap after it 365.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -2876,6 +2905,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // stack 8-byte aligned down from 0x335e0); the x87 block is byte for byte retail's either way, only the tail's pop
 // placement moved: 175 -> 177 positional, LCS-aligned 76 -> 73. Its differences as `double` parameters change
 // nothing (175, alignment kept); as one expression with no locals 176.
+// Round 226: table already in EBP, frame 0x18 versus 0x1c and missing final fade scratch stores remain.
+// Native object/mode/both 177; alpha first with those view subsets 212 each; byte result 173 at
+// 768 bytes (four-point gain below the retention bar). Original body and shared helper restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3029,10 +3061,16 @@ struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
 // score 4 (was 4): only the frame slots of `table` and `definitions` are swapped (retail: table at the lower
-// slot). This body matched in lane 13 round 38's full image and matches on the --fast image; adding almost any one
+// slot). This body matched in lane 13 round 38's full image and matched on its earlier --fast image; adding almost any one
 // other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
 // Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
 // with the table and assigned after the early return; declared before the table; both as `byte const *`.
+// Round 73 (--fast now also 4): the `handle` union declared first 4 (plain 4); `view` declared at function scope 4;
+// the callback arrays declared after table/definitions 30; `draw` declared before `fill` 17; both pointers `byte *const`
+// 4. Compile-only /FAs: the two homes follow which pointer is assigned first (reading the scenario first flips them,
+// but moves its load above the early return); names never move them.
+// Round 226: current reduced control 4; native table, native palette, both roots, native range, native record,
+// range/record, all native views and const callback arrays each 4. Original body restored.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -3154,7 +3192,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
 }
 
-// score 394 (was 460, 952 originally): the four corners are written out (retail has four copies of the scale
+// score 394 (was 394): the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
 // 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
 // (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
@@ -3178,6 +3216,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // declared before corners (388), plus the offsets through real_point3d_set (389), plus the corner helper adding the
 // origin after the transform (`origin->x + transformed.x`, as retail orders that add; 402, 1786 bytes), plus the
 // colour's red/green/blue set before alpha or the colour declared at function scope (388).
+// Round 487, all with native color4f: aggregate offset 388; complete transformed-point staging through
+// the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
+// names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
+// frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -4095,6 +4137,13 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // unculled/gated plus unculled/all five modes 482/280/540/340/636/435/722;
 // plain loop over the actual mode sequence 795. Provider stays out of line;
 // original whole body and call roles restored. Flag stores and stub convention remain.
+// Round 36 (fast, the shared pass helper changed for all three callers): the gate only for modes 2/8 with
+// `if (mode == 3 || mode == 16) enabled = true;` after the cull call and pass 8's raw byte 193 (958 bytes;
+// 0x423c0 201, 0x2bcd0 371), the same with the `!= 0` gate 186, with `g_485898 >= 4 && g_485898 <= 7 ? 0 :
+// cull` 193; the gate pointer with that late store 193, with the cull ternary 193. The late store is
+// threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
+// 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
+// retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

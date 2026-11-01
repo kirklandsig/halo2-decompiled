@@ -55,6 +55,9 @@ __int64 timing_counter_resume(timing_counter *c)
 // Round 61: timestamp then subtract 29; negated start then timestamp 43; LARGE_INTEGER delta 4;
 // standalone clamp ternary 4; delta named t 4; stopped snapshot 4; inner delta/total scope 4;
 // zero-initialized delta 4. Original body restored.
+// Round 33 (lane 2, fast): `total = total + delta` 4; stopped stored before the total 6; the total
+// added through a field pointer 4; the total returned through a local 4; `stopped == false` 4; an
+// empty stopped arm with the work in else 4. CPU-target flags /G5, /G6, /G7 and /GB compile alike.
 // @retail 0x223b60
 __int64 timing_counter_stop(timing_counter *c)
 {

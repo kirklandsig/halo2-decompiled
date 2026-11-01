@@ -2,7 +2,16 @@
 #include "unknown_044e90.h"
 #include "normalize3d.h"
 
-// score 421 (was 421): Frame/list strides and entry/table/plane homes remain.
+struct s_visibility_bound_record
+{
+    point3f center;
+    real radius;
+    byte transform_index;
+    byte padding[3];
+};
+
+// score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
+// Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
 // Storage headers are at 0xb0/0x10bc/0x20c8/0x40d4 versus retail 0xb0/0x10c0/0x20d0/0x40e0.
 // Input plane homes are 0x2c/0x30/0x34/0x38 versus 0x34/0x38/0x3c/0x40; normal registers,
@@ -110,6 +119,13 @@
 // 406 reduced; with const query 406; live flags 442/442; branch-owned query data
 // 448/447, with const query 448/447. Ordinary judgment unavailable; original
 // storage, observations and complete body restored. Frame/list and pointer homes remain.
+// Round 230: Native bound record and sixteen-byte storage with point/vector copy/component
+// construction/direct shared scale 417/417/450/424; per-part containment output on those
+// graphs 406/406/449/421. Native point form kept at 406 after full validation; all call values
+// and float grouping retained. Storage has its own type identity.
+// Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
+// view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
+// 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
 // Round 476: Distance-before-normal graph, original/eight-byte storage, scalar/shared normal scale and direct/whole-plane output: 463/461/441/442/457/455/457/458.
 // Scalar forms shrink to 1716; shared scale recovers 1742 but regresses. Original zero-scale behavior, whole body and header restored; entry/table and plane/list homes remain.
 // Round 481: Complete scalar-normal initialization schedules i/j/k, j/i/k, j/k/i on
@@ -128,6 +144,13 @@
 // full check and is rejected. Sixteen-byte storage retains fast 404 and recovers
 // all three callers, but its closing full check hangs. Complete body and storage
 // restored; original frame/list strides and entry/table/plane homes remain.
+// Round 230: Native bound record and sixteen-byte storage with point/vector copy/component
+// construction/direct shared scale 417/417/450/424; per-part containment output on those
+// graphs 406/406/449/421. Native point form kept at 406 after full validation; all call values
+// and float grouping retained. Storage has its own type identity.
+// Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
+// view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
+// 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
@@ -246,22 +269,20 @@ void __stdcall function_44e90(short entry_index, short section_index)
         for (long part = 0; part < *(long *)(geometry + 8); ++part)
         {
             dword bit = 1 << (part & 31);
+            bool contained = false;
             if (!(visible[part >> 5] & bit))
             {
                 word bound_index = *(word *)(*(byte **)(geometry + 0xc) + part * 8 + 4);
-                byte *bound = *(byte **)(geometry + 0x14) + bound_index * 20;
-                transform4x3f const *transform = &workspace.transforms[bound[0x10]];
-                point3f local = *(point3f *)bound;
+                s_visibility_bound_record const *bound = (s_visibility_bound_record const *)*(byte **)(geometry + 0x14) + bound_index;
+                transform4x3f const *transform = &workspace.transforms[bound->transform_index];
+                point3f local = bound->center;
                 if (transform->scale != 1.0f)
-                {
                     vector3f_scale((vector3f const *)&local, transform->scale, (vector3f *)&local);
-                }
                 point3f center;
                 center.x = transform->forward.i * local.x + transform->left.i * local.y + transform->up.i * local.z + transform->position.x;
                 center.y = transform->forward.j * local.x + transform->left.j * local.y + transform->up.j * local.z + transform->position.y;
                 center.z = transform->forward.k * local.x + transform->left.k * local.y + transform->up.k * local.z + transform->position.z;
-                bool contained = false;
-                if (function_165010((s_frustum_set_view *)views, section_index, &center, *(real *)(bound + 0xc), &contained))
+                if (function_165010((s_frustum_set_view *)views, section_index, &center, bound->radius, &contained))
                 {
                     entry->unknown00 |= 1;
                     visible[part >> 5] |= bit;

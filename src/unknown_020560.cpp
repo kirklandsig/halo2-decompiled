@@ -853,7 +853,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 570 (was 589): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
+// score 570 (was 570): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
@@ -891,6 +891,16 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // original/unsigned selected ordinals/zero-default fraction/both result forms: 608 each (2145/2122
 // bytes). All declarations and original body restored; count/selection/fraction homes and frame
 // remain.
+// Round 74 (m3 lane 12, fast): the existing cross-file distance_sq3f (0x24550) for scan 1 on this body 570 (same
+// code). Retail-shaped index body (scan 1 through distance_sq3f, delta/offset through vector3d_from_points3d, dot3f,
+// length_sq3f, `second` ternary then `fraction = 0; if (second) fraction = ...`) 654 (2033 bytes, aligned 307);
+// one shared index 654; scan 2's distance through distance_sq3f 576 (2094 bytes, aligned 253: retail's y, z, x loads
+// and projection order); with delta assigned k, i, j 608 (2062 bytes, aligned 246: retail's delta loads); either
+// dot3f argument order same code; offset written out 583/831 (frame 0x30, entries re-read per component); offset at
+// block scope 576/608; `nearest` declared before the count == 1 test 575/607. Still missing there: offset's own
+// 12-byte home at +0x14 (retail stores x into it each iteration), delta.k at +0x28, nearest in EDI, and the
+// fraction reloaded around 0x22750 (ours keeps it in xmm2 in every form).
+// Round 297: Nearest/opposite/both ordinal-first candidate publications 570 each; native unsigned selected ordinals with all four publication pairs 570 each; shared true distance reduction 570. Original state updates, ordinal domains, reductions and complete body restored; frame/input and selected-sample/fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1276,104 +1286,6 @@ bool __stdcall function_246a0(void *context)
 typedef long (__stdcall *visibility_draw_callback)(s_slot *slot, byte *data);
 bool function_0bfe60(dword const *flags, long bit);
 
-// score 52 (was 52): the zeroed register is EDI in ours and EBP in retail, and the block the
-// test jumps to is laid out differently.
-// The code is retail's apart from the colours (loop counter and total
-// EDI where retail has EBP, the test index EBP where retail has EDI) and ADD for retail's LEA
-// of the bitset row; push pointer without volatile 56; device as a field pointer 56 (52 with
-// volatile); total zeroed in an else arm 139; one combined query-result test 52;
-// &bitsets[set][0] 52; slots + index 52; the push expansion in a forced-inline helper 52.
-// Round 271: plain completed-pointer/per-store packet advancement crossed with
-// long/short remainder and lower/upper-first saturation: 56/103/137/131/92/117/128/140.
-// All restored; loop/count and test-index colours plus bitset row address remain.
-// Lane 8 r79: non-query draw first 140; bitset row declared between test and status 54; device
-// global at each use 93; bitset row global at each use 122; `(1 << slot->c) & mask` 52.
-// Lane 13 r14: retail gives the test index EDI and the device pointer EBX (status's register),
-// leaving EBP to the loop counter and the total; ours puts the counter, device and total in EDI and
-// the test index in EBP. The total declared at the top of the query block 139 (441 bytes); status
-// declared before the test index 53; `set + index * 3` 52; the test index written at both calls 142;
-// the clamped total stored in the arm with an else storing 0 132 (443 bytes).
-// Round 23 (lane 10): the SDK's begin-visibility-test call for the push expansion 158 (stays out
-// of line); the index from an if instead of the ternary 55; the result locals at the query block
-// 52; the clamp as if/else 52; a const set 52. Without LTCG every spelling of the bitset row
-// (row pointer, &row[0], flat index, pointer arithmetic, const, a separate global or struct row)
-// gives ADD; retail's LEA costs the one byte that shifts the exits.
-// Round 49 (lane 12), screened in an LTCG mini-link with the D3D objects (it reproduces ours but for
-// 0xbfe60's bitset argument, so only differences count): loop counter, index or set declared at the
-// top no change; bitset row declared before the test index +17; the index from an if +3; status as
-// long no change; a while loop +5.
-// Round 7 (m3 lane 2): retail's LEA comes back when the row is first computed as 0xbfe60's argument
-// (`function_0bfe60(g_51f40c.bitsets[set], index)`) and the store goes through a row pointer named at
-// the store (CSE'd and spilled as retail): 38, only the colours left (a mixed read, kept only on a
-// match). With that form: status declared first 39, `set + index * 3` 38, index from an if 41; the row
-// at both uses 122 and through the existing bit_vector_set 122 (the store folds, no spill); the row
-// declared before the test index 119; the SDK begin-test call 158 (stays out of line).
-// Round 27 (lane 11): status set S_OK in an else arm 139 (441 bytes); the loop counter declared
-// before the loop 52; the push pointer read as `*(dword volatile **)device` 52; the test index written
-// at both calls 142 (as lane 13); status declared before the test index 53; `slot->b == player` 52;
-// `player == g_5234c4` 53.
-// Round 108 (lane 6), on round 7's 38 form (the row passed straight to 0xbfe60, named at the store;
-// only the colours left: counter/total EDI where retail has EBP, test index and player EBP/EBP
-// where retail has EDI/EBX, the device EDI where retail reuses status's EBX): the loop counter
-// declared before the loop 38; `slot->b == player` 38; the index set to the counter and then
-// overwritten from the list 41; the test index computed before the query branch 49; the push
-// pointer without volatile 42; a count local (`indices ? count : g_51f40c.count`) in place of
-// reassigning the parameter 47. Retail inlines
-// the SDK's begin-visibility-test body here, which our link keeps out of line.
-// Round 31 (lane 10): on the round-7 row form (38) the rest is one register permutation (retail
-// counter/total EBP, player EBX, slot fields and test index EDI, device EBX; ours EDI, EBP, EBX,
-// EDI). The total as short or word 125/125 (the clamp re-extends); the row named at the loop top 85;
-// round-7 form with a short total 135; with the mask tested before the player 135; with the slot
-// tests as a `continue` filter 38. A one-file harness with the D3D objects linked is not exact (60:
-// it cannot reproduce MakeRequestedSpace's register argument).
-// Round 28 (lane 14), `--fast`: round 7's row form rebuilt 38 (aligned 39; the pure permutation: counter/total EDI,
-// test index and player EBP, slot-field temps EBX, device EDI where retail has EBP, EDI, EBX/EDI and EBX); on it:
-// the test index as dword 38, the visibility-result outputs declared at the query block top 38, a const device
-// pointer 38, the test index, status, total, test+status, status+test and all three declared (uninitialized) at
-// function scope 38 each (symbol order does not move the colours), the test index declared after status 39, the
-// total declared at the query block top 155 (437 bytes), the store through a (word) cast 38. On the kept form: a
-// const row pointer 52 (same code). The XDK's D3DDevice_BeginVisibilityTest is a library function (no header
-// inline); no other file writes the 0x817c8 push. The draw result in its own `drawn` local clamped into the total
-// 96 (463 bytes), on the row form 136, with status declared first 136.
-// Round 56 (lane 12): the SDK's begin-test call in the plain full build 158 (still out of line;
-// retail holds the push header only here); the global test as an early-return guard 52; the count
-// reassigned before the set 66; a pointer local to the whole visibility table for count, slots and
-// row 52; the frame counter read at each use 125.
-// Round 185 (lane 3, fast): on round 7's row form (38, only the colours left): `test`/`total` named
-// `test_index`/`drawn` 38; `long const set` 38; the push expansion in a forced-inline helper 38; the
-// three slot tests as nested ifs 38 (all the same code: the counter EDI, test index EBP, device EDI
-// where retail has EBP, EDI, EBX). Round 7's form restored to the baseline body (a mixed read).
-// Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
-// outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
-// tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
-// Round 125 (lane 6, fast): index, slot, test and row declared const 52; the query block as a
-// forceinline (slot, index, set, draw) helper 52; the clamp as two plain ifs 52; the three slot tests
-// as nested ifs on this form 52 (all identical code); round 7's row form re-measured 38 (the same
-// colours left: counter/total EDI, player/test EBP, slot temps/status EBX, device EDI).
-// Round 141 (lane 4): retail holds the begin-test push header only here (the SDK function inlined
-// by its link; the push constant appears once in the whole image). The set computed in the query
-// block 108; status = S_OK at the loop body top 138; the device declared before the status test 52;
-// the segment size read at both MakeRequestedSpace arguments 52; `!indices ? i : indices[i]` 118.
-// Round 106 (lane 7, fast; every other colour follows the counter's: retail EBP, ours EDI): on round
-// 7's row form (rebuilt 38): the device as `dword volatile **` 38; index and slot declared before the
-// loop 38; the row named before the status test after the k store 38; the frame read from the global
-// at each use 129 (the load sinks into the block); the slot fields read through the table (no slot
-// pointer) 148 (472 bytes). Source permuter, 600 s on the kept body (72 tries): nothing below 52.
-// Lane 12 r66 (fast; a /GL- compile-only screen gives the same colours, loop counter EDI in every form):
-// the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
-// 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
-// 66; status and total declared at function scope 52.
-// Round 111 (lane 8, fast): the visibility-result outputs declared at function scope 52; the device as
-// `dword volatile **` on the kept form 52 (same code); a `total_count` local (`indices ? count :
-// g_51f40c.count`) 61; the slot as `g_51f40c.slots + index` 52; status declared before the slot tests
-// 138; the test index computed after the bitset row 117 (459 bytes).
-// Round 50 (lane 10, fast): the SDK begin-test call 158 again, and with the file built without /arch:SSE
-// (diagnostic, flags restored) 158: the SDK body (35 bytes, the same push) stays out of line either way, so the
-// flags are not what keeps retail's inline from ours; the slot read through a reference 52; the pixel count
-// as a long passed through a cast (0x20770's form) 52; the `continue` test after the bit-test block 139 (441
-// bytes); one `data` pointer shared by both draw calls 139.
-// Round 481: One invariant embedded bitset row before/after count admission with signed
-// long/short/byte/64-bit remainder storage 98/96/140/96/140/96/137/143. Original row lifetime and body restored.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
@@ -1393,8 +1305,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
                 {
                     long test = index * 3 + set;
                     HRESULT status = S_OK;
-                    dword *bitset = g_51f40c.bitsets[set];
-                    if (function_0bfe60(bitset, index))
+                    if (function_0bfe60(g_51f40c.bitsets[set], index))
                     {
                         UINT pixels;
                         ULONGLONG timestamp;
@@ -1406,8 +1317,8 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
                     if (status == S_OK)
                     {
                         dword *device = (dword *)D3D__pDevice;
-                        dword volatile *push = (dword volatile *)device[0];
-                        if (push >= (dword volatile *)device[1])
+                        dword volatile *push = (dword *)device[0];
+                        if (push >= (dword *)device[1])
                         {
                             dword full_size = D3D::CDevice::m_PushSegmentSize;
                             push = D3D::MakeRequestedSpace(full_size >> 1, full_size);
@@ -1418,11 +1329,13 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
                         device[0] = (dword)(push + 3);
                         total = draw(slot, slot->data);
                         status = D3DDevice_EndVisibilityTest(test);
-                        total = PIN(total, 0, 65535);
                     }
-                    slot->k = total;
+                    slot->k = PIN(total, 0, 65535);
                     if (status == S_OK)
+                    {
+                        dword *bitset = g_51f40c.bitsets[set];
                         bitset[index >> 5] |= 1 << (index & 31);
+                    }
                 }
                 else
                     draw(slot, slot->data);
@@ -1477,6 +1390,11 @@ long __stdcall function_3bf20(s_slot *slot, byte *data);
 // before the slot test 84 (it still moves); the counter read first with the slot test inverted 6;
 // the counter read right after the lookup call 6; the global and slot tests joined by `&&` with
 // one else 22 (the slot pointer is then computed before the global test).
+// Round 131 (m3 lane 6, fast): the query as a forceinline helper returning validity with the amount
+// and availability through pointers, the counter read at its global block top 6 (the load still
+// sinks); the slot's validity in a bool local 80 (332 bytes); the counter read into the frame local
+// at the global block top, replaced by the set in the arm 6; the bit index as `/ 32` and `% 32` 108;
+// the bit named before the clamp 100.
 // @retail 0x3c270
 bool __stdcall function_3c270(dword value)
 {

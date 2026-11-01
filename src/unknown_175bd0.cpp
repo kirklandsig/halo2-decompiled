@@ -1864,6 +1864,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // 101, one `markers` local for both arms 102 (0x178360 1); the parameters as (source, out, marker_index) or
 // (source, marker_index, out), the order retail's esi-before-eax setup suggests, 9/9 (callee unchanged, 0x178360
 // 2 each; with node-first 101/101), so the current order is retail's.
+// Round 260: null-arm point/vector setters, singly/both and node-first/reversed publication,
+// 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
+// Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
+// Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2056,6 +2060,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // assigned plane result 379 each (producer outlined). Forced existing expansion on
 // plane/point/both/zone/zone-point/assigned graphs 281/240/358/340/400/405. All input objects, original
 // arithmetic, helper and body restored.
+// Round 493: complete point/plane/both values, mutable then const, 379/379/379/379/379/379;
+// complete point and plane with named distance, mutable/const 379/379. Original zone producer
+// restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
+// Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3100,6 +3108,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // bytes, 0x176f60 25), with spawn at function scope 109 (0x176f60 25). With the mode per call the effect
 // index is computed in EAX and moved to EBP (retail computes it in EBP from the stack slot), so LTCG passes
 // it in a register, and the definition takes EBX where retail spills it. 0x175a80 gets retail's registers.
+// Round 130 (lane 6, fast with 0x176f60): retail's 0x54 frame reads as the spilled definition at [esp+0x10],
+// two unused dwords and the particle-location cursor (a 12-byte record like the spawn record of 0x178c80)
+// ahead of the 0x34-byte matrix; that layout needs the per-call mode (convention change above). On this
+// cached-mode body: the type-query block's braces removed 93; the particle-location cursor declared at function
+// scope 93; the matrix declared outside the loop 93; the particle-location pointer declared before its test 93
+// (all four the same code); `tinted()` called in the colour call's argument list 120 (325 bytes, 0x176f60 25).
 // Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
 // mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
 // early `return next_index;` on the definition test 94; the mode per call with that early return 111
@@ -3116,6 +3130,17 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // mode read before the colours 88; particle system looked up before the effect 113 (345 bytes); next index
 // declared before the lookups and assigned after 88; effect looked up after the definition 119 (346 bytes);
 // early return on the definition test 95 (334 bytes).
+// Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
+// mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
+// early `return next_index;` on the definition test 94; the mode per call with that early return 111
+// (0x176f60 25), with the spawn cursor too 112 (0x176f60 25); spawn with the particle system looked up
+// before the effect 113; spawn with both colours declared inside the type-query block and the next index
+// read after the definition call 95.
+// Round 493: native unsigned system/effect/successor handle subsets 93/93/93/93/93/93/93;
+// native-int system on the unsigned effect/successor graph 93. Original input and result
+// domains restored; frame 0x4c/0x54 and system/successor/color homes remain.
+// Round 260: coherent separate inline color/location/matrix declarations, seven subsets 93;
+// all three with per-call mode 108, losing the matched caller. Original declarations/body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3157,82 +3182,24 @@ long __stdcall function_177040(long particle_system_index, long effect_index)
 	return next_index;
 }
 
-// score 12. MiniMax C (11-01) reached 3 with a second copy of the point helper whose rows sum
-// left*y + forward*x + up*z (the shared helper's order is what the matched 0x179fb0 and 0x17a380 need):
-// all three rows then match and only the loads differ (retail x, y, z; ours z, x, y). Not kept at review
-// (a copied helper body without a match); a match through it would keep it.
-// score 12 (was 12): only rows x and y of the node point transform differ: retail sums them as
-// left*y + forward*x + up*z (row z as written), the function-wide reassociation order. Round 170: the
-// single exit (`result = true; goto done;`) gave the early BL, and 0x152450's `next` player search the rest.
-// Before round 170: frame 0x50 agrees; early false BL, bitmap/count/unit carriers and point/advance scheduling remain.
-// Frame 0x50 agrees; early false BL, player bitmap/count carriers and point/advance scheduling remain.
-// frame 0x50 agrees; early false-result, player bitmap/count carriers and point scheduling remain.
-// Persistent effect pool 194; persistent player pool 189; outer for 189;
-// squared distance compared first 176; player slot/unit names 189.
-// Unit-skip
-// guard 176; vector walk lifetime 176; retained radius 275; location for 390; shared point-transform call
-// 392.
-// Full-width result 176; per-unit matrix 176; named squared radius 176;
-// absent-node point memcpy 176; nested eligibility tests 176.
-// Point at function entry 176; matrix at function entry 176; effect/tag/cursor role names 176; native disabled-bit mask 251; positive player guard 176.
-// Round 123: Effect rejection in natural for 176; current-player while/unit skip 176; both traversal joins 176; guarded tag lifetime in natural for 176; guarded tag/current-player traversal 176.
-// Actual byte/signed-byte return 176/176; signed/unsigned word return 179/179; signed/unsigned long return
-// 179/179; byte-return tested result 176; signed-byte status/return 176. Wider returns lose both checked
-// callers; all declarations restored.
-// Unsigned effect/player/both indices 176/176/176; native result byte 176;
-// condition-local location 176; entry unit/scan player lifetimes 176/176;
-// readonly effect metadata 176. Original body, native widths and metadata restored.
-// Accumulated/selected test result 184/176; result after pool query/signed-byte result/function delta 176 each;
-// live tag radius/live unit fields 254/254; live tag with accumulated result 258.
-// Current effect observed at every use 276; with live tag/unit/both 295/272/297;
-// those four effect-root graphs with the existing point producer forced inline 276/295/272/297.
-// Radius before displacement 176; displacement-first declaration 176; location-scoped matrix 176;
-// each pair and all three 176; absent-node point setter 228 (fast).
-// Complementary bool/test-produced/signed-byte/full-width status 176/176/176/176;
-// complementary success join/test-produced join 303/309; positive tested join 289;
-// initial salted-query truth 269. All original results and exits restored.
-// Round 165: Readonly player/unit/both receivers 176/176/176; each with readonly
-// metadata and both with metadata 176/176/176; squared distance at comparison 176;
-// all readonly receivers plus distance boundary 176. Original receivers and body restored.
-// Round 324: absolute effect slot 176; existing player search 176; slot/search 176; existing salted-index
-// conversion 254; slot/conversion 255; search/conversion 254; all three 255; full slot name with both helpers
-// 255.
-// Round 208: per-test result with literal hit/exhaustion returns, bool/byte/short/long 176 each;
-// uniform player record 270; that record with bool/short/long per-test result 270 each.
-// Round 58: literal false at exhaustion 176; hit as `result = true; return result;` with literal/variable
-// exhaustion 176/176 (VC folds the constant result each time, no early BL); found flag breaking out of
-// each loop 281; found flag in all three loop conditions 281. Retail returns BL only at the early exit.
-// Round 241: native player record/datum iterators 255/255; effect record/datum iterators
-// with inline/called scans 325/325/352/352; paired native iterators 324/324. Original
-// scalar searches, initial guard, false result and complete body restored.
-// Round 233: Actual returned-point ownership, branch/output/source defaults and
-// original/direct absent-node source, each with radius after/before displacement:
-// 176/176/227/227/176/176/216/216. Source-one-use producer forms require a match; all restored.
-// Round 182: signed-short player ordinal with bool/long result and mutable/readonly
-// player receivers 257/257/257/257; signed-byte equivalents 265/265/265/265.
-// Original ordinal, result, receivers and complete executable body restored.
-// Round 417: external effect/player/unit record references, subsets 1-7:
-// 176/176/176/176/176/184/184; readonly complete records 184. All restored.
-// Round 303: raw first-query slot owns empty admission, signed-long failure-first/
-// test-produced conversion/conversion-first/positive admission 250/176/269/246;
-// unsigned-long equivalents 269/265/269/267. Original salted-handle entry and body restored.
-// Round 170 on the 12 form: radius operands swapped 12; named distance/squared radius/both 20/20/20;
-// flipped compare 28, with either name 36; radius before the point 104; reversed delta 95; matrix,
-// point and delta declared at the loop top/first/unit scope/entry 12 each; location index before the
-// unit 15; 0x179fb0's mode-0 iterator 12 (0x179fb0 46); a `players` pool local 20; while-form search
-// 234.
-// Round 9 (lane 2, one-file harness): VC orders each row's three products by when the point helper's
-// coordinate locals were defined (latest first); the helper reading z, x, y in that order plus one more
-// scalar local gives retail's three rows exactly, but breaks matched 0x179fb0, so the cause is in this
-// caller. Extra scalar locals rotate only row z (one: forward/up/left, two: left/forward/up, three or more
-// back); pointer locals, renames, statement orders of the scale block and all six term orders move
-// nothing. Real trials: radius at unit scope 161; definition radius named and used in the test 112;
-// squared radius at unit scope 161; absent-node arm first 149 (823 bytes); position copy in the node
-// arm 163 (836 bytes).
-// Round 172: rows x/y follow the first-assignment order of the point transform's x/y/z locals (z, x, y
-// gives retail's rows x/y but loads z first, 11, and breaks matched 0x179fb0/0x17a380); row z follows the
-// symbol count. Point copied then transformed in place 230; through a position local 257; returned
-// pointer for the delta 20; absent-node branch first 149; radius once per player 161.
+static inline point3f *effect_matrix_transform_point_1778d0(transform4x3f const *matrix, point3f const *point, point3f *out)
+{
+	real x = point->x;
+	real y = point->y;
+	real z = point->z;
+
+	if (matrix->scale != 1.0f)
+	{
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
+	}
+	out->x = (matrix->left.i * y + matrix->forward.i * x) + matrix->up.i * z + matrix->position.x;
+	out->y = (matrix->left.j * y + matrix->forward.j * x) + matrix->up.j * z + matrix->position.y;
+	out->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+	return out;
+}
+
 // @retail 0x1778d0
 bool function_1778d0(void)
 {
@@ -3276,7 +3243,7 @@ bool function_1778d0(void)
 							transform4x3f matrix;
 
 							function_17aec0(location->node_index, effect, &matrix);
-							effect_matrix_transform_point(&matrix, &location->matrix.position, &point);
+							effect_matrix_transform_point_1778d0(&matrix, &location->matrix.position, &point);
 						}
 						else
 						{
@@ -3408,6 +3375,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // bytes). Compile-only: a 179880-only point helper with a scale local, `*=`, `x * scale`, deferred
 // declarations, `!(scale == 1.0f)` or a vector local all give our y-in-place code; naming position.z
 // alone (or with y) moves z instead, naming x changes nothing: retail names position.y and not z.
+// Round 493: native indexed point input/output/both and complete direction access 74/74/74/74;
+// each with default-before-color scale 270/270/270/270. Original helpers and body restored;
+// scale prefix and point Y-copy remain.
+// Round 260: complete native location matrix with original/house scale, original/shared normal
+// kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
