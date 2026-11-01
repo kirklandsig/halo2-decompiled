@@ -781,6 +781,19 @@ real g_55e618;
 // computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 196; on the copy form the
 // collision word stored before the start stores plus the impact before the position 100 (two-point gain,
 // not kept); the copy form in retail's computation order 211; keep computed after impact.index 197 (1536 bytes).
+// Round 53 (lane 10, fast): the reflection block is 14 bytes longer than retail's (0x367..0x466 against
+// 0x367..0x458); ours stores position.x before the normal's j/k reads, so it reloads them, where retail holds
+// the normal in xmm1/4/2 and stores the three position sums together. Position into a local point copied out
+// 286 (1594 bytes); the point copied from the collision and offset in place 335 (1618); the velocity pointer
+// with the local point 232 (1560); the sums in three locals stored after 245 (1570), with the velocity pointer
+// 189 (1536); the velocity pointer with real_point3d_set 188 (1536), with impact.index stored before it 188,
+// with perpendicular/tangent interleaved per component 179 (1537 bytes, retail's length: normal held in
+// registers, tangent.i/j spilled at +0x38/+0x3c as retail, but frame 0x118: ours keeps perp.k in xmm7 and
+// spills tangent.k where retail spills perp.k at +0xac, because ours multiplies normal * dot, copying the
+// normal, where retail multiplies dot * normal and reuses dot's register for perp.k); on that 179 form the
+// dot or the perpendicular products in the other text order 179/179 (same code), the dot read from the
+// particle fields 189, keep computed after the velocity pointer 188; the normal as a union member read
+// directly 605 (h0, copy form), 651 (on the 179 form).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

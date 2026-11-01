@@ -614,6 +614,12 @@ bool sound_driver_voice_create_buffer(
 // short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
 // at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
 // block top with `result = NONE` after the decrement 155.
+// Round 53 (lane 10, fast with 0x191420): the voice reference indexed by `globals->voice_count` 107 (608
+// bytes); the voice index starting at NONE and taking the count inside the range test 107 (608); both
+// descriptors zeroed by `= { 0 }` in place of memset 161 (606); the 3D flag first with direct returns (NONE
+// on both failures, the voice index on success) 146 (619, 0x191420 1); the count stored by
+// `globals->voice_count++` 71 (same code). Compile-only: both buffers in a force-inline helper taking both
+// flags (count and result outside) 150 (frame 0x98); the voice index starting at NONE with the 3D flag first 228.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

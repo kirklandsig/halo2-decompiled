@@ -238,6 +238,12 @@ struct s_free_state_23d260
 // sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
 // k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
 // 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
+// Round 53 (lane 10, fast): retail's side/up block is the matched 0x11d090's code (the same x87 length
+// with side.j squared first, the same scale), but with a constant (1, 0, 0) fallback and the up stores k, j, i.
+// The side normalized in 0x11d090's own form (length `j*j + i*i + k*k` in a local, `else length = 0`, then
+// `if (length == 0.f)` fallback) 119 (retail's x87 length exactly, but the side.i copy is scheduled before
+// the forward.k sine and zero stays XMM3); with `-forward.i` 119; with the epsilon test as `fabs < eps` 119;
+// with side.k assigned first 119; with cross3f_staged for up 289.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -488,6 +488,11 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 53 (lane 10, fast): ours keeps the material table in EBX for the whole body and the matrix in EBP
+// from entry; retail spills the table (+0x18) and the first material index (+0x1c) and uses EBX for the
+// second code, the plane table and the side bit. The final call's fields read through `arg_1->field_2c` 205
+// (0x245aa0 107); the first material index as `short` 207; the code test as `second != first` 209 (same
+// code); the second code read first with that test 208; a first-material record pointer for the final call 209.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

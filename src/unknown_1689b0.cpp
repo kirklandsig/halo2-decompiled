@@ -1626,6 +1626,15 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // dot product summed (x*i + z*k) + y*j (all 48 term orders compile the same) where retail has (x*i + y*j) + k*z;
 // retail also keeps the ternary clamp's select (`mov ecx, 8; jg; mov ecx, eax`).
 // J218: Native point setters for paired sum initialization/averages/accumulations, seven subsets, then result before query storage: 646/552/646/553/646/553/646/646. Original complete body restored.
+// Round 53 (lane 10, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790): retail keeps the sums apart
+// (face at +0x54, the nearest distance at +0x60, edge at +0x64), counts and radii as dwords at +0x88..+0x94,
+// computes `(edge_index + 1) % point_count` at the top of the edge loop (stored as the next index) and
+// reloads the axis and side for each point reconstruction. Every prism read straight from
+// `shapes.prisms[index]` (no prism pointer) 686 (2956 bytes); only the plane reads that way 587 (2892, cursor
+// still at the point count); the next index named at the top of the edge loop 602 (2909); both
+// reconstructions through the existing 0x120790 (inlined: retail's word loads of the two table indices and the
+// second point's +0x9c home, but the first point's home and the axis register differ) 651 (2925); that with
+// the next index named first 686 (2955).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
