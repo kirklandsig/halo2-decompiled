@@ -441,6 +441,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
+// 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
+// section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
@@ -785,6 +788,10 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // 0x11e800's registers), before the section pointer 223, before the region-list declarations (ahead of
 // 0xba690) 230, before the object lookup 78; the listed placement before the 0x12de70 test still gives 9.
 // Each moves a read ahead of calls (kept only with a match); BLOCKED-BY 0x11e800.
+// score 4 (was 70): the vertex-bounds read moved before the geometry-block call (retail reads it there
+// and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
+// second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
+// them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -814,6 +821,7 @@ bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 		long section_index = *(long *)((byte *)triangle + 0x14);
 		if (section_index == 0xff) goto done;
 		byte *section = *(byte **)(model + 0x28) + section_index * 0x5c;
+		s_vertex_bounds_23ac30 const *bounds = *(s_vertex_bounds_23ac30 const **)(model + 0x18);
 		if (!function_12de70((s_geometry_block_info *)(section + 0x38), 3)) goto done;
 		byte *object = *(byte **)(g_4e0300->data + (COLLISION_OBJECT_14A8E0 & 0xffff) * 12 + 8);
 		point3f point = collision->point;
@@ -825,10 +833,10 @@ bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 			matrix = (transform4x3f *)(*(byte **)(model + 0x4c) + (*(short *)((byte const *)collision + 0x46)) * 0x60 + 0x28);
 			function_142700(matrix, &point, &point);
 		}
-		s_vertex_bounds_23ac30 const *bounds = *(s_vertex_bounds_23ac30 const **)(model + 0x18);
 		s_lookup lookup;
-		if (!lookup.initialize(COLLISION_OBJECT_14A8E0)) goto done;
-		byte *surface_set = (byte *)function_1efd80((s_table_holder *)&lookup,
+		s_lookup *lookup_pointer = &lookup;
+		if (!lookup_pointer->initialize(COLLISION_OBJECT_14A8E0)) goto done;
+		byte *surface_set = (byte *)function_1efd80((s_table_holder *)lookup_pointer,
 			*(dword *)((byte const *)collision + 0x48));
 		byte *section_groups = *(byte **)(model + 0x80) + *(long *)((byte *)triangle + 0x14) * 8;
 		byte *section_mesh = *(byte **)(section + 0x34);
