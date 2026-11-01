@@ -97,6 +97,14 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// MiniMax R (11-01): no new form, no lower score: the case-0 entry address as an integer sum (the
+// dword base, the offset added last, the offset summed with the index), through shared multi-caller
+// helpers, the entry pointer used twice (VC materialises it then, but only as `add eax, ecx`, with
+// an extra load), the entries address as a dword or byte pointer field and the entry reached as an
+// offset into the definition all give the same folded bytes at 165 bytes; the permuter ran to its
+// time limit without a candidate. Still the folded member load against retail's materialised entry
+// address, the tag mask before the index scaling, and the parameter address copied through EDX
+// where retail copies it through EAX.
 // score 16 (was 16): this round: six more shapes of the case-0 entry address (the scaled offset in
 // a local computed before the tag lookup, the definition in a local, the entry pointer in a local
 // taken from the shared helper, the entry address as a byte pointer, the unsigned scaled offset,
