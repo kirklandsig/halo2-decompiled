@@ -939,6 +939,10 @@ void function_143250(
 // Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
 // 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
 // admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
+// Round 222: numeric scalar identities, mutable first-assignment declarations,
+// first-producer/final-consumer declaration order, double-first/real-first declarations,
+// numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
+// precision boundary and publication retained; complete original scalar graph/body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -204,6 +204,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
 // Round 291: up evaluated before forward, returned/pre-call receiver masks and symmetric
 // dot roles, 112/112/153/153/112/112/153/153. Original helper and body restored.
+// Round 222: named rotation member 110; complete matrix receiver in loop/branch/entry
+// 149/149/149; direct forward/up/both consumers 160/169/181; native helper component
+// array on the named-member graph 110. Original private helper and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

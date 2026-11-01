@@ -468,6 +468,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // actor offset in EAX and `slot` held in ESI), with the result declared before the actor 170 (aligned 89), the sibling
 // exit with the node state alone 161 (aligned 91); `result` renamed `has_prop` (sorts beside has_markers) 113 and with
 // both pieces 97 (identical code: names don't move the byte slots).
+// Round 222: contiguous three-byte state memset with whole-body result-first,
+// movement field reads and native request masks 0..7: 248/249/248/249/248/249/248/249.
+// Result-first forms recover frame 0x162c but worsen state-base/register homes.
+// Original scalar state resets, result, request, field snapshot and complete body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
