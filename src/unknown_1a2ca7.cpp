@@ -959,6 +959,12 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // another lane's). Forms: `is_excluded |= xuid_equal(...)` 140 (446 bytes); the loop as a while with the
 // steps in its body 81 (same code); the if-set form with the flag declared after the cursor locals 113, with
 // the sender at function scope 113; the excluded id as the first argument 81.
+// Round 131 (lane 5, fast): the message as `messages + i` with a plain getter 145 (441 bytes, both null tests
+// fold); the getter defined out of line in another unit (a diagnostic) stays a call, 133; the added count
+// declared before the message count 82; the loop index declared first 81; the added count and index
+// before the message array 82. Retail keeps both getter null tests (the second as `cmovne`) and shares
+// +0x6c between the sender and the player; ours shares +0x68 between the read-through message and the
+// player and puts the added count at +0x6c. Original body restored.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1463,9 +1469,10 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
 // Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
 // reloads remain; still BLOCKED-BY 0x63d00.
-// score 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
+// Earlier, 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
 // off 1206; bounded friend search 230; bounded member search 219; both 211; indexed merge-record pointer
 // 162.
 // Completed friend/member/both flag results 159/218/218; signed friend/member results
@@ -1519,15 +1526,21 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // copy 126; friend-first after user copy 126; named member after user 124; named friend after user 118;
 // named both after user 126; named friend-first after user 126. count homes, early count retention and
 // membership flag reloads remain.
-// score 117 (was 117): this round: the two member counts in a local two-member struct (both kept
+// Earlier, 117 (was 117): this round: the two member counts in a local two-member struct (both kept
 // in memory) give 124, the same as exchanging the two declarations; the score stays 117. The
 // member count is still read into ESI and pushed where retail keeps it in EAX, and the count
 // homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
 // 0x63d00 and 0x2b642e, whose files belong to other lanes.
-// score 117 (was 117): this round: the listing was re-read to place the first difference; the
+// Earlier, 117 (was 117): this round: the listing was re-read to place the first difference; the
 // member count is still read into ESI and pushed where retail keeps it in EAX, and the count
 // homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
 // 0x63d00 and 0x2b642e, whose files belong to other lanes.
+// Round 131 (lane 5, fast): both counts as if/else assignments 117 (same code); those friend-first 124;
+// zero defaults then conditional counts 245 (839 bytes); friend-first with the clan count renamed to sort
+// after it 124 (homes unchanged: the clan count keeps ebp-4, the friend count ebp-8 and ESI, so names do
+// not place these spill homes); the player xuid first in the clan-presence compare alone 183 (838 bytes).
+// Retail reads the friend count first into ebp-4 and reloads it into ESI after 0x18ff47; that slot later
+// holds the clan-presence cursor. Original body restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {
