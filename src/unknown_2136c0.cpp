@@ -164,6 +164,16 @@ void function_213970(void);
 // word 131; the version update before the language query 128 (three points, dropped); block B's string and
 // request clears first, then its header, then block A 131; the file array cleared per element in a loop
 // 131. Repeats as checks: the language getter at both uses 129; block A's NONE store between its clears 131.
+// Round 126 (lane 5, fast): the language local on the left of its comparison 131; the NONE/enable stores
+// ahead of the scalar zero stores 131; the version as a named const local 131; the dirty flag set before
+// each preference store 131; the handle reset first among the scalar stores 131 (all the same code). The
+// block definitions are now in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
+// src/unknown_2148b0.cpp and src/unknown_12be90.cpp.
+// Round 50 (lane 10, fast): the file built /O1 without the size pragma (diagnostic, restored) 131, the same code
+// (the language getter stays out of line there too, so retail's inline getter is not /O1 alone); one forced-inline
+// compare-and-set helper for both preference updates under the pragma 131 (same code), with a forced-inline
+// redeclaration of the getter 131 (the getter still called); the NONE/flag stores after the language query 131;
+// the dirty flag set before each field store 131; block A's NONE store right after block A's clears 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

@@ -217,6 +217,13 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
 // 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
 // the element or the copy 49/50/50/49.
+// Round 125 (lane 6, fast): with the handle read into a scalar (`void *handle = g_5020f8[i].handle;`) or
+// kept in the struct copy, `success = handle != INVALID; _ReadWriteBarrier(); if (success)` no longer
+// reloads the element: the store and memory re-test are retail's (aligned 3 real instructions left: the
+// `xor edx, edx` widening, the handle in EAX for retail's ECX and retail's `mov eax, ecx` before the push),
+// but 50 positional (alignment padding moves); the same with the struct built in the branch by member or
+// `{ handle }`, built before the barrier, the copy with the long `opened`, `success = (bool)opened`,
+// `(long)(...) != 0` and a forceinline bool handle test 50 each (one code).
 // Round 122 (lane 5): a compile-only build of this loop forwards the stored byte to a register test
 // for a volatile read of `done` between the store and the test, a volatile store of `done` there,
 // and a store through `bool *result = &success`; only a volatile success re-reads it. Real builds
@@ -238,6 +245,15 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
 // handle and constant 42 (same code); success set true inside the open branch over a false
 // initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
+// Round 48 (lane 10, fast): no file copy, the long tested from the array element and the element passed to
+// 0x1a1310 directly 44 (the element's handle is then copied to EAX for the push, as retail, but held in ESI,
+// not ECX); `if (!opened) continue;` 42; on the no-copy form `success = (long)(element handle test); if
+// (success)` 55, `success = (bool)opened; if (success)` 55, `success = !(handle == INVALID); if (success)` 55
+// (351 bytes, the stored byte forwarded each time). BLOCKED by the no-volatile rule: diagnostic only (reverted
+// at once), `bool volatile success;` with `success = (long)(g_5020f8[i].handle != INVALID_HANDLE_VALUE); if
+// (success)` and the element passed directly (`(bool *)&success`) matches byte for byte; the same with the
+// comparison stored without the `(long)` 48 (byte setne, no `xor edx, edx`), from a long local 48, as
+// `(bool)opened` 48, as a char store 48. The flag is written by the queued task like `done`.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

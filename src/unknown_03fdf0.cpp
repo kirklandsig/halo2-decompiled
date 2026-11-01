@@ -376,6 +376,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // indexed form's index EDX, count CX, zero EAX, first EAX, entries ESI spilled at once, where retail
 // has count AX/EAX, zero ECX, first EDI and entries EDX); that with a short count local at the `if`
 // or before the clears 177/177 (480 bytes).
+// Round 126 (lane 5; env link positional, 49 = 54): unsigned cache_index, first, index or first and index on
+// the block and indexed forms 49/125 (same code each); 60 orders of the `if` head statements (first,
+// current, entries, a long count, copy, advance, selection) on the block form 49-146 (best the current order),
+// 60 on the indexed form 125-145; a short count inside the `if` with the loop re-reading the field on the block
+// 143 (164 real), indexed 145; a dword count at the `if` top indexed 126 (140 real, 495 bytes), block 125; real
+// `--fast`: unsigned cache_index 54, current/count/first/entries/copy/selection/advance on the block 66, first/
+// entries/current/copy/selection/advance 66.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

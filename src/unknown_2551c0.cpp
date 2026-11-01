@@ -192,6 +192,16 @@ short __stdcall function_2551c0(long actor_index)
 // rotate_vector_170d70 109 (814), record_rotate_vector 117 (817), biped_rotate_about 159 (820, fast).
 // With vector_k, the helper statements as projection/cross i, k, j 48, projection/cross k, i, j 48;
 // cross i first, projection then cross j, i, k or j, k, i 36 each (same code).
+// Round 127 (lane 5): vector_k re-measured 36 (fast); trace declared before the direction copy with best
+// direction before forward 43; forward and best direction before the best score and found 43; direction
+// copied before the angle with sine and cosine named before the call 43; all three vector components
+// named at the helper's top (i,j,k / k,i,j / k,j,i / j,k,i) 115/116/116/115; the existing cross-file
+// rotate_direction (plain) 56 (815 bytes): the score dot stays k, i, j, so an LTCG-inlined rotation
+// writing through its pointer does not give retail's j, k, i; biped_rotate_about (plain, never measured
+// plain before) 159 (820 bytes), record_rotate_vector (plain) 117 (817 bytes).
+// Round 48 (lane 10, fast): all three vector components named in the rotation helper (read at each of
+// their uses), declared k/j/i, k/i/j, j/k/i or i/k/j: 116/116/115/116 (816 bytes; the frame grows to 0x64);
+// the score's `dot + 1` named as an alignment local 56 (815 bytes).
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

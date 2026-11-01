@@ -456,6 +456,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
 // 49/77 (same code); the chained form with the early bool and the store and attach through the existing
 // 0xbb780 77 (still one shared header address under the link's inline).
+// Round 28 (m3 lane 2, fast with 0x108e10/0xbb780): early bool result, the flagged arm clearing both the
+// entity's index and the local, then `if (object_index != NONE)` on the local 75 (160 bytes: the join is
+// threaded before CSE, so the object read still shares the header address, and EBP caches the last
+// argument); the long result computed before the entity store with `return false` in the flagged arm 48,
+// with the test spelled `NONE != object_index` 48; early bool with `result = true` after the attach and
+// `return false` in the flagged arm 77. Permuter (600 s, 24 tries): 46, only with the second virtual call's
+// arguments reordered and `value` narrowed by a cast (both change behaviour; not usable).
 // Round 60 (m3 lane 9): the store and attach as the existing 0xbb780 with the early bool result, first
 // built plain (earlier only fast) 77 (160 bytes: the full link inlines it and still shares the header
 // address); the object pointer read before the flag test on the long/early bool result 49/77; the header
@@ -483,6 +490,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // argument); that with the long result 75 (186 bytes); with the store and attach as the existing 0xbb780
 // 66; nested NONE/flag tests with a NONE store in each else 78 (188 bytes); the inverted
 // `index == NONE || flagged` test 66. Retail's recomputed index needs a CSE boundary, not only a store.
+// Round 127 (lane 6, fast), all with a bool result declared first and set after the attach (retail's BL: false
+// before the first call, the attach argument in EBX, true after it): flagged arm first 75 (160 bytes: f cached in
+// EBP, header address shared, the flagged store laid out inline), unflagged arm first 77, the value copy declared
+// before the result 75, `result = true` between the field store and the attach 72 (176 bytes, result spilled);
+// the clear under `index != NONE && flagged` then `else if (index != NONE)` 75 (the repeated test is threaded
+// before CSE, as round 65 found for the predicate form).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

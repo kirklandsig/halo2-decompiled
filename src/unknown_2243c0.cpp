@@ -325,6 +325,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // frame); every tag lookup through TAG_GET 152; TAG_GET fallback with the stage element through a `word const *`
 // 152; the pass element read through a 10-byte element struct pointer (`tag_index` at +4) 117 (same code), with
 // the stage element pointer too 117 (same code): a pointer-valued element alone does not leave retail's dead `lea`.
+// Round 128 (m3 lane 6, fast; control 117): the fallback masked `& 0xffff`, the four cache zeros grouped and
+// the flags read just before 0x173ba0 together 154 (first difference +0x0, arg_0 leaves EAX); the pass
+// element's field through a named `long const *` 117 (same code); the pass block's address named right
+// before its read (`local_passes`, retail reads it after the second ordinal) 117 (same code), with the grouped
+// zeros 120, with the masked fallback 152.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

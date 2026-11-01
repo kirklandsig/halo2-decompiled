@@ -403,6 +403,17 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
 // (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
 // XMM4); `delta = velocity;` then in-place subtractions 82-90.
+// Round 128 (m3 lane 6, fast; compile-only harness positional counts track the build at +4): the deltas through
+// the existing scaled_difference3f(state velocity, velocity, 1.0f, delta) on this body 57 (the stores, deltas and
+// (k + j) + i sum are then retail's instruction for instruction, only rotated: conversion/k delta XMM4, i delta XMM2,
+// j delta XMM3 where retail has XMM3/XMM4/XMM2; the correction then multiplies all three in place and is one
+// instruction short, so the listing shifts); that with the correction through vector3f_scale + vector3f_add 54;
+// the f46 prediction (vector3f_add_scaled, scaled_difference3f with the ticks) with deltas k, i, j and the
+// correction adds j, i, k 30 (two points, not kept), with deltas j, i, k 32; all helpers (that prediction,
+// vector3d_from_points3d delta, vector3f_scale + vector3f_add) 80. Harness only: renamed locals, one to three dead
+// locals, declaration orders, short/inline/early conversion on the scaled_difference3f delta all identical; rate
+// products staged before the conversion with that delta 51+ positional; ~450 random prediction/delta/correction
+// combinations none below the round 46 form.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
