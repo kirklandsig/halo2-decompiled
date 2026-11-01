@@ -210,6 +210,10 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // both/native long balance/record-balance/setter-balance/all/all with initial memset
 // 439/477/477/454/454/477/477/486. Original record, property construction, short balance
 // and complete body restored; frame/result/state/getter homes remain.
+// DL224: Coordinated inline count/team balancer and player-lookup declarations in seven subsets
+// 439 each; all three with the capacity getter 439. All checked user scores agree; every original
+// declaration and body restored. Frame, dead state stores, result-byte home and data-getter
+// boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

@@ -77,7 +77,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
@@ -85,7 +85,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // index and point index in memory (frame 0x2c and 0x80) where ours keeps them in registers, its three
 // NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
 // and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
-// score 390 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Earlier 390 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 132 (m3 lane 5, fast): root-table test nested under the count test with the pointer declared there
 // (no NULL default) 398; overall result declared first 399; best distance before the selected defaults 398;
@@ -202,6 +202,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
 // point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
 // original body restored; selected-default/root roles and metric/bitmap homes remain.
+// DL224: Group range-first/negative-first/split-range/split-bitmap eligibility 473/440/473/390;
+// the four with shared group bits 434/434/434/424. Original group observation, domains, helpers
+// and body restored; default/bitmap/endpoint homes, root roles and x87 scheduling remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
