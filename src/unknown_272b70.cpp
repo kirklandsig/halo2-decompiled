@@ -1407,6 +1407,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 267: Seeded while/for, condition-declared actor, for-declared actor: 41/274/41/274;
 // the same four with collection-only iterator scope 41/274/41/274. Original traversal and iterator
 // lifetime restored; handle/candidate scaling and late request/seat scheduling remain.
+// Round 269: Actual winning-seat pointer, early/late initialization, score/receiver update order and
+// nested/continue admission: eight forms 144 each, frame 0x6b0 versus 0x6ac. Original short
+// winner ordinal, requests and complete body restored; iterator/candidate and seat-load schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

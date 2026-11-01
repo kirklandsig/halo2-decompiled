@@ -1452,6 +1452,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // Round 267: Conditional success publication after damping with bool/byte/short/long accumulator
 // 202/197/212/213; before damping 202/197/212/213. All exact-match-only forms restored;
 // original twice-used spin snapshot and bitwise result accumulation retained.
+// Round 269: Native two-use spin byte/char/short/long 191/190/191/195; exhaustive branch-owned
+// result defaults with those carriers 191/190/191/195. Frame/return-byte/release homes remain;
+// original spin Boolean, default, helper and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
