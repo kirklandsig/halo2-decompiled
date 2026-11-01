@@ -140,6 +140,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // `common_bits = width_bits; if (height_bits < width_bits) common_bits = height_bits;` 119 (still cmov); that
 // with y looked up before x in both arms 125 (302 bytes, 0x136140 kept); `long const` copies 82 (same
 // code); y_bits declared before x_bits 82 (same code).
+// Round 277: standard minimum with short/word/byte/long shared count 109/93/93/101;
+// native short less predicate with the same carriers 117/119/119/119. Exact caller
+// and both neighbors survive; original minimum, counts, helper and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

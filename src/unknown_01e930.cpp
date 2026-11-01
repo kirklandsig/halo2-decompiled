@@ -456,6 +456,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 275: explicit word-unit allocation masks, long/dword mask and size carriers, ternary/per-arm
 // open 269/278/269/278/269/278/269/278; retained byte-unit masks 272/280/272/280. Exact-only
 // arithmetic producers restored; frame 0x3c/0x40, zero/clock/output homes and instruction policy remain.
+// Round 277: standard elapsed bound/volume fills/material pair fills, subsets 1..7,
+// 301/278/332/258/322/300/352; all with volume declarations first 352. All file
+// controls survive; original body restored, frame and clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
