@@ -728,7 +728,8 @@ void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdca
 // score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
 // retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
 // before the last stack push (`push edx` holding &camera) and ours after it. Tried: a local for the context, a local
-// for the count, a local loop counter, none changed it.
+// for the count, a local loop counter, none changed it. Permuter (25 min on r621): best 9 (full image 10), only with
+// a volatile store to the cluster's first count; not kept.
 // @retail 0x1733e0
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera)
 {
@@ -1126,6 +1127,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 // retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
 // last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
 // `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
+// Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
@@ -1439,6 +1441,7 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 // score 3 (was 3): the same sort_4byte call as function_1733e0: retail computes &scratch in edx, then `lea ecx` for
 // the order array, then `push edx`; ours uses ecx for &scratch and pushes it first. Tried: locals for the order
 // pointer, the count, the unused pointer, any combination (no change); dropping the block around `scratch` (42).
+// Permuter (25 min on r621, about 1150 variants): nothing below 3.
 // @retail 0x173130
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index,
 	s_view_collection_1733e0 *collection)
@@ -1501,29 +1504,17 @@ struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
-// score 19 (was 19). Retail takes eax=start, esi=end, dl=narrow, [esp+4]=fraction (ret 4; callers 0x171830, 0x16ebf0
-// load esi and dl); ours keeps narrow on the stack (cmp byte ptr [esp+0x74], bl) and puts end in edx (ret 8). The
-// body is otherwise identical (130 vs 132 bytes). The declared order of the parameters does not change any of this
-// (tried 4 orders). Tried: `long narrow` (14: test esi,esi, 130 bytes, but retail's callers load dl),
-// byte/char (19), short (21), `narrow ? a : b` (42), `flags &= ~2` (19), flags/direction statement order (19),
-// early `return true/false` instead of result (41), result set last (41).
-// Why (c2B): the bool is not forced onto the stack; it needs a byte register at entry. With `long narrow` it
-// takes esi (end stays in edx), and without the `result` byte (early returns) it takes bl and end takes ecx.
-// With `result` in bl, start in eax, end in edx and the flags in ecx there is no byte register left, so
-// narrow stays on the stack. Retail has end in esi, so edx is free for narrow and for the `lea edx` that it
-// schedules between the direction components; ours cannot (it holds end in edx until the last component).
-// Parameter position (narrow second, 'long' or bool) did not move any register. Also tried, same score
-// or worse: direction via vector3d_from_points3d (19), k j i order (21), locals for the three differences
-// (19), a pointer local for the result or the direction (19), flags after or inside the direction (23, 29),
-// `flags = narrow ? .. : ..` (42), if/else for flags (31), char result (24). Callers follow this function's
-// convention: `long narrow` raises 0x171830 266 -> 288 and 0x16ebf0 120 -> 169.
+// Matches with the collision flags as an unsigned long declared before `result` (found by the permuter). The
+// start then arrives in EAX, the end in ESI and `narrow` in DL, as retail's callers 0x171830 and 0x16ebf0 set them
+// up (ret 4). Before (19), narrow stayed on the stack and the end came in EDX; `long narrow` gave 14, other spellings
+// of the flag, the result and the direction 19-42.
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
-    bool result = false;
     s_segment_collision collision;
     collision.material = NONE;
-    long flags = 0x808c0f;
+    unsigned long flags = 0x808c0f;
+    bool result = false;
     if (narrow) flags = 0x808c0d;
     vector3f direction;
     direction.i = end->x - start->x;
