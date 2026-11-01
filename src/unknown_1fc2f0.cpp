@@ -369,6 +369,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (369 bytes); velocity declared after the tick scale 32 (identical); each rate chain as one expression
 // `v.c = s.c * rate + p.c - q.c` 107 (345 bytes); the conversion between the velocity copies and the chains
 // 72 (369 bytes); the delta through the existing vector3d_from_points3d 77.
+// Lane 18 round 17 (an LTCG link of this file's generated unit with its callee closure, equal to the full listing,
+// 33 there for 32): new, all identical code: `correction` declared with the other locals 33; a named `limit_squared`
+// 33; the root named before the scale 33. Re-measured listed forms (same results as listed): the delta scaled in
+// place then summed 33; tick products written `tick_scale * v` with the conversion at the top 33; dot3f for the
+// length 33; deltas k, j, i 79 (359 bytes) and i, k, j 34. No untried natural form is left here.
 // Round 105 (lane 7, fast): the rate read from the global at each chain 97 (375 bytes); the conversion after the
 // chains (ticks read at the top) 73 (369 bytes); the conversion read straight from the global 32 (identical); the
 // rate products and adds j, i, k, then the conversion, the subtractions, the tick products and the deltas as
@@ -424,6 +429,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
 // (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
 // XMM4); `delta = velocity;` then in-place subtractions 82-90.
+// Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
+// deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
+// then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain
+// order follows the delta order, while retail has j-first chains with an i, j, k delta (its k, j, i sum). A
+// compile-only screen of ~1150 forms (rate stage per component/staged/copied first/as a struct in all six
+// orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
+// orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
+// the root changes nothing.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

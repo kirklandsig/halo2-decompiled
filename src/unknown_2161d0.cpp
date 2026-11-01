@@ -83,6 +83,9 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // append through an inline member of the record 10; through a static inline function 10; a path pointer
 // for the append only 10; the storage name in its own local first 10. (Matched 0x216da0 recomputes after
 // an inlined member's call; here that form keeps the reuse.)
+// Round 102: a const cache pointer 10; a const path pointer 10; a multi-use location pointer 10; a location
+// reference 10; the location pointer/reference each with a path pointer 10/10; a const type 10; const cached
+// indices 10. Every form compiles to the baseline's code.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

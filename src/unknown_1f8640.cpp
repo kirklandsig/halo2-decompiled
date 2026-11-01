@@ -476,6 +476,15 @@ struct s_1f8a70_actor
 // test alone 404; the first exit through a shared final `return result;` (if/else tail, one goto) 367
 // (1652 B), with the initializer 371. Retail tests route_mode as a word (`movsx ecx, word`), materialises
 // `node != NONE` with setne before its test, and keeps the first exit's false in BL.
+// Round 19 (lane 18): retail's result byte shares unit_mode's slot (+0x12), so it has no definition
+// before the unit-mode test; `failed:` stores false and the success test jumps past that store.
+// Compile-only screen: `result = false;` inside the first arm with the rest of the body in an `else`
+// and one final `return result;` gives retail's `xor bl, bl` / call / `mov al, bl` and keeps the early
+// `return true` exits as `mov al, 1`, but only while the result stays in a register; in the real
+// build it is memory-homed and the first false folds again. Real (fast), all on that else graph:
+// `failed: result = false;` 429 (1648 B); with the route switch's real default 428 (frame 0x80, aligned
+// 91 vs 82); with the case 3 fix too 446; that with the unit mode tested through 0xe70b0's returned
+// pointer 451; the default form with the returned pointer 428. All restored.
 // Round 68 (lane 12): the value-fixed 270 form rebuilt (exact LCS 44 unmatched against the original's 59;
 // EDI holds NONE and route_mode is a memory dword, as retail). Retail evidence on it: the unit mode is
 // tested through 0xe70b0's returned pointer (`cmp word ptr [eax], 5`), route_mode is read as a signed
@@ -484,6 +493,8 @@ struct s_1f8a70_actor
 // its bool in BL). On 270: returned unit-mode test 333 (route_mode then takes EDI, NONE EBX); first
 // exit by goto to a shared final `return result;` 437 (still folded, EDI pushed early); actor fetched
 // once before the first test 277; short route_mode with the returned test 432. Original body kept.
+// Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
+// Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

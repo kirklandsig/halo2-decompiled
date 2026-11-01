@@ -461,6 +461,19 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // query 245 (1100 bytes); the allocation result declared after the start time 256 (the last two are the listed
 // scores of those forms alone, so the loading local's gain cancels in them). Lead: the loading local is retail's
 // for both queries, so it may count once the frame's mask slot is found.
+// Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
+// neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
+// allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start
+// time read before the three stores 240 (aligned 200 -> 216) / before the size 242; `dword large = flags &
+// 0x100` with the size ternary on the mask 269. The SSE float code still needs /arch:SSE (flags lead only).
+// Round 276: Explicit signed timestamp returns, no/zero initialization in low-first and high-first output
+// orders 310/286/310/286; each with a one-use end tick at subtraction 310/286/310/286. No-init/zero-init
+// frames 0x30/0x38 regress.
+// Original executable source restored; Original timestamp helper and complete body restored; frame 0x3c versus 0x40, clock/output homes and instruction policy remain.
+// Round 278: Separate bounded-pump and timed allocation phases, long/dword/short/byte ordinal: break-on-
+// success 288/288/289/304; result-conditioned finite loop 312/312/311/328. All preserve the thirty-pump
+// sequence but shrink the frame to 0x34 and grow code. Original retry phase, clocks, helpers, file policy
+// and full body restored; frame 0x3c/0x40 and status/allocation/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

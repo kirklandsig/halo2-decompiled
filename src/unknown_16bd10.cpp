@@ -733,6 +733,15 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // score 236 (was 236): frame 72 agrees; the first real difference is the plane block's direction preload
 // (retail d.j, ours d.k) with the normal in XMM3/4/5 for i/j/k (ours XMM5/3/4), then the zero/length roles.
 // Earlier: the first difference was put at the switch's dispatch —
+// frame 72 agrees and the arms are in retail's order at 1696 bytes (aligned
+// difference 123): ours puts the length in xmm0 and the zero in xmm1 where retail has xmm1/xmm0
+// (retail preloads direction j as the length accumulator), the normal's i/j/k in xmm5/xmm3/xmm4
+// against retail's xmm3/xmm4/xmm5, the case 2 and default 0x40 flag updates swapped between the
+// memory `or` and load/or/store forms, and the timer reassociated to (rate / scale) * ticks.
+// Earlier (236): the first difference at the switch's dispatch is the default jump target (the
+// code after the switch), so the case bodies' sizes differ and the switch region shifts with it.
+// Earlier (236): frame 72 agrees; the camera mode and the object index are read into
+// this round found the first difference at the switch's dispatch —
 // the default jump target (the code after the switch) is not where retail puts it, so the
 // four case bodies are laid out differently and the whole switch region differs with it.
 // Earlier: frame 72 agrees; the camera mode and the object index are read into
@@ -837,6 +846,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // *direction` or `= camera->point.left` x plane.d before/after the length (80): best block 35 against
 // 38; n.i always lands in XMM5. Real builds: length terms i,k,j / k,i,j / j,k,i 243/243/238; direction
 // and length declared at their first assignment 236; the four block declarations reordered 236.
+// Round 19 (lane 18, fast, positional/aligned against 236/123): listed forms re-measured: seconds
+// local in the tick helper 385/128 (retail's ticks * rate / scale, one instruction shorter, the rest
+// shifts), j-first length 238/122 (retail's direction j preload; the k product still the
+// accumulator); new: both 387/127; j-first length with the plane dot's operands reversed 238/122;
+// with the plane declared after the scalars 238/122; one 0x40 flag update after the point-type
+// switch 399 (1704 B); the length zero test first in the if/else 236/127. All restored.
 // Round 68 (lane 12): retail carries 0.0 in XMM0 into the timer test from every inner-switch path (the
 // point-category arm's length test leaves it there), which follows from its d.j preload; the double
 // `flags = 8` store is retail's. Timer as an if/else statement 244 (1700 bytes); length summed j-first
