@@ -887,6 +887,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
 // 35. Re-measured: copy before the maximum 82, open
 // slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
+// Round 48 (m3 lane 10, fast): retail's only caller passes the player count in EAX, the party list in ECX
+// and the extra count in EDX. `int next_party` 34; one variable serving as next party and then as the
+// call's imbalance output (address-taken, sharing retail's frame-0 slot) 36 (the fill value is still
+// loaded first); the extra-first sum with the clamp's subtraction written in place 45 (192 bytes); the fill
+// bound `i != total` 35; the maximum test as `party_indices[i] + 1 >= next_party` 35. Re-measured
+// (diagnostic, value-changing): `(short)next_party` in the fill 7 with retail's roles.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

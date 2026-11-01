@@ -233,6 +233,15 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
 // 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
 // opened test on the array element 42.
+// Round 48 (lane 10, fast): no file copy, the long tested from the array element and the element passed to
+// 0x1a1310 directly 44 (the element's handle is then copied to EAX for the push, as retail, but held in ESI,
+// not ECX); `if (!opened) continue;` 42; on the no-copy form `success = (long)(element handle test); if
+// (success)` 55, `success = (bool)opened; if (success)` 55, `success = !(handle == INVALID); if (success)` 55
+// (351 bytes, the stored byte forwarded each time). BLOCKED by the no-volatile rule: diagnostic only (reverted
+// at once), `bool volatile success;` with `success = (long)(g_5020f8[i].handle != INVALID_HANDLE_VALUE); if
+// (success)` and the element passed directly (`(bool *)&success`) matches byte for byte; the same with the
+// comparison stored without the `(long)` 48 (byte setne, no `xor edx, edx`), from a long local 48, as
+// `(bool)opened` 48, as a char store 48. The flag is written by the queued task like `done`.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

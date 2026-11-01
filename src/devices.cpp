@@ -766,6 +766,12 @@ struct s_device_machine_view
 // behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
 // Matched retail sites that load 16 bits into the pointer's own register (0x3f500, 0x1c7450, 0x1023d0)
 // use the value in 16-bit compares or a phi, never in byte tests.
+// Round 48 (lane 10, fast): on the lane S form, the bits local as `word` 34 (same code), with the
+// 0x1200055f zero store 117 (657 bytes; the listing is then retail's except the 3-byte longer
+// `movzx eax, byte [eax+2]; and eax, 3` for retail's `mov ax, [eax+2]`, so the score is a shift);
+// the zero store alone re-measured 117; the bits local `dword` without the `& 3` plus the zero store 122
+// (a full `movzx eax, word [esi+2]` and still the pushed ESI, so the conflict is not the 16-bit width);
+// `group->flags & 3` read directly without the word local 34.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

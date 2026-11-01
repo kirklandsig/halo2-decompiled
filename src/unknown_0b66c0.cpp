@@ -254,6 +254,27 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
 // or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
 // colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
+// Round 48 (lane 10, fast with 0xb5f10/0xb61d0): lead, not kept (a one-use local computed ahead of the
+// compare): inside `if (start >= 0 && count > 0)`, `long length = ...;` then `char const *source = string +
+// start;` then `if (start + count <= length)` 21 with 0xb5f10 0: retail's prologue (`mov edi, ecx`, start
+// arriving in ECX and coloured EDI), but the scan walks in ECX and counts in EDX (retail EDX/ECX) and the
+// source is formed before the compare (retail after the clamp, in EDI); the compare as `length >= start +
+// count` or `count + start <= length`, `&string[start]`, an unsigned length local 21 each (same code).
+// Tried: `string + start` named at the function top 41; named inside the sign tests before the scan 37
+// (start EDI and the scan counter ECX as retail, but the destination becomes an EBX register parameter,
+// `ret 4`, 0xb5f10 84); with a plain string parameter at the top 54 (88 bytes); the nested length local
+// with the source named after the clamp 28 (0xb5f10 6), with `start += (long)string` after the clamp 40,
+// with the source named before the clamp 32 (0xb5f10 6), with a named `end` offset 40, with a string copy
+// before the compare and `copy + start` at the call 40 (0xb5f10 35); `length - start >= count` nested or
+// flat 34/34 (0xb5f10 6); the 21 form with a plain string parameter 49 (92 bytes, 0xb5f10 6); the nested
+// length local with `start += string` and a plain string parameter 41 (104 bytes, 0xb5f10 35).
+// Second lead (not kept, one-use local, 0xb5f10 6): `char const *text = string;` read after the clamp, then
+// `start += (long)text` 27: the scan counts in ECX and the read is retail's unfolded `mov eax, [string];
+// add` before the pushes, but start and the walk swap (start EDX and passed there, walk EDI; retail start
+// EDI, walk EDX); the same with the nested length local, with `text + start` at the call, with `start =
+// (long)text + start`, and with the existing 0x11c9a0 for the length 27 each (0xb5f10 6 each). Hybrids:
+// the text read before `count++` 31 (0xb5f10 6); nested length local, text read before the compare and
+// `start += (long)text` after the clamp 40 (0xb5f10 35); the first lead with a named `end` 21 (same code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

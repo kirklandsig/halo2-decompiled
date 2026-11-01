@@ -504,6 +504,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,
 // mask-first load/OR/store again); visited and both markers as one record cleared by its own member
 // (diagnostic for lane 1's escaped aggregate) 42: the frame stays 0x104, but the set is load/OR/store.
+// Round 48 (lane 10, fast): the alternate arm as the existing `state->pairs_iterate(iterator)` 148 (kept out
+// of line; with a forceinline declaration, diagnostic only, 37 with identical code, so the arms are already
+// its inlined shape); `return` for the loop's break 37 and a do/while on `found` 37 (both identical code);
+// the clear through the existing bit_vector_fill re-measured with the shift/mask test 216/213 (still out of
+// line). With the mask test the set loads the word through the folded address and stores through a
+// separate `lea`, so the load is not fused with the store.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
