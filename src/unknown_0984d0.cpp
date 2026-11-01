@@ -430,6 +430,13 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // inverted 109 (544 bytes, branches laid out opposite to retail).
 // Round 490: existing producer returns long/unsigned long/short/word/byte/signed char, 115 each;
 // long result with direct size/handle input 138/134. Producer result width canonicalizes; restored.
+// Round 42 (m3 lane 13, fast): case 2/4's state test as an `if` of its own around the handle/state test 115 (same
+// code); the chain-length test written `local_9 == info.count` with memcmp sized by info.count 178 (520 bytes); the
+// validity flag declared before the switch 142; the validation loop as a plain `for` over the counter (volatile
+// cursor reads kept) 195; the count-one branch reading `table` at each use (no peers local) 204. Independent
+// tie-breaks left besides the loop: the count after the loop in EAX (retail ECX, so the chain call's register
+// temporaries rotate), case 2/4's index*5 in ECX (retail EAX: state read through the scaled index before the entry
+// address is formed), case 5's table in EDX (retail reloads it into EBX).
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

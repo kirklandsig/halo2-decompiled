@@ -1370,6 +1370,13 @@ PRIVATE inline long score_string_list_1608e0()
 // Round 265: library scroll/header-alpha/body-row-alpha bounds and their pairs/all
 // 697/727/719/729/725/743/817; all with upper-first nesting 789. Body-row bounds
 // recover frame 0x79c but regress to 719 at 2922 bytes; original full body restored.
+// Round 41 (lane 14, fast): retail's dim predicate is the existing 0x15db30 inlined (its fresh player lookup and
+// +0x2c/+0x1ac tests byte for byte) with `team == NONE` last; dim is cleared before the team search and set
+// later; the row's raw and masked player indices are loaded once. Bool show_icon 695; with early dim 703; with a
+// masked index local 715 (frame 0x794); `|| function_15db30(display.players[player_row]) || team == NONE` 698
+// (2903 B), as early dim 695, with bool show_icon 688, plus a `row_player_index` local read once per row 698
+// (frame 0x798, inlined call in retail's shape, but place takes EBX and the offset spills), int show_icon with
+// the row local 680 (2879 B), with a named masked index too 700.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

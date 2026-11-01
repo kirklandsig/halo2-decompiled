@@ -772,6 +772,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // compile-only build gives retail's 0x85c frame and slot layout but no EBP bias either. `in_session == true` 510
 // (two-point gain rejected); bit 7 taken before the clock read 515; bool campaign 540; both first forms 513;
 // a long row 512 (same code).
+// Round 41 (lane 14): one show after the 2/3 arm's campaign/totals if-else 607 (1977 B); `text[row]` then
+// `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
+// (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
+// and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

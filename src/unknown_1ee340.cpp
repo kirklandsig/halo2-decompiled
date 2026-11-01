@@ -296,6 +296,11 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 269: Fraction numerator/reciprocal/both/reversed producer order, mutable and const,
 // 192 each in eight forms. Frame 0x84 and retained-origin/edge-I homes remain. Original
 // fraction expression, all geometry helpers and complete body restored.
+// Round 68 (lane 12): start copy first with the direction from the copy 230 (retail's single start loads,
+// exact LCS 132 against 133, but origin is still re-read from the shape, so no edge spills); copy first
+// with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
+// writes with `found = true` last 239 (1045 bytes); a short count local for the call 297. Unused-local
+// probes +1/+2/+3/+4/+8/+12 all 192 (diagnostic: no symbol-numbering effect here).
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

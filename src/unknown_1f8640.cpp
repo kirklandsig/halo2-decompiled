@@ -470,6 +470,14 @@ struct s_1f8a70_actor
 // (movsx/cmp word) and its result a memory byte everywhere but the first exit (BL).
 // Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
 // Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
+// Round 68 (lane 12): the value-fixed 270 form rebuilt (exact LCS 44 unmatched against the original's 59;
+// EDI holds NONE and route_mode is a memory dword, as retail). Retail evidence on it: the unit mode is
+// tested through 0xe70b0's returned pointer (`cmp word ptr [eax], 5`), route_mode is read as a signed
+// short (`movsx`, jle/jg), the zero-route node test is a materialized bool (`setne al; test al, al`),
+// and 0x1f86a0 takes no BL argument (so the first exit's BL is the result itself; 0x262800 does take
+// its bool in BL). On 270: returned unit-mode test 333 (route_mode then takes EDI, NONE EBX); first
+// exit by goto to a shared final `return result;` 437 (still folded, EDI pushed early); actor fetched
+// once before the first test 277; short route_mode with the returned test 432. Original body kept.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
