@@ -1866,6 +1866,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round 290: Indexed property destination from stored pointer/address producer, crossed with native
 // record-count bound and advancement, 780/788/796/770/826/788/812/770 (2750-2814 bytes). Original
 // initializer restored; frame 0xc0, initial cursor/slot/availability and later request homes remain.
+// Round N274: Library property copy before identity capture 711; readonly identity 711;
+// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
+// Original identity/property order, native buffer lifetime and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

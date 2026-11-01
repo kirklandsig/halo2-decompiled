@@ -752,6 +752,8 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
 // Round 291: conditional/default-high actor-height producers, signed/unsigned flags and
 // long/Boolean success, 727/760/727/760/729/750/729/750. Original complete body restored.
+// Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
+// subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

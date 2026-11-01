@@ -70,8 +70,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 629 (was 629): Frame 0x108 agrees; success is retained in BL and saves EBX
-// early instead of using retail's stack byte. Hit/basis/ray/root/rotation homes follow.
+// score 629 (was 629): Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
+// Retail stores true directly in its result byte and returns immediate one on the inactive path.
+// Hit/basis/ray/root/rotation homes follow.
 // Early constant minimum with long success 635, with early point copy 651; final products differ.
 // MiniMax H run 14: the cross helper 0x2922b1 with its sign flipped and the operands swapped at
 // all four calls (same results) 622; under the keep bar, not kept.
@@ -204,6 +205,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
 // Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
 // 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
+// cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

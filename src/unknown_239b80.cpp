@@ -378,6 +378,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // `mulss xmm1, [p.x]` unfused (92 instructions); stores of the index, the state or the point pointer to a
 // global (diagnostic) at the loop top or in any case leave the index in ESI. In case NONE ours uses three
 // temporaries (scaled index, x, y) beside the live index; retail's y reuses the scaled index's register.
+// Round 36 (lane 15, fast): case 0 braced with `vector2f *normal = &line.n` for the dot only, both
+// components by name 42 (same code); the round-54 form rebuilt as i by name, j and the dot through
+// `normal` 44 (304 bytes; the 23 needs the dot written out by component, a helper body by hand); the
+// normalize through `normal`, the dot by name 42 (same code); j stored before i 49 (as listed).
+// The dot helper returning `a->i * b->x + b->y * a->j` 42 (same code), on the pointer form 44.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -556,6 +561,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // test does not). Boolean departure with heading first and the `||` update 264, with memmove 273 (748 B,
 // points/indices in EBP/EBX); that with `|=` 295; long departure with `||` and memmove 236; done-flag
 // diagnostic on the memmove form 229.
+// Round 480: Shared native point-difference distance/angle/both producers
+// 203/213/213; with squared-length sum 203/213/213; paired squared terms
+// with/without the named sum 213/213. Original body restored; count/departure homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -829,6 +837,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Round 294: uninitialized current-point/distance/both declarations before the loop
 // or at entry, 129 each; both with the current-side declaration at those scopes
 // 129/129. Original declaration scopes and body restored; count ECX/prior-side byte remain.
+// Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
+// 278/278/278/278 and conditional collection 302/278/278/278. All restored;
+// native count ECX, prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

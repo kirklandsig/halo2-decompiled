@@ -486,6 +486,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // counter loop uses different ones too. Retail keeps the word mask in a register after the loop
 // (reloaded into ecx before the first test, shared by the compare and the OR for the store);
 // every word-mask form here reads it from memory at each use.
+// Not kept (MiniMax R, 11-01, repeating C's trial above): the one-use present-team bit local 29
+// (was 32), kept only with a match. Remaining: the old mask is a 32 bit value here and a 16 bit one
+// in retail, and the post-loop compare and update read it from memory instead of one reload into ecx.
 // Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
 // becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
 // both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
@@ -598,6 +601,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
 // (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
 // follow it here (the LTCG loop keeps present in a register).
+// Round 36 (lane 15, fast): `present_teams = (1 << team) | present_teams` 32 (same code: the OR still lands
+// in the bit's register and the store follows the flag test); the store as `(word)(old_team_mask |
+// present_teams)` 32 (same code); a dword copy read from the field with the store through `globals` 130
+// (374 bytes, the copy folds into field reads); the word mask declared before the old playing mask 82;
+// a word copy read from the field with an uncast direct store 129 (375 bytes; the engine-index load
+// then hoists as retail's); the volatile present declared first 39. Diagnostic: the word form keeps
+// retail's entry but reloads the spilled word at each use (movzx in the compare, `mov esi` dword in
+// the update), where retail reloads it once into ECX at the loop exit with playing in EDX.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2133,6 +2144,9 @@ void function_159460(long player_index, bool *leading, bool *tied)
 
 #include "object_iterator.h"
 
+// MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
+// allocation in the inlined equipment lookup, and changing the matched release_entry would risk
+// the 0x15b1e0 match.
 // score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
 // and scaling the object index; retail scales the index first, so the scaled index gets its own
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
@@ -2555,6 +2569,9 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
+// MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
+// retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
+// 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
 // score 44 (was 44): frame 0x10 agrees. BLOCKED-BY 0x1967d0 (the options reload after it follows
 // what the compiler thinks 0x1967d0 writes: a 0x4e6948 store there gives the reload) and the
 // 0x1e9df0 call's register setup (retail sets counter, field, then statistics last; ours
@@ -4099,6 +4116,8 @@ static __forceinline long nonnegative_15ce70(long value)
 // Round 241: uniform presence/self/both decisions 575/559/560; with native statistics
 // ordinal 572/552/544; both with override join 560, also staged decoding 560.
 // Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
+// N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
+// 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
@@ -4324,6 +4343,12 @@ struct s_score_zone_view
     short count;
 };
 void function_15fe20(long team_index, color3f *color);
+// Not kept (MiniMax R, 11-01): the two team-color copies through one-use named color3f locals plus
+// the zone-presence shift count masked to a byte (`iterator.index & 0xff`, for retail's
+// `mov cl, byte ptr` reload) measured 433 after the merge with main (the lane reported 45); the
+// mask alone is 87 (was 88). One-use locals are kept only with a match.
+// The remaining differences are register homes (the mode global in EDX against retail's EAX, the
+// unit index and the -1 compares) and the zone-progress tail's byte load order.
 // score 88 (was 88): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
 // and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
@@ -4444,6 +4469,9 @@ void function_15fe20(long team_index, color3f *color);
 // parameter 64; on the 61 form the weapon NONE default before the unit test 92 (2688 B, `or esi, -1`
 // placed as retail, both compares immediate), with the unit through engine_object_get 92.
 // Round 216: Type/timer/round-limit results before publication, seven subsets 659/644/662/687/660/684/670; all with the actual peer cases reversed 670. All restored; returned color transfers, NONE reuse and byte shift remain.
+// Round 480: Filled team-color output objects, rival/own/both, with native publication
+// 302/552/564; with library copies 302/552/564; overlap-safe publication 423,
+// complete individual palette copies 564. Original body restored; native color transfers remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5385,6 +5413,9 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
+// x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
+// ours loads EDX first.
 // score 2 (was 2): final player register setup precedes the x87 argument store; frame and other instructions agree.
 // value-initialized iterator 158; entry workspaces 42; draw dimensions 24; immutable user 24;
 // frame pointer 173; global optimization disabled 242; float consistency 42; force-inline fraction 24.

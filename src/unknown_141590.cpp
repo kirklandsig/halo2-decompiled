@@ -250,6 +250,10 @@ static inline void quaternion_transform_vector(
 // 0x1c); the scalar computed once by the caller before the identity copy and passed to the helper 294 (frame
 // 0x18: the doubled w then also hoists above the copy), with scalar cross terms 309; the helper in retail's
 // computation order (scalar, i/k/j dot, doubled w, cross j/k/i, cross-term-first rows) 272 (frame 0x20).
+// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
+// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
+// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
+// spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -892,6 +896,11 @@ void function_143250(
 // Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
 // 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
 // admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
+// Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
+// 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
+// frame 0x314. On that product graph, native row subsets and late matrix declaration:
+// 1807/1855/1989/1992/2093/2090/2238/2238. Original scalar graph, workspace, publications and body
+// restored; frame 0x314/0x300 and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

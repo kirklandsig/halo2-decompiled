@@ -714,6 +714,9 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // after/before ground normal, original/removed one-use aliases: 314/314/325/325/314/314/325/325.
 // Frames 0x38 or 0x34 versus 0x28; original observations, aliases, helper graph and full body
 // restored.
+// Round 481: Complete fallback plane/forward candidate with publication after normalization,
+// eight independent fallback/forward-phase/active-entry declaration pairs 247 each (1243 bytes).
+// Original in-place fallback and full body restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -1297,6 +1300,8 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // Round 289: Response-only selected contact address, with preferred cursor/count-store phase/entry success
 // result interactions masks 0..7, 430/456/429/455/524/521/525/522. All restored; original
 // receiver, qualified count, copies, response order and arithmetic retained.
+// Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
+// 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

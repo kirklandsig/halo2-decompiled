@@ -744,7 +744,11 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // plain helper 144; the field passed as a one-real struct 106, as its bits to a
 // long parameter 106, with the gain as `*(real *)&gain_bits` 106. The header's
 // bits-in/bits-out decibel sum compiles to SSE (compile-only; retail's own uses of
-// it are SSE too), so this function's x87 sum is a double sum.
+// it are SSE too), so this function's x87 sum is a double sum. Round 69: the existing
+// decibel-to-volume helper for room / both room fields 25/25; aggregate description
+// initialization 116; split first / all result declarations 25/25; the first gain read
+// through its own address 25, through the integer bits' address 92; helper conversion
+// order 25.
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {

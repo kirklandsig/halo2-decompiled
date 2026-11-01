@@ -87,6 +87,8 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
+// and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
 // score 77 (was 77): every frame home and the body up to the success tail agree; left: the rigid-body
 // lookup's address operands (ours `[base+index]`, retail `[index+base]`) and the success tail, BLOCKED-BY
 // 0x1d0cf0 (retail passes it the transform in EAX, the component in EBX and the index in ECX, plain ret;
