@@ -184,6 +184,9 @@ PRIVATE inline byte const *material_parameters(long tag)
 // before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
 // `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 281: multi-use addresses of the actual table/entry/range pointer fields, each alone,
+// table-entry/table-range/entry-range pairs and all three, 47 each; early table-field address 47.
+// Restore-load order and the sampler state convention remain; original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

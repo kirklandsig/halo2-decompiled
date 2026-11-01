@@ -797,6 +797,10 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // Round 94: `unit->type == 0` or `!unit->type` for the mask test 12 (retail's length, not its shl/test);
 // 0xe4bd0's flag test as a field bit 13; a noinline declaration of 0xe4bd0 13; inline depth 0 around
 // 0xe4bd0 (diagnostic) gives it retail's 61 bytes but inlines it here (86).
+// Round 281: masked lookup with native word clear 13; existing word setter 10; both native setters 10;
+// computed type mask 13; boolean predicate 10; word setter with early guard/void return 10/10;
+// masked lookup, word setter and predicate 9; minimal word setter and predicate 9 (both 92 bytes).
+// Both forms scoring 9 lose 0xc2d00 (0 -> 2) in ordinary full links; rejected and original body restored.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -2844,6 +2848,9 @@ void function_c5740(long unit_index, bool start)
 // material path as an inline helper 260 (kept out of line, 0xcf040 6); an early return on a NONE definition 94;
 // `goto done` for the weapon exit 94. Diagnostic (reverted): a global store in 0x1012c0 gives the pool reload but
 // 96 (351 bytes), so that reload is not the main cause.
+// Round 281: full-width material local 106; full-width slot 110; both 118; early receiver declarations 94;
+// nested weapon gates 94; named admission result 94; early receivers with full-width material 106;
+// immutable definition-argument lifetime 94. Full-width material forms also lose matched 0xcf040 (232).
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
