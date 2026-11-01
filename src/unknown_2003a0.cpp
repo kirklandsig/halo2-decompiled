@@ -505,6 +505,13 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // the current body with the `!alternate` arm first 75. Diagnostics (flag form, not kept): `next = 1` 85 and a
 // scan starting at one 81 remove the zero register, but the walk keeps squad/definition in EAX/ECX swapped and
 // the scan keeps alternate in BL, count in EAX and the index in EBP with a sign-extended copy in EDX.
+// Round 73 (fast): earlier rounds' scan-local `short index = 0` re-measured 92 as the base (also as `short index;
+// for (index = 0;` 92 and at the top of the flags block 92), then: at the top of the definition block 97; that with the `next`/`squad_index` stores swapped 91, the stores
+// swapped alone 76; the found flag 94 (336 bytes); count as `short` with the scan-local index 91 (345 bytes): the zero
+// register goes (retail's `test` for the definition, `mov word [esi+4], 0` and `xor edx, edx` before the loop: the
+// 32-bit guard `0 < count` against the index is what makes VC keep 0 in the index's register), but the compare is
+// 16-bit and the walk keeps squad/definition in EAX/ECX. The palette lookup (both forms load the index before the
+// table base, retail the base first) as `index * 0x38 + base`, `&base[index * 0x38]`, without the (word) cast 74 each.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2182,6 +2189,9 @@ bool function_1e11b0(long actor_index, bool active);
 // index in EBP): squad_get for the squad 71; an actor index local for the three loop calls 71; the game time
 // stored before the flag 71; the squad as a byte pointer through squad_get 71; the actor initialised NULL 71
 // (identical register roles: the squad keeps EBX, the index stays in its stack home).
+// Round 73 (fast, current body): `squad_get` for the squad 80 (183 bytes: the depth-zero pragma keeps the header
+// getter out of line), with `actor_datum_get` too 102 (161 bytes); `iterator.actor_index` stored in the loop 64; the
+// loop as `for (;;)` with a break test 64; the +0x34 store from `iterator.squad_index` 65 (199 bytes).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2972,6 +2982,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // forceinline helper taking the squad and index 50 (same code); the trigger guard folded into the local_5 test
 // 111; the definition index as a named local for the arm's test and the 0x290cd0 argument 50 (same code).
 // The callee 0x290e20 (another lane's) still differs at +0x0.
+// Round 73 (fast): `local_2` declared after local_4 50; the follow-up test and call without the short casts 50; a
+// named copy of the index for the whole else-if arm 50; local_4 seeded from the pending word (cleared when +0x64 > 0)
+// 160 (565 bytes); the follow-up written in both task arms (pending arm with its own 0x202e90 call) 74 at 578 bytes:
+// the 0x1fb8a0 call then gets retail's `mov eax, ebp` (two separate blocks before allocation, their tails
+// cross-jumped after it), but the pending arm loses retail's jump into the shared `cmp ax, 0xffff` follow-up block.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
