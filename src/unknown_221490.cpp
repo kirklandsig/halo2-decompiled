@@ -597,6 +597,12 @@ bool sound_driver_voice_create_buffer(
 // short/long/word/dword/char, placed at the start/middle/end, with both bool spellings (3D first): the
 // voice index, the input mixbin or play always outranks the 3D flag for EBX; renaming the bools and the
 // voice index changes nothing.
+// Round 65 (lane 12, fast with 0x191420): round 37's 3D-first long-result form rebuilt 158 (618 bytes:
+// retail's BL/stack-byte bool homes, but the result is a separate sign-extended copy where retail stores
+// the voice index's own zero-extended register); that with the result taken as `(word)voice_index` 155
+// (the voice index then takes EBP); with the short result: `voice_count++` for the count 182 (599
+// bytes), the result declared after the voice index 182, play as `(flags >> 1) & 1` 182, both flags
+// defined before the voice reference 183 (599): the voice index takes EBP and both flags spill.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

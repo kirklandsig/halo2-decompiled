@@ -347,6 +347,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
 // vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
 // file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
+// Round 65 (lane 12, fast with 0x2461a0): the scale helper taking the vector by value 397 (456 bytes,
+// sphere helper outlined; 0x2461a0 84); the difference made in the plane's normal with the j,k,i sum
+// read from it and the scale in place 181 (693 bytes); the difference copied to the normal before the
+// radius test and scaled in place there 397 (456); the difference through the existing
+// scaled_difference3f with scale one 57 (same code), with the flat i,k,j sum 61. No existing helper
+// reads only the i and k squares through a pointer (the pointer form's shape).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

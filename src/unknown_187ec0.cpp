@@ -294,6 +294,12 @@ struct s_seat_animations
 // (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
 // with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
 // `i` declared at function scope 52 (same code).
+// Round 65 (lane 12, fast with 0x188130/0x188640/0x188690), all on round 118's 52 form (rebuilt: 52,
+// animation/count/element in EBX/EBP/EAX for retail's EBP/EAX/EBX): the count selected by if/else 52;
+// the entry returned from the inner loop with a final `return NULL` 91 (143 bytes); `!result &&` in the
+// outer loop's condition instead of the break 52; the entry pointer declared at function scope 52; the
+// element_index parameter as the walking index 52. Retail's own 0x188690 forms the element with
+// `add ecx, eax; mov eax, ecx`, so the lea/test in this body follows element's register, not the getter.
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {

@@ -130,6 +130,18 @@ void function_213970(void);
 // after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
 // getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
 // clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
+// Round 64 (lane 12; one-link LTCG env with the build's stand-in caller, equal to the full listing at 229
+// bytes): with the two blocks as struct globals (diagnostic only), no size pragma, a language getter that
+// returns the global re-read after its fill (`if (g == NONE) g = ...; return g;`) and the two preference
+// updates as inline compare-and-set helpers taking the new value, the env listing equals retail byte for
+// byte (155 bytes, retail's late ESI push and early EDI pop included); so does one compare-and-set helper
+// taking the field's address and the value, called for both fields. On the blocks: no pragma alone 156
+// bytes (language load hoisted into ESI above the clears); the existing wrapper 0x11cae0, the comparison
+// reversed, the local declared first: the same; NONE stores after the query worse; the helpers with the
+// current getter: hoisted; the getter used at each use: load after the clears but the getter reruns after
+// the call; the re-read getter alone: load after the clears in EAX, copied to ESI before the compare. On the
+// separate globals (--fast): no pragma + re-read getter 153; with the helpers 153; helpers under the size
+// pragma stay out of line. Still BLOCKED-BY the block definitions above.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

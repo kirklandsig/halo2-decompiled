@@ -589,6 +589,15 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // actor slot, frame still 0x30); `special = false` also opening the scan arm (diagnostic) 190 (dead, dropped);
 // the `&&` flag with allow_exit declared after the actor lookup 201 (872 bytes); the if/else flag with
 // `special = false` right after the 0x1b8d40 exit (live across the rest of the scan) 200 (872 bytes).
+// Round 65 (lane 12, fast): round 185's if/else flag (`special = true` arm, `special = false` ending the
+// scan arm) rebuilt 190 (frame 0x30: the flag needs no memory, so the seat object takes the dead actor
+// slot); on it: `long seat_object = NONE;` declared before the actor lookup 209 (the NONE store moves to
+// the entry); seat_object declared bare at the outer block's top and assigned in place 190 (frame still
+// 0x30); the special arm assigning `actor->unknown268 != 0` 190 (folded); the flag as a byte 190; the
+// false moved to just before the iterator loop 200 (872 bytes, memory-only, and unset on the team path).
+// Diagnostic (listed form): false at the scan's start makes the flag memory-only and lays the tail after
+// the special path (872 bytes), while the bitwise base already splits the flag (BL, the actor slot
+// across the scan, BL again) as retail does with CL.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

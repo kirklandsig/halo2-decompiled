@@ -2138,6 +2138,14 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 63 (lane 12; an LTCG env link reproduces the build): on 0x203d70's loop (71) an early `return` when the
+// +0x7e test fails 89 (220 bytes); the store from `iterator.squad_index` 78 (185, 0x203d70 drops to 34); a named
+// flag local before the tests 71; iterator/actor declared at the top 71. Same code as the 71 form (env): the
+// `continue` and `== false` tests, squad_get, an actor index local, the header step, `(void)&` or one read through
+// the parameter's address at the lookup, the call or the store. Diagnostics: with the squad dead after the loop the
+// parameter takes EBP (loaded from the stack, so retail's stack convention follows from EBP) and the loop gets
+// retail's EBX/EDI/ESI; with the squad live, only a parameter use ahead of the 0x1e11b0 call each pass gives it a
+// register (then EBX, passed in EBX) and splits the squad pointer as retail does; two uses after the call do not.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

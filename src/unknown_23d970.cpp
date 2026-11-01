@@ -676,6 +676,11 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // product reading command->forward 217 (1270), the pointer taken after the copy 217 (propagated).
 // Retail's second product treats forward's loads as values newer than right's (as the listed second
 // view of the command gives), so something between the products separates them; no plain form did.
+// Round 65 (lane 12, fast): the second product in place on the output (first product into command->up,
+// then cross3f_staged from it into it, no right local) 252 (1291 bytes); a cross returning its output
+// pointer passed straight to the normalize 57 (same code); the first product as a cross returning the
+// vector by value 303 (1332 bytes); the second product staged in place on right, then copied to the
+// output 260 (1296 bytes); the distance stored through a pointer to its field 57 (same code).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

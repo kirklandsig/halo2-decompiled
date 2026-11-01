@@ -9,7 +9,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 104 (was 104): frame 0x3c agrees; half/offset XMM allocation and x87/SSE projection scheduling remain.
+// score 96 (was 104): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// the tail's load/store schedule remain.
+// Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
 // Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
 // and the x87/SSE projection scheduling are unchanged, and that round's trials in
 // this file found no lower form of them
@@ -64,6 +66,17 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // top 104/104/104 (all the same code).
 // Round 251: Native direction input/selection/output memcpy, seven subsets, 104 each; complete memmove 233.
 // Original body and include restored; half/offset XMM allocation and x87/SSE projection scheduling remain.
+// Round 64 (lane 12; one-link LTCG env with the slot table's object, equal to the full listing; env positional
+// 86 for the old body): each of the three float sums grouped in the order retail evaluates it (projection
+// (k + j) + i, local_6 (z + y) + x, final test (j + k) + i) 96 (kept); the projection alone 97 (k-first sum, k in
+// XMM0, one kept zero as retail). Left: the half/reciprocal/negation chain in XMM1 and local_3.i in XMM4 (retail
+// XMM3/XMM1), local_5 kept in XMM0 (retail copies it to XMM6) so -1.0 is hoisted into a register, the inner pairs
+// of local_6 and the final test swapped, and the unknown290 reads scheduled above the target stores. Env, on the
+// grouped projection: half step's operand orders, dword counter, local_3 declared first or at the top, local_4/
+// local_8 declared at the top 79 each (no change); the rotated stores in the five other orders 77-78; local_6 and
+// the final test in each grouped/ungrouped term order 78-79; short counter 205; the component loop written out
+// 184. Env, without it: the component loop written out 185; the normalization's three stores in the five other
+// orders 97/103/98/169/171; a rotated-vector local copied back 179 (1015 bytes), stored per component 167.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
@@ -91,7 +104,7 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
         local_4 = 0.0f;
     if (local_4 > 1.5f)
     {
-        local_3.i = local_3.i * (0.0f - local_2.j) + local_3.j * local_2.i + local_3.k * local_2.k;
+        local_3.i = (local_3.k * local_2.k + local_3.j * local_2.i) + local_3.i * (0.0f - local_2.j);
         real local_5 = local_3.i;
         local_3.i = 0.0f - local_2.j;
         local_3.j = local_2.i;
@@ -103,8 +116,8 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
             local_2.i = local_3.i * -1.0f;
             local_2.j = local_3.j * -1.0f;
         }
-        real local_6 = (local_0->position.z - local_0->unknown370.z) * local_3.k +
-            (local_0->position.y - local_0->unknown370.y) * local_3.j +
+        real local_6 = ((local_0->position.z - local_0->unknown370.z) * local_3.k +
+            (local_0->position.y - local_0->unknown370.y) * local_3.j) +
             (local_0->position.x - local_0->unknown370.x) * local_3.i;
         if (local_6 * local_5 < 0.0f)
             local_6 *= -1.0f;
@@ -139,7 +152,7 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     local_0->unknown41c = 4;
     local_0->unknown420 = 4;
     local_0->unknown424.vector = local_2;
-    if (local_0->unknown290.j * local_2.j + local_0->unknown290.k * local_2.k +
+    if ((local_0->unknown290.j * local_2.j + local_0->unknown290.k * local_2.k) +
         local_0->unknown290.i * local_2.i > 0.8f)
         function_1e4290(arg_0, true);
 }

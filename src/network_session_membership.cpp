@@ -773,6 +773,15 @@ union s_60403
 // bounds) 204 (frame 0x98); the previous count named for the mapping and removal loops 366 (1482 bytes); both 342;
 // the previous member address named in the outer mapping loop 149 (same code); the previous header as an if/else
 // store 364; the header through a local set in an if/else (0x609e0's form) 149 (same code). Current stays in EBX.
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, equal to the full listing; env positional/aligned
+// 141/103 for this body): retail reloads previous into EBX at the members loop's latch and sets the retained mask
+// to zero after that loop. Diagnostic: `!previous ||` added to the members loop's NONE test flips the entry to
+// retail's (previous EBX, current EBP, count homes swapped back) but adds code, 311/156 (1529 bytes); that with the
+// mask declared after the members loop 322/159. New natural forms, entry unchanged: the old member pointer computed
+// at the top of every iteration 331/111; the map value read into a long instead of the entry pointer 208/110; the
+// old member indexed by a fresh map read 167/105. Re-measured in the env only (listed above): the late mask
+// 327/112, the header's previous store first 156/110. Retail weighs previous more than ours somewhere; the late
+// mask only helps once that flips.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

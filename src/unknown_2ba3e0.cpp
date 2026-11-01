@@ -751,6 +751,15 @@ real g_55e618;
 // (also passed to the placement and used for the final stores) 193 (frame 0x118; the dot's k term and
 // `lea esi` then match retail, but the i product keeps the normal as its destination where retail loads
 // velocity.i, and the perpendicular gets no home).
+// Round 64 (lane 12; one-link LTCG env of this file with its stand-in callers and depth-10 closure, equal to
+// the full listing; env positional/aligned 74/84 for this body): retail loads every velocity component twice (dot,
+// then tangent) and the placement's last argument before the position stores. New: the dot read straight from
+// the particle with a velocity pointer for the tangent 187/108; the velocity copy's three stores in the five
+// other orders 76/88, 73/80, 73/80, 76/88, 76/86 (ikj, jik, jki, kij, kji); the perpendicular's 76/84, 76/82,
+// 76/85, 76/85, 76/82; the tangent's 74/84 each; a non-escaping stand-in for 0x1697c0 (diagnostic) gives a
+// 0x10c frame, so the collision record escapes in retail as in ours and the early argument read is not
+// escape-driven. Re-measured in the env only (listed above): the velocity pointer, with dot3f, with
+// vector3f_scale 183/102 each.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
