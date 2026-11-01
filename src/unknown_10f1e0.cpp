@@ -519,6 +519,14 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the clear through the existing bit_vector_fill re-measured with the shift/mask test 216/213 (still out of
 // line). With the mask test the set loads the word through the folded address and stores through a
 // separate `lea`, so the load is not fused with the store.
+// Round 45 (lane 14, fast): the split set needs both the mask test and the variable-size memset: with the mask
+// test, a constant-size memset 164 or no clear 228 (diagnostics) give retail's fused set, while a set on another
+// index (target's, diagnostic 46), the second lookup writing the first marker 45 and an out-of-line call on the
+// visited words before the set 60 or after the clear 104 keep it split (so it is not value reuse or escape). Shift
+// test spellings: `(word & mask) >> shift` 59, `(... & 1) == 0` 37, signed visited words 37, a bool cast 37 (no form
+// gives the mask test); the clear's size as `<< 2` 155, with the mask test 145 (stosd only, set still split).
+// With the mask test the size taken from the node-count parameter 140 or the graph's count 141 (diagnostics)
+// still splits the set: any variable-size memset of the visited words does.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1414,6 +1422,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 243: Complete success/depletion/interruptibility status enums, subsets
 // 1..7 381/173/386/172/403/174/384; all with entry success constant 384. Original byte
 // result, Boolean statuses, queries, parameter observation and complete body restored.
+// Round 45 (lane 14, fast): the three flags declared before the unit lookup 164, after the overlay/name reads
+// with the controlling field tested directly 164, between the name and controlling reads 164, before the
+// overlay/name reads 164, between the unit and control/state lookups 164 (all same code). Retail stores all three
+// flags' zeroes at entry and re-derives the unit inside both inlined 0xcbd50 queries.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

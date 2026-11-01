@@ -258,6 +258,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // inline (diagnostic, x and y by value) 188 (986 bytes: the axis and side loads move ahead of the products as in
 // retail, but the side load stays one folded `movzx edx, byte`); on the 0x120810 form a `plane3f *plane` for
 // the normal copy, dot and d store 198 (965 bytes), on the current body 166 (984 bytes).
+// Round 45 (lane 14, fast): the corner helper taking `short axis, byte side` by value with 0x120810's own lookup
+// body (`long index = side + axis * 2`, horizontal/vertical locals), y stored first 187 (970 bytes, aligned 152 ->
+// 213), x first 187; both squared lengths written in the condition 152; the epsilon tests as `0.0001f < length`
+// 138; only the second length named 138. Retail's corner 0 re-extends the axis from AX (`movsx edx, ax`) and keeps
+// the side in CL, so the side flag is formed in ECX; ours keeps the extended axis in ECX and the flag in EAX.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

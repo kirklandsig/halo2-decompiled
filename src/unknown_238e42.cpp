@@ -1012,6 +1012,10 @@ bool __stdcall function_2399da(long controller_index)
 // tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
 // (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
 // reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
+// Round 45 (lane 14, fast): the identity and the rank each have four uses in the dispatch region (a tie);
+// may_change as `(flags & 0x800) != 0` 90; have_member as one comparison 90; the dispatch inverted with the
+// over-rank and rank-3 returns first and the remove arm last 95 (437 bytes); have_member and may_change each
+// declared at their first assignment 90/90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

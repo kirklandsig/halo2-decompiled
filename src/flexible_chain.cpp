@@ -334,6 +334,10 @@ void __stdcall function_1160c0(real dt)
 // and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
 // &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
 // axis 177. Body restored.
+// Round 45 (lane 14, fast), on the retail-order angle call (177): the vertical declared before the loop 301; the
+// vertical and the inverse step before the loop 190; the angle taken after the rest-offset copy with the vertical
+// before the loop 301; the first node's direction copied before its position 188. The segment/scale temp slot
+// sits above the axis in our frame and below it in retail's.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

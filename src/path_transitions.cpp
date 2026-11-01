@@ -591,6 +591,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
 // `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
 // `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 45 (lane 14, fast), on the b, a, c, d corners with vector3d_from_points3d and both sums through dot3f: the
+// base 274 (aligned 199 -> 158); with case 5's direction declared first 274; case 2's position declared first 280;
+// both 276; both dot3f calls taking `&first` first 274. Left on it: the entry, first.j/first.k and the 1.0/radius*2
+// constants in swapped XMM registers, and the margin formed in the radius register, not in place in the reciprocal's.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
