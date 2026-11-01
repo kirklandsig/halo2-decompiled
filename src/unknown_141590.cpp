@@ -250,6 +250,11 @@ static inline void quaternion_transform_vector(
 // transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
 // but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
 // spill overlap remain.
+// Round 118: transform helper taking the quaternion by value 436 (1429 bytes); rotation declared after the
+// halves/dot/cosine 200; half-angle struct members sine-first 200; the dot clamped in place (no cosine local)
+// 241 (1318 bytes); the axis crossed into its own vector then scaled into the quaternion with cross3f /
+// cross3f_staged 241/240 (1317 bytes, frame still 0x1c). Retail never reads the quaternion's slot after loading
+// it (0x1418d5-0x1418f8) yet gives the transform spills five slots of their own; ours overlay two on it.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

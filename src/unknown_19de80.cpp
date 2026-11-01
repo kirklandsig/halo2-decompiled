@@ -414,6 +414,13 @@ static inline bool teams_enabled_19e1c0()
 // each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
 // token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
 // failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
+// Round 118: plain result with every clamp as `result = result > remaining ? remaining : result;` 691 (1170 bytes);
+// the same ternary clamps on the volatile result 415 (1446 bytes); the text buffer declared before a plain result
+// with the clamps as `remaining < result` 691; token_length unsigned (definition, declaration and the caller's
+// pointer type; 0x19e0f0 still matches) 390; plain result with the engine's token text in its own `written`
+// local 691. Re-measured listed forms: long team with `best_score <=` 421, event teams read at each use 394.
+// Retail never gives `token` a register (re-read from its home before every compare, the first one hoisted
+// above `sub esp`), which is what keeps the four name/team tails apart.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
