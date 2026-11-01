@@ -170,7 +170,7 @@ struct s_block_candidate
 	long pages;
 };
 
-// score 370 (was 370): Frame 0x1050 versus 0x1054; page-offset/ring-tail allocation and policy blocks differ.
+// score 347 (was 370): Frame 0x1050 versus 0x1054; page-offset/ring-tail allocation and policy blocks differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -266,9 +266,24 @@ struct s_block_candidate
 // assignment/memcpy 370 each; each with native successful-datum lookup 367 at 1213 bytes
 // (three-point gains rejected). Original helper use, iterator, lookups and body restored;
 // frame/page-tail homes and policy blocks remain.
+// Round 47 (m3 lane 14, fast, kept form confirmed plain): round 27's busy form (busy = proc && proc(current)
+// in the block arm, `if (busy) { head = tail; continue; }`, scan unconditional) 377 [aligned 239]; on it the
+// limit update as `if (result == NONE && type == limit_index)` without the goto 377 (same code; on the old body
+// 370, same code); offset = 0 declared first in the function 357 [262] (ebx/ebp pushed at entry and the no-best
+// limit update laid out after the loop guard, as retail), after the page count 380, after the result 380, after
+// the limit clamp 381; offset and previous = NONE both first 347 [260] (kept; either order, with or without a bare
+// `current` declaration there 347); with head/tail there too 384, with oldest 386, with have_best 383, result
+// moved after them 395 (1227 bytes); bare offset/previous declarations at the top assigned in place 377; offset
+// initialised there with previous assigned in place 357. On the kept form: the policy ages computed and clamped
+// one at a time, the products' operands swapped, the offset sum's operands swapped: 347 each (same code).
+// Left: ours keeps offset in EDI and current in EBX (retail EBX/EDI), the mask in EBX (retail EDX), pushes EDI
+// at entry, stores previous's NONE at entry, homes segment pages/time the other way round, and lays the case 0/1
+// policy bodies at the function's end.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
+	long offset = 0;
+	long previous = NONE;
 	long pages = size >> physical->page_shift;
 	if (size & ((1 << physical->page_shift) - 1))
 		pages++;
@@ -281,8 +296,6 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 		bool have_best = false;
 		long head = 0;
 		long tail = 0;
-		long offset = 0;
-		long previous = NONE;
 		long current = physical->first;
 		long oldest = NONE;
 		dword oldest_time;
@@ -300,7 +313,6 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 			}
 			long segment_pages;
 			dword segment_time;
-			bool busy = false;
 			if (current == NONE)
 			{
 				segment_pages = physical->page_count - offset;
@@ -314,8 +326,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 				{
 					segment_pages = block->pages;
 					segment_time = block->time;
-					if (physical->busy_proc)
-						busy = physical->busy_proc(current);
+					bool busy = physical->busy_proc && physical->busy_proc(current);
 					if ((dword)(block->time + type) >= (dword)physical->time)
 						busy = true;
 					else if (!busy && (oldest == NONE || (dword)block->time < oldest_time))
@@ -327,6 +338,11 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 					current = block->next;
 					offset = block->pages + block->offset;
 					_mm_prefetch((char *)&((s_physical_block *)physical->blocks->data)[current & 0xffff], _MM_HINT_T0);
+					if (busy)
+					{
+						head = tail;
+						continue;
+					}
 				}
 				else
 				{
@@ -335,51 +351,46 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 					offset = block->offset;
 				}
 			}
-			if (busy)
-				head = tail;
-			else
+			for (long i = head; i != tail; )
 			{
-				for (long i = head; i != tail; )
+				s_block_candidate *candidate = &candidates[i];
+				long next = (i + 1) % 256;
+				_mm_prefetch((char *)&candidates[next], _MM_HINT_T0);
+				if (segment_time > candidate->time)
+					candidate->time = segment_time;
+				candidate->pages += segment_pages;
+				if (candidate->pages >= pages)
 				{
-					s_block_candidate *candidate = &candidates[i];
-					long next = (i + 1) % 256;
-					_mm_prefetch((char *)&candidates[next], _MM_HINT_T0);
-					if (segment_time > candidate->time)
-						candidate->time = segment_time;
-					candidate->pages += segment_pages;
-					if (candidate->pages >= pages)
+					bool better = false;
+					if (have_best)
 					{
-						bool better = false;
-						if (have_best)
+						switch (physical->state)
 						{
-							switch (physical->state)
+						case 0:
+							better = candidate->time < best.time || (candidate->time == best.time && candidate->pages < best.pages);
+							break;
+						case 1:
+							better = physical_memory_candidate_is_better(physical, (s_physical_block_view *)candidate, (s_physical_block_view *)&best);
+							break;
+						default:
 							{
-							case 0:
-								better = candidate->time < best.time || (candidate->time == best.time && candidate->pages < best.pages);
-								break;
-							case 1:
-								better = physical_memory_candidate_is_better(physical, (s_physical_block_view *)candidate, (s_physical_block_view *)&best);
-								break;
-							default:
-								{
-									dword age = physical->time - candidate->time;
-									dword best_age = physical->time - best.time;
-									age = age > 0 ? age : 0;
-									best_age = best_age > 0 ? best_age : 0;
-									better = (long)(best.pages * age) > (long)(candidate->pages * best_age);
-								}
-								break;
+								dword age = physical->time - candidate->time;
+								dword best_age = physical->time - best.time;
+								age = age > 0 ? age : 0;
+								best_age = best_age > 0 ? best_age : 0;
+								better = (long)(best.pages * age) > (long)(candidate->pages * best_age);
 							}
+							break;
 						}
-						if (!have_best || better)
-						{
-							best = *candidate;
-							have_best = true;
-						}
-						head = (head + 1) % 256;
 					}
-					i = next;
+					if (!have_best || better)
+					{
+						best = *candidate;
+						have_best = true;
+					}
+					head = (head + 1) % 256;
 				}
+				i = next;
 			}
 		}
 		if (have_best)
@@ -435,13 +446,11 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 				entry->offset = best.offset;
 				entry->pages = pages;
 				entry->time = physical->time;
-				goto done;
 			}
 		}
-		if (type == limit_index)
+		if (result == NONE && type == limit_index)
 			physical->limits[limit_index] = physical->limits[limit_index] > pages ? pages : physical->limits[limit_index];
 	}
-done:
 	return result;
 }
 

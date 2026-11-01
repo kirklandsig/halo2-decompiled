@@ -635,6 +635,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // scan's exit, the scan laid out before the tail) but 233 (839 bytes: allow_exit then lives in BL, so NONE
 // takes EBP and the frame is 0x30). Without a statement at the end of the scan arm the empty join is removed,
 // the tail is laid out after the special arm and the flag stays in memory; retail's IR had something there.
+// Round 47 (m3 lane 14, fast): a second `allow_exit = true` at the end of the scan arm, keeping the one after
+// the seat call, with the if/else flag 233, the `&&` flag 233 (the first store is dropped as dead, giving the
+// lead's code with allow_exit in BL), the bitwise flag 156; `allow_exit = true` before the seat call: bitwise
+// 48, if/else 200; at the scan's start: if/else 200, bitwise 48. Retail's join of the scan exits (the CL
+// reload at 0x1bc16f) is not an allow_exit store.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

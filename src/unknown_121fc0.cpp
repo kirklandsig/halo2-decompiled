@@ -150,6 +150,13 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 47 (m3 lane 14, fast): diagnostic, the token declared NULL at the block top and stored to a global
+// after the success block: 129 at 779 bytes, but aligned 51 -> 40, `push ebp` at the block start with ESI/EDI
+// and popped after the g_4e3b40 store as retail (a compile-only screen agrees: only a token live across the
+// whole block moves the save; token scope, a for walk, the loop after the success block, a nested first-token
+// test do not); the search as `j < count && found == NONE` 214 (758 bytes); the search index tested after a
+// `break` loop (no found index) 132; the count and unique declarations swapped 128; both counters declared
+// before the token array, unique first 127.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

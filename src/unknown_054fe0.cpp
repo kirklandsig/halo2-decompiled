@@ -1235,7 +1235,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // reverted as well. The permuter on this function was stopped by its time limit without printing
 // anything. Still differs in the owner, the name count and the zero's allocation and the requested
 // cursor.
-// score 184 (was 184): this round: reading the parameters at the call site instead of through the
+// Earlier (184, was 184): reading the parameters at the call site instead of through the
 // shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
 // compiles to the very same bytes, so the parameters null test still compares with the zero in
 // EDX (`xor edx,edx`, `cmp edi,edx`) where retail uses `test edi,edi`, and the owner, the name
@@ -1393,6 +1393,15 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
 // Original body restored; owner/count/zero and requested-record induction remain.
+// Round 47 (m3 lane 14, fast): counting the `push ebx` that retail places among the default stores (every
+// [esp+N] after it is +4), retail stores exactly our defaults (three longs at 0x70, team, 0x7d, 0xff at
+// 0x7e/0x7f, the four NONEs): the earlier reading of a dword at 0x7c, two longs and 0xff at 0x82 was off by that
+// push. The difference is only register lifetime: retail keeps the name count in ESI through both loops
+// (reloaded at loop 2's latch) and uses the memset's EAX for the 0x40 group and a fresh `xor ecx, ecx` for the
+// 0x70 group and the bytes; ours keeps a zero in EDX from the parameters test (re-xored at loop 2's latch) and
+// the name count in memory. Name count declared before the names table 184; the loop index first 184; the mask
+// first 184; the name pointer taken as `->name` of the record 184; the previous-record pointer declared after
+// the names (memcmp on the table entry) 184 (all the same code).
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {
