@@ -54,6 +54,9 @@ struct s_emitter_248340
 // emitter leaves that pass unchanged. Without the volatile (one-file harness, aligned counts): plain
 // 11 (`ret 8`, tag in ebx); tag declared before the definition index, emitter decrement first, group
 // named: the same code as plain.
+// Round 97: plain tag with the emitter address at the end or entry 27/27 (caller 138); tag read through
+// its address 27; both addresses 27; const group home 4; const definition pointer 4;
+// const particle or emitter parameter 4/4 (caller 137).
 // @retail 0x248340
 void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	s_emitter_248340 *emitter)

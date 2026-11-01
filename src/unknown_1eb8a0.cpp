@@ -273,6 +273,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
 // Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
 // all with the activation workspace declared at entry 642. Original initializers and complete body restored.
+// Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
+// then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
+// inherited counter qualification, body and exact caller restored; direction/sample homes remain.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

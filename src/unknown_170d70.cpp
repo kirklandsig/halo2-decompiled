@@ -252,7 +252,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 
 /* advances the player's motion channels by the elapsed time, then rebuilds the forward and up
    vectors at current[10] and current[13] as an orthonormal pair when they drift */
-// score 72 (was 81): the loop matches but for two slots (the time pointer the compiler makes and
+// score 64 (was 72): the current pointer is declared before the values, and the new up's j is stored as soon as it
+// is computed (the permuter found both: 70 and 66 alone). Before (72, was 81): the loop matches but for two slots
+// (the time pointer the compiler makes and
 // the group counter are swapped) and the order of the current and value pointer setup; after it
 // the float sums and products come out in another order (the dot product as k, j, i where retail
 // has k, i, j; the cross products' first loads) and 1.0f is loaded later. Our compiler reorders the
@@ -267,14 +269,15 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // Also tried (all worse): explicit time pointer with the pointers declared in retail's lea order (target,
 // fifth..first, velocity, constant, time, current, value): the loop is then identical, the prologue's lea order
 // and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
-// product in a local (180) or the tests split into bool locals (123).
+// product in a local (180) or the tests split into bool locals (123). Permuter (25 min on r622): best 63, from the
+// two changes kept here plus spelling-only rewrites; the count as unsigned 72 alone.
 // @retail 0x170630
 void function_170630(long player_index)
 {
 	s_motion_channels_1701f0 *state = (s_motion_channels_1701f0 *)g_4e9bd4 + player_index;
+	real *current = state->current;
 	real values[13];
 	real *value = values;
-	real *current = state->current;
 	real *target = state->target;
 	real *velocity = state->first_derivative;
 	real *fifth = state->fifth;
@@ -340,8 +343,8 @@ void function_170630(long player_index)
 		left.k = forward->j * up->i - up->j * forward->i;
 		real up_i = forward->j * left.k - left.j * forward->k;
 		real up_j = left.i * forward->k - forward->i * left.k;
-		real up_k = forward->i * left.j - forward->j * left.i;
 		up->j = up_j;
+		real up_k = forward->i * left.j - forward->j * left.i;
 		up->k = up_k;
 		up->i = up_i;
 		normalize3d(forward);
@@ -728,7 +731,8 @@ void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdca
 // score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
 // retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
 // before the last stack push (`push edx` holding &camera) and ours after it. Tried: a local for the context, a local
-// for the count, a local loop counter, none changed it.
+// for the count, a local loop counter, none changed it. Permuter (25 min on r621): best 9 (full image 10), only with
+// a volatile store to the cluster's first count; not kept.
 // @retail 0x1733e0
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera)
 {
@@ -775,7 +779,8 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 // `while ((slot = map[ci]) == NONE)` (134 but the first argument moves to eax and ret becomes 0x18), `for (;;)` with
 // a break (138, same convention change), a forceinline helper returning the cluster (130, but needs a pointer
 // difference to recover the slot), a helper returning the slot (159), volume_index declared before the slot
-// (156), goto create/found (203).
+// (156), goto create/found (203). Permuter (25 min on r622): best 100, only with volatile locals and list_next's
+// two index arguments swapped (a behaviour change); not kept.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1095,6 +1100,9 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // parameters on the stack, `ret 8`: not usable), long positive with `!= 0` (77), short positive (69, this form),
 // all 48 operand/sum orders of the origin dot product (135 each: the order does not change the code), origin
 // as a local pointer vs context->origin->position.x directly (126 vs 135).
+// Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
+// a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
+// the plane declared first are 69.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
@@ -1126,6 +1134,7 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 // retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
 // last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
 // `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
+// Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
@@ -1211,6 +1220,8 @@ struct s_point_pool_173520
 // (123 -> 96, kept); every order of the four stores points/pool count/count/field_0 (124-131); points through a
 // local pointer after the pool count store (128); `distance <= c ? distance : c` (124), `c < distance` (same code),
 // if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
+// Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
+// not kept.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1439,6 +1450,7 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 // score 3 (was 3): the same sort_4byte call as function_1733e0: retail computes &scratch in edx, then `lea ecx` for
 // the order array, then `push edx`; ours uses ecx for &scratch and pushes it first. Tried: locals for the order
 // pointer, the count, the unused pointer, any combination (no change); dropping the block around `scratch` (42).
+// Permuter (25 min on r621, about 1150 variants): nothing below 3.
 // @retail 0x173130
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index,
 	s_view_collection_1733e0 *collection)
@@ -1501,29 +1513,17 @@ struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
-// score 19 (was 19). Retail takes eax=start, esi=end, dl=narrow, [esp+4]=fraction (ret 4; callers 0x171830, 0x16ebf0
-// load esi and dl); ours keeps narrow on the stack (cmp byte ptr [esp+0x74], bl) and puts end in edx (ret 8). The
-// body is otherwise identical (130 vs 132 bytes). The declared order of the parameters does not change any of this
-// (tried 4 orders). Tried: `long narrow` (14: test esi,esi, 130 bytes, but retail's callers load dl),
-// byte/char (19), short (21), `narrow ? a : b` (42), `flags &= ~2` (19), flags/direction statement order (19),
-// early `return true/false` instead of result (41), result set last (41).
-// Why (c2B): the bool is not forced onto the stack; it needs a byte register at entry. With `long narrow` it
-// takes esi (end stays in edx), and without the `result` byte (early returns) it takes bl and end takes ecx.
-// With `result` in bl, start in eax, end in edx and the flags in ecx there is no byte register left, so
-// narrow stays on the stack. Retail has end in esi, so edx is free for narrow and for the `lea edx` that it
-// schedules between the direction components; ours cannot (it holds end in edx until the last component).
-// Parameter position (narrow second, 'long' or bool) did not move any register. Also tried, same score
-// or worse: direction via vector3d_from_points3d (19), k j i order (21), locals for the three differences
-// (19), a pointer local for the result or the direction (19), flags after or inside the direction (23, 29),
-// `flags = narrow ? .. : ..` (42), if/else for flags (31), char result (24). Callers follow this function's
-// convention: `long narrow` raises 0x171830 266 -> 288 and 0x16ebf0 120 -> 169.
+// Matches with the collision flags as an unsigned long declared before `result` (found by the permuter). The
+// start then arrives in EAX, the end in ESI and `narrow` in DL, as retail's callers 0x171830 and 0x16ebf0 set them
+// up (ret 4). Before (19), narrow stayed on the stack and the end came in EDX; `long narrow` gave 14, other spellings
+// of the flag, the result and the direction 19-42.
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
-    bool result = false;
     s_segment_collision collision;
     collision.material = NONE;
-    long flags = 0x808c0f;
+    unsigned long flags = 0x808c0f;
+    bool result = false;
     if (narrow) flags = 0x808c0d;
     vector3f direction;
     direction.i = end->x - start->x;
@@ -1565,7 +1565,9 @@ struct s_camera_reference_171830
 // in the prologue (long-lived: loops and calls), and keeps forward and up, which die before the sample
 // loop, in registers; ours keeps position in ebx and copies forward into ebp. The chain through 0x171d00
 // matters (its convention changes this function's score: `long narrow` there gives 288), so this function
-// is probably not fixable before 0x171d00 matches.
+// is probably not fixable before 0x171d00 matches. 0x171d00 now matches (#987), which took this from 266 to 284.
+// Permuter (25 min on r622): 26 below its own baseline, only with a float term truncated through an int and a
+// volatile pointer (a behaviour change); not kept.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
