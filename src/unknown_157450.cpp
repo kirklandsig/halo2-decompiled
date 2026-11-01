@@ -4040,10 +4040,10 @@ static __forceinline long nonnegative_15ce70(long value)
 {
 	return value < 0 ? 0 : value;
 }
-// score 456 (was 470): the mode dispatch written as an if/else chain instead of a switch, and the
+// score 456 (was 456): the mode dispatch written as an if/else chain instead of a switch, and the
 // award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
 // attacker parameter is still copied into EDX in the entry block.
-// score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
+// Earlier score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
 // tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
 // Frame 0xe4 versus 0xe0; attacker/NONE/category homes remain. Existing tick conversion 480; direct one-second minimum 549; lives clamp before decrement 535; first cause setter 563; shared initial ticks 528 (fast).
@@ -4118,6 +4118,7 @@ static __forceinline long nonnegative_15ce70(long value)
 // Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
 // 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
+// Round 264: Independent native first/second/both event entry lifetimes, marker combinations, subtype declaration and direct elapsed publication: 456/455/536/456/455/536/536/536. One-point leads rejected; original event scopes/names, all producers and complete body restored. Extra frame word and attacker/category/NONE homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
