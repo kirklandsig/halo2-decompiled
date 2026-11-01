@@ -502,6 +502,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // a bool result from the NONE test cleared in the flagged arm 69 (178 bytes). In retail EBP is pushed only around
 // the test because seven values are live there (this, entity, index, result, table, scaled index, data), as in
 // matched 0x656e0/0x17bf80/0x273480; ours shares the header address, so one register less is needed.
+// Round 151 (lane 4, fast), on the early bool result set after the attach: the entity's field read into a
+// local before the header test 77; an object pointer named in the unflagged arm 77; the NONE and flag tests as
+// breaks out of a `do ... while (false)` 75; the store and attach through the existing 0xbb780 with the update
+// through the existing v23 70 (176 bytes, v23's NONE test stays); that on the long result 57 (181 bytes).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

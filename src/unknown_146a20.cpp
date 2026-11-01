@@ -199,6 +199,12 @@ bool g_47f05b;
 // (137 bytes); `g_479880 = true` alone after the first construction 39 (its store sinks to the join); the
 // pool through a typed local published after 34 (same code); the pool placed at `(byte *)g_479894 + 0x15040`
 // 44 (131 bytes, no reload at all); the pool address computed into `block` first 34 (same code).
+// Round 151 (lane 4, fast with 0x146b80/0x22c3e0 matched): the pool placed at `&((byte *)g_479888)[0x15040]` 34
+// (same code); the buffer as `&((byte *)block)[0x30]` 34 (same code); the fixed allocator constructed in a
+// statement of its own and `block` published after it 42 (133 bytes); the pool constructed in a statement of its
+// own and published from its address 43 (132 bytes); both fixed constructors `__forceinline` in the header 34 (same
+// code; 0x146e30 unchanged at 120). Diagnostic only: global optimizations off for this function 91 (187 bytes, no
+// inlining at all). No source form on this function's side that blocks the dead-store removal is known.
 // @retail 0x146a20
 void function_146a20(void)
 {

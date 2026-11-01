@@ -382,6 +382,10 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // length_sq3f, vector3f_scale(&d, 1.f / distance, &plane->n), vector3f_assign(&plane->n, 0.f, 0.f, 1.f) and
 // `distance > 0.f` 152, with the j,k,i sum 61, with shape_scale3d 61. Diagnostic: one to three dead locals in
 // the sphere helper 57 (no symbol-count rotation here).
+// Round 151 (lane 4, fast): the depth as `-(distance - sphere->radius)` 165 (682 bytes); the scale arm written
+// field by field (`d.i * scale`, `scale * d.j`, `d.k * scale`, diagnostic) 57 (same code); the matched 0x2461a0's
+// form, a named `d_j` copy with a statement sum: i, k, j 57; that with the normal by fields reading `d_j` 57; k, i,
+// j (0x2461a0's own order) 59. No existing helper squares only i and k through a pointer.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
