@@ -605,6 +605,13 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 261: complete native rotated-vector publication with scalar/native input snapshots,
 // split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
 // All restored; SSE ring conversion and the unspilled rotation remain.
+// Round 35 (lane 15, fast): the angle with the ring term first 90 (same code); sine/cosine computed before the
+// direction copy 101 (1086 bytes); the direction copied after the angle 101 (1086); the origin pointer taken
+// before the pathfinding lookup 90; the distance as `ring * radius + radius * 1.2` 90.
+// Round 64 (lane 16, fast): the 96 form (j/k cross terms first, ring phase named) reproduces at 96 (1090 bytes); on it
+// the angle, sine and cosine before the direction copy 246 (1104 bytes), the angle alone before the copy 246, the radius
+// as a `real const` local without the reference 222 (1083 bytes); on the current body the angle and trig first 101,
+// the `real const` radius 211 (1092 bytes).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -186,6 +186,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // keeps the session state in ESI after the getter call (the inlined body re-tests it).
 // Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
 // 439/439/439/439/439/439/439/469. Original body and producer sites restored.
+// Round 478: complete strict solver predicate with short/bool/byte/long result
+// 455/458/458/457; both strict and fallback predicates 458/458/458/458.
+// All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

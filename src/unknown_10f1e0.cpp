@@ -2203,6 +2203,9 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // Round 15: `priority = NONE;` before the fallback test 23; entry_index reassigned with the request
 // priority declared first 16; the index from a ternary with one NONE test 16; the request record
 // declared at function scope 16; the fallback test un-nested (a second plain NONE test) 16.
+// Round 105: const priority capture 16; combined declarations 16; const final index 16; priority input through its
+// own address 16; chained default NONE stores 16; output NONE between fallback and the common guard 22;
+// entry/priority stores swapped 16; definition stored first 17. Original body restored.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
