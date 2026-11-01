@@ -332,6 +332,12 @@ void __stdcall function_1160c0(real dt)
 // Round 264: Existing initial/normalized axis setters and const native delta/target/offset,
 // subsets 1/2/4/3/5/6/7, then all with const assigned-once scalars 192/179/179/192/192/179/192/192.
 // Original producers and complete body restored; segment/previous/axis homes remain.
+// Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
+// direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
+// offset copy (v*cos + projection*axis - cross*sine) with predicted = position + offset 236 (1370 bytes); the dot
+// and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
+// &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
+// axis 177. Body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

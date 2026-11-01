@@ -583,6 +583,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // indexed with scale first and `+=` translation 113 (1136 bytes); indexed with the one declaration 113. A
 // compile-only screen of the helper's copy as memcpy gives the same code as the struct copy; copying from
 // `*out` (the same vector) loses the copy's alias and turns every row.
+// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
+// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
+// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
+// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
+// fixed); after the particle mask or the particle lookup 42 (no change).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

@@ -576,6 +576,15 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
 // g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
 // datum-index `continue` as a nested if 47 (same code).
+// Round 108 (m3 lane 7, fast): `special = false; if (type == 6) { if (byte) special = true; }` 202 (872 bytes);
+// `if (type == 6 && byte) special = true; else if (0x1b8d40 != NONE) goto done; else { special = false; ... }`
+// 200 (872); `special = false; if (type == 6 && byte) special = true; else { scan }` 202 (872); the raw-byte
+// bitwise def with `special = false` opening the scan and seat_object declared (NONE) before it 193 (862 bytes,
+// aligned 13: only the setcc def and the AL/CL tail register left), with the false after the 0x1b8d40 test 193
+// (aligned 14); on that seat placement, `type == 6 ? byte : false` 211 (877), `special = false; if (type ==
+// 6) special = byte;` 97 (861 bytes, aligned 12: entry exact to +0x87; left the setne def stored to the slot,
+// the tail reading memory and the 10.0 temporaries' homes). Every constant (branchy) def keeps the flag in
+// memory at the tail; retail's `mov cl, 1` with the split spill is still unreproduced.
 // Round 141 (lane 4, fast): the special test as a multi-exit inline helper (`return false` twice,
 // `return true`) 200 (872 bytes); `byte special = 0; if (type == 6) special = actor->unknown268;` 99;
 // the proximity exit as `close = true; break;` with the minimum after the loop under `if (close)`:
@@ -620,6 +629,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // scan's exit, the scan laid out before the tail) but 233 (839 bytes: allow_exit then lives in BL, so NONE
 // takes EBP and the frame is 0x30). Without a statement at the end of the scan arm the empty join is removed,
 // the tail is laid out after the special arm and the flag stays in memory; retail's IR had something there.
+// Round 110 (m3 lane 7, fast): retail homes the flag in the dead actor_index parameter slot. `bool special = type
+// == 6; special &= actor->unknown268 != 0;` 47 (same code); the if/else def with `special = false` opening the
+// scan and the tail's prop test nested under `if (special)` 200 (872 bytes); the if/else def with `special`
+// declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
+// `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
+// nothing below 47.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

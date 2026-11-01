@@ -158,7 +158,31 @@ void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte
 void function_196dd0(long player_index, long counter, long arg_1f407d_2, long delta);
 void function_1ea880(long first_player, long player_index, s_object_values *table);
 
-// score 421 (was 421): Frame 0x48 versus 0x50; victim/selection/count homes and rounding calls remain.
+long unit_get_player_index(long unit_index);
+long function_146650(void);
+bool function_15eaf0(void);
+
+/* one of the four most recent damage sources an object keeps (the layout of unit_object_type.cpp's
+   s_unit_damage_source; the time is compared unsigned here) */
+struct s_damage_record
+{
+	dword time;
+	real amount;
+	long object_index;
+	long player_index;
+};
+
+/* the damage history of an object (at +0x2f0) and the damage codes of its records */
+struct s_object_damage_view
+{
+	byte unknown000[0x2f0];
+	s_damage_record history[4];
+	byte damage_codes[4];
+};
+
+// score 353 (was 421): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
+// rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
+// block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
 // 421; early self result 453 (frame 0x50).
 // Earlier 421 (was 421): frame 0x48 versus 0x50; victim/result homes and rounding calls differ.
@@ -233,26 +257,38 @@ void function_1ea880(long first_player, long player_index, s_object_values *tabl
 // (same frame); short selected/reported_slot 453 (1556 bytes), with the [5] array 456; the victim through
 // unit_get_player_index 459; friendly through function_x340af0()/function_15eaf0() 438/438; the game time
 // through function_146650 441.
+// Round 49 (lane 10, fast): include/slot_handler.h's real_to_long made `static __forceinline` (every other live
+// caller already redeclares it so; the rest of its plain-inline users are #if 0 files) and lane 6 r120's chain
+// rebuilt on it (unit_get_player_index victim, function_146650 game time, NONE defaults and damage_code first,
+// short reported_slot/selected, hostile/threshold/counts after the selection, `if (killer == NONE) ... else if
+// (killer == reported_player)`, killer read from the record at each use, other_assists[5], typed damage records,
+// `assists[i] != assists[j]`, friendly through function_15eaf0; consider_team and friendly single expressions)
+// 353 (kept). On it: a record pointer in the selection loop 353 (same code); the damage read once into a local
+// 454 (1583 bytes); the player index read at each use in the selection loop 376; a `&history[selected]` record
+// pointer in the killer block 454 (1583); victim_team/killer/damage_code declared in the other five orders
+// 353-360 (the three slots never move).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
 	if (!*(byte *)engine_globals) return;
 	s_statborg *statistics = (s_statborg *)engine_globals;
-	byte *unit = (byte *)function_badc0(object_index, 3);
-	long victim = unit ? *(long *)(unit + 0x13c) : NONE;
-	long victim_team = victim == NONE ? NONE : (char)g_4e8c24->data[(victim & 0xffff) * 0x21c + 0xc0];
+	long victim = unit_get_player_index(object_index);
+	long victim_team = NONE;
 	long killer_team = NONE;
-	long cutoff = g_510c54->game_time - real_to_long((real)g_510c54->field_2_3 * 4.0f);
-	long recent = g_510c54->game_time - real_to_long((real)g_510c54->field_2_3 * 6.0f);
-	byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+	long killer = NONE;
+	byte damage_code = code;
+	if (victim != NONE)
+		victim_team = (char)g_4e8c24->data[(victim & 0xffff) * 0x21c + 0xc0];
+	long cutoff = function_146650() - real_to_long((real)g_510c54->field_2_3 * 4.0f);
+	long recent = function_146650() - real_to_long((real)g_510c54->field_2_3 * 6.0f);
+	s_object_damage_view *object = *(s_object_damage_view **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+	short reported_slot = NONE;
 	bool consider_team = !(reported_player != NONE && function_1df560((short)victim_team, (short)reported_team));
-	long selected = NONE, reported_slot = NONE;
+	short selected = NONE;
 	real best = -FLT_MAX;
-	byte *history = object + 0x2f0;
 	for (short i = 0; i < 4; ++i)
 	{
-		byte *entry = history + i * 0x10;
-		long player_index = *(long *)(entry + 0xc);
+		long player_index = object->history[i].player_index;
 		if (player_index == NONE) continue;
 		if (player_index == reported_player) reported_slot = i;
 		else
@@ -261,30 +297,31 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 			byte *player = record_pool_lookup(g_4e8c24, player_index);
 			if (!player || !function_1df560((short)victim_team, (char)player[0xc0])) continue;
 		}
-		if (*(dword *)entry > (dword)recent && *(real *)(entry + 4) > best)
+		if (object->history[i].time > (dword)recent && object->history[i].amount > best)
 		{
 			selected = i;
-			best = *(real *)(entry + 4);
+			best = object->history[i].amount;
 		}
 	}
 	if (selected == NONE) selected = reported_slot;
-	long killer = NONE;
-	real assist_threshold = 0.0f;
 	bool hostile = false;
-	byte damage_code = code;
+	real assist_threshold = 0.0f;
+	long assist_count = 0, other_count = 0;
 	if (selected != NONE)
 	{
-		byte *entry = history + selected * 0x10;
-		damage_code = object[0x330 + selected];
-		long player_index = *(long *)(entry + 0xc);
-		if (datum_get_inlined(g_4e8c24, player_index))
+		damage_code = object->damage_codes[selected];
+		if (datum_get_inlined(g_4e8c24, object->history[selected].player_index))
 		{
-			killer = player_index;
-			assist_threshold = *(real *)(entry + 4) * 0.4f;
-			if (killer == reported_player) damage_code = code;
+			killer = object->history[selected].player_index;
+			assist_threshold = object->history[selected].amount * 0.4f;
 		}
 	}
-	if (killer == NONE && datum_get_inlined(g_4e8c24, reported_player)) { killer = reported_player; damage_code = code; }
+	if (killer == NONE)
+	{
+		if (datum_get_inlined(g_4e8c24, reported_player)) { killer = reported_player; damage_code = code; }
+	}
+	else if (killer == reported_player)
+		damage_code = code;
 	if (killer != NONE)
 	{
 		byte *player = g_4e8c24->data + (killer & 0xffff) * 0x21c;
@@ -296,16 +333,14 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 		}
 		else { ++*(short *)(player + 0x1c4); hostile = true; }
 	}
-	long assists[5], other_assists[4];
-	long assist_count = 0, other_count = 0;
+	long assists[5], other_assists[5];
 	if (assist_threshold > 0.0f && victim != NONE)
 		for (long i = 0; i < 4; ++i)
 		{
-			byte *entry = history + i * 0x10;
-			long player_index = *(long *)(entry + 0xc);
+			long player_index = object->history[i].player_index;
 			byte *player = datum_get_inlined(g_4e8c24, player_index);
 			if (!player || player_index == killer ||
-				(player_index != reported_player && !(*(real *)(entry + 4) > assist_threshold))) continue;
+				(player_index != reported_player && !(object->history[i].amount > assist_threshold))) continue;
 			if (function_1df560((short)victim_team, (char)player[0xc0])) assists[assist_count++] = player_index;
 			else other_assists[other_count++] = player_index;
 		}
@@ -350,20 +385,19 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	for (long i = 0; i < assist_count; ++i)
 	{
 		long j = 0;
-		while (j < i && assists[j] != assists[i]) ++j;
+		while (j < i && assists[i] != assists[j]) ++j;
 		if (j == i) { function_1e9ce0(assists[i], 8, statistics, 6, 1, true); *(dword *)g_4e9ae8 |= 0x20; }
 	}
 	for (long i = 0; i < other_count; ++i)
 	{
 		long j = 0;
-		while (j < i && other_assists[j] != other_assists[i]) ++j;
+		while (j < i && other_assists[i] != other_assists[j]) ++j;
 		if (j == i) function_1ea880(victim, other_assists[i], (s_object_values *)statistics);
 	}
 	if (victim != NONE)
 	{
 		bool self = reported_player == victim;
-		bool friendly = g_55e4d0[g_4e9ae8->engine_index] && g_4e6948->flags184.bit0 &&
-			victim_team != NONE && killer_team != NONE && victim_team == killer_team;
+		bool friendly = function_15eaf0() && victim_team != NONE && killer_team != NONE && victim_team == killer_team;
 		function_1ea770(damage_code, victim, statistics, killer, self, friendly);
 	}
 }

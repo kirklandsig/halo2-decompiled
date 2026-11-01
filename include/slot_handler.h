@@ -128,7 +128,7 @@ static inline real slot_random_range(real lower, real upper)
 }
 
 /* rounds as the x87 does (unknown_0259d0's fld/fistp idiom) */
-static inline long real_to_long(real value)
+static __forceinline long real_to_long(real value)
 {
 	long result;
 

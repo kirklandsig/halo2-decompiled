@@ -1346,6 +1346,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
 // outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
 // tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
+// Round 125 (lane 6, fast): index, slot, test and row declared const 52; the query block as a
+// forceinline (slot, index, set, draw) helper 52; the clamp as two plain ifs 52; the three slot tests
+// as nested ifs on this form 52 (all identical code); round 7's row form re-measured 38 (the same
+// colours left: counter/total EDI, player/test EBP, slot temps/status EBX, device EDI).
 // Round 141 (lane 4): retail holds the begin-test push header only here (the SDK function inlined
 // by its link; the push constant appears once in the whole image). The set computed in the query
 // block 108; status = S_OK at the loop body top 138; the device declared before the status test 52;
@@ -1359,6 +1363,15 @@ bool function_0bfe60(dword const *flags, long bit);
 // the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
 // 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
 // 66; status and total declared at function scope 52.
+// Round 111 (lane 8, fast): the visibility-result outputs declared at function scope 52; the device as
+// `dword volatile **` on the kept form 52 (same code); a `total_count` local (`indices ? count :
+// g_51f40c.count`) 61; the slot as `g_51f40c.slots + index` 52; status declared before the slot tests
+// 138; the test index computed after the bitset row 117 (459 bytes).
+// Round 50 (lane 10, fast): the SDK begin-test call 158 again, and with the file built without /arch:SSE
+// (diagnostic, flags restored) 158: the SDK body (35 bytes, the same push) stays out of line either way, so the
+// flags are not what keeps retail's inline from ours; the slot read through a reference 52; the pixel count
+// as a long passed through a cast (0x20770's form) 52; the `continue` test after the bit-test block 139 (441
+// bytes); one `data` pointer shared by both draw calls 139.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
