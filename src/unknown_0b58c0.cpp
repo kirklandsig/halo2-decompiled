@@ -98,8 +98,11 @@ bool function_b5830(long *identifiers, long count, long const *handler_indices, 
 	return result;
 }
 
+/* object_index is the object the entity was made for (b57d0's object_index);
+   this build doesn't read it, and LTCG drops the argument, but 185a30 passing
+   its loop index keeps retail's element-index loop there */
 // @retail 0xb5920
-void function_b5920(long identifier)
+void function_b5920(long identifier, long object_index)
 {
 	s_world *world = (s_world *)g_4cf77c;
 	long state = world->state;

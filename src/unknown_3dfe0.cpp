@@ -21,7 +21,19 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
 // that plus update elapsed after the object 186; update before the object 216;
-// object, update, update elapsed, force 186; an inline object getter for both lookups 27.
+// object, update, update elapsed, force 186; an inline object getter for both lookups 27;
+// force/object renamed (reset, stale; entity, body) 27; special declared before type 26 (tail
+// order as retail, special still in esi); named sample/update timestamps 27, with update first
+// 218; the other entry orders of update elapsed/object/force/update 169-240.
+// Round 57: read-only byte object 27; the existing object type and flag field 27;
+// object declaration hoisted 27; update declaration hoisted 27; object/update declarations
+// hoisted 27; object/update/force declarations hoisted 27; special/type declarations split
+// with original assignment order 27; a multi-use clamped sample interval 27. Body restored.
+// Round 55: the object lookup written at each use 285 (873 bytes); `bool update = false;` as the first
+// statement 227 (object loads straight into ebx as retail, but update leaves the parameter slot and
+// the sample/update timestamps swap esi/edi), after the cache lookup 227, before the elapsed return
+// 227, after it 216; force as a flag set in an if 55 (830 bytes); `update = force` with
+// `if (!force && (object[0xc1] & 1)) return;` 228; force as `!(initialized && valid)` 27 (same code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

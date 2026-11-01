@@ -297,6 +297,18 @@ void c_juggernaut_engine::v15(long player_index)
 // (word)player_index or juggernaut_is((word)player_index) (5, same code as now).
 // Split mask with absolute membership 8; unsigned count 8; wide removal predicate 8;
 // predicate homes 8; early flags 15; flags reference 8; conditional for 8; early outer exit 8.
+// Round 39: a 32-bit shift count is CSE'd with the keep path's `1 << absolute_index` (the
+// result held in edi, g_4e9ae8 no longer hoisted into ebp): the keep shift on
+// `player_index & 0xffff` 81, the test on it 81; diagnostics with an out-of-line long or dword
+// twin of the test 81/81. A 16-bit count (`juggernaut_is(absolute_index)`, or a word twin) gives
+// retail's code with ebx/esi swapped (the byte use pulls the masked index into ebx): absolute
+// index declared first 8, both read from the iterator 8/8. Every retail call of 0x192950 pushes
+// a full register, so its parameter width is open.
+// Round 57 (--fast): a long parameter on the existing test 81 (the shift is CSE'd with the keep
+// path's, and 0x192950 itself differs); the masked index as a word local 85, also with the test
+// on the player index 85; the removal call on the masked index too 8; renaming the player index
+// (index, player) or the masked index (player_absolute_index, slot_index) with the masked-index
+// test 8 each.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

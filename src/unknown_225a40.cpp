@@ -97,6 +97,45 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// score 16 (was 16): this round: six more shapes of the case-0 entry address (the scaled offset in
+// a local computed before the tag lookup, the definition in a local, the entry pointer in a local
+// taken from the shared helper, the entry address as a byte pointer, the unsigned scaled offset,
+// and the entry pointer without the helper) all compile to the same folded bytes at 165 bytes; two
+// more shapes of the impulse helper (the parameter address in a named pointer, the index stored
+// before the call) either move the index store ahead of the call or change nothing. Retail's
+// matched 0x225df0 reads the same entry address in the folded form (`mov eax, [edi + ecx + 0x3c]`)
+// while retail's 0x225ab0 materialises it (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`), so
+// the two retail functions differ in the addressing they picked. Still the folded member load
+// against retail's materialised entry address, the tag mask before the index scaling, and the
+// parameter address copied through EDX where retail copies it through EAX.
+// score 16 (was 16): this round: four more shapes of the case-0 entry address as an integer sum
+// with the index term first (the entry pointer taken from the sum, the label read through the
+// integer address, the entry pointer in a local) and the base term first; all compile to the same
+// folded bytes at 165 bytes. Still the folded member load against retail's materialised entry
+// address, the tag mask before the index scaling, and the parameter address copied through EDX
+// where retail copies it through EAX.
+// score 16 (was 16): this round's nine more shapes for the case-0 entry address: the index
+// term first, the base term first, the two operands swapped, the base in a local, the scaled
+// index in a local, the scaled index and the base in locals, the entry pointer in a local, the
+// address computed as an integer and the label read through that integer; all of them compile
+// to the same folded bytes at 165 bytes. Still the folded member load against retail's
+// materialised entry address, the tag mask before the index scaling, and the parameter address
+// copied through EDX where retail copies it through EAX.
+// score 16 (was 16): the entry index scaling and the tag mask hoisted out of the switch, the
+// scaled index as a local and the sum written out all compile to the same folded bytes; the
+// permuter ran to its time limit (78 tries, best equal to the baseline) and produced no
+// candidate. Still the folded member load against retail's materialised address, the tag mask
+// before the index scaling, and the parameter address copied through EDX where retail copies
+// it through EAX.
+// score 16 (was 16): retail materialises the entry address (`add eax, [edx + 0x70]`,
+// `mov eax, [eax + 0x3c]`) and scales the entry index before the tag mask, our build folds
+// the base into the member load (`mov ecx, [edx + 0x70]`, `mov eax, [ecx + eax + 0x3c]`),
+// one byte longer; after the call to 0x222930 retail copies the parameter address through
+// eax, ours through edx. Every source shape of the entry address (typed indexing, an entry
+// reference, a pointer copy, the base and the scaled offset in locals, unsigned arithmetic,
+// the operands swapped, the field's address taken) compiles to the same folded bytes, so
+// what differs is the compiler's choice of addressing mode, not the source; the permuter
+// was killed by its time limit twice without producing a candidate.
 // score 16 (was 16): retail forms the entry address as a scaled index added to the entries
 // array (`imul`, `add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`), ours folds the base into
 // the load; after the call to 0x222930 retail copies the parameter address through eax, ours
@@ -107,6 +146,11 @@ static inline void sound_track_start_impulse(long index, long handle)
 // Member memcpy 16; entry value/reference 80/16; shared impulse input order 16;
 // short impulse index 45; index before parameter fill 17; short/unsigned loop index 57/16.
 // The scaled entry address still folds into the member load; the impulse pointer uses EDX.
+// index-first element sum 16; typed element helper 16; named entry pointer 16;
+// entry label at a byte offset 16; index-first sum written out 16; named base address 16.
+// Integer arithmetic for the entry sum, the sum with the index first, the label read
+// through an integer address, the label read in a helper and the impulse parameters in
+// a named pointer all give the same bytes; the permuter produced no candidate.
 // @retail 0x225ab0
 void function_225ab0(void)
 {

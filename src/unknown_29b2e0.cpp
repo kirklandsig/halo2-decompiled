@@ -6,6 +6,7 @@
 // @flags /O2 /arch:SSE /Gr
 
 real function_11ce20(vector3f const *arg_0, vector3f const *arg_1);
+real function_11cc90(vector2f const *a, vector2f const *b);
 
 struct s_29b2e0
 {
@@ -32,19 +33,6 @@ PRIVATE __forceinline real function_29b32b(vector3f *arg_0, real *length = NULL)
     return 0.0f;
 }
 
-PRIVATE __forceinline real function_29b45d(point2f *arg_0)
-{
-    real local_0 = (real)sqrt(arg_0->x * arg_0->x + arg_0->y * arg_0->y);
-    if (!(0.0001f > fabs(local_0)))
-    {
-        real local_1 = 1.0f / local_0;
-        arg_0->x *= local_1;
-        arg_0->y *= local_1;
-        return local_0;
-    }
-    return 0.0f;
-}
-
 PRIVATE __forceinline real function_29b4c0(real arg_0, real arg_1, real arg_2)
 {
     real result = arg_0;
@@ -58,22 +46,28 @@ PRIVATE __forceinline real function_29b4c0(real arg_0, real arg_1, real arg_2)
 PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     vector3f const *arg_1, real arg_2, vector3f *arg_3)
 {
-    real local_0 = (real)sin(arg_2);
-    real local_1 = (real)cos(arg_2);
-    real local_2 = (arg_1->i * arg_0->i + arg_1->k * arg_0->k + arg_0->j * arg_1->j) * (1.0f - local_1);
-    vector3f local_3;
-    local_3.i = arg_1->k * arg_0->j - arg_1->j * arg_0->k;
-    local_3.j = arg_1->i * arg_0->k - arg_1->k * arg_0->i;
-    local_3.k = arg_0->i * arg_1->j - arg_1->i * arg_0->j;
-    real local_4 = arg_1->i * local_2 + local_1 * arg_0->i - local_3.i * local_0;
-    real local_5 = local_1 * arg_0->j + local_2 * arg_1->j - local_3.j * local_0;
-    real local_6 = arg_1->k * local_2 + local_1 * arg_0->k - local_3.k * local_0;
-    arg_3->i = local_4;
-    arg_3->j = local_5;
-    arg_3->k = local_6;
+    real sine = (real)sin(arg_2);
+    real cosine = (real)cos(arg_2);
+    real projection = (arg_1->i * arg_0->i + arg_1->k * arg_0->k + arg_0->j * arg_1->j) * (1.0f - cosine);
+    real cross_i = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
+    real cross_j = arg_0->k * arg_1->i - arg_0->i * arg_1->k;
+    real cross_k = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
+    real i = arg_0->i * cosine + projection * arg_1->i - cross_i * sine;
+    real j = arg_0->j * cosine + projection * arg_1->j - cross_j * sine;
+    real k = arg_0->k * cosine + projection * arg_1->k - cross_k * sine;
+    arg_3->i = i;
+    arg_3->j = j;
+    arg_3->k = k;
 }
 
-// score 389 (was 389): frame 0x2c and length agree; early J load and magnitude/yaw homes differ.
+// score 255 (was 267): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
+// where retail keeps them with the yaw at +0xc (local_11 at +0x10, the final pitch in the scale parameter's
+// home), the XMM numbering from the 1.0 constant on, the yaw clamp (retail clamps it in its stack home) and
+// the rotations' register and slot assignment differ.
+// Earlier (308): length 1706 agrees; frame 0x24 versus 0x2c (local_11 and the rotation spills share
+// local_6's slot, retail gives local_11 [esp+0x10] and a spill [esp+0x14] of their own); normalization
+// register numbers, the turn-rate clamps (retail clamps the yaw in its stack home, keeps 0.01745329 in xmm7)
+// and the rotation differ.
 // Round 89 (fast; aligned count 239 at 389): the 2-D normalize through normalize3d after the k store
 // 398 (sibling 0x29b990 lost, 10); the actor angle fields read at each use as retail does 404; the two
 // angle defaults assigned in the else arm 397 (the three magnitudes then share retail's [esp+0xc]
@@ -152,6 +146,59 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 249: Complete scalar normalizer outputs vector/point/both 392/389/392;
 // native vector/point/both 462/428/480; scalar/native and native/scalar 410/462.
 // Original helper publications, contracts and matched sibling restored.
+// Round 209: Second-vector/XY/both captures before first normalization 401/397/405; branch-owned angle
+// defaults with those captures 401/400/401; complete early captures with role names 405, with branch-
+// owned angles 401. Original inputs, helper contracts and normalization order restored; early J and
+// magnitude/yaw homes remain.
+// Round 304: common unchanged/scaled output publication, scalar vector/point/both 480/401/486;
+// native vector/point/both 475/454/530; scalar/native and native/scalar 524/469.
+// Original normalizers and body restored; early J and magnitude/yaw homes remain.
+// Round 442: Five rotation-result scalar declaration orders and three complete role-name/home
+// orders, 389 each in eight compiled forms. All matched controls preserved; original helper,
+// sibling and body restored.
+// Round 27 (lane 14): both 0x11ce20 calls in retail's argument order (retail ecx = arg_3, &local_5) 388;
+// with the yaw through the existing function_11cc90 (retail inlines it) 350 (early J preload as retail,
+// frame 0x2c); with the angle defaults assigned in the else arm 309 (kept; tail exact, frame 0x24); only the
+// yaw/only the pitch default in the else arm 368/368 (frame 0x28); the XY through normalize2d_fast 352 on
+// the 350 form, 308 on 309 (kept: retail length 1706, the private 2-D normalizer copy removed); first
+// normalizer through vector3f_scale 318.
+// Lane 18 round 6: retail's early J load is the else arm's J reload hoisted above the length branch: its then
+// arm scales J in place in XMM1 (`mulss xmm1, xmm0`) and I as a memory operand, while ours forms scale * J
+// from memory, so only one arm loads J. Retail also keeps the degree factor in XMM7 for all three products.
+// Normaliser scaling J first as `j = j * scale` then `i = scale * i` 401 (0x29b990 9); J alone as
+// `j = j * scale` 389 and as `j = scale * j` 389 (same code); k zeroed after the length 393; magnitude
+// initialised at declaration with both angles zeroed only in the else arm 397. Original helper and body restored.
+// Round 54 (lane 16, fast): the actor's +0x658/+0x660 angle fields read at each use (no local_15) 310 (1711
+// bytes; the degree factor then loads into XMM7 as in retail); with each delta before its limit 310 (same
+// code); the pitch accumulated in local_9 (no local_11) 324; both angles initialised at declaration 368 (1723
+// bytes, frame 0x2c); per-use fields with both turn limits as `limit = 2pi; if (field_34 > 0) limit = ...` 295
+// (kept: retail's default-then-override shape), with the first limit (pi/2) in that form too 297 (retail's first
+// limit is an if/else with jmp); on 295, the rotation helper in the projection-first form with three scalar
+// cross terms and rows `v.i * cos + projection * axis.i - cross_i * sin` (src/unknown_2551c0.cpp's unit-axis
+// rotation shape) 267 (kept: frame 0x2c, first difference +0x6e; the projection's term order compiles the same);
+// on 267: descriptive helper names 267 (same code), the yaw renamed or the normalizer's length and local_11
+// renamed to sort last 267/267 (same code), both angles initialised at declaration 369, the existing cross3f for
+// the second axis 295 (1737 bytes), the turn test's product delta-first 267 (same code).
+// Round 29 (lane 14): retail's frame holds two scalar slots at +0x10/+0x14 (first pitch value, sines, one
+// rotation spill) apart from the XY vector (+0x18); the first copy's slot (+0x20) carries the rotation input
+// and result, ours uses the second copy's. Fast: the rotation input, the cross axis or the first pitch value
+// at function scope 308/308/308 (same code); the XY vector initialised after the second normalization 384;
+// both rotations in place on the first copy 311 (frame 0x34); a later XY read (diagnostic) gives frame 0x28.
+// Round 120 (m3 lane 5): retail clamps every value in place (the yaw in its +0xc stack home: load,
+// conditional stores, reload; the pitch and both turn deltas in their own registers), where ours
+// copies each into a separate result register first. The yaw clamp written as direct conditional
+// assignments 290 (1732 bytes; that clamp then has retail's in-home shape); the clamp helper as an
+// in-place pointer helper at all four uses 292 (1726 bytes; every clamp then has retail's shape, but
+// the zero moves XMM1 -> XMM2 and the rest shifts); the helper updating its value parameter and
+// returning it 267 (same code); the normalizer's length local renamed to sort before the local_N
+// names 267 (same code: its slot stays +0x14); the first length from the normalizer's return (no
+// out-parameter) 295. Original body restored.
+// Round 267: Conditional sign selection target/current/both 267/267/267; branch-owned angle calls
+// target/current/both 294/310/315; both selections with entry pitch 267, both branches with role names 315.
+// Original scalar call results, sign tests and body restored; magnitude/yaw homes and XMM allocation remain.
+// Round 269: Independent yaw/pitch delta/limit/both 265/255/255; entry declarations 265/255/255;
+// per-axis scopes without/with entry declarations 255/255. Keep separate multi-use step limits,
+// plain 255; magnitude/yaw homes and XMM numbering remain. All other forms restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
@@ -163,35 +210,33 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     real local_4;
     function_29b32b(&local_3, &local_4);
     vector3f local_5 = *arg_2;
-    point2f local_6 = { arg_2->i, arg_2->j };
+    vector2f local_6 = { arg_2->i, arg_2->j };
     if (function_29b32b(&local_5) == 0.0f) local_5 = *arg_2;
     vector3f local_7;
-    real local_8 = 0.0f;
-    real local_9 = 0.0f;
-    if (local_4 > 0.0f && function_29b45d(&local_6) != 0.0f)
+    real local_8;
+    real local_9;
+    if (local_4 > 0.0f && normalize2d_fast(&local_6) != 0.0f)
     {
-        real local_10 = function_29b4c0(local_3.i * local_6.x + local_3.j * local_6.y, -1.0f, 1.0f);
-        local_8 = (real)acos(function_29b4c0(local_10, -1.0f, 1.0f));
-        if (local_3.j * local_6.x - local_3.i * local_6.y < 0.0f) local_8 = -local_8;
+        local_8 = function_11cc90(&local_6, (vector2f const *)&local_3);
         if (local_2->field_38 > 0.0f) local_8 *= local_2->field_38;
-        real local_11 = function_11ce20(arg_3, &local_3);
+        real local_11 = function_11ce20(&local_3, arg_3);
         if (arg_3->k < 0.0f) local_11 = -local_11;
-        real local_12 = function_11ce20(&local_5, arg_2);
+        real local_12 = function_11ce20(arg_2, &local_5);
         if (arg_2->k < 0.0f) local_12 = -local_12;
         local_9 = local_11 - local_12;
         real local_13 = local_2->field_30 > 0.0f ? local_2->field_30 * 0.01745329238474369f : 1.5707963705062866f;
         local_8 = function_29b4c0(local_8, -local_13, local_13);
         local_9 = function_29b4c0(local_9, -local_13, local_13);
-        real local_14 = local_2->field_34 > 0.0f ? local_2->field_34 * 0.01745329238474369f : 6.2831854820251465f;
-        real local_15 = *(real *)((byte *)local_0 + 0x658);
-        real local_16 = local_8 - local_15;
-        if (!(0.0f > local_15 * local_16)) local_14 *= arg_4;
-        local_8 = local_15 + function_29b4c0(local_16, -local_14, local_14);
-        local_14 = local_2->field_34 > 0.0f ? local_2->field_34 * 0.01745329238474369f : 6.2831854820251465f;
-        local_15 = *(real *)((byte *)local_0 + 0x660);
-        local_16 = local_9 - local_15;
-        if (!(0.0f > local_15 * local_16)) local_14 *= arg_4;
-        local_9 = local_15 + function_29b4c0(local_16, -local_14, local_14);
+        real yaw_limit = 6.2831854820251465f;
+        if (local_2->field_34 > 0.0f) yaw_limit = local_2->field_34 * 0.01745329238474369f;
+        real local_16 = local_8 - *(real *)((byte *)local_0 + 0x658);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x658) * local_16)) yaw_limit *= arg_4;
+        local_8 = *(real *)((byte *)local_0 + 0x658) + function_29b4c0(local_16, -yaw_limit, yaw_limit);
+        real pitch_limit = 6.2831854820251465f;
+        if (local_2->field_34 > 0.0f) pitch_limit = local_2->field_34 * 0.01745329238474369f;
+        local_16 = local_9 - *(real *)((byte *)local_0 + 0x660);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_16)) pitch_limit *= arg_4;
+        local_9 = *(real *)((byte *)local_0 + 0x660) + function_29b4c0(local_16, -pitch_limit, pitch_limit);
         vector3f rotation_input = *arg_2;
         function_29b6c0(&rotation_input, g_4687b0, local_8, &local_7);
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);
@@ -202,7 +247,11 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         function_29b6c0(&local_7, &local_18, local_9, &local_7);
     }
     else
+    {
         local_7 = *(vector3f *)((byte *)local_0 + 0x290);
+        local_8 = 0.0f;
+        local_9 = 0.0f;
+    }
     *(real *)((byte *)local_0 + 0x65c) = local_8;
     *(real *)((byte *)local_0 + 0x664) = local_9;
     *arg_5 = local_7;

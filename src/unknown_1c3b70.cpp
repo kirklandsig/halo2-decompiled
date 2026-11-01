@@ -68,53 +68,8 @@ struct s_47f048_object;
 extern s_47f048_object *g_47f048;
 volatile byte g_47f06d = 1;
 c_shape_owner *function_1c3b20(c_havok_reference_counted *arg_0);
-void havok_entity_component_index_set(hkEntity *entity, s_havok_property_word component_index);
+void havok_entity_component_index_set(hkEntity *entity, long component_index);
 
-// score 71 (was 71): the -1 is built with OR here and pushed as a constant there;
-// later differences are the two-byte shift. BLOCKED-BY 0x1cf2b0: VC7.1 builds every by-value
-// class argument in a register, so retail's `push -1` needs that function to take a long (as
-// 0x1cf3b0 does; a compile-only copy with a long stack parameter gives `push -1`). Unqualified
-// global 76; entry construction 124; construction before the final allocation 77; default
-// construction there 71; earlier/later local names and declaration before the descriptor 71
-// each; copy-initialised, member-assigned or const local 71/71/71; the local declared at entry
-// 124, after the global store 71. Round 218: property/descriptor/final-owner/shape-owner inline
-// and noinline declarations 71 each. Round 91: a long local passed through a property-word view
-// 71; implicit conversion from NONE 76; a static const property word 125; a plain temporary 71
-// (kept: same code without the assignment inside the argument); a copy-initialised local 71.
-// 0x1cf3b0 does). Unqualified global 76; entry construction 124;
-// construction before the final allocation 77; default construction there 71;
-// earlier/later local names and declaration before the descriptor 71 each; copy-initialised,
-// member-assigned or const local 71/71/71; the local declared at entry 124, after the global
-// store 71.
-// earlier/later local names and declaration before the descriptor 71 each.
-// Round 218: Property/descriptor/final-owner/shape-owner inline and noinline declarations:
-// 71/71/71/71/71/71/71/71 (fast control 71). Original restored.
-// Native reference-count receivers for initial/shape/optional owners, separately and together,
-// then a scoped property argument: eight forms 76 at 390 bytes, using an ordinary allocation store.
-// Aggregate immediate preparation persists; original owners, store and property contract restored.
-// 0x1cf3b0 does; a compile-only copy with a long stack parameter gives `push -1`). Unqualified
-// global 76; entry construction 124; construction before the final allocation 77; default
-// construction there 71; earlier/later local names and declaration before the descriptor 71
-// each; copy-initialised, member-assigned or const local 71/71/71; the local declared at entry
-// 124, after the global store 71. Round 218: property/descriptor/final-owner/shape-owner inline
-// and noinline declarations 71 each. Round 91: a long local passed through a property-word view
-// 71; implicit conversion from NONE 76; a static const property word 125; a plain temporary 71
-// (kept: same code without the assignment inside the argument); a copy-initialised local 71.
-// the -1 is built with OR in a register and pushed here, pushed as a constant
-// there; every later row is the two-byte shift. BLOCKED-BY 0x1cf2b0: VC7.1 builds every by-value
-// class argument in a register (a compile-only probe: a class temporary, a POD aggregate and a
-// member-assigned local all give `push reg`; only a long parameter gives `push -1`), so retail's
-// callee takes a long, as 0x1cf3b0 does. Tried: unqualified global 76; entry construction 124;
-// construction before the final allocation 77; default construction there 71; earlier/later local
-// names and declaration before the descriptor 71 each; copy-initialised, member-assigned or const
-// local 71/71/71; the local declared at entry 124, after the global store 71; property/descriptor/
-// final-owner/shape-owner inline and noinline declarations 71 each; native reference-count
-// receivers for the initial/shape/optional owners, separately and together, then a scoped property
-// argument, eight forms 76 (390 bytes); a long local passed through a property-word view 71;
-// implicit conversion from NONE 76; a static const property word 125; a plain temporary 71 (kept:
-// same code without the assignment inside the argument); a copy-initialised local 71. Round 5: a
-// direct-initialised local before the call 71; `-1L` 71; the local at entry 124; a const local 71;
-// the global as the entity argument 71.
 // @retail 0x1c3b70
 void function_1c3b70()
 {
@@ -144,7 +99,7 @@ void function_1c3b70()
  local_4->field_4 = 0xa0;
  local_4 = new (local_4) c_311ba0(&local_3);
  g_47f048 = (s_47f048_object *)local_4;
- havok_entity_component_index_set((hkEntity *)local_4, s_havok_property_word(NONE));
+ havok_entity_component_index_set((hkEntity *)local_4, NONE);
  havok_reference_remove((c_havok_reference_counted *)local_1);
  havok_reference_remove((c_havok_reference_counted *)local_0);
  if (g_47f06d) havok_reference_remove((c_havok_reference_counted *)local_2);

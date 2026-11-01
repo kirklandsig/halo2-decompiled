@@ -10,6 +10,7 @@
 #include "segment_sphere.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vehicle_ray.h"
 
 #define FLAG(bit) (1 << (bit))
 #define TEST_FLAG(flags, bit) (((flags) & FLAG(bit)) != 0)
@@ -739,13 +740,6 @@ struct s_palette_168f40
 	s_material_168f40 *materials;
 };
 
-struct s_vehicle_ray
-{
-	point3f point;
-	vector3f vector;
-	real t;
-};
-
 // @retail 0x168f40
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 	long ignore_object_index, long ignore_object_index2)
@@ -834,6 +828,9 @@ bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 // `return true;` there 25; point/vector read directly in the plane distances 124; the k/j
 // plane terms through `instanced_plane->plane` 177 (both k products then load the plane
 // first, as retail; j does not, and the stepping block grows); the j operands swapped 25.
+// Round 57: plane->n products 25; a typed normal pointer for all/k-only/j-only products
+// 25/25/25; normal k/j with plane i 56; direct entry k-only/j-only 25/25; return the existing
+// result from the successful correction branch 24 (one-point gain and 2168 bytes, restored).
 // @retail 0x1697c0
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision)
@@ -1559,6 +1556,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
+// Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
+// product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
+// the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
+// not retail's form. Original body kept.
 // score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Retail keeps the zero in ESI (pushed first, reused as the prism pointer, based at plane.j where
 // ours bases it at the point count) and counts the accepted shapes in 32-bit counters (test/jle,
@@ -1602,6 +1603,21 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 267: query count long/short 577/623; outer prism cursor live/long/short
 // 638/662/662; unsigned ordinal live/long/short 552/581/623. Original
 // query-count observations, signed outer ordinal and complete geometry restored.
+// Round 415: native plane value and staged side/perpendicular crosses, seven subsets
+// 734/553/734/603/707/603/707; all with complete normalization/ray assignments 707.
+// Original plane observations, product producers and complete geometry restored.
+// Round 424: complementary polygon/normal/contact decisions, seven subsets
+// 553/552/553/554/555/554/555; all with full-width polygon 600. Original
+// decision values, geometry and helper calls restored; sum homes and query zero remain.
+// Round 434: nearest-edge/radii/squared-limit scalar lexical homes, all seven
+// subsets 552 each; complete names with accepted radii before accumulator storage 551
+// (one-point gain rejected). Original scalar homes, word counts and geometry restored.
+// Round 238: point-count-owned upper cap with word/face-long/edge-long/both-long
+// accepted counts 605/561/567/587; each with readonly prism 605/561/567/587.
+// Original cap, accepted word counts, prism view and complete geometry restored.
+// Ray-result-owned positive/negative endpoints and shared ray, seven subsets, then original endpoints with one
+// query result: 613/600/638/571/634/619/661/581. Original complete executable source restored.
+// J218: Native point setters for paired sum initialization/averages/accumulations, seven subsets, then result before query storage: 646/552/646/553/646/553/646/646. Original complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

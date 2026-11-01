@@ -66,8 +66,11 @@ bool object_or_parent_hidden(long object_index)
 	return false;
 }
 
+/* the location of an object's root (the topmost parent); returns the location it
+   filled in: retail leaves that pointer in eax, and only a function that returns it
+   takes the object in ecx and the location in eax as retail does */
 // @retail 0xba300
-void object_get_root_location(long object_index, s_location *location)
+s_location *object_get_root_location(long object_index, s_location *location)
 {
 	long root_index = NONE;
 
@@ -77,6 +80,7 @@ void object_get_root_location(long object_index, s_location *location)
 		object_index = object_query_header(object_index)->object->parent_index;
 	}
 	*location = object_query_header(root_index)->object->location;
+	return location;
 }
 
 /* an element (0xa0 bytes) of the havok components, g_51e9b8 */

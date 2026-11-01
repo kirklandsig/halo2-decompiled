@@ -75,6 +75,9 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// score 109 (was 109): this round: the tail call still needs 0x2b5d0's own body (it takes the mode
+// in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
+// a file this lane may not edit: BLOCKED-BY 0x2b5d0.
 // score 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
@@ -198,6 +201,13 @@ void function_2232a0(void)
 // Separate candidate/result on the recovered prefix: long/int with original/pretested
 // traversal 106/172 each; short/word counterparts 160/192 each. Three-count gains rejected;
 // original scan restored. Outer pretest, optional-source homes and tail transport remain.
+// Round 208: advancing native output receiver on the recovered source arms:
+// scan-boundary acquisition, numeric/pointer terminal, do/for 111/170/141/192;
+// layout-boundary counterparts 130/171/158/192. All restored; outer pretest,
+// source homes and outside tail transport remain.
+// Round 81: combined entry/found source clears in do/for traversal 124/120; entry clear with
+// original arms 109/138; entry clear without the empty-arm store 122/158; entry clear without
+// the final null-arm store 123/160. Original source assignments and traversal restored.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

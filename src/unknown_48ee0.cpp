@@ -18,10 +18,10 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
-// score 230 (was 239): the mode bit loads the flags into edx where retail uses eax, so
+// score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
-// frame 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
+// Earlier frame: 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
 // Earlier form: frame 0x20 versus 0x28; input registers and rounding-call scalar reloads differ.
 // Branch-defined extent 321; two-vector copy loop 311; frame pointer 372; size policy 497; inline depth one 311.
 // Global optimization off 1009; expansion depth zero 349; late mode 350;
@@ -141,6 +141,11 @@ extern real g_4c9798[36];
 // Round 280 (lane E, run 14): the overflow fix-up compares the height against the width
 // and the height is rounded first, so the fix-up block matches retail instruction for
 // instruction (cmp esi, edi; cdq; jle; idiv; the & ~63 masks). 230, kept.
+// Round 289: On the retained height-first overflow graph, long-mode/long-height/short-width carrier subsets 1 through 7; positive word counterpart:
+// [231, 250, 250, 274, 280, 268, 265, 274]. All executable source and temporary types restored.
+// Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
+// each with coordinated pixel-size/mode names 230; coordinated names alone and
+// diameter lexical rank 230. Original declarations, names and body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

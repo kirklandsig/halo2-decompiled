@@ -52,16 +52,6 @@ struct s_unit_object_view
 	long field2ac;
 };
 
-/* the real a quantized value stands for */
-static inline real event_dequantize_real(long value, long maximum, real minimum_value, real maximum_value)
-{
-	if (value == 0)
-		return minimum_value;
-	if (value >= maximum)
-		return maximum_value;
-	return (minimum_value * (maximum - value) + maximum_value * value) / maximum;
-}
-
 /* the identifier in one of the eight slot table slots, or NONE outside them */
 static long slot_table_identifier(long slot)
 {
@@ -706,30 +696,20 @@ struct s_typed_object_header
 /* 0xe68c0, src/unknown_0e68c0.cpp */
 bool function_e68c0(long type, long unit_index);
 
-// score 57 (was 75): the result is a byte that spills to a frame slot and the guard tests
-// the vehicle index first, so the body lines up with retail's; what is left is the register
-// set (retail keeps the vehicle index in eax and the pool pointer in ebp, ours in ebp and
-// edi) and the 1<<type shifts, which retail does in ebx and ours in eax.
-// register set and the order of the body differ.
-// With the result a long in ebx the 1<<type shifts use eax, so the vehicle index moves to ebp in
-// the prologue; retail's byte result loses bl to the shifts and spills to the frame slot, the
-// vehicle index stays in eax and ebp is saved late for the pool pointer.
-// Byte result 85; masked-index locals 75; pool data read at each use 77; mask operand order 75;
-// byte result with pool before the guard 89; split missing guards 83; dword indices 75;
-// byte result with the seat read once 85; byte mask locals 82.
+/* whether a unit has left the given seat of a vehicle */
 // @retail 0x9ee20
 bool c_unit_exit_vehicle_event_definition::v11(long a, long const *entities, long c, void const *data)
 {
+	bool result = false;
 	long unit_index = function_a58d0(entities[0]);
 	long vehicle_index = function_a58d0(entities[1]);
-	bool result = false;
-	if (vehicle_index != NONE && unit_index != NONE)
+	if (unit_index != NONE && vehicle_index != NONE)
 	{
-		s_record_pool *local_1 = g_4e0300;
-		byte *headers = (byte *)local_1->data;
-		if (((1 << ((s_typed_object_header *)local_1->data)[unit_index & 0xffff].type) & 3) && ((1 << ((s_typed_object_header *)headers)[vehicle_index & 0xffff].type) & 3))
+		s_record_pool *object_headers = g_4e0300;
+		s_typed_object_header *headers = (s_typed_object_header *)object_headers->data;
+		if (((1 << headers[unit_index & 0xffff].type) & 3) && ((1 << ((s_typed_object_header *)object_headers->data)[vehicle_index & 0xffff].type) & 3))
 		{
-			s_vehicle_event_unit_view *unit = (s_vehicle_event_unit_view *)((s_typed_object_header *)local_1->data)[unit_index & 0xffff].object;
+			s_vehicle_event_unit_view *unit = (s_vehicle_event_unit_view *)OBJECT(unit_index);
 			if (unit->parent_index != NONE && unit->parent_index == vehicle_index &&
 				unit->seat_index != NONE && unit->seat_index == *(long const *)data)
 			{
@@ -2073,7 +2053,23 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 	return local_0;
 }
 
-// score 155 (was 155): object/offset homes and low-mask allocation remain;
+// score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
+// Earlier: this round's head-block forms (the 0x13c value truncated to a short and
+// compared against both NONE forms, in nine source shapes) all score 149, and naming the object
+// index in a local, so the object address keeps retail's SIB base, scores 148 - a gain of seven
+// that the keep rule drops, so the original body stands.
+// Earlier: this round's head-block forms (the 0x13c word truncated to a short and
+// compared against both NONE forms, so the tail keeps retail's ax/cx) score 149, a gain of six that
+// the keep rule drops, so the original body stands.
+// Earlier: this round's source permuter over the body found no better form (24 tries,
+// best 148 differing instructions, equal to the baseline 148, no confirming build), so the body is
+// unchanged; the four-slot loop still carries one value more than retail (ours reloads [esp+0x14] in
+// the loop head), the 0x400 block keeps its short in EAX where retail uses EDX/CX, and the reduced
+// image's global and thunk addresses differ.
+// Earlier: this round read the diff groups again: the four-slot loop carries one value
+// more than retail (ours reloads [esp+0x14] in the loop head), the 0x400 block keeps its short in
+// EAX where retail uses EDX/CX, and the reduced image's global and thunk addresses differ.
+// Earlier: object/offset homes and low-mask allocation remain;
 // Round 9 (lane 10): retail holds the 0x400 block's short in EAX (stores 0x90 before the result update);
 // its value as a ternary 201; its declaration after the field reads 168; set in if/else 201; both slot
 // masks at the loop head 285 (1041 bytes); first slot mask long 168.
@@ -2192,6 +2188,24 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // before the getter 278/278/278/278. Exact-only records restored.
 // Original separate results with direct request parameter, signed/unsigned ordinal
 // 155/155; all executable source restored.
+// Round 215: original bit ordinal at short/word/byte widths, with long or short positive-four
+// countdown: 210/210/231/231/210/210/231/231. Original ordinal and countdown restored; frame 0x1c
+// agrees, object/offset homes and low-mask allocation remain.
+// Round 441: Boolean fixed request groups parent/position/both/tail/parent-tail/position-tail/all 285/271/289/178/286/272/290; both dynamic child predicates 223. Original request tests, observations and executable body restored; object/offset and low-mask homes remain.
+// Round 448: Decoded two-bit child request in dword/long/word/byte, masked and
+// unmasked shift domains 284/284/284/284/287/287/287/287.
+// Original body and helpers restored; Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership remain.
+// Round 454: Single low/high and paired mask recurrences on the retained post-store child
+// results 229/237/250; with both native request intersections 261/253/276; single low/high
+// recurrence with Boolean intersections 246/273. Two forms reach 1081 bytes but regress;
+// original ordinal, child stores, masks and whole body restored.
+// Round 462: Direct zero-based child slot, long/short/dword/word with original cursor/indexed
+// record fields: 218/224/255/255/218/224/255/255. Original ordinal, countdown, cursor and whole
+// body restored.
+// Round 267: dependency-safe child input orders tag/fraction/key/bytes, key/tag/fraction/bytes,
+// key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
+// tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
+// Original observations restored; object/offset homes and low-mask EBP ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

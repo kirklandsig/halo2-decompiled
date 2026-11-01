@@ -93,6 +93,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	return result;
 }
 
+// score 107 (was 107): this round: the fast check reads 107 at 362 bytes against retail's 376 again
+// and no new form was tried; the difference is still blocked by 0xbadc0's memory-effect knowledge in
+// src/unknown_0bad50.cpp, which makes our link keep the entry fetch.
+// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// re-fetches the unit after its two 0xbadc0 calls, our link proves the callee writes no memory
+// and keeps the entry fetch, so every later register home shifts.
 // score 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // frameless entry saves, unit reload and sentinel carriers differ.
 // frameless entry saves, fresh unit reload and late prior-state carrier differ.
@@ -144,6 +150,13 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // native signed-byte slot alone/with player/with weapon/with both 111/123/111/123;
 // both sentinel declarations with consistent direct reset-unit observations 150.
 // Original producers and complete executable body restored; fresh lookup remains.
+// Round 76: late false 122; result arms 121; late false with long user 125; late fresh unit 122;
+// original fresh unit 107; direct reset lookups 175; false after entry 107; false before weapon 120.
+// Original body restored.
+// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// retail re-fetches the unit after the two calls because its compiler treats 0xbadc0 as writing
+// memory, while our link knows it writes none, so the unit and the flag registers are homed
+// differently and the entry prologue differs.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

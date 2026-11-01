@@ -2,7 +2,8 @@
 #include "unknown_044e90.h"
 #include "normalize3d.h"
 
-// score 421 (was 421): frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
+// score 421 (was 421): Frame/list strides and entry/table/plane homes remain.
+// Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
 // Storage headers are at 0xb0/0x10bc/0x20c8/0x40d4 versus retail 0xb0/0x10c0/0x20d0/0x40e0.
 // Input plane homes are 0x2c/0x30/0x34/0x38 versus 0x34/0x38/0x3c/0x40; normal registers,
 // inverse-scale reuse, distance division and capacity-release scheduling also differ.
@@ -68,6 +69,43 @@
 // entry/branch and entry/entry, each with default/eight-byte alignment:
 // 418/418/419/419/419/419/419/419 fast, all 1742 bytes. Branch/branch recovers frame 0x74a4;
 // three-point gain rejected. Original combined workspace and complete body restored.
+// Round 218: Live view source/direct ranges/both/both with native short view 481/474/453/450;
+// native eight-byte storage alignment on those graphs 481/473/453/449. List/plane and entry/table
+// homes remain; original header, observations and complete body restored.
+// Round 435: Native eight-byte storage alignment plus chained counts and paired capacities,
+// field orders pointer/count/capacity, pointer/capacity/count, count/pointer/capacity,
+// count/capacity/pointer, capacity/pointer/count, capacity/count/pointer:
+// 418/418/418/417/417/417; initialization by real capacity pairs, counts/capacities
+// or capacities/counts 418/418. Four-point gain rejected; original header/body restored.
+// Round 443: Native eight-byte storage plus ordinary-inline transform/containment/query
+// declarations, seven subsets and all plus both publication boundaries, 417 each at 1742 bytes
+// with frame 0x74a4. Four-point lead rejected; original header/body restored; entry/table and
+// plane/list homes remain.
+// Round 445: Real storage alignment eight with natural/eight plane-array alignment,
+// each with aggregate/explicit query fields, 429 each; storage sixteen on the same four
+// graphs 417 each. Four-point lead below keep gate; complete header and body restored.
+// Round 97 (lane 7): retail stores 0 into the plane distance when the transform scale is 0 (a value
+// difference: its zero path shares the distance store with the division path); `else p.d = 0.0f;` alone
+// 444, on the 16-aligned storage template (417) 441. On that: the normal computed in both transform arms into
+// a local vector and stored once at the join with `0.0f - p.d` (retail's join stores) 462; with
+// `transform->scale != 0.0f` 450; with the normal locals defined after the distance block (the transform block
+// is then retail's but for register rotation) 475 at 1700 bytes; with the release tests as
+// `!(capacity & 0x80000000)` (retail's `test/js` and capacity reloads) 448 at 1744 bytes, aligned differences
+// 294 -> 235; parts arms swapped 448 (the two calls' identical pushes stay hoisted, retail sets up each call in
+// its arm). Left on that graph: the entry pointer in EDI (retail EBX, pushes interleaved), the tag table loaded
+// in each branch (retail once into ESI before the tag test) and register rotations.
+// Round 456: Persistent global entry reference; flags/table input graphs on native/default storage alignment:
+// 421/457/433/454/417/455/432/452. Original executable body and supporting declarations restored.
+// Round 467: Full-width input ordinals entry/section/both, then both with live
+// selection fields, original storage 438/421/438/466; native eight-byte storage
+// 435/417/435/465. Four-point aligned lead rejected; original header and body restored.
+// Round 471: Native workspace list construction on eight-byte storage, original/reverse
+// object order and six field-group orders 573 each (1620 bytes). Constructor and native
+// alignment removed; original branch-local descriptor publication and full header restored.
+// Round 474: Unsigned capacity/sign-mask on native four/eight storage 456/454;
+// external-storage bit view 456/454; native allocation-count view 456/454;
+// aligned whole-plane publication with bit/count or mask 480/480. Header and
+// body restored; cleanup tests/preloads recover but entry roles and length regress.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

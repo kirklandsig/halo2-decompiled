@@ -126,31 +126,6 @@ PRIVATE __forceinline bool function_1d6d04(long arg_0)
  return arg_0 == 4 || arg_0 == 5;
 }
 
-// score 49 (was 49): one instruction: for the rotation argument of the 0x1d70d0
-// call retail computes the transform's address again (lea ecx, [esp + 0x8c]),
-// where ours pushes ecx, still holding it from the transform argument (7 bytes;
-// the rest is the shift).
-// Rotation stores through a pointer 49; transform stores through a pointer 49;
-// both store pointers 49; derived transform 49; late transform pointer 49;
-// both late pointers 49; split result 49; result before selection 49;
-// body group 49; center pointer 49; the rotation argument cast from the
-// transform's address, or from its first column 49; the transform argument cast
-// from the rotation's address 49; the rotation through an inline accessor
-// (reference or pointer) 49; component stores spelled m_quad.m128_f32[n] 49.
-// the outgoing call to 0x1d70d0 sets up the transform and
-// its rotation as two separate address calculations in retail (lea ecx,
-// [esp + 0x80] and, three pushes later, lea ecx, [esp + 0x8c] for the same
-// address), while ours computes the address once and reuses the register, so
-// seven bytes are missing and every following instruction is displaced.
-// order: retail pushes the address of the local, then 0, then the float, while
-// ours pushes 0 first and reloads the float out of the stack.
-// body group 49; center pointer 49; the rotation argument cast to
-// hkRotation const * 49; cast to the rotation's first column 49; cast to the
-// column's quad 49; both arguments through pointer locals 49; the rotation argument cast to
-// (hkRotation const *)&local_10.m_rotation 49 (this round, byte-identical to the baseline).
-// body group 49; center pointer 49.
-// Round 198: native rotation component loop long/dword/short/byte 63/63/223/223; separate axis
-// loops 51/51/120/120.
 // @retail 0x1d6d00
 void __stdcall function_1d6d00(s_havok_component *arg_0, void *arg_1, byte *arg_2,
  long arg_3, long arg_4, bool arg_5, bool arg_6)
@@ -225,7 +200,7 @@ void __stdcall function_1d6d00(s_havok_component *arg_0, void *arg_1, byte *arg_
  if (arg_6) { local_12 = arg_4; local_13 = 1.0f; }
  else { local_12 = arg_3; local_13 = 0.0f; }
  hkRigidBody *local_14 = (hkRigidBody *)function_1d70d0(arg_0, (s_1d70d0 *)local_6, false, false,
-  &local_5, local_13, 0.0f, &local_10.m_rotation, *(real *)((byte *)arg_1 + 0x10),
+  &local_5, local_13, 0.0f, &local_10.rotation_part(), *(real *)((byte *)arg_1 + 0x10),
   local_2, &local_10, local_12, false, 0.0f, 0.0f);
  if (!local_14->m_fixed) ((c_1d6d02 *)local_14->m_motion)->function_c(&local_8);
  if (!(bool)((arg_0->unknown04 >> 8) & 1)) local_14 = (hkRigidBody *)function_1d7300((s_1d7300 *)local_14, (s_1d7400 *)arg_0, 0.85f);

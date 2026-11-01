@@ -722,7 +722,7 @@ void function_273670(long ai_index, bool flag)
 	}
 }
 
-void function_201520(short value, long type, long a, long b, long c);
+void function_201520(short value, long type, short a, bool b, bool c);
 void function_204010(long squad_index, long other_squad_index);
 
 /* for every squad an ai index names (or the squad of a starting location),
@@ -1387,6 +1387,29 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 251: bounded candidate count/index byte-short, char-short, short-byte, short-char, byte-byte, byte-char, char-byte, char-char 188/90/182/269/78/190/190/148. Original short counters and body restored.
 // Round 255: native complete candidate record, four construction lifetimes with aggregate assignment
 // 204/204/204/204; library-copy counterparts 204/204/204/204 (861 bytes). All restored.
+// Round 298: native selected-seat copies at selection/object lookup/after leave/winning
+// update 125/124/80/168; library-copy counterparts 125/124/80/168. All restored;
+// selected-seat retention does not recover the initial candidate schedule or request homes.
+// Round 433: Complementary walk decision bool/byte/short/long at entry
+// 230/230/234/233, at the selected seat 99/99/91/85. All restored;
+// real decision polarity/lifetime does not recover the request registers or seat loads.
+// Round 234: Actual request outcome byte/short/long/dword 41/70/68/68; complementary failure carriers
+// 73/73/72/72. Original outcome and body restored; iterator scaling and request/seat scheduling remain.
+// Round 450: scalar candidate transfer/final-publication increment/both 41/41/41;
+// direct priority result alone/with transfer/with increment/both 42/42/42/42;
+// shared seat-definition input 48. Scalar address copies exact-only; all original code restored.
+// Round 454: Collection entry/mid-publication record receivers 153/153, each 153 with
+// sorted candidate fields at every use; persistent collection cursor with derived short count
+// 231/231, with original bounded short count 213/213. Comparator survives; original body restored.
+// Round 252: Positive load decision byte/short/word/long at admission and selection 41/56/56/52/41/56/56/52.
+// Original complete executable source restored; Iterator/candidate scaling, leave-request registers and seat
+// loads across clearing remain.
+// Round 267: Seeded while/for, condition-declared actor, for-declared actor: 41/274/41/274;
+// the same four with collection-only iterator scope 41/274/41/274. Original traversal and iterator
+// lifetime restored; handle/candidate scaling and late request/seat scheduling remain.
+// Round 269: Actual winning-seat pointer, early/late initialization, score/receiver update order and
+// nested/continue admission: eight forms 144 each, frame 0x6b0 versus 0x6ac. Original short
+// winner ordinal, requests and complete body restored; iterator/candidate and seat-load schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -1436,7 +1459,7 @@ void function_274a50(long ai_index, long vehicle_index, long filter_range, bool 
 					s_object_seat *seat = &seats[seat_index];
 
 					if (seat->object_index != NONE && seat->seat_index != NONE &&
-						function_c8200(seat->object_index, seat->seat_index, candidate_actor->unit_index))
+						function_c8200(candidate_actor->unit_index, seat->object_index, seat->seat_index))
 					{
 						real score;
 
@@ -2148,6 +2171,10 @@ PRIVATE __forceinline bool function_276381(long arg_0, s_unit_request *arg_1)
 }
 
 /* whether an actor an ai index names runs the command script named */
+// score 7 (was 7): Seven request-clear versus actor-address scheduling rows remain at exact retail length.
+// DL209: Byte/char/short/long results born after actor lookup, constant false or actor-admission
+// produced: 28/29/28/29/28/37/28/34. All remove the saved BL lifetime and regress; original result
+// restored.
 // @retail 0x276380
 bool function_276380(long ai_index)
 {
@@ -2554,6 +2581,26 @@ struct s_scenario_scripting_view
 // selector, early counter and complete search restored; actor/counter homes and delayed data
 // observation remain.
 // Round 255: complete point-set fields at every use with data/root observation and short-counter scope subsets 102/86/102/87/101/88/101/89. All restored; wrapper unchanged.
+// Round 298: joint best-distance/index entry, outer admission, pre-actor and post-actor
+// lifetimes 103/99/95/95; with loop-local short counter 103/99/94/94. All restored;
+// actor/set/counter homes and delayed data observation remain.
+// Round 433: Encoded unsigned-short winner 93; double storage of real distances alone/with
+// encoded winner 149/149; encoded winner with loop-owned short counter 87; double storage
+// with loop counter/with encoded winner and counter/plus existing self-product 149/149/149;
+// signed long winner with double storage and loop counter 152. All restored; actor/counter
+// homes and the delayed scripting-data observation remain.
+// Round 234: Actual scripting/point-set/scenario record-reference subsets 1..7, then all with typed
+// point member: 96/80/96/80/96/80/96/96. Data references begin after signed admission; original search
+// restored; actor/counter homes and delayed data observation remain.
+// Round 454: Per-use candidate point/decoded selector/both 91/94/92; their loop-owned
+// short-counter forms 87/86/90; native point reference alone/with per-use selector 80/94.
+// Selector re-decode loses wrapper 0x2a71e0 at 14; original search and wrapper restored.
+// Round 252: Native candidate/actor/displacement library-copy boundaries, seven memcpy subsets then complete
+// memmove 102/100/130/157/189/186/216/191. Original complete executable source restored; Actor/set/counter
+// homes and delayed scripting-data observation remain.
+// Round 266: native-array differences at direct/resolved/both branches, each with original/loop
+// short counter, then both with typed point access without/with loop counter: 80/80/80/87/87/87/80/87.
+// Original search and includes restored; exact wrapper survives, actor/counter/data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

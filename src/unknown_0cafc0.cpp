@@ -161,6 +161,9 @@ point3f *function_b9ef0(long object_index, point3f *result)
 }
 
 // score 2 (was 2): only constant-one and crouching-height load scheduling remains; frame 0xa4 and all other instructions agree.
+// Round 73: definition-pointer rename 2; direct explicit read-add-store 17; explicit store on the two-local graph 2;
+// standing-only/crouching-only temporaries 2/2; named total with explicit store 2; early constant-one 2;
+// raw crouching-height load before the calls 12. Opening graph restored.
 // Earlier: frame 0xa4, entry, collision block and marker-branch layout agree; the two
 // height loads are swapped, the seated object goes to EDX (retail EBP, so the marker temporaries
 // rotate one register off), and the parent branch loads the tag table before the object table
@@ -239,6 +242,9 @@ point3f *function_b9ef0(long object_index, point3f *result)
 // 2/2/2/2/2/2/2/2; all restored.
 // Round 400: If-else crouch, staged complement and complete staged weights in masks 1-7, then
 // complete height scope: 2/2/2/2/2/2/2/2. Original producers and arithmetic restored.
+// Round 41: scale-first product 2; named height sum 2; scale local 2; `z = product + z` 2; crouch declared
+// at function scope 2. Retail's biped copy of this blend (0xe5d50) loads the crouching height before the 1.0
+// constant, as ours does here; 1.0 is used once in 0xcafc0, so it is not a shared value.
 // @retail 0xcafc0
 void function_cafc0(long unit_index, point3f *position)
 {

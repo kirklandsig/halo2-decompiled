@@ -472,34 +472,27 @@ real function_1c9ee0(real arg_0);
 void __stdcall function_26c2d0(long arg_0);
 bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool arg_3);
 
-// score 15 (was 41): only the EBX/EBP pair differs now: retail keeps the -1
-// sentinel and then the game-time pointer in EBP and the 0x1e5380 result in
-// EBX, ours the other way round. Tried on the unit index form: the result as a
-// const pointer 15, the result/ticks/unit index declared elsewhere 15, the
-// enable test nested 15, a game-time pointer local 15 or 91 (the flat form
-// with that pointer 28).
-// was: retail keeps the -1 sentinel in EBP and pushes the arguments in the
-// other order, where ours uses EBX for the sentinel, so the prologue and the
-// calls that follow differ.
-// score 15 (was 15): sentinel/clock and settings still exchange EBX/EBP.
-// Elapsed-seconds ready/arms/wait/nested results 15/15/15/15;
-// each with the weighted probability product separated 65/65/65/65.
-// Sentinel/clock and returned-settings EBX/EBP homes remain swapped.
-// actor reference 15; immutable actor 15; actor/node references 15; settings reference 15;
-// timestamp reference 15; interval reference 15; settings/timestamp references 15;
-// actor/coefficient references 15.
-// saved EBX/EBP pair still reversed; whole eligibility,
-// cooldown, reaction and combined test results 15/15/15/15; immutable cooldown
-// inputs 15; read-only two-use clock 91; complete actor/timestamp record and
-// its read-only receiver 15/15.
-// score 15 (was 15): saved-register pair persists; native const/mutable clock
-// records 91/91; interval accumulators on those records 95/95; named elapsed
-// phase 91/91; elapsed plus interval accumulation 95/95.
-// score 15 (was 15): saved sentinel/clock and settings registers still swap;
-// callback failure returns at actor/prop/unit/settings/cooldown/reaction phases
-// 15/106/106/106/106/106; combined actor-settings/all phases 39/39.
-// getter inline/noinline declarations 15/15; actor-index local 15; entry-scoped clock/timestamp
-// 15/15; prop-index local 113; unit inline declaration 15; result-first 116; direct clock 96.
+// score 15 (was 41): only the EBX/EBP pair differs: retail keeps the -1 sentinel and then the
+// game-time pointer in EBP and the 0x1e5380 result in EBX, ours the other way round (so the
+// prologue pushes and every use of the two registers differ). Tried: the result as a const
+// pointer 15; the result/ticks/unit index declared elsewhere 15; the enable test nested 15; a
+// game-time pointer local 15 or 91 (the flat form with that pointer 28); elapsed-seconds
+// ready/arms/wait/nested results 15/15/15/15, each with the weighted probability product
+// separated 65/65/65/65; actor reference 15; immutable actor 15; actor/node references 15;
+// settings reference 15; timestamp reference 15; interval reference 15; settings/timestamp
+// references 15; actor/coefficient references 15; whole eligibility, cooldown, reaction and
+// combined test results 15/15/15/15; immutable cooldown inputs 15; read-only two-use clock 91;
+// complete actor/timestamp record and its read-only receiver 15/15; native const/mutable clock
+// records 91/91; interval accumulators on those records 95/95; named elapsed phase 91/91;
+// elapsed plus interval accumulation 95/95; callback failure returns at actor/prop/unit/
+// settings/cooldown/reaction phases 15/106/106/106/106/106; combined actor-settings/all phases
+// 39/39; getter inline/noinline declarations 15/15; actor-index local 15; entry-scoped
+// clock/timestamp 15/15; prop-index local 113; unit inline declaration 15; result-first 116;
+// direct clock 96. Round 15: settings field before the factor in either product 15/15; clock
+// read after the first factor 80; timestamp read before the clock 94 (418 bytes); unit index
+// passed directly 41.
+// Round 28: descriptive local names 15; the random compare written `f() < chance` 15; the prop
+// state named at its test 15; the rate first in the elapsed product 15; `!= NULL` result test 15.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

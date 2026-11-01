@@ -113,13 +113,20 @@ void function_22fba9(c_class_1473c9 *screen)
 }
 
 /* the widgets of the current pane: bitmaps, groups, texts and models */
-// score 23 (was 23): the text loop's offset reset is mov where retail has and, the model loop's
-// the other way, and the model loop copies the screen to eax before reading its animation type.
+// score 23 (was 66): the text loop's offset reset is mov where retail has and, the model loop's
+// the other way, and the model loop copies the screen to eax before reading its animation type
+// (retail uses esi, the call's register argument, directly; both copy it in the text loop).
 // Tried: the text definition as pointer arithmetic, the text loop as a while, a model
 // definition local, a named animation type, the model helper taking the screen type: all 23.
+// Round 45: own counters for the text loop or the model loop, the text result typed as the
+// helper's return type, the text test nested, the inner counter declared with i: all 23.
+// Round 11 (lane 18): the four alike loop bodies (bitmaps, block-24, block-18, models) through one
+// shared inline helper 187 (kept out of line under /O1), as __forceinline 23 (identical code); the
+// block-18 element read at each use (no block pointer) 61; `long i = 0;` declared before the pane
+// lookup 25 (the text loop's reset becomes retail's `and`, but the zero moves above the pane call),
+// with the model loop's own counter as well 25; the text result declared once before its loop 23;
+// `animating` declared before the pane test 23.
 // @retail 0x22fc08
-// score 23 (was 66): the two results are masked into the slot with AND where retail stores them, so
-// the slot keeps the old value instead of the new one.
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
 	s_screen_pane *pane = screen->get_current_pane();

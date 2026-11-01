@@ -312,11 +312,8 @@ PRIVATE __forceinline void function_94151(s_type_f7e40b *reply, const s_session_
     reply->reason = reason;
 }
 
-// score 12 (was 12): the leave reason is computed without a branch (neg/sbb/add) where
-// retail tests the leave result and moves 8 or 9; the shorter body also moves every
-// branch displacement and the padding at the end.
-// success/failure locals 12/12; helper-owned reason 48; widened result 12;
-// separate decisions 61; two result tests 12; reply-field forms 44/72; inverted inner select 12.
+/* Answers a request to leave a session: 8 when the requesting member has left
+   or has nothing to leave (no member, or this machine's own), 9 when leaving failed. */
 // @retail 0x94150
 void network_message_handler_handle_leave_request(c_class_938e0 *handler, long address, const s_session_id *message)
 {
@@ -324,13 +321,14 @@ void network_message_handler_handle_leave_request(c_class_938e0 *handler, long a
 	if (session && function_058d70(session) && session->function_058d20())
 	{
 		long member_index = network_session_find_member_by_address(session, (const s_type_99af70 *)address);
-        long reason;
-        if (member_index == NONE || member_index == session->current_member)
-            reason = 8;
-        else if (network_session_member_leave(session, member_index))
-            reason = 8;
-        else
-            reason = 9;
+		bool success = true;
+		if (member_index != NONE && member_index != session->current_member)
+			success = network_session_member_leave(session, member_index);
+		long reason;
+		if (success)
+			reason = 8;
+		else
+			reason = 9;
 		s_type_f7e40b reply;
 		function_94151(&reply, message, reason);
 		function_07b140(handler->link, address, 10, sizeof(reply), &reply);
@@ -1117,6 +1115,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // free function in type/address/handler/message and handler-first orders 220/220; cases 2/4/8/5 first
 // 220/216/219/216; message-typed local first 190 (444 bytes, one lower, not kept); link pointer first 242
 // (this moves to ecx); explicit default/scoped lookups/returns 220 each. Diagnostic message test first 212.
+// Earlier at 193 (was 193): retail takes the selector in eax, the message in ecx (kept in ebx), this in
+// edx and the address on the stack (edi), with one switch over 0..24; ours the selector in ecx, the
+// address in eax and the message on the stack, and two switches.
 // Case-subset bisect: one-case bodies take the type in eax, any full body keeps ecx. An unused fourth size
 // parameter is dropped by LTCG (the caller stops passing it) and leaves the registers as they are, 220.
 // Round 188: Residual connection/peer interleaves 5,22,6,23,7,24 / 22,5,23,6,24,7 /
@@ -1147,6 +1148,20 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // connection/peer/session and connection/query/peer orders, eight forms,
 // 195/189/194/193/187/192/193/188 fast; control 191, full 193. All restored;
 // selector/payload/sender convention and single dispatch root remain.
+// Round 39 (m3 lane 12): the address read once through its address (on the stack as retail) with
+// orders (address, message, type) 198, (message, type, address)/(message, address, type) 201;
+// one retail-order switch with it 220, also with (type, address, message) 220 (fast; selector ecx,
+// message eax in every form). All restored.
+// Round 219: Residual singleton handlers 8/11/18 before the connection family, all six orders,
+// 191 each; split singleton placements 192/191 (reduced control 191, full 193). All restored;
+// incoming selector/message/sender allocation and dispatch root remain.
+// Round 442: Four-family residual interleaves 191/188/195/195/190/199/187/196 fast, versus
+// control 191 and full 193. Best four-point lead rejected; all exact cases, phases, caller and
+// declarations restored.
+// Round 255: non-connection cases before final connection classifier, first groups
+// D(2,4,0,3), Q(8,9,10), S(12,13,14,18,11), P(22,23,24) in orders
+// DSQP/DPQS/QSDP/QPDS/SDQP/SQDP/PDSQ/PSDQ: 298/281/300/280/302/300/299/287.
+// Added byte remapping and stacked selector regress; original phases restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

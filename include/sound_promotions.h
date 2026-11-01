@@ -73,6 +73,6 @@ struct s_sound_promotion_state
 	byte const *data;
 };
 
-real function_218e50(long tag_index, short set_index, short permutation_index, short sample_index);
+real function_218e50(long tag_index, short set_index, short permutation_index, long sample_index);
 
 #endif

@@ -133,6 +133,27 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 396: Pitch bound-test result with long/short offset and switch/if dispatch,
 // late destinations 532/535/531/534; entry uninitialized destinations 532/535/531/534
 // (fast control 532, full 545). One-point reduction dropped; all original body/helpers restored.
+// Round 290: Existing linear/bit-pin/real-pin input reference subsets 542/532/536/532/542/532/536;
+// all with native gain value 536 (fast control 532, full 545). Original executable source
+// restored.
+// Round 218: Complete speaker library copy with seven native voice-output entry-scope subsets, then
+// all three role names, 529 each (reduced control 532, full 545). Three-count reductions rejected;
+// all native output scopes, copy and body restored.
+// Round 197: Complete computed real gain/routing/pitch subexpressions, masks 1..7,
+// 542/547/554/545/542/547/554; all with native gain value 554.
+// Native send word stores/tests, stores, stores/tests with routing, tests on gain graph
+// 545/538/562/550; complete library speaker copy with store-only/both views, then native
+// gain values, 566/557/566/557. Three- and seven-point gains rejected; original body restored.
+// DL204: staged routing-result bool/byte/short/long 532 each; guarded interval and
+// conditional-absolute delta forms 589/544/589/544 (reduced control 532, full 545). Restored.
+// Lane 10 round 34: retail sends the voice mixbins through a two-case switch on the channel mode (`sub eax, 0;
+// je; dec eax; jne`, case 1 with two calls whose second call is cross-jumped with case 0's one call), where our
+// counted loop gives a countdown loop. Switch cases 0 then 1 (or 1 then 0) with their own calls: retail's block
+// and branch shape, fast 532 (aligned difference 462 -> 434), plain 568 at 1879 bytes (aligned 481 -> 441;
+// the positional score rises with the shorter body). Fallthrough case 1 into case 0 545 fast; a plain real gain
+// selected through the pointer 566 fast, with the fallthrough switch 559.
+// Round 217: Complete active mixing-workspace aggregate zeros, seven subsets, then all with the
+// unused workspace zeroed: 605/597/640/585/619/619/651/665. Original native workspace initialization restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

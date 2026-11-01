@@ -166,8 +166,10 @@ void function_ba540(long object_index, string_handle name)
 	object->variant = (char)function_16d180(definition->model_index, resolved);
 }
 
+/* the count comes first: callers set up the register arguments last to first, and retail's
+   callers (0xba590, 0xd9f70, 0xea6b0) lea the states (edi) before the count (esi) */
 // @retail 0xba690
-void function_ba690(long object_index, byte **states, long *state_count, long *a, long *b)
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b)
 {
 	s_object_blocks_ab *object = ((s_object_blocks_header_ab *)g_4e0300->data)[object_index & 0xffff].object;
 	*state_count = object->regions_size;
@@ -186,9 +188,7 @@ void render_model_choose_permutations(long render_model_index, long variant_inde
 
 // MiniMax lane B (2026-10-27): 0xba690 takes its pointers in registers (count in esi, states in edi), so
 // its own bytes are the same for either parameter order; only the callers' setup order shows it.
-// This caller matches (249 bytes) when it calls a second copy of 0xba690 that takes the count
-// pointer first, while the three other callers match with states first. Two copies of one retail
-// function were not kept; a single prototype that serves all four callers is still to be found.
+// With the count first (coldspear, 2026-10-30) this caller matches, and so does 0xd9f70.
 // @retail 0xba590
 void __stdcall function_ba590(long object_index, dword fixed_region_mask)
 {
@@ -199,7 +199,7 @@ void __stdcall function_ba590(long object_index, dword fixed_region_mask)
     char previous[16];
     s_object_blocks_ab *object = object_blocks_get_ab(object_index);
     s_object_variant_definition_ab *definition = (s_object_variant_definition_ab *)g_4e3b44[object->tag_index & 0xffff].bytes;
-    function_ba690(object_index, &states, &count, &saved_states, &choices);
+    function_ba690(object_index, &count, &states, &saved_states, &choices);
     memcpy(previous, states, count);
     if (definition->model_index != NONE)
         render_model_choose_permutations(definition->model_index, object->variant,

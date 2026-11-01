@@ -1215,7 +1215,7 @@ short function_25cb60(long arg_0, long arg_1, short arg_2, void *arg_3, void *ar
 }
 
 // @retail 0x25c9d0
-short function_25c9d0(long arg_0, long arg_1, bool arg_2, long arg_3, void *arg_4, byte *arg_5, long arg_6)
+short function_25c9d0(long arg_0, long arg_1, bool arg_2, short arg_3, void *arg_4, byte *arg_5, long arg_6)
 {
 	short result;
 	s_squad_datum *local_1 = actor_get(arg_0)->unknown030 != NONE ? squad_get(actor_get(arg_0)->unknown030) : NULL;

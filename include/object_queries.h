@@ -15,7 +15,7 @@ struct s_location
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 bool object_or_parent_hidden(long object_index);
-void object_get_root_location(long object_index, s_location *location);
+s_location *object_get_root_location(long object_index, s_location *location);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 
 #endif

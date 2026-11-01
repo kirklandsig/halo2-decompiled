@@ -65,13 +65,13 @@ Analysis, documentation and review do not need it.
 
 ## Status
 
-Decompilation is under way, and 9977 retail functions now match byte for
+Decompilation is under way, and 10281 retail functions now match byte for
 byte. The checker reports:
 
 ```
-matched 9977 of 11326 game functions (1663585 of 2786206 bytes, 59.71%)
-matched 1259 of 1436 Havok functions (171591 of 290362 bytes, 59.10%)
-matched 11255 of 17654 functions in scope (1836726 of 3904218 bytes, 47.04%)
+matched 10281 of 11326 game functions (1822700 of 2786206 bytes, 65.42%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+matched 11577 of 17654 functions in scope (2000472 of 3904218 bytes, 51.24%)
 ```
 
 Matched code so far includes:
@@ -84,7 +84,8 @@ Matched code so far includes:
 - the game's data arrays, object lists and hash tables;
 - geometry, quaternion and matrix maths;
 - input, file paths, localized strings, random numbers and game state;
-- the first functions of the Havok physics library.
+- most of the Havok physics library's functions, from collision agents and
+  constraints to ragdolls and file streams.
 
 Every function is checked automatically on every build, so a match stays a
 match. Refer to [docs/PROGRESS.md](docs/PROGRESS.md), which is updated as work
@@ -134,7 +135,7 @@ So the work runs in stages:
    matches, it gets names from what the code does, structs for the data it
    reads, and a source file named after its subsystem, without changing a byte
    of the build.
-5. **Havok (started, alongside 3).** The physics library is decompiled the
+5. **Havok (in progress, alongside 3).** The physics library is decompiled the
    same way. It was a prebuilt library compiled without LTCG, so it matches
    with plain per-file flags; see
    [docs/DECOMPILING.md](docs/DECOMPILING.md#havok).
@@ -202,9 +203,10 @@ ready-made prompt for AI coding agents.
    [docs/DECOMPILING.md](docs/DECOMPILING.md) explains the conventions and
    the compiler's quirks.
 
-Havok functions are open too, and they are a gentle start: no whole-program
-optimisation, and many small ones. `python tools/ready.py --owner third:havok`
-lists the ready ones; claim a range the same way.
+Havok functions are open too, and a gentler start than the game's: no
+whole-program optimisation, so they match with plain per-file flags.
+`python tools/ready.py --owner third:havok` lists the ready ones; claim a
+range the same way.
 
 Not ready to write code? Analysis helps too: several contributors have
 mapped a function or a subsystem in a `docs/` note that the next person then
@@ -222,10 +224,12 @@ Thank you to everyone who has contributed to this project so far:
   team allegiances, Bink playback, looping sounds, damage, projectiles, unit
   actions, vehicles, path search, cloth, recorded animations and devices, and
   then the match-tuning of all of it.
-- [@coldspear](https://github.com/coldspear): much of the tooling (the
+- [@coldspear](https://github.com/coldspear): matches across the game, among
+  them object damage and its owner, online tasks and the upload connection,
+  and big score cuts in dozens of near misses; much of the tooling (the
   permuter's mutations, `masked.py`, the near-miss report, claim-aware
   `ready.py`, the ByteMatch report (then decomp.dev) and the hardening of the disc and XBE
-  readers), and analysis documents for the object core, weapons, surface
+  readers); and analysis documents for the object core, weapons, surface
   lighting, Havok, the Xbox Live logon and more.
 - [@BirchWoodGod](https://github.com/BirchWoodGod): matched ranges all over
   the game, from units and bipeds to network voice, team balancing, map paths,
@@ -246,7 +250,8 @@ Thank you to everyone who has contributed to this project so far:
   compile and behave as retail.
 - [@Roasted-Codes](https://github.com/Roasted-Codes): the first contributor
   matches in Havok, the physics library: its collision-pair dispatch and
-  child-agent code.
+  collision agents, constraint serialization, motion steps, and the
+  library's file streams and string helpers.
 - [@ccgman123](https://github.com/ccgman123): a careful diagnosis of seven
   near misses, the cleanup that removed an in-body pragma from 0x9d1c0, the
   match of 0x1f3230, and the tools that keep disabled drafts out of the ready
@@ -257,8 +262,10 @@ Thank you to everyone who has contributed to this project so far:
   render and tag-function code, and notes on what still differs in a dozen
   near misses.
 - [@averycpawelek](https://github.com/averycpawelek): matches in the unit
-  code and nearby (0xc7100, 0xe5840, 0xe2d80 and four more), and 32 near
-  misses brought closer.
+  code and nearby (0xc7100, 0xe5840, 0xe2d80 and more) and near misses
+  brought closer, then much of Havok: its constraint helpers, ragdoll and
+  hinge descriptions, service lifecycle and stream helpers, and shared
+  physics helpers.
 
 [@kirklandsig](https://github.com/kirklandsig) maintains the project: runs the
 build, reviews and merges every pull request, and keeps the

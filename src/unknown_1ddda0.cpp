@@ -66,24 +66,6 @@ struct s_1debd0
  short field_6;
 };
 
-// score 12 (was 12): the cross product keeps the other operand order, and
-// every swap of the factors leaves this code unchanged. Only the XMM numbers
-// differ: retail multiplies into (point.y - p.y) for the second product, ours
-// into (q.x - p.x). Tried: `0.0f <` 12; `!(... <= 0)` 13; the negated cross
-// with `< 0` 12; `-(b) + a` 12; products in locals (either order) 12; a
-// cross-product helper (either argument order) 12; member-wise stores (x or y
-// first) 12; q's difference inline in the product 12; q projected before
-// point - p 12; projected and differences declared x/y interleaved 43-44;
-// all-scalar locals 22; one inline expression with no difference locals 22;
-// q - p straight from the 3D point 15; a cached g_440b94 row 99; the
-// projections through 0x120810 104; a result flag with break 79; leaving
-// on `local_5 == local_4` 72; comparing the products 50; the input difference
-// after the edge difference 47; the far vertex projected first 12; vertex
-// coordinates through `real const *` 12; a named cross value 12; the edge
-// difference straight from the vertex 15 (0x1dea00 lost). About 2000
-// compile-only screens (statement orders, member or aggregate forms, the
-// comparison forms, side-flag types, named products, an input copy) never
-// give retail's numbering.
 // @retail 0x1debd0
 bool function_1debd0(dword const *arg_1, s_bsp3d const *arg_0, short arg_2, long arg_3,
  short arg_4, bool arg_5, point2f const *arg_6)
@@ -103,10 +85,12 @@ bool function_1debd0(dword const *arg_1, s_bsp3d const *arg_0, short arg_2, long
   point3f const *local_11 = &local_0->field_3c[local_9->field_0[local_10]].field_0;
   point3f const *local_16 = &local_0->field_3c[local_9->field_0[!local_10]].field_0;
   point2f local_12 = { local_11->n[g_440b94[arg_4 * 2 + arg_5][0]], local_11->n[g_440b94[arg_4 * 2 + arg_5][1]] };
-  point2f local_14 = { arg_6->x - local_12.x, arg_6->y - local_12.y };
   point2f local_15 = { local_16->n[g_440b94[arg_4 * 2 + arg_5][0]], local_16->n[g_440b94[arg_4 * 2 + arg_5][1]] };
-  point2f local_17 = { local_15.x - local_12.x, local_15.y - local_12.y };
-  if (local_17.y * local_14.x - local_14.y * local_17.x > 0.0f)
+  point2f local_14;
+  vector2d_from_points2d(&local_12, arg_6, &local_14);
+  point2f local_17;
+  vector2d_from_points2d(&local_12, &local_15, &local_17);
+  if (local_14.x * local_17.y - local_17.x * local_14.y > 0.0f)
    return false;
   local_5 = local_9->field_4[local_10];
  } while (local_5 != local_4);
@@ -333,7 +317,7 @@ struct s_1de2c0
  long field_18;
  long field_1c[128];
  short field_21c;
- bool field_21e;
+ char field_21e;
  bool field_21f;
  point2f field_220;
 };
@@ -391,21 +375,6 @@ PRIVATE __forceinline real function_1de2c2(point3f const *arg_0, point3f const *
    inlines it into 0x1de2c0 and 0x1ddea0 */
 real *function_120810(real const *point, short axis, byte side, real *out);
 
-// score 36 (was 44): retail restores ebx (the side flag) before ebp (the surface) after the first
-// loop's inlined insertion; before the projection loop it loads the side flag with `mov cl` and widens
-// it later (ours `movzx ecx, byte ptr`); inside the loop it reads 0x21e before 0x21c; and the second
-// cross product multiplies into the near vertex's y difference (ours into the far vertex's x).
-// Tried: the projection helper for both edge points without the volatiles 109; the volatiles removed
-// 98; the side flag declared first 44; the insertion helper's parameters swapped 44; the first loop's
-// exit test as an if/break 44; the first flag read in a char local 95 (mov dl with a sign extension);
-// the flag read in a byte local instead of a long one 93. Round 74 (identical code unless scored):
-// the in-loop flag read before the volatile side copy, the pre-loop index without the bool local,
-// the bool local read first, and a byte local, all 44; the flag set before the first insertion 238;
-// a long side index in the first loop 190. Round 5: the far vertex projected through 0x120810 in place
-// of hand-scaled byte offsets 36 (kept); the side copy not volatile 74; the 0x21c read not volatile
-// 94; one side flag and edge pointer for all three loops 55; both vertices through 0x120810 74; the
-// far difference's subtractions swapped 36; the second product's factors swapped 36; a separate
-// projected point then the difference 36.
 // @retail 0x1de2c0
 void function_1de2c0(s_1de2c0 *arg_0, long arg_1)
 {
@@ -457,16 +426,18 @@ void function_1de2c0(s_1de2c0 *arg_0, long arg_1)
    s_1ddda2 const *local_19 = &local_12[local_15];
    bool local_20 = local_19->field_a == arg_1;
    volatile long local_26 = local_20;
-   long local_27 = arg_0->field_21e;
+   byte local_27 = arg_0->field_21e;
    real const *local_21 = (real const *)&local_13[local_19->field_0[local_20]].field_0;
    real const *local_24 = (real const *)&local_13[local_19->field_0[!local_20]].field_0;
    long local_22 = *(short const volatile *)&arg_0->field_21c * 2 + local_27;
-   point2f local_23 = { local_21[g_440b94[local_22][0]] - arg_0->field_220.x, local_21[g_440b94[local_22][1]] - arg_0->field_220.y };
+   point2f local_23 = { local_21[g_440b94[local_22][0]], local_21[g_440b94[local_22][1]] };
    point2f local_25;
    function_120810(local_24, arg_0->field_21c, arg_0->field_21e, &local_25.x);
-   local_25.x -= arg_0->field_220.x;
-   local_25.y -= arg_0->field_220.y;
-   if (local_25.y * local_23.x - local_23.y * local_25.x < 0.0f) return;
+   point2f local_28;
+   point2f local_29;
+   vector2d_from_points2d(&arg_0->field_220, &local_23, &local_28);
+   vector2d_from_points2d(&arg_0->field_220, &local_25, &local_29);
+   if (local_28.x * local_29.y - local_29.x * local_28.y < 0.0f) return;
    local_15 = local_19->field_4[local_26];
   } while (local_15 != local_14);
  }

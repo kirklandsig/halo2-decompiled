@@ -158,20 +158,7 @@ s_object *function_badc0(long object_index, dword type_mask);
 bool function_0c7070(long object_index);
 long function_10f5f0(long object_index);
 
-// score 32 (was 78): frame, shared zero, delayed saves and seat loads agree; the
-// label result still materializes a Boolean and zero-extends it, adding four bytes.
-// Earlier: retail shared esi zero for the result/mode and saved ebp only for the
-// label; ours saved ebp at entry and stored literal zero.
-// Round 411: seat-word/query/label/both-query-label producers 81/79/71/71 (fast);
-// word+query/word+label/all/all with one result exit 81/65/65/53. Removing the
-// one-use seat/definition receivers on that graph 53/53. On label-result ownership,
-// early invalid return/shared result/both 85/32/103; shared short result kept, plain 32.
-// Constant label success 90; dword/Boolean result 31/69 (Boolean loses callers);
-// final binary result test with short/dword storage 96/92. Dword one-point gain restored.
 // @retail 0x155810
-// score 78 (was 78): retail pushes esi and edi at the top and keeps a zero in esi for the
-// mode, and it pushes ebp only around the call that fills it; ours pushes ebp in the
-// prologue, which shifts every stack offset, and retail returns the 1-results in eax
 short function_155810(long unit_index, short *mode)
 {
 	short result = 0;
@@ -195,17 +182,21 @@ short function_155810(long unit_index, short *mode)
 			}
 			if (flag6)
 			{
+				bool mode_selected = false;
+
 				if (function_0c7070(unit_index))
 				{
 					*mode = 1;
-					result = 1;
-					goto done;
+					mode_selected = true;
 				}
-				bool special_label = label == 0x400004a;
-				if (special_label)
+				else if (label == 0x400004a)
 				{
 					*mode = 3;
-					result = special_label;
+					mode_selected = true;
+				}
+				if (mode_selected)
+				{
+					result = 1;
 					goto done;
 				}
 			}

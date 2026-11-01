@@ -14,6 +14,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "projection_storage.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 
 /* Light pool queries and the shapes copied from definitions and placements. */
 s_record_pool *g_4e030c;
@@ -442,12 +443,23 @@ static __forceinline void point_add_scaled_c35a0(point3f const *point, vector3f 
     result->z = point->z + vector->k * scale;
 }
 
-// score 34 (was 34): the x87 magnitude pops k and sums i, k, j rather than retaining k and summing k, j, i;
-// the inverse-times-i load, BSP word load and loop-entry padding also differ.
-// Shared vector3f_add_scaled 34; scale then add 100; nested scale/add 100; shared scaled-add with
-// per-use BSP globals and a loop-local structure 34; force-inline normalize 34; both helpers force-inline 34;
-// force-inline difference 34; point outside the loop 34; inline target 34; inline caller 34;
-// early default length 34.
+/* scales v to unit length and returns its old length, or 0 for a vector too short to normalize */
+static inline real direction_normalize_c0840(vector3f *v)
+{
+    real m = (real)sqrt(v->k * v->k + v->j * v->j + v->i * v->i);
+    if (!(fabs(m) < 0.0001f))
+    {
+        real inverse = 1.0f / m;
+        v->i = inverse * v->i;
+        v->j = inverse * v->j;
+        v->k = inverse * v->k;
+        return m;
+    }
+    return 0.f;
+}
+
+/* steps along the segment from start to end, doubling the step up to 0.1, until a point lies in a
+   BSP leaf with a cluster: that point and its distance along the segment */
 // @retail 0xc0840
 bool function_c0840(point3f const *start, point3f const *end, point3f *out, real *distance)
 {
@@ -455,21 +467,20 @@ bool function_c0840(point3f const *start, point3f const *end, point3f *out, real
     real travelled = 0.0f;
     real step = 0.001f;
     vector3f direction;
-    vector3d_from_points3d(start, end, &direction);
-    real length = normalize_inline(&direction);
+    scaled_difference3f(start->n, end->n, 1.0f, direction.n);
+    real length = direction_normalize_c0840(&direction);
     if (length > 0.0f)
     {
-        s_match_globals *structure = g_4e0348;
-        short bsp_index = g_4686c4;
         s_bsp3d *bsp = g_4e033c;
         while (!result && length > travelled)
         {
             point3f point;
             point_add_scaled_c35a0(start, &direction, travelled, &point);
-            if (bsp_index != NONE)
+            if (g_4686c4 != NONE)
             {
                 long leaf = function_14a280(bsp, 0, &point);
-                if (leaf != NONE && *(short *)(*(byte **)((byte *)structure + 0x30) + leaf * 8) != NONE)
+                short cluster = leaf != NONE ? *(short *)(*(byte **)((byte *)g_4e0348 + 0x30) + leaf * 8) : NONE;
+                if (cluster != NONE)
                 {
                     *distance = travelled;
                     *out = point;
@@ -786,7 +797,11 @@ void function_42850(long object_index, long tag_index, point3f const *position,
     vector3f const *third);
 byte g_55e708;
 
-// score 109 (was 109): BLOCKED-BY 0x2dba0: it takes the position in ecx and the tag on the stack where retail
+// score 128 (was 109): 0x2dba0 now takes the tag in ECX and the direction in EDI as in retail; the marker loop
+// walks the forward pointer in EDI (position = edi + 0x24, index in EBX) where retail walks the position pointer
+// in EBX, derives the forward with `lea edi, [ebx - 0x24]` and keeps the index and count in memory (frame 0xf0
+// against 0xec); the opacity clamp stores the product first. Earlier: BLOCKED-BY 0x2dba0: it took the position in
+// ecx and the tag on the stack where retail
 // passes the tag in ecx and the position on the stack, so the marker loop keeps its index in ebx and
 // spills the position where retail walks the position pointer in ebx with index and count in memory.
 // Round 70: indexed loop with a marker pointer per pass 109; single-marker case first 146; object
@@ -797,6 +812,16 @@ byte g_55e708;
 // in retail, but the loop counts down in registers); short index only 114; short count only 128.
 // Round 141: bool warning flag 109; `count = 1` before the flag test 126; `count == 0` fallback test
 // 109; colour pointer local 109.
+// Round 39: count before markers 109; count/index before markers 109; cursor before the count clamp 109;
+// const cursor 109; pointer for loop 109; marker_count/marker_index names 109/109;
+// cursor after the array declaration 109. Fast preview 131 with caveats; plain all 109; original restored.
+// Round 175 (plain): the absolute index written at each use 109; the effect tag read into a named local
+// for the test and both calls 163 (retail's 607 bytes, but a 0xf4 frame and every register moved).
+// Round 45 (lane 10, plain): an indexed for loop over `&markers[i].matrix` 128; a position pointer local in the
+// indexed loop 128, in the pointer loop 128; the product and the clamped opacity as two locals 128 (aligned
+// 99 -> 96); short count and index 145 (582 bytes). Compile-only (it reproduces the forward-pointer IV): a matrix
+// pointer, both address locals and a marker pointer in the for loop all keep it; a walked position pointer
+// gives two pointer IVs, not retail's one.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -956,15 +981,16 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
         vj *= scale;
         vk *= scale;
     }
-    real x = matrix->forward.k * vk + matrix->forward.j * vj + matrix->forward.i * vi;
-    real y = matrix->left.k * vk + matrix->left.i * vi + matrix->left.j * vj;
-    real z = matrix->up.k * vk + matrix->up.i * vi + matrix->up.j * vj;
-    real scale = -1.0f / z;
-    result->x = scale * x;
-    result->y = scale * y;
+    vector3f transformed;
+    transformed.i = matrix->forward.k * vk + matrix->forward.j * vj + matrix->forward.i * vi;
+    transformed.j = matrix->left.k * vk + matrix->left.i * vi + matrix->left.j * vj;
+    transformed.k = matrix->up.k * vk + matrix->up.i * vi + matrix->up.j * vj;
+    real scale = -1.0f / transformed.k;
+    result->x = scale * transformed.i;
+    result->y = scale * transformed.j;
 }
 
-// score 513 (was 513): the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 482 (was 482): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -993,6 +1019,24 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // again 511: then the tables agree and the first cross product's loads (retail loads up.i, up.j and the
 // reference into registers) and normalize3d's product order are next. Vertex forms with 0 - radius, a
 // negative-radius local before or after radius, const radius: our -radius group stays first (harness).
+// Round 91 (lane 7): kept the projection rows in a `vector3f transformed` plus the shared
+// cross3f_staged for both crosses (the file's twin with swapped operands) 482: the top matches
+// retail to the first cross product. Before that: the vertex copied into a local vector 622, with
+// the rows too 619; rows alone 511; rows with normalize_inline 587; with cross3f for the left cross
+// 537, also normalize_inline 419 (retail's length, 298 aligned). On 482: rows in retail's or natural
+// term order 482/482 (canonicalised); y stored first 480; normalize_inline 575; rows through dot3f
+// 605; the forward cross's i row with its operands swapped (diagnostic) 482. Left: the first cross
+// folds up.i/up.j where retail loads them, normalize3d's sum (j, i, k against i, k, j), the forward
+// cross's i-row loads, and the projection rows.
+// Round 175 (one-file LTCG harness, exact here; plain where marked): a face row pointer for the four
+// projections 481 (plain); a const matrix pointer for them 486, both 483; up / left vector pointers in
+// the sphere arm 620/630 (with the face and/or matrix pointer 619-636); a plane pointer for the normal
+// and distance 543; depth from the radius local 607; the projections as a corner loop 529 (plain),
+// with depth from the radius 610; the projection's vector as one struct copy 624 (2892 bytes); one scale
+// local for both projection scales 500; the inner scale named `inverse` 482 (identical); the scale as
+// three divides 599. Diagnostic: dead initialised locals change it by count alone (+1..+12:
+// 479/479/539/315/483/480/480/480/479/479/483/483, any position); +4 gives 2826 bytes and fixes most of
+// the projection rows, so a natural form with that many more symbols is the lead.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1026,9 +1070,9 @@ void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab co
             vector3f reference = *g_4687a8;
             if (i == 1 || i == 3)
                 reference = *g_4687ac;
-            cross_product_c1a80(&reference, &entry->matrix.up, &entry->matrix.left);
+            cross3f_staged(&entry->matrix.up, &reference, &entry->matrix.left);
             normalize3d(&entry->matrix.left);
-            cross_product_c1a80(&entry->matrix.up, &entry->matrix.left, &entry->matrix.forward);
+            cross3f_staged(&entry->matrix.left, &entry->matrix.up, &entry->matrix.forward);
             entry->matrix.position = shape->origin;
             entry->matrix.scale = 1.0f;
             light_projection_point_ab(&entry->matrix, &vertices[faces[i][0]], &entry->points[0]);
@@ -1126,20 +1170,6 @@ void function_c0110()
     }
 }
 
-// score 6 (was 6): the last flag update holds the object in ecx and the flags in eax, retail the
-// reverse. light_partition_clear after the & 8 test with the light from g_4e030c->data and the pool
-// read at each use (kept); the same with a pool local 59, through the s_light_ab pointer 80; flags
-// through a ternary, a typed object, a dword view, a pointer to the flags 6/6/6/6; flag test negated 7;
-// object fetched after the flag 8; datum iterator 6; entry declared in the loop 6; a 600 s permuter
-// run (59 tries), none below 6. Round 72: `|=`/`&=` on the object's flags in each arm 68 (the
-// result test is threaded away); the flags read in each arm 58; the iterator declared before the
-// object 6; the flags as `((dword *)object)[1]` 6; the clear arm first 7; `dword flags = 0;`
-// declared before the object 6. Round 95: the loop leaving through `!remaining` in its condition 6;
-// the object read as `*(byte **)(g_4e0300->data + i * 12 + 8)` (the file's form) 6, with `remaining`
-// declared before it 8; a set-or-clear ternary on the field 68; the light index read directly instead
-// of through a reference local 6 (kept). Round 52: explicit per-arm stores, direct per-arm stores,
-// and direct stores with an index reference 87/87/87; a direct store ternary 6; the object or flags
-// live at entry 6/6; flags declared before the object 6; separate original and updated flag values 6.
 // @retail 0xc3260
 void __stdcall function_c3260(long light_index, bool clear_object_flag)
 {
@@ -1149,8 +1179,7 @@ void __stdcall function_c3260(long light_index, bool clear_object_flag)
     long object_index = light->object_index;
     if (object_index != NONE && clear_object_flag)
     {
-        struct s_object_header { byte unknown00[8]; byte *object; };
-        byte *object = ((s_object_header *)g_4e0300->data)[object_index & 0xffff].object;
+        byte *object = (byte *)((s_light_object_header_ab *)g_4e0300->data)[object_index & 0xffff].object;
         bool remaining = false;
         s_record_pool_iterator iterator;
         iterator.data = g_4e030c;
@@ -1165,12 +1194,11 @@ void __stdcall function_c3260(long light_index, bool clear_object_flag)
                 break;
             }
         }
-        dword flags = *(dword *)(object + 4);
+        dword *flags = (dword *)(object + 4);
         if (remaining)
-            flags |= 0x40;
+            *flags |= 0x40;
         else
-            flags &= ~0x40;
-        *(dword *)(object + 4) = flags;
+            *flags &= ~0x40;
     }
     record_pool_release(g_4e030c, light_index);
 }
@@ -1188,28 +1216,6 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius, lo
 void function_11bed0(s_location *location, point3f const *point);
 point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
-// score 70 (was 231): the second vector's rotation products come out in another canonical order than
-// retail's (one product of the first too); the tail is BLOCKED-BY 0xba300 (retail passes the object in
-// ecx and the location in eax), which shifts the last block by one instruction. Round 141: the
-// partition as the global itself, the rotations through matrix_transform_vector, the node matrix through
-// object_node_matrix(object_get()) and the far point through point_add_scaled_c35a0 in each arm (once
-// after the marker test 295; a new two-pointer add helper 70). Node matrix through the out-of-line
-// 0xb8bd0 aligned 71 but stays a call (/Ob1 file; inline/forceinline redeclarations ignored); position/
-// forward/up pointer locals aligned 127/114; named rotation outputs/inputs 88/157; const matrix 72; the
-// helper's sums in up-first text order 70 (canonicalised). Round 143: retail compiles both rotations
-// alike (sum up*k + left*j, then forward*i; vector loaded j, k, i); ours gets the first one's
-// forward product reversed and sums the second one up + forward + left. Diagnostics on the shared
-// header (restored): vector-first products 70 (identical), components read at each use 153; const
-// vector arguments 70; a file-private up-first normal transform returning its output (the form other
-// files keep) 70 (identical); the parameter alias dropped 158. Round 147: whichever rotation comes
-// second gets the other order (diagnostics: the two swapped, or a call between them); the arm's locals
-// declared at the top 70 (identical); a named object pointer 72; a named node index 72; the axes as
-// two-element vector arrays 86; a `__forceinline` redeclaration of the rotation helper 70 (identical).
-// files keep) 70 (identical); the parameter alias dropped 158. Round 81: the marker local scoped to
-// its arm 78; the overflow flag declared first 70 (same code); forward/up output pointer locals 86;
-// the location pointer taken at the top 155; the marker flag tested as a byte 70 (same code);
-// diagnostics on the shared header (restored): the helper's components loaded j,k,i / k,j,i / i,k,j /
-// j,i,k / k,i,j 78/76/78/75/81 (i,j,k stays best).
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
@@ -1217,15 +1223,18 @@ void __stdcall function_c2d00(long light_index)
     long const *light_reference = &light_index;
     byte *light = g_4e030c->data + (*light_reference & 0xffff) * 0x110;
     byte *definition = g_4e3b44[*(long *)(light + 4) & 0xffff].bytes;
-    if (!(*(word *)(light + 2) & 2))
+    word flags = *(word *)(light + 2);
+    if (!(flags & 2))
         return;
-    if (*(word *)(light + 2) & 4)
+    if (flags & 4)
         function_c0840((point3f *)(light + 0x84), (point3f *)(light + 0x90),
             (point3f *)(light + 0xa0), (real *)(light + 0x9c));
-    if (*(short *)(light + 0x54) != NONE)
+    short marker_index = *(short *)(light + 0x54);
+    if (marker_index != NONE)
     {
-        long marker_name = function_b8c40(*(long *)(light + 0x4c), *(short *)(light + 0x54));
-        if ((*(long *)definition & 0x20) &&
+        long marker_name = function_b8c40(*(long *)(light + 0x4c), marker_index);
+        bool uses_weapon_marker = (definition[0] & 0x20) != 0;
+        if (uses_weapon_marker &&
             first_person_weapon_get_marker(*(long *)(light + 0x4c), marker_name,
                 (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8)))
         {
@@ -1234,21 +1243,27 @@ void __stdcall function_c2d00(long light_index)
         else
         {
             function_b8d30(*(long *)(light + 0x4c), marker_name, &marker, 1, false);
-            *(point3f *)(light + 0x84) = marker.matrix.position;
+            point3f *position = (point3f *)(light + 0x84);
+            *position = marker.matrix.position;
             *(vector3f *)(light + 0xac) = marker.matrix.forward;
             *(vector3f *)(light + 0xb8) = marker.matrix.up;
             point_add_scaled_c35a0((point3f *)(light + 0x84), (vector3f *)(light + 0xac), 1.0f, (point3f *)(light + 0x90));
         }
     }
-    else if (*(long *)(light + 0x58) != NONE)
+    else
     {
-        transform4x3f *matrix = object_node_matrix(object_get(*(long *)(light + 0x58)), *(short *)(light + 0x5c));
-        transform4x3f_apply_point(matrix, (point3f *)(light + 0x60), (point3f *)(light + 0x84));
-        matrix_transform_vector(matrix, (vector3f *)(light + 0x6c), (vector3f *)(light + 0xac));
-        matrix_transform_vector(matrix, (vector3f *)(light + 0x78), (vector3f *)(light + 0xb8));
-        point_add_scaled_c35a0((point3f *)(light + 0x84), (vector3f *)(light + 0xac), 1.0f, (point3f *)(light + 0x90));
+        long parent_index = *(long *)(light + 0x58);
+        if (parent_index != NONE)
+        {
+            s_slot_object_view *object = object_get(parent_index);
+            transform4x3f *matrix = object_node_matrix(object, *(short *)(light + 0x5c));
+            transform4x3f_apply_point(matrix, (point3f *)(light + 0x60), (point3f *)(light + 0x84));
+            matrix_transform_vector(matrix, (vector3f *)(light + 0x6c), (vector3f *)(light + 0xac));
+            matrix_transform_vector(matrix, (vector3f *)(light + 0x78), (vector3f *)(light + 0xb8));
+            point_add_scaled_c35a0((point3f *)(light + 0x84), (vector3f *)(light + 0xac), 1.0f, (point3f *)(light + 0x90));
+        }
     }
-    function_c28b0(*light_reference);
+    function_c28b0(light_index);
     if (!(light[2] & 8) && *(short *)(light + 0x48) == NONE &&
         (*(long *)definition & 0x8000) && *(real *)(light + 0x24) > 0.0f)
     {
@@ -1261,12 +1276,17 @@ void __stdcall function_c2d00(long light_index)
     function_11bed0(location, (point3f *)(light + 0x38));
     if (*(short *)(light + 0x48) == NONE && (!(light[2] & 1) || (*(long *)definition & 8)))
     {
-        if (*(long *)(light + 0x4c) != NONE)
-            object_get_root_location(*(long *)(light + 0x4c), location);
-        else if (*(long *)(light + 0x58) != NONE)
-            object_get_root_location(*(long *)(light + 0x58), location);
+        long owner_index = *(long *)(light + 0x4c);
+        if (owner_index != NONE)
+            object_get_root_location(owner_index, location);
         else
-            function_11bed0(location, (point3f *)(light + 0x18));
+        {
+            long parent_index = *(long *)(light + 0x58);
+            if (parent_index != NONE)
+                object_get_root_location(parent_index, location);
+            else
+                function_11bed0(location, (point3f *)(light + 0x18));
+        }
     }
     bool overflow;
     function_1cac60(NULL, &g_4e0310_partition, light_index, (long *)(light + 0x10), (point3f *)(light + 0x18),
@@ -1444,7 +1464,60 @@ extern s_object_list *g_4de2f4;
 // declaration 49.
 // Round 77: `real &fraction` 49 (same code); the tint copied after the first call 75; the colour copies
 // after the second call 82; the pointer for the first call only (`light->fraction` after it) 214; the
-// pointer declared with the colours 88.
+// pointer declared with the colours 88. Round 80: the four alpha stores chained in one assignment 51
+// (in reverse order 49); a const fraction pointer 49; the tint declared after the colours 49; the
+// definition's function flags named for both calls 377.
+// pointer declared with the colours 88. Round 10 (lane 14): the tint read through a `color3f const *`
+// local 49; the four definition colours (0x40, 0x4c, 0x58, 0x64) as one `color3f *` array for the copies
+// 417, and in every arm 370; `real *const fraction` 49; the function flags as a named local for both
+// calls 399. Round 12 (lane 14): the fraction pointer at the function top 93 (computed at entry in EDI),
+// also for the arm's later reads 93; at the arm's top with every read through it 88; every arm read through
+// it 49 (same code); the four alpha stores before the copies 49 (same code).
+// Lane 18 r1 (statement orders of the block, the rest unchanged): alphas between the tint and the copies
+// 49; pair copies first with the tint after them 65; tint after the four copies 65; copies 2, 1, 4, 3 with
+// alphas likewise 58; copies 1, 3, 2, 4 55; the fraction pointer before the copies 75; alphas reversed 51.
+// it 49 (same code); the four alpha stores before the copies 49 (same code). Lane 13 round 18:
+// the whole count is the fraction pointer (`[ebx]` against our `[ebp + 0xd0]`, 4 bytes, shifting
+// every later call) and the copy-store schedule that frees EAX for it; a compile-only build does
+// not reproduce this block (it gives EBX), so it is an LTCG effect. Pointer as a byte offset from
+// the light 49, as an element of the radius block 49 (same code); re-derived from the pool global
+// 282; `&light->fraction` passed to 0xbab40 with the pointer kept for the later read 49, the
+// pointer declared between the two calls 49 (same code).
+// Lane 14 r19 (fast with the callees listed reproduces 49; 0xbab40 gets retail's three pushes and
+// nothing scratch lives across it, so it is not the blocker): the fraction pointer defined between
+// copies 3 and 4 / 2 and 3 / 1 and 2 / the tint and copy 1 62/75/76/75 (still EAX, rematerialised);
+// the light's name read into a local before the 0xbab40 call 49 (same code).
+// Round 91 (lane 7; harness counts, where the unchanged source gives 50): the colour copies after
+// the 0xbab40 call 79; the copied view point typed point3f 50; the first blend's fraction named
+// after 0xbad50 50; `object` declared before `object_index` 52; the object through `object_get`
+// 50; the alphas chained 52; a trivial 0xbab40 body (diagnostic) 393.
+// Round 32 (lane 10, fast counts; aligned 8: the colour-copy schedule and `[ebx]` only): the fraction
+// pointer renamed (value / blend_value / zfraction / a_fraction) 49 each; the else arm's colour copy as
+// a plain struct assignment 49 (same code); the pointer declared at function scope and assigned in the
+// arm 49; the light as an `s_light_dynamic *const` 49; the first arm's blend read from the field at each
+// use 324 (aligned 16); `&light->fraction` passed directly again 214 (1616 bytes, aligned 13: also
+// turns the pair fade products).
+// Round 175: the four colours as aggregate initialisers (alpha first) 414 (plain); the name read into
+// a local before 0xbab40 50; the object index chosen by one ternary 428; the function arm's blend read
+// from the field at each use 325; the pair colours copied before the other two (tint first) 58
+// (harness, where the unchanged source gives 50). Diagnostics on the
+// callee (harness): 0xbab40 returning true straight from its 1.0 case or without its recursive call
+// leaves this at 50; only a body small enough to inline moves it (393).
+// Round 111 (lane 6, fast): the fraction pointer from a second view of the light record (re-indexed from the pool)
+// 310 (1607 B; the light index moves to the stack and the later read is still folded to [ebp + 0xd0]); the first
+// blend's fraction read through that view 283; the colours declared before the tint 49; colours declared first,
+// second, pair_first, pair_second 49; pair_second, pair_first, second, first 49. 0xbab40 saves EBX/ESI/EDI/EBP as
+// retail does, so its body is not what keeps EBX from the pointer.
+// Round 30 (lane 13, fast): the tint copied with memcpy 49 (same code); rgb copies in the order
+// first, second, pair_second, pair_first 52; second, first, pair_first, pair_second 54; the tint copied
+// between the second and third copies 59 (1612 bytes), after the first copy 55 (1612 bytes).
+// Round 51 (lane 16, fast with 0xbab40/0xbad50/0x131d60/0xc0b00): the pointer read at the second 0x131d60
+// call and `light->fraction` at the first 49. 0xbab40 (ours, 28) with the 1.0 case's own `return enabled`
+// 117, with a named early result too 115 (this function stays 49 with either).
+// Round 45 (lane 10, fast): 1..28 unused locals at the top or in the arm 49 each (the copy schedule is not a
+// numbering tie; 1..4 extra live stores keep it too and only turn the pair fade products); the colours as
+// `color4f colours[2], pair_colours[2]` 49, as one `color4f colours[4]` 49; a const definition 49; the tint
+// copy-constructed 49; the tint as a `point3f view_point = *g_468710` 49 (all the same code).
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
 {

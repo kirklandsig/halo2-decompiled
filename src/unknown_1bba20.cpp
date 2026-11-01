@@ -158,7 +158,7 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 			ticks = real_to_long(time);
 			player->unknown0a = (short)ticks;
 
-			function_d0620(vehicle_index, &iterator);
+			function_d0620(&iterator, vehicle_index);
 			while (function_d0690(&iterator))
 			{
 				s_slot_object_view *child = object_get(iterator.child_index);

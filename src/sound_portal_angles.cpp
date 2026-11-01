@@ -38,7 +38,16 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 real function_50650(real cosine);
 
 // score 20 (was 20): the whole block is one consistent XMM4/XMM5 swap: ours loads the
-// offset's k into xmm5 and its i into xmm4, retail loads them the other way round.
+// offset's k into xmm5 and its i into xmm4, retail loads them the other way round. Ours gives
+// XMM4 to whichever of i/k is computed first before the call; retail computes i first (with k
+// last, through the portal pointer) and still gives k XMM4. Round 23: offset statements i,j,k
+// 38; k,j,i 43; i,k,j 38; j,k,i 21 (the reloads become retail's, the pre-call order breaks);
+// k,i,j 38; j,k,i without the point address read 22; the radius clamp as a ternary 20.
+// Round 29 (lane 14): the radius and the else arm's zero only follow the offset colouring (the
+// radius takes the register the last product frees); j,k,i gives retail's reloads but hoists
+// `left.k * k` and the radius load. `distance < radius` 20 (same code); `radius <= 0.001f` 21;
+// the negation arm first 30; the portal pointer before the NONE test 199; j,k,i with the call
+// reading `point` directly 21.
 // @retail 0x18ab70
 void function_18ab70(s_sound_portal_bsp const *bsp, long portal_index, s_sound_listener_rotation const *listener,
 	bool reverse, point3f const *point, real radius, s_sound_portal_angles *angles)

@@ -132,6 +132,46 @@ bool function_bafb0(long object_index, long ancestor_index);
 
 bool function_14ddc0(long local_player_index);
 
+// score 44 (was 44): this round: the listings were re-read only; no new shape of the existence
+// flag was found. Retail keeps the existence byte in BL across the 0x155760 call and re-tests it
+// after the split mask, our compiler folds the re-test away and keeps the flag in AL; the loop
+// index is in EBX where retail uses EDI and the unit in EDI where retail uses ESI.
+// score 44 (was 44): this round: the existence test nested around the split test with the mask
+// kept as a number gives 52 (188 bytes, retail's length, and the split test becomes retail's
+// `test dl, 3`), the same with the existence tested on its own 52 (the compiler still folds the
+// re-test away and keeps the flag in AL), and the mask kept as a number without the nesting 72
+// (192 bytes). Still the existence byte in AL where retail keeps it in BL and re-tests it after
+// the split mask, the loop index in EBX where retail uses EDI and the unit in EDI where retail
+// uses ESI.
+// score 44 (was 44): this round's further trials on the split mask and the existence flag: the
+// mask kept in a long local 92 (204 bytes) and the same with the mask test as its own statement
+// 95 (206); the mask test written into the condition 52 (188 bytes, retail's length, but the
+// existence re-test is folded away); the existence test as a second call to 0x14ddc0 89 (203
+// bytes), the same with the player index in a local 80 (204) and with the mask in a local 80;
+// the second call nested inside the mask branch 89 (203), the same with the mask in a local 89
+// and with the object parameter in a local 89 (203). None of them lowers the score.
+// score 44 (was 44): the existence test written as a second helper call, so that the flag is
+// kept across the 0x155760 call and tested again after the split mask, reproduces retail's
+// `setne bl` and its second `test bl, bl`, but the loop index then takes EBP, the table
+// pointer is spilled and the body grows to 203 bytes (89 against 44 at 191); the nested, the
+// single-condition and the unit-ternary forms of the same idea give the same 89 at 203 bytes,
+// and reading the unit through 0x14de70 changes nothing. Still the existence byte in AL where
+// retail keeps it in BL, the loop index in EBX where retail uses EDI and the unit in EDI where
+// retail uses ESI.
+// score 44 (was 44): this round: the split mask as a long value with the existence test kept
+// separate gave 92 (the flat shape loses retail's nested branches); the mask test written into the
+// condition 52 (188 bytes, retail's length) and the same with the existence re-tested after the
+// call 52 (the compiler folds the redundant test away); the object parameter copied into a local
+// 44 (same code); the entry read directly instead of through 0x14ddc0 59 (loses retail's `cmp -1`);
+// a local entries pointer before the loop 93; a while loop 244. Still the existence byte in
+// AL where retail keeps it in BL and re-tests it, with the loop index in EBX and unit in EDI.
+// This round, again: a permuter run was stopped during its baseline build (no result). Retail keeps
+// the existence byte in BL across the 0x155760 call and re-tests it after the split mask, which
+// frees EBX for the object argument and leaves ESI for the unit; our compiler folds the re-test
+// away, keeps the flag in AL and reloads the object from the stack.
+// Round 19: unchanged; only the helper-call chain reproduces retail's BL re-test (89 at 203 bytes:
+// the table pointer spills and the index takes ebp) and every cached-entry form folds the re-test
+// away (72-80); the existence byte and the loop/unit registers remain.
 // score 44 (was 44): BLOCKED-BY 0xbafb0. The existence byte (retail BL, tested again after the
 // split test) and the loop/unit registers differ. `if (function_14ddc0(i) && split)` with the unit read
 // as `function_14ddc0(i) ? player(function_14de70(i))->unit_index : NONE` gives retail's two existence
@@ -152,6 +192,16 @@ bool function_14ddc0(long local_player_index);
 // Round 113: `exists && split` 44; split declared first 44; shared local_player_exists 44; it
 // twice with a split flag 96 (retail's BL re-test, split materialised); split test plus a
 // local_player_exists unit ternary 89. All restored.
+// Round 116: the unit read through 0x14de70 44; `if (split && function_14ddc0(i))` 96 (208 bytes),
+// with the 0x14de70 read too 96; split as `exists ? ... : false` 44; both flags at loop scope 44.
+// Round 30 (0xbafb0's file is on another lane's list, so its parameters stay): two existence
+// tests with the player getter in the unit ternary 89 (our second call sets ESI before EAX, so
+// the unit cannot stay in ESI); player getter then NONE-test ternary 42; that with the unit test
+// nested 42; the first form with the hierarchy test nested 89; `exists && split` 44. Restored.
+// Round 118: `continue` on each failed test 52 (188 bytes, aligned as before: the split test is no
+// longer materialised, but the BL re-test is missing); nested tests 52; nested with the unit read as
+// `exists ? ... : NONE` 52; the unit through a player-datum pointer 44; the existence call repeated
+// in the test 96 (208 bytes). 0x18d4f0 is 0xbafb0's only caller.
 // @retail 0x18d4f0
 void function_18d4f0(long object_index, char *audible, long *local_player_index)
 {

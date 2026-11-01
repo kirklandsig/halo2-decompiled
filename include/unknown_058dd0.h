@@ -188,6 +188,31 @@ public:
 	long unknowna7c;
 };
 
+/* the matchmaking state's player summary and rank values (0x72330, 0x72540) */
+struct s_matchmaking_player_values
+{
+	byte unknown00[0x18];
+	long selected;
+	byte unknown1c[0x630 - 0x1c];
+	byte summary[0x184];
+	long player_count;
+	byte unknown7b8[0x878 - 0x7b8];
+	long ranks[16];
+	long values[16];
+	byte unknown8f8[0x938 - 0x8f8];
+	long limit;
+	bool common_found;
+	byte common[12];
+	byte unknown949[3];
+	long first;
+	long second;
+	bool ready;
+	byte unknown955[3];
+	long maximum;
+	long minimum;
+	long average;
+};
+
 /* post-match */
 class c_session_state_post_match : public c_session_state
 {

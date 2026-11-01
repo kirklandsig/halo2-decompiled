@@ -92,47 +92,42 @@ static inline s_model_object *model_object_get(long object_index)
 	return ((s_model_object_header *)g_4e0300->data)[object_index & 0xffff].object;
 }
 
-// score 1 (was 1): retail reads the region's permutation with
-// mov cl, byte ptr [ecx + edx], ours with [edx + ecx]; only the encoding
-// differs. Subscript, integer-sum, struct, declaration-order and clamp
-// variants stayed at 1; advancing the pointer scored 18, forming it later 58.
-// The 600 s permutation run found no improvement.
 // @retail 0x181cf0
 void function_181cf0(long model_index, long object_index, long *region_index, long region_name, long permutation_name, long *permutation_index)
 {
 	s_model_regions *model = (s_model_regions *)g_4e3b44[model_index & 0xffff].bytes;
 	s_model_object *object = model_object_get(object_index);
+	long region = NONE;
 	byte *permutations = (byte *)object + object->region_permutations_offset;
 	long permutation_count = object->region_permutations_size / 10;
-	long i;
 
-	*region_index = NONE;
+	*region_index = region;
 	*permutation_index = NONE;
-	for (i = 0; i < model->region_count; i++)
+	for (region = 0; region < model->region_count; region++)
 	{
-		s_model_region *region = &model->regions[i];
+		s_model_region *region_entry = &model->regions[region];
 
-		if (region->name == region_name)
+		if (region_entry->name == region_name)
 		{
 			long valid_index;
 
-			*region_index = i;
-			if (i < 0)
+			*region_index = region;
+			if (region < 0)
 			{
 				valid_index = 0;
 			}
 			else
 			{
 				valid_index = permutation_count - 1;
-				if (i <= valid_index)
+				if (region <= valid_index)
 				{
-					valid_index = i;
+					valid_index = region;
 				}
 			}
-			if (valid_index == i && permutations[i] != 0xff)
+			if (valid_index == region && permutations[region] != 0xff)
 			{
-				long permutation = (char)permutations[i];
-				if (region->permutations[permutation].name == permutation_name)
+				long permutation = (char)permutations[region];
+				if (region_entry->permutations[permutation].name == permutation_name)
 				{
 					*permutation_index = permutation;
 				}

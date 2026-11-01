@@ -39,10 +39,20 @@ struct s_network_session_player;
 typedef void *(__stdcall *block_allocate)(void *, long, long);
 typedef void (__stdcall *block_free)(void *, void *);
 
-// @stub 0x2cb5b0
-long __stdcall function_2cb5b0(unsigned char *destination, long *destination_size, unsigned char const *source, long source_size, block_allocate allocate, block_free release, void *opaque)
+/* the zlib inflate routines below src/unknown_2cb5b0.cpp's stream code */
+struct s_inflate_stream;
+struct s_block_state;
+
+// @stub 0x2ce9e0
+long __stdcall function_2ce9e0(s_block_state *blocks, s_inflate_stream *stream, long result)
 {
-    return -1;
+    return -2;
+}
+
+// @stub 0x2ce7b0
+unsigned long __stdcall function_2ce7b0(unsigned long checksum, unsigned char const *buffer, unsigned long size)
+{
+    return 0;
 }
 
 // @stub 0x2cb510

@@ -20,11 +20,16 @@ helpers only they call. */
 #include "object_markers.h"
 #include "object_iterator.h"
 #include "unknown_1eb550.h"
+#include "vehicle_ray.h"
 #include <math.h>
 #include <string.h>
 
 #ifndef MIN
 #define MIN(a,b) ((a)>(b)?(b):(a))
+#endif
+
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
 #ifndef PIN
@@ -424,14 +429,10 @@ bool __stdcall function_eeb80(long vehicle_index, void const *data, long unused)
 
 bool function_f42f0(long vehicle_index);
 
-/* a vehicle's steering: the angle to its velocity, eased by the
-   definition's steering curve, and its throttle and turn rates */
 PRIVATE inline void vehicle_approach(real *value, real const *rates, real bound, real dt);
 
-// score 237 (was 246): frame and cross/dot schedule, rate-bound and final-angle homes differ.
-// Shared cross/dot/approach subsets 262/246/262/239/248/239/248; both dots 235
-// (regrouping restored). Exponent and ordinary clamp subsets 246 each; all with
-// shared rate approach 237, retained after plain confirmation.
+/* a vehicle's steering: the angle to its velocity, eased by the
+   definition's steering curve, and its throttle and turn rates */
 // @retail 0xeec90
 void function_eec90(long vehicle_index, real *steering)
 {
@@ -439,13 +440,11 @@ void function_eec90(long vehicle_index, real *steering)
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	vector3f const *forward = &vehicle->forward;
-	vector3f const *up = &vehicle->up;
-	vector3f const *velocity = &vehicle->local_velocity;
-	real left_i = forward->k * up->j - forward->j * up->k;
-	real left_j = forward->i * up->k - forward->k * up->i;
-	real left_k = forward->j * up->i - forward->i * up->j;
-	real angle = (real)atan2(left_j * velocity->j + left_k * velocity->k + left_i * velocity->i,
-		velocity->k * forward->k + velocity->j * forward->j + forward->i * velocity->i);
+	vector3f left;
+
+	cross3f(&vehicle->up, forward, &left);
+	real angle = (real)atan2(left.k * vehicle->local_velocity.k + left.j * vehicle->local_velocity.j +
+		left.i * vehicle->local_velocity.i, dot3f(&vehicle->local_velocity, forward));
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit3) &&
 		!function_f42f0(vehicle_index) && !(function_d1210(vehicle_index) > 0.0f))
@@ -455,14 +454,18 @@ void function_eec90(long vehicle_index, real *steering)
 	}
 	else
 	{
-		real bound = (0.0f > vehicle->throttle ? *(real *)(definition + 0x1f8) : *(real *)(definition + 0x1f4)) * vehicle->throttle;
-		vehicle_approach(&vehicle->speed, (real const *)(definition + 0x1f4), bound, dt);
-		bound = (0.0f > vehicle->steering ? *(real *)(definition + 0x230) : *(real *)(definition + 0x22c)) * vehicle->steering;
-		vehicle_approach(&vehicle->turn, (real const *)(definition + 0x22c), bound, dt);
+		real throttle = vehicle->throttle;
+		real const *rates = (real const *)(definition + 0x1f4);
+		real bound = (0.0f > throttle ? rates[1] : rates[0]) * throttle;
+		vehicle_approach(&vehicle->speed, rates, bound, dt);
+		real turn_input = vehicle->steering;
+		rates = (real const *)(definition + 0x22c);
+		bound = (0.0f > turn_input ? rates[1] : rates[0]) * turn_input;
+		vehicle_approach(&vehicle->turn, rates, bound, dt);
 	}
 
-	real maximum_angle = (real)((*(real *)(definition + 0x250) == 0.0f ? 1.0 : *(real *)(definition + 0x250)) *
-		0.017453292384743690);
+	real maximum_angle = (*(real *)(definition + 0x250) == 0.0f ? 1.0 : *(real *)(definition + 0x250)) *
+		0.017453292384743690;
 	real exponent = *(real *)(definition + 0x254) == 0.0f ? 1.0 : *(real *)(definition + 0x254);
 
 	if (angle < -3.1415927f)
@@ -470,18 +473,21 @@ void function_eec90(long vehicle_index, real *steering)
 	else if (angle > 3.1415927f)
 		angle = 3.1415927f;
 
+	real ratio = (real)fabs(angle / maximum_angle);
 	real sign = angle >= 0.0f ? 1.0f : -1.0f;
-	real eased = (real)pow(fabs(angle / maximum_angle), exponent) * sign * maximum_angle;
+	real eased = (real)pow(ratio, exponent) * sign * maximum_angle;
 
 	if (eased < -3.1415927f)
 		eased = -3.1415927f;
 	else if (eased > 3.1415927f)
 		eased = 3.1415927f;
 
-	real target = vehicle->gear ? eased : 0.0f - eased;
+	real target = !vehicle->gear ? 0.0f - eased : eased;
 	real rate = *(real *)(definition + 0x210) * 0.017453292f;
-	real minimum = *(real *)(definition + 0x208) * 0.017453292f;
-	real maximum = *(real *)(definition + 0x204) * 0.017453292f;
+	/* the steering limits in degrees: +0x204 the largest angle, +0x208 the smallest */
+	real_bounds angles = *(real_bounds const *)(definition + 0x204);
+	real minimum = angles.hi * 0.017453292f;
+	real maximum = angles.lo * 0.017453292f;
 	real difference = target - vehicle->steering_angle;
 
 	if (difference != 0.0f)
@@ -508,7 +514,7 @@ void function_eec90(long vehicle_index, real *steering)
 point2f *g_468778;
 
 /* a 2d vector made unit length, or the default when it's too short */
-PRIVATE inline void vehicle_normalize2d(point2f *v)
+PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 {
 	real length = (real)sqrt(v->y * v->y + v->x * v->x);
 
@@ -521,18 +527,55 @@ PRIVATE inline void vehicle_normalize2d(point2f *v)
 		if (length != 0.0f)
 			return;
 	}
-	*v = *g_468778;
+	*v = *fallback;
 }
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
-// score 306 (was 306): frame 0x20 versus 0x28, initial magnitude and vector homes differ.
+// score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
+// xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
+// x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
+// Earlier: frame 0x20 versus 0x28, initial magnitude and vector homes differ.
 // Entry magnitude/direction/shared-normalizer subsets 306/337/324/327/309/339/303
 // restored; early magnitude observation needs a match. Existing turn approach 330.
 // Shared byte writer 306, retained after plain confirmation; with turn approach/product terms 310/310.
 // Round 77: the reversing bit written as bit 9 of the flags word (word_flags_set) 314: the writer is
 // then retail's (`or/and byte ptr [esi+0x349]`, one exit each; ours split it into load/op/store), and
 // only its position against the longer retail body moves the count. Restored on that count.
+// Round 425: one velocity/direction workspace 321; one heading/blend workspace 307; both 322;
+// complete 2D role names alone/with either/both 306/321/307/322; both with long reverse result 319.
+// All original source restored; the 0x28 frame and entry magnitude remain unresolved.
+// Lane 13 round 25: retail keeps the three-axis input magnitude squared from the entry to the end (its slot is
+// read after the turn approach: the reversing bit needs it above 0.09, not dt) and recomputes it for the gear
+// (length_sq3f at both, the flag test fixed) 312 at 1171 bytes; forward's 2D left vector as a point2f `left`, the
+// angle's y the input's dot with it (retail's 0x28 frame and slot order) 312 (aligned 160 -> 119); then the shared
+// normalizer taking its fallback (blend falls back to forward), the existing vehicle_approach with a rates pointer
+// and the bit-9 flag writer (round 77's form, repeated because it only pays once the body has retail's length) 187
+// at 1145; the magnitude before the velocity copy 216 (1144); with blend's left vector as a point2f `blend_left`
+// 132; with the velocity copied y first 128; the fallback direction stored y first 130; both 126 (kept). On it:
+// `fabs(...) >= 1.9198622f` (retail's fxch/jb) 218 at 1145; the atan2 terms or operands swapped 126 each;
+// compile-only screens, none better: statement orders of the forward copy/input/normalize/left/heading (144),
+// the normalizer's products as `*=`, either operand order or y first, magnitude term orders/groupings/dot3f.
+// Also on 126: the velocity as one point2f copy 130; the entry magnitude written out 128.
+// Lane 13 round 28: blend.x first with `velocity * inverse` and the fallback x first 128; the magnitude after the
+// velocity copy with k's x term first and blend.x first 128; the normalizer as `*=` 126; the velocity and fallback
+// copied x first 132 (300 compile-only statement-order combinations screened; their best three 128/128/130).
+// Round 182 (the 1.0 constant still lands in xmm2 after the input magnitude's z term, retail's xmm3 before it):
+// the normalizer returning the old length with each caller copying its fallback on 0 126 (identical); the
+// normalizer forced inline 126 (identical); the input magnitude after the speed root 278; left/blend/blend_left
+// declared at the top 126 (identical); one controls-vector pointer for both magnitudes 243.
+// Round 103 (first difference: the velocity copy loads x into ECX, retail EAX; then the 1.0 constant): the
+// velocity as an aggregate initializer `{ i, j }` 130; the short-speed fallback as `direction = velocity` 275
+// (1159 bytes); forward, heading or the input vector as aggregate initializers 126 each (identical).
+// Round 44 (lane 11): k written in both blend rows 126, k declared after blend 126, heading declared before forward
+// 126 (all identical code); the input rotation before the forward copy 122; forward normalized before the input
+// rotation 270 (1146 bytes). Retail loads the 1.0 constant between the entry magnitude's i/j add and its k
+// product (XMM3; ours after the whole sum, XMM2), and writes blend.y before blend.x.
+// Round 13 (lane 17), at 126: the velocity copied x first alone 130 (VC then loads y first and squares it first; the
+// y-first copy loads x first, as retail, but into ECX); the short-speed arm written first (`if (0.0001f > ...)`)
+// 134; `speed` declared with the top locals 126; the normalizer's y product written `inverse * v->y` 126; `left`
+// written y first 126. Retail's normalizers keep the source operand order (x: inverse loaded, y: v->y loaded) where
+// ours loads inverse for both.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -544,11 +587,12 @@ void function_ef070(long vehicle_index)
 	point2f heading;
 	point2f input;
 
-	velocity.x = vehicle->local_velocity.i;
-	velocity.y = vehicle->local_velocity.j;
+	real input_magnitude_squared = length_sq3f((vector3f const *)&vehicle->throttle);
 
-	real speed = (real)sqrt(velocity.y * velocity.y + velocity.x * velocity.x);
-	real input_magnitude_squared = vehicle->throttle * vehicle->throttle + vehicle->steering * vehicle->steering;
+	velocity.y = vehicle->local_velocity.j;
+	velocity.x = vehicle->local_velocity.i;
+
+	real speed = (real)sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 
 	if (!(0.0001f > (real)fabs(speed)))
 	{
@@ -559,19 +603,23 @@ void function_ef070(long vehicle_index)
 	}
 	else
 	{
-		direction = velocity;
+		direction.y = velocity.y;
+		direction.x = velocity.x;
 	}
 	forward.x = vehicle->forward.i;
 	forward.y = vehicle->forward.j;
 	input.x = vehicle->throttle * direction.x - vehicle->steering * direction.y;
 	input.y = vehicle->steering * direction.x + vehicle->throttle * direction.y;
-	vehicle_normalize2d(&forward);
+	vehicle_normalize2d(&forward, g_468778);
 
-	real perpendicular = 0.0f - forward.y;
+	point2f left;
+
+	left.x = 0.0f - forward.y;
+	left.y = forward.x;
 
 	heading.x = vehicle->local_velocity.i;
 	heading.y = vehicle->local_velocity.j;
-	vehicle_normalize2d(&heading);
+	vehicle_normalize2d(&heading, g_468778);
 
 	real k = 1.0f - (heading.y * forward.y + heading.x * forward.x);
 	point2f blend;
@@ -579,23 +627,16 @@ void function_ef070(long vehicle_index)
 	blend.y = forward.y * k + heading.y;
 	blend.x = forward.x * k + heading.x;
 
-	real blend_length = (real)sqrt(blend.y * blend.y + blend.x * blend.x);
+	vehicle_normalize2d(&blend, &forward);
 
-	if (!(0.0001f > (real)fabs(blend_length)) && blend_length != 0.0f)
-	{
-		real inverse = 1.0f / blend_length;
+	point2f blend_left;
 
-		blend.x = inverse * blend.x;
-		blend.y = blend.y * inverse;
-	}
-	else
-	{
-		blend = forward;
-	}
+	blend_left.x = 0.0f - blend.y;
+	blend_left.y = blend.x;
 
-	bool reversing = !((real)fabs(atan2(input.y * blend.x + (0.0f - blend.y) * input.x,
+	bool reversing = !((real)fabs(atan2(input.y * blend_left.y + blend_left.x * input.x,
 		blend.y * input.y + blend.x * input.x)) < 1.9198622f);
-	real angle = (real)atan2(input.y * forward.x + perpendicular * input.x, forward.y * input.y + forward.x * input.x);
+	real angle = (real)atan2(input.y * left.y + left.x * input.x, forward.y * input.y + forward.x * input.x);
 	real offset;
 
 	if (reversing)
@@ -603,27 +644,15 @@ void function_ef070(long vehicle_index)
 	else
 		offset = 0.0f;
 	angle = offset + angle;
-	input_magnitude_squared = vehicle->throttle * vehicle->throttle + vehicle->steering * vehicle->steering +
-		vehicle->unknown1b8 * vehicle->unknown1b8;
-	vehicle->gear = input_magnitude_squared != 0.0f ? !reversing : vehicle->gear;
+	vehicle->gear = length_sq3f((vector3f const *)&vehicle->throttle) != 0.0f ? !reversing : vehicle->gear;
 
 	real steer = PIN(*(real *)(definition + 0x220) * angle, -0.78539819f, 0.78539819f) * 1.2732395f;
-	real bound = (0.0f > steer ? *(real *)(definition + 0x230) : *(real *)(definition + 0x22c)) * steer;
+	real const *rates = (real const *)(definition + 0x22c);
+	real bound = (0.0f > steer ? rates[1] : rates[0]) * steer;
 	real dt = g_510c54->rate;
 
-	if (vehicle->turn > bound)
-	{
-		function_2053c0(&vehicle->turn, (real const *)(definition + 0x22c), -1.0f, dt);
-		if (bound >= vehicle->turn)
-			vehicle->turn = bound;
-	}
-	else if (bound > vehicle->turn)
-	{
-		function_2053c0(&vehicle->turn, (real const *)(definition + 0x22c), 1.0f, dt);
-		if (vehicle->turn >= bound)
-			vehicle->turn = bound;
-	}
-	byte_flags_set(&vehicle->flags349, 1, reversing && dt > 0.09f);
+	vehicle_approach(&vehicle->turn, rates, bound, dt);
+	word_flags_set((word *)&vehicle->flags348, 9, reversing && input_magnitude_squared > 0.09f);
 }
 
 /* the vehicle tuning values (0x4678b8..0x4678d8) */
@@ -765,9 +794,21 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
-// score 12 (was 79): three products with up.j keep it in a register (retail folds it as the memory
-// operand: the first cross's k term and the side cross's i and k terms), and the fail path re-zeroes
-// AL before returning false (retail returns the entry's zero), two bytes over retail.
+// score 8 (was 8): retail's length and tail now; four products load the other operand (ours loads up.j
+// for the first cross's k term and the side cross's i term, up.i for the side cross's j term, and the
+// velocity for the dot's i term; retail loads forward each time). Kept: one `bool result` exit, the
+// failure arm first (`if (!(...)) { clears } else { ...; result = true; }`) and word_flags_set for the
+// flag clear (the clear stays a fused `and byte` last, as retail).
+// Round 130: result + else-arm stores with `flags348 &= ~0x40` 30 (759 B, clear split), with a word
+// clear or a bit-field clear 15 (clear moves first), SET_FLAG 15, word_flags_set/byte_flags_set 12/12
+// (tail exact, six products flip), both helpers with the two returns 12/12 (753 B), the failure arm
+// first 8 (kept); on it: an up pointer local 94, a named dot result 10, `-(up.k / rate * 2)` 159,
+// De Morgan tests 11, byte_flags_set 8, result declared first 178. A compile-only screen (products
+// match the full build) found none under four flips in 576 combinations of declaration orders,
+// result placements, cross3f_staged for either cross, the up pointer, named dot and rate forms.
+// Before round 130 (score 12): three products with up.j keep it in a register (retail folds it as the
+// memory operand: the first cross's k term and the side cross's i and k terms), and the fail path
+// re-zeroes AL before returning false (retail returns the entry's zero), two bytes over retail.
 // Double literals 98; shared crosses 140; both 79 (kept); angular/both scales 83/83;
 // scaled sum 83; single result/vector names 79/79; seven scalar name/scope forms 79;
 // coefficient at use 93, with shared sum 95.
@@ -781,15 +822,52 @@ __forceinline long vehicle_round(real value)
 // vector3f_scale 12 (all kept); then cross3f_staged for either cross 16/18/25; `rate *= strength` 20;
 // the hand projection 20; a result per arm 30, an else arm 12, chained zero stores 14, the flag
 // cleared first 27; the condition in a bool returned at one/two exits 32/20.
+// Round 31: one `bool result` exit (false, success sets true, the stores in an else) declared
+// first 188, after the lookups 30 (no re-zero, but the flag clear splits into load/and/store), between
+// them 62, set before the 34e increment 30; with the flag cleared first 15 (751/751, exit as retail but
+// the flag store first). A compile-only screen reproduces the product operands exactly: every result
+// form flips three more products; the helper's component order (all six, staged or not), operand text
+// order, inline/forceinline, local declaration order, the if/else inverted and the rate computed first
+// never give the first cross's f.i load, which moves only when the side block is removed.
+// Round 425: native rate clamp 12; strength if/else 140; writable flag bit 15; shared byte clear 12;
+// clamp/strength 140, clamp/bit 15, strength/bit and all 140. All original source restored.
+// Round 48: shared up at both crosses 141; shared forward 204; both 209; forward-default axis 169;
+// angular copy/in-place scale 266/91; full forward snapshot 226; up snapshot with rate 146;
+// branch-scoped up at the first/side cross 150/109. Original body restored.
+// Round 132: the product choice follows the order VC first meets each field in dominating code (an
+// earlier read of one operand makes it the memory operand), so it moves with the condition and the
+// rounding (with the rounding out of line 3 flips, with a cast in its place 5). Five real trials,
+// all on the kept form: linear/angular/axis declared before strength with the side cross through
+// cross3f_staged 6; that with `result = true` before the increment 6; axis/angular/linear before
+// strength, staged side cross and De Morgan tests 9; linear/axis/angular before strength, staged side
+// cross, De Morgan tests and the axis if/else inverted 9; angular/linear/axis after strength,
+// `result = true` first and the staged side cross 6. A compile-only screen of 1500 random combinations
+// (declaration orders, flag helper, result placement, staged crosses, side scale+add, De Morgan,
+// inverted axis branch, side and rate declared early, named dot) found none under three flips; the
+// condition's spellings (casts, operand sides, `!= 0`) and local names give identical code.
+// Lane 13 round 28: dot3f(&velocity, &forward) 8 (same code); an up pointer used only at the first cross 4 (first
+// cross and the dot's i term then retail's); with cross3f_staged for the side cross 2 (only the side cross's
+// `a->k * b->j` still loads up.j; a one-use pointer, so kept only on a match); cross3f_staged for the side alone 6;
+// the up pointer at the first cross and the rate with the staged side 4 (the side's i/j pairs flip instead; the
+// side cross still reads vehicle->up). Compile-only screens: the pointer at both crosses 5 flips, a forward
+// pointer at any use 2-15, 256 helper/pointer combinations and 400 random ones (scopes, scale forms, named
+// dot, strength if/else, `rate *= strength`, declaration orders) at best 1 flip; the pointer's name changes nothing.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
+	bool result = false;
 
-	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit6) && vehicle->unknown34d &&
+	if (!(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit6) && vehicle->unknown34d &&
 		(long)vehicle->unknown34e < vehicle_round((real)g_510c54->field_2_3 * 2.0f) &&
-		0.9f >= vehicle->up.k)
+		0.9f >= vehicle->up.k))
+	{
+		vehicle->unknown34e = 0;
+		vehicle->unknown34d = 0;
+		word_flags_set((word *)&vehicle->flags348, 6, false);
+	}
+	else
 	{
 		real strength = vehicle->unknown34d == 2 || vehicle->unknown34d == 4 ? 0.3 : -0.3;
 		vector3f linear_velocity;
@@ -827,12 +905,9 @@ bool function_ef870(long vehicle_index)
 		}
 		function_b77d0(vehicle_index, &linear_velocity, &angular_velocity);
 		vehicle->unknown34e++;
-		return true;
+		result = true;
 	}
-	vehicle->unknown34e = 0;
-	vehicle->unknown34d = 0;
-	vehicle->flags348 &= ~0x40;
-	return false;
+	return result;
 }
 
 
@@ -1003,7 +1078,7 @@ struct s_type_1e6529
 bool function_f1320(long vehicle_index);
 void __stdcall function_1d24a0(s_havok_component *component, float position);
 void function_1d2460(s_havok_component *component);
-bool function_205510(void *buffer, void const *definition_physics, s_havok_component *component);
+bool function_205510(s_havok_component *component, void const *definition_physics, void *buffer);
 transform4x3f *function_ba160(long object_index, transform4x3f *matrix);
 void function_1cfb90(s_havok_component *component, transform4x3f const *matrix, void const *buffer);
 bool __stdcall function_f6670(long vehicle_index, bool update);
@@ -1028,14 +1103,31 @@ bool function_113e40(long unit_index);
 void function_bba20(long object_index);
 bool __stdcall function_e6830(long unit_index);
 bool __stdcall function_111650(long unit_index, long *names);
+long function_10f5f0(long object_index);
 
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 715 (was 715): aligned frame 0x19ac versus retail unaligned 0x1984; flag and scalar homes differ.
+// score 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
+// Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
+// double (LTCG had pushed its 8-byte alignment need onto 0x2056e0's callers).
 // Physics-state branch scope, separate velocity outputs and both 715 each; final default-array
 // initialization alone or with either/both workspace changes 723 each; all with native flag tests 753.
 // Original scopes, scalar observations, default stores and existing local qualifier retained.
+// Round 426: names/damage/buffer lexical-home subsets and all with the matrix renamed 715 in all eight forms; original body restored, aligned frame unchanged.
+// Round 45 (lane 1): the idle test through the existing 0x10f5f0 instead of its body written out 597 (kept; LTCG
+// now calls 0x10f5f0 and inlines 0x113e40, retail the reverse; a forceinline declaration 597, ignored). The six
+// dead [esp+0x13] byte stores are an inlined helper's bool result kept in memory: bipeds' field_bit_test 673 (no
+// stores); stores appear with an `__assume` in the function (`__assume(vehicle != NULL)` 666, type switch
+// `default: __assume(0)` 672, which drops retail's range check) or a two-definition result (`if (bit < 32)`
+// helper 667): no natural form yet. The 0x205510 buffer is six reals: `real buffer[6]` gives frame 0x1990 (639);
+// with linear_velocity per block 639/597; the compile-only probe then gives retail's exact 0x1984 frame once
+// names also has its own block, but the real build keeps 0x1990 (LTCG groups the 12-byte velocity first, so the
+// buffer sits apart and the kill-volume scalars start 12 bytes low). names `= { 0 }` 629, memset 634, both in a
+// block 629.
+// Round 469: Sixteen-point short/word/signed-byte/byte ordinals with three native axis bounds
+// 612 each; those four ordinals with the original buffer 612 each (2220/2264 bytes).
+// Frame 0x1990 still exceeds 0x1984; original complete body and local qualifier restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1086,7 +1178,7 @@ bool __stdcall function_efde0(long vehicle_index)
 					s_havok_component *component = havok_component_get(vehicle->havok_component_index);
 					byte buffer[0x28];
 
-					if (function_205510(buffer, definition + 0x2ac, component))
+					if (function_205510(component, definition + 0x2ac, buffer))
 					{
 						transform4x3f matrix;
 
@@ -1279,11 +1371,7 @@ bool __stdcall function_efde0(long vehicle_index)
 
 	if (function_113e40(vehicle_index))
 	{
-		s_vehicle *current = VEHICLE_GET(vehicle_index);
-		s_animation_state *state_view = vehicle_animation_state_get(current);
-
-		if (*(long *)((byte *)state_view + 0x68) != NONE && state_view->channels[0].graph_tag_index != NONE &&
-			state_view->channels[0].animation_id.index != NONE && state_view->unknown7c == 0x400000c)
+		if (function_10f5f0(vehicle_index) == 0x400000c)
 		{
 			idle = true;
 		}
@@ -1372,32 +1460,81 @@ bool function_1dceb0(s_graph_iterator3c *iterator, s_graph_tag *graph);
    speed, 0.5 at rest */
 PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *definition)
 {
-	real forward_limit = *(real *)(definition + 0x1f4);
 	real reverse_limit = *(real *)(definition + 0x1f8);
+	real forward_limit = *(real *)(definition + 0x1f4);
 	real result = 0.5f;
 
 	if (speed > 0.0f)
 	{
 		if (forward_limit > 0.0f)
 		{
-			result = PIN(speed / forward_limit * 0.5f + 0.5f, 0.0f, 1.0f);
+			result = speed / forward_limit * 0.5f;
+			result += 0.5f;
 		}
 	}
 	else if (reverse_limit > 0.0f)
 	{
-		result = PIN(speed / reverse_limit * 0.5f + 0.5f, 0.0f, 1.0f);
+		result = speed / reverse_limit * 0.5f;
+		result += 0.5f;
 	}
-	return result;
+	return PIN(result, 0.0f, 1.0f);
 }
 
 /* hands each of the vehicle's value-driven animations (its steering,
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 409 (was 622): frame 0x88 versus 0x9c, returned-id temporaries and channel/count homes differ.
+// score 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
+// retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
+// channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
+// (ours: EAX), which moves the iterator/channel init, the kind-loop value/counter homes and the cross block; and VC
+// folds `x * 0.5f + 0.5f` to `(x + 1) * 0.5` where retail multiplies first.
+// Round 182: the forwarding wrapper replaced by the direct call 383 (kept); the ternary spin fractions 371 (kept);
+// overlay fields typed as animation ids 383 (identical); up/forward pointer locals for the cross 370 (one-use);
+// `(real)(x * 0.5f) + 0.5f` 393; each overlay read into a local first 476; the function channel declared before the
+// iterator 371; the kind value at loop-body scope 371. Diagnostic: the channel-play routine called at each set and
+// forced inline in its header 327 (first block then exact), but 0x1101e0/0x16760c lose their out-of-line calls; this
+// file is /Ob1, so a plain call stays out of line (flags lead).
+// Earlier at 409: frame 0x88 versus 0x9c, returned-id temporaries and channel/count homes differ.
 // Existing speed helper forced inline 468; with cross helper 470; channel role names 468/470;
 // single final speed clamp 472, with cross 450, role names 472/450. Both directional limits
 // retained at entry: original/clamp 446/424; with cross 409 (kept)/412.
+// Round 426: separate returned-id values for each of the six overlays 408 each; all six 408; all with the loop id 434. Original body restored; frame remains 0x88.
+// Round 103 (kept, 371 -> 40 at retail's 2027 bytes): each set through the existing channel_play, with
+// channel_play and channel_start marked `inline` at their definitions (this /Ob1 file can then expand them as
+// retail does; their other callers, 0x1101e0 and 0x16760c included, keep their out-of-line calls) 313 alone;
+// the speed fraction's half product named (VC turns `x * 0.5f + 0.5f` into `(x + 1) * 0.5f`) 393 alone, with
+// its clamp once at the return, the reverse limit read first and the kind loop clamping its named value in
+// place 414 alone (2011 bytes) and 364 with channel_play; the function channel declared after the iterator
+// setup 365; the steering dot as `left.k * v.k + v.j * left.j + left.i * v.i` 40 (written i, j, k with the
+// velocity first 365; through dot3f either way 372). Left: the two VEHICLE_GET lookups' SIB order, the reloads
+// after the overlay lookup (retail state, graph, vehicle index; ours vehicle index first), two of the cross
+// product's six terms load the other operand first, and the iterator/channel setup before the function loop
+// (retail stores the graph index early and the iterator's NONE fields before the channel's). Tried at 40: the
+// forward-speed i term's operands swapped 40 (identical); dot3f for the forward speed 42; cross3f_staged on
+// the earlier 42 form 42 (identical); the iterator's 0x28 word before next_index 40 (its two stores then in
+// retail's order); the function channel declared before the iterator 44, right after it (before the setup)
+// 44; the iterator's NONE fields before its floats 40.
+// Coordinator review (lane 8 r103): the lane's 40 named each half product in a one-use local (`real half`),
+// kept only with a match; without them 356. Writing the half product into the result (and the loop's value)
+// first and adding 0.5f in a second statement keeps VC from refolding it, 44 with no new local (kept).
+// Round 44 (lane 11): the iterator initialized by a constructor of s_graph_iterator3c (mem-init list in member
+// order, the animation id's own constructor between index and the 0x28 word, floats typed real) 40 (kept, shared
+// with 0xf6670: the iterator's stores are then retail's 0x6c/0x8c/0x90/0x92/0x94/0x96 order); on it: the function
+// channel declared before the iterator 44 (twice, before and after the real-typed fields); linear_velocity
+// declared first 40, `i` declared first 40, the cross result declared at the block top 40 (all identical code).
+// Left: retail schedules the graph index load and the iterator's NONE stores before the channel's NONE stores.
+// Round 13 (lane 17), at 44 (left: the two VEHICLE_GET SIB orders 2, the three reloads after the overlay block 3,
+// the cross 8 and forward-speed dot 4 operand orders, the iterator/channel setup 27): the iterator given a
+// constructor in its header (mem-initializers in member order with the 0x28 field as a short, floats in the body;
+// 0xf6670 drops its copy of the init, stays 286; 0x1dceb0 still matches) 40: the iterator's NONE stores then come in
+// retail's member order and the cross's two up.i products load retail's operand, but every channel store still
+// precedes the graph-index load (retail loads it right after the channel's three zero words) and the iterator stores
+// follow it; on that: one forward pointer for the cross and the forward-speed dot 48, `state` declared at function
+// scope (assigned before the channel) 40, `left` declared at block scope 40, the forward speed passed straight to the
+// fraction (no `speed` local) 40. Diagnostics: `iterator.animation_id = c_type_709360()` after the index 149 (a
+// temporary copy); the function channel declared before the iterator 44; the sum's source order is ignored (VC
+// always forms (i + j) + k here, retail keeps k, j, i).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -1417,84 +1554,60 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		if (state->graph_tag_index != vehicle->unknown400 && state->unknown74 != NONE && state->unknown78 != NONE)
 		{
 			vehicle->unknown400 = state->graph_tag_index;
-			VEHICLE_OVERLAY(vehicle, 0) = state->overlay_find(0x8000078, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 1) = state->overlay_find(0x4000079, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 2) = state->overlay_find(0x800007a, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 3) = state->overlay_find(0x800007b, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 4) = state->overlay_find(0xc00007d, 0x7000101, 0x7000101);
-			VEHICLE_OVERLAY(vehicle, 5) = state->overlay_find(0x110005c9, 0x7000101, 0x7000101);
+			VEHICLE_OVERLAY(vehicle, 0) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x8000078);
+			VEHICLE_OVERLAY(vehicle, 1) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x4000079);
+			VEHICLE_OVERLAY(vehicle, 2) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x800007a);
+			VEHICLE_OVERLAY(vehicle, 3) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x800007b);
+			VEHICLE_OVERLAY(vehicle, 4) = state->overlay_find_for_class(0x7000101, 0x7000101, 0xc00007d);
+			VEHICLE_OVERLAY(vehicle, 5) = state->overlay_find_for_class(0x7000101, 0x7000101, 0x110005c9);
 			for (i = 0; i < 3; i++)
 			{
 				VEHICLE_OVERLAY41C(vehicle, i) = state->overlay_kind_get(i);
 			}
 		}
-		if (VEHICLE_OVERLAY(vehicle, 0).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 0), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 0).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 0), 0))
 		{
 			callback(vehicle_index, graph, &channel, vehicle->steering_angle, 0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 1).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 1), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 1).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 1), 0))
 		{
 			vector3f left;
 
 			cross3f(&vehicle->up, &vehicle->forward, &left);
 			callback(vehicle_index, graph, &channel,
-				((linear_velocity.i * left.i + left.j * linear_velocity.j + linear_velocity.k * left.k) /
+				((left.k * linear_velocity.k + linear_velocity.j * left.j + left.i * linear_velocity.i) /
 					*(real *)(definition + 0x1f4) + 1.0f) * 0.5f,
 				0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 2).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 2), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 2).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 2), 0))
 		{
 			callback(vehicle_index, graph, &channel, vehicle_speed_fraction(vehicle->speed, definition), 0.0f, 1.0f,
 				user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 3).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 3), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 3).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 3), 0))
 		{
 			real speed = vehicle->forward.k * linear_velocity.k + vehicle->forward.j * linear_velocity.j +
 				linear_velocity.i * vehicle->forward.i;
 
 			callback(vehicle_index, graph, &channel, vehicle_speed_fraction(speed, definition), 0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 4).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 4), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 4).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 4), 0))
 		{
-			real value = 0.0f;
-
-			if (*(real *)(definition + 0x20c) > 0.0f)
-			{
-				value = vehicle->unknown360 / *(real *)(definition + 0x20c);
-			}
+			real value = *(real *)(definition + 0x20c) > 0.0f ? vehicle->unknown360 / *(real *)(definition + 0x20c) : 0.0f;
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
-		if (VEHICLE_OVERLAY(vehicle, 5).index != NONE && state->graph_tag_index != NONE &&
-			channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY(vehicle, 5), NONE, NONE, NONE, NONE))
+		if (VEHICLE_OVERLAY(vehicle, 5).index != NONE && state->channel_play(&channel, VEHICLE_OVERLAY(vehicle, 5), 0))
 		{
-			real value = 0.0f;
-
-			if (*(real *)(definition + 0x20c) > 0.0f)
-			{
-				value = vehicle->unknown364 / *(real *)(definition + 0x20c);
-			}
+			real value = *(real *)(definition + 0x20c) > 0.0f ? vehicle->unknown364 / *(real *)(definition + 0x20c) : 0.0f;
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
 
 		s_graph_iterator3c iterator;
 		c_animation_channel function_channel;
 
-		iterator.unknown00 = NONE;
-		*(real *)&iterator.unknown08 = 0.0f;
-		*(real *)&iterator.unknown0c = 0.0f;
-		*(real *)&iterator.unknown10 = 0.0f;
-		iterator.index = NONE;
-		iterator.next_index = NONE;
-		*(short *)iterator.unknown28 = NONE;
 		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
-			if (state->graph_tag_index != NONE &&
-				function_channel.set(state->graph_tag_index, 0, iterator.animation_id, NONE, NONE, NONE, NONE))
+			if (state->channel_play(&function_channel, iterator.animation_id, 0))
 			{
 				byte value = ((byte *)vehicle->unknown398)[iterator.index];
 
@@ -1506,10 +1619,12 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 		{
 			if (VEHICLE_OVERLAY41C(vehicle, i).index != NONE)
 			{
-				real value = PIN(vehicle->unknown288[i] * 0.5f + 0.5f, 0.0f, 1.0f);
+				real value = vehicle->unknown288[i] * 0.5f;
 
-				if (state->graph_tag_index != NONE &&
-					channel.set(state->graph_tag_index, 0, VEHICLE_OVERLAY41C(vehicle, i), NONE, NONE, NONE, NONE))
+				value += 0.5f;
+				value = PIN(value, 0.0f, 1.0f);
+
+				if (state->channel_play(&channel, VEHICLE_OVERLAY41C(vehicle, i), 0))
 				{
 					callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 				}
@@ -1536,7 +1651,8 @@ void __stdcall function_f0f50(long vehicle_index, dword const *node_mask, long n
 // @retail 0xf0f90
 bool function_f0f90(long vehicle_index)
 {
-	return (*(dword *)(VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index)) + 0x1ec) >> 7) & 1;
+	bool result = (*(dword *)(VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index)) + 0x1ec) >> 7) & 1;
+	return result;
 }
 
 void function_1d1260(s_havok_component *component);
@@ -1555,11 +1671,11 @@ void function_f0fd0(long vehicle_index, bool set)
 
 		if (set)
 		{
-			vehicle->flags348 |= 4;
+			((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit2 = true;
 		}
 		else
 		{
-			vehicle->flags348 &= ~4;
+			((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit2 = false;
 		}
 		if (was_set != set && vehicle->havok_component_index != NONE)
 		{
@@ -1711,6 +1827,9 @@ bool function_f12e0(long vehicle_index)
 
 /* whether the vehicle, with its flag 2 at +0x10a set, is a type 5 vehicle
    or a type 4 one of kind 1 */
+// score 1 (was 1): ours reuses the kind comparison's flags with a jmp to the
+// shared jne; retail re-tests the type. Nested conditions, a named kind local,
+// a switch and a 300 s permuter run all scored 1.
 // @retail 0xf1320
 bool function_f1320(long vehicle_index)
 {
@@ -1978,15 +2097,6 @@ bool function_f5d70(long vehicle_index);
 /* runs the vehicle's engine for a tick: its load follows the throttle, a
    new gear engages after a delay (at once when it changes direction), the
    shift timers count, and the gear's torque spins the engine up */
-// score 156 (was 156): extra frame word and cached shift-byte home remain; conditional throttle retained.
-// Conditional / both-branch throttle 156 kept plain; input-first 191; field-only clamp 192;
-// conditional with clamp 191, native gear 178, direction roles / scalar names 156/156.
-// Computed load 156; uniform raw speed 199, with load 199, with native gear 200.
-// Full current gear 184; uniform gear reads 197; requested direction first 156, with full/live
-// gear 184/197; named shift time 156, with full/live gear 184/197. Separate limited result 152,
-// with full gear / requested direction first / live gear 182/152/197; word delay 155, with full
-// gear 184, with limited result 151. Uniform shift phase byte/word/long 156/154/183; limited
-// result with word phase 150; limited result with word delay and word phase 181. All restored.
 // @retail 0xf1950
 void __stdcall function_f1950(long vehicle_index, real throttle_input, short new_gear)
 {
@@ -1997,8 +2107,7 @@ void __stdcall function_f1950(long vehicle_index, real throttle_input, short new
 	{
 		real throttle = !vehicle->unknown385 && !function_f5d70(vehicle_index) ? throttle_input : 0.0f;
 
-		char current = vehicle->gear;
-		real gear_ratio = function_f14f0(current, vehicle_index);
+		real gear_ratio = function_f14f0(vehicle->gear, vehicle_index);
 		real engine;
 
 		if (VEHICLE_MAX_ANGULAR_VELOCITY(definition) * -0.5f > vehicle->unknown378)
@@ -2015,11 +2124,11 @@ void __stdcall function_f1950(long vehicle_index, real throttle_input, short new
 		}
 		engine /= VEHICLE_MAX_ANGULAR_VELOCITY(definition);
 
-		bool reversed = new_gear != -2 && (current >= 1) != (new_gear >= 1);
+		bool reversed = new_gear != -2 && (new_gear >= 1) != (vehicle->gear >= 1);
 
 		vehicle->unknown380 += (throttle - engine) * (g_510c54->rate * 45.454544f);
 		vehicle->unknown380 = PIN(vehicle->unknown380, 0.0f, 1.0f);
-		if (reversed || (current == NONE && new_gear != current))
+		if (reversed || (vehicle->gear == NONE && new_gear != vehicle->gear))
 		{
 			vehicle->gear = (char)new_gear;
 			vehicle->unknown38c = (char)0xfe;
@@ -2028,13 +2137,13 @@ void __stdcall function_f1950(long vehicle_index, real throttle_input, short new
 			vehicle->unknown385 = 0;
 			vehicle->unknown388 = 0;
 		}
-		else if (vehicle->unknown38c == (char)0xfe && new_gear == current)
+		else if (vehicle->unknown38c == (char)0xfe && new_gear == vehicle->gear)
 		{
 			vehicle->unknown385 = 0;
 			vehicle->unknown386 = (byte)MIN(vehicle->unknown386 + 1, 0xff);
-			if (current >= 0)
+			if (vehicle->gear >= 0)
 			{
-				s_vehicle_gear *definition_gear = &VEHICLE_GEARS(definition)[current];
+				s_vehicle_gear *definition_gear = &VEHICLE_GEARS(definition)[vehicle->gear];
 
 				if (engine > definition_gear->engine_upshift_scale)
 				{
@@ -2056,7 +2165,7 @@ void __stdcall function_f1950(long vehicle_index, real throttle_input, short new
 		}
 		else
 		{
-			long delay = (long)(g_510c54->field_2_3 * 0.05f);
+			long delay = real_truncate(g_510c54->field_2_3 * 0.05f);
 
 			if (delay <= 1)
 			{
@@ -2088,15 +2197,8 @@ void __stdcall function_f1950(long vehicle_index, real throttle_input, short new
 				(vehicle->unknown37c * gear_ratio + torque) / *(real *)(definition + 0x260) * g_510c54->rate;
 
 			vehicle->unknown378 = angular_velocity;
-			if (VEHICLE_MAX_ANGULAR_VELOCITY(definition) * 0.05f > angular_velocity)
-			{
-				angular_velocity = VEHICLE_MAX_ANGULAR_VELOCITY(definition) * 0.05f;
-			}
-			else if (angular_velocity > VEHICLE_MAX_ANGULAR_VELOCITY(definition) * 1.3f)
-			{
-				angular_velocity = VEHICLE_MAX_ANGULAR_VELOCITY(definition) * 1.3f;
-			}
-			vehicle->unknown378 = angular_velocity;
+			vehicle->unknown378 = PIN(angular_velocity, VEHICLE_MAX_ANGULAR_VELOCITY(definition) * 0.05f,
+				VEHICLE_MAX_ANGULAR_VELOCITY(definition) * 1.3f);
 		}
 		else
 		{
@@ -2147,12 +2249,49 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 /* the physics of type 0 vehicles (the differential-steered ones): the
    engine drives each side's contacts, the turn trading torque between
    the sides */
-// score 115 (was 192): Kept live period receiver, native twice-used gear and result-first torque; zero/scalar residency and spin schedule remain.
+// score 101 (was 101): 115 before round 114; the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
+// alignment need LTCG had pushed onto this caller); before that, frame 0x14 against 0x10 (one dead
+// slot below gear_throttle; the four used slots agree but sit 4 higher); zero/scalar residency and
+// spin schedule remain. Kept earlier: live period receiver, native twice-used gear and result-first
+// torque.
 // Live period 136; native gear 190; both 113; scalar roles 192/136/190/113; result-first torque 101 kept plain.
 // Spin exit / period-first / both 101; named absolute steering with each 127; early torque zero 140.
 // Y405: Frame 0x14 versus 0x10 and zero/scalar homes remain;
 // gear-none/two-defaults/active-gear/sign-arm torque results 126/140/138/126; each with shared
 // straight-drive product 132/141/141/132.
+// Round 21: `if (gear == NONE) torque = 0; else torque = ...` gives retail's arm order and threaded
+// zero magnitude but torque in xmm3, 697 bytes, 138 (ternary 138, `!=` with else 145, magnitude set in
+// each arm 126; all 24 declaration orders of torque/magnitude/left/right 138); the turn product inline
+// in both sides 113; removing the gear call or merging the two throttle minimums shrinks the frame by
+// two slots (diagnostic).
+// r97: the turn product written at both uses (retail's xmm6 zero, xmm5 product) 113;
+// torque if/else with NONE first 138, with that 138; spin helper as one fmod of
+// `spin > 0 ? spin : spin + period` 112, with the product at both uses 149; spin
+// result local 134. The extra frame word is not 0x2056e0's (it aligns itself).
+// Lane 13 round 25: the gear read at each use (no short local) 127; the torque as a ternary 145; as
+// `if (gear == NONE) torque = 0; else ...` 138; the f1740 result in a named local 115; the two throttle minimums
+// declared engine first 113; both minimums written inside the call 115 (same code). Diagnostics: the wheel spin
+// helper replaced by plain fmod keeps the 0x14 frame; one shared minimum (or no f1740 call) drops it to 0xc, so the
+// dead word comes with the second minimum; the opening magnitude already matches retail.
+// Lane 13 round 28: the gear throttle's minimum written in the f1740 call 113 (frame still 0x14); the engine
+// throttle's minimum in the f1950 call 115; engine_throttle renamed (diagnostic) 115, slots unchanged;
+// `if (gear == NONE) torque = 0; else ...` 138 (retail's arm order and per-path zero, but torque in xmm3 against
+// retail's xmm0, 697 bytes); call arm first 145.
+// Round 117 (fast; aligned 52 for the unchanged body): `if (gear == NONE) torque = 0; else ...` now 127 (zero
+// XMM6, product XMM5 and the negation's fresh zero as retail; torque XMM3), with `-torque`, the field-first
+// product, torque-first sides or `turn * torque_magnitude` 127 each (same code); the turn product written at both
+// uses 98 (aligned 32: every float register as retail; left the NONE arm laid out after `jne` with the zero set in
+// it, the right value copied to XMM0 before its store, and the spin temp stored before the period test), with the
+// NONE-first if/else 127, the call-first ternary 134, the NONE-first ternary 127, call arm first with an else
+// zero 134, magnitude declared first 127, a single-exit spin helper 121, an if/else result spin helper 98, the
+// zero-period exit first 103. Compile-only: every spin shape (local copy, ternary argument, fmodf, float fmod
+// overload, pointer argument, no helper, double local) stores the temp at each definition.
+// Round 45 (lane 1): `-torque` 101 (identical); `torque < 0.0f ? 0.0f - torque : torque` 100; torque declared at
+// the gear read 101; NONE-first if/else with `-torque` 127 at 697 bytes (torque XMM3, magnitude XMM0; retail XMM0,
+// XMM1), with the flipped test 129.
+// Round 44 (lane 11): the contact torque store as if/else 171 (692 bytes); right computed before left 101; right
+// declared before left 101; `!(i & 1) ? left : right` 101 (identical code); diagnostic: the turn product at both
+// uses 98 again (left: the NONE gear arm, right copied to XMM0 before its store, the spin temp at each definition).
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2203,12 +2342,13 @@ int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, t
 
 /* a wheel's spin advanced by its angular velocity, wrapped into the
    definition's period */
-PRIVATE inline void vehicle_wheel_spin_wrap(real *spin, real period)
+PRIVATE inline void vehicle_wheel_spin_wrap(real *spin, real delta, real const *period)
 {
-	*spin = period > 0.001f ? (real)fmod(*spin, period) : 0.0f;
+	*spin += delta;
+	*spin = *period > 0.001f ? (real)fmod(*spin, *period) : 0.0f;
 	if (0.0f > *spin)
 	{
-		*spin += period;
+		*spin += *period;
 	}
 }
 
@@ -2232,7 +2372,29 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
-// score 189 (was 189): frame 0x34 versus 0x30; native gear and incoming roles agree;
+// score 10 (was 29): the spin wrap helper now takes the field's address and the advance (it adds,
+// wraps and re-reads the period through its pointer), which gives retail's spin tail. Left: frame
+// 0x34 versus 0x30 (one never-referenced dword at the frame top) with the torque and loop-offset
+// slots swapped; every other differing line is that 4-byte offset. Round 182: the helper in place
+// through pointers without the advance 89 (976 bytes, the fmod argument re-reads the field); the
+// advance inside the helper 29 (kept); braking through the existing 0xf5d70 call 321 (out of line
+// under /Ob1; forced inline 29, identical to the written-out test, but 0xf1950/0xf5ee0/0xf6d10 then
+// lose their out-of-line calls); torque renamed for slot order 29 (identical). Diagnostics: the extra
+// dword stays without the throttle/0xf1740 call, the spin tail, the steering calls or the gear
+// call, and with a constant braking argument; it goes (frame 0x30) only without the 0x2056e0 call.
+// It is not 0xefde0's aligned frame passed down (with 0xefde0 not calling it, still 0x34). Also 29
+// each (identical): the rotation at function scope, torque/i/braking declared first, braking as one
+// boolean expression.
+// Earlier at 71 (was 189): the contact definition as an element pointer, both steering
+// the frame is now retail's 0x30 (round 114); before that, frame 0x34 versus
+// 0x30; native gear and incoming roles agree;
+// the contact definition as an element pointer, both steering
+// bits read early into named locals, and the spin wrap helper changed to take the
+// spin value and return the wrapped one; the contact loop now matches retail
+// instruction for instruction. Left: frame 0x34 versus 0x30 (one never-referenced
+// dword at the frame top) with the torque and loop-offset slots swapped, and the
+// spin tail spilling the period instead of re-reading it from the definition.
+// Earlier at 189: frame 0x34 versus 0x30; native gear and incoming roles agree;
 // torque/contact homes, flag extraction and spin allocation remain. Shared workspace/in-place spin
 // and original bits 304/257/201/272/216; native short gear on the two legal graphs 187/202.
 // Early one-use bit forms 334/92/121 and their short-gear/return-value forms
@@ -2243,6 +2405,57 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // selection-zero torque/byte flags 311; entry-zero torque/use-point bits 274; selection-zero
 // torque/use-point bits 301; spin forceinline 189; steer forceinline 189; both forceinline 189;
 // spin noinline 425; steer noinline 350; both noinline 545. Original executable body restored.
+// J198: torque name/throttle scope/quaternion loop-entry/function-entry declarations 189 each;
+// native contact cursor with original/loop/entry/combined lifetimes 245 each.
+// Value-input spin result, value/field periods and short/byte gear 182/261/197/262;
+// separate exhaustive/default-zero results with value/field periods 189/261/208/258.
+// Seven-point value-input gain below margin; frame, torque/contact and period homes remain.
+// Round 49: torque/counter declaration swap 189; steering helper with a matrix argument 189;
+// both 189; const spin 189; late torque/late counter/both 189 each; behavioural counter name 189.
+// Original target and steering helper restored.
+// Round 50: the contact definition as an element pointer read twice (legal bit tests) 187 (below
+// the margin). On the early-bit graph (named bits after the flags read, plain if/else-if gear) 100
+// at 991 bytes; with the short gear 156; plus the element pointer (retail's dead `add eax, edi`) 62:
+// the loop then equals retail but for slots. Spin wrap there: period through a pointer 89 (976
+// bytes); value-in/value-out helper 241 (`ret 4`: vehicle_index moves to a register); value copy
+// inside the helper 93 (still `fld` of the field); the wrap with direct field names 29 at 991 bytes
+// (spin code then retail's: value temp, period re-read, field stored before the sign test; not
+// kept: early bits and a hand-written helper need a match). Left at 29: frame 0x34 against 0x30
+// (an extra never-referenced dword at the top) and torque/loop-offset slots swapped (retail shares
+// the throttle slot with torque; compile-only does too, LTCG pairs it with the offset). i before
+// torque, scoped throttle with late torque, a named gear-select result, the throttle magnitude
+// passed inline: 29 each. Original body restored.
+// Round 114 (lane 6): the 0x34 frame was 8-byte alignment that LTCG pushed up from 0x2056e0, whose
+// inline cap helper named a `double scale`; passing the scale straight to scale_vector_by_double
+// (0x2056e0 still matches) gives retail's 0x30 frame here (189 -> 187 on this body). On round 50's D9
+// form (early named bits, the element pointer, the wrap written on the fields; 29 before) that is 10,
+// and with `torque * dt` written in both adds (no spin local) 8 at 991 bytes: only the torque and
+// loop-offset slots stay swapped (torque 0x14 / offset 0x18 sharing the throttle's, retail the other
+// way round). None of those forms is kept without a byte match. On the 8 form: i or torque declared
+// first 8/8, torque declared late 8, throttle in a block 8, throttle passed inline 8, a while loop 8,
+// plain else-if gear 177, torque preset to 0 270, brake store before the torque store 19, torque
+// stored first 32, contact pointer before the definition pointer 9, memcpy for the rotation copy 71,
+// the existing VEHICLE_DWORD_BITS view for the bits (early 8, at use 180), torque from an inline
+// helper returning from each arm 8 / single exit 71, spin named before the calls 81. Wrap helper
+// forms: period through a pointer 84, by reference 84, forceinline 84; the helper also doing the add
+// with a named spin 10 (the D9 spin code), with `torque * dt` per call 70, with torque and dt passed
+// 70; on this body (period pointer, add inside) 183. Diagnostics: extra torque uses in or after the
+// loop, throttle and torque as one variable (10), and removing any single call never move torque
+// above the offset. Source permuter on the 8 form: 6 tries in 616 s, nothing lower. Original body
+// restored.
+// Round 103 (the frame is now 0x30; left: torque at 0x14 and the loop offset at 0x18 sharing the throttle's
+// slot, retail the other way round (8), and after the first fmod the period zero `xorps xmm2` comes before
+// the advance reload, retail after (2)): the gear arm as one ternary 10 (identical); the second steering
+// bit read from the element expression 242 (frame 0x34); torque assigned once,
+// `braking || vehicle->gear == NONE ? 0 : ...` 192 and with the short gear read first 193 (both give
+// torque retail's slot, shared with the throttle, but merge the two zero paths and put the computed path
+// first); a nested ternary with the gear assigned inside it 10 (identical). Diagnostics: without the
+// in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
+// weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
+// Round 13 (lane 17), at 10 (the same 8 slot lines and the 2-line zero/reload order after the first fmod): torque
+// renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
+// contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
+// rotation declared in each steering branch 186 (frame 0x40).
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2291,20 +2504,22 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	}
 	for (i = 0; i < state->definition->contact_count; i++)
 	{
-		dword flags = state->definition->contacts[i].flags;
+		s_vehicle_contact_definition *contact_definition = &state->definition->contacts[i];
 		s_vehicle_contact *contact = &state->contacts[i];
 		quaternionf rotation;
+		bool turn_left = TEST_FIELD_BIT((contact_definition->flags >> 2) & 1);
+		bool turn_right = TEST_FIELD_BIT((contact_definition->flags >> 3) & 1);
 
 		contact->torque = torque;
 		if (braking)
 		{
 			contact->unknown83 = true;
 		}
-		if (TEST_FIELD_BIT((flags >> 2) & 1))
+		if (turn_left)
 		{
 			vehicle_contact_steer(state, contact, sine, cosine, &rotation);
 		}
-		else if (TEST_FIELD_BIT((flags >> 3) & 1))
+		else if (turn_right)
 		{
 			vehicle_contact_steer(state, contact, 0.0f - sine, cosine, &rotation);
 		}
@@ -2319,18 +2534,16 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 
 	real spin = torque * dt;
 
-	vehicle->unknown360 += spin;
-	vehicle_wheel_spin_wrap(&vehicle->unknown360, *(real *)(definition + 0x20c));
+	vehicle_wheel_spin_wrap(&vehicle->unknown360, spin, (real const *)(definition + 0x20c));
 	if (!(TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit5)))
 	{
-		vehicle->unknown364 += spin;
-		vehicle_wheel_spin_wrap(&vehicle->unknown364, *(real *)(definition + 0x20c));
+		vehicle_wheel_spin_wrap(&vehicle->unknown364, spin, (real const *)(definition + 0x20c));
 	}
 }
 
 void function_141590(transform4x3f const *in, transform4x3f *out);
 quaternionf *function_141f60(matrix3x3 const *matrix, quaternionf *out);
-void function_11d790(quaternionf const *q, vector3f *axis, real *angle);
+void function_11d790(quaternionf const *q, real *angle, vector3f *axis);
 
 /* a damping force against a speed, at most what stops it within a tick */
 PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scale)
@@ -2348,10 +2561,21 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 830 (was 872): Frame 0x10c versus 0xfc; scalar and matrix homes still differ.
+// score 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
 // both point setters 846. Plain confirms four existing cross3f calls, unchanged call roles.
+// Round 426: facing-at-use/boost-default/mass subsets 895/835/905/794/874/803/882, matrix homes 882; facing after boost/velocity 806/846, with default boost 833/860; each with mass 773 (kept)/821/803. Frame 0x10c remains; plain confirms 773.
+// DL196: current-output/response/normalization subsets 773/775/744/759/728/759/744;
+// desired output 773. Complete facing before/after velocity 856/856; complete
+// force products 728, with late facing 856. Keep only current-output ownership
+// and the normalization result; original facing reads and response observations retained.
+// Round 45 (lane 1): `real climb = vehicle->unknown1b8;` for the elevation's compare and product 721 (retail loads
+// the field once; a 7-point gain, under the 8-point bar, so not kept); a separate relative transform for
+// 0x142a60's result (retail has three transforms at 0x70/0xa4/0xd8) 736 (frame 0x104, the transforms 8 bytes
+// high), with climb 729; with climb, `boost * maximum`
+// and `boost * vehicle->speed` 721 each (identical code), boost preset to 1.0f then the conditional 747, boost as
+// one ternary 721 (identical).
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2363,7 +2587,6 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	real maximum_speed;
 	vector3f linear_velocity;
 	vector3f angular_velocity;
-	vector3f const *facing = &vehicle->local_velocity;
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
@@ -2374,6 +2597,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 		boost = 1.0f;
 	}
 	maximum_speed = *(real *)(definition + 0x1f4) * boost;
+	vector3f const *facing = &vehicle->local_velocity;
 	function_ba1d0(vehicle_index, &linear_velocity, &angular_velocity);
 	if (TEST_FIELD_BIT(VEHICLE_DWORD_BITS(vehicle->flags_134)->bit23))
 	{
@@ -2400,12 +2624,18 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	up.j = -(facing->k * facing->j);
 	up.k = 1.0f - facing->k * facing->k;
 
-	real forward_mass = vehicle->unknown25c * (forward_fraction * forward_fraction);
-	real up_mass = vehicle->unknown25c * (up_fraction * up_fraction);
-	real left_mass = vehicle->unknown25c * (left_fraction * left_fraction);
+	real mass = vehicle->unknown25c;
+
+	real forward_mass = mass * (forward_fraction * forward_fraction);
+	real up_mass = mass * (up_fraction * up_fraction);
+	real left_mass = mass * (left_fraction * left_fraction);
 	real length = (real)sqrt(up.k * up.k + up.j * up.j + up.i * up.i);
 
-	if (!(0.0001f > (real)fabs(length)))
+	if (0.0001f > (real)fabs(length))
+	{
+		length = 0.0f;
+	}
+	else
 	{
 		real inverse = 1.0f / length;
 
@@ -2413,7 +2643,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 		up.j = inverse * up.j;
 		up.k = inverse * up.k;
 	}
-	if (0.0001f > (real)fabs(length) || length == 0.0f)
+	if (length == 0.0f)
 	{
 		up.i = 1.0f;
 		up.j = 0.0f;
@@ -2516,20 +2746,19 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	banked.j = cosine * up.j + axis.j * sine;
 	banked.k = cosine * up.k + axis.k * sine;
 
-	transform4x3f current;
+	transform4x3f transform;
 	transform4x3f desired;
-	transform4x3f difference;
 	quaternionf rotation;
 	vector3f rotation_axis;
 	real rotation_angle;
 
-	current.scale = 1.0f;
-	current.forward = vehicle->forward;
-	cross3f(&vehicle->up, &vehicle->forward, &current.left);
-	current.up = vehicle->up;
-	current.position.x = 0.0f;
-	current.position.y = 0.0f;
-	current.position.z = 0.0f;
+	transform.scale = 1.0f;
+	transform.forward = vehicle->forward;
+	cross3f(&vehicle->up, &vehicle->forward, &transform.left);
+	transform.up = vehicle->up;
+	transform.position.x = 0.0f;
+	transform.position.y = 0.0f;
+	transform.position.z = 0.0f;
 	desired.scale = 1.0f;
 	desired.forward = *facing;
 	cross3f(&banked, facing, &desired.left);
@@ -2537,10 +2766,11 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	desired.position.x = 0.0f;
 	desired.position.y = 0.0f;
 	desired.position.z = 0.0f;
-	function_141590(&current, &current);
-	function_142a60(&desired, &current, &difference);
-	function_141f60(&difference.rotation, &rotation);
-	function_11d790(&rotation, &rotation_axis, &rotation_angle);
+	function_141590(&transform, &transform);
+	// Reuse the inverse transform workspace for the relative transform.
+	function_142a60(&desired, &transform, &transform);
+	function_141f60(&transform.rotation, &rotation);
+	function_11d790(&rotation, &rotation_angle, &rotation_axis);
 
 	real rate = PIN(rotation_angle * maximum_turn_rate * 0.95492965f, 0.0f - maximum_turn_rate, maximum_turn_rate);
 	vector3f torque;
@@ -2549,12 +2779,12 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	torque.i = (rotation_axis.i * rate - vehicle->angular_velocity.i) * torque_scale;
 	torque.j = (rotation_axis.j * rate - vehicle->angular_velocity.j) * torque_scale;
 	torque.k = (rotation_axis.k * rate - vehicle->angular_velocity.k) * torque_scale;
-	force.i *= vehicle->unknown25c;
-	force.j *= vehicle->unknown25c;
-	force.k *= vehicle->unknown25c;
-	torque.i *= vehicle->unknown25c;
-	torque.j *= vehicle->unknown25c;
-	torque.k *= vehicle->unknown25c;
+	force.i *= mass;
+	force.j *= mass;
+	force.k *= mass;
+	torque.i *= mass;
+	torque.j *= mass;
+	torque.k *= mass;
 	function_2056e0(vehicle_index, state, 0.0f, &force, &torque);
 }
 
@@ -2563,6 +2793,7 @@ point2f *g_468774;
 
 real normalize2d(point2f *v);
 real function_30bf0(vector3f *v);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 bool __stdcall function_a75d0(vector3f *vector, real maximum);
 extern vector3f *g_4687a4;
 
@@ -2583,11 +2814,23 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
-// score 1053 (was 1124): Frame 0x80 versus 0x74; velocity and force homes still differ.
+// score 1052 (was 1053): Frame 0x80 versus 0x74; velocity and force homes still differ.
 // Existing inverse transform 1137; forward transform and accumulation 1053 kept;
 // both 1238; shared cross products 1130; inverse/cross 1134; forward/cross 1056;
 // all three 1222; all with mass scales 1254. Plain confirms the shared in-place
 // forward transform and vector accumulation; original incoming-velocity calculation kept.
+// Round 304: scalar incoming velocity/shared yaw/shared airborne producers in seven
+// nonempty combinations 1094/1072/1064/1066/1062/1053/1089; all with force/velocity role names 1089.
+// Original-graph persistent/planar/later/all native frame-object name families 1053/1053/1053/1053.
+// Original body restored; the frame remains 0x80 versus 0x74.
+// Round 44 (lane 11): the permutation count/pointer through the existing 0xba690 1052 (kept: removes the helper's
+// body written by hand); the velocity transform through the existing 0x1427f0 1238 at 4511 bytes (out of line:
+// its /Ob1 file; retail inlines it here, x, y and z in registers with only the forward and left rows stored);
+// 0x1427f0 marked inline at its definition 1084 (frame 0x84) but matched 0x210770 then breaks (48); a
+// __forceinline redeclaration here 1238 (ignored). The frame stays 0x80 against 0x74 (a flags lead).
+// Round 469: Angular-output/scaled-velocity/heading-pair lifetime scopes in seven nonempty
+// combinations, then all with input declared at consumption: 1053/1053/1053/1053/1053/1053/1053/1053.
+// Every initializer, expression and call restored; frame 0x80 versus 0x74 remains.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -2894,9 +3137,10 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 		torque.k *= mass;
 	}
 
-	s_vehicle *current = VEHICLE_GET(vehicle_index);
-	long permutation_count = current->unknown118 / 10;
-	byte const *permutations = (byte *)current + current->unknown11a + permutation_count * 2;
+	long permutation_count;
+	long permutations;
+
+	function_ba690(vehicle_index, &permutation_count, NULL, NULL, &permutations);
 
 	for (i = 0; i < *(long *)(definition + 0x2e8); i++)
 	{
@@ -2908,7 +3152,7 @@ void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state
 			permutation < permutation_count)
 		{
 			state->points[i].unknowna0 =
-				*(real *)(point_definition + 0x38 + (char)permutations[permutation * 8 + 1] * 4);
+				*(real *)(point_definition + 0x38 + (char)((byte const *)permutations)[permutation * 8 + 1] * 4);
 		}
 		else
 		{
@@ -3065,10 +3309,49 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
-// score 204 (was 204): Restored original body; projection/cross-product scheduling and angle precision remain.
+// score 154 (was 154): Staged cross and native up receiver kept; projection/trig schedules remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
 // coordinated external force-inline 326, with wide angle 359; all original contracts restored.
+// J198: staged cross/projection/both/dot/products/combinations 188/205/190/211/206/207/207/207.
+// Up/forward/both receivers and case/trig combinations 177/204/178/188/188/178/178/178.
+// On native receiver, complete projection/dot/both/sine-first 171/171/169/169; staged cross, native up receiver and all symmetric products kept plain.
+// Double angle/cases/trig/both 147/147/147/147; shared dot/scale/both/trig 154/148/149/149.
+// All precision/grouping forms exact-only and restored. Projection-load order, cross operands and trig homes remain.
+// Round 431: full forward value 264; staged rotated forward/up/both rows 169/169/169;
+// forward value with rotated forward/up/both 264/264/262; complete staging with tested flipping result 262;
+// native CRT forward/up/matrix copy subsets 169 each (seven). Original graph restored; projection preloads and trig residence remain.
+// Round 43 (lane 16): retail keeps the angle on the x87 stack (one fld of the fraction above the switch,
+// fmul/fsub per case) and has `cosine` in XMM4 and cos*up.i in XMM5 in both predecessors of the shared up
+// rotation. `double angle` 147 at 787 bytes (x87 flow then retail's; exact-only, restored); the up rotation
+// and left cross written in both paths (default returning) 238; the projection as one reversed sum and
+// three `-=` statements 177; the same through facing->up with no pointer 188; dot3f(up, forward) /
+// dot3f(forward, up) 171/171; dot grouped (j + k) + i / (k + j) + i 170/170 (j term retail's); grouped with
+// the k and i operands swapped 170 (identical code: product operands are canonicalised).
+// Lane 13 round 25: the forward pointer declared after up (forward through it everywhere) 165; forward copied
+// before the up pointer 169; the forward pointer declared first 169; that with dot3f(up, forward) 178; the
+// projections subtracted in place without the named products 169. Retail's 30 shorter bytes are the angle kept
+// on x87 (fraction loaded above the switch); only `double angle` gives that (exact-only, not repeated).
+// Lane 13 round 28: the up copy written to facing->up 168 (forward loads then hoist above it, as retail's); every
+// use through facing->up 207; with dot3f and the projection through vector3f_scale 164; with the dot read through
+// facing->up 154; the up pointer declared after the dot (copy and dot through facing->up, everything after
+// through the pointer) 154; all uses through facing->up 171, all through the pointer 169; the dot declared at its
+// assignment 154; in the cases 1/2 path cos, sin then the cross 154, the cross first 154; dot3f passed straight to
+// vector3f_scale (no dot local) with the pointer declared after it 154 (kept). Left: the dot's i term
+// and two left-cross products load forward where retail loads up.
+// Round 182: dot3f(&facing->forward, &facing->up) 154 (identical); the left cross through facing->up 151 (833
+// bytes; its first product then retail's, three others flip); that with the dot's arguments swapped 151; the
+// projection removed in place through a `dot` local 174 (compile-only it gives the dot's i term); the up pointer
+// declared first with the dot through it 164. A compile-only harness (reproduces our products exactly) screened 144
+// dot/projection/cross/normalize/fallback spellings and 30 by-name copy orders: none gives retail's cross operand
+// orders (it needs the j components ranked before i and i before k for both vectors); best 3 of 9 products off.
+// Round 45 (lane 1): `double angle` 130 at 786 bytes (exact-only, not kept); with the up rotation and left cross
+// written in both paths (default returning, no goto) 121 at 797 bytes (retail's default path also preloads cosine
+// and cos * up.i, as a tail merge of two written-out rotations would); the same with `real angle` 339 at 983
+// bytes; on the 121 form the x87 forward rows' products swapped 121 and sine declared first 121 (identical code:
+// sine keeps the state slot where retail's takes the result slot).
+// Round 44 (lane 11): sine declared before cosine 154; the axis declared first 154; plain cross3f for the flip axis
+// 154 (all identical code); `double angle` 130 at 786 bytes with either sine/cosine order (exact-only, not kept).
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3076,19 +3359,24 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	real fraction = function_f4250(vehicle_index);
 	bool flipping = fraction > 0.0f;
-	real dot;
 
 	facing->forward = vehicle->local_velocity;
 	facing->up = *g_4687b0;
-	dot = facing->up.j * facing->forward.j + facing->up.k * facing->forward.k + facing->up.i * facing->forward.i;
-	facing->up.i -= facing->forward.i * dot;
-	facing->up.j -= facing->forward.j * dot;
-	facing->up.k -= facing->forward.k * dot;
-	if (function_30bf0(&facing->up) == 0.0f)
+
+	vector3f projection;
+
+	vector3f_scale(&facing->forward, dot3f(&facing->up, &facing->forward), &projection);
+
+	vector3f *up = &facing->up;
+
+	up->i -= projection.i;
+	up->j -= projection.j;
+	up->k -= projection.k;
+	if (function_30bf0(up) == 0.0f)
 	{
-		facing->up = *g_4687a8;
+		*up = *g_4687a8;
 	}
-	vehicle_cross(&facing->up, &facing->forward, &facing->left);
+	cross3f_staged(up, &facing->forward, &facing->left);
 	if (flipping)
 	{
 		real angle;
@@ -3118,13 +3406,13 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 			goto rotate_up;
 		}
 		cosine = (real)cos(angle);
-		vehicle_cross(&result->forward, &result->up, &axis);
+		cross3f_staged(&result->forward, &result->up, &axis);
 		sine = (real)sin(angle);
 rotate_up:
 		result->up.i = axis.i * sine + result->up.i * cosine;
 		result->up.j = result->up.j * cosine + axis.j * sine;
 		result->up.k = result->up.k * cosine + axis.k * sine;
-		vehicle_cross(&result->up, &result->forward, &result->left);
+		cross3f_staged(&result->up, &result->forward, &result->left);
 	}
 	else
 	{
@@ -3304,7 +3592,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
-// score 48 (was 53): from the marker count sum on, retail's scratch registers run one step
+// score 48 (was 48): from the marker count sum on, retail's scratch registers run one step
 // ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
 // loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
 // block), plus the 0x146320 set-up pair (its declared order, BLOCKED-BY 0x146320: seed declared
@@ -3317,6 +3605,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // pointer 129; the ray through vector3f_scale 48; facing declared with the loop locals 48; `long count`
 // declared before the first count 48; count from the second call, then `+= primary_count` 48 (the
 // 48s are the same code: the second count's sign extension stays preferenced to eax).
+// Round 420: native facing producer 67; native ray producer 48; native facing producer + native ray
+// producer 67; collision miss continue 48; native facing producer + collision miss continue 67; native
+// ray producer + collision miss continue 48; native facing producer + native ray producer + collision
+// miss continue 67; native facing producer + native ray producer + collision miss continue + readonly
+// marker 67; total owns first marker result 141. Original body restored.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -3388,7 +3681,9 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
-// score 160 (was 160): count/marker/strength homes and reflection schedule differ;
+// score 41 (was 160): left: the cone call sets up EDI before ECX (retail ECX first; the same in
+// 0xf6060, BLOCKED-BY 0x146320, whose file is held) and the middle-point copy is scheduled ahead of
+// the reflection's loads (retail stores its z and y words after the first products).
 // Frame 0x8cc agrees; count/marker carriers, strength residence and reflection schedule remain.
 // Round 384: sixteen-marker capacity 186; with shared vector setter 170; indexed loop 186, with
 // setter 170; complete reflection input captures 190/205/190/205.
@@ -3403,6 +3698,21 @@ extern byte g_5107ee;
 // countdown/facing+midpoint 153; countdown/reflection setter 158; countdown/facing+reflection
 // 153; countdown/midpoint+reflection 158; positive word countdown 159; positive dword countdown
 // 165. Original executable body restored.
+// J197: existing complete initializer, ordinary/inline/forced 330/276/159;
+// request construction before vector helpers, forced/inline/ordinary 181/316/333;
+// forced initializer with bounded strength 177, with native countdown 166.
+// Count/marker/strength homes and reflection schedule remain.
+// DL196: endpoint/request-owned strength/projection-product subsets
+// 161/181/169/165/162/184/163; native full-width count 160.
+// Original executable body and all supporting contracts restored.
+// Round 43 (lane 16): long index 170 (strength-reduced, pointer at +0x54); short index 163
+// (retail's test/movzx count); with the strength as PIN(..., 0.0f, 1.0f) and `if (strength > 0.0f)`
+// 84 (kept: pointer at +0x38, spilled strength, frame); dot grouped 86; dot terms written i, j, k
+// 80 (kept); position copy before the memset 53 (kept); colours, name, forward, NONE fields, tag
+// order 43 (kept); copy before the dot / copy and memset before the dot 43/43; facing copied after
+// the middle point 41 (kept); copy after the memset 39 (retail stores two words before it, not kept);
+// dot declared where computed 41; dot3f(normal, facing) / dot3f(facing, normal) 45/45; a pointer to
+// effect_markers[6] 41; the reflection through vector3f_assign 41.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
@@ -3416,7 +3726,7 @@ void __stdcall function_f62f0(long vehicle_index)
 			s_object_marker markers[16];
 			short count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
 
-			for (word marker_index = 0; marker_index < count; ++marker_index)
+			for (short marker_index = 0; marker_index < count; ++marker_index)
 			{
 				s_object_marker *marker = &markers[marker_index];
 				s_vehicle_wash_collision collision;
@@ -3429,51 +3739,43 @@ void __stdcall function_f62f0(long vehicle_index)
 				if (function_1697c0(0x800007, &marker->matrix.position, &vector, vehicle_index, NONE,
 					(s_collision_result_1697c0 *)&collision))
 				{
-					real strength = (1.0f - collision.t) * (0.0f - marker->matrix.forward.k) * vehicle->unknown25c;
+					real strength = PIN((1.0f - collision.t) * (0.0f - marker->matrix.forward.k) * vehicle->unknown25c,
+						0.0f, 1.0f);
 
-					if (!(0.0f > strength))
+					if (strength > 0.0f)
 					{
-						if (strength > 1.0f)
-						{
-							strength = 1.0f;
-						}
-						else if (!(strength > 0.0f))
-						{
-							continue;
-						}
-
 						s_effect_marker effect_markers[7];
 						s_effect_parameters parameters;
 						point3f middle;
-						vector3f facing = direction;
 						real dot;
 
 						middle.x = (marker->matrix.position.x + collision.point.x) * 0.5f;
 						middle.y = (marker->matrix.position.y + collision.point.y) * 0.5f;
 						middle.z = (marker->matrix.position.z + collision.point.z) * 0.5f;
+						vector3f facing = direction;
 						function_1201a0(&facing, g_4687bc);
 						function_1763a0(&collision.point, &facing, effect_markers, &collision.normal);
-						dot = (collision.normal.k * facing.k + collision.normal.j * facing.j +
-							facing.i * collision.normal.i) * 2.0f;
-						memset(&parameters, 0, sizeof(parameters));
+						dot = (collision.normal.i * facing.i + facing.j * collision.normal.j +
+							facing.k * collision.normal.k) * 2.0f;
 						effect_markers[6].position = middle;
+						memset(&parameters, 0, sizeof(parameters));
 						parameters.unknown34 = 0;
 						parameters.unknown38 = 0;
 						parameters.unknown3c = 0;
 						parameters.unknown30 = 0;
 						parameters.source = NULL;
-						parameters.tag_index = *(long *)(definition + 0x2a0);
-						effect_markers[6].forward.i = facing.i - collision.normal.i * dot;
-						effect_markers[6].forward.j = facing.j - collision.normal.j * dot;
-						effect_markers[6].forward.k = facing.k - collision.normal.k * dot;
 						parameters.color_a = 0xff808080;
 						parameters.color_b = 0xff808080;
 						effect_markers[6].name = 0x80000ba;
+						effect_markers[6].forward.i = facing.i - collision.normal.i * dot;
+						effect_markers[6].forward.j = facing.j - collision.normal.j * dot;
+						effect_markers[6].forward.k = facing.k - collision.normal.k * dot;
 						parameters.unknown18 = NONE;
 						parameters.object_index = NONE;
 						parameters.owner.unknown4 = NONE;
 						parameters.owner.unknown0 = NONE;
 						parameters.owner.unknown8 = NONE;
+						parameters.tag_index = *(long *)(definition + 0x2a0);
 						parameters.marker_count = 7;
 						parameters.markers = effect_markers;
 						parameters.flags = 4;
@@ -3488,14 +3790,6 @@ void __stdcall function_f62f0(long vehicle_index)
 	}
 }
 
-/* a ray: a point, a vector, and the fraction along it something was hit */
-struct s_vehicle_ray
-{
-	point3f point;
-	vector3f vector;
-	real t;
-};
-
 bool function_182800(s_vehicle_ray *ray, long ignore_index, void *world);
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore_object_index, long ignore_unit_index);
 byte function_11f470(real lo, real hi, real value);
@@ -3507,33 +3801,93 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 316 (was 374): frame 0xe0 versus 0xec, iterator/scalar homes and final flag stores remain.
+// score 206 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
+// every frame slot now retail's; left: the override search's exit (retail tests the found
+// element out of line, threaded from the loop; ours re-tests i < count), the permutation pointer's load order,
+// integer registers in the ray copies, the scale products (ours copy the scale, retail scales in place), the
+// clamp/fallback store placement and the final flag writer. Before round 45 (286, was 303): the state/permutation
+// and byte flag slots, the late zero register and the component pointer's NULL test also differed.
+// Earlier: frame 0xe0 versus 0xec, iterator/scalar homes and final flag stores remain.
 // Native point copy 350; up copy 341; both 333; both with long quantization 328;
 // both with post-search scalar selection 321; all three 316 (kept); scalar selection alone 362;
 // native ray setters 333; ray/marker/both at entry and complete workspace names 316 each.
+// Round 425: point before up 317; shared word flag writer 316, with point first 317; long sound
+// result 319, with point first 319, with writer/everything 341/341; both long decisions with all 344.
+// All original source restored; missing twelve frame bytes and iterator/scalar homes remain.
+// Lane 13 round 25: the twelve bytes are the ray's hit normal (0x182800 fills a 0x28-byte ray: point, vector, t,
+// normal; the struct gained the field) 303 (kept). On it: the override search as a NULL element pointer set on the
+// match (retail's loop and threaded exit exactly) 276 (a flag set in the loop: kept only on a match); the element
+// pointer kept from the loop with `i < count` 292; with a count local 286; the count local alone 314; the point
+// before up 303; the three offsets loaded rest first 303; `if (!marker.node_index) {...} else value = 0` 300; all
+// three 300; with the component read at each use behind the index test (no NULL test) 298; byte_flags_set 300;
+// word_flags_set bit 8 (retail's or/and RMW and split epilogue) 310 at 1378 bytes; that with the NULL pointer
+// search 288; the iterator initialized before the largest change, permutations and changed flag 298 (stores
+// then in retail's order).
+// Lane 13 round 28: the element pointer kept from the loop with `i < count` 306 (frame moves); with a count local
+// 286 (kept: the loop is retail's; its exit still re-tests i < count). On 286: the ray point before up 288; the
+// offsets loaded rest first 289; `iterator.animation_id = c_type_709360();` after the index (on 303) 322; explicit
+// graph_index/index stores in member order 286 (init then in retail's order); the init before the largest change,
+// permutations and changed 286; `if (!marker.node_index) {...} else value = 0` 286 (zero block out of line as
+// retail); havok_component_get at each use (no NULL test) 284; both 285; `sounded` declared first 284; the init
+// first too 284; the NULL found pointer 276 (a flag set in the loop).
+// Round 182 (retail packs sounded/changed as bytes +0xe/+0xf of one dword, ours puts them in two dwords at
+// +0xf/+0x17, which moves largest_change, current and the state/permutations slots): changed declared at
+// function scope beside sounded 289 (still two dwords); changed renamed (slot order by name) 286 (same slots);
+// the update bit through word_flags_set bit 8 296 (1383 bytes); the permutation count inside the pointer
+// expression 286 (identical); the ray declared at the top of the block 286 (identical).
+// Round 45 (lane 1): the averaged value written in the quantize call instead of assigned back to value 277 (kept:
+// retail's sounded/changed packed dword, call temp slot and permutation/state order); sounded declared first 273
+// (kept); the iterator stores in member order before largest_change/changed 276 on 277 (with or without the
+// redundant id stores); the point copied before up 275 on 273; `if (!marker.node_index) {...} else value = 0`
+// 274 on 273 (retail's layout); vector3f_scale for the ray vector 274 (identical); offset/rest/length assignment
+// order 270 on 273, with the component read at each use behind the index test (no NULL test, 0xf6bd0's form) 268
+// with the moved init / 269 without (kept); the component change alone 271; offset/length/rest orders
+// rol/lor/rlo 264/265/272 against orl 261 on the NULL found pointer form (that form 264; a flag set in the loop).
+// Round 45, second pass on 269: the point copied first 271; SET_FLAG for the update bit 269; `node_index != 0`
+// 269; the fallback as `value = 0.0f; if (function_168f40(...)) value = 1.0f;` 265 (the XMM7 zero goes); with the
+// point first 265, with the node test's zero arm last 263, with both 251 (kept); on 251 `real reach = 0.0f -
+// length;` before the ray / at the products / after the copies / between the copies 249/251/249/249 (in-place
+// products but a hoisted zero); the Havok clamp as an explicit store then if/else-if 257.
+// Round 44 (lane 11): the permutation count/pointer through the existing 0xba690 (count, NULL, NULL, &pointer;
+// LTCG inlines it with retail's loads) 250 -> 214 (kept); the iterator's constructor and real-typed floats
+// (0x1dceb0 still matches; iterator stores then exactly retail's, the casts at the reads gone) 251 -> 250 and
+// 214 -> 206 (kept); 0xba690 before the iterator 215; the havok component pointer read before the && chain 204
+// (computed ahead of the NONE test); as `index != NONE ? get : NULL` 206; the fallback ternary 236, as if/else
+// 242 (LTCG keeps its zero in an XMM register across 0x168f40); word_flags_set bit 8 216; the update bit through
+// the word-bits view in if/else 216 (retail's `or/and byte [edi+0x349]` and split epilogue exactly, a score rise
+// at 1376 bytes); `ray.vector.i *= 0.0f - length` 272; the ray vector copied by components 318; the override
+// search as a NULL found pointer 206 (retail's loop exit exactly; a flag set in the loop); the Havok clamp as a
+// store then if/else-if 212 (retail's clamp block exactly); `changed` declared after the 0xba690 call 199 with
+// reach / 204 without (retail's store order; under the bar); `real reach = 0.0f - length;` used in all three
+// products, before/after/between the ray copies 199/199/199 (retail's in-place products, but the zero is then
+// hoisted to XMM5; 7 points, under the bar); reach declared with offset or first, or at the products, 206
+// (identical); vector3f_scale 206; an inline helper returning the active component's world (NULL otherwise),
+// diagnostic: with the found pointer, the bit writer and the clamp store 211 at 1375 bytes, the component block
+// then retail's (`[eax+ebx+4]` flag read, then `add eax, ebx`), a bool ray-cast helper the same; all of those
+// with reach 181. Left on that set: the world loaded into EAX then moved to ESI (retail loads ESI), the zero
+// hoisting with reach, and the fallback select (retail `movss 1.0 / jne / xorps`).
+// Round 469: Integer-displacement grouping with indexed mismatch-continue, body-stepped
+// cursor, predicate-owned cursor and indexed while searches 251/257/257/251;
+// the four searches with the original displacement 251/257/257/251. Original body restored;
+// frame 0xec agrees, metadata load order and found-index retest remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
+	bool sounded = false;
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	s_animation_state *state = vehicle_animation_state_get(vehicle);
-	bool sounded = false;
 
 	if (!(definition[0x2ac] & 1))
 	{
-		long permutation_count = vehicle->unknown118 / 10;
-		byte const *permutations = (byte *)vehicle + vehicle->unknown11a + permutation_count * 2;
+		long permutation_count;
+		long permutations;
 		s_graph_iterator3c iterator;
 		real largest_change = 0.0f;
 		bool changed = false;
 
-		iterator.unknown00 = NONE;
-		*(real *)&iterator.unknown08 = 0.0f;
-		*(real *)&iterator.unknown0c = 0.0f;
-		*(real *)&iterator.unknown10 = 0.0f;
-		iterator.index = NONE;
-		*(short *)iterator.unknown28 = NONE;
-		iterator.next_index = NONE;
+		function_ba690(vehicle_index, &permutation_count, NULL, NULL, &permutations);
+
 		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
 			long index = iterator.index;
@@ -3547,82 +3901,81 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 				real length;
 				real rest;
 				real value;
+				long override_count = *(long *)(definition + 0x2f0);
+				byte *override;
 				long i;
 
-				for (i = 0; i < *(long *)(definition + 0x2f0); i++)
+				for (i = 0; i < override_count; i++)
 				{
-					byte *override = *(byte **)(definition + 0x2f4) + i * 0x4c;
-
+					override = *(byte **)(definition + 0x2f4) + i * 0x4c;
 					if (*(long *)(override + 0x44) == iterator.unknown04 && *(long *)(override + 0x48) != NONE)
 					{
 						break;
 					}
 				}
 
-				if (i < *(long *)(definition + 0x2f0) &&
-					(char)permutations[*(long *)(*(byte **)(definition + 0x2f4) + i * 0x4c + 0x48) * 8 + 1] >=
-					*(short *)(*(byte **)(definition + 0x2f4) + i * 0x4c + 0x42))
+				if (i < override_count && (char)((byte const *)permutations)[*(long *)(override + 0x48) * 8 + 1] >=
+					*(short *)(override + 0x42))
 				{
-					offset = *(real *)&iterator.unknown14;
-					length = *(real *)&iterator.unknown18;
-					rest = *(real *)&iterator.unknown1c;
+					offset = iterator.unknown14;
+					rest = iterator.unknown1c;
+					length = iterator.unknown18;
 				}
 				else
 				{
-					offset = *(real *)&iterator.unknown08;
-					length = *(real *)&iterator.unknown0c;
-					rest = *(real *)&iterator.unknown10;
+					offset = iterator.unknown08;
+					rest = iterator.unknown10;
+					length = iterator.unknown0c;
 				}
 
 				s_vehicle_ray ray;
 
-				ray.vector = vehicle->up;
 				ray.point = marker.matrix.position;
+				ray.vector = vehicle->up;
 				ray.point.x += ray.vector.i * offset;
 				ray.point.y += ray.vector.j * offset;
 				ray.point.z += ray.vector.k * offset;
 				ray.vector.i = ray.vector.i * (0.0f - length);
 				ray.vector.j = ray.vector.j * (0.0f - length);
 				ray.vector.k = ray.vector.k * (0.0f - length);
-				if (marker.node_index)
+				if (!marker.node_index)
 				{
-					value = 0.0f;
-				}
-				else if (update && (g_510c54->game_time + index) % 4)
-				{
-					byte last = ((byte *)vehicle->unknown390)[index];
-
-					value = last == 0xff ? 1.0f : last * (1.0f / 255.0f);
-				}
-				else
-				{
-					s_havok_component *component = NULL;
-
-					if (vehicle->havok_component_index != NONE)
+					if (update && (g_510c54->game_time + index) % 4)
 					{
-						component = havok_component_get(vehicle->havok_component_index);
-					}
-					if (component && TEST_FIELD_BIT(component->flag5) && component->unknown9c &&
-						function_182800(&ray, NONE, (void *)component->unknown9c))
-					{
-						value = PIN(1.0f - (ray.t * length - rest) / (length - rest), 0.0f, 1.0f);
+						byte last = ((byte *)vehicle->unknown390)[index];
+
+						value = last == 0xff ? 1.0f : last * (1.0f / 255.0f);
 					}
 					else
 					{
-						value = function_168f40(0x8c2d, &ray, vehicle_index, NONE) ? 1.0f : 0.0f;
+						if (vehicle->havok_component_index != NONE &&
+							TEST_FIELD_BIT(havok_component_get(vehicle->havok_component_index)->flag5) &&
+							havok_component_get(vehicle->havok_component_index)->unknown9c &&
+							function_182800(&ray, NONE,
+								(void *)havok_component_get(vehicle->havok_component_index)->unknown9c))
+						{
+							value = PIN(1.0f - (ray.t * length - rest) / (length - rest), 0.0f, 1.0f);
+						}
+						else
+						{
+							value = 0.0f;
+							if (function_168f40(0x8c2d, &ray, vehicle_index, NONE))
+							{
+								value = 1.0f;
+							}
+						}
+						((byte *)vehicle->unknown390)[index] = function_11f470(0.0f, 1.0f, value);
 					}
-					((byte *)vehicle->unknown390)[index] = function_11f470(0.0f, 1.0f, value);
+				}
+				else
+				{
+					value = 0.0f;
 				}
 				if (value - current > largest_change)
 				{
 					largest_change = value - current;
 				}
-				if (update)
-				{
-					value = (value + current) * 0.5f;
-				}
-
-				long quantized = function_11f470(0.0f, 1.0f, value);
+				long quantized = function_11f470(0.0f, 1.0f, update ? (value + current) * 0.5f : value);
 
 				if (((byte *)vehicle->unknown398)[index] != quantized)
 				{
@@ -3684,46 +4037,47 @@ PRIVATE __forceinline real vehicle_larger(real a, real b)
 /* one of the vehicle definition's limits: its forward and reverse speeds
    (0, 1, the larger 2), its left and right turn speeds (3, 4, 5) and its
    steering angles in degrees (6, 7, 8) */
-// score 109 (was 109): retail returns in xmm0 (`fstp [esp + 8]; movss xmm0, [esp + 8]` in each case),
-// which only one `return result;` gives; it then cross-jumps case 6 into case 7's `fmul` and
-// keeps cases 2 and 5 as their own `jbe` diamonds. Tried: single exit 123 (xmm0 as retail, but
-// cases 2 and 5 jump into case 8 and 6/7 stay apart); returns in cases 6/7 161 (x87 again);
-// the larger as if/else 119; a radians inline for 6/7 123; case 2 with block locals 123;
-// double fabs in 6/7 123; cases 6/7 sharing one body 138; a shared angle local for 6/7 123.
-// Round 401: single-result case orders 012345867 143; 031425867 157; 013425867 156; 012345768 123;
-// 013482567 157; 013467825 129; 876543210 134; 258013467 162. All restored; lookup scheduling and
-// late tail merges remain.
 // @retail 0xf78e0
 real __stdcall function_f78e0(long vehicle_index, long limit)
 {
-	/* retail keeps limit on the stack */
-	long const *reference = &limit;
-	byte *definition = VEHICLE_DEFINITION_GET(VEHICLE_GET(vehicle_index));
+	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
+	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
+	real result;
 
 	switch (limit)
 	{
 	case 0:
-		return (real)fabs(*(real *)(definition + 0x1f4));
+		result = (real)fabs(*(real *)(definition + 0x1f4));
+		break;
 	case 1:
-		return (real)fabs(*(real *)(definition + 0x1f8));
+		result = (real)fabs(*(real *)(definition + 0x1f8));
+		break;
 	case 2:
-		return vehicle_larger(*(real *)(definition + 0x1f4), *(real *)(definition + 0x1f8));
+		result = MAX((real)fabs(*(real *)(definition + 0x1f4)), (real)fabs(*(real *)(definition + 0x1f8)));
+		break;
 	case 3:
-		return (real)fabs(*(real *)(definition + 0x22c));
+		result = (real)fabs(*(real *)(definition + 0x22c));
+		break;
 	case 4:
-		return (real)fabs(*(real *)(definition + 0x230));
+		result = (real)fabs(*(real *)(definition + 0x230));
+		break;
 	case 5:
-		return vehicle_larger(*(real *)(definition + 0x22c), *(real *)(definition + 0x230));
+		result = MAX((real)fabs(*(real *)(definition + 0x22c)), (real)fabs(*(real *)(definition + 0x230)));
+		break;
 	case 6:
-		return (real)fabs(*(real *)(definition + 0x204) * 0.017453292f);
+		result = (real)fabs(*(real *)(definition + 0x204) * 0.017453292f);
+		break;
 	case 7:
-		return (real)fabs(*(real *)(definition + 0x208) * 0.017453292f);
+		result = (real)fabs(*(real *)(definition + 0x208) * 0.017453292f);
+		break;
 	case 8:
-		return vehicle_larger(*(real *)(definition + 0x204) * 0.017453292f,
-			*(real *)(definition + 0x208) * 0.017453292f);
+		result = MAX((real)fabs(*(real *)(definition + 0x204) * 0.017453292f),
+			(real)fabs(*(real *)(definition + 0x208) * 0.017453292f));
+		break;
 	default:
 		__assume(0);
 	}
+	return result;
 }
 
 bool __stdcall function_f8070(long bit, word const *flags);
@@ -3731,10 +4085,17 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
-// score 864 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
+// score 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // Complete definition snapshot, result-first, direct active predicate in seven nonempty
 // combinations 1006/864/1006/869/1002/869/1002; snapshot with numeric movement-case
 // source order 1006. Original observations, switch and body restored.
+// Round 304: entry-owned kind/angular-ceiling/engine subsets 1010/1010/1010/1010/1010/1010/1010;
+// complete families with staged cross 1010. Original body restored; definition and float-return boundaries remain.
+// Round 182: 0xf78e0 now matches (its limits return in xmm0), 864 -> 817; the inline larger-of sites as
+// `MAX((real)fabs(a), (real)fabs(b))` as 0xf78e0 now spells them 830 (fast).
+// Round 45 (lane 1): ours keeps 1.0 in XMM5 from entry (retail loads it per site; every callee writes only
+// XMM0/XMM1); the final clamp as if/else-if 817 (identical); the 0xc0005a5 exit without `forced = false` 822
+// (retail clears BL there); both 822; result declared before forced 817; result declared first 817 (identical).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -3977,17 +4338,23 @@ PRIVATE __forceinline long vehicle_players_on_foot(long *unit_indices, point3f *
 	iterator.index = NONE;
 	while ((player = data_iterator_next_inlined(&iterator)) != NULL && count < 16)
 	{
-		long unit_index = *(long *)(player + 0x2c);
-
-		if (unit_index != NONE && VEHICLE_GET(unit_index)->parent_object_index == NONE)
+		if (*(long *)(player + 0x2c) != NONE && VEHICLE_GET(*(long *)(player + 0x2c))->parent_object_index == NONE)
 		{
-			unit_indices[count] = unit_index;
-			centers[count] = VEHICLE_GET(unit_index)->center;
+			unit_indices[count] = *(long *)(player + 0x2c);
+			centers[count] = VEHICLE_GET(*(long *)(player + 0x2c))->center;
 			count++;
 		}
 	}
 	return count;
 }
+
+/* an iteration over the vehicles: the current vehicle, then the object
+   iterator */
+struct s_vehicle_iterator
+{
+	s_vehicle *vehicle;
+	s_type_f1af8e iterator;
+};
 
 /* starts an iteration over the vehicles */
 PRIVATE inline void vehicle_iterator_new(s_type_f1af8e *iterator)
@@ -4001,113 +4368,107 @@ PRIVATE inline void vehicle_iterator_new(s_type_f1af8e *iterator)
 
 /* whether a moving vehicle is within ten world units of a player on foot,
    and which */
-// score 102 (was 110): frame 0x114 agrees; player-scan allocation and scheduling still differ.
-// Bounded short/word/char/byte player counts 137/130/134/129;
-// those four with result-first common exit 137/130/134/129;
-// existing velocity magnitude helper 131, native difference with/without it
-// 135/135 (match-only), plain vehicle for loop 131.
-// Earlier body restored.
-// Y405: kept the full-width result set after the collection with one exit, 110. The collector
-// reading the unit field at every use as well gives 85 at 569/562, but 0xf7ca0 shares the
-// collector and goes 142 -> 150, so not kept.
-// Collector count long/short/word/byte with per-use unit 124/170/170/171;
-// cached unit with short/word/byte/char collector count 184/184/185/185.
-// Per-use unit with positive bool/byte/word/long return 124/117/90/93;
-// existing typed player with early/bool/word/long return 124/124/90/93.
-// Word/long return name ordering at entry and after collection 90/96/93/85.
-// Earlier current-vehicle stack home and center-address scale differed.
-// Round 409: Three-use center pointer with short ordinal 102 (556/562, plain); complete squared-component names also 102, not kept. Long/word/byte ordinal with or without complete squared components 163/103/107; seven- and three-point forms restored. Scaled center loads and LEA now agree. Player-pool/current-vehicle/result allocation remains; collector and all call arguments unchanged.
 // @retail 0xf7a60
 bool __stdcall function_f7a60(long *vehicle_index)
 {
 	long unit_indices[16];
 	point3f centers[16];
 	long count = vehicle_players_on_foot(unit_indices, centers);
-	long found = true;
 
 	if (count > 0)
 	{
-		s_type_f1af8e iterator;
-		s_vehicle *vehicle;
+		s_vehicle_iterator iterator;
 
-		vehicle_iterator_new(&iterator);
-		while ((vehicle = (s_vehicle *)function_baeb0(&iterator)) != NULL)
+		vehicle_iterator_new(&iterator.iterator);
+		while ((iterator.vehicle = (s_vehicle *)function_baeb0(&iterator.iterator)) != NULL)
 		{
 			short i;
 
 			for (i = 0; i < count; i++)
 			{
-				if (VEHICLE_GET(unit_indices[i])->parent_object_index != iterator.object_index)
+				if (VEHICLE_GET(unit_indices[i])->parent_object_index != iterator.iterator.object_index)
 				{
 					point3f const *center = &centers[i];
-					real dx = vehicle->center.x - center->x;
-					real dy = vehicle->center.y - center->y;
-					real dz = vehicle->center.z - center->z;
+					real dx = iterator.vehicle->center.x - center->x;
+					real dy = iterator.vehicle->center.y - center->y;
+					real dz = iterator.vehicle->center.z - center->z;
 
 					if (100.0f > dz * dz + dy * dy + dx * dx &&
-						vehicle->linear_velocity.i * vehicle->linear_velocity.i +
-						vehicle->linear_velocity.j * vehicle->linear_velocity.j +
-						vehicle->linear_velocity.k * vehicle->linear_velocity.k >= 1.0f)
+						iterator.vehicle->linear_velocity.i * iterator.vehicle->linear_velocity.i +
+						iterator.vehicle->linear_velocity.j * iterator.vehicle->linear_velocity.j +
+						iterator.vehicle->linear_velocity.k * iterator.vehicle->linear_velocity.k >= 1.0f)
 					{
-						*vehicle_index = iterator.object_index;
-						goto done;
+						*vehicle_index = iterator.iterator.object_index;
+						return true;
 					}
 				}
 			}
 		}
 	}
-	found = false;
-done:
-	return found;
+	return false;
 }
+
+/* an eight-byte vehicle seat-state entry; the occupancy word is at +4 */
+struct s_vehicle_seat_state
+{
+    byte unknown00[4];
+    word flags;
+    word unknown06;
+};
+typedef char assert_vehicle_seat_state_size[(sizeof(s_vehicle_seat_state) == 8) ? 1 : -1];
 
 /* whether an occupied vehicle (one with its flag 2 at +0x10a set) is within
    ten world units of a player on foot, and which */
-// score 142 (was 142): frame 0x114/0x118 and current-vehicle storage differ.
-// Outer declarations, const vehicle, loop scope, single result, shared center and
-// point-difference helper all 142; indexed seats 156; native unsigned seat mask
-// with plain pointer stepping 140 at 561/549 (-2, restored). Original body retained.
-// Y405: the shared collector reading the unit at every use moves this to 150 (not kept); own body restored. Positive
-// word return with short/long/word/byte ordinal and plain seat stepping 170/164/170/172; long
-// return 167/162/167/169. Occupied-mask result dword/long/word/short at entry/after collection
-// 215/177/215/177/179/158/180/157; raw seat-word result dword/long at entry/after collection
-// 200/158/198/152. Frame 0x114 versus 0x118 and returned-object home remain.
 // @retail 0xf7ca0
 bool __stdcall function_f7ca0(long *vehicle_index)
 {
 	long unit_indices[16];
 	point3f centers[16];
-	long count = vehicle_players_on_foot(unit_indices, centers);
+	s_record_pool_iterator iterator;
+	byte *player;
+	long count = 0;
+
+	iterator.data = g_4e8c24;
+	iterator.index = NONE;
+	while ((player = data_iterator_next_inlined(&iterator)) != NULL)
+	{
+		if (*(long *)(player + 0x2c) != NONE)
+		{
+			unit_indices[count] = *(long *)(player + 0x2c);
+			centers[count] = VEHICLE_GET(*(long *)(player + 0x2c))->center;
+			count++;
+		}
+	}
 
 	if (count > 0)
 	{
-		s_type_f1af8e iterator;
-		s_vehicle *vehicle;
+		s_vehicle_iterator iterator;
 
-		vehicle_iterator_new(&iterator);
-		while ((vehicle = (s_vehicle *)function_baeb0(&iterator)) != NULL)
+		vehicle_iterator_new(&iterator.iterator);
+		while ((iterator.vehicle = (s_vehicle *)function_baeb0(&iterator.iterator)) != NULL)
 		{
 			short i;
 
 			for (i = 0; i < count; i++)
 			{
-				if (VEHICLE_GET(unit_indices[i])->parent_object_index != iterator.object_index)
+				if (VEHICLE_GET(unit_indices[i])->parent_object_index != iterator.iterator.object_index)
 				{
-					real dx = vehicle->center.x - centers[i].x;
-					real dy = vehicle->center.y - centers[i].y;
-					real dz = vehicle->center.z - centers[i].z;
+					point3f const *center = &centers[i];
+					real dx = iterator.vehicle->center.x - center->x;
+					real dy = iterator.vehicle->center.y - center->y;
+					real dz = iterator.vehicle->center.z - center->z;
 
-					if (100.0f > dz * dz + dy * dy + dx * dx && TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags_10a)->bit2))
+					if (100.0f > dz * dz + dy * dy + dx * dx && TEST_FIELD_BIT(VEHICLE_WORD_BITS(iterator.vehicle->flags_10a)->bit2))
 					{
-						long seat_count = (unsigned long)vehicle->unknown120 >> 3;
-						word const *seat = (word const *)((byte *)vehicle + vehicle->unknown122 + 4);
+						long seat_count = (unsigned long)iterator.vehicle->unknown120 >> 3;
+						s_vehicle_seat_state const *seat = (s_vehicle_seat_state const *)((byte *)iterator.vehicle + iterator.vehicle->unknown122);
 						long j;
 
-						for (j = 0; j < seat_count; j++, seat += 4)
+						for (j = 0; j < seat_count; j++)
 						{
-							if (*seat & 0xfff8)
+							if ((seat[j].flags & 0xfff8u) > 0)
 							{
-								*vehicle_index = iterator.object_index;
+								*vehicle_index = iterator.iterator.object_index;
 								return true;
 							}
 						}
@@ -4215,13 +4576,21 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1166 (was 1429): Frame 0x104 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1134 (was 1166): Frame 0x104 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
 // 1142/1142/1163/1162; force/brake/up/all vector forms 1142/1142/1108/1124 restored.
 // Three-use steering ratio 1168; fraction with separate magnitude assignment 1163,
 // a three-point incremental gain rejected. Keep original steering fabs and matrix homes.
+// DL196: current-output/state-workspace/normalization subsets
+// 1184/1165/1177/1198/1193/1177/1222. Original sum interactions
+// 1135/1165/1135/1182/1167/1186/1166/1198 had a one-use input alias; restored.
+// Desired output 1134, also 1134 with original names (kept); clean sum interactions
+// 1135/1165/1135/1182/1166/1186/1166. Facing/flip scopes and normalizer/vector
+// interactions 1166/1166/1166/1177/1177/1177/1135/1166, all restored.
+// Desired with sum/normalizer/both/shared crosses 1129/1145/1135/1129; the five-point
+// sum additions are rejected. Keep only the consumed desired-matrix output.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4525,13 +4894,12 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	vehicle_cross(&desired.up, &desired.forward, &desired.left);
 	vehicle_transpose(&current);
 
-	matrix3x3 difference;
 	quaternionf rotation;
 	vector3f axis;
 	real length;
 	real angle;
 
-	function_141f60(function_142eb0(&desired, &current, &difference), &rotation);
+	function_141f60(function_142eb0(&desired, &current, &desired), &rotation);
 	length = (real)sqrt(rotation.k * rotation.k + rotation.j * rotation.j + rotation.i * rotation.i);
 	if (0.0001f > (real)fabs(length))
 	{

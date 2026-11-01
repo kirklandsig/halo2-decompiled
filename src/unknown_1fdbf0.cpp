@@ -7,6 +7,7 @@
 #include "unknown_0259d0.h"
 #include "slot_handler.h"
 #include "props.h"
+#include "vector_products.h"
 
 /* the prop view (unknown_25d690.cpp) starts with its state */
 struct s_type_f95cd3;
@@ -161,20 +162,6 @@ struct s_aim_definition
 	dword flags;
 };
 
-// score 41 (was 41): the target index stays in EAX where retail keeps it in EBX, so
-// the moving object header's address is recomputed and its type byte is read into BL.
-// object_index assigned before the header lookup 43 (retail's length and memory type
-// compare); the same with the header from target_index 43; passing object_index to
-// 0x118e80 43; object_header_get 43; flags & 0x100 47; the target field re-read 44,
-// passing object_index then 58. The fallback's callee 0xcba50 is unmatched. Round 76: the
-// field read for the NONE test, object_index and the call (no target local) 44 (retail's
-// `mov edx, ebx; mov ecx, edx` copy, the value in EAX not EBX); object_index first with the
-// call re-reading the field 43; target declared at the top 43; forward pointer local for the
-// fallback copy 48 (retail's source/destination registers, first load folded); member-wise
-// fallback copy 46.
-// passing object_index then 58. The fallback's callee 0xcba50 is unmatched.
-// Existing actor/object lookup force-inline declarations, singly/together 41 each;
-// native dword flag Boolean/direct 41/47; word Boolean/direct and byte Boolean 53 each.
 // @retail 0x1fe120
 void function_1fe120(long actor_index, vector3f *direction)
 {
@@ -182,24 +169,23 @@ void function_1fe120(long actor_index, vector3f *direction)
 	long object_index = actor->unit_index;
 	if (actor->unknown268)
 	{
-		long target_index = actor->unknown274;
-		if (target_index != NONE)
+		if (actor->unknown274 != NONE)
 		{
-			s_moving_object_header *header = &((s_moving_object_header *)g_4e0300->data)[target_index & 0xffff];
-			object_index = target_index;
+			object_index = actor->unknown274;
+			s_object_header_view *header = object_header_get(actor->unknown274);
 			if (header->type == 1)
 			{
 				s_moving_object *object = (s_moving_object *)header->object;
 				s_aim_definition *definition = (s_aim_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
 				if ((bool)((definition->flags >> 8) & 1))
 				{
-					function_118e80(target_index, direction);
+					function_118e80(actor->unknown274, direction);
 					return;
 				}
 			}
 		}
 	}
-	*direction = *(vector3f *)((byte *)moving_object_get(object_index) + 0x168);
+	*direction = *(vector3f *)(object_header_get(object_index)->object + 0x168);
 	function_cba50(object_index, direction, false);
 }
 
@@ -332,33 +318,6 @@ bool function_1fef40(s_type_c3b527 const *target, long actor_index)
 real function_30bf0(vector3f *v);
 vector3f *function_11d000(vector3f const *v, vector3f *out);
 
-// score 57 (was 57): only the final rotation differs: retail loads axis k/j into xmm1/xmm2 and
-// d.j/d.i into xmm3/xmm4 (ours xmm3/xmm4 and xmm1/xmm2) and scales axis j/k by the parallel part in
-// place, where ours copies it for j (three bytes longer). The block's code is the same for every
-// spelling tried: products swapped (axis * parallel) 57; the four scalars declared before or after
-// the axis or at the top 57; the rotation as 0x11d3b0 writes it, or through an inline
-// (axis, sine, cosine) helper 57; valid flag declared first 57; valid as an expression 86;
-// member-wise forward copy 88; negated cosine test 100. Round 76 (retail multiplies axis j/k by
-// the parallel part in place but the parallel part by axis i through a copy): the shared cross3f
-// for the rotation's cross terms 69, for the axis and the rotation 70 (with every row as
-// direction * cosine + axis * parallel 70), for the axis only 64 (retail's in-place j/k products,
-// axis i/j ranks swapped), the same with the cross k term first 60. A compile-only screen that
-// reproduces this block exactly found no closer form among: the axis statements in all six orders
-// or through cross3f, the four rotation scalars in all 24 orders or a cross3f/struct cross, named
-// const sine/cosine, the parallel part accumulated or through a named dot, and an inline
-// (vector, axis, sine, cosine) helper in either parameter order (93/97: the axis pointer forces
-// reloads after each row's store).
-// member-wise forward copy 88; negated cosine test 100.
-// Perpendicular/forward query inline and noinline declarations, singly/together 57 each; fallback
-// normalization via returned output pointer 71, with both inline declarations 71.
-// member-wise forward copy 88; negated cosine test 100. Only the declaration order of the four
-// scalars changes the block (all 24 orders compiled; this one is closest): operand and term orders
-// are canonicalised. Axis by cross3f 64; parallel scale written into each row 78; local_3 declared
-// before local_2 59; rows i, k, j 59; an inline rotate helper with named parallel/cross scalars 57
-// (with a cross vector, worse).
-// member-wise forward copy 88; negated cosine test 100.
-// Perpendicular/forward query inline and noinline declarations, singly/together 57 each; fallback
-// normalization via returned output pointer 71, with both inline declarations 71.
 // @retail 0x1fddd0
 bool function_1fddd0(long actor_index, point3f const *origin, vector3f *direction,
     long *out_index, real *arg_c9241c, long *out_object)
@@ -401,9 +360,7 @@ bool function_1fddd0(long actor_index, point3f const *origin, vector3f *directio
         {
             vector3f axis;
             bool valid = true;
-            axis.i = direction->k * forward.j - direction->j * forward.k;
-            axis.j = direction->i * forward.k - direction->k * forward.i;
-            axis.k = direction->j * forward.i - direction->i * forward.j;
+            cross3f(&forward, direction, &axis);
             if (function_30bf0(&axis) == 0.0f)
             {
                 function_11d000(&forward, &axis);
@@ -413,13 +370,14 @@ bool function_1fddd0(long actor_index, point3f const *origin, vector3f *directio
             *direction = forward;
             if (valid)
             {
-                real local_0 = (direction->k * axis.k + direction->j * axis.j + direction->i * axis.i) * 0.1339746117591858f;
+                real axis_i = axis.i;
+                real local_0 = (direction->k * axis.k + direction->j * axis.j + direction->i * axis_i) * 0.1339746117591858f;
                 real local_1 = direction->j * axis.k - direction->k * axis.j;
-                real local_2 = direction->k * axis.i - direction->i * axis.k;
-                real local_3 = direction->i * axis.j - direction->j * axis.i;
-                direction->i = direction->i * 0.8660253882408142f + local_0 * axis.i - local_1 * 0.5f;
-                direction->j = local_0 * axis.j + direction->j * 0.8660253882408142f - local_2 * 0.5f;
-                direction->k = local_0 * axis.k + direction->k * 0.8660253882408142f - local_3 * 0.5f;
+                real local_2 = direction->k * axis_i - direction->i * axis.k;
+                real local_3 = direction->i * axis.j - direction->j * axis_i;
+                direction->i = local_0 * axis_i + direction->i * 0.8660253882408142f - local_1 * 0.5f;
+                direction->j = direction->j * 0.8660253882408142f + local_0 * axis.j - local_2 * 0.5f;
+                direction->k = direction->k * 0.8660253882408142f + local_0 * axis.k - local_3 * 0.5f;
             }
         }
         *arg_c9241c = *(real *)(actor + 0x7bc);
@@ -445,17 +403,13 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 extern vector3f *g_4687b0;
 
 // @retail 0x1fe410
-// score 2 (was 42): the cosine is loaded onto the x87 stack before the register that
-// holds the point is pushed, retail pushes it first.
 void function_1fe410(point3f *point, real distance)
 {
     point3f start;
     start.x = g_4687b0->i * 1.5f + point->x;
     start.y = g_4687b0->j * 1.5f + point->y;
     start.z = g_4687b0->k * 1.5f + point->z;
-    real angle = (real)random_next(&g_4e7408->unknown0) * 1.5259022e-05f;
-    angle *= 6.2831854820251465f;
-    angle -= 3.1415927410125732f;
+    real angle = function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, -3.1415927410125732f, 3.1415927410125732f);
     vector3f radial;
     radial.i = (real)cos(angle);
     radial.j = (real)sin(angle);

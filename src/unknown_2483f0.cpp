@@ -7,6 +7,7 @@
 #include "unknown_0259d0.h"
 #include "data_array.h"
 #include "globals.h"
+#include "vector_products.h"
 
 extern s_record_pool *g_51ec84;
 extern s_record_pool *g_51ec88;
@@ -143,76 +144,21 @@ static inline void particle_cross_product3d(vector3f const *a, vector3f const *b
 
 /* the rotation and position a particle system is drawn at: its own, or
    moved by the first person offset */
-// score 52 (was 52): frame 0x30 agrees; four bytes long. Retail keeps the left axis in
-// xmm2/xmm7/xmm5 across 0x142eb0 (which only writes xmm0/xmm1) and gives the point's y/z xmm3/xmm4;
-// ours gives the left axis xmm2/xmm3/xmm4, so the point loads and the products are scheduled
-// differently; the cross-product multiplies interleave with the axis copies in another order.
-// The sums already associate as retail's ((y*l + z*u) + x*f, (x*f + y*l) + z*u); 0x143070 is not
-// the inlined helper (its y/z sums associate differently).
-// Tried: 40 random product operand/sum orders 52-58 (best 52/52); axis copies before the cross product
-// 56, forward copy only 52, up copy first 50 positional, cross product of the copied axes 85 positional;
-// point declared at its copy 52; matrix inline/noinline 52/52; cross force-inline 52; matrix aggregate
-// 107; left-axis construction 140; point first/renamed 52/52; consumed matrix output 54; shared cross
-// product 55; rotation memcpy/const point/point memcpy 52; indexed rotation 92; accumulated components
-// 95; indexed translation 85; position output first 54; existing axis-matrix helper 73; scalar point
-// coordinates 98; paired cross products 55; six cross products 52; compound cross components 52; cross
-// value result 140; frame-mode return 104; offset at construction 52; shared point setter 78; forward/up
-// snapshots 107/111; both axes and up-first 137/135; scoped axes 137; both/up/forward publication before
-// cross 137/137/137; complete point result/aggregate 121/121; shared result setter 114; planar/
-// horizontal/vertical results 51/52/53; immutable input with complete result 121; scoped input/result
-// 121. Round 93: cross product into a separate left vector copied into the matrix and used by the
-// products 128 (490 bytes); point copied before the 0x142eb0 call 91; point-first products in natural
-// row order 59, with retail's x-row order 59; member-wise point copy 98 (442 bytes).
-// Round 49: 40 random product operand/sum orders 52-58 (best 52/52); axis copies before the
-// cross product 56, forward copy only 52 (screened), up copy first 50 positional (screened),
-// cross product of the copied axes 85 positional; point declared at its copy 52.
-// Earlier: matrix inline/noinline 52/52; cross force-inline 52; matrix aggregate 107; left-axis
-// construction 140; point first/renamed 52/52; consumed matrix output 54; shared cross product 55;
-// rotation memcpy/const point/point memcpy 52; indexed rotation 92; accumulated components 95;
-// indexed translation 85; position output first 54; existing axis-matrix helper 73; scalar point
-// coordinates 98; paired cross products 55; six cross products 52; compound cross components 52;
-// cross value result 140; frame-mode return 104; offset at construction 52; shared point setter
-// 78; forward/up snapshots 107/111; both axes and up-first 137/135; scoped axes 137;
-// both/up/forward publication before cross 137.
-// cross-product schedule and retained left-axis/point XMM homes differ.
-// Matrix inline/noinline 52/52; cross force-inline 52; matrix aggregate 107;
-// left-axis construction 140; point first/renamed 52/52; consumed matrix output 54.
-// cross-product scheduling and point/XMM homes still differ; four bytes long.
-// Shared cross product 55; rotation memcpy/const point/point memcpy 52;
-// indexed rotation 92, accumulated components 95, indexed translation 85;
-// position output first 54; existing axis-matrix helper 73.
-// matching 0x30 frame; cross-product schedule, left-vector XMM homes
-// and point-coordinate loads still differ, with four extra bytes. Earlier operand/sum/helper
-// forms excluded; tried scalar point coordinates 98; paired cross products 55; six cross
-// products 52; compound cross components 52; cross value result 140; frame-mode return 104;
-// offset at construction 52; shared point setter 78.
-// cross scheduling and retained left-axis/point XMM homes remain.
-// Complete point result/aggregate 121/121; shared result setter 114; planar/horizontal/vertical results 51/52/53;
-// immutable input with complete result 121; scoped input/result 121. The one-point gain is rejected.
-// Cross scheduling and retained axis/point XMM homes still differ. Forward/up
-// snapshots 107/111; both axes and up-first 137/135; scoped axes 137; both/up/forward
-// publication before cross 137/137/137.
-// Complete cross first/second/both inputs by value 111/107/141; both with translation setter 141;
-// existing translation setter 53; paired matrix/point names 52; entry workspaces 52; native cross references 52.
 // @retail 0x248450
 void function_248450(matrix3x3 *rotation, s_particle_frame const *frame, point3f *position, matrix3x3 const **rotation_result, point3f const **position_result, bool field_b4)
 {
 	if (field_b4)
 	{
 		matrix3x3 offset;
-		point3f point;
 
 		*rotation = frame->rotation;
 		*position = frame->position;
-		particle_cross_product3d(&g_485618.up, &g_485618.forward, &offset.left);
 		offset.forward = g_485618.forward;
+		particle_cross_product3d(&g_485618.up, &g_485618.forward, &offset.left);
 		offset.up = g_485618.up;
 		function_142eb0(&offset, rotation, rotation);
 
-		point = *position;
-		position->x = point.y * offset.left.i + offset.up.i * point.z + offset.forward.i * point.x;
-		position->y = offset.forward.j * point.x + point.y * offset.left.j + offset.up.j * point.z;
-		position->z = offset.forward.k * point.x + point.y * offset.left.k + offset.up.k * point.z;
+		vector3f_rotate_into_axes(&offset, (vector3f const *)position, (vector3f *)position);
 		position->x += g_485618.position.x;
 		position->y += g_485618.position.y;
 		position->z += g_485618.position.z;

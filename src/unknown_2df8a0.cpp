@@ -1,4 +1,4 @@
-// @flags /O2 /GL-
+// @flags /O2 /GL- /GX
 // Havok (third-party physics library): a filter over pairs of 32-bit keys.
 // Two keys whose top 16 bits are equal and nonzero never pair; otherwise the
 // pair is enabled by bit (second & 31) of word (first & 31) of a 32-word

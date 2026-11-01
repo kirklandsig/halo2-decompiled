@@ -1903,15 +1903,6 @@ struct s_session_map_view
    5 the members' status, 6 ready, 7 the wrong players, 8 to 10 the host's
    states; the members' progress goes to progress. Retail keeps progress on
    the stack: reading it through its address keeps it there */
-// score 103 (was 103): ours holds progress in EDI; retail reads it from its stack home at both
-// uses, keeps the limit in EDI, the team mask in EBX and the count in progress's home.
-// Volatile reads of progress at both uses 195 (aligned 40 of 50: progress stays home, but a
-// zero constant takes EDI and the limit spills); at the second use only 112; at the first
-// only 195; both plus the limit at function scope 194; both with the team mask declared
-// first 192; team mask declared first alone 103.
-// Round 284: Native long/dword team bit held for both mask uses 103/103;
-// host readiness accumulated from its test 124/124; unique teams accumulated from
-// their mask tests 124/124; both test counts 140/140. Original counts restored.
 // @retail 0x19a2ce
 long function_19a2ce(real *progress)
 {
@@ -1946,7 +1937,6 @@ long function_19a2ce(real *progress)
 		long percent;
 		long status = network_session_interface_get_members_status(&percent);
 		real members_progress = (real)PIN(percent, 0, 100) * 0.01f;
-		long maximum = 1;
 
 		switch (status)
 		{
@@ -1998,8 +1988,10 @@ long function_19a2ce(real *progress)
 
 			if (data && (*(dword *)(data + 0x48) & 1))
 			{
-				long count = 0;
-				dword teams = 0;
+				long maximum = 1;
+				long count;
+				dword teams;
+				count = teams = 0;
 				long a;
 				long b;
 				s_session_map_view *map;
@@ -2015,9 +2007,7 @@ long function_19a2ce(real *progress)
 					{
 						maximum = map->maximum_players[setting];
 						if (maximum <= 1)
-						{
 							maximum = 1;
-						}
 					}
 				}
 				for (index = 0; index < 16; index++)

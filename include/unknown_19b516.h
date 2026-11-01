@@ -133,6 +133,9 @@ public:
 	/* the base class's get_screen (unknown_22e27b.cpp) */
 	c_widget *function_22eeee() { return (c_widget *)((c_class_1a2c81 *)(void *)this)->get_screen(); }
 	bool function_22ef1b();
+	/* the base class's next_wrapped and previous_wrapped (screen_widgets.h) */
+	__forceinline c_widget *next_wrapped() { return (c_widget *)((c_class_1a2c81 *)(void *)this)->next_wrapped(); }
+	__forceinline c_widget *previous_wrapped() { return (c_widget *)((c_class_1a2c81 *)(void *)this)->previous_wrapped(); }
 	/* the base class's slots 1 and 2 (unknown_22e27b.cpp) */
 	void function_22e335() { ((c_class_1a2c81 *)(void *)this)->c_class_1a2c81::v2(); }
 	/* the base class's slot 3 (unknown_22e27b.cpp) */

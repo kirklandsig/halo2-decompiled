@@ -13,12 +13,18 @@ struct wrapper_2f9950
 	void const *child;
 };
 
-// one side of a query: a shape, the key of the part concerned, where it sits,
-// and the side it is a part of
-struct body_2ea940
+// The shape and key are copied together while a child keeps its placement
+// and parent unchanged.
+struct geometry_2ea640
 {
 	void const *shape;
 	long key;
+};
+
+// one side of a query: a shape, the key of the part concerned, where it sits,
+// and the side it is a part of
+struct body_2ea940 : geometry_2ea640
+{
 	void const *placement;
 	body_2ea940 const *parent;
 

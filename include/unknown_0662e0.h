@@ -92,16 +92,7 @@ struct s_network_configuration
 	byte unknown1b4[0x4];
 	long value1b8;
 	long value1bc;
-	long value1c0;
-	long value1c4;
-	long value1c8;
-	long value1cc;
-	long value1d0;
-	long value1d4;
-	long value1d8;
-	long value1dc;
-	long value1e0;
-	long value1e4;
+	long value1c0[10];
 	long value1e8;
 	long value1ec;
 	long value1f0;

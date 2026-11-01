@@ -165,6 +165,8 @@ void function_249d10(s_structure_bsp_view *bsp, dword *bits, long index)
 }
 
 /* the distance sound travels between two clusters */
+// The default is a ternary on the same test as the branch below: VC then loads both
+// constants before the branch, as retail does, and threads the repeated test.
 // score 60 (was 60): No local frame; shared zero/default entry values and native endpoint/exit ownership remain.
 // retail tests the byte for 0 first, then 0xff, keeps a 255 default in XMM0
 // and a shared zero in XMM1; ours tests the word interior first and builds each zero. Kept: no
@@ -202,8 +204,6 @@ void function_249d10(s_structure_bsp_view *bsp, dword *bits, long index)
 // Round 177: Entry cluster extrema with original/normalized equality: word interval/
 // zero-first 66/71, byte interval/zero-first 72/76 for each. Original late extrema,
 // receiver, sample, interpolation and fallback restored.
-// The default is a ternary on the same test as the branch below: VC then loads both
-// constants before the branch, as retail does, and threads the repeated test.
 // @retail 0x249d60
 real function_249d60(s_structure_bsp_view *bsp, long cluster_a, long cluster_b)
 {

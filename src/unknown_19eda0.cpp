@@ -385,6 +385,9 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// score 316 (was 379): the distance to the centre is now computed and compared in double, so the
+// float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
+// bound is still one product where retail has two and the frame is 0x34 versus 0x30.
 // score 379 (was 379): frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.
 // Earlier at 393: the fade clamp now computes a single radius*1.5 product, so the
 // the fade clamp now computes a single radius*1.5 product, so the
@@ -415,6 +418,14 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 272: ordinary variant and load-stepped cursor with entry declarations for
 // fade limit/spread/outer distance, every subset and complete role names
 // 416/416/416/416/416/416/416/416. Original parameter home, observations and body restored.
+// Round 415: ordinary variant/body cursor step with native current/previous vertices and
+// top-first declarations, seven subsets 429/416/396/432/429/416/396; all with CRT input copies 396.
+// Both matched callers lose two in every trial; complete executable body restored.
+// Round 122 (fast): retail also inlines 0x1ccb0(59)/0x1cd90 here (both in an /Ob1 contributor file; inline
+// declarations here 379). Ours keeps &vertices[index].y in EBP, so the step and fade denominator lose retail's EBP and
+// perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner
+// radius at its use 430; on the uv form: bottom by fields 374, bottom right after the index 375 (step in EBP,
+// pointer spilled instead), edge with one cast 374, top from the vertex 377, top.z assigned 375.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
@@ -425,9 +436,9 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
     real inner_radius = radius - 0.0001f;
     double delta_x = (double)center->x - (double)g_4b9da0.x;
     double delta_y = (double)center->y - (double)g_4b9da0.y;
-    real distance = (real)sqrt(delta_x * delta_x + delta_y * delta_y) - radius;
-    real fade_limit = radius * 1.5f;
-    real fade = distance < 0.0f ? 0.0f : (distance > fade_limit ? fade_limit : distance);
+    double distance = sqrt(delta_x * delta_x + delta_y * delta_y) - radius;
+    real fade_limit = 1.5f * radius;
+    real fade = distance < 0.0 ? 0.0f : ((real)distance > fade_limit ? fade_limit : (real)distance);
     fade = 1.0f - fade / fade_limit;
     if (fade > 0.0f)
     {
@@ -476,9 +487,13 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
             long index = step == count ? 0 : step;
             double vertex_x = (double)vertices[index].x - (double)g_4b9da0.x;
             double vertex_y = (double)vertices[index].y - (double)g_4b9da0.y;
+            real radial_denominator = maximum_distance - spread;
             real alpha = (maximum_distance - (real)sqrt(vertex_x * vertex_x + vertex_y * vertex_y)) /
-                (maximum_distance - spread);
-            alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
+                radial_denominator;
+            if (alpha < 0.0f)
+                alpha = 0.0f;
+            else if (alpha > 1.0f)
+                alpha = 1.0f;
             point3f bottom = { vertices[index].x, vertices[index].y, center->z };
             point3f top = bottom;
             top.z += height;

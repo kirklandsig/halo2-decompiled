@@ -138,7 +138,19 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // returning g_470be8 gives retail's comiss; the started success then jumps into the nearby
 // g_470be8 epilogue instead of the final one, so the code is 12 bytes short (70). Also
 // tried: that form with `<` 75 or `!(<)` 75, with an early `if (!character)` return 75; the
-// plain `>=` test without the local 97.
+// plain `>=` test without the local 97. Round 89: the 70 form's started success jumps into the
+// g_470be8 epilogue, so its jb is short and the loop head loses its pad; one final `return result`
+// (found path result/global; started failure return or assignment) 97/97/125 (load sunk into the
+// return); result in the started path and one not-started return 97/97/19/19; started failure falling
+// to the outer return 78/60/84; on the 70 form: early !character return 70, outer returns merged 91,
+// result declared before the character call 74 or at the top 97, a final extra return 70.
+// Lane 10 round 42: `!(a >= b)` is the form that tests with jb (comiss sets CF for less or unordered),
+// `a < b` swaps the operands to use ja. The preload needs result returned on three paths (the 70 form);
+// with two uses the load sinks: started success only 97, success and found 97, success and after-loop 97,
+// found and one final block return 97. Started failure assigning result 125 (result spilled); started
+// failure falling to one shared return of g_470be8 111 (edi pushed before the guards), or to the
+// !character return with `!(>=)` 84 (the success gets its own epilogue); the started success falling to
+// a final block return after the else 70 (the jb still joins the nearby g_470be8 epilogue).
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {
@@ -441,8 +453,13 @@ static inline s_prop_datum *prop_ref_iterator_next_256810(s_prop_ref_iterator_25
 	return prop_ref;
 }
 
-// score 107 (was 107): retail takes the actor array from g_4f55f0 and keeps the element pointer in a stack slot,
-// ours reads another global and keeps it in ebp; our frame is eight bytes smaller.
+// score 107 (was 107): retail keeps the actor pointer in a stack slot and the prop loop's current index in
+// ebp; ours keeps the actor in ebp and spills the index, so our frame is smaller (both read g_4f55f0). Retail's
+// front is 16 bits (movzx dx from facing, word store, cmp word at the end): `short front` gives exactly that
+// but scores 166 (the index is still spilled and the actor kept in ebx, next_index moving to ebp), so it is
+// left as bool. Tried with short front: index used straight from the iterator, other declaration orders,
+// iterator fields swapped or index copied first, one index variable shared by both loops (166-169); for or
+// while loops over next_index rotate the loop (202, 205).
 // @retail 0x256810
 short __stdcall function_256810(long actor_index, s_slot *slot)
 {
