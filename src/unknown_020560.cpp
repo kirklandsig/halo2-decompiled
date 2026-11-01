@@ -1336,6 +1336,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // loop 38; the row named before the status test after the k store 38; the frame read from the global
 // at each use 129 (the load sinks into the block); the slot fields read through the table (no slot
 // pointer) 148 (472 bytes). Source permuter, 600 s on the kept body (72 tries): nothing below 52.
+// Lane 12 r66 (fast; a /GL- compile-only screen gives the same colours, loop counter EDI in every form):
+// the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
+// 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
+// 66; status and total declared at function scope 52.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

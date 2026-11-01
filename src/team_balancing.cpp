@@ -881,6 +881,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // (same code: the count register exchange is no numbering tie); the fill through a walking `long *slot` 63 (199
 // bytes); the clamp named `clamped` 34; the call given `player_count + extra_count` 34; the imbalance declared
 // bare and set to NONE before the call 34; the party index read once into `party` 73 (frame 0x40, cmovle).
+// Lane 12 r66 (fast, with 0x91e30 matched): the result as `excess < 0 || excess <= maximum_imbalance` 48
+// (193 bytes); the maximum as one ternary assignment per party 34 (same code); the fill as
+// `while (extra_count-- > 0) parties[i++] = next_party;` 70 (the party list moves to the stack); the
+// excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
+// 35. Re-measured: copy before the maximum 82, open
+// slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
