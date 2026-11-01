@@ -1527,6 +1527,17 @@ struct s_rating_summary
 // (strncpy then terminate, as other files have) then gives retail's formatter-before-count order but the
 // getter still inlines, 388, also at inline_depth(1) and through a forwarding helper 388: retail's
 // identity copy was an inlined helper, which this region cannot reproduce.
+// Round 53 (m3 lane 1): team skill/value nested with a ternary lower 92; key first, formatter local
+// and a ternary team lower 83 (the ternary always gives the counters cursor EBX); the team counters
+// pointer renamed (same code); the team value read before the skill 65; the team value tested before
+// the skill 64. Diagnostic without the
+// inline_depth(0) region: the existing unicode_string_to_ascii (0x13fb90) for the name, a
+// strncpy-and-terminate inline copy for the identity and the existing team-count accessor 0x193440 in
+// the team loop's condition all inline as retail's code (formatter before the count push, the 0x7f
+// loop, a per-iteration jump table), 407 at 1260 bytes, fast and plain: only the getter 0x192e60
+// inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
+// it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
+// out of line is still unknown.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1841,6 +1852,14 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // adjusted pointer, so it is the natural source under /arch:SSE, a file-flag lead); a user record pointer
 // for the users loop 754 (the loop then gets retail's jump over the padding and xuid-relative loads); with
 // online_logon_connected() too 775 (2846 bytes); delay as `> 3 ? 300000 : 2000` 709 (aligned 515 -> 513).
+// Round 53 (m3 lane 1, fast; aligned diff of the listing: 308 unaligned lines at 709): the existing
+// online_logon_connected() with the getter 0x192e60 in the users loop 763 (the getter inlines as
+// retail's pointer-range check, but our build hoists the variant count into EBX where retail reloads it
+// and counts the loop down in EBX); plus a user record pointer 755 (2862 bytes; cursor then in EBX at
+// the xuid); the slot computed before the properties copy 763; the record loop in retail's shape
+// (state == 1 as a request flag set again by the retry test, the getter, the identity copied into a
+// local XUID, an index scan only for type 5) 794 at 2942 bytes (aligned 289); the request flag alone
+// 730 (no flag byte appears; retail's `xor dl, dl` comes with the other parts).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
