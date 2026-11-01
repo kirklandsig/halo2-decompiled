@@ -283,7 +283,7 @@ const long g_43e8e8[4] = { 32, 64, 128, 256 };
 // scores 76 (was 62); no lower score.
 // MiniMax E (11-01): the copy count read before the allocation reaches retail's 178 bytes;
 // the earlier round dropped this form on the difference count alone (62 against 58).
-// score 62 (was 77): the allocation callee takes its out pointer in ESI here and in EBX in
+// score 58 (was 77): the allocation callee takes its out pointer in ESI here and in EBX in
 // retail, so the frame is one push deeper and the copy count rides in EDI.
 // @retail 0x1d3f0
 bool function_1d3f0(long index, void const *colors, D3DPalette **out)
