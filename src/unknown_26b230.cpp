@@ -1939,6 +1939,11 @@ void function_269250(long clump_index, long actor_index);
 // Round 250: Native actor/group output ownership, then native selected-handle combinations:
 // 104/146/147/147/146/147; both complete-output forms with team-local scoring 129/129.
 // Pool/selection and x87/SSE allocation remain; all matched controls survive.
+// Round 31 (lane 15, fast): in-arm compare with the selection stored first, with `continue` on a team mismatch,
+// with `best < score`: 126 each (480 B); `(void)&selected;` on either form identical (87/126). Diagnostics:
+// the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
+// into a register and leave the selection in memory as retail: the selection wins the callee-saved register
+// only through the call in the walk plus its post-loop uses.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

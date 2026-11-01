@@ -345,6 +345,10 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 31 (lane 15, fast): case 1's distance named in a braced case 42; case 0's dot result named 42; state,
+// line, first declared in reverse 42. Diagnostics (not kept): 1-8 unused locals at the function's top 42 except
+// 5 (56: retail's `mulss xmm1, [p.x]` dot fold appears, 4 bytes shorter); at case 0 or the loop top 42. The
+// state/index/pointer rotation follows no symbol count.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

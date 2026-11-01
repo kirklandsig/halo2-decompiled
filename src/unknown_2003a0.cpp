@@ -2121,6 +2121,9 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
+// 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
+// flag store with the short-view return 65 (206).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
