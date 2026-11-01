@@ -3202,13 +3202,13 @@ void function_32ce0(long object_index, real opacity)
         D3DDevice::Begin(D3DPT_QUADLIST);
         D3DDevice_SetVertexData4f(9, 1.0f, 1.0f, 1.0f, alpha);
         D3DDevice_SetVertexData2f(3, 0.0f, 0.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[0].x, corners[0].y, corners[0].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[0].x, corners[0].y, corners[0].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 0.0f, 1.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[1].x, corners[1].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[1].x, corners[1].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 1.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[2].x, corners[2].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[2].x, corners[2].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 0.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[3].x, corners[3].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[3].x, corners[3].y, corners[3].z, 1.0f);
         D3DDevice::End();
     }
 }
