@@ -453,6 +453,20 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // products up-first as retail); dot3f in either order, the first two terms parenthesised, the terms i, j, k
 // 101 each; cross3f_staged(up, forward, left) 101, cross3f 113; with the `+=` dot: the scaled terms as one
 // vector3f 124 (918 bytes), updated in place 122, `up->i = up->i - scaled_i` 99.
+// Round 121 (m3 lane 5, fast): the three axis pointers declared before the normalize calls, orders
+// left/forward/up, left/up/forward, up/left/forward 131/131/132 (all three lea hoisted above the
+// first call; retail interleaves); one exit with body_index declared NONE beside the component index
+// and the update under `if (body_index != NONE)` 112 (same code), that with the center through
+// carrier_vector_from_havok 149. Compile-only (no LTCG, same axis block as ours): every one-expression
+// dot spelling gives the same code; no by-name or pointer access per axis or per written component
+// moved the dot's k,i,j order or the swapped products. A 600 s permuter run was cut off by its time
+// cap while confirming a candidate.
+// Round 60 (m3 lane 9, fast with 0xb7060; real builds of round 40's screened forms): the dot as `dot = k;
+// dot += j; dot += i` 110 (k and j products up-first as retail), with the three axis pointers declared
+// together before the normalize calls 109, with `up->i = up->i - scaled_i` 110; the center through
+// carrier_vector_from_havok with the `+=` dot and the axis pointers 153 (264 instructions as retail, object
+// index in EAX, entry index on the stack); the loop's body pointer declared before the outer loop 112.
+// Retail's call in 0xb7060 sets ECX (entry) before EAX (object), as the declared order implies.
 // Round 63 (lane 12, fast; an LTCG env link with the stand-in callers and 0xb7060 is exact: 915 bytes of code
 // against retail's 925): the failure stores valid-first 112 (same code); `up->i = up->i - scaled_i` on the current
 // body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);

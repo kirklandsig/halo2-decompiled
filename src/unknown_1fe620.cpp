@@ -110,10 +110,21 @@ static __forceinline long real_to_long(real value);
 // Round 314: Adjustment distance snapshot with bool/byte/short/long outcomes, without/with motion-
 // scale snapshot: 437/433/437/433/448/444/452/448. Short and long recover frame 0x48 but retain wrong
 // third-input ownership and regress. Original frame 0x4c body restored at 378.
+// Round 121 (m3 lane 5, fast): +0x38 as a named local read with the other limits (used twice) 375
+// (xmm7 loaded before the draws as retail); with all three draws through the random-state local 434;
+// draws 1/3 through it only 423; the 0x70e test nested 373; the prop flag set by an if 415. Probe on
+// round 28's lead (early +0x14/+0x18 locals, lower bounds as arguments, +0x3c per use, the resolver as
+// 0x210850's if/else) with the +0x38 local: 342 at 1861; there the sign test as
+// `(local_11 & 0x80000000) > 0` gives retail's `test eax, 0x80000000 ... jbe` (341; `!= 0`, `>> 31`,
+// `(long) < 0`, `>= 0x80000000` 342/342/347/341). Left on the probe: the cross product's inputs
+// colour xmm3/xmm2/xmm1 where retail has xmm1/xmm4/xmm3 (one extra movaps in retail).
 // Round 253: Retail-backed blend/actor/entry order with early third-range bounds, coherent angular seed
 // owner and per-use cap subsets; scores 373/424/438/350/447/449/449/384.
 // Original executable source restored; no qualifying gain.
 // The 350 form uses one-use early range captures and did not match; restored under the exact-match gate.
+// Round 123 (lane 6, fast): the displacement magnitude stored before the side vector 373; the +0x7c0 zero stored
+// before the +0x7bc copy 416 (1852 bytes); the +0x714 copy before the time store 372; the sign test as
+// `(long)seed < 0` 417; the magnitude's terms in i/j/k order 373.
 // Round 63 (lane 12, fast; an LTCG env link with this file's stand-in caller and the 0x259d0/0x210850/0x1fdce0 files
 // is exact): the third draw's bounds read into locals with the limits before the draws, all three draws through
 // function_259d0(&local_10->unknown0, ...) with the lower bounds as `0.0f - limit` arguments, and the resolver in

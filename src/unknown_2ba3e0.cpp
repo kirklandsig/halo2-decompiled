@@ -490,6 +490,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // declared first 10. Compile-only screen of the tail (~900 forms): an expression sum in the maximum
 // branch always turns the minimum's j/k scale sequential; k read first with i,j,k statements gives the
 // whole tail, but no vector-squared body with it keeps 0x2b98b0 (its first normalize needs k,i,j).
+// Round 33 (lane 14): the back-edge reloads follow the prologue order in ours (first, next, definition)
+// and run reversed in retail. Loop over the index parameter with the head in a local 79 (1524 bytes);
+// index/head names 10 (same code); change zeroed i first 19; change declared at the loop top 10 (same
+// code); unsigned index 10 (same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -765,6 +769,23 @@ real g_55e618;
 // (1545 bytes); the velocity pointer with perpendicular/tangent/final setters, with dot3f, or with only the final
 // setter 184/103 each (1541 bytes, frame 0x118: perpendicular still gets no home); the pointer declared at the
 // loop top and used for the displacement too 279/201 (1567 bytes).
+// Round 36 (lane 13, fast): retail's homes follow its spills (tangent.i/j spilled twice each sit low at +0x38,
+// perp.k once at +0xa4 under the collision); it holds the three position sums in xmm1/xmm4/xmm2 until after
+// impact.index, so only perp.i/j, tangent.k and keep cross the call. On the velocity pointer form (194): dot3f
+// 194; dot3f with the perpendicular through vector3f_scale 194; dot3f(normal, velocity) with it 194 (all the
+// same code: helpers don't move the dot * normal operand order, ours keeps the normal as the destination);
+// tangent written as `velocity - dot * normal` 207 (1547 bytes); on the copy form 242 (1558 bytes).
+// Then 45 random dependency-respecting orders of the reflection block's 15 statements (keep, copy, dot,
+// perpendicular, tangent, position, impact.index) and of the four updates after the call, a third of them on
+// the pointer form, in a one-file LTCG link equal to the full build: none below this body (link positional
+// 74, aligned 84; the next best 76/100 and 91/93, sizes 1543-1555).
+// Round 60 (lane 16, fast): retail reads each velocity component twice from the particle (dot, then tangent)
+// and keeps keep/perp.i/perp.j/tangent.k in xmm3/5/6/7 across the placement call (tangent.i/j and perp.k
+// in memory); ours keeps five values in registers. The velocity pointer form 195 (frame 0x118); with the
+// impact declared and its index stored before the position stores 195; with perpendicular/tangent in retail's
+// computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 196; on the copy form the
+// collision word stored before the start stores plus the impact before the position 100 (two-point gain,
+// not kept); the copy form in retail's computation order 211; keep computed after impact.index 197 (1536 bytes).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

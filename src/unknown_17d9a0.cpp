@@ -230,6 +230,12 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (953 bytes). Screens: 384 helper shapes on 0x120810 19-24 mismatches (only row order counts).
 // Best screen 7 with four extra function-scope locals and one in the helper: retail's body may have
 // more named locals than ours (in combination, not singly).
+// Round 62 (fast, 0x120810 listed): edges through vector2d_from_points2d with an if/else inverse 157 (986 bytes);
+// the existing 0x120810 per corner 189 (966); both 182 (975, aligned 55); with the corner helper taking axis and
+// side by value 180 (975, aligned 49, the closest: left are the plane store base, the bool in EAX for ECX, the
+// product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
+// locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
+// retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -716,6 +722,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // original endpoints, pivot timing, helper operations and complete body restored.
 // Existing plane/angle/normalizer boundaries, seven subsets, then all with staged cross:
 // 704/594/727/669/726/660/742/755. Original complete executable source restored.
+// J218: Current exact-frame ordered-distance result/accepted endpoint setters/rotation-entry pivot, seven subsets, then native transform value: 639/596/675/576/671/688/756/724. Original complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

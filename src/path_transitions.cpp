@@ -544,6 +544,35 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
 // other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
 // and case 2's declaration orders, compile identically (286-290).
+// Round 106 (fast): the corner pointers a, b, c, d now 299 at 1284 bytes (aligned 142 -> 94, case 5 exact,
+// but the actor load is the first instruction, so LTCG passes pathfinding in EDX, 0x270d90 313, and
+// case 2's 0x26c590 setup is re-coloured). On that graph: result first 299; surface before start_out 299;
+// case 5's direction before its position 295; result without volatile 371; the actor test as an outer if 299.
+// Round 35 (lane 13): result declared first 278; surface pointer declared first 278; corners a, b, c, d 299
+// (1284 bytes: actor_index loaded into EAX at entry and pathfinding moved to EBX as retail, but LTCG then passes
+// pathfinding in EDX); with the surface pointer first 299; with case 5's direction copied before its position 295.
+// Retail's caller sets up ECX, EAX, EDI in the same order as ours, so no parameter reorder is indicated.
+// Round 36 (m3 lane 14, fast; aligned = difflib count, base 199): the a, b, c, d corners re-measured 299 (1284
+// bytes, aligned 119; the corner code and case 5 become retail's, actor_index is loaded at entry, but pathfinding
+// arrives in EDX). On them: the projection and origin sums grouped `(y + z) + x` 300 (aligned 105; grouped on
+// the base form 278, same code); `first` and `second` through the existing vector3d_from_points3d 299 (1288,
+// aligned 96), with both sums grouped 304, origin grouped only 304, the projection written vector-first 299;
+// with that helper and both sums through dot3f 280 (1284, aligned 89: the projection, origin, distances and
+// stores take retail's shape apart from first.j/first.k swapping registers; every dot3f argument order 280);
+// dot3f with the corners' own differences 299 (aligned 119); dot3f projection with the origin written out,
+// grouped or not, 304/299. Diagnostic: first's components assigned i, k, j give retail's `(j + k) + i`
+// projection order (303; the stores reorder). On the dot3f form: fraction and margin as two divisions 280
+// (same code: one reciprocal), the reciprocal written in both 280, the radius through a source pointer 280,
+// the radius test ahead of the reciprocal 327, the reciprocal named before the projections 280, both reciprocal
+// products written the other way round 280. The length
+// (+4) is only the margin product: retail multiplies the reciprocal in place by the radius in memory
+// (`mulss xmm2, [eax]`), ours loads the radius and multiplies by the reciprocal; with that and the entry's
+// pathfinding register fixed, the dot3f form would align everything after case 1/6.
+// Round 62: the corner pointers a, b, c, d 299 fast and plain (1284 bytes, aligned 119: actor_index loaded
+// into EAX as the first instruction, so pathfinding arrives in EDX and moves to EBX after it; retail moves
+// EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
+// first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
+// before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

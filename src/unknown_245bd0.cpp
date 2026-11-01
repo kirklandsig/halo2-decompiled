@@ -334,6 +334,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
 // difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
 // `j + (k + i)` 61; k, i, j statements 61.
+// Round 42 (lane 11, fast): the squared distance from the points themselves (the difference vector kept
+// for the normal) 307 (776 bytes), with the separate unit-z zeros and the swapped dot 307 (776); with the
+// difference vector made only in the scale arm 222 (722); the difference held in a plane3f local's
+// normal 57 (same code); the difference as a brace-initialised vector 61. Compile-only screen of the
+// sphere block (GPRs masked, base 42, the listed pointer diagnostic 12): the sum direct/length_sq3f/
+// dot3f/from the points x the scale helper/reciprocal in the call/fields x chained or separate zeros
+// x both dot orders: 34 at best (helper-only reads give every product in place).
 // Round 12 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80): the squared distance through a two-point
 // helper with its own difference vector (vector3d_from_points3d + length_sq3f, the form other files carry)
 // beside the normal's difference 307 (776 bytes: the subtractions are not merged), with the normal's
@@ -346,6 +353,22 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // radius test and scaled in place there 397 (456); the difference through the existing
 // scaled_difference3f with scale one 57 (same code), with the flat i,k,j sum 61. No existing helper
 // reads only the i and k squares through a pointer (the pointer form's shape).
+// Round 58 (lane 16, fast): the best-* updates stored plane, depth, type, index 63; the root kept as a double
+// with the reciprocal `(real)(1.0 / root)` 397 (456 bytes, sphere helper outlined); the normal copied from the
+// difference and scaled in place on the plane 397 (456); the radius test as `!(distance_squared >= r * r)` 58;
+// the squared distance as a double 397 (456). Repeats: unit-z default before the epsilon test 174 (689 bytes),
+// a radius local after the normal 62 (672 bytes).
+// Round 15 (lane 17, fast with 0x19cb90/0x245bd0/0x245d80/0x2461a0): the sphere passed by reference 57; flat
+// i, k, j sum with the reciprocal in the call 61; a named i + k partial plus the j square 59; the
+// unit-z arm through the normal member, unit z first then separate zeros 61; a scalar point-to-point
+// squared-distance helper (no vector of its own) beside the difference 307 (776 bytes), with the
+// difference made inside the radius test 227 (722): the subtractions are still not merged. Diagnostic:
+// the unit-z arm's 1.0 read from a named global stops the 1.0 hoist (retail's fsqrt block) 153 (681 bytes).
+// Round 17 (lane 17, fast): the difference from a by-value helper 397 (sphere helper outlined, 456 bytes);
+// length_sq3f(&d) with the normal by fields 152 again (every product then in place and 1.0 loaded in each
+// arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
+// 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
+// existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

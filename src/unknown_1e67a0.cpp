@@ -637,6 +637,18 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // and used for every velocity access 128 (gain 4, not kept), declared just before the first velocity store 141;
 // on the top pointer: projection and movement through vector3f_add_scaled/vector3f_add 128, the jitter add
 // through vector3f_add 128, all three 128, the movement add alone 128, limits through vector3f_assign 128.
+// Round 47 (m3 lane 1, fast, 0x24590 listed; aligned counts against this body's 154): retail order
+// jitter (on/off, signs, scale-on-left selects) with a plain long and its products added straight into the
+// velocity plus the movement add through vector3f_add 202 (1055 bytes, aligned 111); round 91's 174 form
+// plus the projection through vector3f_add_scaled 191 (aligned 117); the jitter add through vector3f_add
+// with a plain long in the old order 163 (1045 bytes), plus the movement add 147 (1087 bytes), plus the
+// projection through vector3f_add_scaled too 147 (1086 bytes). Reconfirmed:
+// jitter add 130, with retail-order plain jitter 231, plus movement add 174 (aligned 129), retail order alone 233.
+// Round 62 (fast, 0x24590 listed; jitter on/off first with `*=` and a plain long in each): projection, movement
+// and jitter adds through the existing helpers 191 (1066 bytes); projection and movement 189 (1063, aligned
+// 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
+// volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
+// memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -755,6 +767,7 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // and the flags on the stack; this file's declaration describes another order and the callers are
 // in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
 // sine and the cosine in the dead argument slots.
+// MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // score 155 (was 155): Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
 // movement/rotation homes and cross/result lifetimes still differ.
 // Frame 0x18 agrees; sampled movement/rotation homes and SSE/output scheduling still differ.

@@ -369,7 +369,8 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 122 (was 122): the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
+// score 122 (was 122): frame 0x14 and scan prefix agree; first +0xd5 is a displaced case span; cross coloring and selected-tail sharing remain.
+// Earlier: the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
 // request dies at the base argument as in retail); left: `lowest` is stored after `selected` (retail first),
 // the first cross keeps i/j/k in XMM0/1/2 (retail XMM1/2/0) so the two selected arms are not tail-merged
 // (28 bytes), and the averaging path's copies, sum order and dot order (round 112: dot_average and the
@@ -496,6 +497,7 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
 // (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
 // (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
+// J218: Existing staged-cross output setter/three-contact output-pointer scaled-add/native scratch values, seven subsets, then scratch value assignment: 122/122/122/199/199/199/199/199. Pointer-result staged cross, forced/ordinary inline, exact-only: 122/122. Original complete body restored.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -903,6 +905,7 @@ struct s_flags_1f0870
 // 625; contact_cross as a function-like macro 621; 0x1f087b or shape_dot as macros 590/590.
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
+// J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1095,118 +1098,16 @@ PRIVATE inline void shape_rotate_vector(matrix3x3 const *matrix, vector3f const 
         copy = *input;
         input = &copy;
     }
-    out->i = (input->j * matrix->left.i + input->k * matrix->up.i) + input->i * matrix->forward.i;
-    out->j = (input->j * matrix->left.j + input->k * matrix->up.j) + input->i * matrix->forward.j;
-    out->k = (input->j * matrix->left.k + input->k * matrix->up.k) + input->i * matrix->forward.k;
+    vector3f const *left = &matrix->left;
+    out->i = (input->j * left->i + input->k * matrix->up.i) + input->i * matrix->forward.i;
+    out->j = (input->j * left->j + input->k * matrix->up.j) + input->i * matrix->forward.j;
+    real k = input->j * left->k;
+    k += input->k * matrix->up.k;
+    k += input->i * matrix->forward.k;
+    out->k = k;
 }
 
-// score 9 (was 50): frame 0x58 and length 1043 agree; first +0x38b is the second rotation's
-// i/j up-before-left product schedule. The entire prefix and first rotation now agree.
-// Each row still sums (L + U) + F, as retail. Round 24 (lane 10) kept: carrier delta and first rotation through
-// the existing vector3f_add/vector3f_rotate_into_axes 32; both position adds through vector3f_add, the file rotate
-// helper as one expression per row and the count clamp as a ternary 17; the support add as velocity + position 15;
-// the file helper's rows as (left + up) + forward, parenthesised 9 (coordinator: the lane's accumulated rows
-// i F,L,U; j/k L,U,F scored 13 but summed the i row as (F + L) + U, away from retail's order, so not kept; without
-// the parentheses the compiler regroups the terms, 15; (up + left) + forward and forward + (left + up) also 9;
-// temporaries summed L + U + F 73; accumulated L,U,F 79). Tried on those: override add alone 86, override
-// subtraction from the source 269, support add alone 88, both adds alone 38; helper rows i L,F,U 12, F,U,L 16,
-// L,U,F 70 (harness; 1016 bytes); `support = false` at its declaration 218; carrier delta through vector3f_add
-// 88; override add as velocity + position 19. Unparenthesised term order inside a row is canonicalised (216 orders
-// alike in a compile-only harness). Round 106: the order is the function's float-sum ranking, which
-// rotates with the tuple count: the count clamp as an `if` 84 (all rows and the override add flip);
-// the clamp as `count < 0xfe ? count : 0xfe` 10; a named pointer for the second rotation's vector 89,
-// for both rotations 103; a `short` count 31. Earlier notes follow.
-// Earlier: Frame 0x58 agrees; final override load order and rotation coefficient residency remain.
-// Earlier: Frame 0x58 agrees; final override loads and rotation coefficient residency remain.
-// Earlier: Frame 0x58 agrees; final override loads and rotation coefficient residency remain.
-// final override load order and rotation input/coefficient schedule differ.
-// Rotation pointer/reference results 101/101; matrix reference 101; remaining helper orders 101/101/101.
-// Deferred rotation stores 102; left-coefficient snapshots 102; original alias copy and arithmetic restored.
-// Earlier partial input-component snapshots 76-82 were not selected; the complete alias-safe
-// per-use input form below remains at 87.
-// Final override load order and rotation input/coefficient allocation still differ.
-// Final point setter 104; completed translation 189; translation record 102;
-// rotation result 175; direction snapshot 187; orientation snapshot 193;
-// point/rotation results 177; translation/orientation snapshots 301.
-// the rotation reads each input component at its use, as retail
-// frame 0x58 agrees; final override loads and rotation coefficient/input scheduling remain.
-// Frame 0x58 agrees; override load order and rotation coefficient residency remain.
-// Earlier: final override load order and rotation input/coefficient schedule differ.
-// Partial component reads 76-82; the alias copy protects both in-place inputs.
-// All current input reads use the protected copy when input and output alias.
-// Components accumulated by statements in retail's term order 86; matrix-first
-// products 86; the 0x2477b1 helper's form 88; typed position/velocity pointers 86;
-// swapped operands 86; through shape_add 164 (position first, as retail, plus a copy);
-// typed pointers with explicit sums 86.
-// Initialized alias copy 118; memcpy copy 87; shared copy setter 84 (three-count gain rejected);
-// alias-copy name 87; value input 110; reference input with copy 110; value matrix 201;
-// unconditional input copy 109. All eight helper/call forms restored.
-// Earlier: the rotation reads each input component at its use, as retail
-// does (re-reading after every store); that is correct in place, since the alias copy
-// points the input at the copy when it is the output. Override additions still load
-// the velocity before the position, and the rotations' term order and operand roles
-// differ. Components accumulated by statements in retail's term order 86; matrix-first
-// products 86; the 0x2477b1 helper's form 88; typed position/velocity pointers 86;
-// swapped operands 86; through shape_add 164 (position first, as retail, plus a copy);
-// typed pointers with explicit sums 86.
-// Rotation result setter 95; overlap-safe alias copy 107; final/initial/both support admissions 82/82/82
-// (all 1031 versus 1043 bytes, rejected); native override byte 87; short/word saturation 87/87.
-// Axis-record values forward/left/up/all outline the helper, 418 each; output/matrix-output references and
-// trailing-component loops 87 each; force-inline axis values 141/148/146/246; force-inline loop/reference
-// loop 87/87.
-// Partial sums i/j/k 93 each, ij/ik/jk/all 87 each; first lateral product named in the i row only 59 (1040/1043 bytes; not kept: one of three parallel rows). Original grouping and alias copy retained.
-// left products in every row 86 fast;
-// forward products in every row 90 fast;
-// up products in every row 87 fast;
-// left/forward products in every row 86 fast;
-// left/up products in every row 86 fast;
-// forward/up products in every row 87 fast;
-// all three products in every row 54 fast;
-// first syntactic product in every row 90 fast;
-// Round 159: Complete named-product declaration orders forward/left/up 50; forward/up/left 54;
-// left/up/forward 54; up/forward/left 53; up/left/forward 53; matrix-first named products 54; immutable
-// named products 54; named products with all partial sums 59. Forward/left/up kept at 1040/1043 bytes;
-// plain confirmed.
-// Round 163: Complete-product row scopes/entry carriers/axis-first names 50/50/50;
-// deferred publication 93; row accumulators 59; forced expansion 50; existing final add
-// 163; existing result setter 93. All on the retained nine-product graph; original
-// helper, alias copy and every operation restored.
-// Round 166: Complete vector-return ownership, matrix/input pointer-pointer, reference-pointer,
-// value-pointer, pointer-reference, reference-reference, value-reference, pointer-value,
-// reference-value 127/127/223/127/127/223/161/161. Original two-use output helper restored.
-// Round 342: Row-shared forward/left/up product carriers 86/86/86; paired forward-left/forward-up/left-up 53/53/53;
-// all three 52; all three with complete protected input scalars 102. Original nine-product helper restored.
-// Lane 5 r77: VC canonicalises the rotation (any sum order, product operand order or product
-// declaration order gives identical code; a compile-only screen shows it), and `dst += src`
-// with two indirect operands always loads the source first. Override adds through named
-// offset/position pointers 54; row i grouped (forward + left) + up 50 at 1043/1043; retail's
-// own row groupings (left + up, forward + left, forward + left) 59; one named output-velocity
-// pointer for both override blocks 265 (frame); a 600 s permuter run, none below 50.
-// Round 112: the convention already agrees (ret 0xc). Override add as `dst = dst + src` 50 (same code);
-// the rotation helper in 0x143070's accumulated form 87; helper parameter orders input/matrix/out 48,
-// input/out/matrix 48, matrix/out/input 54, out/input/matrix 50, out/matrix/input 52; input/matrix/out
-// with row i grouped (forward + left) + up 50 at 1043/1043; override add as a three-component loop 59.
-// Round 177: Independent matrix-axis pointer/reference boundaries, all eight forms 71;
-// shared in-place final override/support/both additions 83/88/83. Override loads recover
-// but coefficient allocation worsens; original helper, alias copy and body restored.
-// Round 21 (lane 10): override add through the existing vector3f_add 83 (the add then loads the
-// position first, as retail, but the rotation sums rotate: VC reassociates by function context);
-// with vector3f_rotate_into_axes for both rotations 80 (first rotation's term order exact, second's
-// j/k rows still forward-first); its products matrix-first 80 (same code); plus the support add
-// through vector3f_add 70 (1039 bytes, in-place products, F.j/U.j residency swapped); both adds
-// through vector3f_add with the original helper 83. Original body restored.
-// Round 32 (lane 16): override add as `dst = src + dst` 50; through typed output-struct fields, both
-// operand orders 50/50; row i written forward + left + up 50 (same code); single grouped expressions
-// per row, (j-left + k-up) + i-forward then forward + left + up, 87. Diagnostics (not kept): without
-// the 0x1f0870 call the override add and second rotation take retail's order; with the call but
-// `current` not passed, the movaps copies go; an opaque or hollowed 0x1f0870 changes neither.
-// N226: Current/matrix/carrier native-size copy subsets 9 each; all plus output
-// orientation copies 37. On the dual-helper graph, symmetric left/up/forward
-// products, transverse sums, all products L-U-F/F-L-U/U-L-F and accumulators
-// 79/73/22/22/73/73/73/79. Entire original helper, body and copies restored.
-// Round 92: existing 0x2477b1 for the second rotation 15, for both 82; rotation helpers swapped 44;
-// private-helper orders input/matrix/out, input/out/matrix, matrix/out/input and out/matrix/input 82
-// each, out/input/matrix 9; pointer-return helper 9. Original helper, calls and include set restored.
+/* one step of the shape against its contact, in the frame of a moving carrier or support when it has one */
 // @retail 0x1f0450
 void __stdcall function_1f0450(s_shape_state *history, byte *out, s_shape_carrier_contact const *contact)
 {

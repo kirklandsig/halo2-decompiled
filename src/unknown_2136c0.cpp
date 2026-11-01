@@ -124,6 +124,12 @@ void function_213970(void);
 // 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
 // definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
 // src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
+// Round 33 (lane 14, fast; still BLOCKED-BY the separate global definitions): progress record / file handle
+// reset by value-initialized assignment 171/165; constant-first version test 131 (same code); every scalar
+// reset before the five clears 131 (aligned 44 against 35); progress record and handle both by memset 145.
+// Diagnostic, size pragma removed 158: the preference tail is then retail's (version loaded to EAX, NONE
+// stores after the clears), but the language load is hoisted into ESI above the clears and ESI/EDI are
+// pushed at entry, where retail pushes EDI around its two block clears only and ESI after the language join.
 // Round 40 (lane 11, fast): without the size pragma (diagnostic) 158: the shape after the clears is retail's
 // (`or eax, -1`, the NONE stores among the language test, inlined getter calls) but the language read is
 // hoisted above the clears into ESI, where retail reads it into EAX after them and copies it to ESI only
@@ -146,6 +152,17 @@ void function_213970(void);
 // the size pragma 131; one compare-and-set helper (field address, value) for both preference fields with the
 // header getter 131; helper with the re-read getter 131; the same two without the size pragma 153/158. Still
 // BLOCKED-BY the block definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
+// Round 36 (lane 13, fast): the language query and both preference updates in their own block 131 (same
+// code), without the size pragma 158; one dirty store after both tests behind a changed flag 173 (259 bytes);
+// block B's scalar zero stores ahead of its header clear 131; the version compared as a dword 131; the
+// existing wrapper 0x11cae0 called in both the language test and the store 129 (232 bytes, two points). Still
+// BLOCKED-BY the separate global definitions (block A in src/unknown_213760.cpp and src/unknown_213d20.cpp).
+// Round 60 (lane 16, fast): without the size pragma (diagnostic base 158): the language local declared at the top
+// and assigned after the NONE stores 158; block B's clears before block A's 158; block A's NONE store right after
+// block A's clears 161; the handle record value-initialised (`= s_file_handle()`) 158; with the pragma 165.
+// With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
+// the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
+// Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

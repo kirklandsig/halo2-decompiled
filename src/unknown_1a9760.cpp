@@ -86,6 +86,20 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // directly, local_8 declared first, `0.5f * v`, `local_8 * k` [66 each]. Left: the 0.5/reciprocal/negation
 // chain in XMM1 with local_3.i in XMM4 and the normalized i in XMM3 (retail XMM3/XMM1/XMM4), and the dot's
 // k-before-j product.
+// Round 36 (lane 13; compile-only screens of the block up to the first 0x30bf0 call reproduce ours, then fast):
+// the side dot's terms come out in descending first-mention order of the direction's fields (the length's text
+// order moves the j/k-term pair), but the term with the fresh `0 - j` always comes first where retail has it
+// last (k, j, i). The direction scaled i, k, j 178 (989 bytes); the length written k, i, j 106; a separate
+// perpendicular vector for the dot (then copied over the offset) 201 (1015 bytes), declared at the top 201,
+// with the i, k, j scaling 206; the offset computed after the normalization 216 (1013 bytes).
+// Round 33 (lane 14, fast; aligned counts from a difflib alignment, original 86): the final test accumulated
+// j, k, i in a named local 105 (aligned 84; retail's dot instructions, still scheduled above the unknown424
+// copy); half-step components written out 192; negated j named and used for the projection and the store
+// 177 (aligned 85); the projection accumulated k, j, i (`local_5 = k-term; += j-term; += i-term`) 97
+// (aligned 87: z/y/magnitude/j/k registers and the xmm7 zero become retail's, half/x and inverse/i stay
+// swapped); that with the negated j named first 176 (989 bytes, aligned 80), plus the side projection
+// accumulated z, y, x 176 (aligned 93); the k, j, i projection with the j, k, i final test 98. Retail does not
+// hoist the -1.0 load (else branch and memory operand), so it copies the projection into xmm6.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

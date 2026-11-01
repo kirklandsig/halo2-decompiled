@@ -160,6 +160,27 @@ bool g_47f05b;
 // Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
 // buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
 // named const 34 (same code); the pool address named after the first construction 34 (same code).
+// Round 122 (lane 5, fast with 0x146b80/0x22c3e0 matched): the size-only constructor re-measured 35
+// (140 bytes, only the abstract vtable store missing); on it, the fixed base's buffer/size stores under
+// a constant-folded `if (size > 0)` 35 (a folded branch does not keep the store); the buffer as `block +
+// sizeof(c_havok_fixed_memory)` 34 (same code); the buffer named after the three global stores 36 (146
+// bytes, the 1s become immediates); `g_479894 = NULL; if (block) g_479894 = new (block) ...` 32 (139
+// bytes, the NULL store moves above the test, the vtable store still dropped).
+// Round 106 (lane 7, fast with every function of the files using the header): the size-only
+// constructor (buffer `this + 1`) 35 (140 bytes; 0x146b80/0x22c3e0 kept); the abstract constructor
+// clearing its four words with memset and then storing NONE 38 (152 bytes), clearing three words 37
+// (149), each with the size-only constructor 46/27 (153/150): the base vtable store is still dropped
+// and 0x146b80/0x146e30/0x22c3e0 lose (memset keeps a pointer to the words). Compile-only is not
+// exact here (the constants' registers differ).
+// Round 105 (lane 8, fast with 0x146b80/0x22c3e0/0x146ac0): retail 0x146b80 and 0x146e30 build the
+// same class at g_479888 + an offset and drop the base store; only here (object at g_479888 itself,
+// buffer at this + 0x30) is it kept. Header forms: the abstract array value-initialised with NONE set
+// in the body 42 (0x146b80 21, 0x22c3e0 219); the fixed base storing buffer, count, size 33 (Round
+// 103's count-before-size form re-measured); the abstract loop zeroing all four slots, then NONE 21
+// (144 bytes; the plain dead zero store at +0x14 survives the loop, but the vtable store is still
+// dropped; 0x146b80 15, 0x22c3e0 207). Diagnostics (not kept): the pool constructed first 52; the
+// pool construction removed 75: the base store is dropped either way, so nothing after the
+// construction keeps it.
 // Lane 12 r66 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0; a /GL- compile-only build also drops the store):
 // g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
 // sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the

@@ -1416,7 +1416,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 134 (was 141): the retained mask is a plain local and the pre-loop statements run capacity,
+// score 134 (was 134): the retained mask is a plain local and the pre-loop statements run capacity,
 // size, written, mask: the bit (EBP), size (EBX), count (ECX), the frame order i/written/kept/size/bit
 // and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
 // `written = 0` and the PIN test (retail `test edi, edi`, immediate store), so the capacity-fail exit
@@ -1473,6 +1473,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // code); first cursor byte stored in each include_mask arm with `*cursor++` in the else 178 (475
 // bytes); the player bit written at its use 134 (same code); clamp test removed (diagnostic) 171
 // with `ret 0x10`.
+// Upper-first ternary, sequential bounds, lower/upper-first conditional clamped-result construction:
+// 179/134/134/140; same four with exhaustive result production 201/177/177/177. Zero sharing and pre-loop
+// scheduling remain; original source restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3128,6 +3131,9 @@ struct s_voice_route_choice
 // Round 462: Consumed next-ordinal choice pointer/reference before headset, original/reused talker
 // mask 1075/1084; after headset 1079/1088; reference forms 1075/1084/1079/1088. All suppress
 // four-way expansion; original body restored.
+// Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
+// masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
+// original observations, bitwise radio and full body restored; entry/cursor allocation remains.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3356,6 +3362,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // before the stride 139; consumed, size, stride order 158 (476 bytes); `*(word *)&packet[1]` with
 // `== 0` 139; the plain arm through the out-of-line talker test 181 (450 bytes, not inlined); one
 // shared kind test before the relay branch 180 (467 bytes).
+// Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
+// 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

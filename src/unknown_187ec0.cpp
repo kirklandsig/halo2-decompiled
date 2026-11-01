@@ -562,6 +562,9 @@ bool function_172750(long mode, point3f const *point, real radius);
 // element looked up after the first index 165; `index == 13 || index == 14` 121; unbraced fallback lookups 118.
 // The material-class parameters stay BLOCKED-BY the declarations in src/impacts.cpp and src/projectiles.cpp.
 // Round 108: 0x1882d0's two material parameters as the material class (no parameter reference) 118 here.
+// Round 474: Complete first/second/both conditional variant results 165/168/170;
+// whole first/second/both entry values 178/167/205; second/both payload pairs
+// before variants 131/159. Original body restored; tag/index and output homes remain.
 // @retail 0x1883e0
 void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)
