@@ -461,6 +461,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // dot spelling gives the same code; no by-name or pointer access per axis or per written component
 // moved the dot's k,i,j order or the swapped products. A 600 s permuter run was cut off by its time
 // cap while confirming a candidate.
+// Round 60 (m3 lane 9, fast with 0xb7060; real builds of round 40's screened forms): the dot as `dot = k;
+// dot += j; dot += i` 110 (k and j products up-first as retail), with the three axis pointers declared
+// together before the normalize calls 109, with `up->i = up->i - scaled_i` 110; the center through
+// carrier_vector_from_havok with the `+=` dot and the axis pointers 153 (264 instructions as retail, object
+// index in EAX, entry index on the stack); the loop's body pointer declared before the outer loop 112.
+// Retail's call in 0xb7060 sets ECX (entry) before EAX (object), as the declared order implies.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

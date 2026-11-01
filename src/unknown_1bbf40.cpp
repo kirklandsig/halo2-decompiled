@@ -582,6 +582,13 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // `&&` 200, bitwise 47, false-then-field 99 (each the same as its goto form: the break is threaded
 // back); that with the preset-true `||` form 187; the whole test in an inline helper taking the
 // actor index 268 (813 bytes).
+// Round 60 (m3 lane 9, fast): on the if/else flag with `special = false` closing the scan arm (190, frame
+// 0x30: the unspilled flag leaves the dead actor slot to the seat object), the seat object declared bare
+// at the function top or the outer block top and assigned NONE before the call 190/190 (same code); it
+// declared with its NONE at the function top 209 (it moves to the frame, the seat short then takes the
+// actor slot, frame still 0x30); `special = false` also opening the scan arm (diagnostic) 190 (dead, dropped);
+// the `&&` flag with allow_exit declared after the actor lookup 201 (872 bytes); the if/else flag with
+// `special = false` right after the 0x1b8d40 exit (live across the rest of the scan) 200 (872 bytes).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

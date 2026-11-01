@@ -1124,6 +1124,9 @@ void c_game_engine_markers::v21(long object_index)
 // mode read through g_4e6948's own view 119 and the absolute index inside the flag block 119; guard
 // returns for the mode, type and slot tests 40; the object fetched before the type test as in the
 // matched v24 119 (the object is then kept, where retail reloads it).
+// score 40 (was 40): the entry swaps EAX/ECX for the object index and the header; retail computes the
+// player pointer before the flag test with the players' data load unfolded and reloads the options
+// pointer at the engine-type compare.
 // Round 77: the team at each call again 119 (the options pointer then stays in EDX from entry and the
 // type lookup takes ESI/EDI); a short slot 93, with the team at each call 93 (438 bytes); the unit
 // looked up before the type test 119, with the team at each call 132; an object pointer after the
@@ -1214,6 +1217,10 @@ void c_game_engine_markers::v21(long object_index)
 // pointer 40 (same code); on the team at each call (119, 430 bytes): a const unit 119, a const player 119, the flag
 // read into a named bool before its test 119, the event block's slot range tested before the player index 119, the
 // slot read through the typed header array 119. The options pointer keeps EDX from entry in every per-call form.
+// Round 59 (fast): 1-8 unused locals at the top (constant or parameter copies; diagnostic) change nothing
+// on this body or on the team at each call; a slot-table local as in v24 (`g = g_51ec80`) 50, with the
+// team at each call 119; v30's per-arm team with a const player 119; early returns for the mode and the
+// type test 40 (same code), with the team at each call 119.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

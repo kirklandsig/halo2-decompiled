@@ -985,6 +985,12 @@ void function_1d1540(s_havok_component *component);
 // returning on its own 88. On the plain-copy body, parameters (transform, index, component) 85 (same code;
 // definition, both declarations and both calls changed together) and (component, index, transform) 85 with
 // matched 0x1d1b60 lost at 2.
+// Round 60 (m3 lane 9, fast with 0x1d0c20/0x1d1b60/0x1d5120): on the 88 body (set copy, body pointer,
+// m_fixed first; aligned 8, only the component's stack home): the definition marked `inline` 88; the
+// reset test as a named bool 154 (278 bytes); the body read by direct rigid_bodies indexing 88; the fixed
+// and flag tests nested with a return in the reset arm 88; the transformed flag read before the copy 88.
+// It is on the object/havok call cycle (0x1d1260 and 0x1d1540 reach it again through 0x1d1b60 ->
+// 0x1d0c20 without any stubbed function), so where LTCG enters that cycle may decide its convention.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

@@ -1039,6 +1039,7 @@ bool function_68670(byte *source, long size, void *block);
 // finding a better form. The header home, the size register, the forwarded cursor and the grouped
 // case-1 stores remain.
 // Retail treats the read header as reachable through the ring buffer: it reloads
+// Earlier (72): retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at
 // esp+0x14 (header at esp+0xc, ours at esp+0x10), interleaves the message's zero and value stores
@@ -1131,6 +1132,11 @@ bool function_68670(byte *source, long size, void *block);
 // the kind read into a short local for the switch 72 (identical); case 0 sending a copy of the value made before
 // the switch 142 (558 bytes). Harness: case 0's block-local copy 137 (header at retail's +0xc, but the start then
 // stays in ESI across the read and `used` is updated through a register), without the view address line 154.
+// Round 59 (fast), all with case 0 sending a block-local copy (frame and case 0 then retail's, 137):
+// case 1's offset/size each cleared by its own memset 135 (560 bytes); header and payload declared in
+// the loop 146; payload alone in the loop 146; the payload size at function scope 137; header and
+// payload in the loop with per-field memsets 144. Retail treats the header as escaped (start reloaded
+// after the first read, used updated in memory) although its copy keeps &header from the send.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

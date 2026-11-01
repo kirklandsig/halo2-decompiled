@@ -583,6 +583,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // unlike retail's two-cost compare, and the code is 510 bytes plus two int3: only the tail realigns; the count
 // pairs still run reference first); as `candidate.cost() - reference->cost() < 0` 67 (508 bytes); the first
 // test as `reference->count_spread() - candidate.count_spread() > 0` 72 (516 bytes, reference still first).
+// Round 61 (m3 lane 9, fast): the first test as `reference->count_spread() - candidate.count_spread() > 0`
+// 72 (516 bytes); nested `if (candidate <= reference) { if (candidate < reference || cost) ... }` in the
+// real build 100 (512 bytes); the equality spelled `!(candidate > reference)` 67 and `candidate <=
+// reference` 67 (same code); the reference selected once before the loops and set to `&best` after an
+// improvement 125 (spilled to the stack, still queried first).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -859,6 +864,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // `short` next_party local 76 (197 bytes); open slots as `team_count * maximum_team_size - player_count -
 // extra_count` 71; the last party index tracked from NONE and the fill writing `last_party + 1` 82 (173 bytes);
 // the clamp compare as `maximum_imbalance >= (excess < 0 ? 0 : excess)` 35.
+// Round 61 (m3 lane 9, fast; the caller's file was on another lane's list, so no parameter orders): the
+// clamp as `excess = imbalance > open_slots ? imbalance - open_slots : 0;` then `result = excess <=
+// maximum_imbalance;` 65 (205 bytes); the copy bound `i != player_count` 35; open slots as `team_count *
+// maximum_team_size - player_count - extra_count` 71; `long i = 0;` with `for (; i < player_count; i++)` 34
+// (same code); next_party first, then the total, then `open_slots = team_count * maximum_team_size;
+// open_slots -= total;` 34 (same code).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

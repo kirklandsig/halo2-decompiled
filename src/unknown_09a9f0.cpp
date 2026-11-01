@@ -449,6 +449,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
 // 49/77 (same code); the chained form with the early bool and the store and attach through the existing
 // 0xbb780 77 (still one shared header address under the link's inline).
+// Round 60 (m3 lane 9): the store and attach as the existing 0xbb780 with the early bool result, first
+// built plain (earlier only fast) 77 (160 bytes: the full link inlines it and still shares the header
+// address); the object pointer read before the flag test on the long/early bool result 49/77; the header
+// flags in a named byte with the early bool 77; the early bool with an `== 0` flag test built 77.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -296,6 +296,13 @@ static __forceinline bool structure_bsp_collision_available()
 // 92 (296 bytes). The screen keeps the flag test only when the flag-test block's predecessor on the excluded
 // edge is not the arm that sets the flag (a computed value or a memory test first); every such form that
 // keeps the semantics adds code at the join, and the flag is then spilled where retail spills the collision.
+// Round 61 (m3 lane 9, fast): the flag set in the scenery arm with 0xbf9a0 in its else-if and `point3f const
+// *point = &collision->point;` named at the join before `if (excluded) return result;` 62 (the address sinks
+// first; still threaded), with the requery under `if (!excluded)` and `else found = false;` 77 (263 bytes);
+// the exclusion condition written out at both tests, no flag (looking for a CSE'd condition temp) 107 (309
+// bytes: 0x10a0b0 called twice); a `done` flag set by the exclusion and by the model path (`result =
+// 0x14a8e0(...); done = true;`) tested before the requery 68 (272 bytes); the positive test (`type != 6 ||
+// 0x10a0b0 == 2`) holding the probe and requery with `else found = false;` 77 (263 bytes).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -479,6 +486,18 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // the point copy 172; the vertex helper forced inline 172; the three fetches as one && expression
 // 264 (681 bytes); `if (!section) return false;` 211 (726 bytes). Retail's skip after a missing
 // first vertex tests a flag no path initialises, so no defined-failure form reproduces it.
+// Round 61 (m3 lane 9, fast): retail's vertex flag (a byte set after each successful fetch, never cleared
+// and never initialised, tested only when the first fetch fails; 0x11e800 is called whatever the second and
+// third fetches gave) written as `if (get(v0)) found = true; else if (!found) continue; if (get(v1)) found =
+// true; if (get(v2)) found = true;`: with `bool found = false;` 232 (756 bytes; aligned 51 against 99: the
+// BSP takes EBX with retail's spill and the vertex block lines up), uninitialised 226 (aligned 50); with a
+// bool result 207/212 (aligned 49/46); result and flag declared at the top 246/229, a byte result at the top
+// 240/243; `definition = NULL` at its declaration 245, an uninitialised definition 257, with the
+// uninitialised flag 280; `unknown` renamed `a_unknown`/`z_unknown` 226/226 (names move no homes). Left on
+// the best flag form: the instance index in EBP (retail ECX, with the range in EBP), NONE held in EDX for
+// three compares, the 0x16e1b0 unknown/part-index homes and BLOCKED-BY 0x11e800 (its v0/v1/v2/point
+// registers). Any defined initial value adds a store retail lacks, and the flag is set in a test, so none of
+// these is kept.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -694,6 +713,11 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // Round 185 (lane 3, fast, diagnostic): the bounds read before the geometry-block call plus the
 // lookup pointer still give 4, all four 0x11e800 argument registers (ours second/third/point in
 // esi/edx/ecx, retail edx/ecx/esi), so BLOCKED-BY 0x11e800.
+// Round 61 (m3 lane 9, fast): the existing bounds read moved before the region test 88, before `if
+// (section_index == 0xff) goto done;` 15 (886 bytes; left: the read's home, the lookup-address reuse,
+// 0x11e800's registers), before the section pointer 223, before the region-list declarations (ahead of
+// 0xba690) 230, before the object lookup 78; the listed placement before the 0x12de70 test still gives 9.
+// Each moves a read ahead of calls (kept only with a match); BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -854,6 +878,14 @@ done:
 // only (it requeries after a failed model lookup, so not keepable): `if (!result && !excluded)` in front of the
 // requery keeps retail's `mov bl, 1; jmp` / `test bl, bl`, NONE in EBX with the back edge's `or ebx, -1` and
 // the result in its parameter slot in a compile-only screen, but 157 (488 bytes) in the real build.
+// Round 61 (m3 lane 9, fast): the object branch first with the probe inverted (`if (!excluded && !0xbf9a0)`
+// requery, `else if (!excluded)` 0x14a8e0, the no-object lightmap in the else) 145 (456 bytes); the same
+// inverted probe with the no-object case first 130 (470 bytes, retail's length; the 0x14a8e0 arm stays
+// inside the loop where retail lays it out after it); the exclusion condition written out at both tests, no
+// flag 216 (534 bytes: the policy loads repeat after 0xbf9a0; 0xd2a50 101); one lightmap call through `bool
+// found = true;` (cleared for objects, set from the requery) with the model and requery under `if
+// (!excluded)` 164 (448 bytes; 0xd2a50 72); the result parameter written through `bool *const
+// result_reference = &result;` 125 (same code).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
