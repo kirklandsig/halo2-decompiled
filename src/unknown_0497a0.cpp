@@ -946,6 +946,10 @@ void __stdcall function_43720(s_43740_input *input)
 // with the record filled in retail's store order 67 (0x42b20 62); the field test with the tag local
 // inside and the normal read from the definition 62, plus retail's fill order 62, plus the record declared
 // at the top 62 (0x42b20 matched in each).
+// Round 124 (fast, 0x42b20 checked each time): the image pointer written into the texture call 62; the
+// group pointer written into the image expression 62; the call's count argument recomputed from the
+// point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored
+// last 64 (211 bytes, and 0x42b20 stops matching).
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

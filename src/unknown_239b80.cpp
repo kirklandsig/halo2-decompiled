@@ -358,6 +358,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // line, first declared in reverse 42. Diagnostics (not kept): 1-8 unused locals at the function's top 42 except
 // 5 (56: retail's `mulss xmm1, [p.x]` dot fold appears, 4 bytes shorter); at case 0 or the loop top 42. The
 // state/index/pointer rotation follows no symbol count.
+// Round 124 (fast; the one-file LTCG harness agreed each time): case 1's distance in a named real
+// 42; case 1 through a block-local point pointer 42; `points + i` in case 1 42; case 1's dot written
+// by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
+// (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
+// state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

@@ -871,6 +871,20 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // later blocks move); the segment flags cleared after the planes 178; plane 0's d as statements j, += k, += i
 // 287 (1867 bytes), the same sum in a named local (diagnostic) 251 (1867); plane 0's d as one sum of
 // `(real)(a * b)` products 271 (1867).
+// Round 124 (one-file LTCG harness, exact at 115; five confirmed with fast): whatever the term order,
+// the last term of plane 0's d loads its camera component after the copy (the copied normal's i
+// takes xmm4), and the zero that inherits camera i's register then shifts the clip loop's XMM homes.
+// Plane 0's d with explicit grouping, every term order and operand order: (a+b)+c 145-179, a+(b+c)
+// 145-179 (`e.i*n.i + (e.k*n.k + e.j*n.j)` 145 fast); d accumulated with `+=` in any order 287 (1867
+// bytes); a named d 119 (fast); d computed from the forward pointer before or after the copy 441/442;
+// the three camera components in named reals, any order 276; the near distance computed after the
+// copy 141 (fast), before the bounds copy 191, just before the d negation 179; d negated together
+// with the near add 423; the normal negations in the other five orders 126-141 (j, i, k 126 fast);
+// a by-name normal copy 460/464; a plane-negate or vector-negate inline helper for both planes 269/247;
+// classification in 96 term/operand/grouping forms, none below 115; the intersection written
+// directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
+// Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
+// operands fixed in the unrolled loop, flipped in the remainder loop).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
