@@ -1079,6 +1079,8 @@ bool function_108530(long device_index, long name)
 // division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
 // target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
 // 0x108670 13 -> 34).
+// Round 216: Bounded up/down-time producers and local/field cruise-speed ownership; then standard minimum/maximum duration/ramp floors and upper bounds:
+// 128/128/142/142/137/137/138/138/143/148/163/151/166/167/181/217. Original executable source restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
