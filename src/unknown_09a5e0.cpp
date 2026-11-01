@@ -2053,6 +2053,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 	return local_0;
 }
 
+// MiniMax lane E (11-01): the pool index named in a local gives retail's SIB base (154, a gain of one
+// that the keep rule drops); the head block's register split is not reachable from the source (short
+// casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
+// 201, 212 and 269).
 // score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
 // Earlier: this round's head-block forms (the 0x13c value truncated to a short and
 // compared against both NONE forms, in nine source shapes) all score 149, and naming the object

@@ -1289,6 +1289,9 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
     s_path_location const *location, s_avoidance_trace *trace);
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
+// MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
+// scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
+// lowered the 444.
 // score 444 (was 444): frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the

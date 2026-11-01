@@ -963,6 +963,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
    an established channel */
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
+// MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
+// message, address) with the receiver in EDX, which this file's declaration cannot change.
+// score 193 (was 193): retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // the address on the stack (loaded into EDI, which 0x94220 takes it in); ours the type in ECX, the
 // address in EAX and the message on the stack, in every declared order. Retail lays the case bodies out
 // in one switch's order 0,2,3,4,8,9,10,12,13,14,22,23,24,18,11,5,6,7; with the unified switch and the
