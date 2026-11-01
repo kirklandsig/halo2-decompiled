@@ -323,6 +323,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 256: Guarded coordinate acquisition xzy/yxz/yzx/zxy/zyx gives 287/293/293/287/293;
 // coherent scale with xyz/yzx/zyx gives 301/301/301. Original shared guard, alias-safe snapshots
 // and body restored; frame 0x30 remains.
+// Round 468: Displaced reciprocal first, with factor admission/publication/perspective-zero
+// scope subsets 0..7: 239/215/227/197/264/283/267/283. Original inverse evaluation, defaults, factors
+// and complete body restored; frame 0x30 and displaced-transform spill remain.
+// Round 471: Separate raw/scaled coordinate families, default-copy/explicit-branch/conditional/
+// native-point conditional, field/shared scale: 225/199/265/269/316/306/690/230. Original
+// alias-safe helper, frame defaults, inverse graph and complete body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

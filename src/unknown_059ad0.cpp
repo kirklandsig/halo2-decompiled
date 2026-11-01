@@ -3525,6 +3525,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // folds to [ebp + edx*4 + 0x72dd]. Non-volatile result 157; result declared after the lookup 136;
 // member arm first 145 (463 bytes); state flag/time read at each use 153; state pointer after the
 // flag test 153; pointer kept with the flag read directly 153 (pointer sunk). Opening body restored.
+// Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
+// fast; all three with the native machine-address field copy 131. Original declarations,
+// machine copy, result qualifier and full body restored; full starting count remains 119.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -4895,13 +4898,18 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
-// score 697 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
+// score 569 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
 // Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
 // First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
 // Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
 // with first/second/both result passes 798/662/809; all with member-mask role names 809.
 // Second pass without the implied result-loop test 748; complete admission predicates with
 // player fields/original player snapshot 767/750. The 662 form required the implied test and was dropped.
+// Round 467: Native first/second/player record graphs, seven subsets, 696 each fast;
+// all with signed-short member ordinals 669 fast, 680 plain. Original records with
+// first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
+// Necessary result-controlled error-continue loops first/second/both 696/704/732;
+// with signed-short ordinals 718/715/724. Original records and validation exits retained.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
@@ -4924,7 +4932,7 @@ bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 		if (*(const long *)(update + 0xc) != NONE)
 			for (long i = 0; i < session->member_count; i++)
 				old_to_new[i] = i;
-		for (long i = 0; i < *(const short *)(update + 0x10); i++)
+		for (short i = 0; i < *(const short *)(update + 0x10); i++)
 		{
 			const byte *entry = update + 0x14 + i * 0x104;
 			if (*(const short *)entry == NONE)

@@ -1287,6 +1287,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 459: Resolved-output defaults after corresponding key stores,
 // mode/class/both/type/mode-type/class-type/all 828/828/828/828/828/828/828; all after traversal defaults
 // 826. Original initialization restored. All executable trial forms restored.
+// Round 471: Separate selected graph/index short/short, short/long, long/short, long/long,
+// materialized before/after outputs 1024/1002/1017/1000/1018/1001/1014/1002.
+// All selected-component carriers and original constructor lifetimes restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

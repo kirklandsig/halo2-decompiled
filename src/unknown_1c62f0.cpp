@@ -705,6 +705,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // count); plain callback at the second dispatch 93 (same code); user read through its address without
 // volatile 133; flags through a plain word cast 97 (same code). Left: the second-dispatch callback reload
 // (volatile), after which the third dispatch's scratch registers are rotated one step (EAX/ECX/EDX).
+// Round 470: six lexical orders of the position/limit/next scalars 97 each;
+// first and last float orders with later saved-identity names 97/97. Original
+// names and body restored; adjacent flags scheduling and callback reload remain.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

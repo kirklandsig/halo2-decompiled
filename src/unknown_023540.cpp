@@ -3005,6 +3005,13 @@ struct s_2a2f0_record
 // Round 460: Complete native strip value at loop entry/dimensions/texture/draw,
 // mutable/immutable pairs 304/304/304/304/289/289/288/288. Independent dimensions and ordinary counts;
 // original table, pointer and complete body restored; bounded count copy remains.
+// Round 468: Signed-byte/byte remainders with long, signed-byte, dword and word ordinals
+// 169/178, 272/265, 169/178, 272/265. All with independent dimensions and ordinary
+// counts; original complete body restored; bounded-count register copy remains.
+// Round 474: Independent dimensions and ordinary counts with float-result
+// clamps/whole bounds/both 166 each; shared alpha clamp alone/with dimensions/
+// bounds/both 275/274/275/274; all with shared half-height 274. Original body
+// restored; bounded-count register copy and dimension homes remain.
 // @retail 0x2a2f0
 void __stdcall function_2a2f0(long tag, real alpha)
 {
@@ -3195,7 +3202,7 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
     D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
 }
 
-// score 1083 (was 1083): frame 0x2c agrees; small permission now has retail byte tests,
+// score 949 (was 972): frame 0x2c agrees; small permission now has retail byte tests,
 // but mode-bound/save roles, state expansion and scalar homes differ.
 // Earlier: Frame 0x2c agrees; capability/save roles and state expansion remain.
 // frame 0x2c agrees; saved registers, mode flags and state-call expansion differ.
@@ -3281,6 +3288,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // lifetimes restored; mode-bound register and state expansion remain.
 // Round 451: Byte/signed-byte success crossed with bool/byte/signed-byte/word/long rescale storage:
 // 1194/1194/1194/1194/1202/1202/1187/1187. Original status carriers restored.
+// Round 468: Late descriptor arms 1023/2013/3012/0213/0312/1230/2301/3210
+// 972/1112/1106/1085/1081/1117/1086/1119. Order 1023 kept plain at 4848/4828 bytes;
+// order 0312 reaches retail length but gains only two. Initial capability switch unchanged.
+// Round 474: Complete encoded mode-three pair 949 (plain, 4828/4828 bytes);
+// mode-zero RGB 972; pair/RGB 949; final word 1100; pair/final 1074;
+// RGB/final 1100; all 1074; all/full alpha 1083; first/second word alone
+// 954/967. Pair kept; mode-bound/save roles and state expansion remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3389,7 +3403,45 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     long exponent = 0;
     if (inverse_span > 1.0f)
         do { ++exponent; } while (inverse_span > (real)(1 << exponent));
-    if (mode == 0)
+    if (mode == 1)
+    {
+        color4f first, second;
+        real alpha = *(real const *)(configuration + 0x28);
+        first.alpha = clamp_filter_unit(alpha);
+        first.red = clamp_filter_unit(*(real const *)(configuration + 0x1c) * alpha);
+        first.green = clamp_filter_unit(*(real const *)(configuration + 0x20) * alpha);
+        first.blue = clamp_filter_unit(*(real const *)(configuration + 0x24) * alpha);
+        second.alpha = clamp_filter_unit(*(real const *)(configuration + 0x68));
+        second.red = clamp_filter_unit(*(real const *)(configuration + 0x5c));
+        second.green = clamp_filter_unit(*(real const *)(configuration + 0x60));
+        second.blue = clamp_filter_unit(*(real const *)(configuration + 0x64));
+        if (!skip_state) set_filter_blending(false);
+        g_484f68.PSAlphaInputs[0] = 0x8200000;
+        g_484f68.PSAlphaOutputs[0] = 0x40;
+        g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
+        g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
+        real gain = 1.0f / (exponent > 5 ? 4.0f : exponent > 4 ? 2.0f : 1.0f);
+        gain /= exponent > 0 ? 2.0f : 1.0f;
+        gain /= inverse_span / (real)(1 << exponent);
+        g_484f68.PSConstant1[5] = function_131fc0(clamp_filter_unit(gain * offset));
+        g_484f68.PSAlphaInputs[5] = 0x1d201220;
+        g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
+        g_484f68.PSConstant0[6] = pack_color4f(&first);
+        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
+        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
+        g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
+        g_484f68.PSRGBInputs[6] = 0x1341134;
+        g_484f68.PSRGBOutputs[6] = 0x45;
+        g_484f68.PSAlphaInputs[6] = 0x1d120c02;
+        g_484f68.PSAlphaOutputs[6] = filter_output_first_shift(exponent);
+        g_484f68.PSConstant0[7] = pack_color4f(&second);
+        g_484f68.PSAlphaInputs[7] = 0x11141d05;
+        g_484f68.PSAlphaOutputs[7] = 0xc00;
+        g_484f68.PSFinalCombinerConstant0 = pack_color4f(&second);
+        g_484f68.PSFinalCombinerInputsABCD = 0x114000f;
+        g_484f68.PSFinalCombinerInputsEFG = 0x1d041c00;
+    }
+    else if (mode == 0)
     {
         bool extra_texture = configuration == (byte const *)NONE;
         if (extra_texture)
@@ -3427,44 +3479,6 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSFinalCombinerConstant0 = function_131fc0(offset);
         g_484f68.PSFinalCombinerInputsABCD = 0x41d1105;
         g_484f68.PSFinalCombinerInputsEFG = (extra_texture ? 25 : 32) << 8;
-    }
-    else if (mode == 1)
-    {
-        color4f first, second;
-        real alpha = *(real const *)(configuration + 0x28);
-        first.alpha = clamp_filter_unit(alpha);
-        first.red = clamp_filter_unit(*(real const *)(configuration + 0x1c) * alpha);
-        first.green = clamp_filter_unit(*(real const *)(configuration + 0x20) * alpha);
-        first.blue = clamp_filter_unit(*(real const *)(configuration + 0x24) * alpha);
-        second.alpha = clamp_filter_unit(*(real const *)(configuration + 0x68));
-        second.red = clamp_filter_unit(*(real const *)(configuration + 0x5c));
-        second.green = clamp_filter_unit(*(real const *)(configuration + 0x60));
-        second.blue = clamp_filter_unit(*(real const *)(configuration + 0x64));
-        if (!skip_state) set_filter_blending(false);
-        g_484f68.PSAlphaInputs[0] = 0x8200000;
-        g_484f68.PSAlphaOutputs[0] = 0x40;
-        g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
-        g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
-        real gain = 1.0f / (exponent > 5 ? 4.0f : exponent > 4 ? 2.0f : 1.0f);
-        gain /= exponent > 0 ? 2.0f : 1.0f;
-        gain /= inverse_span / (real)(1 << exponent);
-        g_484f68.PSConstant1[5] = function_131fc0(clamp_filter_unit(gain * offset));
-        g_484f68.PSAlphaInputs[5] = 0x1d201220;
-        g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
-        g_484f68.PSConstant0[6] = pack_color4f(&first);
-        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
-        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
-        g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
-        g_484f68.PSRGBInputs[6] = 0x1341134;
-        g_484f68.PSRGBOutputs[6] = 0x45;
-        g_484f68.PSAlphaInputs[6] = 0x1d120c02;
-        g_484f68.PSAlphaOutputs[6] = filter_output_first_shift(exponent);
-        g_484f68.PSConstant0[7] = pack_color4f(&second);
-        g_484f68.PSAlphaInputs[7] = 0x11141d05;
-        g_484f68.PSAlphaOutputs[7] = 0xc00;
-        g_484f68.PSFinalCombinerConstant0 = pack_color4f(&second);
-        g_484f68.PSFinalCombinerInputsABCD = 0x114000f;
-        g_484f68.PSFinalCombinerInputsEFG = 0x1d041c00;
     }
     else if (mode == 2)
     {
@@ -3512,12 +3526,12 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSTextureModes = 0x8421;
         g_484f68.PSConstant0[4] = pack_color3f((color3f const *)(configuration + 4));
         g_484f68.PSConstant1[4] = pack_color3f((color3f const *)(configuration + 0x10));
-        g_484f68.PSRGBInputs[4] = (((((configuration[0] ? 0x10 : 0) + 9) << 16) | ((configuration[0] ? 0x10 : 0) + 10)) << 8) | 0x10002;
+        g_484f68.PSRGBInputs[4] = configuration[0] ? 0x19011a02 : 0x09010a02;
         g_484f68.PSRGBOutputs[4] = 0x3045;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
         g_484f68.PSConstant0[5] = pack_color3f((color3f const *)(configuration + 0x1c));
-        g_484f68.PSRGBInputs[5] = (((configuration[0] ? 0x10 : 0) + 11) << 8) | 0x24250001;
+        g_484f68.PSRGBInputs[5] = configuration[0] ? 0x24251b01 : 0x24250b01;
         g_484f68.PSRGBOutputs[5] = 0x1045;
         g_484f68.PSAlphaInputs[5] = 0x1d201d00 | (exponent > 6 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
