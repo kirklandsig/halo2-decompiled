@@ -525,9 +525,10 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
-// score 67 (was 67): frame 0x90 versus 0xa0: the three identity words fold away (retail stores them at
-// +0x10 and reads them back for the copy, with the source record right after at +0x1c); packed
-// source-byte carriers and initialization homes differ; signed array-end comparison recovered.
+// score 53 (was 67): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
+// 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
+// packed source-byte carriers and initialization homes differ.
 // Forward entry pointer 133; chained source resets 149; link-word fill 157; signed byte sentinel 149; unsigned entry index 133 (plain).
 // Existing record initializer with zero tail 130; short/word counters 133/133;
 // counters-before-version stores 132; separate link stores 133; initializer and store order 129 (plain).
@@ -633,6 +634,15 @@ void function_1537f0(s_profile_record *record);
 // entries walked with a signed index 45 (259 bytes, plain); not kept (a made-up struct that sets the stack homes;
 // no existing type pairs them). The record's field 0x40 then shares a register with the field 0x44 word and the
 // NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
+// Round 49 (lane 10): the entries walked with a pointer `for (entry = g_4cf98c; entry < g_4cf98c + 350;
+// entry++)` with the record's tail clear and 0xff sentinel kept 98 (292 bytes); the identity declared and
+// zeroed after the entry pointer 67; the existing 4-aligned s_player_properties as the record with the tail
+// clear dropped 78 (238 bytes), with an XUID identity zeroed after the record initializer 78 (238); the index
+// loop with the tail clear dropped 78 (238). Kept: the pointer walk with the tail clear and sentinel dropped
+// (the tail clear zeroed fields 0x7c-0x8f the inlined view copy never reads, and the sentinel re-stored the 0xff
+// the record initializer already leaves in field 0x7f) 53 (255 bytes, plain). On that: `entry !=
+// g_4cf98c + 350` 53, the record before the identity 53, an XUID identity 53, the identity `= { 0 }` 53. The
+// identity is still folded in every form.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -643,15 +653,12 @@ void function_7f930(void)
 	g_4cf97c = NONE;
 	g_4cf984 = NONE;
 	g_4cf988 = NONE;
-	for (long i = 0; i < 350; i++)
+	for (s_player_configuration_cache_entry *entry = g_4cf98c; entry < g_4cf98c + 350; entry++)
 	{
 		s_cached_player_identity identity;
 		memset(&identity, 0, sizeof(identity));
 		s_cached_player_source source;
 		function_1537f0((s_profile_record *)&source);
-		memset(source.unknown7c, 0, sizeof(source.unknown7c) + sizeof(source.field7f) + sizeof(source.unknown80));
-		source.field7f = 0xff;
-		s_player_configuration_cache_entry *entry = &g_4cf98c[i];
 		function_7f8b0((s_cached_player_view *)&entry->player, &identity, &source, NULL);
 		entry->next = entry->next_other = entry->unknown58 = entry->previous_other = NONE;
 		memset(&entry->flags, 0, sizeof(entry->flags) + sizeof(entry->unknown64));
