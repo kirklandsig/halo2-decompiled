@@ -144,7 +144,7 @@ void function_10ec00(long object_index, s_animation_state *state, long unused, d
 extern real g_547648;
 void c_animation_channel_data_get(c_animation_channel const *channel, s_animation_data *data);
 
-// score 207 (was 207): Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
+// score 207 (was 207): Frame 0x30 versus 0x2c, transforms/ordinal homes and getter expansion remain.
 // Round 87: the cause is our inlining of 0x1c6440 in the weighted arm (retail calls it there and in the
 // third arm). With the getter out of line (noinline in its header, diagnostic only) the entry and the first
 // arm match retail (edi is the zero register, transforms is read from the stack): 174 at 940 bytes. Its
@@ -284,6 +284,9 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
 // 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
 // in the sampled block 189. Original body restored.
+// Round 227: Target inline/stdcall/both 207 each; channel getter, frame setter and sampler inline
+// singly, getter/setter and getter/sampler pairs 207 each; complete playback inline declarations 207.
+// All declarations and original bodies restored; weighted getter expansion and spilled induction remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
