@@ -236,6 +236,7 @@ static inline void quaternion_transform_vector(
 // frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, score
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, scoring
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
 // 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
@@ -248,6 +249,10 @@ static inline void quaternion_transform_vector(
 // above the copy); s first and 2w after the cross 277 (1331 bytes). Plain: the three transforms through the
 // existing quaternion_rotate_point on the staged-cross/real-scale construction 258 (1303 bytes). 0x11d000 writing
 // through a named result pointer (still matched) 200: its summary does not keep the quaternion's slots unshared.
+// Round 285: Native direct-plus-projection vector with final shared scaled-cross addition,
+// ordinary/shared dot and ordinary/staged cross, cross-first/direct-first:
+// 305/349/309/336/295/338/321/330. Frame and quaternion/cross spill overlap remain; complete helper and
+// body restored.
 // Round 30 (lane 2, fast): retail computes the transform's scalar (w*w*2 - 1) before the identity copy and the
 // doubled w after the first dot, and gives the cross terms slots of their own (ours spill them into the dead
 // quaternion). Transform dot in i/k/j text order 200 (same code); scalar cross terms 265 (1300 bytes, frame
@@ -919,6 +924,9 @@ void function_143250(
 // frame 0x314. On that product graph, native row subsets and late matrix declaration:
 // 1807/1855/1989/1992/2093/2090/2238/2238. Original scalar graph, workspace, publications and body
 // restored; frame 0x314/0x300 and basis/matrix homes remain.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

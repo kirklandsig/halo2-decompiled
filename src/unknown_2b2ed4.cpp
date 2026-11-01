@@ -78,6 +78,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
 // Earlier: the block order follows retail's apart from a few blocks, but stack offsets
+// frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// merging the two XONLINE_FRIEND copies into one local in the status block
 // the block order follows retail's apart from a few blocks, but stack offsets
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
@@ -164,6 +166,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // (`and al, 1; cmp al, bl`); the session player as if/else 330 (same code); `!friends ? >> 10 : >> 12` 331
 // (the >> 10 block first with a jmp, still not parked out of line after the player select's jmp as in
 // retail); the clears chained title first (`suffix[0] = title[0] = 0`) 330.
+// Round 283: complete session/voice/both visibility stores 391/444/453; coherent final
+// flags alone/session/voice/both 330/389/426/436; all with constructor-owned initial clear 436.
+// Coherent flags alone: 2327 bytes, count 330; original body and stores restored.
+// Round 292: native six-state suffix cases reversed, five rotations, odd/even and
+// middle-out orders 330 each; original complete cases restored; homes and re-derivations remain.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

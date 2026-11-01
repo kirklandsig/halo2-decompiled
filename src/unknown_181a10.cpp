@@ -614,6 +614,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 443: phase-specific final/surface/material output receivers, seven
 // pointer subsets and full graph with final reference, 344/393/329/321/344/393/329/329.
 // Original output observations, scalar samples, plane math and full body restored.
+// Round 284: existing shared axis-rotation producer, separate/in-place plane output,
+// without/with all four named distance products: 419/419/448/448; shared row-rotation
+// producer 321/321/352/353. Grouping changes were exact-only; all helpers, includes,
+// normal/plane expressions and complete body restored. Frame 0x48 versus 0x44 remains.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

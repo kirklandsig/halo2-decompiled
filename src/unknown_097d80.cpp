@@ -194,6 +194,12 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// Round 285: Shared callback output with fixed short/unsigned-short collection and dispatch ordinals,
+// scratch after counters/before arrays: eight at 161 (406 bytes). Frame and callback/loop temporary homes
+// remain; complete body and original signed ordinals restored.
+// Round 287: One count across callback and dispatch-end/cleanup/both phases,
+// independent/function-scope information output, count before arrays: 138/157/176/138/157/176/176/176.
+// Escaped count and later loop homes remain; original signed traversal and outputs restored.
 // Round 31 (m3 lane 2, fast): produced as a dword (passed through a long pointer cast) 31; total as a
 // dword 32; the room argument as `sizeof(blocks) / sizeof(blocks[0]) - total` 31; the collection child
 // declared before loop 1 31; error and total declared before starts 31 (frame 0x8024 in each).

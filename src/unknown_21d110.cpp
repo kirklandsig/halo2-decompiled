@@ -440,6 +440,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // home its request in EBX). On 181: the allocation through function_21d2c1 193 (on 193, the same
 // code), the delete out of line 214, start-result arms swapped 180 (fast), one exit 182 (fast), the
 // no-effect path first 200 (fast), the platform handle by an if/else 181 (fast, same code).
+// Round 283: shared start with a multiply-used effect-admission fact, bool/byte/short/long,
+// nested lifecycle 223/223/205/207; combined success/failure lifecycle 223/223/205/207.
+// All eight sensitive callers preserved; original body and expansion policy restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

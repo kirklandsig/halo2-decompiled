@@ -161,6 +161,9 @@ extern real g_4c9798[36];
 // Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
 // long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
 // and call tuple unchanged; mode/size homes and rounding reloads remain.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

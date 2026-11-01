@@ -216,6 +216,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the arg_6 test exact, divergence starts at the basis cross products); the range read once before the test
 // 619; read first inside the else 618 (still reloaded); cross-product operands swapped in the helper's first or
 // third part 618 (same code).
+// Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
+// 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -687,6 +687,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // into the velocity 248, the jitter add through vector3f_add 160 (aligned 88), plus the movement add 164
 // (1098 bytes, aligned 82); only the on/off values in that if form, signs and scales as `*=` ternaries, 165
 // (1046 bytes, aligned 83: the on/off form alone gives the split limits).
+// Round 293: Plain indexed jitter sign/on, per-coordinate, on-first and branch-selected stages,
+// inherited sample 182/238/165/177; ordinary sample 222/179/218/243. The first and third
+// recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -929,6 +932,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // 176 (1385 bytes); a separate forward local rotated in place with the sample in its own block 169
 // (the slot is not shared). Retail keeps the vector components in XMM and multiplies by the axis from
 // memory; ours loads the axis into the destination registers.
+// Round 293: Complete scalar velocity-product schedules ijk/ikj/jik/jki/kij/kji
+// 219 each (frame 0x24, retail length); all-input then all-product and per-row compound
+// producers 213/213. Original sampled-vector, frame 0x18 and full body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

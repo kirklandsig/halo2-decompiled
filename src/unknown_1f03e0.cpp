@@ -509,6 +509,9 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // cross through 0x1f087b 122 (same code); the `selected != 0` arm first 164 (975 bytes, as before); the compare
 // written `dot_average > dot_a` 122 (same code); dot_average computed before dot_a 122 (same code). Ours hoists the
 // g_4687b0 reload into each selected arm (each computes j, k, i), so the arms' j/k store tails are not shared.
+// Round 289: Inherited three-contact default, with direct average publication/shared addition/dot-order
+// interactions masks 0..7, 193/211/190/189/193/211/190/189. All restored; original
+// default publications, average join, helper bodies, calls and arithmetic retained.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -926,6 +929,8 @@ struct s_flags_1f0870
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
+// Round 288: Continued magnitude/input squared sum/both/history squared sum/magnitude+history/input+history/all/all with entry magnitude,
+// 593/590/593/590/593/590/593/593 (fast). Original complete body, observations, helpers and call roles restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1300,6 +1305,9 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // Caller stays 230; all seven matched file controls survive. Original contract and body restored.
 // Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
 // 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
+// Round 289: Response-only selected contact address, with preferred cursor/count-store phase/entry success
+// result interactions masks 0..7, 430/456/429/455/524/521/525/522. All restored; original
+// receiver, qualified count, copies, response order and arithmetic retained.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
@@ -1550,6 +1558,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
 // accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
 // second call).
+// Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
+// at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
+// rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

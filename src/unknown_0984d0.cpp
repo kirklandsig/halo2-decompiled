@@ -423,6 +423,12 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // retail's choice is the cursor's weight, not the handle conflict); a dword handle 207; the data cursor as
 // `void *const *` over data.v 207. The volatile form's extra `mov edx, eax` (item loaded into EAX) shifts every
 // later line by one, which is most of its 115.
+// Round 285: Test-set inline validator result, success/failure initialization with
+// both/size-only/handle-only/no input producers: 115/134/138/137 in both orders. Items/data carriers and
+// validation-loop entry remain; complete helper and body restored.
+// Round 287: Native byte/signed-byte/word/long validation results on the original
+// case priority, all-valid/rejected polarity: 115/115/206/160/124/124/188/91. Cursors and loop entry
+// remain; native long rejection 91 also plain, restored as an unmatched flag form.
 // Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
 // 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
 // 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison

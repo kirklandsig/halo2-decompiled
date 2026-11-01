@@ -247,6 +247,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // reciprocals before the a ones 239 (not kept: an order of independent values, 6 under the keep bar); with by before bx 242; reciprocals by, bx, ax, ay 239;
 // bx, by, ay, ax 239; b extents and reciprocals before the a pair 239; by before bx alone 247; the
 // flip before the extents 249; the flip after the width 325.
+// Round 284: native three-channel RGB clamp with separate alpha, phased/fused
+// input modulation, ascending/descending ordinals and alpha last/first:
+// 383/381/391/389/399/399/506/498. Original complete producer and callback restored;
+// frame 0x50 versus 0x60 and tint/UV overlap remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

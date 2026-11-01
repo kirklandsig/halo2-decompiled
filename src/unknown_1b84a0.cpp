@@ -459,6 +459,8 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with one `return result` 274; `bool result = false;` set true inside a prop-index block that holds the
 // ready test 281 (1056 bytes); 0x25d690 called directly in the marker call's argument (no wrapper) 113
 // (same code: the call still follows the first two pushes).
+// Round 291: result identity before readiness/availability, all readiness/availability/
+// selection identity subsets, 113/113/113/113/113/113/113/113. Original body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

@@ -1029,6 +1029,9 @@ struct s_signed_file_write_parameters
 // Round 484: native I/O header-failure/extension-admission/signature-admission joins,
 // subsets H/E/S/HE/HS/ES/HES and HES with explicit byte-count failure
 // 301/129/129/301/301/129/301/301; frame/capacity/offset homes remain. Original body restored.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

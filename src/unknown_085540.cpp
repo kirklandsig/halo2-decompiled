@@ -1205,6 +1205,12 @@ bool function_68670(byte *source, long size, void *block);
 // kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
 // difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
 // the copy count from header.size too 79.
+// Round 285: Existing shared prefix initializer with sequence-copy, short-copy-guard and loop-payload
+// subsets: 120/156/119/154/135/142/139/146. Header/sequence homes, DX size and prefix-store order remain;
+// original memset, payload scope, helper calls and body restored.
+// Round 287: Case priorities 021/102/120/201 with function/loop header homes:
+// 72/72/72/72/118/118/118/118. Header/sequence homes, DX size and reader knowledge remain;
+// original case priority, header lifetime and complete body restored.
 // Round 31 (m3 lane 2, fast): case 2 as the switch's default (no __assume) 144; the case-0 copy
 // with the payload count declared before its test 129; the payload read using header.size at each
 // use 116 (554 bytes); the count decrement as the for loop's step 171 (483 bytes); payload declared

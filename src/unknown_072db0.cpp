@@ -1548,6 +1548,9 @@ struct s_rating_summary
 // Round 443: native complete team-counter value, original/admission storage,
 // crossed with key-before-session and per-arm lower results, 383/383/389/389
 // in either scope. Original pointer, summary order, lower and full body restored.
+// Round 290: On explicit team lower-result production, separate team value/change/level carriers,
+// all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
+// summary scheduling and team counter/cursor homes remain, with exact frame and length.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1873,6 +1876,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round N274: Library property copy before identity capture 711; readonly identity 711;
 // producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
 // Original identity/property order, native buffer lifetime and complete body restored.
+// Round 290: Indexed property destination from stored pointer/address producer, crossed with native
+// record-count bound and advancement, 780/788/796/770/826/788/812/770 (2750-2814 bytes). Original
+// initializer restored; frame 0xc0, initial cursor/slot/availability and later request homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

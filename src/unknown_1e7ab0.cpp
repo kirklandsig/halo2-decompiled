@@ -299,6 +299,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // code: PRIVATE is empty); the admission test as nested ifs 620 (same code); the request entry fetched before
 // the player index 622. Retail tail-merges cases 24-29 into one 0x1e8eb0 call (each case only pushes its
 // arguments) and case 18 into the same post-call test, with 19 returns against our 26.
+// Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
+// 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
+// through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

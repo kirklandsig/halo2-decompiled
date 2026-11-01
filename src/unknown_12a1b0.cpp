@@ -1334,6 +1334,9 @@ struct s_looping_detail_request
 // query and the skip loop in one forceinline helper taking the count 127 (same code); skip and player declared at
 // the top of the else arm 127 (same code); the audible test on the request's copy 170; one offset vector shared by
 // both arms 127 (same code). The query stays inlined in all five.
+// Round 290: Shared offset/outer selected-player/outer camera workspace subsets 1-7 all 127;
+// complete workspace with native signed count 129. Original declarations and count restored;
+// entry frame/copy agree, detail retention and first-player expansion remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

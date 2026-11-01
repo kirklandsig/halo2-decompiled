@@ -630,6 +630,9 @@ bool sound_driver_voice_create_buffer(
 // the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
 // `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
 // one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
+// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
+// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
+// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
 // Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
 // first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D

@@ -316,6 +316,9 @@ void function_14bac0()
 // declared at the first block's top 259; renaming the alternate or the iterators changes nothing (259);
 // the first scan on a 12-byte iterator through data_iterator_next_calling 262 (frame 0x44). On the kept
 // body: the unit re-read from the player at the last call 243.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
 // Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
 // (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
 // at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
@@ -340,6 +343,9 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

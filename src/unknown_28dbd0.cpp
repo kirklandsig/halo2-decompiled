@@ -207,6 +207,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // projection*axis + v*cos - cross*sin 241 (same code); the 173 form with three scalar cross terms 246
 // (frame 0x124). Diagnostic: the random arm's two draws as an offset vector with zero k (z stored back,
 // the -0.5 applied per draw as retail; ours still consumes the draws in the adds) 226 (1220 bytes).
+// Round 284: shared scaled-add accumulation deferring cross/projection/both/direction+cross,
+// original/sine-first production: 233/230, 204/252, 254/253, 235/231. Original
+// complete helper and body restored; frame 0x11c versus 0x118 remains.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

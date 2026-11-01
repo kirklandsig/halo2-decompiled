@@ -1487,6 +1487,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 485: Serialized recipient-result word/dword, branch/conditional, original/per-mode
 // first-byte publication 132/166/132/166/132/166/132/166. Two-point gains rejected;
 // original serializer and capacity/result graph restored.
+// Round 287: Actual membership/clamp return producers, expression/branch/both,
+// 192/167/179/170/197/170; membership/both producers without entry zero 198/199.
+// Independent result zero and capacity-failure epilogue remain; original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

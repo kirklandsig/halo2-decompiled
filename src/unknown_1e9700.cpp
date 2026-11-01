@@ -291,6 +291,9 @@ struct s_object_damage_view
 // `selected`: still +4.
 // Lane 12 r72 result not kept: friendly written out (not through function_15eaf0) gave 349 (retail's 1544
 // bytes) on its own form, 4 under the keep bar against round 49's 353.
+// Round 290: Persistent victim-team/credited-player/code role names, all seven subsets, 353 each;
+// all names with separate declarations and original assignments 353. Frame 0x50 agrees; the
+// three scalar homes, biased history cursor and attribution/award allocation remain. Original restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -199,6 +199,10 @@ void function_1d56f0(s_havok_component *component)
 // 0x1c4a80 -> 0x1d3fc0 -> 0x1d0c20; here 0xb8540 and 0xb7430 are disabled stubs, so LTCG walks another
 // cycle (via 0x2266a0 ... 0xdbc80 -> 0x1d1b60), which may be what keeps the component on the stack
 // (BLOCKED-BY 0xb8540).
+// Earlier: this round no new source form of this body was found: the 19 aligned differences stay in
+// Round 292: complete component/body, query filter/shape and step/count/output parameter
+// identities in seven subsets and alternate complete roles 77/77/77/77/77/77/77/77.
+// Original formal identities restored; lookup operand order and setter transport remain.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

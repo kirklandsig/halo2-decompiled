@@ -489,6 +489,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 70 (m3 lane 9, fast with 0xb7060): our head coalesces the object index with the object pointer (ECX), so the
 // entry index takes EAX. A named masked object index 132, a header element pointer 132 (head unchanged both times),
 // the entry by byte offset 112; 0xb7060 stays 2 in each.
+// Round 291: uninitialized entry/component/physics pointer declarations at entry, all
+// subsets then existing center conversion, 112/112/112/112/112/112/112/149. Original body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
