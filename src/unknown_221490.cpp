@@ -624,6 +624,9 @@ bool sound_driver_voice_create_buffer(
 // on both failures, the voice index on success) 146 (619, 0x191420 1); the count stored by
 // `globals->voice_count++` 71 (same code). Compile-only: both buffers in a force-inline helper taking both
 // flags (count and result outside) 150 (frame 0x98); the voice index starting at NONE with the 3D flag first 228.
+// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
+// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
+// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
 // Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
 // result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
 // spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not

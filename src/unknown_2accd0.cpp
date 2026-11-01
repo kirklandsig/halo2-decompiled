@@ -1025,6 +1025,9 @@ struct s_signed_file_write_parameters
 // (byte-identical; the extend sums stay header first); the header memset's count from the record's size
 // field 272 (952 bytes); the extend arm's memset before its offset 301 (948); its chunk size before its
 // memset 262; the zero clamp as `if (offset < 0) offset = 0;` 268. Dead temps 1-7: identical code.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // Round 64 (lane 16, fast): the header-site memset count read from the record's size field (diagnostic)
 // 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
 // `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the

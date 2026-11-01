@@ -928,6 +928,9 @@ void function_143250(
 // 1881/1796/1903/1766/1867/1796/1905; complete graph with matrix receiver renamed 1905.
 // Product elision leaves 943 scalars and recovers rotation in EAX, but frame 0x314 remains;
 // all nine initial loads and explicit precision conversions were retained. Entire body restored.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
 // 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
 // frame 0x314. On that product graph, native row subsets and late matrix declaration:

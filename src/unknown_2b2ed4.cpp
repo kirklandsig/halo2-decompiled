@@ -75,8 +75,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  return result;
 }
 // score 330 (was 330): Stack homes, suffix address rederivation and block placement remain.
-// Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
+// frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
+// the block order follows retail's apart from a few blocks, but stack offsets
+// Stack homes, suffix address rederivation and block placement remain.
+// Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // Earlier: the block order follows retail's apart from a few blocks, but stack offsets
 // frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // merging the two XONLINE_FRIEND copies into one local in the status block

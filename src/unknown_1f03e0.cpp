@@ -954,6 +954,8 @@ struct s_flags_1f0870
 // Round 235: complete movement-scale/history-anchor/both/current+scale/current+anchor/
 // all/current/all with split anchor assignment: 623/665/672/627/661/666/621/666. Current-value
 // forms revisit the clean store graph; original observations and full body restored.
+// Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
+// declaration lifetimes. Scores 590/590/590/590/590/590/590/590. Original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1591,6 +1593,8 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 329: Complete reset orders MNSZ/SNMZ/ZNMS/NSMZ/NZMS/MSNZ/SZNM/ZMSN
 // 223/221/222/221/222/222/222/223; N=normal, M=material, S=sentinel, Z=scalar zero. Both
 // reset phases use the same order; original stores and complete body restored.
+// Round 296: Accepted-state support-first, flag-first, scalar-first and interleaved stores, on original
+// and real movement graphs. Scores 221/224/221/221/224/227/224/224. Original complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

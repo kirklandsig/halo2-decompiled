@@ -310,6 +310,9 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
 // Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
 // points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
 // (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte

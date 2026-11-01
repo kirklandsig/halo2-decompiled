@@ -189,6 +189,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // placed after that vector's normalisation, also stops its preload: up.i read directly in the projection's i row
 // 126 (929 bytes, aligned 5), in the dot 126, in the cross after the second normalisation 120 (aligned 11). Lead: a
 // natural form that names up.i before forward.i is created without reading it after up's normalisation.
+// Round 291: up evaluated before forward, returned/pre-call receiver masks and symmetric
+// dot roles, 112/112/153/153/112/112/153/153. Original helper and body restored.
 // Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
 // 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
 // forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register

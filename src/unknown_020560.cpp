@@ -900,6 +900,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // block scope 576/608; `nearest` declared before the count == 1 test 575/607. Still missing there: offset's own
 // 12-byte home at +0x14 (retail stores x into it each iteration), delta.k at +0x28, nearest in EDI, and the
 // fraction reloaded around 0x22750 (ours keeps it in xmm2 in every form).
+// Round 297: Nearest/opposite/both ordinal-first candidate publications 570 each; native unsigned selected ordinals with all four publication pairs 570 each; shared true distance reduction 570. Original state updates, ordinal domains, reductions and complete body restored; frame/input and selected-sample/fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
