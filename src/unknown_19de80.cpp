@@ -410,6 +410,10 @@ static inline bool teams_enabled_19e1c0()
 // `result <= remaining ? result : remaining` 661.
 // Diagnostic (a volatile token read at every compare, reverted): 468, with retail's token_length EDI and per-test
 // token reloads, but a hoisted zero then takes EBX (event to EBP) and `remaining` still stays on the stack.
+// Round 66 (lane 9, fast): every vsnprintf failure as `return remaining;` with the volatile/plain result 439/696;
+// each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
+// token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
+// failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

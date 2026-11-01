@@ -538,6 +538,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // twice-used elapsed values on that graph 420; each with plain word maximum 472/472;
 // terminal reset result bool/long 440/444, each with plain word maximum 448/448.
 // Exact-only reset-result forms and every executable change restored; frame and actor homes remain.
+// Round 66 (lane 9, fast): retail's 0x2683f0, 0x1e2150 and 0x25ac00 take the actor index in EBX, where retail
+// keeps it for the whole function; ours reloads EBX from the stack argument before each. Case 1's 0x25c820 call
+// and the release one made a single call (a `release_only` label) 431 (frame 0xa0, 1616 bytes, the three flags go
+// to stack bytes, but `index` then takes EBX); with the iterator walk 452; the iterator walk reading
+// `iterator.index` at every use 443 (identical to the listed 443); the 0x25d510 step made an extern function and
+// inlined across files 443 (identical; 0x25d510/0x25d580/0x25dac0/0x25b440 still match); the single call with
+// 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
