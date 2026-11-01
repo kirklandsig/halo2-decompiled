@@ -7,6 +7,7 @@
 // the tolerance, the moves run out, or the shapes separate.
 #include <xmmintrin.h>
 #include "pair_agents_2eab70.h"
+#include "closest_hit_301a00.h"
 
 // six vectors copied one at a time (0x2e7d80): where a body sits
 struct class_2e7d80
@@ -117,6 +118,11 @@ class closest_collector_2fe830 : public hit_collector_2fe830
 public:
 	bool has_hit;
 	hit_2fe830 hit;
+
+	virtual void add_hit(hit_2fe830 const *candidate)
+	{
+		((class_301a00 *)this)->add_hit((s_301a00_hit const *)candidate);
+	}
 
 	closest_collector_2fe830()
 	{

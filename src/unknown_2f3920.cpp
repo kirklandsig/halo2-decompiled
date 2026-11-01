@@ -3,6 +3,7 @@
 // (as a free function and as a method), and whether they overlap: the closest
 // points of their segments, in the world, against the sum of their radii. The
 // queries are marked in the timing stream.
+// Both contact entry points share the segment-distance and fallback-normal path.
 #include "timer_mark_2ebc80.h"
 #include <math.h>
 #include <xmmintrin.h>
@@ -132,10 +133,26 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 	body_2f40e0 const *side_b = (body_2f40e0 const *)b;
 	capsule_2f40e0 const *capsule_a = side_a->shape;
 	capsule_2f40e0 const *capsule_b = side_b->shape;
-	contact_2f3920 contact;
+	struct query_head
+	{
+		__m128 direction_a;
+		contact_2f3920 contact;
+	};
+	struct query_tail
+	{
+		__m128 direction_b;
+		closest_points_308590 closest;
+		__m128 ends_a[2];
+		__m128 ends_b[2];
+	};
+	query_head head;
+	query_tail tail;
+	contact_2f3920 &contact = head.contact;
+	__m128 (&ends_a)[2] = tail.ends_a;
+	__m128 (&ends_b)[2] = tail.ends_b;
+	closest_points_308590 &closest = tail.closest;
 	contact.a = a;
 	contact.b = b;
-	__m128 ends_a[2];
 	{
 		c_query_transform const *frame = &side_a->placement->transform;
 		__m128 const *end = capsule_a->ends;
@@ -147,10 +164,9 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 			end++;
 		}
 	}
-	__m128 ends_b[2];
 	{
-		c_query_transform const *frame = &side_b->placement->transform;
 		__m128 const *end = capsule_b->ends;
+		c_query_transform const *frame = &side_b->placement->transform;
 		__m128 *placed = ends_b;
 		for (int count = 2; count != 0; count--)
 		{
@@ -159,16 +175,26 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 			end++;
 		}
 	}
-	__m128 direction_a = _mm_sub_ps(ends_a[1], ends_a[0]);
-	__m128 direction_b = _mm_sub_ps(ends_b[1], ends_b[0]);
-	closest_points_308590 closest;
+	__m128 &direction_a = head.direction_a;
+	direction_a = _mm_sub_ps(ends_a[1], ends_a[0]);
+	__m128 &direction_b = tail.direction_b;
+	direction_b = _mm_sub_ps(ends_b[1], ends_b[0]);
 	int const clamped = function_308590(&ends_a[0], &direction_a, &ends_b[0], &direction_b, &closest);
 	float const radius = capsule_a->radius + capsule_b->radius;
 	float const reach = radius + ((input_2f3920 const *)input)->tolerance;
-	if (closest.distance_squared <= reach * reach)
+	// Retail rejects ordered separation; an unordered comparison continues.
+	if (!(closest.distance_squared > reach * reach))
 	{
 		float const distance = (float)sqrt(closest.distance_squared);
-		if (clamped == 0)
+		if (clamped != 0)
+		{
+			if (closest.distance_squared > 0.0f)
+			{
+				contact.normal = closest.offset;
+				goto normalize;
+			}
+		}
+		else
 		{
 			__m128 across = cross_2f3920(direction_a, direction_b);
 			float length_squared;
@@ -185,20 +211,15 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 				goto normalize;
 			}
 		}
-		else if (closest.distance_squared > 0.0f)
 		{
-			contact.normal = closest.offset;
-			goto normalize;
-		}
-		{
-			float const x = (float)fabs(direction_a.m128_f32[0]);
-			int second = 1;
-			float const y = (float)fabs(direction_a.m128_f32[1]);
-			int third = 2;
-			float const z = (float)fabs(direction_a.m128_f32[2]);
 			int smallest = 0;
+			int second = 1;
+			int third = 2;
+			double const &x = (float)fabs(direction_a.m128_f32[0]);
 			float minimum = x;
-			if (y < x)
+			float const y = (float)fabs(direction_a.m128_f32[1]);
+			float const z = (float)fabs(direction_a.m128_f32[2]);
+			if (y < minimum)
 			{
 				second = 0;
 				minimum = y;
