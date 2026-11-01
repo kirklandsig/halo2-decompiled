@@ -595,6 +595,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
 // ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
 // `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
+// Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
+// `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
+// a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
+// pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -887,6 +891,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
 // 35. Re-measured: copy before the maximum 82, open
 // slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
+// Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
+// the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
+// 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
+// copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
+// as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

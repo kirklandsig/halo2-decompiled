@@ -3528,6 +3528,11 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
 // fast; all three with the native machine-address field copy 131. Original declarations,
 // machine copy, result qualifier and full body restored; full starting count remains 119.
+// Round 21 (lane 17, fast with 0x630f0/0x59e50): the machine copy by `memcpy` from `identity + 0xa` 119 and from the
+// XNADDR `abEnet` 119 (same code); through a named byte source pointer with `memcpy` 151 (463 bytes, as the named
+// source pointer: first attach and merged reason-7 tails retail's, the copy's `lea` folded, the member path, tails
+// and reservation loop one register step behind); the copy declared before the result 121; `return *reason = 7,
+// false;` compiles the same (compile-only); 1-3 dead temporaries (diagnostic) 119 each.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,

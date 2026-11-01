@@ -766,6 +766,12 @@ struct s_device_machine_view
 // behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
 // Matched retail sites that load 16 bits into the pointer's own register (0x3f500, 0x1c7450, 0x1023d0)
 // use the value in 16-bit compares or a phi, never in byte tests.
+// Round 21 (lane 17; compile-only /FAs screen of the file reproduces the listing): on masks + the zero store
+// (122), a two-byte bitfield struct copy tested with `&&` 122, bitfields through a struct-pointer cast of the
+// field 122, a `word const *` to the group's flags 122, a `short` flags local 122, `register` on the group
+// pointer 122 (all the pushed ESI); screens only: `register` on the flags or machine flags, `!= 0` masks, the
+// flags word at its read, machine flags first (ESI); the bitfield copy tested with `&` frees EAX only by
+// spilling the copy to the stack. 1-7 dead temporaries (diagnostic) leave both forms unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
