@@ -534,6 +534,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // inline alone does not move the convention); sample/update declared at function scope 420; the maximum test
 // as `(short)maximum < field` 421; the 0x25d610 test nested under `sample && update` 420; the sampler result
 // clearing the flag with the 0x264b50 call in its else arm 458 (1656 bytes).
+// Round 45 (lane 13, fast with 0x1e34e0): iterator walk 443 (1616 bytes, frame 0x9c; index copy in EBX,
+// actor copy in EDI, retail the reverse); iterator.index at each use 443 (same code); with maximum a plain
+// word 442; with sample/update at function scope 442; with sampled_one declared first 442. The actor's
+// stack passing may come from the build's stand-in caller (a second call site passing a buffered argument).
 // Round 215: terminal maximum publication through native reset/count arms 420;
 // twice-used elapsed values on that graph 420; each with plain word maximum 472/472;
 // terminal reset result bool/long 440/444, each with plain word maximum 448/448.
@@ -545,6 +549,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `iterator.index` at every use 443 (identical to the listed 443); the 0x25d510 step made an extern function and
 // inlined across files 443 (identical; 0x25d510/0x25d580/0x25dac0/0x25b440 still match); the single call with
 // 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
+// Round 229: timer/view-first case orders 30421/34021/34201/34210/30241/32401/32104/34102
+// give 437/434/431/461/441/431/433/452. Fast frame 0xa0 recovered, actor input stays stacked;
+// all original cases, qualifiers, call boundaries and executable body restored.
+// Round 260: tail completion bool/byte/short/long at finalization/entry 437 each;
+// exact-only flags restored; frame 0xa4 and stacked actor input remain.
+// Round 263: Independent native-long sample/update/sampled-one subsets 433/424/430/425/452/425/430; all long with ordinary maximum 445.
+// Original while traversal, Boolean flags, maximum qualifier, workspaces and complete body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -869,7 +880,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
-// score 267 (was 265): actor EBX, prop ESI, squad and unit homes, the type-15 arm and the 0x25c9d0
+// score 257 (was 267): actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
 // call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
 // scheduling before the branch, the suppression/current byte homes swapped ([esp+0x12]/[esp+0x13]),
 // and at the first 0x1c8df0 call retail spills the root into the squad's slot and keeps the hit
@@ -984,6 +995,14 @@ real function_296600(long actor_index, long prop_ref_index);
 // the first 0x1c8df0 call (retail stores it into the squad's slot and loads current into AL, so its hit
 // pointer stays in EDX where ours spills it), the root/priority homes after it, and BLOCKED-BY 0x25cb60
 // (contributor) for the movsx of the sight.
+// Round 38 (lane 15, plain checks; aligned = LCS-aligned differing instructions, 105 at 267): current
+// computed before suppressed 372; the time read before the prop lookup 271; the unit as
+// `object[0xaa] == 0 ? object : NULL` 257 (kept: plain 1256 bytes; the code is now branchless
+// setne/dec/and where retail selects with cmovne from the NULL-first home, aligned 117, so the
+// NULL-first form remains the closer structure once the slot swaps are solved). On it: the ternary
+// inverted 257; time before prop 258; current before suppressed 366; the unit selected right after the
+// object lookup 289; `prop_ref_index ==` operand order 257. Byte homes: ours puts suppressed (3 byte
+// refs plus its address) at [esp+0x12] and current (4 refs) at [esp+0x13], retail the reverse.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
@@ -1006,11 +1025,9 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	s_type_76cf92 *prop = prop_get(reference->prop_index);
 	long time = g_510c54->game_time;
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
-	byte *unit = NULL;
 	bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
 	bool current = *(long *)(actor + 0x338) == prop_ref_index;
-	if (object[0xaa] == 0)
-		unit = object;
+	byte *unit = object[0xaa] == 0 ? object : NULL;
 	if (*(short *)(actor + 4) == 15 && *(long *)(actor + 0x26c) != NONE)
 	{
 		byte *parent = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x26c) & 0xffff) * 12 + 8);

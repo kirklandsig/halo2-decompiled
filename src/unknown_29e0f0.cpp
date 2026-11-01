@@ -77,6 +77,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
@@ -85,6 +86,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
 // and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
 // score 390 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Round 132 (m3 lane 5, fast): root-table test nested under the count test with the pointer declared there
+// (no NULL default) 398; overall result declared first 399; best distance before the selected defaults 398;
+// group bitmap declared before the record/group pointers 412; record pointer after the marker call 420.
 // Earlier: frame 0x68/0x64, induction/endpoint homes and x87 scheduling differ.
 // Earlier: table-pointer roles now agree; frame 0x68/0x64, outer-loop reload placement, inner-loop registers and x87 square order remain.
 // Complete initial guard exits 458; CRT output point copy 416; distance second point by value 569;
@@ -184,6 +189,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // best-distance home agrees at frame 0x64. Separate short/long output-point induction 415/412; with one
 // shared computed step 418/427. Original signed-short input scans, byte narrowing, metric helpers and
 // validator tuples remain; selected-default, bitmap/endpoint, root-table and x87 homes still differ.
+// Round 51 (lane 11, fast): round 86's t19 form rebuilt on this body 437 with the byte selected point,
+// 188 (aligned 46) with it short again; on that graph the existing distance3d (0x3ea30, inlined) for the
+// three point distances with b - a operands 185 (aligned 57), with a - b 216; the distance helper through
+// a vector local with j,k,i / i,j,k / k,j,i sums 188 each (same code). Left on 188: per-call x87 square
+// orders, arg_3 not kept in ESI across the distances to the 0x29de20 call, the found flag stored from AL,
+// the record-index add, the output loop's entry jump. distance3d on the original 418/418.
+// Round 494: complete point-input copies inside squared/length metrics, first/second/both
+// in each alone, then both squared with first/both length: 439/437/473/558/555/787/677/892.
+// Original input reads, metric helpers and entire body restored; selected homes and table roles remain.
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

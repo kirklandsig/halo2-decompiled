@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "unknown_13fd90.h"
 #include "unknown_19c1d0.h"
+#include "matrix_transform.h"
 #include <stdarg.h>
 #include <string.h>
 #include <wchar.h>
@@ -361,12 +362,7 @@ bool g_47ff86 = true;
 
 PRIVATE inline void transform_plane_163db0(transform4x3f const *matrix, s_plane const *source, s_plane *plane)
 {
-	real x = source->normal.i;
-	real y = source->normal.j;
-	real z = source->normal.k;
-	plane->normal.i = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x;
-	plane->normal.j = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x;
-	plane->normal.k = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x;
+	matrix_transform_vector(matrix, &source->normal, &plane->normal);
 	real scale = matrix->scale;
 	real distance = matrix->position.y * plane->normal.j;
 	distance += source->d * scale;
@@ -600,6 +596,17 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // depth and rectangle loads are retail's, only x0's product folds the load depth-first and is one
 // byte short) x0 written depth-first 83 (same code) and x0 computed last 659; the in-place plane
 // transform of 0x184440's file (one-expression z, y, scale * d, x distance) for planes 2 and 3 730.
+// Round 22 (lane 17, fast): the plane helper's normal rows replaced by the existing matrix_transform_vector 28
+// (identical code; kept); the helper forceinline 28 (identical). Per-plane distance order: retail sums planes
+// 0/1 as y, d, z, x and planes 2/3 as z, y, d, x. Any one-expression sum (all 24 term orders) 56, every order
+// canonicalised to z,x,d,y / y,d,z,x / z,y,x,d / z,x,y,d for planes 0-3; the distance as d * scale + dot3f
+// (24 forms: dot arguments, scale local none/first/after the rows, term and product order) best 33 (scale
+// after the rows: planes 1-3 take retail's z, y, d, x, plane 0 z, d, y, x), others 37/52/58/616; on the
+// existing matrix_transform_vector: dot3f 68/81, with the scale local 40, one expression 79; on that 40 form
+// the plane normals' z inputs through rect: plane 0 40, plane 1 674, both 674, all four 671. Diagnostics
+// (dead copies of depth): before plane 2 with the pinned sum, 1-7 copies 36 each (only the x87 error tests
+// flip); before plane 0 on the dot3f form 58/91/75/50/48/52/51 for 1-7, with the per-plane orders
+// shifting: the canonical sum order is a temporary-numbering effect, so a match needs retail's numbering.
 // Round 276: All three transformed-normal results reused for publication and distance: direct/setter
 // publication, with/without all distance-product names 337/337/337/337; matrix-position field view on
 // those four graphs 620/620/611/611. All regress and shorten the body.
@@ -899,6 +906,17 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
 // Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
 // operands fixed in the unrolled loop, flipped in the remainder loop).
+// Round 55 (lane 10, fast): retail follows the source's operand order in the remainder classification
+// loop's j term and in the clip denominator/distance products, ours swaps some of them. The plane pointer
+// const 115 (same code); the classification index declared in the for 115 (same code); the two planes as
+// separate locals 242 (1830 bytes); the negated forward vector computed before plane 0's copy 426, right
+// after plane 0's copy 133.
+// Round 441: indexed near-final/far-input/far-final normal negation loops, subsets 1..7
+// 259/257/259/259/267/259/113; all plus two-component screen loop 232. Two-point gain
+// rejected; original body restored. Early coefficient preload and projection homes remain.
+// Y488: plain near/source/far normal-negation loops, seven subsets,
+// 259/257/259/259/267/259/113; all with short component indices 488.
+// Two-point gain rejected; original body restored. Coefficient/zero XMM roles remain.
 // Round 215: complete classification/denominator/both products 263/247/131;
 // complete numerator products 113; classification/numerator 265; denominator/numerator 251;
 // all three product boundaries 140; existing shared vector addition after scale 115.
@@ -910,6 +928,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // goes through integer registers to the frame); plane 1's negated vector declared at function scope 115 (same code).
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 119 135 130 242 246 135 127, first difference
 // always +0xbb (the e4.i load does not follow the temp count).
+// Y488: plain near/source/far normal-negation loops, seven subsets,
+// 259/257/259/259/267/259/113; all with short component indices 488.
+// Two-point gain rejected; original body restored. Coefficient/zero XMM roles remain.
+// Round 215: complete classification/denominator/both products 263/247/131;
+// complete numerator products 113; classification/numerator 265; denominator/numerator 251;
+// all three product boundaries 140; existing shared vector addition after scale 115.
+// All restored; early coefficient preload and clipping/projection allocation remain.
+// Round 447: double near-sum/near-distance/screen-factor storage, subsets 1..7: 444/434/443/439/444/429/435; single-use clamp at its offset addition 208. Original domains and body restored; coefficient preload and projection homes remain.
 // Round 219: positive visibility on guarded loops, entry-result/projection-input-cursor/shared-count
 // masks 0..7: 236/236/132/132/470/470/470/470. Original culling result, independent counts and
 // projection indexing restored; coefficient preload, zero roles and projection staging remain.

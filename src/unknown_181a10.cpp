@@ -598,6 +598,36 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // All thirteen matched controls survive. Original independent coefficient outputs, geometry-first arm,
 // material receiver, Boolean validity, exits, normal/plane arithmetic and full body restored; frame 0x48
 // versus 0x44 and classifier/plane/output homes remain.
+// Round 45 (lane 13, fast): retail loads the shape data three times in the exclusion test and ends it
+// with setne/test. data as a dword/byte-pointer union with the byte test through the pointer 321 (one
+// shared load); pointer check and byte test as one && bool helper 319; the condition as a named bool 321
+// (same code); a bool helper with early returns 331 (retail's setne/test, loads still shared); that as a
+// single-exit result 331. Original body restored.
+// Round 40 (m3 lane 15, fast = plain): the component check is the inline sequence of src/unknown_1c25a0.cpp's
+// contact_shape_has_material (matched 0x1c5400/0x1d4880), but retail here loads the data field three times and clamps
+// with the constant in the result register (`mov ecx, 1; cmp ecx, edx; jg`), unlike those siblings. A same-file copy
+// of that helper shape 335 (1258 bytes, retail's setne/test), plus the key test through its pin 335; clamp
+// `1 > v ? 1 : (16 < v ? 16 : v)` 321 (same code); MIN(16, MAX(1, v)) written out 341; result-register if form 329
+// (both comparison spellings); two-step clamp 347.
+// Round 23 (lane 18, fast control 321): in the 1..16 classifier, MIN(16, MAX(1, v)) as two named steps
+// 321 (same code); max then an if for the upper bound 321; `limited = 1; if (v >= 1) limited = v > 16 ?
+// 16 : v;` 332 (retail's `mov ecx, 1` preload); the nested preset (`limited = 1; if (v >= 1) { limited = 16;
+// if (v <= 16) limited = v; } `) 329 and with constant-first tests 329 (both bounds preloaded as retail, but
+// `cmp value, const` and the data copied to EAX; retail reads the data field three times, ours once);
+// origin through a point pointer local read x, y, z / z, y, x 323/322. Diagnostics: the byte test in a bool
+// helper 321 (folds); data test, classifier and byte test in a multi-return bool helper 331 (gives retail's
+// `setne al; test al, al`); the data field as a dword/pointer union read as a pointer for the byte 321.
+// Round 443: phase-specific final/surface/material output receivers, seven
+// pointer subsets and full graph with final reference, 344/393/329/321/344/393/329/329.
+// Original output observations, scalar samples, plane math and full body restored.
+// Round 284: existing shared axis-rotation producer, separate/in-place plane output,
+// without/with all four named distance products: 419/419/448/448; shared row-rotation
+// producer 321/321/352/353. Grouping changes were exact-only; all helpers, includes,
+// normal/plane expressions and complete body restored. Frame 0x48 versus 0x44 remains.
+// Round 74 (m3 lane 12, fast): the material read back through 0x1ee410's returned pointer (retail's
+// `mov ax, word ptr [eax]`) 319; the root entity as `root->type == 1 ? root->entity : NULL` then tested 321 (retail
+// loads the type into ECX first; ours still compares memory); both 319; distance computed before the origin
+// reads 322; index/other_index declared before valid 321.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -247,6 +247,17 @@ struct s_free_state_23d260
 // sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
 // k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
 // 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
+// Round 53 (lane 10, fast): retail's side/up block is the matched 0x11d090's code (the same x87 length
+// with side.j squared first, the same scale), but with a constant (1, 0, 0) fallback and the up stores k, j, i.
+// The side normalized in 0x11d090's own form (length `j*j + i*i + k*k` in a local, `else length = 0`, then
+// `if (length == 0.f)` fallback) 119 (retail's x87 length exactly, but the side.i copy is scheduled before
+// the forward.k sine and zero stays XMM3); with `-forward.i` 119; with the epsilon test as `fabs < eps` 119;
+// with side.k assigned first 119; with cross3f_staged for up 289.
+// Round 40 (lane 14, fast): movement.j with the cosine product first 121 (1328 bytes); the rotation's
+// projection and rows each as one expression (0x11d3b0's style) 110 (1330 bytes); the rotation's
+// forward/up pointers declared before the side vector and used for the side and up cross too 289
+// (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
+// pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
 // Round 29 (m3 lane 2, fast; none kept): retail's side block is 0x11d090's code (`w.i = v->j; w.j = 0.f - v->i;
 // w.k = 0.f`, length `sqrt(j*j + i*i + k*k)`, `!(0.0001f > fabs(length))` scale, `else length = 0.f`, then `if
 // (length == 0.f)`), with a constant fallback. That side form 119 (x87 squares j first as retail, but the side.i
@@ -279,9 +290,23 @@ struct s_free_state_23d260
 // forward/up pointers declared before the side vector and used for the side and up cross too 289
 // (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
 // pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
+// Round 55 (lane 10, fast): the side normalized through two-return j-first normalizers with the hand-written
+// up (k, j, i): sum `k*k + j*j + i*i` with every scale `inverse * x` 275; `i*i + (j*j + k*k)` with `k * inv`
+// 269; `j*j + k*k + i*i` with `(1 / m) * i` first 268; the `i*i + (j*j + k*k)` normalizer with cross3f_staged
+// and the forward vector written and read through one `forward` pointer 273 (1330 bytes, first difference +0xa6),
+// with the pointer for the writes only 281.
+// Round 441: existing complete side/up producer with native forward/up ownership and
+// two-use double movement trig values, eight subsets 512/484/474/444/503/477/465/439;
+// separate force-inline declaration 512 (producer remains out of line). Original body and
+// declarations restored; zero/side normalization and up/roll allocation remain.
 // Round 219: native roll/movement input with alternate normalization, staged up cross and repeated
 // double movement trig results, masks 0..7: 257/274/256/289/264/274/258/157. Original input layout,
 // normalizer and complete body restored; zero/side and up/roll allocation remain.
+// Round 334: Frame 0x4c agrees; first +9 is zero XMM3 versus XMM1, then side
+// normalization and up/roll allocation. Uniform named product parts at the actual
+// up-cross/roll-cross/rolled-row expressions, subsets 1/2/3/4/5/6/7,
+// 315/312/129/312/114/257/291; all parts const 291. Every parallel row uses
+// the same form; original arithmetic trees and store phases preserved. Original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
