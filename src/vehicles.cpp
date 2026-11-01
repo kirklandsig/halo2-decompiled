@@ -2453,7 +2453,7 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
 // weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
 // Round 13 (lane 17), at 10 (the same 8 slot lines and the 2-line zero/reload order after the first fmod): torque
-// renamed `engine_torque` 10 (identical); the period as one named pointer for both wraps 65; the contact and
+// renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
 // contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
 // rotation declared in each steering branch 186 (frame 0x40).
 // @retail 0xf1f80
