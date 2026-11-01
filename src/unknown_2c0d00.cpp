@@ -288,6 +288,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
 // Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
 // all original constant lifetimes, qualifiers, buffers and complete body restored.
+// Round 57 (m3 lane 1, fast): retail shares the raised point's slot with the sphere-loop center and
+// reuses location's slot for the object count. Location in its own block ending at the query 925,
+// with the count declared first 925; type-0 center/offset at the other-actor block scope 882;
+// object matrix at the loop-body top 882; sphere center at the object-loop scope 882.
 // Round 479: positive index/visibility/self-vehicle admission subsets 1/2/4/3/5/6/7
 // all 931f (control 931); actual returned object transform 940f. Original gates,
 // defaults, matrix consumers and complete body restored.
