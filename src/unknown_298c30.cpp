@@ -186,6 +186,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 408 (identical code; kept: retail's cursor and count-down are MSVC's strength reduction of this loop); with retail's
 // 16-bit counters (`inc bp`, `cmp bx, 2`): both short 471 (0x29a190 445 -> 699), endpoint index only 417 (1720 bytes),
 // candidate count only 458 (0x29a190 699); named dx/dy for the loop's point distance 411 (1738 bytes).
+// DH round 266: actual two-angle emission table with emission/candidate/endpoint byte-or-short
+// ordinals, all eight combinations 562/543/578/564/562/543/578/564. Plain emission
+// induction shrinks to 1556-1594 bytes and misses frame/entry/cleanup; original restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
