@@ -252,6 +252,15 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// MiniMax I (11-01, later): the left vector declared before the other two vectors, with the left
+// component before them, groups its three stores as retail does: 288 (was 291). Also tried, all
+// worse or identical: the steering sums and the local_16 dot with their terms swapped (291,
+// identical code), the left vector's i taken from the left component (339), the other two vectors
+// swapped (306).
+// MiniMax I (11-01): the distance limit (the setting at local_2+0x44) is read before the local_16
+// test, as retail does, so the setting stays in xmm1 across the branch: 291 (was 300). Left: the
+// second normalize's j product, the left vector's stores and 12-byte slot, the 0x5d0 flag store,
+// the side test's dot order and the local_16 dot's x87 order.
 // score 645 (was 645), coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
 // locals (the 0x44 setting read early, the 0x11cd20 result held until after the side test), kept only with a match;
 // without them the sum splits and store reorders below score 643 (fast), under the 8-point bar. Its tried forms:
@@ -353,10 +362,10 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 	if (function_29cc7e(&local_9) == 0.0f)
 		*(bool *)(local_0 + 0x5d0) = false;
 	real local_10 = (real)sqrt(arg_2->i * arg_2->i + arg_2->j * arg_2->j + arg_2->k * arg_2->k);
-	vector3f local_12 = *g_4687a4;
-	vector3f local_11 = local_8;
 	real left_i = -local_8.j;
 	vector3f local_13 = {-local_8.j, local_8.i, 0.0f};
+	vector3f local_12 = *g_4687a4;
+	vector3f local_11 = local_8;
 	if (!local_2)
 		*(real *)(local_0 + 0x660) = 0.0f;
 	else if (!*(bool *)(local_0 + 0x5d0) || *(bool *)(local_0 + 0x5d2))
@@ -380,11 +389,12 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			if (function_30bf0(&local_14) == 0.0f)
 				local_4 = false;
 		}
+		real distance_limit = *(real *)(local_2 + 0x44);
 		bool local_16 = *(bool *)(local_0 + 0x5d1);
 		if (local_16 && (((vector3f *)(local_0 + 0x5f8))->j * arg_2->j + arg_2->i * ((vector3f *)(local_0 + 0x5f8))->i) / local_10 > 0.5)
 			local_16 = false;
 		short local_17;
-		if (!local_16 && !(*(real *)(local_2 + 0x44) > local_10 && *(bool *)(local_0 + 0x4d5)))
+		if (!local_16 && !(distance_limit > local_10 && *(bool *)(local_0 + 0x4d5)))
 		{
 			local_11 = *arg_2;
 			local_11.k = 0.0f;
