@@ -477,6 +477,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 719/719/716/710; corresponding per-use clearance forms 784/784/802/801. Unscoped output/cosine
 // pair 710 plain, restored as a new unused one-use output workspace; existing reverse/side direction
 // workspaces with separate cosines 767/717. Three- and two-point forms restored; original frame and body retained.
+// Round 338: both shared trig workspaces on the ordinary-result/in-place-scale graph,
+// with live radius/delegated clamp/shared difference subsets 730/784/774/876/730/784/774/876.
+// Original trig homes, radius, clamp, direction helper and full body restored; frame/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

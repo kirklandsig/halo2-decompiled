@@ -667,6 +667,9 @@ bool sound_driver_voice_create_buffer(
 // native conditional/default field construction and nonzero/full-bit tests
 // 135/148/147/144/135/148/147/144. Original complete body restored; spatial/play and zero/input
 // carriers remain. Default-field forms are exact-only post-test flag forms.
+// Round 338: full-width six-bin loop on native block storage, spatial-first/per-phase
+// mixbins/count-before-clear subsets 71/182/71/182/71/181/71/181. Original complete body
+// restored; spatial/play and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
