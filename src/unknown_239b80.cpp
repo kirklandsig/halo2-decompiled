@@ -552,6 +552,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // flag: Boolean departure, heading first, memmove, `||` update and `current` at function scope 253
 // (746 bytes); direct returns 262; short hull count 257; `current` at function scope 245, with the
 // Boolean departure 215; the heading at function scope 231. Original body restored.
+// Round 51 (lane 11, fast): on round 105's done-flag form (153; ours keeps count coalesced with current in
+// ESI across the classifier call and reloads points into EBX after it, retail keeps points in ESI and
+// reloads current = count from memory): short hull count without casts 249 (754 B, caller 0x239d50 80);
+// the index store split from the increment 153; that store before best_distance 153; the hull test before
+// the done flag 201. On the original: the departure flag declared first at function scope, long/bool,
+// 224/218 (767 B; retail's flag sits in the index argument's home, ours gives that home to the hull count).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -818,6 +824,21 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // `points` into ECX at the loop head (ours into EDI, coalesced with the current point), so ECX is never free across
 // the loop there and the previous side stays in memory; a `(void)&` on the previous side, both sides or count changes
 // nothing (env).
+// Round 51 (lane 11, fast): `if (count > 0)` directly around the for loop 211 (893 B): count is then loaded once
+// into ECX (`movsx edi, cx` stride, `test cx, cx` guard), the previous side goes to memory and the loop head
+// takes ECX, all as retail (aligned 85 -> 38); with the fraction as if/else (or a ternary) 92 (890 B, aligned 32,
+// eps/one in XMM4/XMM5): left are the zero in XMM1 (retail XMM2), the intersection registers permuted (retail
+// dy XMM0, denominator/fraction XMM1), `i = 0` stored after the guard (retail before `jle`) and count hoisted
+// into ECX for `result = count`. The guard repeats the loop's first test, so it needs a match. On that graph:
+// dx written at its uses 147 (887 B, aligned 27, zero XMM2); dy at its uses 300; both 289; dx first 95;
+// outputs y first 97; clamp as if/else-if 92; denominator terms swapped 92; `fraction = 0.f` default before the
+// deltas 97; fraction/dx/dy declaration orders 92/95/92/92; vector2f delta j-i/i-j/initializer 91/94/94;
+// polygon_difference_23a220 deltas 94; clipped store after denominator/clamp/deltas 286/250/99; `result =
+// count` after the copy 264; NONE arm first 96; index `= 0` before the guard 249 (129, the original code, without the else).
+// Without the guard: `if (count > 0)` around the previous point too 274; `if (count != 0)` 265; index at
+// function top with the guard 263; guarded do/while 128; while loop / function-scope index 129 each; previous
+// distance from points[count - 1] 268; count read through its address 129; 1-6 unused locals 129 (diagnostic);
+// previous side volatile 149 (diagnostic, count still read twice; reverted).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

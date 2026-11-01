@@ -176,6 +176,12 @@ real normalize2d(point2f *arg_0);
 // integer copy through its `long *` and the output stays EBX); that with the to-centre vector initialised
 // from the input point and differenced in place 233 (1023), with `2.0f - distance` in the normalize block
 // 274, with the centre/radius call before the input copy 220. Retail's inlined radius is a movss load.
+// Round 51 (lane 11, fast): the found-flag clear before the actor lookup 261, without the output
+// self-address read 275 (both change the convention: 0x1ba5c0/0x1bdad0/0x1bff80 stop matching); the point
+// copy declared at function scope 211 (same code); the output self-address read after the actor lookup 211
+// (same code); the object lookup before the point copy 211 (aligned 170 -> 200); the radius after the
+// centre copy 215. The inline route to 0x30c60 needs its definition changed (unknown_030290.cpp, held by
+// another lane this round).
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

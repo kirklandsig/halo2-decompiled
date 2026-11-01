@@ -367,10 +367,10 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
 // then differs in ~417 instructions, so the 228 body is kept.
-// score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // Earlier: frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
 // Round 46 leads (aligned diff 59 at 228): retail's failure block stores result = false itself and the
 // route switch has a real default storing false (`default: result = false; break;` and `failed:
@@ -468,6 +468,14 @@ struct s_1f8a70_actor
 // EDI is pushed before the first test); unit_mode renamed a_mode/z_mode 270 each (same code: the slot
 // stays at +0, so retail's +2 is not name order). Retail's route_mode is a dword slot read as a word
 // (movsx/cmp word) and its result a memory byte everywhere but the first exit (BL).
+// Round 51 (lane 11, fast): VALUE BUG still in this body (retail case 3 shares case 5's tail: node NONE,
+// radius 0, route_mode = 1). On the value-fixed graph (case 3 in case 5's order with route_mode = 1, a real
+// route default storing false, `failed: result = false;`) 270 (1636 B, aligned 70), the same without the
+// result initializer 270; short route_mode 431 (it takes EDI from NONE); short route_mode with a named
+// `reachable` (radius != 0 || node != NONE) test 400, with the negated `||` written inline 431; the named
+// test alone 404; the first exit through a shared final `return result;` (if/else tail, one goto) 367
+// (1652 B), with the initializer 371. Retail tests route_mode as a word (`movsx ecx, word`), materialises
+// `node != NONE` with setne before its test, and keeps the first exit's false in BL.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
