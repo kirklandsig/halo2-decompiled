@@ -1195,7 +1195,9 @@ void __cdecl function_24970(s_histogram_state *state)
 // subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
 // place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
 // LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
-// none changes the pair.
+// none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
+// in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
+// subtraction readback plus final memset 35; a named post-store zero used twice 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1918,6 +1920,12 @@ struct s_filter_rows
 // Round 40: same-file forceinline/inline helper taking the slot pointer 17/17,
 // with only the 0x1c590 call 17; `__forceinline` declaration of 0x1cc30 at file
 // or block scope with function_1cc30(12) 28/28 (not inlined).
+// Round 35 (fast): a slot pointer read for 0x1c590 and again for an ignored 0x1cb70 call 25 (the call
+// stays; the first read still folds to +0x64 and the add is built apart); the same with 0x1cb70's result
+// in an unused local 17 (the call is dropped at link time, the read still folds); `function_1cc30(12)`
+// here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
+// an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
+// inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -3287,6 +3295,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // mode-zero RGB 972; pair/RGB 949; final word 1100; pair/final 1074;
 // RGB/final 1100; all 1074; all/full alpha 1083; first/second word alone
 // 954/967. Pair kept; mode-bound/save roles and state expansion remain.
+// Round 217: Complete span/scaled-endpoint/center-term expression boundaries, seven subsets,
+// then all with immutable normalization reciprocal: 1083/1083/1083/1083/1083/1083/1083/1083. Original arithmetic-expression spellings restored.
+// Selector 3 and full-word alpha, exact-only sampler/upper-default/live-field subsets: 1085/1092/997/1102/1122/1147/1124/1170. No nonmatching selector-3 form retained.
+// Clean upper-default clamp with original/full-word alpha: 1099/1100.
+// All clean forms restored too; no eligible gain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

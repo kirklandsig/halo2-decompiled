@@ -487,6 +487,12 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // outside the scan [56]. Without it: found flag [86] (330 bytes), with a selection pointer or a found
 // pointer [86], long index [86] (322 bytes), do-while scan [86], squad index stored before next [85], index
 // declared just after the walk [88], in the definition block [93] (each still with the zero register).
+// Round 46 (lane 1, fast): the entries select as `!alternate ? +0x58 : +0x60` 74 (retail's arm order,
+// unchanged); the index declared `= 0` at the top of the flags-test block 92, just before the loop 92; with a
+// scan-local index, the count read through the slot in both tests 92, the `!alternate` select 92, `index ==
+// count` 92. Diagnostics: the scan as a forceinline bool helper (found returns true) gives retail's threaded
+// exits at 336 bytes, 94 (zero register kept); without `next = 0` as well 96 (zero register gone, walk
+// squad/definition swapped): the zero register is that constant coalesced with a scan-local index.
 // Round 56 (lane 16, fast): the index declared in the scan block 92 (337 bytes: retail's prologue and the flags in
 // memory, `or dword [esp+0x10], 1`, but squad/definition EAX/ECX swapped and EBP a zero register that is also the
 // index); with a found flag 94 (336, retail's threaded exits); without the `next = 0` store (diagnostic) the zero
@@ -1246,6 +1252,13 @@ struct s_squad_tree_definition
 // (retail's folded load, dead add and `mov eax, ecx` appear, but the parent lookup sits before the branch);
 // pass-4 index as `(long)i` 31; a pass-4 pointer to the parent field 31; pass-3 test through the local pool's
 // element 58; test-only parent locals with the use re-reading the field, pass 3/pass 4/both 31/31/31.
+// Round 46 (lane 1): retail's shape needs a second read of the parent field in each then-block, merged with
+// the first before the test's value is forwarded: an unused `squad_group_get(field)` local ahead of pass 3's
+// parent lookup and ahead of pass 4's call gives a byte match (fast and plain; kept: an unused getter result,
+// kept only with a match, as the release build of a compiled-out check would leave it), pass 4's
+// alone 40 (its code then retail's, the loop alignment off). Natural second reads in pass 3: the first child
+// read through a second getter after/before the parent local 53/53 (one +4 field pointer for the load and the
+// store), through the local pool 105 (358 bytes); the getter form with pass 4's unused local 34.
 // @retail 0x2009d0
 void function_2009d0(void)
 {
@@ -1272,6 +1285,8 @@ void function_2009d0(void)
 		s_squad_group_datum *group = &((s_squad_group_datum *)groups->data)[(word)i];
 		if (group->parent_index != NONE)
 		{
+			// unused: the release build keeps only the lookup (its check is compiled out)
+			s_squad_group_datum *checked_parent = squad_group_get(group->parent_index);
 			s_squad_group_datum *parent = squad_group_get(group->parent_index);
 			long child = parent->first_child_index;
 			if (child == NONE)
@@ -1293,6 +1308,8 @@ void function_2009d0(void)
 		s_squad_datum *squad = squad_get(i);
 		if (*(long *)squad->unknown6c != NONE)
 		{
+			// unused: the release build keeps only the lookup (its check is compiled out)
+			s_squad_group_datum *checked_group = squad_group_get(*(long *)squad->unknown6c);
 			#pragma inline_depth(0)
 			function_205280(*(long *)squad->unknown6c, i);
 			#pragma inline_depth()
@@ -2125,6 +2142,21 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 63 (lane 12; an LTCG env link reproduces the build): on 0x203d70's loop (71) an early `return` when the
+// +0x7e test fails 89 (220 bytes); the store from `iterator.squad_index` 78 (185, 0x203d70 drops to 34); a named
+// flag local before the tests 71; iterator/actor declared at the top 71. Same code as the 71 form (env): the
+// `continue` and `== false` tests, squad_get, an actor index local, the header step, `(void)&` or one read through
+// the parameter's address at the lookup, the call or the store. Diagnostics: with the squad dead after the loop the
+// parameter takes EBP (loaded from the stack, so retail's stack convention follows from EBP) and the loop gets
+// retail's EBX/EDI/ESI; with the squad live, only a parameter use ahead of the 0x1e11b0 call each pass gives it a
+// register (then EBX, passed in EBX) and splits the squad pointer as retail does; two uses after the call do not.
+// Round 37 (m3 lane 14, fast), on 0x203d70's inline-step loop with the word flag store and full-width
+// return (71, 191 bytes): iterator declared at function scope 71; actor index declared at function scope
+// 71; loop pointer declared in the while condition 71; squad_get(squad_index) at every squad use 92 (224);
+// early return for the tick test 89 (220).
+// Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
+// 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
+// flag store with the short-view return 65 (206).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2892,6 +2924,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 119 (lane 5): the order/pending part as a forceinline or plain inline helper taking the index and squad
 // 50/50 (copy-propagated); the trigger part's squad re-fetched at the join through squad_get(arg_1)/(word)arg_1
 // 199/212 (the reload stays); the follow-up arm without the short casts 50.
+// Round 46 (lane 1): 0x290e20 already takes its NONE in EBX as in retail. Diagnostics: the trigger loop's
+// 0x290e20 call, the 0x204d30 call or the last 0x1fb8a0 call given 0 for the index 87/49/54, the reload stays
+// in each. The trigger pointer declared at function scope 50; the optional output, the counter output or the
+// task declared at function scope 59/50/50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

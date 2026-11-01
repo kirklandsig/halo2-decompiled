@@ -1435,6 +1435,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 555/555/553/553/553/553; immutable/native component-publication 555/555.
 // Frame remains 0x2c; every form puts caller at 442 versus 364. Original
 // input observations, native vector, length expression and complete body restored.
+// Round 268: shared final color-scale scalar pairs 1-2/1-0/2-0/all, original luminance
+// workspace 567 each; split luminance producers 529/529/529/567. Frame stays 0x2c;
+// caller 364 and exact caller survive all eight. Original scalar graph and body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

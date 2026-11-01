@@ -79,6 +79,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // moves. Tried: rotating g_467104 in place (368), the vector by value into an out parameter
 // (386), in-place scalar locals (377), accumulating one sum variable (377), aliasing in/out (639,
 // wrong), both angles hoisted (361), second rotation first (372), sine before cosine (357).
+// Round 38: retail writes each rotated component straight back to g_467104 (only i and j are copied to the stack, k is
+// re-read from memory) and the second pass reads g_467104 back, so the in-place form is the closer shape: in place
+// (368, frame 0x78, 633 -> 548 aligned differences), in place with both angles as named locals (353; the 0.3 angle goes
+// to SSE where retail keeps both angles on the x87 stack), in place with the squares before sine/cosine (390), in place
+// with named sine products (356), in place with each rotated vector stored right after its own local (368); on the
+// in-place + named-angles form: the matrices declared second, first (353), the angles declared before them (353).
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -742,6 +748,11 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // a pointer to the +0xe0 field for the tests, `NULL`/`true` spellings of the arguments, a local for
 // the second tag read after the call. Retail never takes g_4858c4's address, so its reload means
 // retail's 0x1bd50 counts as writing it (the same symbol as a global 0x1bd50 stores, a structure?).
+// Round 186: a store to g_4858c4 added to 0x1bd50 as a diagnostic gives retail's reload exactly, so the
+// cause is outside this body: g_4858c4 and g_485a58 (which 0x1bd50 writes) look like members of one
+// retail storage struct, BLOCKED-BY g_4858c4's definition (src/unknown_030290.cpp). Tried (all 26 unless
+// noted): `_ReadWriteBarrier()` after the call; the signature test nested in its own `if`; the fields
+// read by index (`((long *)g_4858c4)[0x38]`); `&& tag` for `!= 0`; the flag stored after the call 31.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1334,18 +1345,14 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
 }
 
 #include <math.h>
+#include "vector_angles.h"
+#include "vector_products.h"
 
 extern transform4x3f *g_4687d0;
 void function_146de0(void);
 void function_146b80(void);
 int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, transform4x3f *result);
 
-// score 96 (was 116): what still differs is the x87 start (retail loads the heading once and
-// keeps it on the stack; here the reference is re-read) and the loop base register (retail
-// ebp = out + 0x30, here + 0x2c). The three axis vectors are one matrix3x3, as retail copies
-// them with one rep movsd. Indexed loop keeps the stack convention (pointer loop: 145, register
-// convention). Tried: heading as double (148, pushes esi/edi/ebp at entry), as real (147),
-// pitch as a double local (161), the old volatile copy loop (116).
 // @retail 0x3ebd0
 bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matrices, transform4x3f *out, long count)
 {
@@ -1362,11 +1369,8 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         byte *definition = NULL;
         if (index != NONE)
             definition = g_4e3b44[index & 0xffff].bytes;
-        real const &heading = *(real *)(definition + 0x80);
         vector3f forward;
-        forward.i = (real)(cos(heading) * cos(0.0));
-        forward.j = (real)(sin(heading) * cos(0.0));
-        forward.k = (real)sin(0.0);
+        direction_from_angles(&forward, *(real *)(definition + 0x80), 0.0f);
         matrix3x3 axes;
         axes.forward = forward;
         axes.left.i = forward.k * g_4687b0->j - forward.j * g_4687b0->k;
@@ -1381,12 +1385,9 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         transform.position.z = *(real *)(definition + 0x18) * g_4b9da0.z;
         for (long i = 0; i < count; ++i)
         {
-            transform4x3f *destination = &out[i];
-            *destination = matrices[i];
-            destination->position.x += offset->i;
-            destination->position.y += offset->j;
-            destination->position.z += offset->k;
-            function_142a60(&transform, destination, destination);
+            memcpy(&out[i], &matrices[i], sizeof(transform4x3f));
+            vector3f_add((vector3f const *)&out[i].position, offset, (vector3f *)&out[i].position);
+            function_142a60(&transform, &out[i], &out[i]);
         }
         result = true;
     }
@@ -1423,18 +1424,9 @@ struct s_320b0_box
     vector3f radius;
 };
 
-// score 98 (was 103): the 1.0 held across the loop sits in xmm4 here, in xmm3 in
-// retail, and the scale temporary the other way round; ours also folds the
-// last term's matrix element as a memory operand (`movaps; mulss [mem]`) where
-// retail loads it first. The compiler orders each sum by the order the three
-// coordinates are declared in, not by the source order of the terms; declaring
-// z, y, x gave 99 (x, y, z 103, y, z, x 104, z, x, y 105, y, x, z 106), and
-// writing the scale test as `1.0f != scale` took one more. Copying the point
-// through a point3f local spilled it to the stack (much worse).
 // @retail 0x320b0
 bool function_320b0(s_320b0_box const *box)
 {
-    real const volatile *box_scale = &box->matrix.scale;
     byte *context = (byte *)g_547f88.context;
     box3f bounds;
     bounds.x0 = 0.0f - box->radius.i;
@@ -1450,45 +1442,41 @@ bool function_320b0(s_320b0_box const *box)
     {
         {
             long i = edge * 2;
-            real z = ((point3f *)edges)[i].z;
-            real y = ((point3f *)edges)[i].y;
             real x = ((point3f *)edges)[i].x;
-            real scale = *box_scale;
-            if (1.0f != scale)
+            real y = ((point3f *)edges)[i].y;
+            real z = ((point3f *)edges)[i].z;
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
         {
             long i = edge * 2 + 1;
-            real z = ((point3f *)edges)[i].z;
-            real y = ((point3f *)edges)[i].y;
             real x = ((point3f *)edges)[i].x;
-            real scale = *box_scale;
-            if (1.0f != scale)
+            real y = ((point3f *)edges)[i].y;
+            real z = ((point3f *)edges)[i].z;
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
     }
     s_bounds3d projected;
     bool visible = function_1652e0((s_view *)(context + 4), *(real *)(context + 0x74), transformed,
         24, NULL, NULL, &projected, true, false);
-    bool overlaps = projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
+    visible &= projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
         projected.y1 >= *(real *)(context + 0xac) && *(real *)(context + 0xb0) >= projected.y0;
-    return visible & overlaps;
+    return visible;
 }
 
 PRIVATE __forceinline real random_signed_value(s_random_globals *random)
@@ -1708,6 +1696,8 @@ PRIVATE inline real clamp_2e9e0(real value)
     return value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
 }
 
+real game_time_get_seconds();
+
 // score 507 (was 508, 594 originally): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
 // scales multiplied by size into the two float args). Checked against retail block by block (0x2e9e0-0x2f2ca, 2026-10-31): every
@@ -1724,12 +1714,16 @@ PRIVATE inline real clamp_2e9e0(real value)
 // whatever order the terms are written in (3 orders, 507); 0.0/1.0 are reloaded instead of kept in xmm5/xmm6.
 // Tried: far_distance read in place (552), all clamps as PIN (543), declaration order of the out locals (no change),
 // attenuation hoisted together with animated (576), several spellings of the hash sum (548), the flags dword kept in a local
-// (590), camera sums as separate double locals (no change).
+// (590), camera sums as separate double locals (no change). Round 38: the time is the existing game_time_get_seconds
+// (0x146630, the same code; 507). The `D3DDevice::SetVertexData2f` member form makes LTCG inline the push-buffer write
+// as retail does (2285 bytes = retail's, definition in ebx and NONE in ebp as retail) but scores 512 because the stack
+// slots still differ (retail's frame is 0x94; aligned differences 439 -> 370); `if (!(visibility > 0.0f))` gives
+// retail's comparison order (506; 511 with the member form).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
     long tag = NONE;
-    real time = g_510c54 && g_510c54->active ? g_510c54->game_time * g_510c54->rate : 0.0f;
+    real time = game_time_get_seconds();
     point3f position;
     vector3f direction;
     color3f color;
@@ -2178,7 +2172,9 @@ bool function_39a80(byte *state)
 
 
 
-// score 193 (was 324): PIN reevaluates the clamped expression as retail does (the target's
+real magnitude3d(vector3f const *v);
+
+// score 182 (was 193, 324): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2186,11 +2182,16 @@ bool function_39a80(byte *state)
 // first/second vectors in either order and operand order of the scalings (193-214), b before a (279),
 // the dot test last (205), angle and cosine spelled separately (193), the current length as its own named local before the PIN (217), as an assignment inside the PIN (193).
 // Retail also spills a second temp at +8 for rotated.i and orders sine/cosine slots (+0x10/+0xc) differently; the rotation arithmetic differs from there on.
+// Round 38: both lengths are the existing magnitude3d (0x24590; retail's x87 length code is its body), 193 -> 182; the
+// frame (length slot) and the cross product's operand registers still differ. Tried: first rotated in place with named
+// cross terms (the 0x11d3b0 shape, 194), vector3f_scale for both normalizations (199), the six normalized components
+// interleaved first.i, second.i, first.j, first.k, second.j, second.k (188; per component 190), a named length local
+// before the PIN with magnitude3d (282); the two dot products through the existing dot3f (182, same code, kept).
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
-    real a = PIN((real)sqrt((double)current->i * current->i + (double)current->j * current->j + (double)current->k * current->k), 0.0001f, 10.0f);
-    real b = PIN((real)sqrt((double)target->j * target->j + (double)target->k * target->k + target->i * target->i), 0.0001f, 10.0f);
+    real a = PIN(magnitude3d(current), 0.0001f, 10.0f);
+    real b = PIN(magnitude3d(target), 0.0001f, 10.0f);
     vector3f first, second;
     real inverse = 1.0f / a;
     first.i = current->i * inverse;
@@ -2200,7 +2201,7 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
     second.i = target->i * inverse;
     second.j = target->j * inverse;
     second.k = target->k * inverse;
-    real dot = second.k * first.k + second.j * first.j + second.i * first.i;
+    real dot = dot3f(&second, &first);
     if (fabs(dot) < 0.9999f && a > 0.0001f && b > 0.0001f)
     {
         real angle = (real)(acos(dot) * step);
@@ -2210,7 +2211,7 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
         axis.k = second.j * first.i - first.j * second.i;
         function_30bf0(&axis);
         real sine = (real)sin(angle), cosine = (real)cos(angle);
-        real projection = (axis.k * first.k + axis.j * first.j + axis.i * first.i) * (1.0f - cosine);
+        real projection = dot3f(&axis, &first) * (1.0f - cosine);
         vector3f rotated;
         rotated.i = projection * axis.i + cosine * first.i - (axis.k * first.j - axis.j * first.k) * sine;
         rotated.j = projection * axis.j + cosine * first.j - (first.k * axis.i - axis.k * first.i) * sine;
@@ -2262,10 +2263,18 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 139 (r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// score 132 (was 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
+// Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
+// (loaded once, re-read at the loop top) with i in esi, the index in ebx, the object in edi and the
+// cursor in ebp; ours gives `list` ebp. `g_547f98` read at each use instead of the `list` local 113 | 77
+// (frame 0x9c, retail 0xa0, so not kept), with `!(depth >= 0.0f)` 111 | 75, with the camera fields 110
+// | 75, with `g >= 0 ? (g <= 3 ? g : 3) : 0` 113 | 83; `!(depth >= 0.0f)` alone 132 | 69 (retail's
+// `comiss depth, 0; jae`); the depth as `g_4b9e14.right.k * x + up.k * y + forward.k * z + position.z`
+// 133 | 68. The view/count slots are swapped against retail as in 0x33400 (view is register-assigned
+// at the clamp's join, then spilled: `xor eax, eax` for the zero arm and a dead reload).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2925,6 +2934,18 @@ s_cached_input_list g_5246f8[4];
 // `if (count > 0)` guard, `view` as if/else or the alpha/special locals hoisted; the list arrays
 // hoisted 149, a pointer-compare limit 145; `view` computed after the loop 124 but the list
 // pointer then moves to ebp.
+// Round 186 (a --fast image with 0x3e9c0's other callers' files reproduces the full build): without
+// the volatiles the body is retail's nearly everywhere (aligned 45 against 76) but esi/edi are pushed
+// in the prologue, the clamp's zero comes from eax with a dead reload and selected/view swap slots:
+// 130. On that base: clamp re-assigned 134, `g >= 0 ? (g <= 3 ? g : 3) : 0` 129, if/ternary clamp 130,
+// if/else-if clamp 134, clamp at the tail 114 (list back on the stack), `if (count > 0)` 130,
+// `!(depth >= 0.0f)` 130 (retail's comiss order), camera-field depth 129, selected renamed 130,
+// declaration orders 132-137. On this form: `!(depth >= 0.0f)` 98, camera fields 100, both 100,
+// `&g_5246f8[view]` at both calls 99. Cause of the entry pushes: LTCG keeps the stack 8-byte aligned
+// down to 0x3d7f0 (object_view_distance's `double` locals; see 0x335e0's note). With those as real
+// (diagnostic only, 0x3d7f0 gets worse) the volatile-free body pushes esi/edi after the count test as
+// retail does (aligned 25); then only the clamp's zero arm, its dead reload and the selected/view
+// slots remain (130 positional from the two-instruction shift).
 // @retail 0x33400
 long function_33400(byte const *list, s_cached_input *output, long mode)
 {
@@ -2965,6 +2986,12 @@ long function_33400(byte const *list, s_cached_input *output, long mode)
 }
 
 struct s_sort_record;
+/* an entry of the scenario's tag reference block at +0x37c, indexed by a placement record's first byte */
+struct s_placement_tag_reference
+{
+    dword group_tag;
+    long tag_index;
+};
 typedef bool (__stdcall *t_41640_fill)(long, void *, long, long, long, void *, s_sort_record *);
 typedef void (__stdcall *t_41640_draw)(long, long, long, long, long, dword, byte *);
 bool __stdcall function_4de20(long, long, long, long, long, long, s_sort_record *);
@@ -2974,6 +3001,16 @@ void __stdcall function_4e260(long, long, long, long, long, dword, byte *);
 void __stdcall function_4ebd0(long, long, long, long, long, dword, byte *);
 void __stdcall function_4ede0(long, long, long, long, long, dword, byte *);
 void __stdcall function_4efa0(long, long, long, long, long, dword, byte *);
+
+// The draw callback of the sixth placement type. It forwards to the same routine as the fifth
+// type's (function_4efa0), so the linker folds the two identical bodies into one; retail's
+// table setup still treats them as two different addresses (both are stored as immediates).
+void __stdcall draw_placement_type_5(long tag, long context, long first, long second,
+    long third, dword handle, byte *material)
+{
+    function_4ede0(tag, context, first, second, third, handle, material);
+}
+
 void function_40e30(short group, long tag, real distance, long level, short kind,
     dword and_mask, dword or_mask, t_41640_fill fill, dword value, void *context);
 point3f *function_3f220(dword a, dword b, dword c, point3f *out);
@@ -2985,13 +3022,6 @@ real g_525980[3];
 struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
-// score 155 (was 201; reduced image, so call targets are noisy): remaining differences are
-// the retail tag lookup (`lea eax,[ecx+eax*8]` then `[eax+4]`, ours folds it into one address),
-// the callback index (retail scales it once: `shl eax,2` then `[esp+eax+0x50]` / `[esp+eax+0x68]`),
-// the order of the radius multiply against the z offset, and the stack slots of the loop
-// counters (0x20/0x24 swapped). Tried: `signed char definition_index` (retail tests `al` before
-// the movsx, and the listing is closer, but the length shift makes the score 180), index*size
-// written before the base pointer for part/entry (155), the tag as a byte pointer plus 4 (155).
 // @retail 0x41640
 void function_41640(void)
 {
@@ -2999,7 +3029,7 @@ void function_41640(void)
         (t_41640_fill)function_4dfa0, (t_41640_fill)function_4e0d0,
         (t_41640_fill)function_4e0d0, (t_41640_fill)function_4e0d0 };
     t_41640_draw draw[6] = { function_4e260, function_4ebd0, function_4ebd0,
-        function_4ede0, function_4efa0, function_4efa0 };
+        function_4ede0, function_4efa0, draw_placement_type_5 };
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     if (!g_4ba025) return;
     byte *definitions = (byte *)g_4e0350;
@@ -3019,13 +3049,14 @@ void function_41640(void)
             byte *record = *(byte **)(table + 0x1c) + record_index * 24;
             s_geometry_block_info *block = (s_geometry_block_info *)(*(byte **)(table + 0x14)
                 + *(short *)(record + 6) * 0x2c);
-            long definition_index = (signed char)record[0];
+            signed char definition_index = record[0];
             if (definition_index < 0 || definition_index >= *(long *)(definitions + 0x378)
                 || *(short *)(record + 0xa) <= 0 || !function_12de70(block, 3)) continue;
-            long tag = (*(long **)(definitions + 0x37c))[(signed char)record[0] * 2 + 1];
-            if (tag == NONE) continue;
-            byte *definition = g_4e3b44[tag & 0xffff].bytes;
+            s_placement_tag_reference const *reference =
+                &(*(s_placement_tag_reference **)(definitions + 0x37c))[(signed char)record[0]];
+            if (reference->tag_index == NONE) continue;
             long part_index = record[1];
+            byte *definition = g_4e3b44[reference->tag_index & 0xffff].bytes;
             if (part_index >= *(long *)(definition + 0x10)) continue;
             byte *part = *(byte **)(definition + 0x14) + part_index * 20;
             long instance = record[2];
@@ -3038,10 +3069,10 @@ void function_41640(void)
             dword packed = *(dword *)(record + 0x14);
             point3f decoded;
             point3f position = *function_3f220(packed & 0x3ff, (packed >> 10) & 0x3ff, packed >> 20, &decoded);
+            real radius = record[3] * 0.0313725508749485f;
             position.x = node->center.x - 4.0f + position.x;
             position.y = node->center.y - 4.0f + position.y;
             position.z = node->center.z - 4.0f + position.z;
-            real radius = record[3] * 0.0313725508749485f;
             short section = *(short *)(record + 4);
             if (section == NONE || !function_1321f0(section, (s_1321f0 const *)&g_547f88)) continue;
             long frustum = ((signed char *)g_547f88.indices)[section];
@@ -3054,11 +3085,8 @@ void function_41640(void)
                 {
                     handle.fields.record = *(long *)(range + 0x14) + i;
                     handle.fields.distance = distance_class;
-                    long callback_index = part[4];
-                    t_41640_fill selected_fill = fill[callback_index];
-                    t_41640_draw selected_draw = draw[callback_index];
                     function_40e30(0, material, 10000.0f, 0, 0xffff, NONE, 0,
-                        selected_fill, (dword)selected_draw, (void *)handle.value);
+                        fill[part[4]], (dword)draw[part[4]], (void *)handle.value);
                 }
             }
         }
@@ -3131,7 +3159,14 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // blocks (456), block-scoped locals (653), pairs loop (906), sum operand permutations per axis (no change),
 // 0.0f - radius (464), a negative_radius local (464), -radius in the offsets (405), four separate offset
 // locals (396, frame 0xe4), copying collision.point to a local origin (398, real 12-byte copy), a scale local /
-// x *= scale / reordered x sum in the helper (no change).
+// x *= scale / reordered x sum in the helper (no change). Round 38: the vertex colour as the existing color4f (alpha
+// first, red/green/blue 1.0) gives retail's 0xe0 frame: retail spills alpha at +0x74 and keeps the colour's other 12
+// bytes unwritten (388, first difference +0x30, not kept: -6); left to differ: retail spills radius at its definition
+// (+8, -radius at +0xc) and keeps the scale in xmm5. Also tried: alpha before the corners (413), alpha or the
+// corners/offset declared at function scope (394), color4f plus radius after the matrix call (391), plus offset
+// declared before corners (388), plus the offsets through real_point3d_set (389), plus the corner helper adding the
+// origin after the transform (`origin->x + transformed.x`, as retail orders that add; 402, 1786 bytes), plus the
+// colour's red/green/blue set before alpha or the colour declared at function scope (388).
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -3396,6 +3431,13 @@ byte g_509413;
 // EBX (both still unmatched), where ours uses EAX plus a stack word and EDX; retail also
 // zeroes the flags from the loop's zero register. Reading the two gates as `if (!a || !b)`
 // and storing literal true saves 4 bytes (143 to 139) but leaves the score at 42.
+// Round 186: ours pushes at entry because LTCG keeps an 8-byte aligned stack down to function_3d7f0
+// (via function_33400): object_view_distance's `double` locals. With them as real (diagnostic) or the
+// distance through the existing distance3d (0x3ea30), the gates come before the pushes as in retail
+// (40), but 0x3d7f0 gets worse (177, 189), so neither is kept. With 0x33400 volatile-free (list in EBX)
+// this body is retail's except the frame (0x284: the alignment), the entry pushes and 0x1ddd0's ESI/EDI
+// arguments. Also tried: `if (a && b) { ... }` 42, the records declared before it 42, two separate
+// early returns 42.
 // @retail 0x335e0
 void __stdcall function_335e0(long mode)
 {
@@ -4029,6 +4071,15 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // keeps the raw g_4ba022 byte in the slot (removes the extra `mov [esp+0x1c],1` stores and matches
 // pass 8, 6 differing spots left, but 26 bytes short so the score is 193), the volatile spelling
 // from 0x423c0 (209), `enabled = enabled && extra` (213).
+// Round 186: LCS-aligned this body is only 12 instructions off (the positional count is the shifts):
+// the early `enabled = 1` stores, pass 3's late stores, pass 8's raw gate byte, the dead g_485898 loads
+// of the three no-cull passes and function_14b60's eax argument. A gate pointer (`byte const *gate`,
+// NULL for the ungated passes, `if (enabled && gate) enabled = *gate;`) leaves 6 (193 positional,
+// 958 bytes): the dead loads only appear when 0x44370 itself is inlined at link time (a file-local
+// copy folds them away), and 0x14b60's register argument needs its body (disabled in its owner's
+// file because it moves matched 0x14ac0's frame). Also tried: `enabled &= extra_enabled` 191,
+// `!(g_485898 >= 4 && g_485898 <= 7) && normal_cull` 138, 0x44370's `>= 4 && <= 7 ? 0 : cull`
+// 138 (cull arms reversed), `if (enabled && extra_enabled != 1)` 167.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -4104,7 +4155,12 @@ bool function_13630();
 // local set inside a test 327, bool/byte/long locals, if-else, ternaries, two calls (447, tail duplicated) 273-357); (5) 0x3ba90 returns long here but retail
 // stores only its al (bool), which needs the definition in unknown_03bcb0.cpp changed to bool
 // (-1 instruction, 2bcd0 354 only because the shift moves). Tried: a plain {0} parameter block (398, dead
-// zero stores dropped), the helper-returned block (320 before the memset form).
+// zero stores dropped), the helper-returned block (320 before the memset form). Round 38: the weapon tag read
+// straight from the object table without the one-use object local (331, kept); `!(g_4c19ac > 0)` (331, still
+// setle); the weapon object as a pointer whose tag is read at each use (331 positional, but it gives retail's esi
+// object register: 20 -> 18 aligned differences); `if (g_4c19ac > 0) f(false, true); else f(true, true);` (421,
+// tail duplicated); `bool last = function_3ba90(...) != 0` (352). BLOCKED-BY 0x44370 (pass flags, dead loads),
+// 0x14b60 (a stub), 0x3ba90 (returns long).
 // @retail 0x2bcd0
 void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects, bool finish,
     long context_mode, long filter_mode, real transition)
@@ -4196,8 +4252,7 @@ void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects,
                         long weapon = function_cbd50(unit, (signed char)unit_data[0x212]);
                         if (weapon != NONE)
                         {
-                            byte *local_ec1b9c = ((s_scalar_object_header *)g_4e0300->data)[weapon & 0xffff].object;
-                            long tag = *(long *)local_ec1b9c;
+                            long tag = *(long *)((s_scalar_object_header *)g_4e0300->data)[weapon & 0xffff].object;
                             if (tag != NONE)
                             {
                                 byte *definition = g_4e3b44[tag & 0xffff].bytes;

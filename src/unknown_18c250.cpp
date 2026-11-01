@@ -349,6 +349,18 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// score 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
+// retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
+// into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
+// where retail uses lea ecx. This round: the front end canonicalises the sum, so every spelling gives the
+// same two loads with the offset first and as the add's destination: the pointer first, both operands as
+// dwords in either order, a dword-typed view of the promotion data, the offset cast to unsigned, int or
+// size_t, the sample pointer in a local before or inside the block and the offset hoisted before the block
+// all give the same bytes (7), as do the sum through an address local, the pointer local with += and the
+// index form; reading the scale's bits without the volatile pointer gives the same bytes
+// (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
+// last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
+// 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
@@ -577,7 +589,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // so the extra dword is the spill of the literal 1 that the flag test, the type-1 test and the shift
 // share. What still differs: the frame stays 0x8c against retail's 0x80 and the datum/tag homes differ.
 // Original body kept.
-// score 279 (was 279): frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
+// Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // frame 0x8c versus 0x80; datum/tag homes, constant-one spill and output-address formation differ.
 // Earlier: frame 0x8c versus 0x80; datum/tag homes and root-output address formation differ.
 // Earlier 280 from 280: Frame 0x8c versus 0x80; datum/tag and protected root-location convention remain. BLOCKED-BY 0xba300.
@@ -667,6 +679,8 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // library marker-position and full-output transfers in all eight combinations, 371
 // each (frame 0xb0; reduced 0x21db80 loses). Original direct fields, receiver pair,
 // provider calls, output publication and complete body restored.
+// Round 267: all five other flags/owner/byte entry-publication orders and three native shared-zero
+// chains each score 279. Original initial stores restored; frame 0x8c, datum/tag homes and one spill remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

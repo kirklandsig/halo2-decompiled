@@ -637,8 +637,13 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 	return events;
 }
 
-/* Channel and callback access through local pointers preserves the stack-only entry convention. */
-// score 97 (was 97): adjacent flag load/byte clear and callback reload still differ; direct parameters
+/* Callback access through a local pointer preserves the stack-only entry convention. */
+// Earlier at 97 (MiniMax S, 10-31): retail loads the flags word before the byte clear (movzx edx, word ptr
+// [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
+// clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
+// volatile slot, kept one load but changed the register allocation (133, 132, 141).
+// score 93 (was 97): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
+// one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
 // 126; clears spanning clamp 136, with word events 136. Original body and parameter accesses restored.
 // adjacent word-load/byte-clear order and callback reload remain.
@@ -694,6 +699,16 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // builds hold the callback in EBX; ours reloads it only because the first read is volatile. Frame limit
 // after the clamp 118; byte clear before the event-word clears 116; event-word clears after the clamp 114;
 // `next_frame < 0.0f` 97 (same code); frame limit after the byte clear 119.
+// Round 16 (m3 lane 17, fast): the `&channel` pointer local is what keeps the first-dispatch flags load
+// below the byte clear (channel read directly: flags load hoisted as retail, but the identity compares
+// are CSE'd into CX, 113); the identity compared through an `operator==` on the identity type with
+// channel read directly 93 (memory-operand compares as retail); on it: no volatile 136; channel store
+// first and the identity re-read after the rate 98; a variant local initialised from the call 94 (it
+// becomes the return buffer); the variant local declared, then assigned and stored to the identity
+// after the rate 93 (the variant block is then retail's instruction for instruction; not kept, same
+// count); plain callback at the second dispatch 93 (same code); user read through its address without
+// volatile 133; flags through a plain word cast 97 (same code). Left: the second-dispatch callback reload
+// (volatile), after which the third dispatch's scratch registers are rotated one step (EAX/ECX/EDX).
 // Round 470: six lexical orders of the position/limit/next scalars 97 each;
 // first and last float orders with later saved-identity names 97/97. Original
 // names and body restored; adjacent flags scheduling and callback reload remain.
@@ -701,66 +716,65 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)
 {
-	c_animation_channel *const *local_0 = &channel;
 	animation_event_callback const *local_3 = &callback;
-	c_type_709360 animation_id = (*local_0)->animation_id;
-	s_graph_tag *graph = c_animation_channel_get_graph(*local_0);
-	s_animation *animation = (*local_0)->function_1c6440();
-	real position = (*local_0)->frame_position;
+	c_type_709360 animation_id = channel->animation_id;
+	s_graph_tag *graph = c_animation_channel_get_graph(channel);
+	s_animation *animation = channel->function_1c6440();
+	real position = channel->frame_position;
 	real last_frame;
 	real next_frame;
 	long events;
 
-	(*local_0)->unknown14 = 0;
-	(*local_0)->unknown16 = 0;
+	channel->unknown14 = 0;
+	channel->unknown16 = 0;
 	next_frame = frame;
 	last_frame = (real)animation->frame_count - 0.0001f;
 	if (0.0f > next_frame)
 	{
 		next_frame = 0.0f;
 	}
-	(*local_0)->unknown11 &= ~0xe;
-	events = animation_events_dispatch(graph, animation, (*local_0)->flags, position, next_frame, *(animation_event_callback volatile *)local_3, user);
-	if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+	channel->unknown11 &= ~0xe;
+	events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, *(animation_event_callback volatile *)local_3, user);
+	if (animation_id == channel->animation_id)
 	{
-		(*local_0)->unknown14 |= events;
+		channel->unknown14 |= events;
 		if (next_frame >= last_frame)
 		{
-			events = animation_events_dispatch(graph, animation, (*local_0)->flags, position, FLT_MAX, *local_3, user);
-			if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+			events = animation_events_dispatch(graph, animation, channel->flags, position, FLT_MAX, *local_3, user);
+			if (animation_id == channel->animation_id)
 			{
-				(*local_0)->unknown14 |= events;
-				if (TEST_FIELD_BIT((*local_0)->flag1))
+				channel->unknown14 |= events;
+				if (TEST_FIELD_BIT(channel->flag1))
 				{
-					if (((*local_0)->flags & 0x20) && animation->loop_frame_index == 0)
+					if ((channel->flags & 0x20) && animation->loop_frame_index == 0)
 					{
-						animation_id = state->variant_get((*local_0)->animation_id);
-						(*local_0)->animation_id = animation_id;
-						if ((*local_0)->flags & 8)
+						animation_id = state->variant_get(channel->animation_id);
+						channel->animation_id = animation_id;
+						if (channel->flags & 8)
 						{
-							(*local_0)->rate = 1.0f;
+							channel->rate = 1.0f;
 						}
-						animation = (*local_0)->function_1c6440();
+						animation = channel->function_1c6440();
 					}
 					position = (real)animation->loop_frame_index;
 					next_frame = next_frame - last_frame + position;
-					events = animation_events_dispatch(graph, animation, (*local_0)->flags, position, next_frame, *local_3, user);
-					if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+					events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, *local_3, user);
+					if (animation_id == channel->animation_id)
 					{
-						(*local_0)->unknown14 |= events;
-						(*local_0)->unknown11 |= 4;
+						channel->unknown14 |= events;
+						channel->unknown11 |= 4;
 					}
 				}
 				else
 				{
-					(*local_0)->unknown11 |= 8;
+					channel->unknown11 |= 8;
 					next_frame = (real)animation->frame_count - 0.0001f;
 				}
 			}
 		}
-		if (animation_id.graph_index == (*local_0)->animation_id.graph_index && animation_id.index == (*local_0)->animation_id.index)
+		if (animation_id == channel->animation_id)
 		{
-			(*local_0)->set_frame_position(next_frame);
+			channel->set_frame_position(next_frame);
 		}
 	}
 }

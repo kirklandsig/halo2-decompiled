@@ -757,6 +757,10 @@ void __stdcall vector_constructor_iterator(void *arg_0, unsigned arg_1, int arg_
 void *__fastcall function_31bc70(void *arg_0);
 real function_18cac0(long arg_0);
 
+// score 155 (was 155): the frame 0x8ac agrees, but the camera pointer takes ESI where retail keeps it
+// in EBP and the gain table is addressed through a pointer in EBP where retail addresses it from the
+// stack; dropping the memset result frees EBP but makes MSVC align the frame (240) and passing the
+// array instead of the clear result changes the frame again (219), so the clear-result view is kept.
 // score 155 (was 155): frame 0x8ac agrees; camera ESI/EBP and persistent clear-result/side homes differ.
 // Earlier: the camera pointer takes ESI where retail keeps it in EBP, and the
 // clear-result and side locals sit at [esp + 0x14], [esp + 0x18] and [esp + 0x28] where retail

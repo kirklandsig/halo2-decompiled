@@ -129,10 +129,10 @@ struct s_sound_playback
 /* clamps value to [lower, upper], testing the lower bound first */
 #define PIN_126660(value, lower, upper) ((value) < (lower) ? (lower) : (value) > (upper) ? (upper) : (value))
 
-/* adds delta to value, kept within [lower, upper] */
-static inline void approach_126660(real *value, real delta, real lower, real upper)
+/* adds delta to value, kept within [-maximum, maximum] */
+static inline void approach_126660(real *value, real delta, real maximum)
 {
-	*value += PIN_126660(delta, lower, upper);
+	*value += PIN_126660(delta, 0.0f - maximum, maximum);
 }
 
 #define SOUND_PLAYBACK_GET(index) (&((s_sound_playback *)g_4e637c->data)[(index) & 0xffff])

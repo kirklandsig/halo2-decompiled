@@ -507,6 +507,10 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
+// retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
+// the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so
+// the 16-bit helper is kept.
 // score 85 (was 85): Frame 0xc agrees; alpha extension, literal assembly and run-two reuse differ.
 // Alpha parity extension, literal-word assembly and run=2 reuse remain. Disjoint
 // shifted/multiplied alpha fields 204/194; long/word/unsigned opacity nibble 172/236/172; word

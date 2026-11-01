@@ -366,6 +366,9 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
 
+// score 72 (was 68): the texture pointer is taken from a local again and the flags are read
+// in the test itself: the four points the bitmap's own address won are under the keep bar,
+// so the body of the earlier round is restored.
 // Tried (MiniMax S run 10): the mipmap limit at bitmap + 0x14 read into a local before the
 // texture pointer is cleared scores 70 against 72; under the keep bar.
 // @retail 0x1d000
@@ -2986,10 +2989,17 @@ s_runtime_device_configuration g_runtime_device_configuration;
 long g_467008, g_46700c;
 bool g_5093bc;
 
-// score 70. Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
+// MiniMax G (10-31): 55 (was 68): the settings are copied into the global field by field and the
+// depth format is assigned first; the two flag bytes still come from a register instead of memory.
+// MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
+// casts the global's own address, so it is not kept without a match.
+// score 55 (fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // format after the back buffer width and clearing the result before the device pointer gives 68;
 // reading the two flag bytes back through a byte pointer to g_runtime_device_configuration as
 // well gives 49. That cast of the global's address is not kept without a match.
+// MiniMax G (run 12): the depth format assigned right after the memset 55 (kept); with the settings'
+// first four bytes copied as one dword into .packed and the switch on (short)(.packed >> 16) instead
+// of g_485aca 52 (both read through the wrong type: not kept without a match).
 // @retail 0x128c0
 bool function_128c0(s_128c0_settings const *settings)
 {
@@ -2997,10 +3007,10 @@ bool function_128c0(s_128c0_settings const *settings)
     bool result = true;
     D3DPRESENT_PARAMETERS parameters;
     memset(&parameters, 0, sizeof(parameters));
+    parameters.AutoDepthStencilFormat = (D3DFORMAT)(D3DFMT_D24S8 + ((byte)g_485ac8 != 0));
     parameters.Windowed = false;
     parameters.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
     parameters.EnableAutoDepthStencil = true;
-    parameters.AutoDepthStencilFormat = (D3DFORMAT)(D3DFMT_D24S8 + ((byte)g_485ac8 != 0));
     parameters.BackBufferFormat = D3DFMT_A8R8G8B8;
     parameters.BackBufferWidth = g_485a8a.a.v3 - g_485a8a.a.v1;
     parameters.BackBufferHeight = g_485a8a.a.v2 - g_485a8a.a.v0;
@@ -5493,6 +5503,9 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
+// flag drives the table test, as retail does; left is our ebx zero register against retail's
+// edi, the loop counter in edi against retail's esi, and the permutations in eax at 0x3e380.
 // score 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
 // higher (the context buffer at [esp+0x44] against retail's [esp+0x3c], the indices at [esp+0x38]
 // against [esp+0x30]), so every reference in the body is at another offset.
@@ -5512,11 +5525,12 @@ void function_4c690(long tag, transform4x3f const *nodes)
     if (function_3e320(tag, (byte const *)indices))
     {
         long handle = function_3e380(tag, 4, nodes, (byte const *)indices, &node_count, 0);
+        *(long *)(context + 8) = handle;
         bool available = handle != NONE;
         if (available)
         {
             s_shader_transform_table *table = 0;
-            if (handle != NONE && handle >= 0)
+            if (available && handle >= 0)
                 table = (s_shader_transform_table *)(g_487b18.data + (handle & 0x0fffffff));
             g_485a5c = table;
             function_1bd50(context);
@@ -5654,6 +5668,10 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// Tried (MiniMax C run): the defaults stored only when the current depth is not zero, then
+// the override carried in two locals and the pair stored again at the end: 182 against 202,
+// but the first stores are always overwritten (a no-op form), so not kept without a match.
+// The locals alone score 218 (fast). Retail does compare the current depth with zero here.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -8024,6 +8042,10 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// Tried (MiniMax C run): the two offsets passed in the other order (0x20/0x18 and 0x30/0x24
+// as the second and third arguments), the device result tested directly with the failure
+// path writing the flag, and the palette result in a local of its own: 167 against 171;
+// under the keep bar, body restored.
 // @retail 0x12560
 void function_12560()
 {

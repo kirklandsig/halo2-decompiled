@@ -161,6 +161,9 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax S (10-31): no new form, no lower score. Retail keeps the shape's edges and the ray direction
+// in xmm1-xmm7 and computes the three edge vectors in registers, storing only four floats; ours spills
+// every component of every difference to the stack and re-reads them, so the frame is 0x84 against 0x90.
 // score 192 (was 192): frame 0x84 versus 0x90: retail keeps origin.x/y in xmm6/xmm7 until the
 // offset (ours re-reads all three from the shape), so it spills first.i/second.i into homes and puts
 // the found byte at +0x38 and the plane at +4; every later stack offset differs by that. Retail also
@@ -287,6 +290,12 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 462: One complete ray value with direct native start versus duplicate start, native/library
 // copy before/after origin: 248 in all eight forms, 1001/1001 bytes but frame 0x98 versus 0x90.
 // Original input observations, separate start and complete body restored.
+// Round 267: Native producer order (O origin, D direction, S start, A/B first/second edge):
+// OBADS/OBDAS/OBDSA/ODBAS/ODBSA/DOBAS/DOBSA/OADBS 192/192/191/191/191/191/191/193.
+// One-point forms restored with every original producer; frame 0x84 and origin/edge homes remain.
+// Round 269: Fraction numerator/reciprocal/both/reversed producer order, mutable and const,
+// 192 each in eight forms. Frame 0x84 and retained-origin/edge-I homes remain. Original
+// fraction expression, all geometry helpers and complete body restored.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

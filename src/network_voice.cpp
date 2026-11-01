@@ -2278,6 +2278,16 @@ long voice_players_share_team(long other, long player)
 // with separate noinline 25,25,25; mode force-inline alone/with both outlined queries 25,25.
 // Lane 13 r20: team flag taken before the membership call 142; team test as `mode != 2` 25; ternary
 // mask in the block 47; `mode == 3 || mode == 2` 25; mode read from the global field 25.
+// Lane 12 r66 (fast): retail's EAX test and `mov esi, eax` copy are the global-test form with the
+// mode and the mask named inside the block (`if (g.mode == 2 || g.mode == 3) { long mode = g.mode;
+// dword mask = 0; ...`) when the 0x53de0 call ends the global's availability: with a compiler barrier
+// after those two declarations (diagnostic only) it matches byte for byte; our link proves 0x53de0
+// leaves the global alone, so the inner uses fold back into the test's load (56). Tried: early
+// returns of the named result (init, then mode) 114; a force-inline helper taking the mode 123 (the
+// convention moves to ECX); the getter named inside under a global test 56; the global read at both
+// tests with the mask inside 56; the mask declared after the mode 25 (same code). Diagnostic: a write to
+// an unrelated global added to 0x53c30 does not end the mode's availability (56): the link tracks
+// which globals a callee writes.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
@@ -3121,6 +3131,9 @@ struct s_voice_route_choice
 // Round 462: Consumed next-ordinal choice pointer/reference before headset, original/reused talker
 // mask 1075/1084; after headset 1079/1088; reference forms 1075/1084/1079/1088. All suppress
 // four-way expansion; original body restored.
+// Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
+// masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
+// original observations, bitwise radio and full body restored; entry/cursor allocation remains.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
