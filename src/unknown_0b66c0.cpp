@@ -254,6 +254,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
 // or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
 // colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
+// Round 67 (lane 16, fast with 0xb5f10/0xb61d0): `length - count >= start` 34 (scan counter in ECX as retail,
+// but start in EDX, walk EDI; 0xb5f10 6); that with `string + start` or `start + string` at the copy 29 each
+// (the sum goes to the string load's EAX, retail adds into start's EDI; 0xb5f10 6); `start <= length - count`
+// 34 (0xb5f10 6); `__stdcall` on the definition 40 (identical code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -126,7 +126,7 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 	return success;
 }
 
-// score 419 (was 443): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// score 410 (was 419): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -215,6 +215,15 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // On the bool form: the one-use edge-index and sector-index locals read in place 419 each and together
 // (identical code, kept); the blocked-flag and vertex one-use locals read in place 429 each, all four 429
 // (1611 bytes); forward as bool 526 (1690 bytes).
+// Round 67 (lane 16, fast; kept forms confirmed plain): retail compares the traversal count as a word (`cmp word
+// ptr [esp+0x18], 0` and `0xc8`, then `inc dword ptr`), so the count is a short: 419 -> 412 kept; the entry
+// result stores in retail's order (FLT_MAX, blocked, sector, edge, distance, unknown1c) 412 -> 410 kept. On
+// those: the count declared at the top `= 0` 429; `bool first = true` at its declaration (retail stores it at
+// the top of each sector iteration) 412; the line normal and distance as a two-member plane (n, d) 454 (1651
+// bytes, frame 0x64); the final tail's stores in retail's order (blocked, edge, sector, distance) 410 and tail
+// C's (blocked, edge, distance) 410 (no gain); `bool success` 432 (1568 bytes); `iterator.forward` read at
+// each use 526 (1696 bytes, 0x26ccb0 209). Retail keeps `hit` in the dead pathfinding parameter slot (+0x74),
+// reaches the hit block only from the edge loop's break, and returns constants from separate tails.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
@@ -227,9 +236,9 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 
 	result->unknown20 = 3.4028235e38f;
 	result->blocked = false;
+	result->sector_index = NONE;
 	result->edge_index = (word)NONE;
 	result->distance = distance;
-	result->sector_index = NONE;
 	result->unknown1c = false;
 	real last_distance = -0.1f;
 	if (pathfinding && sector_index != target_sector_index && sector_index >= 0 && sector_index < pathfinding->node_count)
@@ -239,7 +248,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 		cross3f(g_4687b0, direction, &normal);
 		if (magnitude3d(&normal) > 1e-5)
 		{
-			int count;
+			short count;
 			count = 0;
 			vector2f line_normal;
 			real line_distance;

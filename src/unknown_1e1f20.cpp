@@ -768,6 +768,13 @@ void swarm_leader_detach(long actor_index);
 // 0x18, 0x54) through it 291 (974 bytes); the prop-list clear through it 290; 0x1e1740's slot-local
 // loop 261 (same code). 0x258600 takes the actor index in EDI in both builds. Still BLOCKED-BY
 // 0x26ed40 (inlined in retail, kept out of line by its file's flags).
+// Round 67 (lane 16, plain each): every function in 0x258600's callee closure (0x258540, 0x258480, 0x16ba40) is
+// matched, so that lead is not a stub or unmatched body there; 0x2628f0 (a direct callee) and deeper 0x1e3b60,
+// 0xcc810, 0x203bf0 and 0x28f8d0 are unmatched. A named bool for the definition bit (`bool counted = definition
+// && ...; if (counted)`) 285 (identical code); the memory test through the entry actor with the body re-derived
+// 352 (1028 bytes: frame 0x20 and the cursor spilled to +0x14 as retail, but the actor offset and index fold into
+// one `index * 0xb6 + i` multiply instead of retail's spilled offset plus an i*12 IV); that with a short memory
+// index 371 (1044 bytes); the bit tested as `*definition & 8` 285; 0x203ed0's argument as `value != 0` 285.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

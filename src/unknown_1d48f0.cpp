@@ -232,6 +232,13 @@ const dword g_455978[81] = {
 // with in-place adds 407 (2149 bytes), both forms together 338 (2104 bytes). Retail calls 0x11bed0 (location in
 // ESI, point in EDX) at every site and inlines 0x279740 only at the first release; ours inlines 0x11bed0 and
 // calls 0x279740 twice. Earlier diagnostics tie both to 0x279740's /Ob1 file flags (a build-flags decision).
+// Round 67 (lane 16, fast): upper bound as `local_4 + x` in all three rows 298 and the inflated radius as
+// `0.001f + arg_7` 298 (both identical code); round 62's planar form with round 87's sample-end copy 338 again
+// (2104 bytes): the frame homes are then retail's throughout (+0x2c copy, +0x44 length, +0x48 table vector,
+// +0x1c sample end, +0x30/+0x40 optional state), and what is left is colouring: arg_9/arg_10 and the body/shape
+// pair in ESI/EDI swapped against retail, the table cursor spilled from ECX instead of kept in ESI, arg_6/zero/
+// inverse in XMM3/XMM7/XMM2 (retail XMM2/XMM5/XMM3), plus the 0x11bed0/0x279740 inline difference. On it the
+// sample end as `x = x + i` rows 338 and as real_point3d_set on the copy 338 (identical code each).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
