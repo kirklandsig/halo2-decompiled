@@ -831,6 +831,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // pointer declared before the index with `i++, rigid_body += 0x60` (11), that with the count read first (12),
 // named count and element-array locals (12). The parameter takes ECX whenever its last use comes before the
 // loop guard (27, 12, 12), but retail also reads the element array after the guard.
+// Further forms: byte/short/long result 30/36/34; assigning the flag test to result 18 (entry registers
+// agree, loop/exit differ); existing typed array/getter with bool/byte/short/long result 8/30/36/34;
+// private linkage, cdecl and stdcall declarations 8/8/8; a zero-flag continue before setting result 8.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
