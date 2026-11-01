@@ -21,6 +21,7 @@ struct c_type_709360
 	short index;
 
 	c_type_709360() : graph_index(NONE), index(NONE) {}
+	bool operator==(c_type_709360 const &other) const { return graph_index == other.graph_index && index == other.index; }
 };
 
 /* a frame event of an animation (type 0 and 1 are the feet) */
@@ -187,13 +188,13 @@ struct s_graph_element3c
 	long unknown00;
 	c_type_709360 animation_id;
 	long unknown08;
-	long unknown0c;
-	long unknown10;
-	long unknown14;
+	real unknown0c;
+	real unknown10;
+	real unknown14;
 	long unknown18;
-	long unknown1c;
-	long unknown20;
-	long unknown24;
+	real unknown1c;
+	real unknown20;
+	real unknown24;
 };
 
 /* an element of the graph's block at +0x44 (0x14 bytes) */
@@ -209,16 +210,22 @@ struct s_graph_iterator3c
 {
 	long unknown00;
 	long unknown04;
-	long unknown08;
-	long unknown0c;
-	long unknown10;
-	long unknown14;
-	long unknown18;
-	long unknown1c;
+	real unknown08;
+	real unknown0c;
+	real unknown10;
+	real unknown14;
+	real unknown18;
+	real unknown1c;
 	long index;
 	c_type_709360 animation_id;
-	byte unknown28[2];
+	short unknown28;
 	short next_index;
+
+	/* a new iterator, before the block's first element */
+	s_graph_iterator3c() : unknown00(NONE), unknown08(0.0f), unknown0c(0.0f), unknown10(0.0f), index(NONE),
+		unknown28(NONE), next_index(NONE)
+	{
+	}
 };
 
 /* the first frame of an animation's node 0 (0x18 bytes): a quantized rotation, a position and a scale */

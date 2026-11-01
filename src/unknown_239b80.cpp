@@ -348,6 +348,21 @@ short function_239e50(short count, point2f const *points, short *indices);
 // Round 46 (lane 1, fast): a braced case 0 with `vector2f *normal = &line.n` for the dot only, and for the
 // normalize too, 42/42 (same code); j stored through it, with the normalize by name or through it, 44/44 (304
 // bytes); the loop test `state != 2` 43; the loop on `i < count` alone with case 1 returning 2 88 (301 bytes).
+// Round 63 (lane 12, fast; an LTCG env link reproduces the build): the normal's j as `-(first.x - p.x)` 63 (302
+// bytes), i as `-(p.y - first.y)` 65, both 74 (304), j as `0.f - (first.x - p.x)` 63, j stored as `first.x - p.x`
+// then negated in place 63. On the round-54 23 form (env, 108 combinations): every case order, the first-point copy
+// as a struct or field-wise in either order, case 1's dot through the helper, the pointer or by name, and a case-0
+// point pointer: 23 or worse (field-wise copies 28 at 310 bytes). Diagnostic: case 1 without its `state = 2` gives
+// retail's index EDX (state then ESI), so the state/index/point colouring turns on case 1's state store.
+// Round 31 (lane 15, fast): case 1's distance named in a braced case 42; case 0's dot result named 42; state,
+// line, first declared in reverse 42. Diagnostics (not kept): 1-8 unused locals at the function's top 42 except
+// 5 (56: retail's `mulss xmm1, [p.x]` dot fold appears, 4 bytes shorter); at case 0 or the loop top 42. The
+// state/index/pointer rotation follows no symbol count.
+// Round 124 (fast; the one-file LTCG harness agreed each time): case 1's distance in a named real
+// 42; case 1 through a block-local point pointer 42; `points + i` in case 1 42; case 1's dot written
+// by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
+// (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
+// state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
@@ -782,6 +797,12 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // as `distance >= 0.f` at the append 265 (874 bytes); the side flags renamed (side/previous_side, last_inside,
 // was_inside) 129 each (same code and slots: the names do not move the byte flags here).
 // The NONE result arm written first (`if (result == NONE) memcpy ...; else {...}`) 129 (same code).
+// Round 63 (lane 12, fast; an LTCG env link with the stand-in callers and 0x17dd80 is exact): the negative test as
+// `-epsilon > distance` 129 and as `distance < 0.f - epsilon` 129 (same code); the current point as `points + i` 129;
+// the entry distance with the x term first 129 (same code); the inside test after the epsilon tests 136. Retail loads
+// `points` into ECX at the loop head (ours into EDI, coalesced with the current point), so ECX is never free across
+// the loop there and the previous side stays in memory; a `(void)&` on the previous side, both sides or count changes
+// nothing (env).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

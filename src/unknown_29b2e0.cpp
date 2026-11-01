@@ -60,7 +60,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 267 (was 308): frame 0x2c agrees (1713 bytes against 1706); the sqrt/acos temporaries sit at +0x14
+// score 255 (was 267): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
 // where retail keeps them with the yaw at +0xc (local_11 at +0x10, the final pitch in the scale parameter's
 // home), the XMM numbering from the 1.0 constant on, the yaw clamp (retail clamps it in its stack home) and
 // the rotations' register and slot assignment differ.
@@ -193,6 +193,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // returning it 267 (same code); the normalizer's length local renamed to sort before the local_N
 // names 267 (same code: its slot stays +0x14); the first length from the normalizer's return (no
 // out-parameter) 295. Original body restored.
+// Round 267: Conditional sign selection target/current/both 267/267/267; branch-owned angle calls
+// target/current/both 294/310/315; both selections with entry pitch 267, both branches with role names 315.
+// Original scalar call results, sign tests and body restored; magnitude/yaw homes and XMM allocation remain.
+// Round 269: Independent yaw/pitch delta/limit/both 265/255/255; entry declarations 265/255/255;
+// per-axis scopes without/with entry declarations 255/255. Keep separate multi-use step limits,
+// plain 255; magnitude/yaw homes and XMM numbering remain. All other forms restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
@@ -221,16 +227,16 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         real local_13 = local_2->field_30 > 0.0f ? local_2->field_30 * 0.01745329238474369f : 1.5707963705062866f;
         local_8 = function_29b4c0(local_8, -local_13, local_13);
         local_9 = function_29b4c0(local_9, -local_13, local_13);
-        real local_14 = 6.2831854820251465f;
-        if (local_2->field_34 > 0.0f) local_14 = local_2->field_34 * 0.01745329238474369f;
+        real yaw_limit = 6.2831854820251465f;
+        if (local_2->field_34 > 0.0f) yaw_limit = local_2->field_34 * 0.01745329238474369f;
         real local_16 = local_8 - *(real *)((byte *)local_0 + 0x658);
-        if (!(0.0f > *(real *)((byte *)local_0 + 0x658) * local_16)) local_14 *= arg_4;
-        local_8 = *(real *)((byte *)local_0 + 0x658) + function_29b4c0(local_16, -local_14, local_14);
-        local_14 = 6.2831854820251465f;
-        if (local_2->field_34 > 0.0f) local_14 = local_2->field_34 * 0.01745329238474369f;
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x658) * local_16)) yaw_limit *= arg_4;
+        local_8 = *(real *)((byte *)local_0 + 0x658) + function_29b4c0(local_16, -yaw_limit, yaw_limit);
+        real pitch_limit = 6.2831854820251465f;
+        if (local_2->field_34 > 0.0f) pitch_limit = local_2->field_34 * 0.01745329238474369f;
         local_16 = local_9 - *(real *)((byte *)local_0 + 0x660);
-        if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_16)) local_14 *= arg_4;
-        local_9 = *(real *)((byte *)local_0 + 0x660) + function_29b4c0(local_16, -local_14, local_14);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_16)) pitch_limit *= arg_4;
+        local_9 = *(real *)((byte *)local_0 + 0x660) + function_29b4c0(local_16, -pitch_limit, pitch_limit);
         vector3f rotation_input = *arg_2;
         function_29b6c0(&rotation_input, g_4687b0, local_8, &local_7);
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);

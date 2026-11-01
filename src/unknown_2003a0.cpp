@@ -874,6 +874,10 @@ done:
 // pair at the scan top and the palette index at the definition block's top (harness, identical).
 // Ours carries next in CX from the entry test into the first pass; retail folds both tests into
 // `cmp word [edx+4]` and reloads at the loop top.
+// Round 475: Consume the cursor before decoding its saved explicit selection pair, with
+// definition-owner/mode/scenario snapshot subsets 0..7: 193/201/235/236/230/242/225/227.
+// Entry still caches next; some forms also change the iterator register. Original cursor
+// phase, observations, frame 8 and complete body restored.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2138,6 +2142,21 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 63 (lane 12; an LTCG env link reproduces the build): on 0x203d70's loop (71) an early `return` when the
+// +0x7e test fails 89 (220 bytes); the store from `iterator.squad_index` 78 (185, 0x203d70 drops to 34); a named
+// flag local before the tests 71; iterator/actor declared at the top 71. Same code as the 71 form (env): the
+// `continue` and `== false` tests, squad_get, an actor index local, the header step, `(void)&` or one read through
+// the parameter's address at the lookup, the call or the store. Diagnostics: with the squad dead after the loop the
+// parameter takes EBP (loaded from the stack, so retail's stack convention follows from EBP) and the loop gets
+// retail's EBX/EDI/ESI; with the squad live, only a parameter use ahead of the 0x1e11b0 call each pass gives it a
+// register (then EBX, passed in EBX) and splits the squad pointer as retail does; two uses after the call do not.
+// Round 37 (m3 lane 14, fast), on 0x203d70's inline-step loop with the word flag store and full-width
+// return (71, 191 bytes): iterator declared at function scope 71; actor index declared at function scope
+// 71; loop pointer declared in the while condition 71; squad_get(squad_index) at every squad use 92 (224);
+// early return for the tick test 89 (220).
+// Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
+// 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
+// flag store with the short-view return 65 (206).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2458,6 +2477,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // overlap written straight into wake 318 [156] (1103 bytes), with the else-if tail [202]; words and
 // overlap declared at the loop body's top 275. The pool stays in EBX across the walk (so the pushes
 // come first) even with the area block, the definition block, the tail or the actor phase cut out.
+// Round 475: Failure-first actor completion, with bitmap pointer scan/short overlap/native
+// offset-vector subsets 0..7: 301/331/320/349/316/346/338/364. All restored; frame
+// 0x48 versus 0x54, early saves, pool/intersection and current-handle homes remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3300,6 +3322,10 @@ void function_2011f0(long arg_0);
 // Round 119 (lane 5): `long difficulty; if/else; switch ((short)difficulty)` 318 (identical); definition pointer
 // by if/else 361; placement index through `placement_entry->placement_index` 322; all three 359; a separate
 // `attempts` local instead of reassigning arg_0 384 (1348).
+// Round 475: Native two-word request payload with every subset of entry first-request,
+// second-request and construction-record declarations, 318 in all eight forms.
+// Original request representation, declaration phases and header restored; frame 0x134 agrees,
+// placement/definition and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

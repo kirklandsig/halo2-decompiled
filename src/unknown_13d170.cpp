@@ -257,6 +257,9 @@ struct s_block_candidate
 // time declared before the while 377, the scan as `for (...; i = next)` 377 (all aligned 238). Left there:
 // retail holds offset in EBX from entry (its zero for the type clamp, so EBX is pushed first and `next` is
 // spilled at +0x4c: frame 0x1054), stores the zero segment time in each arm and keeps current in EDI.
+// Round 258: Native policy if/else dispatch 0/1/default and 1/0/default, each with
+// bool/byte/short/long results, 385/385/384/381/400/400/396/394. Original switch, result domain and body
+// restored; frame 0x1050 versus 0x1054 and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

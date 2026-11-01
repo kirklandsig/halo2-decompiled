@@ -129,12 +129,14 @@ static inline void quaternion_transform_vector(
 // components as named locals 282 and 325; a result vector in the transform helper 367 (frame grows, code grows).
 // Frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
 // Earlier (237, was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
+// Earlier 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
 // the sine half in the matrix parameter's home slot ([esp+0x38]) and the cosine half at the bottom local
 // ([esp+0x10]), while ours keeps both halves in the two-member struct at [esp+0x14]/[esp+0x18]; retail holds the
 // quaternion in xmm2/xmm1/xmm0 (i/j/k) where ours uses k/i/j. Tried: cross products with the vector operand first
 // 237 (identical - VC commutes the products); the axis components as named locals 344; the scale before the
 // crosses 325.
 // Earlier (237, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Earlier 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Lane 6 r85: helper with `s` computed first 302 (s and the doubled scalar hoisted above the matrix copy,
 // the doubled scalar spilled twice as retail, frame 0x20, constants one xmm lower); with vector-first
@@ -230,6 +232,15 @@ static inline void quaternion_transform_vector(
 // scalar inline at each use 326/1245, with the doubled dot inline too 336/1285; `cross * q->w * 2.f`
 // 269/1326; dot, w2, s 252 (frame 0x24, nothing above the copy); dot, s, w2 250/1317/94; s, w2,
 // crosses, dot 253/1304; s, crosses, dot, w2 247/1308/229; crosses inline in the rows 345/1222.
+// Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
+// native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
+// frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
+// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// frame 0x1c/0x24 and quaternion/cross spill sharing remain.
+// Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
+// with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
+// 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -780,7 +791,7 @@ void function_143250(
 	}
 }
 
-// score 1766 (was 1781): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// score 1766 (was 1766): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
 // Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
 // Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
@@ -857,6 +868,18 @@ void function_143250(
 // Round 255: producer-ready retained columns 1/5, 2/5, 3/5, 4/5, 5/6, 1/4/5, 2/4/5,
 // 4/5/6 score 1772/1768/1768/1772/1771/1802/1801/1783. Original publication graph restored;
 // frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// Round 263: Immutable first-assignment intermediates in all seven band subsets tie 1766 at 10773 bytes;
+// complete immutable graph without the mixed workspace 2229 at 10304 bytes. Original scalar declarations
+// and inherited workspace restored; frame, input admission and basis/matrix homes remain.
+// Round 145: the stacked rotation comes from the number of locals: LTCG passes it in EAX (retail's
+// `ret 4`, order alone on the stack) only while the function declares fewer than about 950 of them
+// (a one-file LTCG probe flips between 950 and 980 unused declarations on a cut-down body; block or
+// struct scope still counts). Plain checks: every term copy propagated (971 terms, rotation still stacked)
+// 1927 (10933 bytes); copies propagated and every single-use term written into its consumer (299 terms,
+// retail's convention) 1886 (10894); the first 400 single-use terms written in, copies kept (941 terms,
+// retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
+// 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
+// 0x23690 508->512 with retail's convention.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

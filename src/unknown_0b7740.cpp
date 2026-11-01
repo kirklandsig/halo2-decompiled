@@ -1,5 +1,6 @@
 #include "unknown_0b68c0.h"
 #include "unknown_11c920.h"
+#include "bit_vector.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "effects.h"
@@ -1180,6 +1181,14 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // stored flag initialised beside the orientation test 398. Diagnostics: 0xbfed0's definition moved after
 // this function in this file 234 (still no ESI reload: definition order is not why retail distrusts ESI);
 // the no-model data field read as a dword 234 (still reuses EDI: the reload is not a type difference).
+// Round 121 (m3 lane 5, fast): retail rematerialises 0x55eeb4 at every use (memcpy destination, both
+// mask-call arguments, the sample mask); the stored/empty test as nested ifs 234; the amount by if/else
+// 234; orientations defaulted at the declaration with `else stored = false` 402 (1367 bytes); `stored`
+// declared first 236; the no-model parent matrix by array indexing 234.
+// Round 37 (lane 13, fast): the node-mask tests through the existing bit_vector_test 234 (same code, kept: replaces
+// the hand-written bit tests); render/no-model branches swapped in the source 313 (1372 bytes); a short node
+// counter 222 (1387 bytes, but aligned 16 -> 120: the frame and every later slot move); `++node` 234; the render
+// model's node count named for the default-orientation test and the loop bound 252 (1370 bytes).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
@@ -1257,7 +1266,7 @@ void __stdcall function_bd090(long object_index)
             }
         }
         if (!*(long *)(render_model + 0x48)) orientations[0] = *(rigid_transform_scaled *)g_4687d8;
-        if (!(mask[0] & 1))
+        if (!bit_vector_test(mask, 0))
         {
             if (root_absolute)
                 function_1421f0(matrices, &orientations[0]);
@@ -1289,7 +1298,7 @@ void __stdcall function_bd090(long object_index)
         for (long node = 1; node < *(long *)(render_model + 0x48); node++)
         {
             byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
-            if (!(mask[node >> 5] & (1 << (node & 31))))
+            if (!bit_vector_test(mask, node))
             {
                 function_1421f0(&matrices[node], &orientations[node]);
                 function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);

@@ -219,6 +219,16 @@ __forceinline bool function_184448(long arg_0)
 // Round 50 (lane 1, fast): arg_0 test as `!= NONE` with the record arm first 986; NULL record set
 // before the surface pointer 965; worklist entry stored before its count 965; both 965; the record
 // and worklist-count locals renamed to sort first/last 965 each with every stack home unchanged.
+// Round 144 (lane 4, fast): retail keeps the transform pointer only in its stack home (+0x98) and the surface
+// list in ECX, loads the block count into a register before the index compare (as the compile-only build
+// does) and initializes the projected bounds at the top of each face iteration. Defaults then `if (arg_0 !=
+// NONE)` override 978 (4573 bytes); the bounds lookup as one `&&` test 962 (three-point gain rejected); the
+// non-NONE arm first 986; NULL stored before the default list 965; a short surface group 967 (4573 bytes).
+// Round 13 (lane 17): the plane transform reading the three normal components into scalars (no vector copy) 978 at
+// 4557 bytes (frame 0x11cc as retail; the transform's products and adds then follow retail's sequence, one spill
+// slot apart); the per-face bounds initialized at the top of the face loop (retail stores them there) 977; both 1024
+// (4538 bytes); the existing normalize3d for both normalizations 1002 (4542 bytes); the two vector copies before
+// the plane-distance dots dropped (the dots on the originals) 1062 (4477 bytes). Original helpers and body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
