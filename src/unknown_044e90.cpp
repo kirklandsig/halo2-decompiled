@@ -158,6 +158,11 @@ struct s_visibility_bound_record
 // Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
 // view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
 // 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
+// Round 240: Successive complete rotation-row/center-row/position-product statements, seven
+// subsets and all with coherent plane/query home names: 406/403/403/406/406/403/403/403.
+// Original operands, grouping, zero-scale handling and complete executable body restored.
+// On the successive center graph, uninitialized output storage before the bound copy/at part
+// entry: 403/403. Below-margin center gain and both lifetimes restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

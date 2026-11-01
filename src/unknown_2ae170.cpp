@@ -908,6 +908,9 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // 307; long first-branch levels 309; send-first, inner-first, send-as-bits and first-branch helper
 // forms 296. One-argument bits-to-real helper 342; every sum through decibels_add 470 (1276 B).
 // Remaining there: our compiler makes all-memory sums x87 chains (regrouped); retail stays SSE.
+// Round 240: Successive scalar sum statements in buffer/front/both/rear/buffer-rear/front-rear/all
+// pairs, then all with a named repeated boosted result: 370/370/370/370/370/370/370/370.
+// Original grouping, scalar observations and complete body restored; dispatcher checked.
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
@@ -1108,6 +1111,9 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 // offset bits 232 (854 B); no volatile bins 240; long bins, no volatile 242; front-level local 228;
 // offset bits, no volatile 237; bool flag with long bins, no volatile 247; bool flag 246; bool flag
 // with long bins 256; gains at use, bool flag, long bins 254. 240/242/228/237/247 lose the dispatcher.
+// Round 240: Successive scalar sums front/rear/both/both with tail results
+// on real/bit-held input: 224/224/224/224/230/230/230/230. New own-address forms exact-only;
+// all original scalar observations, grouping, qualifications and complete body restored.
 // @retail 0x2af450
 void c_sound_effects::add_effect_sends_split(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {

@@ -301,6 +301,9 @@ struct s_block_candidate
 // Left: ours keeps offset in EDI and current in EBX (retail EBX/EDI), the mask in EBX (retail EDX), pushes EDI
 // at entry, stores previous's NONE at entry, homes segment pages/time the other way round, and lays the case 0/1
 // policy bodies at the function's end.
+// Round 240: Inner-scan policy/time/segment-home names, seven subsets and all with reversed
+// independent policy/time acquisition: 347/421/411/347/347/421/411/411. Policy-only field copy
+// exact-only; policy/time reaches frame 0x1054 at 411. Original executable body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

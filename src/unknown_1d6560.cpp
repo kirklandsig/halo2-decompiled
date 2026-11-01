@@ -183,6 +183,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // one read with the kind-7 switch listing cases 0/7/11 and an `__assume(0)` default 121 (284) [13]; two reads with
 // the main switch's through `component->object_index` 91 at 256 [146] (component on the stack, kind EDX), with
 // the kind-7 read through it instead 96 [0] (same code); one read with the body array named first 94 [13].
+// Round 240: Primary body result default, crossed with secondary body default, one byte type
+// and native object-byte shift: 100/108/91/91/100/108/91/91. Original body restored;
+// shared-type forms lose the matched caller (13); the five-point gain is below the keep gate.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
