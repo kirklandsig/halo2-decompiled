@@ -632,6 +632,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // constant choice is no numbering tie); the two `(void)&parameter;` statements were dead (removed: identical
 // code); without them, the jitter add through the existing vector3f_add 130 (1077 bytes, as round 91: not kept);
 // the movement scaled through the existing vector3f_scale 132; the direction normalised through it 132.
+// Round 67 (lane 12, fast, 0x24590 listed): limits, the jitter offset or both through the existing
+// vector3f_assign 132/132/132; a `vector3f *velocity = &state->velocity` pointer declared after the enable store
+// and used for every velocity access 128 (gain 4, not kept), declared just before the first velocity store 141;
+// on the top pointer: projection and movement through vector3f_add_scaled/vector3f_add 128, the jitter add
+// through vector3f_add 128, all three 128, the movement add alone 128, limits through vector3f_assign 128.
 // Round 47 (m3 lane 1, fast, 0x24590 listed; aligned counts against this body's 154): retail order
 // jitter (on/off, signs, scale-on-left selects) with a plain long and its products added straight into the
 // velocity plus the movement add through vector3f_add 202 (1055 bytes, aligned 111); round 91's 174 form
@@ -660,6 +665,12 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // velocity.k reading limits.j's XMM6), with `limits.j = limits.k = ...` or `limits.k = limits.j = ...` 259 (1009
 // bytes, one register). Left: 1.0 in XMM4 (retail XMM3), the direction loaded k/j/i into XMM3/2/1 (retail 2/1/3),
 // the velocity stores and the jitter block.
+// Round 69 (lane 12, fast, 0x24590 listed): the velocity pointer (`vector3f *velocity = &state->velocity`) declared
+// at the very top 128 (gain 4, not kept); retail-order jitter (on/off, signs, `*=` scales) on a plain long 233 (1020
+// bytes), with the top or post-enable velocity pointer 233/233; on that plain-long base, limits, the jitter offset or
+// both through the existing vector3f_assign 233 each (1020 bytes). On the plain long our build merges limits.j and
+// limits.k into one value (two stores and one spill where retail keeps XMM6/XMM7 copies and three stores); the
+// volatile long is what keeps them apart here, and no tried form keeps them apart without it.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

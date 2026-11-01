@@ -1124,6 +1124,20 @@ bool function_68670(byte *source, long size, void *block);
 // address forced to escape restores retail's reloads and late header load (retail behaves as if the
 // read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
 // stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 45 (lane 11, fast): retail's frame is the 72 form's plus a case-0 copy (ours pads 4 bytes below
+// the header; the compile-only listing shows no other local), and retail's header is address-exposed:
+// its size loads only after the start/used stores and the first read reloads the ring fields. Grouping
+// the header and the case-0 message in one struct (diagnostic only, a grouping form) gives both: 39 at
+// retail's 553 bytes, leaving the header-size register (SI, retail DX, so retail reloads the start before
+// the payload read and interleaves case 1's stores) and case 0's copy store, which retail schedules after
+// the channel load. On that diagnostic: the size declared before its test 122; a short size 39; the
+// header size at each use 125; case 0 written out under the channel test 36 (helper body by hand, the
+// copy store then lands after the branch). Real forms: the view-address line after the header and
+// payload declarations 72 (same frame); `standard` (self-aligned entry) without the view-address line 168
+// (519 bytes, the view is then held in a register), with the case-0 copy 154, with the grouping 154; a
+// ring read member (read_wrapped, start advance, used update) inline in this file's ring declaration
+// 72 (identical), with the case-0 copy 137; the same member out of line in the ring file 243 (not
+// inlined, 466 bytes). What exposes the header in retail without sending it is the open question.
 // Round 108 (lane 8; a one-file LTCG harness, this file + 0x1a19a0/0x68670/0x75e80 files, gives the build's 72
 // exactly): a compile without whole-program optimization does not give retail's code (retail passes the read and
 // send arguments in registers, so retail's object is LTCG). Real (fast): the payload test written `>= 1` 63 (553
@@ -1158,6 +1172,13 @@ bool function_68670(byte *source, long size, void *block);
 // homes and in-memory ring updates). Left there: the size in SI where retail has DX, because ours
 // forwards the stored ring start (EDX) into the second read where retail reloads it, and the case-0
 // copy scheduling and 0x68670 argument order that follow from it.
+// Round 41 (lane 13, --fast): the header declared in the loop 118 (553 bytes: its size takes DX and case 1's interleaved
+// stores are retail's, but view/size swap ESI/EDI, `used` is updated through a register and the start is forwarded
+// through EAX), at any point of the loop 118, with the payload in the loop too 118; in the loop with the header's `used`
+// update first 76 (553: the `used` update is retail's memory add; left: view ESI / size EDI, the remainder moved to EAX
+// and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
+// first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
+// header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
