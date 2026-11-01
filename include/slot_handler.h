@@ -127,8 +127,9 @@ static inline real slot_random_range(real lower, real upper)
 	return lower + (upper - lower) * slot_random();
 }
 
-/* rounds as the x87 does (unknown_0259d0's fld/fistp idiom) */
-static inline long real_to_long(real value)
+/* rounds as the x87 does (unknown_0259d0's fld/fistp idiom); retail has the
+   fld/fistp inline at every call */
+static __forceinline long real_to_long(real value)
 {
 	long result;
 

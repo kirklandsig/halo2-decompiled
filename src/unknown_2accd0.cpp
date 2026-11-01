@@ -743,6 +743,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Lane 12 r72 (fast; 0x2adb10 in brackets): the signature case as `default:` with no `__assume(0)` arm
+// 177 (688 bytes); `parameters->task->state = 4;` ahead of the total 232; the body case's position
+// written at both uses with no local 213; the signature case's likewise 221 (694 bytes); the getter
+// returning the buffer with the size through `dword *` (owner, size, flag from the buffer field) 34
+// [279, 944 bytes]. Compile-only: both positions written at both uses 111, with no total local 101;
+// about 450 random rewrites of the current form found nothing below it.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -964,6 +970,10 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Lane 12 r72 (fast; 0x2ad7c0 in brackets): the getter returning the buffer with the size through
+// `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
+// memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for
+// both arms 129, with the `void *` parameters view as well 129.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

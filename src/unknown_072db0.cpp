@@ -1506,6 +1506,9 @@ struct s_rating_summary
 // both uses with no named local 92 (no slot moves: the level/compare-cursor order is not the identity
 // local's name); with the key stored first as well 88; the team count switched once before a plain
 // counted team loop 157 (1192 bytes); the team skill as a sign-extended long 102.
+// Lane 12 r72 (fast): on the key stored before the session copy (88, 4 points, not kept): lower declared
+// in each loop 88; the team statistics pointer formed before the change call 88; both 88; level declared
+// in each loop 105 (every slot reshuffles).
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
