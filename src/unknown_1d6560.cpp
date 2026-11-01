@@ -132,6 +132,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // kind-7 test as a plain if 100 (260 bytes, sbb select); parameters (component, owner, level, kind, index) as the
 // caller's setup order implies 96 (same code, caller kept), with the one-read body 136, with a single-exit kind-7
 // path 100 (caller 13).
+// Round 46 (lane 1): parameters in retail's register order (component, index, kind, owner, level) 96 (same
+// code, caller kept), with the one-read type after the body 94 (caller 13), with case 0 also through the
+// object_index local 133 (220 bytes, caller 213), with case 0 through the header data at that index 133
+// (caller 213). A /Gd screen of 72 one-read forms (type/body/result orders, byte/long type, case 0 through the
+// component or the local, switch/result kind-7 path, header pointer) and two with the body formed at its uses
+// loads the index into EAX in every one. Retail loads the header data first and keeps it live into case 0
+// (EDX), which costs EBP for the body array; no form here keeps it.
 // Round 56 (lane 16): a /Gd compile-only screen predicts the register parameters (it agrees with the build for the
 // two-read body, the one-read flip and the form below). Of ~150 one-read forms (orders of object_index, type,
 // rigid body and result; long/byte/short/const type; case 0 through the component or object_index; a header
@@ -141,6 +148,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
 // both switches 125 (284 bytes, caller 194).
+// Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
+// a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
+// 98 (caller 13, movzx); the kind-7 test as `switch (kind) { case 7: ... }` 89 (caller 13); the current body with
+// case 0 through the object_index local 91 (caller 146); the type read straight from component, long 105 (caller 9,
+// index arrives in EDX). An env link with 0x1d5940/0x1d5bf0 (exact for the current body): the type through a
+// forceinline getter in both branches, or straight from component in both, never hoists the two reads (268/264
+// bytes); every order of the object_index/rigid-body/type/result declarations with byte or long type keeps the flip.
 // Round 31 (lane 15, fast; o/t/r = object_index, type, rigid body in declaration order, caller in brackets):
 // type through the byte-array header idiom o,t,r 105 [9], r,o,t 137, o,r,t 136, byte 117/132; o,t,r with case 0
 // through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes

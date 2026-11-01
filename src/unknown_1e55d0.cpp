@@ -68,6 +68,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	else *(dword *)out &= ~2;
 }
 
+// MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
+// trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
+// stack slot; 1176 bytes against retail's 1164.
 // Round 16: retail takes its first argument in EAX and copies it to EBX at once, and reads the
 // third argument from [ebp+0xc]; ours takes the same three arguments in the same registers, but
 // keeps the output pointer in EDI and the input pointer in EBX where retail keeps them the other

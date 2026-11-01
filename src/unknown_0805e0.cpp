@@ -137,6 +137,14 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
 // Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
 // `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
+// Round 59 (fast; 0x1a303b/0x2b393c stayed matched): 1-8 unused locals at the top (diagnostic) 43 each;
+// result set before the copy 43; the entry pointer declared at function scope 43; `*iterator = index =
+// entry->next` without early returns 43; `g_4cf98c + index` 43; a two-use dword flags local 43 (all same code).
+// Round 17 (lane 17, fast): the guest mask as a byte parameter of the exclusion helper 43 (propagated, still an
+// immediate); `while (!result && index != NONE)` with a successor local and `else index = next` 57 (AL mask, but
+// the loop stays top-tested in ECX); the record's four tests as one inline `&&` predicate 43 (identical), with
+// early returns 40 (round 119's form, re-measured), that plus a successor stepped at the loop's end 48; a guarded
+// do-while with a successor, `else index = next` and the `!result` test 51 (no hoist).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -605,6 +613,14 @@ void function_1537f0(s_profile_record *record);
 // Round 101 (lane 7), `--fast`: identity `= { 0, 0, 0 }` 95 (282 bytes); a const identity `= { 0 }` 67; assigned from a
 // value-initialized temporary 67; memset of its member array 67; the zero identity copied into the entry first and the
 // entry's own identity passed to 0x7f8b0 97 (284 bytes).
+// MiniMax E (10-31): the record's own tail clear and byte sentinel dropped (the record initializer
+// already leaves field 0x7f at 0xff) 78 (238 bytes, plain); the entries walked with a pointer 53 (255 bytes).
+// MiniMax E (10-31): the link words' -1 is the same constant as the globals' NONE and so stays in EBP; retail
+// keeps it in EAX and gives the record's field 0x40 its own register; 45 (259 bytes).
+// MiniMax E (10-31): the identity and the record in one two-member local struct (identity, then record) and the
+// entries walked with a signed index 45 (259 bytes, plain); not kept (a made-up struct that sets the stack homes;
+// no existing type pairs them). The record's field 0x40 then shares a register with the field 0x44 word and the
+// NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1026,10 +1042,28 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // copies the count into ECX for upper); copy loops indexed by the destination (`i = lower; i < upper`, `i = upper;
 // i > lower`, both) on the current body 371/373/373, on the plain-entry form 364/361/361; on the plain-entry form the
 // direction step computed before the copy loops 358, the flag set from `removed < position` 390 (1162 bytes).
+// Round 44 (lane 10, fast): round 111's plain-entry form rebuilt 56 (upper coalesced with the count in EAX; on the
+// current body the `cache_full` sete puts the count in ECX and upper in EAX, retail has count EAX, upper ECX); on it
+// the count path reading the count into a block-local `count` for the test and the bound 56, with lower assigned
+// first and no flag store 355 (1162 bytes); the current body with that block-local count 49 (identical); the current
+// body's three-way test as `position > removed` 50; the plain entry with the bounds and flag declared above the
+// removal block 378.
 // Round 140 (lane 4): on the current body, lower as `removed <= position ? removed : position` 49 (same code);
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
 // cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
+// Round 59 (fast): 1-8 unused locals at the top (diagnostic) 49 each. Round 149's plain entry rebuilt (cmovle lower,
+// explicit `>` arm, count path upper first with the flag cleared, flag set before the decrements) 54: only the
+// EDX/ESI load of the removed index and upper in EAX (coalesced with the count and the backward index) differ.
+// On it: backward copy as `for (i = upper; i > lower; i--) g[i] = g[i - 1]` 361 (1165 bytes, upper still EAX);
+// the copy arms tested as `!downward` 54; the two calls passed g_4cf980 with `removed` assigned after them 373
+// (1177 bytes); the count test as `g_4cf978 > position` 56; lower as `removed <= position ? removed : position` 56.
+// Round 17 (lane 17, fast): round 149's plain entry with the explicit `>` arm and the count path upper first
+// rebuilt 56; with round 119's mixed read 54 (first difference +0x4c: the entry and EDX load are retail's);
+// plus `downward = true` first in the `<` arm 52 (only upper in EAX, against retail's ECX, and the forward
+// copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
+// function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
+// : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
