@@ -567,6 +567,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // the tail's first block is laid out right after it); with the bitwise flag: the proximity exit as `return
 // g_46fbe4;` 76, every scan exit as a return 76, the 0x1b8d40 exit as a nested if 47 (same CFG), the
 // datum-index `continue` as a nested if 47 (same code).
+// Round 141 (lane 4, fast): the special test as a multi-exit inline helper (`return false` twice,
+// `return true`) 200 (872 bytes); `byte special = 0; if (type == 6) special = actor->unknown268;` 99;
+// the proximity exit as `close = true; break;` with the minimum after the loop under `if (close)`:
+// `&&` 200, bitwise 47, false-then-field 99 (each the same as its goto form: the break is threaded
+// back); that with the preset-true `||` form 187; the whole test in an inline helper taking the
+// actor index 268 (813 bytes).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

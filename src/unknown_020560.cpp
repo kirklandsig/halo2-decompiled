@@ -1319,6 +1319,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
 // outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
 // tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
+// Round 141 (lane 4): retail holds the begin-test push header only here (the SDK function inlined
+// by its link; the push constant appears once in the whole image). The set computed in the query
+// block 108; status = S_OK at the loop body top 138; the device declared before the status test 52;
+// the segment size read at both MakeRequestedSpace arguments 52; `!indices ? i : indices[i]` 118.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {
