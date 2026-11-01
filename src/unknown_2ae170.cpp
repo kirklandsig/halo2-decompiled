@@ -574,7 +574,7 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 	settings->mixbins.dwMixBinCount++;
 }
 
-// score 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
+// score 299 (was 299): Workspace frame/prologue and repeated conversion coalescing remain.
 // Earlier: frame 0x130 versus 0x94; our LTCG CSEs and hoists the identical 0x12aff0(-64, 0, -64)
 // conversions (6 calls versus retail's 15; BLOCKED-BY 0x12aff0: retail's callers treat it as opaque).
 // Round 75: SetMixBins (retail calls 0x37c5e4) for SetMixBinVolumes 449 (kept); the existing 0x2216f0 with a
@@ -691,6 +691,11 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // Round 217: Complete descriptor value initialization at declaration and by assignment, first/second/
 // third/all for each: 307/314/314/299/307/314/314/299. Unselected value-production forms restored.
 // Selected native descriptor value production: 2aeb20-t04; original scopes and game-call inputs retained.
+// Lane 18 r21 (plain): memcpy settings copy 296 (retail's inline rep movsd; below margin); memcpy with
+// undeclared-zero objects 393 (951 B); memcpy with the second rear send as if/else 317; memcpy with
+// front/rear level locals 315; memcpy with explicit sends 412 (941 B). Without the zeroing our LTCG
+// reuses the first set's (-64, 0, -64) conversion in sets 2 and 3 across the SetMixBins/SetVolume
+// calls (2 and 1 calls there, retail 5 and 5): it treats 0x12aff0 as pure, retail as opaque.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
@@ -742,8 +747,8 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 	return effects->m_settings.level2c;
 }
 
-// MiniMax R (10-31): no new form, no lower score.
 // score 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
+// MiniMax R (10-31): no new form, no lower score.
 // Earlier: retail copies the input level into a dead argument slot through a
 // frame 0xc agrees; retail copies the input level into a dead argument slot through a
 // Frame 0xc agrees; selected-primary storage, destination construction and integer-bit/SSE staging differ.
@@ -865,6 +870,18 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // input level copied once into a real local for the else branch's sums 411 (dispatcher lost); the
 // first branch's two selected levels as long bits 377 (aligned 161 -> 152, but level then sits in EBX and
 // the right bin is spilled); the first level as a real/long union 370 (same code).
+// Lane 18 r21 (fast unless noted): else-branch input level as a long read through `*(real *)&level`
+// 410, in a local bits/value union 411 (both memory-homed; dispatcher lost). Lead, 296: the level as a
+// long local never address-taken, every else-branch sum through a new inline two-operand bits-in,
+// real-out sum (`return *(real *)&a + *(real *)&b;`) and the gains read at each use: 296 plain at
+// 1116 B, dispatcher exact (retail's EBX level staged before each add, no shared send + level). Not
+// kept: the helper's only caller is this function; 0x2af450 229, 0x2af920 205/208 and 0x2af800 79
+// rise with it, and the same sum with a double body is 343. Without the gain reads 313 (1127 B;
+// dispatcher lost). On the 296 form: front/rear levels at use 333, with gain locals 321; original
+// mode-one tail 324; offset at the top of each flag3 branch 312; flag3 mode tails through the helper
+// 307; long first-branch levels 309; send-first, inner-first, send-as-bits and first-branch helper
+// forms 296. One-argument bits-to-real helper 342; every sum through decibels_add 470 (1276 B).
+// Remaining there: our compiler makes all-memory sums x87 chains (regrouped); retail stays SSE.
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
@@ -936,8 +953,8 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 	}
 }
 
-// MiniMax R (10-31): no new form, no lower score.
 // score 224 (was 224): Frame 0x20 versus 0x18, mode/input-level homes and the second x87 tail sum remain.
+// MiniMax R (10-31): no new form, no lower score.
 // Retail loads level, offset and the send level with integer moves (/arch:SSE has no movd, so level
 // in EBP is bounced through a temp before each add) and never shares send + level between appends.
 // Round 152: send level from an out-parameter getter 224 (promoted, identical); gains at use, byte
@@ -1054,6 +1071,12 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 // retail's level in EBP bounced through a stack temp before each addss, the offset and send level
 // copied as integers into homes, and the store-reload pushes are /Op code generation (see 0x2aefe0).
 // Round 216: Direct normalized route bit in word/short/byte/dword carriers 236/236/242/241; raw bit mask carriers 237/237/253/248. All restored; frame, mode/input-level homes and x87 tail remain.
+// Lane 18 r21 (fast): the level as a long local with the inner sums through a two-operand bits-in,
+// real-out inline sum (see 0x2aefe0) 229 at 832 B: level in EBP and mode on the stack as retail, but
+// the all-memory sums become x87 chains; with gains at use 261; gains at use and offset bits 238;
+// offset bits 232 (854 B); no volatile bins 240; long bins, no volatile 242; front-level local 228;
+// offset bits, no volatile 237; bool flag with long bins, no volatile 247; bool flag 246; bool flag
+// with long bins 256; gains at use, bool flag, long bins 254. 240/242/228/237/247 lose the dispatcher.
 // @retail 0x2af450
 void c_sound_effects::add_effect_sends_split(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
