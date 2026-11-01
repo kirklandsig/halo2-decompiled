@@ -300,6 +300,12 @@ struct s_seat_animations
 // outer loop's condition instead of the break 52; the entry pointer declared at function scope 52; the
 // element_index parameter as the walking index 52. Retail's own 0x188690 forms the element with
 // `add ecx, eax; mov eax, ecx`, so the lea/test in this body follows element's register, not the getter.
+// Round 52 (lane 1, fast with 0x188130): the two count/entries pairs typed as a tag-block struct (count,
+// entries) with the block selected per iteration and no inner guard 57 (175 bytes: retail's result spill and
+// EDX reload, but animation is then register-passed in EAX, type in ECX, ret 4; 0x188130 12); that struct
+// with retail's value selects and no guard 63 (172 bytes, registers permuted: animation EAX, count EBP,
+// element ECX); the struct on the guarded form 55 (same code); one block reference selected once with its
+// count in the loop test 98 (135 bytes); the value selects with `if (count > 0)` around the inner loop 57.
 // @retail 0x187fe0
 s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {
@@ -565,6 +571,12 @@ bool function_172750(long mode, point3f const *point, real radius);
 // Round 474: Complete first/second/both conditional variant results 165/168/170;
 // whole first/second/both entry values 178/167/205; second/both payload pairs
 // before variants 131/159. Original body restored; tag/index and output homes remain.
+// Round 52 (lane 1, fast): the entry index wrapped once in a material-class local 118 (same code);
+// element_index read once through its address for the fallback lookups 118 (same code); the element
+// through the existing 0x188690 210 (472 bytes); each tag lookup as `tag_index != NONE ? ... : NULL` 162;
+// the second tag lookup first 172. Re-measured: the 4th/5th parameters as the material class (0x188180's
+// call adapted) still match here (fast), 0x188180 56; still BLOCKED-BY the declarations in
+// src/impacts.cpp and src/projectiles.cpp.
 // @retail 0x1883e0
 void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)
@@ -677,7 +689,7 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
 // items.cpp, unknown_246f10.cpp). Retail also calls 0x1883e0 with twelve stack arguments where
 // ours passes thirteen: BLOCKED-BY 0x1883e0 (another file).
-// score 77 (was 77): frame 0x48 agrees; first counter spill recovered; effect/forward inputs and second scan differ
+// Earlier: frame 0x48 agrees; first counter spill recovered; effect/forward inputs and second scan differ
 // (BLOCKED-BY 0x1883e0, see below). Earlier forms and observations:
 // Point setter 89; component loop 317; origin value 150; description position 105;
 // late description 89; result-array names 89; query-owned defaults 122; facing value 149.
@@ -711,6 +723,12 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // sound index 89; description filled before the effect scan 98.
 // Round 118: effect point through the existing vector3f_add_scaled 77; first array filled first 77;
 // the fills paired by index 76; velocity copied first 77; effect point after the query 96.
+// Round 52 (lane 1, fast): the sound position as an aggregate initializer 77 (same code); the scan index
+// types exchanged (short first, dword second) 120 (364 bytes); the six NONE defaults as one chained
+// assignment 77; one chained assignment per array 77; the locals declared position, effect point, second,
+// first 77; the fills paired by index re-measured 76. With 0x1883e0's 4th/5th parameters as the material
+// class (diagnostic) 56 (346 bytes): this takes retail's inputs, so the input split follows 0x1883e0's
+// convention; left are the second scan (retail: dword index in EDI, scale in EBP) and the `or esi, -1` slot.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

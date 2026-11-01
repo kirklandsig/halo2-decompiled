@@ -1302,6 +1302,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
 // the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
 // write handle 120.
+// Round 49 (m3 lane 1, fast), on round 53's 7 form (rebuilt: 7, left the write handle loaded late and the
+// checksum in EDX): the write through a force-inline blocking helper taking the handle by value (call and
+// wait; an inlined by-value parameter gives retail's handle-first write) 114 at 917 bytes, the write
+// then matches and the close loses its `mov ecx, eax` copy; plain inline 114. Helper sets for the size
+// query/resize/write/close calls (D direct, H helper): DDHH 114 at 917 (aligned 4: only the close copy
+// missing, checksum EAX as retail), DHHD 6 and HDHD 6 (one rotation off: resize EAX, header ECX, close
+// copy EDX), DHHH/HHHH/HDHH 118. On DDHH: a close helper holding the INVALID test and store, by file or
+// handle pointer, 114/114 (7 without the write helper); the close argument through g_557c90[index] 114;
+// the close test through the s_file_handle view 114; nested close test 114. The handle from a force-
+// inline getter returning it by value, at the write / write+close / all four / write+resize: 7 each (the
+// getter is transparent). Diagnostics: the file pointer from a byte offset 104, from a displacement local
+// 101 (the displacement then takes EAX, retail ECX).
 // Round 123 (lane 6, fast): the 7 and 6 forms reproduce. On the 7 form a write handle local alone 114 is one
 // instruction from retail (917 bytes: only the close call's `mov ecx, eax` struct copy is missing, the rest is
 // loop padding); with a `s_file_write_flags flags(0)` local as 0x2151f0 writes it 114; the write handle built by

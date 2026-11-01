@@ -878,6 +878,11 @@ done:
 // definition-owner/mode/scenario snapshot subsets 0..7: 193/201/235/236/230/242/225/227.
 // Entry still caches next; some forms also change the iterator register. Original cursor
 // phase, observations, frame 8 and complete body restored.
+// Round 51 (lane 1, fast): the iterator flags as a short (retail's movsx) 175; the exhausted test written
+// as the empty arm (`if (next == NONE) {} else`) 176; the squad looked up with the unmasked long index 176;
+// the first scan's pair through a short pointer 196 (617 bytes, as before); a long result 211 (633, as
+// before). The entry test still loads next into CX for the first pass (retail compares it in memory and
+// reloads it at each loop top), which pushes NONE into EBX.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2157,6 +2162,11 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
 // 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
 // flag store with the short-view return 65 (206).
+// Round 51 (lane 1, fast): on 0x203d70's loop (step helper, statement-level pair around 0x203f60, word flag
+// store, short-view return; 71 at 191 bytes, everything but the squad pointer's split around the loop and the
+// index in EBP): squad_get for the squad 71; an actor index local for the three loop calls 71; the game time
+// stored before the flag 71; the squad as a byte pointer through squad_get 71; the actor initialised NULL 71
+// (identical register roles: the squad keeps EBX, the index stays in its stack home).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2480,6 +2490,11 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // Round 475: Failure-first actor completion, with bitmap pointer scan/short overlap/native
 // offset-vector subsets 0..7: 301/331/320/349/316/346/338/364. All restored; frame
 // 0x48 versus 0x54, early saves, pool/intersection and current-handle homes remain.
+// Round 51 (lane 1, fast): the area iterator, the two points, the wake flag or the location declared at
+// function scope 275 each (identical code: scope never moves the shared homes); a long squad index 275 (as
+// before); the walk through the existing out-of-line record_pool_iterator_step 415 (1007 bytes: the step
+// stays a call, also 0x204b20 202, 0x201df0 139, 0x200d80 158). Retail keeps the walk iterator in memory
+// (data reloaded each pass) as an escaped local would be.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
