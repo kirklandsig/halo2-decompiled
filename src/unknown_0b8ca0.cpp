@@ -742,6 +742,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // included: the cluster test through the existing bit_vector_test 230 (same code, kept: it replaces that
 // helper's body written out); the distance through length_sq3f 230; the range test as an else-if 230; the
 // model index read at each use 227 (below the bar); a named radius for the square 230.
+// Y499: closed ancestry/range/marker phase subsets on the real-angle tree with direct double
+// radius operand 246/246/246/247/247/247/247; all with bool result 260. Reduced forms self-align
+// with both callers present, but frame 0xac versus 0xb4 and scalar homes remain. Original body restored.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {

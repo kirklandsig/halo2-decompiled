@@ -18,9 +18,9 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
-// score 197 (was 226): the mode bit loads the flags into edx where retail uses eax, so
+// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
-// score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
@@ -168,6 +168,8 @@ extern real g_4c9798[36];
 // Round 283: width-first rounding on the retained overflow graph, full-word mode/height
 // and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
 // Original height-first producers, bounds, mode, capacity expressions and complete body restored.
+// Y499: retained long-mode graph, size/mode/both/extent/size-extent/all/bounds/aspect
+// scalar role families 197 each; original names and body restored. Mode/size homes and protected rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

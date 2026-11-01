@@ -580,7 +580,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
-// score 264 (was 279): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
+// score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
 // so the object pointer goes to ECX; retail tests with immediates and loads `mov bl, 1` only after the b8d30
 // call. Retail also stores case 3's failure byte (`neg/sbb/inc`, slot shared with the audibility output) and
@@ -703,6 +703,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // without its type compare 331 (frame 0x80), the shift on another constant 286: the early EBX constant stays.
 // On the kept form: audibility declared just before the marker 267; marker declared before its name 264; case 3's
 // forward vector declared before the audible store 264.
+// Y499: retained direct-output/audibility graph, failure-first/common exit/both
+// 261/260/261; reversed membership mask 257; with failure/common/both 263/264/263;
+// all with byte failure 263. Seven-point best is below the keep bar; original body restored.
+// Frame 0x84/0x80 and early constant-one spill remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

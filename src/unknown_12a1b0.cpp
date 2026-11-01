@@ -1982,14 +1982,14 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
-// score 335 (was 335): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
+// score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
 // locals in a different order and the gap cannot be closed by padding;
 // retail reads the track value and the source scale before the clear, the one-fill clear and the
 // inlined 0x221810 (BLOCKED-BY 0x221810, another file) and the inlined 0x12a420 at the
 // stop_channel site remain.
-// score 335 (was 335): frame 0x4b4 versus 0x4bc (retail reads the track value and the source scale before the
+// Earlier: frame 0x4b4 versus 0x4bc (retail reads the track value and the source scale before the
 // clear), the one-fill clear, 0x221810 inlined (BLOCKED-BY 0x221810) and 0x12a420 inlined at the stop_channel site remain.
 
 // Earlier: frame 0x4b4 versus 0x4bc, entry snapshots and the class lookup expansion still differ.
@@ -2034,6 +2034,10 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // 497; the playback lookups through the existing sound_definition_get 335 (same code); the stop flag through
 // word_flags_set at the state-else site 419, at both sites 419; the gain sum above the clear 333 (under the keep bar),
 // with the nested clear 498.
+// Y499: retained gain-parameter graph, early track-gain/source-scale/source-gain
+// input subsets 1-7: 339/467/465/464/462/481/481; all with flat zero aggregate 492.
+// Exact-only one-use snapshots all restored; frame remains 0x4b4/0x4bc with scalar homes,
+// class-query boundary, clear regions and stop-call expansion unresolved.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
