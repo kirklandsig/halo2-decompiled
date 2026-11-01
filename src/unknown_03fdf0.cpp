@@ -337,6 +337,15 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
 // material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
 // declared first 49 (identical, 54).
+// Round 124 (lane 5): an LTCG env link of this file plus the callee files' objects, with an entry calling
+// 0x404b0, gives the full build's listing instruction for instruction (2 s a form). On it (positional/aligned):
+// block form with `current` read back for first 125/37 (153 instructions); a short count before the `if` on
+// the block 60/53; indexed forms 125-145 (aligned 29-30 at 148-150 instructions: index ECX and zero EDX where
+// retail has EDX/ECX, first kept in EDX across the copy where retail loads it into EDI and spills it, entries
+// spilled to the cursor home at once where retail builds it in EDX after the copy; the indexed form with a
+// long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
+// the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
+// combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

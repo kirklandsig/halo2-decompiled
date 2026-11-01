@@ -1447,6 +1447,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // three qsort calls written out 169 (420). Diagnostic: the else path re-querying instead of reading
 // player_count (no forwarding) 116: the result then goes straight to its home as retail, but index_count
 // stays in memory in both scans, so the forwarding is not the only cause.
+// Round 124 (lane 5, fast): index_count assigned 0 in each branch before its scan, not at its declaration
+// 141 (438 bytes; frame 0x58, mode spilled, zero in EBX); that with index_count declared after item_count
+// 141; item_count initialised at its declaration 121 (432); player_count assigned 0 in branch one instead of
+// at its declaration 126; the three queries (mode, teams, values) declared before the count locals 94;
+// `(void)&index_count` 83 (same code: the slots are not set by an address taken this way). An LTCG env link
+// with the direct callees' objects does not reproduce this function (callee clobber sets reach further).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2517,7 +2523,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
-// score 95 (was 95): this round: the widget indices as longs (with (short) casts at the
+// score 95 (was 95): the locals live in the other stack slots (shown count, the first
+// loop's player, the second loop's four widget indices), retail reloads players[i] after the
+// voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
+// ours keeps the screen in ebx and false in edi.
+// Earlier round: the widget indices as longs (with (short) casts at the
 // find_text/find_bitmap calls) 198/227, the helper taking them by reference 95/198/227, the
 // helper's assignment order 96/98/99 and a mode local in the last loop 95 all compile to the
 // same or worse code. Retail's last loop keeps the four indices in registers (eax, edi, ebx
@@ -2525,15 +2535,11 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // out-parameters force them into memory. A separate counter for the second loop moves the
 // first loop's player-slot pointer to retail's slot (-8) and scores 93, but the gain is under
 // eight, so the body stays as it is.
-// score 95 (was 95): this round: the four widget indices' declaration order (both loops),
+// Earlier round: the four widget indices' declaration order (both loops),
 // the two function-scope locals the other way round, the widget indices after the team
 // locals, the player slot kept in a local, the loop counter as an int and the voice query's
 // player index in a local all compile to the same code (95). Retail still reloads players[i]
 // after the voice-state query and keeps bitmap_a in ebx in the last loop.
-// score 95 (was 95): the locals live in the other stack slots (shown count, the first
-// loop's player, the second loop's four widget indices), retail reloads players[i] after the
-// voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
-// ours keeps the screen in ebx and false in edi.
 // Earlier: find_bitmap now takes a long like find_text (round 104); named pointer to
 // players[i] in the first loop 111; renamed count, flag, player and slot locals 111.
 // Round 184: shared count 301; result-first voice 129; native team byte 165; count/voice 307;
@@ -2573,6 +2579,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // in EBX for all five calls and puts the `false` argument in EDI once text_b is pushed; retail pushes 0
 // and moves the screen into EDI. 0x2514fd shows the same reload symptom after 0x19a9b4, whose chain ends in
 // the same out-parameter session getter (0x596a0) as 0x53b40's.
+// Round 124 (lane 5, fast; the three stacked notes merged into this one): shown_count assigned in each
+// branch instead of at its declaration 203; in_matchmaking queried before shown_count is declared 100;
+// shown_count declared after the loop counter 100; one function-scope `local` for the first two loops 95
+// (same code); `shown_count = 0` before the empty-list call 166 (918 bytes only because the two list-fill
+// calls then tail-merge; the last loop keeps its 8 extra bytes). An LTCG env link with the direct callees'
+// objects does not reproduce this function (the players[i] reload depends on callees further down).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

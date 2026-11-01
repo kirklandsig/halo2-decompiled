@@ -320,6 +320,14 @@ void function_07b3e0(void)
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
 // left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 124 (lane 5, fast): record_pool_next_used over datum indices 105 (73 bytes, stays a call); the
+// absolute-index scan with index_to_datum_index 44; the datum index named before the call 39 (same code);
+// the iterator form with index_to_datum_index on a pool local 47; MiniMax H's two pool locals with the index
+// stored after the datum index (retail's order) 11 at 131 bytes (only the found block's size/data registers
+// and the dead datum `add` left; one-use duplicate local, not kept). Compile-only diagnostic: file-local
+// non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
+// retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
+// file's /Ob1 keeps them out of line here: a flags decision).
 // @retail 0x7b430
 void function_07b430(void)
 {
