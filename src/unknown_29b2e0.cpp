@@ -202,6 +202,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
 // with complete role names 255/255/255/255/255/255/255/255.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 30 (lane 2, fast): retail packs the sqrt/acos temporaries with the yaw in [esp+0xc] and gives local_11
+// [esp+0x10] alone; ours packs the temporaries with local_11 in [esp+0x10] and the yaw alone in [esp+0xc]
+// (the inlined acos result then needs its own slot). The yaw renamed to sort before local_11 255; local_11
+// renamed to sort after the yaw 255; both angle declarations moved to the function's top 255 (all the same
+// code); the XY vector initialised before the second copy 253 (two-point gain, not kept), before the first
+// copy 361 (1710 bytes). Retail also spills the pitch into arg_4's home after its last use.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

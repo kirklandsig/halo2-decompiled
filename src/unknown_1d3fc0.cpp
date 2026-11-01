@@ -128,6 +128,15 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 279: Complete independent orthogonalized scalar results before stores in all six
 // producer row orders 188 each; with all three removed products named 188, existing staged
 // cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
+// Round 190 (fast; compile-only screen scored against retail's block, control 71 mismatches): forward-only
+// helpers (one caller, so only keepable with a match): products k, i, j with k reciprocal-first 108 (retail's
+// j/i/k register mapping xmm4/xmm5/xmm6, k still preloaded, sum still j, k, i; screen 63); statement sum j, i, k
+// with products j, i, k 108 (screen 55); plain j, i, k sum with products j, i, k 111 (55), with k, i, j 110;
+// named i square with k, i, j 110; the k-first forward plus a k, j, i statement sum in the shared helper 149;
+// forward normalised in a local copy 251 (982 bytes). Screen only: 144 forms (three sum forms x six product
+// orders x every operand spelling) never drop the k preload and the spelling never matters; the dot's argument
+// order and all six projection row orders compile the same; distinct in/out pointers, products through
+// locals and a magnitude helper compile like the control.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

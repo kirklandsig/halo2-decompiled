@@ -445,6 +445,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 256: Shared width/height/both short locals 255/254/257; promoted long locals 256/255/259;
 // both short/long at entry 257/259. Original dimension reads and complete body restored; frame
 // 0x3c and clock/output homes remain.
+// Round 50 (lane 1, fast): format-field size query + per-arm movie open 255; `size` read back from
+// permanent_memory_size after the three stores 242; that + format-field query 241; that + per-arm open
+// 248; all three 253. Retail's constant 10 sits in EBP for the texture call and the format store, and
+// its retry loop is top-tested with one allocation call (ours rotated, the call duplicated).
 // Round 475: Plain surround-volume/stereo-volume/stereo-bin producer subsets
 // 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
 // Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point

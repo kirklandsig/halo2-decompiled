@@ -502,6 +502,13 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
 // branch-owned next 74/129/129/74/74/129/129/129.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 190 (fast): retail's scan has a dead `lea edi, [ebx+edi*8]` after the type compare (so the index is
+// re-extended at the loop top), count in EBP, entries in EBX, alternate in CL and the index in EDX. An element
+// pointer local for the compare on the found-flag form 94 (336 bytes, no lea: it folds), on the current body 74
+// (same code); count and entries as value ternaries on the flag form 94, with the `!alternate` arm first 94, on
+// the current body with the `!alternate` arm first 75. Diagnostics (flag form, not kept): `next = 1` 85 and a
+// scan starting at one 81 remove the zero register, but the walk keeps squad/definition in EAX/ECX swapped and
+// the scan keeps alternate in BL, count in EAX and the index in EBP with a sign-extended copy in EDX.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -882,6 +889,11 @@ done:
 // definition-owner/mode/scenario snapshot subsets 0..7: 193/201/235/236/230/242/225/227.
 // Entry still caches next; some forms also change the iterator register. Original cursor
 // phase, observations, frame 8 and complete body restored.
+// Round 51 (lane 1, fast): the iterator flags as a short (retail's movsx) 175; the exhausted test written
+// as the empty arm (`if (next == NONE) {} else`) 176; the squad looked up with the unmasked long index 176;
+// the first scan's pair through a short pointer 196 (617 bytes, as before); a long result 211 (633, as
+// before). The entry test still loads next into CX for the first pass (retail compares it in memory and
+// reloads it at each loop top), which pushes NONE into EBX.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2146,6 +2158,14 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 125 (lane 5): actor index assigned in the loop test 64; actor and actor index declared at the top 64;
+// iterator declared at the top, before or after the squad pointer, 64/64; flag test as a signed char 64;
+// flag test with an empty then-arm 64; the 0x1e11b0 test as `== false`, with an empty then-arm, through a
+// named bool 64/64/64; game time stored first 64. Diagnostics: pointer renamed (name order) 64; iterator's
+// squad index field stored in the loop 65 (the index becomes a register argument). Flags lead (not
+// applied): with `/Ob1` file flags and no pragma, the existing step helper gives 71 at 191 bytes exactly as
+// the statement-level pragma does, so /Ob1 alone accounts for retail's out-of-line 0x204d30/0x203f60 and
+// unrotated loop; the squad index still never gets a register there (byte return 78).
 // Round 63 (lane 12; an LTCG env link reproduces the build): on 0x203d70's loop (71) an early `return` when the
 // +0x7e test fails 89 (220 bytes); the store from `iterator.squad_index` 78 (185, 0x203d70 drops to 34); a named
 // flag local before the tests 71; iterator/actor declared at the top 71. Same code as the 71 form (env): the
@@ -2161,6 +2181,11 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 31 (lane 15, fast): return as `(squad[2] & 0x80) != 0` 65 (204); bit-7 test as `(char)squad[2] >= 0`
 // 64 (same length); actor index declared at loop scope 64; iterator.actor_index stored by the step 64; word
 // flag store with the short-view return 65 (206).
+// Round 51 (lane 1, fast): on 0x203d70's loop (step helper, statement-level pair around 0x203f60, word flag
+// store, short-view return; 71 at 191 bytes, everything but the squad pointer's split around the loop and the
+// index in EBP): squad_get for the squad 71; an actor index local for the three loop calls 71; the game time
+// stored before the flag 71; the squad as a byte pointer through squad_get 71; the actor initialised NULL 71
+// (identical register roles: the squad keeps EBX, the index stays in its stack home).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2288,6 +2313,14 @@ bool function_1df5d0(short team_a, short team_b);
 // Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
 // with outer health workspace 39/39/153/153/39/39/153/153.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 190: unused-local probes (diagnostic, not kept) 1-8 before the squad pointer and 1-8 before health in
+// the real build 39 each (2: 47), 1-16 at both places compile-only: the add never folds, so it is no numbering
+// tie. Compile-only experiments: a single-definition value folds (`addss xmm0, [p+16]`) in or out of a loop; a
+// multi-path local folds outside a loop through a byte or typed local pointer, an indexed element or a stack
+// parameter, but inside any loop (for, while with a call, do-while, body in a forceinline helper, local declared
+// outside) every operand shape loads the field first. Real: count declared at function scope 39; total as
+// `((real *)squad)[4]` 39; the add through a fresh squad_get 217 (861 bytes); a forceinline add helper by value
+// or through a total pointer 217/218 (834/833 bytes).
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2487,6 +2520,11 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // Round 475: Failure-first actor completion, with bitmap pointer scan/short overlap/native
 // offset-vector subsets 0..7: 301/331/320/349/316/346/338/364. All restored; frame
 // 0x48 versus 0x54, early saves, pool/intersection and current-handle homes remain.
+// Round 51 (lane 1, fast): the area iterator, the two points, the wake flag or the location declared at
+// function scope 275 each (identical code: scope never moves the shared homes); a long squad index 275 (as
+// before); the walk through the existing out-of-line record_pool_iterator_step 415 (1007 bytes: the step
+// stays a call, also 0x204b20 202, 0x201df0 139, 0x200d80 158). Retail keeps the walk iterator in memory
+// (data reloaded each pass) as an escaped local would be.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2939,6 +2977,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
 // 50/50/50/50/50/50/50/50.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 190 (fast): a two-use `bool has_definition = flag40 && definition != NONE` for both tests 169 (578 bytes:
+// the follow-up 0x1fb8a0 call gets retail's `mov eax, ebp`, but the bool is materialised at entry and the compute
+// arm re-reads the definition index); the same bool only in the else arm 50 (same code); the trigger part as a
+// forceinline helper taking the squad and index 50 (same code); the trigger guard folded into the local_5 test
+// 111; the definition index as a named local for the arm's test and the 0x290cd0 argument 50 (same code).
+// The callee 0x290e20 (another lane's) still differs at +0x0.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

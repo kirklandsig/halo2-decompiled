@@ -2062,6 +2062,16 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // @coldspear's permuter (#104, 2026-10-30): 66 -> 52 needs a volatile local pointer; its reorders alone gain nothing.
 // Round 268: entry output declarations / attached-path early return / persistent selected
 // marker, all seven subsets 69; native output role names 69. Original body restored.
+// Round 128 (m3 lane 5): the cause is the object/effect call cycle (0xd9d60 -> 0x176870 -> 0x175fa0 -> ... ->
+// 0xd6c80 -> 0xd7b80 -> 0xd6800 -> 0xdae60 -> 0xd9d60): ours keeps plain /Gr fastcall (ECX, EDX, rest on the
+// stack), as LTCG gives a function its walk reaches through a back edge, and so does 0xda110; the disabled
+// 0xb8540, 0xb7430, 0xb7b40 and 0x2902b0 (stubs cut their cycle edges) change the walk. Diagnostic, reverted:
+// with those four bodies enabled this function takes retail's AL/ECX/EDX convention, 8 at 260 bytes (0xdae60
+// 57, 0xda110 513, but matched 0xd6bc0 63 and 0x11a320 10 lost); there, the marker and object parameters
+// swapped (definition, declaration and the four calls) 6 (registers as retail), with `markers[2].name` stored
+// before the position and forward copies as well 4: only the 0x176ad0 register-argument setup is left
+// (retail ECX, EDX, EDI, ESI; its only caller, so 0x176ad0's own parameter order). In the real build: both
+// forms 70 (0xdae60 75, 0xdaaa0 231), the name first alone 69. BLOCKED-BY 0xb8540.
 // @retail 0xd9d60
 void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
 	s_damage_owner const *owner)

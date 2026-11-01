@@ -299,6 +299,21 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
+// (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
+// at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
+// the 0x6b380 loop 237, all three 259; centre/height/radius in their own block 217 (frame 0x44, gain under the gate),
+// with the 0x6b380 loop 229, plus the direct point 238 (frame 0x40).
+// Round 112 (lane 8, fast): retail adds the offset to the translated local and passes it to both calls,
+// re-reads the player's unit for 0x14e0f0 and runs the second scan through 0x6b380. Translated local
+// 245 (1048 bytes); plus the unit field at each use 230; plus the 0x6b380 second scan 259 (readiness
+// homes and the second loop as retail, frame 0x48); plus a block around centre/height/radius 259 (centre
+// at retail's 0x2c, alternate and first iterator at 0x38, the second iterator alone at 0x48 where retail
+// shares 0x2c); its index stored before the datum index 259 (retail's store order); plus the final scan
+// through data_iterator_next_inlined 268 (1027), without the block 270. On that form: the offset as
+// three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
+// iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
+// slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

@@ -1371,7 +1371,12 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 92 (was 92): frame 0xfc and length (1212) agree. Left: level and the group-compare cursor take
+// score 61 (was 92): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
+// and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
+// the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
+// ECX into the loop head and stores it there, ours keeps it in memory) and the lower zero (retail sets it
+// in the else arm, ours before the test). Earlier, at 92: frame 0xfc and length (1212) agree. Left: level
+// and the group-compare cursor take
 // each other's slots (ours 0x18/0x14, retail 0x14/0x18); retail loads the key before the collection
 // fields and calls the identity formatter before pushing strncpy's count; in the team loop retail keeps
 // the counters cursor in a stack slot and the collection, then level, in EBX (ours: cursor in EBX,
@@ -1506,6 +1511,33 @@ struct s_rating_summary
 // both uses with no named local 92 (no slot moves: the level/compare-cursor order is not the identity
 // local's name); with the key stored first as well 88; the team count switched once before a plain
 // counted team loop 157 (1192 bytes); the team skill as a sign-extended long 102.
+// Round 49 (m3 lane 1): the team loop's lower as `lower = 0; if (value >= 0) lower = ...;` 61 (kept; the
+// team loop then gives EBX to the collection and level as retail, and the player-loop slots fall into
+// place); the same as if/else 92, reversed ternary/if-else 96/96, the zero before the level call 118
+// (1228 bytes), the arms swapped (`type == 5` first) 317, team-loop value/change/level/lower 108, level
+// alone 108 (lower/change/value alone 92), one index shared by both loops 127, the count declared before
+// the loop 92, both rating calls written as the 0x73e00 arguments 131. On the 61 form: key stored before
+// the session 57; skill and value tested in nested ifs (value then loaded after the skill test, as
+// retail) 60, both 56; with the identity formatter's result in a local as well 50 (aligned 18: the
+// summary block then matches; match-only), on that: team value read at each use 228, a team entry pointer
+// 70, a walking counters pointer 51 (its base is the struct, retail's cursor points at +6), the counters
+// pointer at the loop top 50, long skill 66, early continue 50, skill read at the loop top 232, the four
+// shared declarations in four other orders 50 each. Diagnostics: without the file-scope inline_depth(0)
+// region only the variant getter 0x192e60 inlines (407); a terminating-copy inline helper for the identity
+// (strncpy then terminate, as other files have) then gives retail's formatter-before-count order but the
+// getter still inlines, 388, also at inline_depth(1) and through a forwarding helper 388: retail's
+// identity copy was an inlined helper, which this region cannot reproduce.
+// Round 53 (m3 lane 1): team skill/value nested with a ternary lower 92; key first, formatter local
+// and a ternary team lower 83 (the ternary always gives the counters cursor EBX); the team counters
+// pointer renamed (same code); the team value read before the skill 65; the team value tested before
+// the skill 64. Diagnostic without the
+// inline_depth(0) region: the existing unicode_string_to_ascii (0x13fb90) for the name, a
+// strncpy-and-terminate inline copy for the identity and the existing team-count accessor 0x193440 in
+// the team loop's condition all inline as retail's code (formatter before the count push, the 0x7f
+// loop, a per-iteration jump table), 407 at 1260 bytes, fast and plain: only the getter 0x192e60
+// inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
+// it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
+// out of line is still unknown.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1609,7 +1641,9 @@ void __stdcall function_741f0(s_match_player_rating_collection *collection, s_qu
                     change = function_74720((const s_match_rating_collection *)collection, i);
                     value += change;
                     level = function_74970(value, skill);
-                    lower = value >= 0 ? function_74970(value, 0) : 0;
+                    lower = 0;
+                    if (value >= 0)
+                        lower = function_74970(value, 0);
                     const s_rating_counters_team *stats = &collection->team_counters[i];
                     function_73e00(lower, batch, (const XUID *)collection->teams[i].unknown0c, change,
                         stats->first, stats->second, stats->third, level, 3, players);
@@ -1821,6 +1855,14 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round N274: Library property copy before identity capture 711; readonly identity 711;
 // producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
 // Original identity/property order, native buffer lifetime and complete body restored.
+// Round 53 (m3 lane 1, fast; aligned diff of the listing: 308 unaligned lines at 709): the existing
+// online_logon_connected() with the getter 0x192e60 in the users loop 763 (the getter inlines as
+// retail's pointer-range check, but our build hoists the variant count into EBX where retail reloads it
+// and counts the loop down in EBX); plus a user record pointer 755 (2862 bytes; cursor then in EBX at
+// the xuid); the slot computed before the properties copy 763; the record loop in retail's shape
+// (state == 1 as a request flag set again by the retry test, the getter, the identity copied into a
+// local XUID, an index scan only for type 5) 794 at 2942 bytes (aligned 289); the request flag alone
+// 730 (no flag byte appears; retail's `xor dl, dl` comes with the other parts).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
