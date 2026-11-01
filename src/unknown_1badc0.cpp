@@ -18,6 +18,7 @@ real normalize2d(point2f *arg_0);
 // below the retention margin). What still differs: this body loads the output pointer into EBX before
 // saving EBP, retail saves EBP and keeps the pointer there, so the point copy runs through EBP where
 // retail uses EBX; the body is also 21 bytes short of retail. Original body kept.
+// Earlier (merged stacked note): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // Earlier 211 (was 211): Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
 // frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Earlier: Frame 0x90 agrees; output EBX/EBP and vector/SSE homes remain. Retail
@@ -161,9 +162,20 @@ real normalize2d(point2f *arg_0);
 // and phase/entry collision storage, 255/255/255/255; the same four without output
 // self-address observation 250/250/250/250. All disturb two matched callers in the
 // reduced image. Original input observations, output access, scalar spill and body restored.
+// Round 110 (lane 8, fast): `2.0f - distance` inside the normalize-success block with the center copied
+// before the radius 269 (992 bytes); the to-center vector initialised from the input point and differenced
+// in place through vector3d_from_points3d 229 (1027 bytes, aligned 136 against 123), with `2.0f - distance`
+// in the block 242 (1015); the existing 0x30c60 for center and radius 296 (980 bytes: stays a call from its
+// /Ob1 file, so the head changes); no output self-address read with `2.0f - distance` in the block 287.
 // Round 258: Complete center-relative planar/projection-numerator/both-side-sum expression
 // subsets 1..7, then all with an independent adjusted root: 255/211/255/211/255/211/255/255. Original
 // expressions and body restored; output EBP and point/vector/SSE homes remain.
+// Round 112 (lane 8, fast): a __forceinline declaration of the existing 0x30c60 for centre and radius 296
+// (980 bytes, still a call; three matched callers change convention); `inline` on 0x30c60's definition plus
+// the call 215 (1000 bytes, inlined, its two matched callers keep matching, but the radius arrives as an
+// integer copy through its `long *` and the output stays EBX); that with the to-centre vector initialised
+// from the input point and differenced in place 233 (1023), with `2.0f - distance` in the normalize block
+// 274, with the centre/radius call before the input copy 220. Retail's inlined radius is a movss load.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

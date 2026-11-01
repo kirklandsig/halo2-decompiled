@@ -192,6 +192,10 @@ struct s_24e9c7_bounds
 // 155 (735 bytes); the same with separate side scalars 155; across built in the side point and scaled in
 // place with scalar back 139 (the listed form; side y spilled at -0x14); that scalar form with scale read
 // first 155.
+// Round 50 (lane 1, fast): on the in-place side point with `0.0f -` (139), the point renamed across /
+// width_offset / lateral / a_side 139 each with every home unchanged (names do not move it above result);
+// j component first 138; (0 - forward_j) * size operand order 139; `side.x = (real)half_width * side.x`
+// 139; that with both pairs j first 139.
 // Round 35 (lane 13, fast): retail's -0xc/-8 pair reads as one 8-byte point (x kept in a register, its home
 // unused; y spilled, then scaled in place to the side y); tried: across as a point scaled in place into the
 // side vector, declared at function entry 139 (742 bytes) or at its computation 139; a separate across point
