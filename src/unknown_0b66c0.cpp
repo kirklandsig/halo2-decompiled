@@ -278,6 +278,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (long)text + start`, and with the existing 0x11c9a0 for the length 27 each (0xb5f10 6 each). Hybrids:
 // the text read before `count++` 31 (0xb5f10 6); nested length local, text read before the compare and
 // `start += (long)text` after the clamp 40 (0xb5f10 35); the first lead with a named `end` 21 (same code).
+// Round 282: Shared end-pointer scan with a separate signed/unsigned length counter,
+// unequal/ordered end tests, original/direct source: 36/36/36/36/40/40/40/40.
+// Search sibling 19 and caller 6/96 lose their matches; helper and full body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -1173,6 +1173,9 @@ bool function_68670(byte *source, long size, void *block);
 // and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
 // first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
 // header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
+// Round 282: Received-header aggregate/memset initialization at function/loop scope,
+// direct sequence 171/159/170/161; separate sequence 191/186/176/167.
+// Initialization does not recover the header home or DX size; original executable body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

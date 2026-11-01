@@ -203,6 +203,9 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// Round 282: Native collection array-end traversals (child end with indexed/advancing boundaries,
+// boundary end with indexed/advancing child), independent outputs 169/149/148/145;
+// shared query output 168/149/147/130. Original frame and body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
