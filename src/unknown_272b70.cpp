@@ -1410,6 +1410,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 269: Actual winning-seat pointer, early/late initialization, score/receiver update order and
 // nested/continue admission: eight forms 144 each, frame 0x6b0 versus 0x6ac. Original short
 // winner ordinal, requests and complete body restored; iterator/candidate and seat-load schedules remain.
+// Round 280: actor identifier used twice with scalar geometry/actor publication orders
+// 55/56/55/253; collection-owned count counterparts 76/77/76/255. Original executable
+// body restored; iterator scaling, request registers and seat loads across clearing remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2601,6 +2604,9 @@ struct s_scenario_scripting_view
 // Round 266: native-array differences at direct/resolved/both branches, each with original/loop
 // short counter, then both with typed point access without/with loop counter: 80/80/80/87/87/87/80/87.
 // Original search and includes restored; exact wrapper survives, actor/counter/data homes remain.
+// Round 280: paired conditional distance/index results, positive/complementary predicate,
+// either publication order and original/loop-owned short counter 80/87/80/87/80/87/80/87.
+// Original search restored; actor/set/counter homes and early data read remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -68,6 +68,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	else *(dword *)out &= ~2;
 }
 
+// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
 // trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
 // stack slot; 1176 bytes against retail's 1164.
@@ -75,7 +76,6 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // third argument from [ebp+0xc]; ours takes the same three arguments in the same registers, but
 // keeps the output pointer in EDI and the input pointer in EBX where retail keeps them the other
 // way round.
-// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // BLOCKED-BY 0x1ec690 (round 30): retail passes the case-3 callee's input in EDI with two stack arguments; our
 // stub (src/stubs/bipeds.cpp) takes ECX/EDX and one stack argument, which is what moves input/output to
 // EBX/EDI here.
@@ -164,6 +164,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // LTCG cannot inline from its /Ob1 file).
 // Also (fast): the rate on the right of each position product 319; the activity bit in shift form 319;
 // the object lookup and activity read before the position computation 324 (1180 bytes). All restored.
+// Round 280: aligned-helper conditional radius selection, matrix-first declaration,
+// result-first lower clamp and consistent minimum-radius snapshot combinations: eight
+// forms 319 each. Original helper and complete body restored; pointer ownership remains.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

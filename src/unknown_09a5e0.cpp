@@ -2211,6 +2211,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
 // read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
 // flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
+// Round 280: joint direct/conditional parent-short producers with decoded slot/header offset
+// and shifted/direct tail request 279/294/288/290/284/273/266/266. Original executable
+// body restored; object/offset homes and low-mask EBP ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
