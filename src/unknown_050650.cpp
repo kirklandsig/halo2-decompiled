@@ -1259,6 +1259,10 @@ struct s_actor_looking_structure_view
 // Round 121: score written forward-first (j,k,i) 23 (same code) / forward-first i,k,j 25; helper with cross i
 // before the projection (0x170d70's order) 23; cross terms in a vector3f local 62; the dot named before the
 // projection 23.
+// Round 73: all-component/axis-only/vector-only/score array views 23/23/23/23; both dot views 39;
+// candidate reference 139; reused axis-j scalar 158; staged projection j,i,k/j,k,i/i,j,k/i,k,j
+// 60/146/32/21; two-stage projection j,i/i,k/i,j/k,j/k,i/j,k 31/22/31/32/22/32;
+// two-stage loop score 124. A 2400 s permuter startup timed out before its baseline. Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
