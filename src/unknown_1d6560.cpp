@@ -170,6 +170,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // type_value, rigid_body renamed body 124/124/124; kind, level or component renamed 124/124/124 (names order no
 // register); the main switch inside `if (kind != 7)` with the kind-7 switch after it 115 at 272 [194]; per-case
 // returns with no result 124. On this body: case 0 as `(byte >> 2) & 1` or `(byte)(byte >> 2) & 1` 96/96 [0].
+// Round 64 (lane 16, fast; caller 0x1d5bf0 in brackets): one type read as a byte 94 [13], as a long 96 [13];
+// on the one-read body the owner read once through `&owner` 96 [13], the level through `&level` 96 [13], the kind
+// through `&kind` 65 at 260 bytes [194: kind on the stack, ret 0xc], the rigid body as `base + index * sizeof`
+// byte arithmetic 96 [13]. Every one-read body takes component in ECX and the index in EAX.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
