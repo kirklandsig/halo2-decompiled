@@ -240,6 +240,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
 // 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
 // opened test on the array element 42.
+// Round 130 (lane 6, fast): `success = true;` cleared by `if (handle == INVALID) success = false;` then tested
+// 50 (threaded into two stores); the resize step as a forceinline helper taking success by value and passing its
+// address 83 (351 bytes, frame 0x100, the parameter's copy still forwarded); done without `volatile` (the waits
+// read it through their volatile pointer) 42 (same code); `if (!opened) continue;` 42; success set only inside
+// the open branch 58 (348 bytes).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

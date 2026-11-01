@@ -369,6 +369,20 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // long count in the `if` is 140 in the real build); indexed with a short count and the entries pointer after
 // the copy 60/75-80; a separate loop cursor copied from the entries pointer (retail's `mov ebx, edx`), 32
 // combinations of count/first/cursor/copy-source/loop forms, 129-130/47-48.
+// Round 130 (lane 6; LTCG env link through 0x404b0, env positional/aligned, real `--fast` where given): the
+// indexed form with the copy source written as the field, no first local (current set from previous, the copy
+// destination and the loop index read previous) and entries set after the selection: aligned 7, real 131 at
+// 508 bytes: the head is retail's instruction for instruction through +0x5a (index EDX, count AX/EAX, zero ECX,
+// previous loaded into EDI after the pushes, entries built in EDX after the copy, `mov ebx, edx` cursor), and
+// only retail's `mov [esp+0x14], edi` spill of first and its `mov esi, [esp+0x14]` reload at the loop entry are
+// missing (ours re-reads previous there). Every form that keeps first in a local gives it a register: as a
+// local for all three uses 63 (real 164, 492 bytes; both parameters move to the stack), current/destination
+// from previous and first only for the index 19 (real 162: first copied to EBP, mode left in memory where
+// retail keeps mode in EBP and spills first), first read back from current 53, one variable for first and
+// index 39, first or index declared at function/if top 53-64, a dword first 19/63, `first + n` (or `n + first`)
+// per iteration 46-52, the selection at function top/if top/after the copy/before the loop/in the loop body/
+// inline in the test 45-77; local names (first/start/base_index, entries/source/records) never move a
+// register. The current indexed form re-measured 144 (real), with a long count named in the block 140 (real).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
