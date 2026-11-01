@@ -592,6 +592,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // reloads); the word copy from the field with the store through the pointer 129; the word copy
 // through the pointer with direct stores 77 (the engine-index load then moves up past one store).
 // Round 216: Final signed-char/byte/short/word counters 97 each; with word saved mask 93 each. Word mask read-only, signed present, both signed accumulators, and read-only/both signed 77 each. All restored; shared post-loop mask reload remains.
+// Round 36 (lane 15, fast): `present_teams = (1 << team) | present_teams` 32 (same code: the OR still lands
+// in the bit's register and the store follows the flag test); the store as `(word)(old_team_mask |
+// present_teams)` 32 (same code); a dword copy read from the field with the store through `globals` 130
+// (374 bytes, the copy folds into field reads); the word mask declared before the old playing mask 82;
+// a word copy read from the field with an uncast direct store 129 (375 bytes; the engine-index load
+// then hoists as retail's); the volatile present declared first 39. Diagnostic: the word form keeps
+// retail's entry but reloads the spilled word at each use (movzx in the compare, `mov esi` dword in
+// the update), where retail reloads it once into ECX at the loop exit with playing in EDX.
 // @retail 0x158140
 void function_158140(void)
 {

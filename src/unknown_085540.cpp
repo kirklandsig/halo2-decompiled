@@ -1161,6 +1161,12 @@ bool function_68670(byte *source, long size, void *block);
 // (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
 // live from the test into the cases (reloaded after the payload read); ours coalesces it with the
 // long size in ESI.
+// Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
+// header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
+// 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not
+// kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
+// difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
+// the copy count from header.size too 79.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

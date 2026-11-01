@@ -363,6 +363,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
 // (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
 // state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
+// Round 36 (lane 15, fast): case 0 braced with `vector2f *normal = &line.n` for the dot only, both
+// components by name 42 (same code); the round-54 form rebuilt as i by name, j and the dot through
+// `normal` 44 (304 bytes; the 23 needs the dot written out by component, a helper body by hand); the
+// normalize through `normal`, the dot by name 42 (same code); j stored before i 49 (as listed).
+// The dot helper returning `a->i * b->x + b->y * a->j` 42 (same code), on the pointer form 44.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

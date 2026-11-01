@@ -3364,6 +3364,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // shared kind test before the relay branch 180 (467 bytes).
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
+// Round 36 (lane 15, fast): the packet cursor beside the count re-measured 164 (478 bytes; the member
+// takes EBP, the channel is reloaded into ESI per relay arm); the packet pointer declared at function
+// scope and set per iteration 139 (same code); on the cursor form, the member bit cleared before the
+// delivery calls 161 (469 bytes); the route zeroed as `= { 0 }` 139 and as a chained assignment 139
+// (same code).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
