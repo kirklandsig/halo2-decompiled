@@ -602,6 +602,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
 // helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
 // below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
+// Round 261: complete native rotated-vector publication with scalar/native input snapshots,
+// split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
+// All restored; SSE ring conversion and the unspilled rotation remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

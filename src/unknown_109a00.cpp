@@ -481,6 +481,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
 // declared before the default body 154; the entry before the object 151; the object through a `headers` local
 // (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
+// Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
+// 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
+// body and call inputs restored; input register pair and early physics-pointer spill remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
