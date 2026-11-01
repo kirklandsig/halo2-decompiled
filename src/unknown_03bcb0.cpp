@@ -1009,6 +1009,13 @@ void function_3c650(byte const *state)
 extern byte g_485ac2;
 s_3c9a0_matrix g_4c1b68;
 
+// score 315 (was 315): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
+// 1.0, 1.13, 1.5, 0.0001); no behaviour difference found. Retail spills tangent and view_tangent to float stack slots and
+// divides with divss, ours keeps them on the x87 stack (fdiv st(1)); retail also keeps the near_x/near_y/z stores to
+// g_4c1b08 and reloads them in the corner sums, ours forwards them and drops the stores (1330 vs 1387 bytes), and its
+// frame is 0x4c, ours 0x60.
+// Tried: store order z,x,y,scale (291 -> 291), volatile tangent (-6), volatile tangent+view_tangent (-6), writing only
+// g_4c1b08[3].y and keeping the other corners in locals (same code).
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1180,18 +1187,23 @@ void function_41040(short index, long part_index, long group, byte weight,
     }
 }
 
-// score 352 (was 365): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// score 305 (was 352): logic matches retail block by block (no behaviour difference found); what still differs is register
+// allocation: retail keeps tag in ebp and stage in edi and leaves pass in its stack slot, ours puts pass in ebp and tag in
+// edi, so the 0x15d70 call setup, the case 18 pass*10 and the record_material reads differ; retail also loads the source
+// fields as [esi+g_4ba138] and takes the address afterwards (lea), and reloads out->value10 for the 0x4cbb0 call.
+// Tried: volatile result/tag (352), (void)&param (no effect), direct g_4ba138[index] field reads (412), pass/tag address
+// tricks (none), statement-order permutations of result/out/key/index (305-360), key as long (341), group as switch or
+// if-chain (switch gives sub/dec instead of test/cmp; the nested != 1 form gives retail's cmp), selection as byte with one
+// movsx (closer to retail, score 340-361 only because the size changes: 1196 vs 1204 bytes).
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
 {
-    volatile bool result = false;
+    bool result = false;
     s_sort_record *out = (s_sort_record *)record;
-    tag = *(long volatile *)&tag;
-    short key = (byte)handle;
+    short key = handle & 0xff;
     short index = (short)(handle >> 8);
     s_44940_entry *source = &g_4ba138[index];
-    byte *object = *(byte **)source->unknown10;
     long mode = function_15d70(tag, stage, pass, source->tag != NONE,
         (bool)((source->unknown00 >> 10) & 1));
     switch (stage)
@@ -1216,8 +1228,12 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
             byte *pass_entry = *(byte **)(groups + 4) + pass * 10;
             tag = *(long *)(g_485a80 + 0xd0);
             pass = 0;
+            byte *object = *(byte **)source->unknown10;
             if (object)
-                mode = (*(dword *)(pass_entry + 2) & 0x8000) ? 2 : object[0x76] == 0xff;
+            {
+                if (!(*(dword *)(pass_entry + 2) & 0x8000)) mode = object[0x76] >= 0xff;
+                else mode = 2;
+            }
         }
         break;
     }
@@ -1228,6 +1244,7 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
         {
             tag = *(long *)(g_485a80 + 0xd0);
             pass = 0;
+            byte *object = *(byte **)source->unknown10;
             if (object && g_4b9f5c != NONE && !g_4b9f88 &&
                 (g_4b9f78 > g_4b9f7c ? g_4b9f78 : g_4b9f7c) > 0.0f && object[0x76] < 0xff)
                 mode = 0;
@@ -1237,20 +1254,32 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     case 16:
     {
         bool enabled = g_4ba004 && !g_485a75 && !g_485a76;
-        if (!TEST_FIELD_BIT((source->unknown00 >> 7) & 1)) mode = NONE;
-        else if (source->unknown00 & 0x100) mode = enabled ? NONE : 1;
-        else mode = enabled ? 2 : 0;
+        dword bits = source->unknown00;
+        if (bits & 0x80)
+        {
+            if (bits & 0x100) mode = enabled ? NONE : 1;
+            else mode = enabled ? 2 : 0;
+        }
+        else
+            mode = NONE;
         break;
     }
     }
     out->unknown04 = (byte)mode;
     if (mode != NONE)
     {
-        long kind = source->flags >> 29;
-        if (kind)
+        if (source->flags >> 29)
         {
-            out->group = kind == 1 ? 1 : 2;
-            out->value0c = ((source->flags >> 9) & 0x1ff) | ((source->tag & 0xffff) << 11);
+            if (source->flags >> 29 != 1)
+            {
+                out->group = 2;
+                out->value0c = ((source->flags >> 9) & 0x1ff) | ((source->tag & 0xffff) << 11);
+            }
+            else
+            {
+                out->group = 1;
+                out->value0c = ((source->flags >> 9) & 0x1ff) | ((source->tag & 0xffff) << 11);
+            }
         }
         else
             out->group = 1;
@@ -1279,17 +1308,23 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
         byte *material = record_material(tag, pass, stage, entry_index) + (byte)mode * 0x132;
         out->value10 = (dword)material;
         word primitive = *(word *)geometry_entry;
-        long selection;
+        byte selection;
         switch (primitive)
         {
-        case 1: selection = (signed char)section[0x10]; break;
-        case 2: selection = (signed char)section[0x10]; break;
-        case 3: selection = (signed char)section[0x10]; break;
-        case 4: selection = (signed char)section[0x11]; break;
-        case 5: selection = (signed char)section[0x11]; break;
-        default: selection = (signed char)section[0x10]; break;
+        case 1:
+        case 2:
+        case 3:
+            selection = section[0x10];
+            break;
+        case 4:
+        case 5:
+            selection = section[0x11];
+            break;
+        default:
+            selection = section[0x10];
+            break;
         }
-        long shader = function_1cb20(*(word *)(section + 0x14), selection, *(long *)(material + 0x100));
+        long shader = function_1cb20(*(word *)(section + 0x14), (signed char)selection, *(long *)(material + 0x100));
         out->value08 = (word)shader;
         out->unknown14 = *(dword *)source->unknown10;
         result = function_4cbb0(*(long *)(material + 0x100), (word)shader) != 0;
