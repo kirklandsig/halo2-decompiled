@@ -90,10 +90,13 @@ PRIVATE __forceinline void scripted_vector_scale(vector3f const *vector, real sc
 
 /* sets an object's linear velocity from speeds along its forward, left and up
    axes */
-// score 30 (was 30): frame 0xc and retail's spills of the left products into velocity agree; 378
-// bytes against 377. Left: two cross-product terms take the other operand order, the k spill is
-// scheduled after `push ebx`, and the up term is loaded rather than copied from up_speed (one byte),
-// so the three final sums land in the up registers where retail keeps them in the forward ones.
+// score 21 (was 30): frame 0xc, retail's spills of the left products into velocity and (with the
+// forward_left_part local) the final adds in the forward registers agree; 378 bytes against 377. Left:
+// the j row's second cross product loads forward.k where retail loads up.i, the left.k product is
+// scheduled after the left.j spill, and the up.i term is loaded rather than copied from up_speed.
+// Before round 19 (at 30): two cross-product terms took the other operand order, the k spill was
+// scheduled after `push ebx`, and the up term was loaded rather than copied from up_speed (one byte),
+// so the three final sums landed in the up registers where retail keeps them in the forward ones.
 // Round 29: forward and up scaled into their own vectors with left scaled straight into velocity,
 // then two vector3f_add, 76 -> 30 (kept). On it (fast): shared cross3f/cross3f_staged 30/30; forward
 // and up pointer locals 135; forward scaled before the cross product 28 (forward_speed leaves xmm6,
@@ -164,6 +167,22 @@ PRIVATE __forceinline void scripted_vector_scale(vector3f const *vector, real sc
 // late or mutable pointer and forward-up declarations 8 each on that base; both sums forward with
 // publication 84; up-alias cross 111; forward-alias 130; single accumulator and second-sum-forward
 // 85 each (caller conventions changed). One-use aliases not kept; original restored.
+// Round 19 (lane 17; compile-only harness agrees on the float block): the cross-product operand
+// orders follow how many expressions are evaluated before the cross (diagnostic dead temporaries: one
+// fixes the k row, two both rows); the final adds put the sum in the up registers whenever the last
+// add reads velocity's stored value against up_part, in every scale order and accumulator tried; a
+// fresh `forward_left_part` local (first assigned at the first add, after up_part) makes the forward registers the
+// destination with retail's ((forward + left) + up) association: 21 (kept).
+// Real (fast): left into velocity, `velocity + up_part` then `+ forward_part` 27; a left_part local
+// with `left_part + up_part` into velocity then `+ forward_part` 25 (both add (left + up) + forward,
+// retail (forward + left) + up, so not kept); the object through an inline scripted_object_get 30;
+// up scaled first 32; up scaled before the cross product 82. On that form: the one-use forward
+// pointer in the cross 19 (both cross rows right; left.k schedule and the up.i copy remain); pointer
+// placements (forward ptr in cross/forward scale, up ptr in cross/up scale) 0001 19, 0010 29, 0011 77,
+// 0100 19, 0101 19/19, 0110 25/27, 0111 73/75, 1001 19/21, 1010 19/27, 1011 26/75 (377 bytes: the
+// left spill schedule right, but up.j not preloaded and the up_speed copy on up.j), 1100 26, 1101
+// 26/26, 1110 26/83, 1111 36/94; inline scripted_object_get with the forward pointer 19, alone 21; a
+// header local for the lookup 19 (one-use, not kept), with the forward pointer 21.
 // @retail 0x10b010
 void function_10b010(long object_index, real forward_speed, real left_speed, real up_speed)
 {
@@ -173,14 +192,15 @@ void function_10b010(long object_index, real forward_speed, real left_speed, rea
 		vector3f left;
 		vector3f forward_part;
 		vector3f up_part;
+		vector3f forward_left_part;
 		vector3f velocity;
 
 		scripted_cross_product(&object->up, &object->forward, &left);
 		scripted_vector_scale(&object->forward, forward_speed, &forward_part);
 		scripted_vector_scale(&left, left_speed, &velocity);
 		scripted_vector_scale(&object->up, up_speed, &up_part);
-		vector3f_add(&forward_part, &velocity, &velocity);
-		vector3f_add(&velocity, &up_part, &velocity);
+		vector3f_add(&forward_part, &velocity, &forward_left_part);
+		vector3f_add(&forward_left_part, &up_part, &velocity);
 		function_b7740(object_index, &velocity, NULL, false);
 		function_1c4b00(object_index, &velocity, NULL, true);
 		if (velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k > 0.0001f)

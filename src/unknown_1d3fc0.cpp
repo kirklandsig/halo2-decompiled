@@ -125,6 +125,14 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (identical code, same slots); the projection as a loop over `n[axis]` 110; through a named scaled
 // vector 110; pointer locals dropped with the projection on the matrix fields 181 (953 bytes: forward
 // then folds all three products), the same on six transforms 181.
+// Round 19 (lane 17; compile-only harness reproduces the forward block, x87 j,k,i with k,j,i preloaded):
+// 216 forward-only and 96 shared-helper spellings screened; naming the i and j squares gives retail's
+// forward x87 order j,i,k, but every form preloads forward.k and multiplies it into k's register
+// (retail: reciprocal in xmm6, `mulss xmm6, [k]`, k reloaded on the short path), also with k captured
+// before the sqrt, a `>=` test, an early return, `*=` products or the existing vector3f_scale; the
+// dot/projection spellings compile the same. Real (fast): shared helper with a named k square (the
+// harness's best, giving retail's up/left x87 order) 154; no named square 153; named j and k squares
+// 154; named i and k squares 153 (all move the first difference to the +0x44 exit).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

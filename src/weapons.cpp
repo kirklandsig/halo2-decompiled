@@ -2022,6 +2022,11 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // entry weapon read not touching the pool global, the slots take retail's pool-in-EBP/unit-spilled
 // shape (aligned 83), so the entry read joins the loop's pool range; no source form found that splits it.
 // Round 62, later: `taken` as a short 209 (fast, 611 bytes).
+// Round 19 (lane 17, fast; the reduced image builds 0x1008f0 differently, so these are previews): the
+// definition index read in the holder block 195 (571 bytes); definition index and taken both in the
+// success block 160; the other magazine as `->magazines + magazine_index` 124 (same code); the holder
+// test as `taken < count && unit_index != NONE` 125; the slot take as `unloaded < count - taken ? ...`
+// 126. The pool-global lead stands (0x106030 reaches 0x159dd0 in a file another lane holds this round).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {

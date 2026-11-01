@@ -221,6 +221,13 @@ void function_44720(void)
 // Round 467: Accepted entry level named at its original read in long/short/word/byte,
 // used by admission and cached submission predicate 155/151/151/152; predicate at its
 // submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
+// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
+// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
+// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
+// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
+// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
+// 157 (515).
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

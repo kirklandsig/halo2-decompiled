@@ -185,6 +185,12 @@ bool g_47f05b;
 // g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
 // sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
 // construction in a typed local published after the pool construction 38 (154 bytes).
+// Round 19 (lane 17, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0/0x146de0/0x146da0/0x147090/0x2d6fc0):
+// the size-only constructor re-measured 35 (140 bytes, only the abstract vtable store missing). On it: a
+// constructor taking the whole block size (buffer `block_size - sizeof(*this)`) 35; the pool placed at
+// `(byte *)g_479894 + 0x15040` 44 (131 bytes); the fixed allocator and its 0x15000-byte buffer as one
+// struct whose constructor passes its buffer member 35; `g_4798b4++` between the two constructions 39
+// (136 bytes); the three global stores after the fixed construction 42 (142 bytes).
 // @retail 0x146a20
 void function_146a20(void)
 {
