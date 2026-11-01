@@ -605,6 +605,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // seat call before `allow_exit = true` 200 (872). Any false def live across a call copies the tail's first
 // block onto the special path; only the def at the scan's end keeps retail's `mov cl, 1; jmp`. On that
 // end-def form: `long seat_object = NONE` at the outer block's top 192, the iterator there 190 (same code).
+// Round 27 (m3 lane 2, fast): if/else def with `special = false` after the 0x1b8d40 test 200 (872 bytes,
+// memory-only), just before `allow_exit = true` 200; the false at the end of the scan arm 190 (as round 185),
+// with `seat_object` declared and set to NONE at function scope 209 (frame still 0x30), declared there and
+// assigned in place 190 (same code), with a byte flag 190 (same code); the `&&` flag renamed to sort first or
+// last 200/200 (same code); a forceinline tail helper taking the flag and allow_exit by value with the `&&` def
+// 199 (865 bytes), with the if/else def and the false at the scan's start 199.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

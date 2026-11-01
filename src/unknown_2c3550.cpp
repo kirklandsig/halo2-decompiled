@@ -220,6 +220,11 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 258: Both captured normalized components used for native direction publication, y/x or
 // x/y capture order and publication after value08/position/distance/parent: 177/177/177/177/177/177/177/177.
 // Original native copy, captures and body restored; early Y preload and XMM allocation remain.
+// Round 27 (m3 lane 2, fast): the node's direction filled by components 177 (608 bytes: direction kept in
+// XMM0/XMM1 to the end), also without the direction locals 177; the direction locals declared first in the
+// function and assigned after the normalize 92 (same code); the cross factors named 92 (same code); direction
+// from vector2d_from_points2d with the locals x first 92. Compile-only (reproduces ours): no direction locals,
+// locals declared at the block top, dot operands swapped, a named dot: none preloads y.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
