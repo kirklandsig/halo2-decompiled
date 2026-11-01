@@ -1230,14 +1230,15 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
+// score 137 (was 137): Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
+// Earlier at 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // this round: the entry still loads the class table into EDI where retail loads it into
 // EDX, and the fade product is still multiplied by the fade-out time before the inverse, so the elapsed
 // difference keeps XMM2 where retail keeps XMM3 and every use of it differs; a named local for the scaled
 // product, a second local for the scaled-out product, a local for the elapsed-minus-hold difference and a
 // local for the whole product all compile to the same code.
-// score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
 // the first branch's product/sum order (retail `(elapsed - hold) * inverse * fade_out`, then
@@ -1307,6 +1308,7 @@ long function_2197f0(real gain);
 // reciprocal computed before the fade-out tests 187 (656 bytes).
 // N round 257: Native real/aggregate ducking gains and endpoints, real/aggregate returns, expression/accumulator 322/322/322/322/198/198/198/198.
 // Original value types, helper and complete body restored.
+// J221: Elapsed/reciprocal/both/fraction role names 137 each; fade-in/full timing/ambience snapshots 144/179/182; parallel interpolation outputs 137; native table base plus original short lookup input 146 at 672 bytes (entry instructions agree). All original executable code restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2788,7 +2790,9 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
-// score 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
+// score 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
+// early failure tail remain; long search-result boundaries do not change the selected code.
+// Earlier at 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
 // cx and the result in al/bl with an 8-byte frame; ours loads the index into eax and holds the result in a stack
 // byte with a 12-byte frame.
 // Earlier: playback/channel roles recovered; frame 12 versus 8, status test and failure
@@ -2846,6 +2850,10 @@ static inline short sound_voice_find_available_channel(char type)
 // Round 253: Native byte API return with byte/bool/char/long result and common/direct success exits;
 // scores 113/113/113/109/139/139/139/133.
 // Original executable source restored; no qualifying gain.
+// J222: Long search workspace/return, long workspace with short return, promoted short result and native long
+// direct search exits all 96; long workspace with Boolean body result and long/short helper returns 113/113;
+// explicit committed success 122 (430 bytes); existing byte success declared at entry on the long search graph
+// 96. Original executable body and private helper restored; every calibrated match preserved.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
