@@ -274,6 +274,11 @@ struct s_free_state_23d260
 // [51] (1335 bytes; first difference +0xae: zero XMM1 as retail, forward.k kept in a stack copy); that with
 // normalize3d 267 [57]; up written k, i, j 272 [71]; cross3f 273; the up reads through `forward` 275, the side
 // reads 254, both 284; yaw cosine/sine locals alone 100; side assigned k, j, i or i, j, k 94 (same code).
+// Round 40 (lane 14, fast): movement.j with the cosine product first 121 (1328 bytes); the rotation's
+// projection and rows each as one expression (0x11d3b0's style) 110 (1330 bytes); the rotation's
+// forward/up pointers declared before the side vector and used for the side and up cross too 289
+// (1311 bytes); the roll sine/cosine inside the rotation block after its pointers 141; the two
+// pointers at function scope after the sine/cosine 102; the roll sine/cosine before the side vector 118.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

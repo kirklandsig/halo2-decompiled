@@ -199,6 +199,10 @@ struct c_aggregate : c_child
 // before the child read 31 (all same code but the list). Diagnostics, reverted: one output local for both
 // calls 31 (frame 0x8020, but the children base/inner count/block slot still sits at 0x10 below the dispatch
 // cursor/cleanup count slot, the reverse of retail); the cleanup loop disabled 268.
+// Round 38 (m3 lane 14, fast): the dispatch and cleanup loops each in a block of their own 31; produced
+// declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
+// the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
+// 0x8024 in all).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
