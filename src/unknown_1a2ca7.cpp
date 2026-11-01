@@ -900,11 +900,12 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 
 /* adds the senders of the player's messages (at most 20) to the players
    list, except those given and those already on it */
-// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
+// score 81 (was 81): BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
+// only. Retail keeps the excluded-XUID
 // cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
 // in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
 // Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
-// score 81 (was 81): this round's five declaration-order trials for the swapped count and
+// Earlier, 81 (was 81): this round's five declaration-order trials for the swapped count and
 // sender homes: the count after the loop index, the sender held at function scope, the
 // exclusion flag declared before the sender, the exclusion flag held at function scope and
 // both of them at function scope; four of them score 81 and the flag-first one 80, too small
@@ -913,7 +914,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // Round 19: unchanged; the added count and the message pointer keep their swapped homes
 // (+0x68/+0x6c) and the sender stays in edi because our LTCG keeps the exclusion cursor in edx
 // across 0x63d00; still BLOCKED-BY 0x63d00.
-// score 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
+// Earlier, 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
 // Earlier: count/sender homes +0x6c/+0x68 remain reversed; nullable getter and exclusion cursor differ.
 // Exclusion pointer at use 82; native exclusion result 132; enumeration-count lifetime 82; format buffers swapped 81; getter force-inline declaration 81.
 // Byte added count 103; signed/unsigned word exclusion result 128/128; cumulative conditional 113; rejection guards 81.
@@ -938,6 +939,14 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // Round 50: account-entry, added player and account-id role names 81 each; split message and
 // player declarations 81 each; inline reference allocation 81; account-copy buffer name 81;
 // exclusion declarations swapped 81. Opening body restored.
+// Round 113 (lane 8, fast with 0x63d00): `if (xuid_equal(...)) is_excluded = true;` (listed, 113) gives
+// retail's exclusion-loop body exactly, so the rest is allocation: retail treats 0x63d00 as clobbering EDX
+// (cursor in EDI, `mov edx, edi` per call, sender spilled to +0x6c and reloaded into ECX), ours keeps the
+// cursor in EDX. 0x63d00 takes ECX, EDX and one stack byte, the /Gr fastcall shape, and every retail caller
+// reloads EDX after it: it looks like a /GL- object in retail (a flags lead for the user; its file is
+// another lane's). Forms: `is_excluded |= xuid_equal(...)` 140 (446 bytes); the loop as a while with the
+// steps in its body 81 (same code); the if-set form with the flag declared after the cursor locals 113, with
+// the sender at function scope 113; the excluded id as the first argument 81.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {

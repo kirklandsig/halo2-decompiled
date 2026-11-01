@@ -320,6 +320,7 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
+// Earlier at 115: the case 1/3 loop still differs in registers: retail keeps the items
 // Earlier (115): the case 1/3 loop still differs in registers: retail keeps the items
 // Earlier: the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
@@ -397,6 +398,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // before case 1/3 162.
 // N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
 // Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 125 (lane 5): the slot index written out as `local_1 & 0x3ff` at each use 161 (diagnostic of
+// the handle's weight); the handle typed dword 115; memcmp sized by the request's count with the count
+// test reversed 178 (520 bytes); a plain for loop with the cursors set before it (no hand-inverted
+// guard) 195; the case 2/4 element through a pointer local 115.
 // Round 64 (lane 12; one-link LTCG env with the stand-in callers, code equal to the full listing; env positional/
 // aligned 99/55 for this body): retail's loop cursors behave as ordinary spilled variables (the items cursor
 // reloaded on the back edge only, the preheader's EAX used on entry; ESI/EDI untouched in the loop), not volatile
@@ -418,6 +423,17 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Round 287: Native byte/signed-byte/word/long validation results on the original
 // case priority, all-valid/rejected polarity: 115/115/206/160/124/124/188/91. Cursors and loop entry
 // remain; native long rejection 91 also plain, restored as an unmatched flag form.
+// Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
+// 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
+// 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison
+// operands swapped 116; memcmp sized by the request's count (retail's `lea ecx, [edx*4]`) re-measured on
+// this body 178 (520 bytes). 0x991d0's call setup follows its declared order (one register argument,
+// the handle in EDX), so no parameter reorder has retail evidence.
+// Round 147 (m3 lane 4, fast; volatile-read body): the validation counter declared inside the count test's
+// block 203 (524 bytes); both cursors declared at case scope 195; the counter declared before the validity
+// flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
+// switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
+// inverted 109 (544 bytes, branches laid out opposite to retail).
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

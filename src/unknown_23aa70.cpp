@@ -182,6 +182,8 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 	vertex_decode_ranges_23ac30(x, y, z, bounds, &range, point);
 }
 
+/* reads one vertex position (and its node, for the formats that store one) from a
+   buffer in one of four formats; packed formats decode through the bounds */
 // score 62 (was 62): format 3 loads the buffer data into EBP where retail uses EBX, and
 // format 4 forms a vertex pointer where retail addresses every field as base + index * 8
 // and keeps the index for the late node read. Indexing format 4 gives exactly retail's
@@ -331,6 +333,12 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // the ranges decoder called directly 175; the decode helper taking bounds and point first 175; a shared
 // inline data + offset accessor in all four cases 175; decoded into a case-local point stored before the
 // node 175. Diagnostics: without format 2's zero store 177, without all three 173 (node on the stack).
+// Round 146 (fast), formats 3 and 4 indexed: format 4's record copied into a local first 197 (640 bytes);
+// a decode helper returning the point by value (`*point = decode(...)`, formats 2 and 4) 173; the range
+// vector built first in each packed case and the ranges decoder called 175; one function-scope `data`
+// local assigned in every case and cast per access 175; a coordinate-array decode helper given
+// `&vertices[index].x` with the node read by index 175. Each still flips (node EBX, switch temp EDI,
+// source on the stack, `ret 8`); retail's constant only appears in this function.
 // Round 122 (lane 6), formats 3 and 4 indexed through `vertices` locals: the decode returning the point by
 // value 175; an axis loop over the three packed coordinates 184 (632 bytes); bounds as the decode's first
 // parameter 175; a per-axis decode helper (value, lower, upper) 177 (628 bytes); the result as an aggregate
@@ -351,28 +359,31 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	switch (buffer->format)
 	{
 	case 1:
-		*point = ((point3f const *)(buffer->data + buffer->offset))[index];
-		if (node) *node = 0;
+		{
+			point3f const *vertices = (point3f const *)(buffer->data + buffer->offset);
+			*point = vertices[index];
+			if (node) *node = 0;
+		}
 		break;
 	case 2:
 		{
-			s_packed_vertex_23ac30 const *vertex = ((s_packed_vertex_23ac30 const *)(buffer->data + buffer->offset)) + index;
-			vertex_decode_23ac30(vertex->x, vertex->y, vertex->z, bounds, point);
+			s_packed_vertex_23ac30 const *vertices = (s_packed_vertex_23ac30 const *)(buffer->data + buffer->offset);
+			vertex_decode_23ac30(vertices[index].x, vertices[index].y, vertices[index].z, bounds, point);
 			if (node) *node = 0;
 		}
 		break;
 	case 3:
 		{
-			s_vertex_with_node_23ac30 const *vertex = ((s_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset)) + index;
-			*point = vertex->position;
-			if (node) *node = vertex->node;
+			s_vertex_with_node_23ac30 const *vertices = (s_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset);
+			*point = vertices[index].position;
+			if (node) *node = vertices[index].node;
 		}
 		break;
 	case 4:
 		{
-			s_packed_vertex_with_node_23ac30 const *vertex = ((s_packed_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset)) + index;
-			vertex_decode_23ac30(vertex->x, vertex->y, vertex->z, bounds, point);
-			if (node) *node = vertex->node;
+			s_packed_vertex_with_node_23ac30 const *vertices = (s_packed_vertex_with_node_23ac30 const *)(buffer->data + buffer->offset);
+			vertex_decode_23ac30(vertices[index].x, vertices[index].y, vertices[index].z, bounds, point);
+			if (node) *node = vertices[index].node;
 		}
 		break;
 	default:

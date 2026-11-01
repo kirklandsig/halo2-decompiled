@@ -568,6 +568,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
    the list of messages, then the timed message and the status text at the
    bottom */
 // score 114 (was 114): frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
+// frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
 // Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
 // bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
 // (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
@@ -635,6 +636,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 287: Shared drawing coefficients across flash/row/status/timed phases,
 // three short-height then five byte-timer subsets: 261/266/259/191/191/190/214/195. Predicate packing,
 // left-word and color/scalar homes remain; all original values and body restored.
+// Round 128 (m3 lane 6, fast; control 114): on the bool timer (191, 1888 bytes) `left` is still stored as a
+// dword (retail `mov word ptr [ebp-0x3c], ax`) and the scripted flag still packs at -2: `left` assigned in two
+// statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
+// rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
+// code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

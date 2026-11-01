@@ -154,6 +154,13 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // selected through the pointer 566 fast, with the fallthrough switch 559.
 // Round 217: Complete active mixing-workspace aggregate zeros, seven subsets, then all with the
 // unused workspace zeroed: 605/597/640/585/619/619/651/665. Original native workspace initialization restored.
+// Round 66 (lane 9, fast control 532, full 545): retail's x87 difference compares never round (no fstp/fld after
+// the subtraction or after fabs) and load the stored value first (`fld stored; fld input; fsub st(1); fabs;
+// fstp st(1)`); the two magnitude compares bounce the input through xmm0. Ours (float fabs under /Op) rounds twice.
+// Tried: `fabs((double)(difference))` 537 (fabs becomes a CRT call under /Op); `fabs((double)a - (double)b)` on the
+// four differences 534; `fabsf` on all six 532; an inline previous/current compare helper on all six 617, on the
+// four differences 585 (one call stays out of line). Diagnostic only (flags are the user's call): the file without
+// /Op 723 (1728 bytes: inline fabs without rounding, but `fld input; fsub [stored]` and no xmm bounce).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
