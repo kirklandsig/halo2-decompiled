@@ -937,6 +937,47 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
     s_pathfinding_node const *node = &data->nodes[index];
     return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, data));
 }
+// MiniMax R (11-01, fourth round): no new form, no lower score. The frame stays 0x30 against
+// retail's 0x28, and the edge pointer keeps the 0x1c home where retail keeps 0x18 (the magnitude
+// takes retail's 0x1c home here). This round: writing the two offsets directly (origin->x +
+// normal.x * radius, and origin->x + normal.x * (0.0f - radius) for the other side, the way
+// 0x2c2910 and 0x2c2740 write theirs) drops the frame to retail's 0x28 and removes the
+// direction.x spill, but the edge pointer's home then moves to 0x1c where retail keeps it at
+// 0x18, so the whole body shifts (358, the same with the product first); flipping the operand
+// order of the two origin adds and writing them with += leave the code unchanged (322);
+// declaring the edge pointer at function scope leaves the code unchanged (322) and with the
+// direct offsets gives the same 358; writing the normalisation out in the body, with the
+// magnitude in a local of the body and with the scaling written out as well, compiles to the
+// same code as the helper (322), so the homes are not decided by the helper's shape. A permuter
+// run over the function was started but its full-image baseline build did not finish inside two
+// hours on this shared machine, so it produced no result to apply.
+// MiniMax R (11-01, third round): no new form, no lower score. The crossing test written as three
+// ifs over one flag reproduces retail's accumulator exactly (that block now matches retail's
+// shape), but the function scores 369 with the helper-built offsets and 345 with the per-coordinate
+// ones; the per-coordinate offsets give retail's frame (0x28) and, together with the crossing
+// block, retail's length (1312 bytes), yet the xmm allocation and the place of the surface loop's
+// `if (side)` block still differ. This round: the side branch swapped gives 322 and as a ternary
+// 336; the offsets written straight into the first and second vectors give 419 and the negated
+// form 429. Also this round: retail consumes the zero in `0.0f - radius` (subss xmm0, xmm4) right
+// after the normalisation while ours copies it and keeps it to the comparison, so the negated
+// radius in a local (399), the two offset adds in the other order (415), the other offset first
+// (348) and the normal written as two statements (322, the same code) all leave the zero in xmm7.
+// MiniMax R (11-01, second round): no new form, no lower score. The permuter on this function ran
+// thirty tries from the 322 baseline without a new best. The frame stays 0x30 against retail's
+// 0x28, the zero is still in xmm7 (retail xmm0), the radius still in xmm6 (retail xmm4), the
+// direction still in xmm0/xmm5 (retail xmm7/xmm6) and ours still re-reads vertex1 at the select
+// where retail keeps it in EBX.
+// MiniMax R (11-01): tried, not kept: 322 (was 324), under the 8-point keep bar, so the code keeps
+// the two initialised declarations (324). Declaring the two marker variables without an
+// initialiser and assigning them in the other order puts the two entry stores in retail's order
+// (the marker at [esp+0xc] first); the later rounds' 322 figures above were measured with that
+// form in place. The frame stays 0x30
+// against retail's 0x28, the zero is still in xmm7 (retail xmm0), the radius still in xmm6 (retail
+// xmm4) and ours still re-reads vertex1 at the select where retail keeps it in EBX.
+// MiniMax R (11-01): no new form, no lower score. The vertex pair's declaration order swapped and
+// the from/to choice made where the addresses are built score 325/346/325/342; the frame stays
+// 0x30 against retail's 0x28 and ours still re-reads vertex1 at the select where retail keeps it
+// in EBX.
 // score 324 (was 324): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
 // and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
 // zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still

@@ -163,6 +163,16 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // original fresh unit 107; direct reset lookups 175; false after entry 107; false before weapon 120.
 // Original body restored.
 // Earlier 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// MiniMax R (11-01, third round): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail
+// re-fetches the unit after its calls because its link treats the callee as writing memory, while
+// our link knows that it writes none and keeps the unit in a register. The needed change is in
+// src/unknown_0bad50.cpp, which is outside this lane's set of files, so the function is left as
+// it is.
+// MiniMax R (11-01, second round): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail
+// MiniMax R (11-01): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail re-fetches the
+// unit after its calls because its link treats the callee as writing memory, while our link knows
+// that it writes none and keeps the unit in a register.
+// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
 // retail re-fetches the unit after the two calls because its compiler treats 0xbadc0 as writing
 // memory, while our link knows it writes none, so the unit and the flag registers are homed
 // differently and the entry prologue differs.
