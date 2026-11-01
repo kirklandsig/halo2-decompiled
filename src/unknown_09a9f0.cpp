@@ -449,6 +449,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
 // 49/77 (same code); the chained form with the early bool and the store and attach through the existing
 // 0xbb780 77 (still one shared header address under the link's inline).
+// Round 65 (lane 12, fast), all on the early bool result: the NONE and flag tests as one multi-return
+// inline predicate, the clear under `else if (object_index != NONE)` 77 (the predicate's exit join is
+// threaded before CSE; header address still shared), with the store and attach through the existing
+// 0xbb780 77; a `word` absolute index named once for the test and the object read 84 (155 bytes); the
+// header data pointer named once for both lookups 78; the test through the existing object_header_get
+// (slot_handler.h) with the store and attach through 0xbb780 77.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
