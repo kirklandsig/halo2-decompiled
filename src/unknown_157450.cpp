@@ -481,6 +481,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// score 29 (was 32): the present-team bit is computed into a named local before the mask update;
+// the player loop then updates the present mask in a register, which is retail's load/or/store.
+// Still the old mask is kept as a 32 bit value here and as a 16 bit one in retail, and the
+// post-loop compare and update read it from memory instead of from one reload into ecx.
 // Not kept (MiniMax C, 10-31): the present-team bit in a one-use local 29 (the loop's mask update
 // becomes retail's load/or/store; retail spills the old mask as a word and reloads it into ecx for
 // both the post-loop compare and the update). A 16 bit mask local gives retail's prologue and loop
@@ -612,7 +616,9 @@ void function_158140(void)
 
 		if (team != NONE)
 		{
-			present_teams |= 1 << team;
+			dword team_bit = 1 << team;
+
+			present_teams |= team_bit;
 			if (!(player->flags & 2))
 			{
 				playing_teams |= 1 << player->team;
@@ -2123,6 +2129,9 @@ void function_159460(long player_index, bool *leading, bool *tied)
 
 #include "object_iterator.h"
 
+// MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
+// allocation in the inlined equipment lookup, and changing the matched release_entry would risk
+// the 0x15b1e0 match.
 // score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
 // and scaling the object index; retail scales the index first, so the scaled index gets its own
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
@@ -2539,6 +2548,9 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
+// MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
+// retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
+// 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
 // score 44 (was 44): frame 0x10 agrees. BLOCKED-BY 0x1967d0 (the options reload after it follows
 // what the compiler thinks 0x1967d0 writes: a 0x4e6948 store there gives the reload) and the
 // 0x1e9df0 call's register setup (retail sets counter, field, then statistics last; ours
@@ -4297,6 +4309,11 @@ struct s_score_zone_view
     short count;
 };
 void function_15fe20(long team_index, color3f *color);
+// score 45 (was 88): the two team-color copies go through named color3f locals (retail loads all
+// three words before it stores any of them), and the zone-presence shift count is masked to a byte
+// (`iterator.index & 0xff`), which gives retail's `mov cl, byte ptr` reload of the spill slot.
+// The remaining differences are register homes (the mode global in EDX against retail's EAX, the
+// unit index and the -1 compares) and the zone-progress tail's byte load order.
 // score 88 (was 88): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
 // and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
@@ -4489,7 +4506,8 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                     function_159130(best_score, text);
                     unicode_string_copy(display->rival_text, text, 8);
                     color3f color;
-                    display->rival_color = *function_7f720(&color, (short)best);
+                    color3f chosen_color = *function_7f720(&color, (short)best);
+                    display->rival_color = chosen_color;
                     display->rival_score = best_score;
                     display->leading = score > best_score;
                     display->rival = true;
@@ -4505,7 +4523,8 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                 }
                 display->score = score;
                 color3f color;
-                display->color = *function_7f720(&color, player->team);
+                color3f own_color = *function_7f720(&color, player->team);
+                display->color = own_color;
             }
             else
             {
@@ -4566,7 +4585,7 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                 iterator.data = g_4e8c24;
                 iterator.absolute_index = NONE;
                 iterator.index = NONE;
-                while (player_iterator_next((long *)&iterator)) present |= 1 << iterator.index;
+                while (player_iterator_next((long *)&iterator)) present |= 1 << (iterator.index & 0xff);
                 for (long zone = 0; zone < zones->count; zone++)
                 {
                     if (zones->indices[zone] != NONE)
@@ -5354,6 +5373,9 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
+// x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
+// ours loads EDX first.
 // score 2 (was 2): final player register setup precedes the x87 argument store; frame and other instructions agree.
 // value-initialized iterator 158; entry workspaces 42; draw dimensions 24; immutable user 24;
 // frame pointer 173; global optimization disabled 242; float consistency 42; force-inline fraction 24.
