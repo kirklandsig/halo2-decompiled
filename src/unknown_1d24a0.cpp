@@ -252,6 +252,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 283: reverse scale short/long/signed-byte 902/929/902; reverse short scale with reverse
 // add/subtract/both 1086/1060/1158; with forward add/subtract loops 1157; all reverse long 1239.
 // Original producers, accepted angular consumers and full body restored; frame and entry homes remain.
+// Round 237: native wide-dot/real-dot/planar input values, seven nonempty subsets 1249/1274/1605/1145/1402/1446/1741;
+// all with long scale ordinal 1682
+// Original executable body and helpers restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -353,6 +353,10 @@ void __stdcall function_1160c0(real dt)
 // vertical and the inverse step before the loop 190; the angle taken after the rest-offset copy with the vertical
 // before the loop 301; the first node's direction copied before its position 188. The segment/scale temp slot
 // sits above the axis in our frame and below it in retail's.
+// Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
+// cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position` and sine/cosine angle names 179
+// each (all identical code: neither names nor declaration order place these homes).
 // Round 37 (lane 15, fast): every slot is shared alike except two mirrored groups: retail runs length/cosine +0,
 // segment/scale/sine +4, axis +8, rest offset +0x40, previous +0x4c; ours runs axis +0, segment +0xc, length
 // +0x10, previous +0x40, offset +0x4c (the axis, length and normalization code is otherwise retail's). The axis
@@ -370,6 +374,10 @@ void __stdcall function_1160c0(real dt)
 // and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
 // &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
 // axis 177. Body restored.
+// Round 74 (m3 lane 12, fast; 0x73360 kept its match in each): `previous = position` right after the i == 0
+// if/else 200, before the rest-offset copy 194, before the velocity stores 192 (previous stays at +0x40 in all three:
+// the mirrored homes do not follow where previous's live range ends); `previous = node->position` after the
+// publication 179 (same code); `segment->stiffness * definition->stiffness` 179 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

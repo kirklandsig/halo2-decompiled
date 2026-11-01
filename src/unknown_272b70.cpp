@@ -1380,7 +1380,7 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 
 /* puts the actors an ai index names into the free seats of a vehicle (or
    makes them walk to them), nearest first, best seat first */
-// score 41 (was 41): Frame agrees; iterator-handle/candidate scaling, leave-request registers and seat loads across clearing remain.
+// score 32 (was 41): Frame 0x6ac and the 846-byte extent agree; iterator/candidate scheduling, leave-request registers and request/slot publication homes remain.
 // Round 244: shared displacement dot 41; existing distance producer 278 (782 bytes);
 // pointer-result for traversal 274, with shared dot 274; capacity-first admission 45,
 // with traversal 278; existing request output/seat reference formals 41/41. All restored.
@@ -1419,6 +1419,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 282: complete actor-position values mutable/const 229/229; vehicle-position values
 // 271/271; paired mutable/immutable/mixed values 307/307/307/307. All exact-only captures restored;
 // original candidate/request body, frame 0x6ac and matched comparator retained.
+// Round 236: Complete cleared-slot family orders OEF/FOE/FEO/EFO, ordinary/chained flags:
+// 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
+// FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
+// flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -1507,12 +1511,12 @@ void function_274a50(long ai_index, long vehicle_index, long filter_range, bool 
 					else
 					{
 						memset(&slot, 0, sizeof(slot));
-						slot.vehicle_index = seat->object_index;
-						slot.seat_index = seat->seat_index;
 						slot.flag0 = false;
 						slot.flag3 = false;
 						slot.flag5 = true;
 						slot.flag6 = true;
+						slot.seat_index = seat->seat_index;
+						slot.vehicle_index = seat->object_index;
 						slot.unknown28 = 3.4028235e38f;
 						slot.unknown2c = 3.4028235e38f;
 						success = function_1a80e0(candidate->actor_index, 0x4c, (s_slot *)&slot, 1);
@@ -2618,6 +2622,9 @@ struct s_scenario_scripting_view
 // Round 282: actual winning native point at selection/pre-actor/entry/outer scope
 // 121/122/124/120; with the original short counter owned by the loop 126/121/123/121.
 // Original ordinal, signed dynamic search and frame restored; exact wrapper survives all eight.
+// Round 236: Complete native input/product/both/full-result nodes in the existing squared-length helper,
+// each with original/loop-owned short counter: 80/87/80/87/80/87/80/87.
+// Original complete search and shared helper restored; actor/counter/data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

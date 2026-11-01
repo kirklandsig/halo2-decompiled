@@ -255,6 +255,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
 // before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
 // lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
+// Round 133 (m3 lane 6, fast with 0x248cc0/0x173ba0/0x249aa0/0x137bd0/0x173fd0/0x175070/0x1751d0 listed): every
+// child-loop difference in the kept form is the scratch rotation from field_10's temporary; retail (and the sibling
+// 0x247950) loads arg_2 twice for the two list addresses. A `parent` local for the link and the parent store 70
+// (same code); field_3c stored right after field_10 72; with the count increment too 208 (860 bytes, 0x248cc0 15);
+// field_10 first with field_3c stored between the fifth sample and the compare 134 (876 bytes: the scheduler lifts
+// the integer store above the fstp, so the compare still splits); field_3c stored right after the record link 184.
 // Round 63 (m3 lane 16, fast): compile-only, field_10 first still splits the compare with the sample in a
 // named local, the compare operands swapped, a `cached` record local read just before it, `!(==)`, the
 // sample as `/ 65535.f`, an empty-then if, a flags-word pointer for the update. Real: field_10 first with

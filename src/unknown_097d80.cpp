@@ -230,6 +230,9 @@ struct c_aggregate : c_child
 // Round 282: Native collection array-end traversals (child end with indexed/advancing boundaries,
 // boundary end with indexed/advancing child), independent outputs 169/149/148/145;
 // shared query output 168/149/147/130. Original frame and body restored.
+// Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
+// then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
+// restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

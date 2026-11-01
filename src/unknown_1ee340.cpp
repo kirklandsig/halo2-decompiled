@@ -349,6 +349,8 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 286: CRT origin/start/both copies with original/CRT normal publication
 // 282/307/204/264/270/291; both input copies plus the hit-point setter 270/291.
 // Origin retention and edge homes remain; original copies, stores and body restored.
+// DL220: Scalar origin with native difference constructors, crossed with scalar start, ray constructor and staged cross:
+// 192/195/192/195/192/195/192/195. Original complete body restored; original frame and register homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

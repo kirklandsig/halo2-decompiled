@@ -212,6 +212,9 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
+// MiniMax E (11-01): no new form, no lower score; retail's second pool register needs the LTCG inline
+// of 0x16bb70/0x16bc00 from src/unknown_16b570.cpp (/Ob1 there), so the 11-point two-pool-local form
+// stays recorded as not kept.
 // score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
 // which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
 // layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
@@ -379,6 +382,8 @@ void function_07b3e0(void)
 // Round 285: separate next-search/found-index carriers long/long and dword/long
 // with pre/post-release advancement 61/65 (117/113 bytes); long/dword and dword/dword
 // 53/57 (125/121 bytes). Original cursor and body restored.
+// Round 333: Separate next-start cursor long/dword before release 61/61, after release 65/65;
+// existing dynamic scanner counterparts 61/61/65/65. Pool residency remains unresolved.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1311,6 +1316,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 447 against 515) / 869 with the loop getter; every helper `__forceinline` 906, with the loop getter 859.
 // Round 285: three multi-use pointer-home names independently and five joint lexical
 // orders 766 each; original pointer names, workspaces and body restored.
+// Round 333: Uniform identity memcpy/memmove with word cells 766/855, dword cells 844/876; scoped
+// ID counterparts 766/855/844/875. Frame/session/lookup remain; original transfers restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

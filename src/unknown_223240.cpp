@@ -238,6 +238,14 @@ void function_2232a0(void)
 // store before the empty-scan NULL 117; the scan index declared after count and layout 109; the per-view
 // record address as `g_47f0f8 + 1 + index` 109 (identical code where 109). 75 of the differences still sit
 // in the tail after the loop (0x2b5d0's convention: count + 1 in EAX, kept in EDX across the record init).
+// DL218: Complete dispatch inline and shared-predicate forced expansion, separately/together and
+// with optional-source initialization, six forms 109; predicate-only and combined pretested
+// traversal 138/138. All controls preserved. Original body, every declaration and initializer
+// restored. Exact count/layout prefix, outer pretest, loop-entry source zero and outside tail
+// transport remain.
+// Round 284: native multi-use options receiver with a complete positive layout result,
+// bool/byte/short/long on the recovered source graph: do 109 each; pretested for 138 each.
+// Original complete body restored; outer pretest, optional-source home and tail transport remain.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

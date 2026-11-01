@@ -693,6 +693,8 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Round 286: independent multi-use directional limits in ijk/ikj/jik/jki/kij/kji
 // producer order 158/160/158/158/160/160; immutable ijk/kji 158/160. Scalar forms
 // shrink the frame to 0x24; original 0x28 vector frame, limits and body restored.
+// DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
+// 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -938,6 +940,8 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // Round 293: Complete scalar velocity-product schedules ijk/ikj/jik/jki/kij/kji
 // 219 each (frame 0x24, retail length); all-input then all-product and per-row compound
 // producers 213/213. Original sampled-vector, frame 0x18 and full body restored.
+// DL220: Native scalar rotation-cross storage, crossed with original/axis scalar observations and complementary cosine:
+// 196/203/248/236/196/221/247/228. Sample home and rotation/output scheduling remain. Original body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

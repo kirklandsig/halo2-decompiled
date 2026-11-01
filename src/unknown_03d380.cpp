@@ -415,6 +415,10 @@ void function_125a90(long value);
 // Round 287: Paired unsigned/signed-byte policies, each isolated byte policy, and paired byte
 // mask-predicate producers 36 each; paired unsigned/signed-byte policies with the native long
 // inner type test 46 each. Original policy storage, producers and body restored.
+// Round 284: complete policy observations from incoming flags, b/a/both 103/143/144;
+// those with the native inner type comparison 104/144/145; both with short/byte type
+// carriers 149/152. Original policy snapshots, type and complete body restored;
+// scaled ordinal before policy load and decision-block placement remain.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
