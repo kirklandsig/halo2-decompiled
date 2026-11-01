@@ -2066,7 +2066,10 @@ void function_2818e0(void)
 // two places), the rest 22-83; on the two best, declarations by kind or by pass, count first or last 4.
 // Round 100 (lane 7, --fast): the per-arm apply reading the blend weight into a local at its top 2,
 // in the blend-1 arm 2; the blend-2 rotation through a pointer local to the destination rotation
-// 352; the flags test as `!= 0` 2; the apply index in a named local 2.
+// 352; the flags test as `!= 0` 2; the apply index in a named local 2. KIMI1 round 100: real zero
+// lanes plus a sign store 256; a negative-zero scalar 308; an __m128 mask 235; a zero __m128 plus
+// a sign store 290; split dword initialization 2 (0x289580 78); quaternion fields 256; ordinary
+// inline multiply 480; the flag declaration split from its read 2.
 // @retail 0x281b60
 void function_281b60(void)
 {
