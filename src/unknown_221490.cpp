@@ -628,6 +628,9 @@ bool sound_driver_voice_create_buffer(
 // with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
 // code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
 // (anneal, 600 s, 67 tries): best 71.
+// Round 285: bounded short/word/byte/signed-byte first-pair loops, then both
+// pair arrays with the real spatial-bin table 234/234/234/234/234/234/234/234. Original
+// complete body restored; spatial/play split and zero/input scheduling remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

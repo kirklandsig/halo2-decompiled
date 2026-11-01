@@ -574,6 +574,9 @@ static inline word font_character_pixel(long alpha, long color)
 // production orders 201/201/195/195; complete opacity field with byte/numeric
 // parity, word/dword 211/201/239/195. Exact-only records, helper and full decoder
 // restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 285: short fill counters switch/ordinary/both 181/172/191; word counterparts
+// 181/172/191; both byte/signed-byte 178/178. Original helper, decoder and counters restored;
+// alpha extension, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

@@ -776,6 +776,9 @@ struct s_device_machine_view
 // the zero store alone re-measured 117; the bits local `dword` without the `& 3` plus the zero store 122
 // (a full `movzx eax, word [esi+2]` and still the pushed ESI, so the conflict is not the 16-bit width);
 // `group->flags & 3` read directly without the word local 34.
+// Round 285: native real magnitude APIs at the three velocity-case consumers,
+// seven subsets and all with the power-velocity zero default 34/34/34/34/34/34/34/117.
+// Original body restored; native word-load sharing and zero-join scheduling remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1079,6 +1082,9 @@ bool function_108530(long device_index, long name)
 // division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
 // target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
 // 0x108670 13 -> 34).
+// Round 285: native real absolute API, absolute-duration and independent absolute-distance
+// producers, all seven subsets 121 each; all with field-owned cruise speed 134. Original
+// body restored; initial-velocity register and ramp-down residency remain.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1550,6 +1556,9 @@ bool function_0b6760(s_index_pair const *pair);
 // on this body the same 303 (1510 bytes); the b3 byte tested `<= 0` 294 (retail's `ja`, same count); the
 // state as one conditional expression 300 (1512 bytes). Retail's result byte never crosses a call on any
 // path, so its stack home is not register pressure from a live range.
+// Round 285 (N): settled-power conjunction orders and complementary active-first
+// admission graphs 300/419/419/353/353/419/353/353. Original field tests, body and inherited
+// qualifiers restored; frame/index/header/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
