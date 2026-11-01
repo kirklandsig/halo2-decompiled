@@ -1423,6 +1423,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // flag test (`lea [x + x*4 + 0x23]`), retail loads the flags into EAX for the take test, the
 // shared take path schedules as the 0x21cb90 note says (BLOCKED-BY 0x2194c0's parameter order),
 // and retail extends the previous permutation (`movsx eax, ax`).
+// Round 36: the take twin indexing the track entry twice 146 (confirmed); the previous value through
+// the existing 0x21cc30 with an `inline` declaration 129 (retail's `movsx`, confirmed); the helper
+// without `inline` 172 (called out of line); `long previous` 129 (the same `movsx`). All restored.
 // Round 106: the transition flag set through the existing word_flags_set 75 (kept: the flag store
 // through a pointer stops the track-index read being reused across the pitch-range call, so the
 // definition takes ESI); the playing record before the definition 50 (kept); on that, `result`
