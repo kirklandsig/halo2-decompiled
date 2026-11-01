@@ -776,6 +776,28 @@ union s_60403
 // false and carries it in BL); that with the removal loop reading the records directly 362; `new_to_old[i]`
 // read directly for `local_0` 149 (same code). Diagnostic: parameters swapped (definition and calls) 153: current
 // still takes EBX, so the entry choice follows current's weight, not symbol order.
+// Round 23 (m3 lane 2, fast): the current member count named once (`member_count`, the mapping and member loop
+// bounds) 204 (frame 0x98); the previous count named for the mapping and removal loops 366 (1482 bytes); both 342;
+// the previous member address named in the outer mapping loop 149 (same code); the previous header as an if/else
+// store 364; the header through a local set in an if/else (0x609e0's form) 149 (same code). Current stays in EBX.
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, equal to the full listing; env positional/aligned
+// 141/103 for this body): retail reloads previous into EBX at the members loop's latch and sets the retained mask
+// to zero after that loop. Diagnostic: `!previous ||` added to the members loop's NONE test flips the entry to
+// retail's (previous EBX, current EBP, count homes swapped back) but adds code, 311/156 (1529 bytes); that with the
+// mask declared after the members loop 322/159. New natural forms, entry unchanged: the old member pointer computed
+// at the top of every iteration 331/111; the map value read into a long instead of the entry pointer 208/110; the
+// old member indexed by a fresh map read 167/105. Re-measured in the env only (listed above): the late mask
+// 327/112, the header's previous store first 156/110. Retail weighs previous more than ours somewhere; the late
+// mask only helps once that flips.
+// Round 36 (lane 13, fast; a one-file LTCG link equal to the full build screened them first): the header's
+// previous word as an if/else 364 (two instructions short); the mapping loop bounds named once 155; the long
+// header stores ahead of the session copy 154; the header's previous word stored after the map clears 266
+// (1513 bytes); the member loop reading new_to_old[i] at each use in place of the element pointer 149 (same
+// code). In every form ours gives current EBX and previous EBP at entry (retail the reverse), and with them
+// the swapped count homes (retail previous count +0x18, current +0x1c) and the member loop's register roles.
+// Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
+// count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
+// loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

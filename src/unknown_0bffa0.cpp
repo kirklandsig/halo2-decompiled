@@ -797,7 +797,11 @@ void function_42850(long object_index, long tag_index, point3f const *position,
     vector3f const *third);
 byte g_55e708;
 
-// score 109 (was 109): BLOCKED-BY 0x2dba0: it takes the position in ecx and the tag on the stack where retail
+// score 128 (was 109): 0x2dba0 now takes the tag in ECX and the direction in EDI as in retail; the marker loop
+// walks the forward pointer in EDI (position = edi + 0x24, index in EBX) where retail walks the position pointer
+// in EBX, derives the forward with `lea edi, [ebx - 0x24]` and keeps the index and count in memory (frame 0xf0
+// against 0xec); the opacity clamp stores the product first. Earlier: BLOCKED-BY 0x2dba0: it took the position in
+// ecx and the tag on the stack where retail
 // passes the tag in ecx and the position on the stack, so the marker loop keeps its index in ebx and
 // spills the position where retail walks the position pointer in ebx with index and count in memory.
 // Round 70: indexed loop with a marker pointer per pass 109; single-marker case first 146; object
@@ -813,6 +817,11 @@ byte g_55e708;
 // cursor after the array declaration 109. Fast preview 131 with caveats; plain all 109; original restored.
 // Round 175 (plain): the absolute index written at each use 109; the effect tag read into a named local
 // for the test and both calls 163 (retail's 607 bytes, but a 0xf4 frame and every register moved).
+// Round 45 (lane 10, plain): an indexed for loop over `&markers[i].matrix` 128; a position pointer local in the
+// indexed loop 128, in the pointer loop 128; the product and the clamped opacity as two locals 128 (aligned
+// 99 -> 96); short count and index 145 (582 bytes). Compile-only (it reproduces the forward-pointer IV): a matrix
+// pointer, both address locals and a marker pointer in the for loop all keep it; a walked position pointer
+// gives two pointer IVs, not retail's one.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1207,160 +1216,6 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius, lo
 void function_11bed0(s_location *location, point3f const *point);
 point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
-// score 38 (was 38): only the node-matrix arm's rotations differ (231 before earlier rounds; one round
-// reached score 40 (was 38) when the else arm also reloaded ebx before ebp after the marker call, where retail reloads
-// ebp first). Ours folds the forward.i load into
-// only the node-matrix arm's rotations differ (231 when first written; at 40 the
-// else arm also reloaded ebx before ebp after the marker call where retail reloads ebp first). Ours
-// folds the forward.i load into
-// the i product of both (`movaps; mulss [m + 4]`, a byte shorter each, which shifts every later jump and
-// call by two bytes) and sums the second rotation's rows in another order (its vector loaded i first);
-// retail compiles both rotations alike (up*k + left*j, then forward*i; vector loaded j, k, i). Round 141:
-// the partition as the global itself, the rotations through matrix_transform_vector, the node matrix
-// through object_node_matrix(object_get()) and the far point through point_add_scaled_c35a0 in each arm
-// (once after the marker test 295; a new two-pointer add helper 70). Node matrix through the out-of-line
-// 0xb8bd0 aligned 71 but stays a call (/Ob1 file; inline/forceinline redeclarations ignored); position/
-// forward/up pointer locals aligned 127/114; named rotation outputs/inputs 88/157; const matrix 72; the
-// helper's sums in up-first text order 70 (canonicalised). Round 143: diagnostics on the shared header
-// (restored): vector-first products 70 (identical), components read at each use 153; const vector
-// arguments 70; a file-private up-first normal transform returning its output (the form other files
-// keep) 70 (identical); the parameter alias dropped 158. Round 147: whichever rotation comes second gets
-// the other order (diagnostics: the two swapped, or a call between them); the arm's locals declared at
-// the top 70 (identical); a named object pointer 72; a named node index 72; the axes as two-element
-// vector arrays 86; a `__forceinline` redeclaration of the rotation helper 70 (identical). Round 81: the
-// marker local scoped to its arm 78; the overflow flag declared first 70 (same code); forward/up output
-// pointer locals 86; the location pointer taken at the top 155; the marker flag tested as a byte 70
-// (same code); diagnostics on the shared header (restored): the helper's components loaded j,k,i /
-// k,j,i / i,k,j / j,i,k / k,i,j 78/76/78/75/81 (i,j,k stays best). Round 38: an explicit final return
-// and the marker after the early guard 70 each; a rotation for loop 158 (1005 bytes); a local matrix
-// 306 (1067); rotations before the point transform 124 (1027); the returned position 77; the existing
-// scaled rotation callee 391 (893); a rotation do loop 286 (890). Round 80 (the tail now matches, 38):
-// a named parent index 40; a forward / position pointer local in the node arm 42/44, in the marker arm
-// 198/210. LTCG harness diagnostics of the arm (not kept): the second rotation takes the
-// first's form when the marker arms' far-point adds are removed, and the fold goes when the marker call
-// is removed; the rotations written out in the arm give both retail's form apart from the fold; helper
-// parameter orders, reference parameters, by-value components or results, an orientation helper and
-// the existing vector3f_rotate_into_axes change nothing or lose more.
-// only the node arm's two rotations differ: retail compiles both alike (sum up*k + left*j,
-// then forward*i, the matrix element loaded first; vector loaded j, k, i); ours folds the first one's forward.i
-// product (`movaps; mulss [m + 4]`) and orders the second one i, k, j (the one-byte shift also flags the later
-// jumps and calls). The ranks are function-wide: in a compile-only screen the second rotation turns retail's
-// when the point transform call before it is removed or the matrix comes back from the out-of-line 0xb8bd0
-// (diagnostics only; that is a call, and 0xb8bd0's file is /Ob1). Round 141: the partition as the global itself,
-// the rotations through matrix_transform_vector, the node matrix through object_node_matrix(object_get()) and
-// the far point through point_add_scaled_c35a0 in each arm (once after the marker test 295; a new two-pointer
-// add helper 70). Node matrix through the out-of-line 0xb8bd0 aligned 71 but stays a call (/Ob1 file;
-// inline/forceinline redeclarations ignored); position/forward/up pointer locals aligned 127/114; named rotation
-// outputs/inputs 88/157; const matrix 72; the helper's sums in up-first text order 70 (canonicalised). Round
-// 143: diagnostics on the shared header (restored): vector-first products 70 (identical), components read at
-// each use 153; const vector arguments 70; a file-private up-first normal transform returning its output (the
-// form other files keep) 70 (identical); the parameter alias dropped 158. Round 147: whichever rotation comes
-// second gets the other order (diagnostics: the two swapped, or a call between them); the arm's locals declared
-// at the top 70 (identical); a named object pointer 72; a named node index 72; the axes as two-element vector
-// arrays 86; a `__forceinline` redeclaration of the rotation helper 70 (identical). Round 81: the marker local
-// scoped to its arm 78; the overflow flag declared first 70 (same code); forward/up output pointer locals 86;
-// the location pointer taken at the top 155; the marker flag tested as a byte 70 (same code); diagnostics on
-// the shared header (restored): the helper's components loaded j,k,i / k,j,i / i,k,j / j,i,k / k,i,j
-// 78/76/78/75/81 (i,j,k stays best). Round 38: an explicit final return and the marker after the early guard 70
-// each; a rotation for loop 158 (1005 bytes); a local matrix 306 (1067); rotations before the point transform
-// 124 (1027); the returned position 77; the existing scaled rotation callee 391 (893); a rotation do loop 286
-// (890). Round 10 (lane 14): the file's s_light_ab type for the light 38; const matrix with the definition
-// flag as a byte 38; the word flag tests as bytes 46; the existing function_2477b1 rotation 306; an
-// s_light_frame_ab pointer for the frame fields 352. Original body restored.
-// Round 12 (lane 14): the node matrix through the out-of-line 0xb8bd0 184 (1002 bytes); with `inline` on
-// 0xb8bd0's definition 38 (identical, but 0xbcc20/0x11b710 then inline it too); the rotation inputs
-// through one `vector3f const *` axes pointer 40; the light re-read for the second rotation 266; the node
-// matrix fetched again for the second rotation 304. Compile-only screens (no gain): second output via a
-// local, second input copied first, both inputs copied before the point call, both outputs via locals.
-// Lane 18 r1: the light index read through the alias at every later use (16a8e0, 1cac60 too) 38 (gives
-// retail's ebp/ebx reload order; a 2-point gain, not kept); c28b0 called with the parameter itself 154;
-// the second rotation through function_2477b1 256, the first 243; the point transform between the two
-// rotations 54.
-// only the node-matrix arm's two rotations differ. Ours folds the forward.i load
-// into the i product of both (`movaps; mulss [m + 4]`, a byte shorter each, which shifts every later
-// jump and call) and computes the second rotation in another order (its vector loaded i first);
-// retail compiles both rotations alike (up*k + left*j, then forward*i, the matrix element loaded
-// first; vector loaded j, k, i). Cause of the second-rotation order: the helper's per-call matrix
-// parameter. A compile-only build of the file reproduces the arm exactly; there the helper's body
-// written out in the arm with the caller's `matrix` gives both rotations retail's form apart from
-// the fold (4 differing SSE lines against 34; under LTCG 20, 6 aligned), while a block-local copy of
-// the matrix pointer in both rotations, or any helper call (inline/static/forceinline, const or
-// not, any parameter order, by reference, returning its output, matrix3x3 or row pointers, an
-// LTCG-inlined plain function, a two-vector helper) gives our form. The fold stays in every
-// written term and operand order (canonicalised).
-// Tried: round 141: the partition as the global itself, the rotations through
-// matrix_transform_vector, the node matrix through object_node_matrix(object_get()) and the far
-// point through point_add_scaled_c35a0 in each arm (once after the marker test 295; a new
-// two-pointer add helper 70). Node matrix through the out-of-line 0xb8bd0 aligned 71 but stays a
-// call (/Ob1 file; inline/forceinline redeclarations ignored); position/forward/up pointer locals
-// aligned 127/114; named rotation outputs/inputs 88/157; const matrix 72; the helper's sums in
-// up-first text order 70 (canonicalised). Round 143 (shared header, restored): vector-first
-// products 70 (identical), components read at each use 153; const vector arguments 70; a
-// file-private up-first normal transform returning its output 70 (identical); the parameter alias
-// dropped 158. Round 147: whichever rotation comes second gets the other order (the two swapped,
-// or a call between them); the arm's locals declared at the top 70 (identical); a named object
-// pointer 72; a named node index 72; the axes as two-element vector arrays 86; a `__forceinline`
-// redeclaration of the rotation helper 70 (identical). Round 81: the marker local scoped to its
-// arm 78; the overflow flag declared first 70 (same code); forward/up output pointer locals 86;
-// the location pointer taken at the top 155; the marker flag tested as a byte 70 (same code);
-// helper components loaded j,k,i / k,j,i / i,k,j / j,i,k / k,i,j 78/76/78/75/81 (shared header,
-// restored). Round 38: an explicit final return and the marker after the early guard 70 each; a
-// rotation for loop 158 (1005 bytes); a local matrix 306 (1067); rotations before the point
-// transform 124 (1027); the returned position 77; the existing scaled rotation callee 391 (893);
-// a rotation do loop 286 (890). Round 80 (the tail now matches, 38): a named parent index 40; a
-// forward / position pointer local in the node arm 42/44, in the marker arm 198/210. Round 10
-// (lane 14): the file's s_light_ab type for the light 38; const matrix with the definition flag
-// as a byte 38; the word flag tests as bytes 46; the existing function_2477b1 rotation 306; an
-// s_light_frame_ab pointer for the frame fields 352. Round 12 (lane 14): the node matrix through
-// the out-of-line 0xb8bd0 184 (1002 bytes); with `inline` on 0xb8bd0's definition 38 (identical,
-// but 0xbcc20/0x11b710 then inline it too); the rotation inputs through one `vector3f const *`
-// axes pointer 40; the light re-read for the second rotation 266; the node matrix fetched again
-// for the second rotation 304; compile-only screens (no gain): second output via a local, second
-// input copied first, both inputs copied before the point call, both outputs via locals. Lane 13
-// round 18 (fast counts, 38 here): a plain auto-inlined copy of the helper 38 (same code); const
-// matrix local 38; the rotations swapped 48; the up input copied into a local first 190.
-// Round 91 (lane 7; harness counts, where the unchanged source gives 38; the real build's two
-// extra are a marker-arm reload pair that drifts with LTCG context): the definition typed as the
-// file's light definition 38; the node arm's object read from the header table directly 40; the
-// light parameter passed directly to 0xc28b0 154; the far point added before the second rotation
-// 220; a `word flags` local for the entry tests 40; a rotation helper taking the vector by value 235
-// or returning it 268.
-// Round 32 (lane 10, fast counts): a file-local copy of the rotation helper 38 (same code), with its
-// component locals renamed (x/y/z, a/b/c, z/y/x, c/b/a, vi/vj/vk) 38 each (names do not move the
-// order), with const component locals 38, with a `vector3f v = *vector` copy 235 (1077 bytes); the
-// node matrix as a `transform4x3f *const` local 38.
-// Round 175 (one-file LTCG harness, 38 for the unchanged source; plain where marked): the location
-// pointer dropped (a cast at each use) 40; the marker name declared at the function top 38; the
-// distance declared at the function top 38; the rotations through the matrix's rotation member 38;
-// the three far points through the shared vector3f_add 40 (plain). Diagnostics: a matrix struct
-// without the union 38, a matrix3x3 rotation helper 45; dead initialised locals change it by count
-// alone (+1..+5: 40/56/56/60/60, any position or type) and the fold stays at every count, and also
-// without the first-person marker call, without 0xb8d30 or without 0xc28b0.
-// Round 47 (lane 16, fast with 0xc0840/0xc28b0/0x14a280; unchanged by 0xc0840's new body): the node
-// arm's far point through the existing vector3f_add_scaled 38 (same code); both rotations through the
-// existing vector3f_rotate_into_axes on the rotation member 525 (759 bytes); the light index read
-// through the alias at the 0x16a8e0 and 0x1cac60 calls too 38 (same code here); the second / first
-// rotation alone through vector3f_rotate_into_axes 388 / 390 (894 bytes).
-// Round 30 (lane 13, fast, all 38 = same code): no early return (body under `if (flags & 2)`); typed
-// s_light_ab fields for the node arm's point and rotation inputs; the rotation outputs through
-// frame.forward/frame.up; memcpy for the marker copies; the location pointer declared at the top.
-// Compile-only diagnostics (the harness reproduces the arm): either rotation alone, or the second one
-// on a re-fetched matrix, gives no fold in either, but rows j/k then end with the forward product
-// (retail starts them with it); dropping any one marker-arm copy also removes the fold; duplicated
-// copies, copy order, dead locals (1..8), `!= 0`/`-1`/`1.f` spellings and declaration placement do not.
-// Round 51 (lane 16; compile-only screen of this file, which reproduces the node arm: 19 differing SSE
-// lines for the unchanged source): a file-local rotation helper in all 6 input-load orders x 3 row
-// orders 19..54 (i, j, k loads and i, j, k rows stay best); with up-first rows (0x163db0's matched plane
-// rows) 19 (same code); unused reads of the node matrix axes before the rotations 19/28 (diagnostic);
-// the node arm first in source (marker test inverted) 44.
-// Round 117 (fast): the second rotation through a const reference of the matrix 40, through a const pointer copy
-// 40; the marker declared last 38 (same code); the first rotation into a local then copied 237 (1045 bytes); both
-// inputs copied into locals 256 (1094 bytes). Compile-only: either rotation alone leaves the first row's forward
-// product unfolded (retail's form), so the fold follows the second rotation's later read of the same element.
-// Round 19 (lane 2, fast with 0xc0840/0xc28b0/0x14a280): the node matrix declared at the function
-// top 38; both rotation outputs addressed from one forward pointer (`forward + 1` for up) 40; the far
-// point from apply_point's returned position 45; the node arm as a forceinline helper taking the light
-// 40; the body under one enabled test instead of the early return 38 (same code).
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
@@ -1368,15 +1223,18 @@ void __stdcall function_c2d00(long light_index)
     long const *light_reference = &light_index;
     byte *light = g_4e030c->data + (*light_reference & 0xffff) * 0x110;
     byte *definition = g_4e3b44[*(long *)(light + 4) & 0xffff].bytes;
-    if (!(*(word *)(light + 2) & 2))
+    word flags = *(word *)(light + 2);
+    if (!(flags & 2))
         return;
-    if (*(word *)(light + 2) & 4)
+    if (flags & 4)
         function_c0840((point3f *)(light + 0x84), (point3f *)(light + 0x90),
             (point3f *)(light + 0xa0), (real *)(light + 0x9c));
-    if (*(short *)(light + 0x54) != NONE)
+    short marker_index = *(short *)(light + 0x54);
+    if (marker_index != NONE)
     {
-        long marker_name = function_b8c40(*(long *)(light + 0x4c), *(short *)(light + 0x54));
-        if ((*(long *)definition & 0x20) &&
+        long marker_name = function_b8c40(*(long *)(light + 0x4c), marker_index);
+        bool uses_weapon_marker = (definition[0] & 0x20) != 0;
+        if (uses_weapon_marker &&
             first_person_weapon_get_marker(*(long *)(light + 0x4c), marker_name,
                 (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8)))
         {
@@ -1385,21 +1243,27 @@ void __stdcall function_c2d00(long light_index)
         else
         {
             function_b8d30(*(long *)(light + 0x4c), marker_name, &marker, 1, false);
-            *(point3f *)(light + 0x84) = marker.matrix.position;
+            point3f *position = (point3f *)(light + 0x84);
+            *position = marker.matrix.position;
             *(vector3f *)(light + 0xac) = marker.matrix.forward;
             *(vector3f *)(light + 0xb8) = marker.matrix.up;
             point_add_scaled_c35a0((point3f *)(light + 0x84), (vector3f *)(light + 0xac), 1.0f, (point3f *)(light + 0x90));
         }
     }
-    else if (*(long *)(light + 0x58) != NONE)
+    else
     {
-        transform4x3f *matrix = object_node_matrix(object_get(*(long *)(light + 0x58)), *(short *)(light + 0x5c));
-        transform4x3f_apply_point(matrix, (point3f *)(light + 0x60), (point3f *)(light + 0x84));
-        matrix_transform_vector(matrix, (vector3f *)(light + 0x6c), (vector3f *)(light + 0xac));
-        matrix_transform_vector(matrix, (vector3f *)(light + 0x78), (vector3f *)(light + 0xb8));
-        point_add_scaled_c35a0((point3f *)(light + 0x84), (vector3f *)(light + 0xac), 1.0f, (point3f *)(light + 0x90));
+        long parent_index = *(long *)(light + 0x58);
+        if (parent_index != NONE)
+        {
+            s_slot_object_view *object = object_get(parent_index);
+            transform4x3f *matrix = object_node_matrix(object, *(short *)(light + 0x5c));
+            transform4x3f_apply_point(matrix, (point3f *)(light + 0x60), (point3f *)(light + 0x84));
+            matrix_transform_vector(matrix, (vector3f *)(light + 0x6c), (vector3f *)(light + 0xac));
+            matrix_transform_vector(matrix, (vector3f *)(light + 0x78), (vector3f *)(light + 0xb8));
+            point_add_scaled_c35a0((point3f *)(light + 0x84), (vector3f *)(light + 0xac), 1.0f, (point3f *)(light + 0x90));
+        }
     }
-    function_c28b0(*light_reference);
+    function_c28b0(light_index);
     if (!(light[2] & 8) && *(short *)(light + 0x48) == NONE &&
         (*(long *)definition & 0x8000) && *(real *)(light + 0x24) > 0.0f)
     {
@@ -1412,12 +1276,17 @@ void __stdcall function_c2d00(long light_index)
     function_11bed0(location, (point3f *)(light + 0x38));
     if (*(short *)(light + 0x48) == NONE && (!(light[2] & 1) || (*(long *)definition & 8)))
     {
-        if (*(long *)(light + 0x4c) != NONE)
-            object_get_root_location(*(long *)(light + 0x4c), location);
-        else if (*(long *)(light + 0x58) != NONE)
-            object_get_root_location(*(long *)(light + 0x58), location);
+        long owner_index = *(long *)(light + 0x4c);
+        if (owner_index != NONE)
+            object_get_root_location(owner_index, location);
         else
-            function_11bed0(location, (point3f *)(light + 0x18));
+        {
+            long parent_index = *(long *)(light + 0x58);
+            if (parent_index != NONE)
+                object_get_root_location(parent_index, location);
+            else
+                function_11bed0(location, (point3f *)(light + 0x18));
+        }
     }
     bool overflow;
     function_1cac60(NULL, &g_4e0310_partition, light_index, (long *)(light + 0x10), (point3f *)(light + 0x18),
@@ -1645,6 +1514,10 @@ extern s_object_list *g_4de2f4;
 // Round 51 (lane 16, fast with 0xbab40/0xbad50/0x131d60/0xc0b00): the pointer read at the second 0x131d60
 // call and `light->fraction` at the first 49. 0xbab40 (ours, 28) with the 1.0 case's own `return enabled`
 // 117, with a named early result too 115 (this function stays 49 with either).
+// Round 45 (lane 10, fast): 1..28 unused locals at the top or in the arm 49 each (the copy schedule is not a
+// numbering tie; 1..4 extra live stores keep it too and only turn the pair fade products); the colours as
+// `color4f colours[2], pair_colours[2]` 49, as one `color4f colours[4]` 49; a const definition 49; the tint
+// copy-constructed 49; the tint as a `point3f view_point = *g_468710` 49 (all the same code).
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
 {

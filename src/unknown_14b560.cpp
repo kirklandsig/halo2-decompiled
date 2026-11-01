@@ -1073,6 +1073,10 @@ bool function_14ed80(void)
 // lookup frees. Round 41: the clamp through the file's PIN macro 19 (166 bytes); maximum at
 // function scope 8; globals declared after the index 8; player declared first 8; the bound
 // read from the globals at each use without the maximum local 21.
+// Round 43: all 23 other orders of the first/third/player/globals declarations: globals before the
+// player 49-50, the rest 8-9; no globals local (the global read at each use) 53 (first then takes
+// EDX, the globals EDI); index declared first 8, after the outputs 8; the third-person field assigned
+// first 9; renaming the globals or first local 8 (names do not steer it).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1631,6 +1635,10 @@ struct s_unit_player_assignment
 // renamed 17; the existing first_person_character_from_player for the remap 17, the existing
 // function_a7a30 for both +0xd4 notifications 17, and both 17 (LTCG inlines each: same code);
 // block-scoped unit pointers 17.
+// Round 43: the control-set argument read back from player->unit_index 17; both +0xd4 fields read
+// at each use 17; both together 17; the outer comparison's operands swapped 18; the remap as one
+// conditional expression 17; the unit pointer declared before the player 17. Matched 0x14f190
+// makes the same 0x1682bf call with our schedule.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -1964,23 +1972,15 @@ real function_23ba90(point3f const *point, long player_index, bool deterministic
     s_spawn_influence_list *list, dword *seed);
 bool function_23bb70(long tag_index, point3f const *position);
 
-// score 19 (was 19): the global is read into EDX here and into EAX in retail,
-// and the four values that are pushed for the call are pushed in another order.
-// Round 7: independent getters and a fresh getter only at the increment 71 each;
-// const player/options pointers and const options data 19 each; player/options/both object references 19 each.
-// Round 15: player declared before the options 90 at 303 bytes (retail's load order, aligned 9 against 8:
-// the add before the counter read and the late +0x14 read remain, and the loop loses its padding);
-// counter read through a getter in the seed with the player defined after it 77; seed built in
-// statements 19, with the options field first 19; seed computed before the result/best locals 22.
 // @retail 0x14ef00
 long function_14ef00(long player_index, long tag_index, bool deterministic, bool preserve_counter)
 {
-    s_game_options_view *options = g_4e6948;
     s_player *player = player_get(player_index);
+    s_scenario_starting_profiles_view *scenario = (s_scenario_starting_profiles_view *)g_4e0350;
+    s_game_options_view *options = g_4e6948;
     short result = NONE;
     real best = -1000.0f;
     dword seed = ((1 << (player_index & 0xffff)) ^ options->id_b ^ options->id_a) + player->unknown218;
-    s_scenario_starting_profiles_view *scenario = (s_scenario_starting_profiles_view *)g_4e0350;
     s_spawn_influence_list influences;
     function_23bc40(player_index, &influences);
     for (short index = 0; index < scenario->starting_profile_count; ++index)
@@ -2043,6 +2043,12 @@ struct s_player_creation_record
 };
 #pragma pack(pop)
 
+// score 0 (was 33): matches retail (plain check): the reset of the player's controller is written
+// out in the NONE arm, where retail has 0x14f270's reset expanded, and the other arm's call to
+// 0x14f270 passes the controller through a local, so the compiler leaves the call out of line as
+// retail does instead of specializing it on the literal. Both forms (the written-out reset and the
+// one-use local) are retail's code shape and are kept only with this byte match.
+// The rounds that led here are kept below.
 // score 33 (was 33): retail inlines function_14f270(index, record->value04) here one level (its NONE
 // arm inline, its recursive NONE call kept); our link keeps that variable-argument call out of line
 // (it inlines only constant-NONE calls), so the tail is written out and differs from +0x1f6.
@@ -2163,11 +2169,14 @@ void __stdcall function_14c090(long index, bool reuse, s_player_creation_record 
         {
             if (controller == NONE)
             {
-                function_14f270(index, controller);
+                ((s_players_globals *)g_4e8c20)->unknown1c[old_controller] = NONE;
+                --((s_players_globals *)g_4e8c20)->unknown0a;
+                *(long *)(current + 0x24) = NONE;
             }
             else
             {
-                function_14f270(index, NONE);
+                long none_controller = NONE;
+                function_14f270(index, none_controller);
                 *(long *)(current + 0x24) = controller;
                 ((s_players_globals *)g_4e8c20)->unknown1c[controller] = index;
                 ++((s_players_globals *)g_4e8c20)->unknown0a;
@@ -2229,6 +2238,9 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// score 775 (was 701): the first 0x151b80 call's boolean argument passed through a named local; the
+// call was no longer expanded, the body shrank to 2636 bytes and the score rose. Reverted; the frame
+// and the two expanded calls remain the blocker.
 // score 701 (was 701): frame 0x4c versus 0x74 and selective call expansion remain.
 // Earlier: frame 0x4c versus 0x74; request/pointer homes and call expansion remain.
 // frame 0x4c versus 0x74; request/pointer homes and call expansion differ.
@@ -2681,7 +2693,16 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
-// score 103 (was 103): the globals pointer stays live in EDI through both iterator loops;
+// score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
+// `globals` local builds to the same bytes in the full build (611 = 611, first difference
+// +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the
+// pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
+// retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
+// has ESI, so the two roles are swapped.
+// score 103 (was 103): the store through the named `globals` local was tried again and scored
+// 180 in the full build against the 103 baseline, so it was reverted; the globals pointer stays
+// live in EDI through both iterator loops and retail keeps it in ESI, reloading it only at the
+// two stores; target/point homes still differ.
 // target/point homes still differ.
 // Earlier: the global is kept in EDI here and in ESI in retail,
 // so the prologue saves the other registers and the field that is written
@@ -2878,7 +2899,12 @@ struct s_unit_flags_14d8b0
 	word bit8 : 1;
 };
 
-// score 9 (was 9): the nine differing lines have one root cause: the last g_4e6948->mode test
+// score 9 (was 9): the late mode receiver is EDX rather than ECX; reset-slot
+// scratch registers are EAX/ECX rather than EDX/EAX, and the root pool uses EDX rather
+// than ECX. Frame 0xc8 and 1287-byte extent agree; first difference is +0x304.
+// The timer callee 0x1521d0 now matches. Earlier: 59 statement variants stayed at 9.
+// Earlier: late mode, reset-slot and root-pool scratch registers remain.
+// the nine differing lines have one root cause: the last g_4e6948->mode test
 // keeps the options pointer in EDX where retail keeps it in ECX, and that single allocation
 // cascades into the game-engine block (EAX and ECX where retail has EDX and EAX) and into the
 // root walk's global load (EDX where retail has ECX); the callee 0x1521d0 splits its own
@@ -2950,6 +2976,12 @@ struct s_unit_flags_14d8b0
 // restored.
 // Round 98: mode and reset countdown as one condition 9; reset countdown through a short reference 9;
 // the two byte countdowns through a signed char pointer 9; short slot index local in both slot
+// blocks 9; flag bytes through the player's flags word 9. At that stage, 0x1521d0 also split
+// global/data registers ECX/EDX where ours reused one; that callee now matches.
+// Round 219: engine-global snapshots, native byte countdown members and both 9,9,9;
+// timer inline alone/with snapshots/with byte members/with both 9,9,9,9;
+// expiry result alone/with snapshots 9,9; native reset member/all native
+// countdown members/inline with reset member 9,9,9. Original body retained.
 // blocks 9; flag bytes through the player's flags word 9. Retail also splits the global/data
 // registers in the callee 0x1521d0 (ecx/edx where ours reuses one).
 // Round 145: one forceinline engine-slot notify helper for both slot blocks 9; root walk as a while

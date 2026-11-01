@@ -295,6 +295,9 @@ union s_185be7
 // Round 461: raw third-input byte/word/long/dword across duration and latch tests
 // 734/730/733/733; complementary inactive bool/byte/short/long 731/731/728/730.
 // Gains at most three rejected; original Boolean carrier and complete body restored.
+// Round 265: library range / paired axis-duration / paired response-weight-angle
+// selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
+// upper-first nesting 1320. Native frame, original custom clamps and full body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

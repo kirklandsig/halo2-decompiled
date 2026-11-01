@@ -352,6 +352,10 @@ void c_class_2c9e69::select_last_variant()
 // Round 39: an early return for an absent datum 23; `else { name; if (text) ... }` 23; the arms swapped
 // (`variant != NONE` first, the empty copy kept) 30; the two lookups assigned after their declarations 23;
 // the variant named in the name arm 23.
+// Round 62: named condition declaration 36 (154 bytes); named condition with direct empty text 36; both condition
+// declarations 36; nested named condition 36; named condition with the inherited qualifier 36; empty condition with
+// direct named text 36; explicit/implicit assignment-condition receivers 36/36. Every form merges the loads into EDI.
+// Opening body restored.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

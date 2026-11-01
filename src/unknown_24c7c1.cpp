@@ -607,6 +607,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 54 (lane 16, fast; base 114): the tutorial colour as `!flag_1384 && (b6 & 1) ? a8 : a4` 114 (same code);
 // `left` declared `short const` at its assignment 114 (same code); both 114; both with a bool timer 191 (1888
 // bytes); the tutorial colour reading g_510c94 at each use (no `globals` local) 114 (same code).
+// Round 62 (lane 12, fast; base 114): the two colour locals declared once at function scope 133; the
+// rectangles declared before origin 115; `field_24` declared before `color` in each phase 115; `color`
+// renamed (diagnostic) 115 with its home unchanged at -0x2c (retail -0x34); the rectangles at function
+// scope 115. The one byte the bool timer loses is `left`: retail stores it as a 16-bit memory local
+// (`mov word ptr [ebp-0x3c], ax`) where ours spills a dword, so the bool timer needs that form too.
 // Round 40 (lane 11, fast; unchanged source 115 fast, 114 plain): retail stores `left` once with a word move
 // (`mov word ptr [ebp-0x3c], ax`), so it is a memory local there, not a spilled register (ours spills it as a
 // dword); with the bool timer that word store is retail's missing byte (the bool form is otherwise retail's
@@ -621,6 +626,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // split_screen renamed to sort last 191, scripted renamed to sort first/last 191/191, split_screen declared
 // at function scope 191 (114 with the long timer), the timer or all three flags as `byte` 191/191: names,
 // scope and byte/bool type do not move the byte slots.
+// Round 16 (m3 lane 17, fast; unchanged source 115 fast): `left` renamed to sort first 115 (same code: it
+// is a spill slot, so slot-name ordering does not reach it); `left` declared before `top` 115 (same); the
+// HUD state global read at each use 115 (same); the text buffer declared first 115 (same); `top` as a long
+// 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
+// tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
+// where retail starts a new group after origin (-0xd).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

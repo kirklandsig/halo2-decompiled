@@ -379,11 +379,20 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 {
 	return (real)fabs(plane->normal.k * point->z + plane->normal.j * point->y + plane->normal.i * point->x - plane->d);
 }
-// score 32 (was 39): at retail's length (2833 bytes). Left: retail stores the identifier before it loads
-// the copied rectangle (ours loads x0 first); the top and bottom planes sum the distance as z, y,
-// d * scale, x and schedule the k row's first add before its third product, where the other planes
+// score 28 (was 32): at retail's length (2833 bytes). Left: the top and bottom planes sum the distance as
+// z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
+// Round 37 (lane 13, one-file LTCG harness equal to the full build): x0 read through rect like the other three
+// corners 28 (kept: the identifier store and the rectangle loads now follow retail); on it the points local
+// dropped 28 (same code), the position pointer in the transform 40, a normal pointer in the error test 48,
+// the scale read in the sum 36, rect declared first 28, depth read before the identifier store 31, x0 as
+// `depth * rect->x0` 28, the locals declared after the copy 28; the plane normals' z inputs through rect (any
+// of the four) 669 (2838 bytes); `0.0f - depth` for the corner z 676 (2791 bytes); all 24 one-expression
+// distance sums 60. The top/bottom helper (z, y, d * scale, x) with x0 through rect gives 6 (left: the x-term
+// operand order of planes 1-3), with a position pointer in it 10, in both helpers 20, with the error normal
+// pointer 26, scale inline in either helper 37; 1-8 dead copies of depth (diagnostic only) 14 except 8 (6),
+// in the second helper 1-4 dead copies 14/14/14/6: the plane 1-3 operand order is not a numbering effect.
 // Round 51 (lane 16): retail's has-plane arm jumps past the plane-4 transform, so the shared
 // transform after the if/else was a behaviour difference: the transform back in the else arm 99
 // (2818 bytes, the stored unit normal forwarded), with that normal set through vector3f_assign
@@ -598,7 +607,7 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 		result->rectangle = *rectangle;
 		result->identifier = identifier;
 		real depth = camera->depth;
-		real x0 = result->rectangle.x0 * depth;
+		real x0 = rect->x0 * depth;
 		real x1 = rect->x1 * depth;
 		real y0 = rect->y0 * depth;
 		real y1 = rect->y1 * depth;
@@ -793,11 +802,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
 // the copied normal's x into xmm4; retail keeps the near distance in xmm5 and the zero in xmm4,
 // ours keeps the near distance in xmm6 and the zero in xmm1.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Intersection/projected point setters 119/119; existing in-place vector scale 115; long/byte result 216/119.
 // Forward value copy 474; direct projected element 246; scaled direct element 247; separate scaled vector 115.
 // Second-plane-first 425; reuse first negated normal 463; indexed plane selection 375.
@@ -858,6 +867,24 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // (the operand order is canonicalised); the output element stored directly 247 (1867 bytes); p1
 // declared before p0 120; the near plane's d grouped as `i + (k + j)` 145; the point memcpy
 // moved before the planes (after the memset) 193.
+// Round 58 (lane 16, fast): plane 0's d grouped `i + (k + j)` 145, `(k + j) + i` 145 (plane 0's code unchanged,
+// later blocks move); the segment flags cleared after the planes 178; plane 0's d as statements j, += k, += i
+// 287 (1867 bytes), the same sum in a named local (diagnostic) 251 (1867); plane 0's d as one sum of
+// `(real)(a * b)` products 271 (1867).
+// Round 124 (one-file LTCG harness, exact at 115; five confirmed with fast): whatever the term order,
+// the last term of plane 0's d loads its camera component after the copy (the copied normal's i
+// takes xmm4), and the zero that inherits camera i's register then shifts the clip loop's XMM homes.
+// Plane 0's d with explicit grouping, every term order and operand order: (a+b)+c 145-179, a+(b+c)
+// 145-179 (`e.i*n.i + (e.k*n.k + e.j*n.j)` 145 fast); d accumulated with `+=` in any order 287 (1867
+// bytes); a named d 119 (fast); d computed from the forward pointer before or after the copy 441/442;
+// the three camera components in named reals, any order 276; the near distance computed after the
+// copy 141 (fast), before the bounds copy 191, just before the d negation 179; d negated together
+// with the near add 423; the normal negations in the other five orders 126-141 (j, i, k 126 fast);
+// a by-name normal copy 460/464; a plane-negate or vector-negate inline helper for both planes 269/247;
+// classification in 96 term/operand/grouping forms, none below 115; the intersection written
+// directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
+// Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
+// operands fixed in the unrolled loop, flipped in the remainder loop).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

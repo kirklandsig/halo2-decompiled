@@ -263,6 +263,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 251: Native accumulated-value return in scalar/merge/both/color/scalar-color/merge-color/all helpers
 // 1013/1013/1287/1145/1419/1426/1647; all with byte palette 1625. Original helper contracts, input-weight
 // capture and complete body restored; palette/record and SSE carriers remain.
+// Round 264: Library contribution clamp, paired radius caps and paired fallback bounds,
+// subsets 1/2/4/3/5/6/7 and full upper-first clamp 2071/836/848/2166/2161/942/2251/2228.
+// All enlarge code; original selections, input captures and complete body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

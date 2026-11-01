@@ -80,6 +80,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
+// MiniMax S (10-31): no new form, no lower score. The frame agrees (0x64), but retail parks its loop
+// index and point index in memory (frame 0x2c and 0x80) where ours keeps them in registers, its three
+// NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
+// and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
 // score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Earlier: frame 0x68/0x64, induction/endpoint homes and x87 scheduling differ.
 // Earlier: table-pointer roles now agree; frame 0x68/0x64, outer-loop reload placement, inner-loop registers and x87 square order remain.
@@ -168,6 +172,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // stays 16-bit, `cmp word [..], dx`, where retail compares the movsx'd field with a 32-bit group in EBX); the
 // point bits through them too 424 (same code); `long local_15` with the helpers 496 (the set shares the test's mask again). Retail spills the group (EBX) to the arg_2 home and later reuses
 // that home for the pass's found flag (`mov byte ptr [esp + 0x80], 0`).
+// Round 474: Native early reference/provider/both ordinal snapshots 398 each;
+// complete link payload alone/with reference/provider/both 475 each; complete
+// graph with promoted provider ordinal 513. Original body and helpers restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
