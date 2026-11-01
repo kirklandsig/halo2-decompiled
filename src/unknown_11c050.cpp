@@ -5,6 +5,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "object_queries.h"
+#include "location_zones.h"
 #include <string.h>
 
 struct s_bsp3d;
@@ -19,34 +20,6 @@ long function_11bf90(long object_index, point3f *point)
 		point->z += 0.05f;
 	return attempts == 0;
 }
-
-struct s_11c120_cluster
-{
-	byte unknown00[0x70];
-	byte zone;
-	byte unknown71;
-	short entry_index;
-	byte unknown74[0xb0 - 0x74];
-};
-
-struct s_11c120_zone
-{
-	byte unknown00[2];
-	short index;
-	plane3f plane;
-	byte unknown14[4];
-};
-
-struct s_11c120_bsp
-{
-	byte unknown00[0x68];
-	s_11c120_zone *zones;
-	byte unknown6c[0xa0 - 0x6c];
-	s_11c120_cluster *clusters;
-	byte unknowna4[0xd4 - 0xa4];
-	long entry_count;
-	byte *entries;
-};
 
 struct s_entry_11bf30
 {
@@ -116,35 +89,12 @@ bool function_11c080(s_location const *location)
 	return (CLUSTER_BITS(0x1138)[cluster_index >> 5] & (1 << (cluster_index & 31))) != 0;
 }
 
-/* retail calls this from every caller */
+/* retail calls this out of line, except where it inlines the body
+   (location_point_in_zone_inline in location_zones.h) */
 __declspec(noinline) bool function_11c120(s_location const *location, point3f const *point, short *zone_index);
 
 // @retail 0x11c120
 bool function_11c120(s_location const *location, point3f const *point, short *zone_index)
 {
-	bool result = false;
-	short cluster_index = location->cluster_index;
-
-	if (cluster_index != NONE)
-	{
-		s_11c120_bsp *bsp = (s_11c120_bsp *)g_4e0348;
-		s_11c120_cluster *cluster = &bsp->clusters[cluster_index];
-
-		if (cluster->zone != 0xff)
-		{
-			s_11c120_zone *entry = &bsp->zones[cluster->zone & 0x7f];
-			short index = entry->index;
-
-			if (index != NONE)
-			{
-				if (!(cluster->zone & 0x80) || 0.0f > entry->plane.k * point->z + entry->plane.j * point->y + entry->plane.i * point->x - entry->plane.d)
-				{
-					result = true;
-					if (zone_index)
-						*zone_index = index;
-				}
-			}
-		}
-	}
-	return result;
+	return location_point_in_zone_inline(location, point, zone_index);
 }

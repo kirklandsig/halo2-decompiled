@@ -29,14 +29,22 @@ struct s_pathfinding_surface
 	byte unknown0c[0x14 - 0xc];
 };
 
-/* an edge of the pathfinding data (16 bytes, from +0xc) */
+/* an edge of the pathfinding data (16 bytes, from +0xc): nodes are the
+   nodes on its two sides */
 struct s_pathfinding_edge
 {
 	word vertices[2];
 	byte unknown04[4];
 	word next_edges[2];
-	word unknown0c;
-	word surface;
+	union
+	{
+		struct
+		{
+			word unknown0c;
+			word surface;
+		};
+		word nodes[2];
+	};
 };
 
 struct s_pathfinding_data

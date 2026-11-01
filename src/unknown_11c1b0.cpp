@@ -19,80 +19,34 @@ bool cache_files_load_structure_bsp(s_structure_bsp_reference *arg_0);
 void cache_files_unload_structure_bsp(s_structure_bsp_reference *arg_0);
 void function_16e2c0(long arg_0);
 
-struct s_11c1b0
-{
-    void (__stdcall *field_0)(short);
-    dword field_4[8];
-};
-
-#define g_440df0 (*( s_11c1b0 const (*)[68])((byte const *)g_440dd8 + 0x18))
-
-// score 50 (was 50): entry index/zero registers and saved-index publication still differ.
-// Earlier allocation: retail keeps local_0 in ebx (xor ebx, ebx; mov bx) up to the
-// Initial index/zero registers and early saved-index store still differ; frame and both result lifetimes agree.
-// On the separate-result form: signed ordinal 125; ordinal != 68 51; row cursor 125;
-// counted row cursor 95; callback snapshot 50; signed snapshot 125; row snapshot 125;
-// counted row snapshot 95. Original dispatch, two index values and returns retained.
-// retail keeps local_0 in ebx (xor ebx, ebx; mov bx) up to the
-// initial index DI/zero EBX differ from retail BX/EDI;
-// saved-index publication still follows validation instead of preceding it.
-// Earlier: retail keeps local_0 in ebx (xor ebx, ebx; mov bx) up to the
-// function_137da0 call and stores it at once into arg_0's slot, which then serves as
-// local_7; it holds the early false in al (so the limit goes in esi and every push
-// comes first) and only later the result in bl, with edi as its zero register. Ours
-// keeps local_1 in bl from the start, local_0 in di and zero in edx. Tried: local_0
-// and local_7 as one variable 116 (edi becomes the zero register); local_7 = local_0
-// at its declaration 143; with one variable, return false for the range test (local_1
-// with or without its initializer, declared first or second) 131 (ebx gets retail's
-// xor/mov, but the early return gets its own epilogue); return local_1 there 114
-// (draft) / 131 (one variable); the body inside if (arg_0 == NONE || in range) 99
-// (draft) / 116 (one variable).
-// Earlier allocation: result false from entry (al) and the success in bl now match
-// result false from entry (al) and the success in bl now match
-// Earlier: result false from entry (al) and the success in bl now match
-// retail, and local_7 shares arg_0's slot, but the zero goes in ebx and local_0 in edi
-// (retail: local_0 ebx, zero edi), and local_7's store comes after the range test
-// (retail: at entry). One variable with result + local_1 128 (retail's registers, but
-// its own slot: push ecx); local_7 = local_0 after the loop 87; local_0 read after the
-// range test 58; result declared first 120 (100 one variable); local_1 declared at the
-// block top 50; local_7 after the true test 50; local_7 in the NONE test 50; local_1 &&
-// local_7 != arg_0 for the goto 50 (same code); a 600 s permuter run, none below 50.
-// Late byte/short/long success carriers 80/110/109; word/byte callback counters 95/95;
-// word counter plus byte success 107; equality-produced success 94;
-// equality result plus word counter 128.
-// Requested value before/after old index 50/50; early saved index after request
-// 128, request-first 128, false-before-save 130, false-before-request 130;
-// requested input with wide saved/current carriers 125/122. Separate indices/results retained.
-// One index variable 128 (every instruction as retail except its own slot: a variable takes the
-// argument's home only when defined after the argument's first read); validity bool first, one
-// or two variables 130/130, with the false result first 132; local copy of the requested index
-// read first 128.
+/* switches the loaded structure bsp to bsp_index (NONE unloads it); bsp_index then holds the
+   game's current bsp index, read again after function_137da0 */
 // @retail 0x11c1b0 standard
-bool __stdcall function_11c1b0(short arg_0, bool arg_1)
+bool __stdcall function_11c1b0(short bsp_index, bool arg_1)
 {
-    short local_0 = g_4e6948->index;
+    short requested_index = bsp_index;
+    bsp_index = g_4e6948->index;
+    short local_0 = bsp_index;
     bool result = false;
-    if (arg_0 == NONE || (arg_0 >= 0 && arg_0 < *(long *)((byte *)g_4e0350 + 0x210)))
+    if (requested_index == NONE || (requested_index >= 0 && requested_index < *(long *)((byte *)g_4e0350 + 0x210)))
     {
-        short local_7 = local_0;
-        if (g_4686c4 == arg_0 && local_0 == arg_0)
+        if (g_4686c4 == requested_index && local_0 == requested_index)
             return true;
         for (dword local_2 = 0; local_2 < 68; local_2++)
         {
-            if (g_440df0[local_2].field_0)
-                g_440df0[local_2].field_0(arg_0);
+            if (g_440dd8[local_2].field_18)
+                g_440dd8[local_2].field_18(requested_index);
         }
-        if (local_0 != NONE && local_0 != arg_0)
+        if (local_0 != NONE && local_0 != requested_index)
         {
             function_137da0();
-            local_7 = g_4e6948->index;
+            bsp_index = g_4e6948->index;
         }
-        if (g_4686c4 != NONE && g_4686c4 != arg_0)
+        if (g_4686c4 != NONE && g_4686c4 != requested_index)
         {
             if (arg_1)
             {
-                byte *local_3 = *(byte **)((byte *)g_4e0350 + 0x214) + g_4686c4 * 0x44;
-                cache_files_unload_structure_bsp((s_structure_bsp_reference *)local_3);
+                cache_files_unload_structure_bsp((s_structure_bsp_reference *)(*(byte **)((byte *)g_4e0350 + 0x214) + g_4686c4 * 0x44));
             }
             g_4686c4 = NONE;
             g_4e0348 = NULL;
@@ -101,14 +55,14 @@ bool __stdcall function_11c1b0(short arg_0, bool arg_1)
             g_4e033c = NULL;
         }
         bool local_1 = true;
-        if (g_4686c4 != arg_0)
+        if (g_4686c4 != requested_index)
         {
-            byte *local_4 = *(byte **)((byte *)g_4e0350 + 0x214) + arg_0 * 0x44;
+            byte *local_4 = *(byte **)((byte *)g_4e0350 + 0x214) + requested_index * 0x44;
             g_4e0348 = NULL;
             g_4e0344 = NULL;
             g_4e0340 = NULL;
             g_4e033c = NULL;
-            g_4686c4 = arg_0;
+            g_4686c4 = requested_index;
             if (cache_files_load_structure_bsp((s_structure_bsp_reference *)local_4))
             {
                 function_16e2c0(*(long *)(local_4 + 0x14));
@@ -128,7 +82,7 @@ bool __stdcall function_11c1b0(short arg_0, bool arg_1)
                 goto local_5;
             }
         }
-        if (local_7 != arg_0)
+        if (bsp_index != requested_index)
             function_137d40();
     local_5:
         g_4e6398 = g_485ab0;

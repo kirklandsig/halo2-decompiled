@@ -126,13 +126,6 @@ PRIVATE __forceinline bool function_1d6d04(long arg_0)
  return arg_0 == 4 || arg_0 == 5;
 }
 
-// score 49 (was 49): the arguments of the outgoing call are set up in another
-// order: retail pushes the address of the local, then 0, then the float, while
-// ours pushes 0 first and reloads the float out of the stack.
-// Rotation stores through a pointer 49; transform stores through a pointer 49;
-// both store pointers 49; derived transform 49; late transform pointer 49;
-// both late pointers 49; split result 49; result before selection 49;
-// body group 49; center pointer 49.
 // @retail 0x1d6d00
 void __stdcall function_1d6d00(s_havok_component *arg_0, void *arg_1, byte *arg_2,
  long arg_3, long arg_4, bool arg_5, bool arg_6)
@@ -207,7 +200,7 @@ void __stdcall function_1d6d00(s_havok_component *arg_0, void *arg_1, byte *arg_
  if (arg_6) { local_12 = arg_4; local_13 = 1.0f; }
  else { local_12 = arg_3; local_13 = 0.0f; }
  hkRigidBody *local_14 = (hkRigidBody *)function_1d70d0(arg_0, (s_1d70d0 *)local_6, false, false,
-  &local_5, local_13, 0.0f, &local_10.m_rotation, *(real *)((byte *)arg_1 + 0x10),
+  &local_5, local_13, 0.0f, &local_10.rotation_part(), *(real *)((byte *)arg_1 + 0x10),
   local_2, &local_10, local_12, false, 0.0f, 0.0f);
  if (!local_14->m_fixed) ((c_1d6d02 *)local_14->m_motion)->function_c(&local_8);
  if (!(bool)((arg_0->unknown04 >> 8) & 1)) local_14 = (hkRigidBody *)function_1d7300((s_1d7300 *)local_14, (s_1d7400 *)arg_0, 0.85f);

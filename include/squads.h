@@ -47,7 +47,8 @@ struct s_squad_datum
 	byte unknown6c[0x70 - 0x6c];
 	long first_vehicle_index;
 	short next_squad_index;
-	byte unknown76[0x98 - 0x76];
+	byte unknown76[0x84 - 0x76];
+	dword enabled_types[5];        /* a set of 0x83 slot types; all set when the squad is created */
 };
 
 /* the actors (g_4f55f0), 0x888 bytes each; slot_handler.h's s_actor_view

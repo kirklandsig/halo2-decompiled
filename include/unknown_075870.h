@@ -193,8 +193,8 @@ void network_observer_set_owner_key(s_network_observer *observer, long owner, lo
 long network_observer_find_channel(s_network_observer *observer, long owner, long remote_index);
 void network_observer_close_channel(s_network_observer *observer, long channel_index);
 void network_observer_send_message(s_network_observer *observer, long owner, long channel_index, bool out_of_band, long message_type, long message_size, const void *message);
-bool network_observer_channel_ready(s_network_observer *observer, long channel_index, long message_type);
-void network_observer_mark_message(s_network_observer *observer, long channel_index, long message_type);
+bool network_observer_channel_ready(s_network_observer *observer, long owner, long channel_index, long message_type);
+void network_observer_mark_message(s_network_observer *observer, long owner, long channel_index, long message_type);
 bool network_observer_channel_timed_out(s_network_observer *observer, long channel_index);
 
 #endif

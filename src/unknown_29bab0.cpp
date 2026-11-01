@@ -104,6 +104,41 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 224: direct input plus shared cross/speed/publication 748/750/881; cross+speed 748;
 // cross+publication, speed+publication, all, all+native normalizer setter 886 each. Two-point
 // cross gains rejected; original input access, helpers and outputs restored.
+// Round 267: Isolated response/position/normalized-input home identities on direct input,
+// all seven subsets and jointly with the magnitude identity, 804 each. Frame 0x8c versus
+// retail 0x88; original body, input access and helpers restored.
+// Round 392: Native scalar/flag/heading actor fields, scalar+flag/scalar+heading/flag+heading/all,
+// then all with object-first acquisition: 804/804/804/804/804/804/804/829. All direct-input forms restored.
+// Round 394: Direct-input shared addition/scalers/both/projection/addition-projection/scalers-
+// projection/all/all with shared normalizer 747/804/747/804/747/804/747/785. Three-point gains rejected; all restored.
+// DH round 234: direct input/live lateral-radius field with last/scale/direction query
+// output defaults, eight combinations 835/835/808/808/832/832/805/805. All restored;
+// early input/heading and normalizer memory-product homes remain on frame 0x88.
+// Round 408: direct input with lookup/position ordinary/inline/noinline declaration
+// pairs, excluding ordinary/ordinary, 804 each (eight forms). Original declarations,
+// complete body, input home and all arithmetic helpers restored.
+// Round 417: direct input, per-use heading/up receivers and planar-normalizer inline
+// declaration, seven subsets then all with staged cross: 903/803/891/803/903/803/891/803.
+// All executable source, helper calls and declarations restored.
+// Round 425: Direct input with collision-output flag/flag/vector lexical homes, all seven
+// subsets 803 each; all three with the false flag initialized at first use 805. Original
+// input access, query homes, initialization, helpers and complete body restored.
+// Initial heading/default/input setter subsets and all with output setters
+// 833/847/886/744/832/839/827/871; new-frame normalizer fabsf/input/inline subsets
+// 744/746/746/744/744/936/936; best 744 at frame 0x88 and retail length
+// gains six, below the keep threshold. Original input access, helpers and body restored.
+// Round 246: initial heading library copy with paired defaults, normalized input
+// and final output transfers in all eight combinations 803/803/803/803/803/803/803/810,
+// all on direct input. Original copies, parameter observation and whole body restored.
+// Round 144 (lane 4, fast): ours keeps the input pointer in EBX from the prologue (retail reads it from its
+// stack home, pushes EBX late for the heading pointer and loads the input into EDI only in the final arm), and
+// caches the three normalizer components on the x87 stack (retail `fld [x]; fmul [x]` each). A branch-local
+// input pointer copy 750 (same code); the normalizer squares through a two-pointer double dot 807; the epsilon
+// test as `fabs(local_0) < 0.0001f` 750 (retail's dword constant, nothing else moves); the input reference
+// taken after the position query 750; the normalized copy declared before the heading copies 750.
+// Round 260: Native i/k/j norm with real-absolute/shared-scale/single-result combinations
+// 792/786/792/786/791/785/791/785 on direct input. Original promoted products, input access, helpers and
+// entire body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

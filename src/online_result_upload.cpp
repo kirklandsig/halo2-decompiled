@@ -3,18 +3,18 @@
    and gives up on the server list after three attempts per server (built
    with SSE, apart from its neighbours in unknown_0b3d30.cpp) */
 #include "upload_storage.h"
+#include "online_result_cache.h"
 
 void online_result_registration_clear(void);
 void function_6b640(long task_index);
 extern bool g_510580;  /* the upload server list is valid */
 extern long g_510584;  /* the online task that queries the server list, or NONE */
-extern dword g_5107d8; /* the number of servers in the list */
 
 /* the number of upload servers, none while the list is not valid */
 static __forceinline long online_result_server_count(void)
 {
 	long count = 0;
-	if (g_510580) count = g_5107d8;
+	if (g_510580) count = g_510588.count;
 	return count;
 }
 

@@ -70,7 +70,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 629 (was 629): Frame 0x108 agrees; early EBX/BL success, hit-byte and basis/rotation homes remain.
+// score 629 (was 629): Frame 0x108 agrees; success is retained in BL and saves EBX
+// early instead of using retail's stack byte. Hit/basis/ray/root/rotation homes follow.
+// Early constant minimum with long success 635, with early point copy 651; final products differ.
 // MiniMax H run 14: the cross helper 0x2922b1 with its sign flipped and the operands swapped at
 // all four calls (same results) 622; under the keep bar, not kept.
 // Frame 0x108 agrees; early success BL/EBX and hit/basis/ray/root/rotation homes remain.
@@ -156,6 +158,50 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 680 [439]; nested body ending `return local_0;` then `return true;` 679 [462] (retail's early-exit
 // layout and `mov al, 1`). Every stack home is then 4-12 bytes off retail's (flag 0xf, minimum 0x10,
 // hit flags 0x14, input copy 0x38 in retail's frame).
+// Round 257: shared affine origins 629; early constant minimum 636; collision-produced
+// hit entries 700, with early minimum 706; inactive early return on those four
+// affine graphs 685/698/681/694. Original helpers, producers and exits restored.
+// CRT input copy 629; CRT hit clear 735; both 735; shared zero-output setter 629, with
+// input/hit/both transfers 629/735/735; complete entry transfers with early minimum 739. Frame
+// agrees; direct memory success and hit/basis/rotation homes remain.
+// Round 171: blocked-ray count byte/short/long/unsigned-long at entry 707/707/706/706;
+// after input copy and output zero 715/714/713/713. Original success bit, four hit bytes,
+// accepted length initializer, every math helper and all in-place input/result copies restored.
+// Round 175: ordinary-inline cross/offset/rotation helpers, all seven subsets, 629 each;
+// all five existing helpers ordinary-inline 629. Original forced expansions restored;
+// frame agrees, early success save and hit/basis/rotation homes remain.
+// Round 392: four hit bits as byte mask at entry/active scope 766/766;
+// word/long/dword masks 762/765 each. Frame shrinks and code regresses;
+// original hit bytes, success, all helpers and in-place copies restored.
+// Round 263: normalization/settings inline/noinline declarations singly and all four pairs
+// 629/629/629/629/629/629/629/629. Original providers, helpers and in-place snapshots restored.
+// Round 250: native reference formals for cross/rotation/root producers,
+// subsets 1..7 and all with the point producer: 629 each. All original formals,
+// helper calls and in-place snapshots restored; success and workspace homes remain.
+// Round 227: Whole rotation sine-cross/base/both shared producers
+// 731/648/713; result-first root/with sine/with base/with both
+// 726/654/725/633; all with common promoted angle 721.
+// Original helpers and all in-place snapshots restored; early success and workspace homes remain.
+// Round 177: Success from the completed raw-distance minimum 689; with existing point/rotation/
+// both/ray/point+ray/rotation+ray/all setters 707/706/707/711/711/711/711. All restored;
+// frame shrinks to 0x104 and native success/hit/basis/rotation homes remain unresolved.
+// Round 238: Actual ray origin/length/distance cursors 643/659/659;
+// origin+length/origin+distance/length+distance 660/660/645; all three/all plus hit cursor
+// 728/728. Original indexed arrays, countdown, success and helper snapshots restored.
+// Round 249: Root return / limited-angle output with pointer/reference, output-first/last,
+// and limit-first/original input roles: all eight 637. Original outputs, helpers and calls restored.
+// Round 424: paired hit-response orders 0213/1023/1032/1302/0132
+// 629/629/628/627/628; first three with completed clamp result 726 each.
+// Two-point best rejected; original response order and helper restored.
+// Existing staged cross in basis/rotation/projection subsets, then all with point setter
+// 651/629/651/626/645/626/645/659; three-point best rejected;
+// original producers and in-place snapshots restored.
+// Round 457: native second-rotation result/two distinct rotation results, original/early
+// minimum, original/staged rotation cross: 628/642/634/648/628/642/634/648.
+// One-point best rejected; original complete body and all in-place snapshots restored.
+// Round 259: all six cross-product parts named before subtraction, paired axis schedules
+// ijk/ikj/jik/jki/kij/kji and positive/negative arm schedules, 636 each. Original
+// helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

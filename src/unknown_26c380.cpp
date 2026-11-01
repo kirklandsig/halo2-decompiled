@@ -4,12 +4,13 @@
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
+#include "vector2f_products.h"
 #include "globals.h"
 #include "unknown_1fa590.h"
 #include "unknown_26c380.h"
 #include "path.h"
 
-bool function_270600(s_path_location const *location, long node_index);
+bool function_270600(long node_index, s_path_location const *location);
 
 /* an edge as the traces read it: its flags, and the sectors on either side */
 struct s_sector_edge
@@ -21,20 +22,9 @@ struct s_sector_edge
 	word sectors[2];
 };
 
-struct vector2f
-{
-	real i;
-	real j;
-};
-
 static inline real dot_product2d(point3f const *point, vector2f const *vector)
 {
 	return point->x * vector->i + point->y * vector->j;
-}
-
-static inline real cross_product2d(vector2f const *a, vector2f const *b)
-{
-	return a->i * b->j - a->j * b->i;
 }
 
 static inline void vector2d_from_points3d(point3f const *p0, point3f const *p1, vector2f *out)
@@ -143,7 +133,8 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 	return success;
 }
 
-// score 418 (was 418): frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/NONE roles, memory flags and tails differ.
+// score 443 (was 443): frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
 // and EDI, and retail keeps a byte local at [esp+0xe] where ours has a long zero at
 // [esp+0x14].
@@ -197,6 +188,30 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 239: actual blocked/admission/both byte fields with long result 418/418/418;
 // with bool result 577/583/577; both char fields with long/bool result 418/577. All restored.
 // Blocked-field forms also move the matched edge helper to 10.
+// Earlier 404 (was 418): the trace result fields are stored in retail's order, the traversal count is an
+// int, the first flag is a word, the edge direction a byte, and the accepted and blocked paths return
+// their result directly. The frame 0x5c versus 0x64 and the remaining field and register rotations remain.
+// Round 205: complete scalar input reads in cross first/second/both 492/472/482;
+// magnitude alone/with first/with second/with both 400/492/469/482;
+// all with planar input reads 482. Four-point magnitude gain rejected; original producers restored.
+// Round 215: first-edge constant at sector/pre-iterator/pre-edge phases in word storage 426/426/427;
+// bool storage 420/420/429; original-phase bool 417; pre-iterator byte 420. Original first word and
+// producer phase restored; frame 0x5c/0x64, full/planar overlap and byte/tail homes remain.
+// Round 434: valid-walk edge seed, post-initialization success/sector seeds and all domain subsets
+// 422/404/421/404/421/403/422/422; last includes the early planar declaration. Frame remains 0x5c at 1605 bytes.
+// Post-initialization success plus sector 403 is a rejected one-point form; original complete body restored.
+// DL202: CRT planar transfer 440, frame 0x60 and seven additional caller losses;
+// existing magnitude/planar/both widened results 404/495/495; unused cross return
+// removed alone/with magnitude/with planar/with both 404/404/495/495.
+// Original helpers, result contracts and body restored; frame 0x5c versus 0x64,
+// independent normal homes, byte state and separate output tails remain.
+// Round 245: complete point/vector captures via native/const copies, aggregate inputs
+// and complete output publication 412/412/453/453/458/458/464/464; mixed input
+// constructions 492/488. Native copies gain 31 but demote matched 0x26ccb0;
+// output publication demotes eight controls. Original helper and entire body restored.
+// Round 259: native returned cross vector, component/aggregate construction, mutable/const
+// normal and explicit/aggregate planar initialization, eight combinations 597 each.
+// All original helper contracts, normal storage and executable source restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
@@ -209,9 +224,9 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 
 	result->unknown20 = 3.4028235e38f;
 	result->blocked = false;
-	result->sector_index = NONE;
 	result->edge_index = (word)NONE;
 	result->distance = distance;
+	result->sector_index = NONE;
 	result->unknown1c = false;
 	real last_distance = -0.1f;
 	if (pathfinding && sector_index != target_sector_index && sector_index >= 0 && sector_index < pathfinding->node_count)
@@ -221,29 +236,31 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 		cross3f(g_4687b0, direction, &normal);
 		if (magnitude3d(&normal) > 1e-5)
 		{
-			short count = 0;
+			int count;
+			count = 0;
 			vector2f line_normal;
 			real line_distance;
-			long next_sector_index = sector_index;
+			long next_sector_index;
+			next_sector_index = sector_index;
 
 			line_normal.i = normal.i;
 			line_normal.j = normal.j;
 			line_distance = dot_product2d(origin, &line_normal);
-			while (next_sector_index != NONE)
+			while (NONE != next_sector_index)
 			{
 				long previous_sector_index = current_sector_index;
 				s_pathfinding_node const *sector;
 				s_edge_iterator iterator;
-				bool first;
+				word first;
 				bool hit = false;
-				point3f const *point1;
 				real distance1;
+				point3f const *point1;
 
 				current_sector_index = next_sector_index;
 				next_sector_index = NONE;
 				sector = &pathfinding->nodes[current_sector_index];
 				if (!(sector->flags & 0x10) && !result->unknown1c &&
-					(!edge || (((s_sector_edge const *)edge)->flags & 0x200)))
+					(edge == 0 || (((s_sector_edge const *)edge)->flags & 0x200)))
 				{
 					result->unknown1c = true;
 					result->unknown20 = last_distance;
@@ -261,19 +278,21 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					result->edge_index = (word)NONE;
 					result->distance = distance;
 					function_x697631(origin, direction, distance, &result->point);
-					success = result->blocked;
+					bool tmp1 = result->blocked;
+					success = tmp1;
 					goto done;
 				}
 				first = true;
 				do
 				{
-					bool forward = iterator.forward;
+					byte forward = iterator.forward;
 					point3f const *point0;
 					real distance0;
 
 					if (iterator.previous_surface_index != NONE)
 					{
-						point1 = &pathfinding->vertices[iterator.vertex];
+						long tmp3 = iterator.vertex;
+						point1 = &pathfinding->vertices[tmp3];
 						point0 = &pathfinding->vertices[forward ? edge->vertices[1] : edge->vertices[0]];
 						distance0 = dot_product2d(point0, &line_normal) - line_distance;
 					}
@@ -287,13 +306,14 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 						}
 						else
 						{
-							point0 = point1;
 							distance0 = distance1;
+							point0 = point1;
 						}
 						point1 = &pathfinding->vertices[iterator.vertex];
 					}
 					distance1 = dot_product2d(point1, &line_normal) - line_distance;
-					hit = function_26c380(origin, pathfinding, forward, current_sector_index, iterator.edge_index,
+					word tmp2 = iterator.edge_index;
+					hit = function_26c380(origin, pathfinding, forward, current_sector_index, tmp2,
 						direction, &next_sector_index, distance0, distance1, point0, point1, result);
 					if (hit)
 					{
@@ -305,7 +325,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					}
 					edge = function_1fa720(&iterator);
 				} while (edge);
-				if (hit)
+				if ((bool)hit)
 				{
 					if (result->distance - last_distance < -0.1 && count > 0)
 					{
@@ -314,14 +334,15 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					last_distance = result->distance;
 					if (result->distance - distance > 0.0001)
 					{
-						if (target_sector_index != NONE && target_sector_index != result->sector_index)
+						long tmp0 = result->sector_index;
+						if (target_sector_index != NONE && target_sector_index != tmp0)
 						{
 							if (next_sector_index == target_sector_index && result->distance - distance < 0.01)
 							{
 								result->sector_index = next_sector_index;
 								result->blocked = false;
 								result->edge_index = (word)NONE;
-								result->distance = distance;
+								result->distance = (real)distance;
 								function_x697631(origin, direction, distance, &result->point);
 								goto done;
 							}
@@ -331,15 +352,14 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								result->blocked = true;
 								result->edge_index = (word)NONE;
 								function_x697631(origin, direction, distance, &result->point);
-								success = result->blocked;
-								goto done;
+								return result->blocked;
 							}
 						}
 						else
 						{
 							result->blocked = false;
-							result->edge_index = (word)NONE;
 							result->distance = distance;
+							result->edge_index = (dword)NONE;
 							function_x697631(origin, direction, distance, &result->point);
 							goto done;
 						}
@@ -350,17 +370,17 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 						goto done;
 					}
 					if (location && (((s_sector_edge const *)edge)->flags & 0x80) &&
-						function_270600(location, iterator.edge_index))
+						function_270600(iterator.edge_index, location))
 					{
 						result->blocked = true;
-						success = hit;
+						success = (bool)hit;
 						goto done;
 					}
 					if (count > 200)
 					{
 						break;
 					}
-					count++;
+					++count;
 				}
 				else
 				{
@@ -375,9 +395,9 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 			}
 		}
 	}
-	result->blocked = false;
 	result->edge_index = (word)NONE;
 	result->sector_index = current_sector_index;
+	result->blocked = false;
 	result->distance = distance;
 	function_x697631(origin, direction, distance, &result->point);
 done:
@@ -416,9 +436,8 @@ PRIVATE inline real trace_normalize_direction(vector3f *vector)
 struct s_type_c3b527;
 
 // @retail 0x26c4e0
-bool function_26c4e0(s_type_c3b527 const *start, s_type_c3b527 const *end,
-	s_path_trace_result *trace, s_pathfinding_data *pathfinding,
-	long sector_index, long target_sector_index, long location)
+bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
+	s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace)
 {
 	point3f const *origin = (point3f const *)start;
 	point3f const *target = (point3f const *)end;
@@ -618,6 +637,13 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
 short function_210310(long object_index, long a);
 bool function_210690(short output_index, point3f const *point, point3f *out);
 
+// score 28 (was 28): retail computes start before direction, sets the NONE result before the call
+// setup and keeps point on the stack. Round 61: with the parameters as (up, point, output, collision)
+// (point then needs no `&point` read to stay on the stack), start first and result declared first it
+// matches (fast), and so does 0x1c19b0, every matched caller kept: BLOCKED-BY 0x270400 (two call lines
+// in contributor code). With this order: point read directly 35, plus start first 2. With this
+// signature: start and result first 37; that through one `point3f const *` read of `&point` 37;
+// point read directly 28 here but five matched callers lose their argument setup.
 // @retail 0x26d100
 long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
 {

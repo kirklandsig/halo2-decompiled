@@ -241,13 +241,27 @@ short __stdcall function_1c10a0(long actor_index)
 // This round: plain slot read 28; plain index read 4; plain index with
 // const pool/data/slot/actor, swapped local names or early mask 4 each;
 // original with const pool/data/actor/slot or swapped local names 2 each.
-// retail, the rest of the function matches. An ordinary pool read puts the
+// An ordinary pool read puts the
 // pointer in EDX but lets the data load fold into the final add, and a
 // volatile data read keeps the load apart but moves the pointer to ECX.
 // Typed actor-array base 2; direct typed slot snapshot 2; actor-zero chain 6;
 // missing-index chain 4; both chains 8; mutable pool with byte/actor base 2/2;
 // typed actor base with direct index parameter 4. Original body restored.
 // Single typed/byte actor cursors advanced after the slot snapshot 17/2. Restored.
+// Round 71 (no volatile): slot data block `(s_slot_82_data *)slot->unknownc` with
+// actor_reset_state 20 (retail's slot load, EDX pool and zero; only the data load folds
+// into `add eax, [edx + 0x44]`); with a data local / typed base / actor argument inside
+// the reset 20/20/20; extra lookup first 20; result first 20; index or slot read through
+// its address 20/20; slot read after the reset 28 (unfolded, but pool ECX as 0x1b09b0).
+// Volatile reads of both parameters before the reset 20; both read through their
+// addresses 28; plain slot cast and reset 28; a call to function_1f86a0 90 (stays a call);
+// that with `inline` on 0x1f86a0 28 (and 0x1f86a0 then inlines into all its callers).
+// Retail is 0x1f86a0 inlined at link time (argument in EAX first, its own unfolded
+// loads): BLOCKED-BY 0x1f86a0 (`/Ob1` file, called out of line by 28 other functions).
+// Round 101 (lane 7, no volatile): slot data block first, index read through its address into
+// actor_reset_state 20; reset first, then the slot read through its address 28; that with the
+// block 28; a `__forceinline` declaration of function_1f86a0 and a call 88 (39 bytes, stays a
+// call); a separate `result = true` 20.
 // @retail 0x1c10f0
 bool __stdcall function_1c10f0(long actor_index, s_slot *slot)
 {
@@ -272,18 +286,6 @@ bool __stdcall function_1c10f0(long actor_index, s_slot *slot)
 	return true;
 }
 
-// score 15 (was 63): the unknown22a byte is tested in CL (retail AL), the seat
-// count and the seat table swap ECX and EDX, and retail loads the unit for the
-// seat request before its stores. Unit read in each arm 75; flag local 17; seat
-// pointer local 11 (fixes the seat registers, flips the dot product's x term),
-// with the dot arguments swapped 13; forceinline seat search helper 17; tag
-// lookup written out 15; object pointer local 17; request stores reordered 15.
-// frame 0x24 and status loads agree; actor lookup order, early
-// slot retention and object/tag registers differ. Earlier forms: wide result 97;
-// shared predicate 112/115/120; actor-offset form 112; request at entry 70.
-// Round 162: native payload 115, with found-seat result 115; whole-slot found-seat result 65;
-// unsigned-word status with payload/whole-slot 115/65; long found-seat result 114/100;
-// payload/search with direct unit observations 91. Original body and data types restored.
 // @retail 0x1c1160
 short __stdcall function_1c1160(long actor_index, s_slot *slot, bool active)
 {
@@ -293,47 +295,66 @@ short __stdcall function_1c1160(long actor_index, s_slot *slot, bool active)
 	if (actor_get(actor_index)->unknown504 == 2)
 	{
 		s_actor_view *actor = actor_get(actor_index);
-		s_unit_request action;
-		long unit_index = actor->unknown018;
+		long unit_index;
 
-		if (actor->unknown22a)
+		if (bool vector_request = actor->unknown22a)
 		{
-			if (!function_110ab0(unit_index) &&
-				(!state->unknown14 || dot3f((vector3f *)&state->unknown08, &actor->unknown290) > 0.9f))
+			unit_index = actor->unknown018;
+			if (!function_110ab0(unit_index))
 			{
-				action.type = 0x35;
-				action.type35.has_vector = state->unknown14;
+				real alignment = 1.0f;
+
 				if (state->unknown14)
 				{
-					action.type35.vector = *(vector3f *)&state->unknown08;
+					alignment = dot3f((vector3f *)&state->unknown08, &actor->unknown290);
 				}
-				state->unknown00 = function_e6900(actor->unknown018, &action);
+				if (alignment > 0.9f)
+				{
+					s_unit_request request;
+
+					request.type = 0x35;
+					request.type35.has_vector = state->unknown14;
+					if (state->unknown14)
+					{
+						request.type35.vector = *(vector3f *)&state->unknown08;
+					}
+					state->unknown00 = function_e6900(actor->unknown018, &request);
+				}
 			}
 		}
-		else if (!function_110ab0(unit_index))
+		else
 		{
-			long vehicle_index = state->unknown04;
-
-			result = g_46fbe4;
-			if (vehicle_index != NONE)
+			unit_index = actor->unknown018;
+			if (!function_110ab0(unit_index))
 			{
-				s_vehicle_tag_view *tag = vehicle_tag_get(vehicle_index);
-				short seat_index;
+				long vehicle_index = state->unknown04;
 
-				for (seat_index = 0; seat_index < tag->seat_count; seat_index++)
+				result = g_46fbe4;
+				if (vehicle_index != NONE)
 				{
-					if (TEST_FIELD_BIT(tag->seats[seat_index].flags.bit3))
+					s_vehicle_tag_view *tag = vehicle_tag_get(vehicle_index);
+					short seat_index;
+
+					for (seat_index = 0; seat_index < tag->seat_count; seat_index++)
 					{
-						if (seat_index != NONE && function_c8f60(vehicle_index, seat_index) == NONE)
+						s_vehicle_seat_view *seat = &tag->seats[seat_index];
+
+						if (TEST_FIELD_BIT(seat->flags.bit3))
 						{
-							action.type = 0x1c;
-							action.type1c.object_index = vehicle_index;
-							action.type1c.seat_index = seat_index;
-							action.type1c.unknowna = false;
-							action.type1c.unknownb = false;
-							function_e6900(actor->unknown018, &action);
+							if (seat_index != NONE && function_c8f60(vehicle_index, seat_index) == NONE)
+							{
+								long request_unit = actor->unknown018;
+								s_unit_request action;
+
+								action.type1c.object_index = vehicle_index;
+								action.type = 0x1c;
+								action.type1c.seat_index = seat_index;
+								action.type1c.unknowna = false;
+								action.type1c.unknownb = false;
+								function_e6900(request_unit, &action);
+							}
+							break;
 						}
-						break;
 					}
 				}
 			}

@@ -948,6 +948,12 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // (stores in order, `xor ebx` after the pushes); shared header tick helper 3; force-inline tick
 // helper with a separate zero assignment 3; plain inline allocator 297 (kept out of line).
 // Every spelling hoists the first zero store above the last push, as in 0x223b60.
+// Result declared after the allocation 70; tick reader __forceinline 3, inline 3; start
+// tick read before the null result 3; null result in an else arm 3; tick reader without
+// volatile 127 (the zero stores vanish).
+// Round 117: a barrier inside the tick reader after the zero store 3, before it 4 (the zero xor
+// again after the pushes); the header's address taken 3; the page count read before the tick
+// read 17; the reader with external linkage 3.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

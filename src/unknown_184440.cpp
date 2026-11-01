@@ -182,6 +182,49 @@ __forceinline bool function_184448(long arg_0)
 }
 
 #pragma inline_depth(1)
+// score 965 (was 965): Frame 0x11d4 versus 0x11cc and scene/surface geometry homes remain.
+// Round 419: scene field observations 983; effect record reference 977; scene field observations/effect
+// record reference 983; surface record reference 977; scene field observations/surface record reference
+// 983; effect record reference/surface record reference 977; scene field observations/effect record
+// reference/surface record reference 983; scene field observations/effect record reference/surface record
+// reference/material record reference 989. Frame 0x11d4 versus 0x11cc and scene/surface geometry homes
+// remain. Original body restored.
+// frame 0x11d4 versus 0x11cc; initial surface and
+// geometry/transform homes differ. Complete scalar normalization capture
+// scored 989; common length result 999 recovers 0x11cc. Native copies
+// scored 1097/1070. Full-width low endpoints 976 (one-point gain rejected);
+// high/both 1009; row combinations 1020/1004/1035; selectors 1038/1017.
+// Scalar-capture/endpoint combinations scored 992/1005/979/1014.
+// Existing in-place point/plane transforms with complete scalar input capture: point 1045,
+// plane 1024, both 1093; point scalar capture/native publication 984; plane 979; both 989;
+// point staged/plane direct 1027, point direct/plane staged 1028. All original helpers restored;
+// frame excess and initial surface/geometry homes remain.
+// Plane scalar capture alone recovers frame 0x11cc at 1024 (4538 bytes, first +0x1d);
+// staged point publication with that capture 1027. Both remain rejected.
+// Round 315: Existing projection-point setter/sample displacement additions/velocity additions in
+// seven subsets 989/976/983/990/1001/985/1001; full graph with sound-origin setter 996. The one-count
+// gain is rejected. Original helpers, snapshots, arithmetic trees and complete 4590-byte body
+// restored; frame 0x11d4 versus 0x11cc remains.
+// Round 447: Native short worklist count/cursor and existing shared group lookup, seven subsets; shared lookup with full-width edge pair
+// 982/981/982/990/981/984/981/990. Frame 0x11d4 versus 0x11cc and initial surface/geometry homes remain.
+// Original executable source and all trial helper/interface changes restored.
+// Round 245: complete double product/squared-sum/square-root intermediate ownership,
+// seven subsets 989/977/989/989/977/989/977; full graph with single result 981.
+// Original two-use normalizer and complete body restored; frame excess remains.
+// Round 464: projected bounds initialized after both projection origins 965 (kept, plain);
+// per-face 3D/2D/both polygon arrays 977/977/977; each with late projected bounds 965;
+// all with world bounds declared at initialization 965. Keep only the later projected
+// bounds initialization. Frame 0x11d4 versus 0x11cc and initial geometry homes remain.
+// Round 144 (lane 4, fast): retail keeps the transform pointer only in its stack home (+0x98) and the surface
+// list in ECX, loads the block count into a register before the index compare (as the compile-only build
+// does) and initializes the projected bounds at the top of each face iteration. Defaults then `if (arg_0 !=
+// NONE)` override 978 (4573 bytes); the bounds lookup as one `&&` test 962 (three-point gain rejected); the
+// non-NONE arm first 986; NULL stored before the default list 965; a short surface group 967 (4573 bytes).
+// Round 13 (lane 17): the plane transform reading the three normal components into scalars (no vector copy) 978 at
+// 4557 bytes (frame 0x11cc as retail; the transform's products and adds then follow retail's sequence, one spill
+// slot apart); the per-face bounds initialized at the top of the face loop (retail stores them there) 977; both 1024
+// (4538 bytes); the existing normalize3d for both normalizations 1002 (4542 bytes); the two vector copies before
+// the plane-distance dots dropped (the dots on the originals) 1062 (4477 bytes). Original helpers and body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
@@ -227,7 +270,6 @@ void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, lo
     {
         long local_15 = local_0[(short)local_14++];
         s_184440 *local_16 = &local_6->field_2c[local_15];
-        real_bounds local_33[2] = { { FLT_MAX, -FLT_MAX }, { FLT_MAX, -FLT_MAX } };
         plane3f const *local_54 = &local_6->field_c[local_16->field_0 & 0x7fff];
         plane3f local_17;
         if (local_16->field_0 & 0x8000)
@@ -291,6 +333,7 @@ void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, lo
         real local_31 = function_184441(&local_55, &local_28);
         vector3f local_56 = local_30;
         real local_32 = function_184441(&local_56, &local_28);
+        real_bounds local_33[2] = { { FLT_MAX, -FLT_MAX }, { FLT_MAX, -FLT_MAX } };
         for (short local_34 = 0; local_34 < local_27; local_34++)
         {
             real local_35 = (local_55.k * local_1[local_34].z + local_55.j * local_1[local_34].y + local_1[local_34].x * local_55.i) - local_31;

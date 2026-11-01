@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "engine_peer.h"
 #include "effects.h"
+#include "slot_handler.h"
 #include <math.h>
 
 struct s_e4050_object
@@ -28,37 +29,17 @@ struct s_e4050_object_header
 	s_e4050_object *object;
 };
 
-// score 18 (was 30): retail holds the constant 1 in edx (a dword) and reuses it for both flag
-// tests, the state compare and the return (mov eax, edx); ours tests with immediates and returns
-// through setne. A long result 18; a bool result 28; return 1 / 0 30; the flags through word,
-// dword or long bitfield views 30 (18 with the long result).
+static __forceinline long real_to_long(real value);
+
 // @retail 0xe4050
 bool function_e4050(long object_index)
 {
 	s_e4050_object *object = ((s_e4050_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-	long result = 0;
 
-	if (!TEST_FIELD_BIT(object->flag_c1_0) && TEST_FIELD_BIT(object->flag_348_0))
-	{
-		real scaled = g_510c54->field_2_3 * 0.18f;
-		long ticks;
-
-		__asm
-		{
-			fld scaled
-			fistp ticks
-		}
-
-		if (object->value_399 >= ticks)
-		{
-			if (object->state_3dc == 1 || object->state_3dc == 3)
-			{
-				if (object->parent_index == NONE)
-					result = 1;
-			}
-		}
-	}
-	return result != 0;
+	return !TEST_FIELD_BIT(object->flag_c1_0) && TEST_FIELD_BIT(object->flag_348_0) &&
+		object->value_399 >= real_to_long(g_510c54->field_2_3 * 0.18f) &&
+		(object->state_3dc == 1 || object->state_3dc == 3) &&
+		object->parent_index == NONE;
 }
 
 /* inline keeps it out of the callers' register tracking: retail's callers
@@ -69,18 +50,16 @@ inline __declspec(noinline) real function_12aff0(real a, real b, real c, bool fl
 // @retail 0x12aff0
 real function_12aff0(real a, real b, real c, bool flag)
 {
+	real t;
 	if (!(0.0001f > fabs(a - b)))
-	{
-		real t = (c - a) / (b - a);
-		if (t < 0.0f)
-			t = 0.0f;
-		else if (t > 1.0f)
-			t = 1.0f;
-		return t;
-	}
-
-	word above = a > c;
-	return above == flag ? 0.0f : 1.0f;
+		t = (c - a) / (b - a);
+	else
+		t = (a > c) == flag ? 0.0f : 1.0f;
+	if (t < 0.0f)
+		t = 0.0f;
+	else if (t > 1.0f)
+		t = 1.0f;
+	return t;
 }
 
 /* the particle system objects at 0x479868 and 0x479874, picked by the group

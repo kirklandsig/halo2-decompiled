@@ -12,6 +12,7 @@
 #include "owned_reference_318b90.h"
 #include "motion_description_3115a0.h"
 #include "slot_table_372a40.h"
+#include "pair_notifications_315e70.h"
 #include "havok_reference.h"
 #include "unknown_1cec30.h"
 #include <xmmintrin.h>
@@ -117,13 +118,11 @@ public:
 		g_memory_2d88a0->release_block(block, size, tag); \
 	}
 
-// what an empty slot holds
-class empty_entry_3101c0
+// The world's pair notification handler for its special matrix entries.
+class empty_entry_3101c0 : public dispatcher_315e70
 {
 public:
 	BLOCK_NEW_3101C0(0x1c)
-
-	virtual void slot_0() {}
 };
 
 // the parts of the solver settings that answer queries

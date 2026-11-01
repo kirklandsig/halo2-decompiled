@@ -25,16 +25,20 @@ and closes, and keyframes the machine's Havok bodies to its nodes. */
 struct s_machine
 {
 	long definition_index;
-	struct
+	union
 	{
-		dword unknown0 : 11;
-		dword dynamic_lighting : 1;
-		dword static_lighting : 1;
-		dword static_lighting_sideways : 1;
-		dword unknown14 : 8;
-		dword unknown22 : 1;
-		dword unknown23 : 1;
-		dword : 8;
+		dword value;
+		struct
+		{
+			dword unknown0 : 11;
+			dword dynamic_lighting : 1;
+			dword static_lighting : 1;
+			dword static_lighting_sideways : 1;
+			dword unknown14 : 8;
+			dword unknown22 : 1;
+			dword unknown23 : 1;
+			dword : 8;
+		};
 	} object_flags;
 	byte unknown008[0xc];
 	long parent_object_index;
@@ -49,8 +53,8 @@ struct s_machine
 	byte unknown0c2[0xd4 - 0xc2];
 	long value_d4;
 	byte unknown0d8[0x10a - 0xd8];
-	byte flags_10a;
-	byte unknown10b[0x12a - 0x10b];
+	word flags_10a;
+	byte unknown10c[0x12a - 0x10c];
 	short animation_state_offset;
 	dword device_flags;
 	long position_group_index;
@@ -218,21 +222,18 @@ __forceinline short machine_round(real value)
 	return (short)result;
 }
 
+/* sets or clears one bit of a flags word */
+static inline void flags_set_bit(dword *flags, long bit, bool value)
+{
+	if (value)
+		*flags |= 1 << bit;
+	else
+		*flags &= ~(1 << bit);
+}
+
 PRIVATE void machine_keyframe_rigid_bodies(long machine_index, bool keyframed);
 PRIVATE void machine_release_rigid_bodies(long machine_index);
 
-// score 81 (was 81): Native portal-entry base kept; scenario/constant carriers, coalesced object-bit clears and policy result EAX versus ECX remain.
-// Round 204: native portal entry 81 kept plain; default-first policy 100; both 106 (subthreshold); shared final update 81; long/unsigned-word policy 102/81; six-use flags 108; flags/default 117; chained clears 81.
-// Round 268: six-use destination flags receiver 81; reset after both clears 81;
-// receiver with six-use source bits 108; receiver with later reset 81; source bits
-// with later reset 108; all three 108; final default-first dispatch with receiver 81;
-// that plus later reset 81. Original portal, policy, flag stores and reads restored.
-// Round 270: native object-bit pointer/reference receivers 93/93; either with later
-// reset 93; either with default-first policy 91 (first +0x7f), with both 92. All
-// eight restored, including the named real bitfield type; initial carriers and merged clears remain.
-// Round 208: early policy declaration 81; descending configured cases 81; both 81;
-// comparison mapping with one short observation/direct fields 132/132; natural portal admission
-// and shared publication 150; with early policy 150; with direct configured comparisons 160.
 // @retail 0x115020
 void __stdcall machine_place(long machine_index, s_type_181dea *scenario_machine)
 {
@@ -251,16 +252,12 @@ void __stdcall machine_place(long machine_index, s_type_181dea *scenario_machine
 	if (scenario_machine->flags & 8)
 		machine->flags |= 0x20;
 	machine->placement_index = NONE;
-	machine->object_flags.unknown22 = false;
-	machine->object_flags.unknown23 = false;
+	flags_set_bit(&machine->object_flags.value, 22, false);
+	flags_set_bit(&machine->object_flags.value, 23, false);
 
-	short policy;
+	short policy = 3;
 
-	if (machine->definition_index == NONE)
-	{
-		policy = 3;
-	}
-	else
+	if (machine->definition_index != NONE)
 	{
 		switch (MACHINE_DEFINITION_GET(machine->definition_index)->pathfinding_policy)
 		{
@@ -289,7 +286,7 @@ void __stdcall machine_place(long machine_index, s_type_181dea *scenario_machine
 			machine->placement_index = portal->portal_index;
 			if (portal->portal_index != NONE)
 			{
-				machine->object_flags.unknown22 = true;
+				flags_set_bit(&machine->object_flags.value, 22, true);
 
 				long table = function_1fa7f0();
 
@@ -308,13 +305,12 @@ void __stdcall machine_place(long machine_index, s_type_181dea *scenario_machine
 		// fall through
 	case 0:
 	case 3:
-		machine->object_flags.unknown23 = true;
-		function_b8b70(machine_index);
+		flags_set_bit(&machine->object_flags.value, 23, true);
 		break;
 	default:
-		function_b8b70(machine_index);
 		break;
 	}
+	function_b8b70(machine_index);
 }
 
 struct s_115191
@@ -375,7 +371,8 @@ void __stdcall function_115220(long machine_index)
 	}
 }
 
-// score 368 (was 473): its flag tests and the type-mask test read as field bits (TEST_FIELD_BIT) give retail's load-and-shift; the rest still differs.
+/* a machine's per-tick update: gear power, automatic door opening, portal
+   obstruction and rigid-body keyframing; returns whether anything changed */
 // @retail 0x1152e0
 bool __stdcall function_1152e0(long machine_index)
 {
@@ -384,18 +381,18 @@ bool __stdcall function_1152e0(long machine_index)
 	s_animation_state *state = NULL;
 	bool animated = false;
 	bool changed = false;
-	word object_flags = machine->flags_c0;
 
-	if ((TEST_FIELD_BIT((object_flags >> 12) & 1)) && (!(0.0001f > (real)fabs(machine->position)) || (TEST_FIELD_BIT((object_flags >> 10) & 1))) &&
-		machine->havok_component_index != NONE)
+	if (TEST_FIELD_BIT((machine->flags_c0 >> 12) & 1))
 	{
-		s_havok_component *component = havok_component_get(machine->havok_component_index);
-		real position = (TEST_FIELD_BIT((object_flags >> 10) & 1)) ? 1.0f : 0.0f;
+		if ((!(0.0001f > (real)fabs(machine->position)) || TEST_FIELD_BIT((machine->flags_c0 >> 10) & 1)) &&
+			machine->havok_component_index != NONE)
+		{
+			s_havok_component *component = havok_component_get(machine->havok_component_index);
+			real minimum = TEST_FIELD_BIT((machine->flags_c0 >> 10) & 1) ? 1.0f : 0.0f;
 
-		if (machine->position > position)
-			position = machine->position;
-		function_1d24a0(component, position);
-		changed = true;
+			function_1d24a0(component, machine->position > minimum ? machine->position : minimum);
+			changed = true;
+		}
 	}
 
 	if (MACHINE_GET(machine_index)->animation_state_offset != NONE && machine->channels[0].graph_tag_index != NONE &&
@@ -411,8 +408,8 @@ bool __stdcall function_1152e0(long machine_index)
 			machine->channels[0].set_frame_ratio(machine->power);
 		machine->power_velocity = 0.0f;
 
-		real velocity = (1.0f - machine->power) * definition->depowered_velocity +
-			definition->powered_velocity * machine->power;
+		real velocity = (1.0f - machine->position) * definition->depowered_velocity +
+			definition->powered_velocity * machine->position;
 
 		if (fabs(velocity) > 0.0001f)
 		{
@@ -460,7 +457,7 @@ bool __stdcall function_1152e0(long machine_index)
 					(s_machine_unit_definition_view *)g_4e3b44[unit->definition_index & 0xffff].bytes;
 				bool can_open = true;
 
-				if (TEST_FIELD_BIT(((1 << header->type) >> 1) & 1) && !(TEST_FIELD_BIT((local_98b918->unit_flags >> 20) & 1)))
+				if (((1 << header->type) & 2) && !(TEST_FIELD_BIT((local_98b918->unit_flags >> 20) & 1)))
 					can_open = false;
 				else if (TEST_FIELD_BIT((unit->flags_10a >> 2) & 1))
 					continue;
@@ -478,11 +475,9 @@ bool __stdcall function_1152e0(long machine_index)
 							marker.matrix.position = machine->center;
 							function_b9fc0(machine_index, &marker.matrix.forward, NULL);
 						}
-						direction.i = unit->center.x - marker.matrix.position.x;
-						direction.j = unit->center.y - marker.matrix.position.y;
-						direction.k = unit->center.z - marker.matrix.position.z;
-						if (marker.matrix.forward.i * direction.i + marker.matrix.forward.k * direction.k +
-							marker.matrix.forward.j * direction.j > 0.0f)
+						vector3d_from_points3d(&marker.matrix.position, &unit->center, &direction);
+						if (direction.j * marker.matrix.forward.j + direction.k * marker.matrix.forward.k +
+							direction.i * marker.matrix.forward.i > 0.0f)
 						{
 							continue;
 						}
@@ -504,18 +499,17 @@ bool __stdcall function_1152e0(long machine_index)
 	{
 		bool closed = false;
 
-		if (machine->power_group_index != NONE &&
-			((machine->device_flags & 0x100) && MACHINE_DEVICE_GROUP_GET(machine->power_group_index)->value != 0.0f ||
-			machine->power != 0.0f))
+		if (machine->power_group_index != NONE)
 		{
-			closed = true;
+			closed = (machine->device_flags & 0x100) && MACHINE_DEVICE_GROUP_GET(machine->power_group_index)->value != 0.0f ||
+				machine->power != 0.0f;
 		}
 
 		for (long i = machine->first_portal_reference; i < machine->first_portal_reference + machine->portal_reference_count; i++)
 		{
-			short portal_index = MACHINE_STRUCTURE_BSP->portal_references->portal_indices[(word)i];
-			real obstruction = (definition->obstruction_upper_bound - definition->obstruction_lower_bound) * machine->power +
-				definition->obstruction_lower_bound;
+			long portal_index = MACHINE_STRUCTURE_BSP->portal_references->portal_indices[(word)i];
+			real lower_bound = definition->obstruction_lower_bound;
+			real obstruction = (definition->obstruction_upper_bound - lower_bound) * machine->power + lower_bound;
 
 			if (closed)
 				MACHINE_PORTAL_BITS[portal_index >> 5] |= 1 << (portal_index & 0x1f);
@@ -547,26 +541,25 @@ bool __stdcall function_1152e0(long machine_index)
 		function_bd020(machine_index);
 		machine->device_flags &= ~4;
 	}
-	if (!moved)
+	for (long parent_index = machine->parent_object_index; !moved && parent_index != NONE; )
 	{
-		for (long parent_index = machine->parent_object_index; parent_index != NONE; )
-		{
-			s_machine_header *header = MACHINE_HEADER_GET(parent_index);
+		s_machine_header *header = MACHINE_HEADER_GET(parent_index);
+		s_machine *parent = header->machine;
 
-			if (header->flags & 4)
-				moved = true;
-			parent_index = header->machine->parent_object_index;
-			if (moved)
-				break;
-		}
+		if (header->flags & 4)
+			moved = true;
+		parent_index = parent->parent_object_index;
 	}
 	if (moved)
 	{
 		machine_keyframe_rigid_bodies(machine_index, false);
+		changed = true;
 		function_bba20(machine_index);
-		return true;
 	}
-	machine_release_rigid_bodies(machine_index);
+	else
+	{
+		machine_release_rigid_bodies(machine_index);
+	}
 	return changed;
 }
 
@@ -681,7 +674,22 @@ struct s_component_property_view
 // Locals or const references for the value pointer or the component offset,
 // a volatile read of the parameters, the call inline in the test, early
 // returns and the havok_component_get form score 13 to 23; the 600 s
-// permutation run found no improvement.
+// permutation run found no improvement. Round 45: direct query result 26;
+// component declared before/after result 13/13; const component 13; value/key
+// through their own addresses 13/13; named validity 13; validity-initialized
+// result 23.
+// permutation run found no improvement. The callee's parameters in all five
+// other orders 13 (identical code); a free-function callee with the component
+// first, second, third or last 13; the component written in the call 14; offset
+// before the data pointer 13; 0xa0-byte element indexing 13; result declared
+// first 13; one && test with the call 14.
+// permutation run found no improvement. Round 39 (m3 lane 12): ours also
+// hoists the g_51e9b8 load to the front, where retail loads it into eax after
+// the index scaling. Pointer-typed value/positive parameters (table type too)
+// 13; the component expression inside the call 14 (positive then loads
+// early); result declared first 13; index term first in the address 13;
+// 0x1d3550 declared (key, value, positive) 13 (diagnostic only, its file was
+// held this round). All restored.
 // @retail 0x11bd60
 bool __stdcall function_11bd60(long object_index, long key, long value, long positive)
 {

@@ -1379,7 +1379,26 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
-// score 232 (was 232): frame 0x28 versus 0x2c, unit/mode homes and shared look reciprocal remain.
+// score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
+// Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
+// -0x18/-0x1c against retail's -0x1c/-0x18) declared in the other order, with the two
+// initialising calls kept in their original order, compile to byte-identical code (197 at
+// 2197 bytes): MSVC does not order the two homes by the declaration order.
+// Round 31 (lane I, fast): the pitch's rate read through a copy of the settings pointer
+// (`s_game_time_globals *frame_settings = g_510c54;` before the clamp) stops the shared reciprocal,
+// so MSVC keeps retail's two separate divisions, the second reloading `[0x510c54]->rate`; the two
+// clamped look outputs as one s_view_angles local give retail's grouping of them. Fast score
+// 218 -> 200; 2193 -> 2197 bytes (retail 2199). The frame (0x28 versus 0x2c), the look-output homes
+// (ours -0xc/-8, retail -0x2c/-0x28), the swapped unit/mode slots, the ESI/EDI save region and the
+// clamp's register roles still differ. A rate read through a local (a value or a pointer copy)
+// either keeps the shared reciprocal or lands in a stack slot instead of retail's `[eax + 4]`.
+// MiniMax I (10-31) review: round 31's 200 came from the `frame_settings` pointer copy, a one-use
+// local (kept only with a match); without it the s_view_angles local alone 216 against 220, under the
+// 8-point bar, so the body stays as it was.
+// Earlier score 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
+// 0x28 versus 0x2c (look homes), the shared look reciprocal, ESI/EDI saved before the unit test (retail
+// after it, restored at the loop exit) and the channelb8 pointer in ECX remain.
 // Earlier 241 from 241: frame 0x30 vs 0x2c; esi/edi saved before the unit test (retail after it,
 // frame 0x28 vs 0x2c; esi/edi saved before the unit test (retail after it,
 // frame 0x28 vs 0x2c; esi/edi saved before the unit test (retail after it,
@@ -1487,6 +1506,92 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 251 (fast control 234): loop-scoped orientation byte-offset/ordinal/base/cursor
 // 410/234/409/254; the four at entry 561/234/576/558. Ordinal forms keep frame
 // 0x28; the other forms grow it to 0x30. Original buffer lifetime and body restored.
+// Round 255 (fast control 234): native actual aiming/look/view state fields, their
+// three pairs/all, and complete native point pairs 234 each. Original byte-buffer
+// declaration and every original expression restored; frame remains 0x28.
+// Round 174 (fast control 234, full 232): complete mutable/readonly clock roots
+// 509/509; mutable/const native interval 543/543. Final plain activity scan,
+// long/short condition and long/word body termination 233/230/233/230; four-count
+// reduced gains fail the eight-count gate. All snapshots/scans restored; frame,
+// unit/mode homes and shared look reciprocal remain.
+// Round 34 (fast control 234, full 232): independent primary/idle pointer or reference
+// receivers, all four combinations 234 each; those four with first-weapon fields
+// observed directly 578 each. Original shared channel lifetime and body restored.
+// Round 182: actual aiming-input vector homes before/after other locals 521/521;
+// native real/double input scalars 485/510; confined aiming phases repeat
+// 521/521/485/510 (fast control 234). Original inputs, calls and body restored.
+// Round 389 (fast control 234, full 232): late magnitude double 428; reused native idle tick
+// 290; both 427; both named animation-period summands 234. Native double period/duration
+// alone, with magnitude, with idle tick and with both 390/415/397/414 (exact-only).
+// Original scalar types, arithmetic and calls restored; frame 0x28 and look homes remain.
+// DL167: Plain look-history difference traversal long/short/dword/word 599/600/599/600;
+// complete per-axis difference/default/history publication 501 each. Existing mode-helper inline
+// and inline with separate noinline declaration 234 each (fast control 234). All restored.
+// Round 249: native user active-bit stores with original/dispatch/final/both weapon-bit
+// access 234 each; complete native user observations with those four forms 470 each.
+// Original records, flag snapshot, stores and every smoothing input restored.
+// Round 268: uniform direct zoom/idle/both channel receivers 220/234/220;
+// native input root alone/with zoom/with idle/with both 441/444/441/444;
+// all with flags declared at assignment 444 (fast control 234, full baseline 232).
+// Only direct zoom-channel access kept: plain 218, 2193/2199 bytes, differing rows 217 -> 212.
+// Frame 0x28 versus 0x2c, unit/mode homes and shared look reciprocal remain.
+// DL179: Coordinated scalar-spring/angular-difference ordinary, inline and noinline
+// declaration pairs (excluding both ordinary) 218/218/499/499/499/218/218/218 fast;
+// original complete body and every helper declaration restored. Frame/look homes remain.
+// Round 426 (fast control 220): shared bool/long override with logical publications
+// 404/422; bitwise publications 422/413; those four with direct overlay-result assignment
+// 431/435/434/422. Original override branch, lookup and complete executable body restored.
+// Round 430: Actual weapon-array cursor, body pointer step, long/short/dword/word ordinals: index-
+// bound 415/309/415/309; array-end bound 440/474/440/474. Original index-based body restored.
+// Round 212: const overlay return pair with two role names 220/220; pair reservation at
+// weapon/iteration/user scope, both names, 388 each (fast control 220). Original lookup lifetime and body
+// restored; frame and look homes remain.
+// Round 317: Existing shared scalar clamp for both look outputs, with zoom clamp,
+// inline declaration and confined spring/look-phase subsets, 220 each (fast control 220,
+// full 218). Original macro expressions, declarations and complete body restored.
+// Round 30 (lane 11): retail's movzx form found with a compile-only harness of this file: the two flag
+// bits tested on a `long` copy of the channel byte under the update test (every byte, word, dword,
+// shift, bitfield, bool, volatile and helper spelling of the direct test folds to `test byte`; a
+// two-definition dword local also gives movzx but keeps an unthreaded join). Kept with the round 93
+// set (aligned counts, fast): movzx 116 -> 114, active preset 110, callback `== 0 ? right : left` 109,
+// positive zoomed/scoped in retail's order with the clear test lacking `zoomed &&` and the overlay
+// play per arm 48, the set read once 47 (plain 218 -> 122, 2196 bytes). Not kept (fast, control 125 /
+// aligned 47): set test as a ternary with field reads 323/53; if/else look clamps 128/50 (reciprocal
+// still shared); early return for a missing unit 125 (same code); weapon object looked up after the
+// orientations and callback 134/76; look rates as one point2f 121/33 (retail's -0x2c/-0x28 homes,
+// frame 0x30, reciprocal still shared; a grouping). Harness only: no clamp or rate spelling (pointer or
+// reference clamp helper, array, statement order, named rates, explicit reciprocal) stops the shared
+// reciprocal; ESI/EDI are shrink-wrapped as in retail without LTCG but not with it, also with the
+// post-loop code removed. Lead: 0xb6760 (src/unknown_0b66c0.cpp, not ours to change) may be a callee
+// retail's callers treat as clobbering ECX (channelb8 kept in ESI).
+// Review of round 30 (m3): not kept: the 48/122 set needs `else if (zoomed)` after `if (scoped)`, a test
+// that is always true inside `if ((zoomed || scoped) && ...)`; with a plain `else` it is 306 (fast). Code
+// back to the original; the movzx, active-preset and callback findings above still stand alone.
+// Round 98 (lane 8): BLOCKED-BY the build's stand-in caller (tools/build.py): an LTCG env link of the
+// generated translation unit equals the full listing only while the entry calls the stand-in that
+// calls this function; with only 0x165dc1's stand-in (retail's one caller) the same source saves
+// ESI/EDI after the unit test and restores them at the loop exit, as retail (no other object
+// matters: all 1772 others linked still shrink-wrap). Env rows with the stand-in, base 157/116: each
+// look angle divided then clamped in its own statement 160/119; the mode lookup after the spring
+// defaults 173/129; `first_weapon = user->weapons` 157/116 (identical); spring defaults declared
+// d, c, b, a 161/127; user flags read and set directly without the flags local 157/116 (identical).
+// Round 24 (lane 14, fast; aligned counts by sequence alignment, base 116): the movzx flag test (a named
+// `long` copy of the channel byte, two bit tests), the active preset and the `== 0 ? right : left` callback
+// together 358 (2199 bytes, aligned 109); with the overlay set read once (negative flags) 372; those three
+// with positive zoomed/scoped bools in retail's order, the clear test without the extra `zoomed &&` and a
+// plain `else` for the play arms 328 (aligned 70); that with the play and save in each arm and the set read
+// once 306 (2190 bytes, aligned 53: two instructions short, retail's `cmp zoomed; je` in the else arm); the
+// positive bools alone on the original body 401. Unit/mode slots (ours -0x18/-0x1c), the look homes and
+// shared reciprocal and the ESI/EDI save region are unchanged by all of them.
+// Round 8 (lane 18, fast, aligned counts in brackets, fast control 220 [79], full 218): a `#pragma optimize("p", on)`
+// diagnostic (reverted) gives retail's two look divisions with the rate reloaded between them, but
+// copies the look-history pair through x87 and grows the body to 2212 bytes, 343 [77]; look rates as
+// one s_view_angles 216 [72] (frame 0x30); that declared first 216 [72]; with unit and mode declared
+// before their assignments 216 [72]; with the pitch as `x * (-1.0f / rate)` 219 [79]; the two look
+// locals' addresses taken as a no-op (diagnostic) 220 [79]; the loop index declared in the for 220 [79].
+// N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
+// All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
+// J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1598,30 +1703,29 @@ void __stdcall function_166d75(long user_index)
 						no_scope = true;
 					}
 				}
-				channel = &weapon->channel98;
-				if (function_0b6760((s_index_pair *)channel))
+				if (function_0b6760((s_index_pair *)&weapon->channel98))
 				{
 					if (!no_zoom)
 					{
 						if (no_scope)
 						{
-							channel->rate = PIN(zoom, 0.5f, 1.0f);
+							weapon->channel98.rate = PIN(zoom, 0.5f, 1.0f);
 						}
 						else
 						{
-							channel->rate = 1.0f;
+							weapon->channel98.rate = 1.0f;
 						}
 					}
 					else if (!no_scope)
 					{
-						channel->rate = 1.0f;
+						weapon->channel98.rate = 1.0f;
 					}
-					weapon->animation.channel_update(channel, NULL, 0);
+					weapon->animation.channel_update(&weapon->channel98, NULL, 0);
 					if (no_zoom && no_scope ||
-						!no_scope && channel->unknown08 != 0x60000d8 ||
-						!no_zoom && no_scope && channel->unknown08 == 0x60000d8)
+						!no_scope && weapon->channel98.unknown08 != 0x60000d8 ||
+						!no_zoom && no_scope && weapon->channel98.unknown08 == 0x60000d8)
 					{
-						channel->clear();
+						weapon->channel98.clear();
 						if (no_zoom && no_scope)
 						{
 							if (weapon->animation.animation_name != 0x400000c)
@@ -1632,7 +1736,7 @@ void __stdcall function_166d75(long user_index)
 						}
 					}
 				}
-				if ((!no_zoom || !no_scope) && !function_0b6760((s_index_pair *)channel))
+				if ((!no_zoom || !no_scope) && !function_0b6760((s_index_pair *)&weapon->channel98))
 				{
 					long set;
 					dword channel_flags;
@@ -1647,7 +1751,7 @@ void __stdcall function_166d75(long user_index)
 						channel_flags = 0x803f;
 						set = 0x6000060;
 					}
-					weapon->animation.overlay_play_for_class(channel, channel_flags, mode, 0x7000101, set);
+					weapon->animation.overlay_play_for_class(&weapon->channel98, channel_flags, mode, 0x7000101, set);
 					first_person_weapon_save_orientations(user_index, field_x11c898, 0.1335f);
 				}
 overlay:
@@ -1816,86 +1920,22 @@ static __forceinline void first_person_orientations_from_model_16760c(s_16760c_r
 }
 
 
-static __forceinline void first_person_channel_sample_sway_16760c(c_animation_channel *channel, real const *value,
-	real positive_frame, real negative_frame, real weight, long node_count, byte *orientations)
-{
-	if (*value > 0.0f)
-	{
-		channel->set_frame_position(positive_frame);
-		channel->sample(weight * *value, NULL, node_count, (real_quaternion_transform *)orientations);
+/* samples the channel at the positive or the negative frame by a sway value
+   (an lvalue, read again after the frame is set), scaled by the weight */
+#define FIRST_PERSON_CHANNEL_SAMPLE_SWAY(channel, value, positive_frame, negative_frame, weight, node_count, orientations) \
+	if ((value) > 0.0f) \
+	{ \
+		(channel).set_frame_position(positive_frame); \
+		(channel).sample((value) * (weight), NULL, (node_count), (real_quaternion_transform *)(orientations)); \
+	} \
+	else if (0.0f > (value)) \
+	{ \
+		(channel).set_frame_position(negative_frame); \
+		(channel).sample(0.0f - (value) * (weight), NULL, (node_count), (real_quaternion_transform *)(orientations)); \
 	}
-	else if (0.0f > *value)
-	{
-		channel->set_frame_position(negative_frame);
-		channel->sample(0.0f - weight * *value, NULL, node_count, (real_quaternion_transform *)orientations);
-	}
-}
 
 /* samples a weapon's animation, its overlays and its sway into the user's
    orientations, then builds the weapon's node matrices */
-// score 410 (was 410): Frame 0x78 and initial copies agree; early blend byte and user/weapon/sway homes differ.
-// Earlier frame 0x58 versus 0x78; root/channel overlap and later sway homes remained.
-// Earlier root/channel homes overlapped in frame 0x58 vs 0x78; kept the nonnegative ammo arm and common index-derived adjustment bit.
-// Frame 0x78 and root/channel homes agree; early blend byte and later receiver/sway homes differ.
-// Earlier frame 0x58 overlapped root/channel homes; kept the nonnegative ammo arm and common index-derived adjustment bit.
-// Frame 0x78 and initial copies/probe agree; early eligibility byte and later sway homes remain; new trial counts are fast, control 411/2166.
-// Earlier: frame 0x58 versus 0x78; root/channel overlap and later sway homes remain.
-// frame 0x58 versus 0x78; root/channel overlap and later sway homes remain.
-// root/channel homes still overlap in frame 0x58 vs 0x78; kept the nonnegative ammo arm and common index-derived adjustment bit.
-// blend time true arm 506; ammo nonnegative path first 463; adjustment flag from index 460; arms model read
-// first 469; channel before lookups 531; channel before state view 475; ammo adjustment flag 455; ammo arms
-// read first 478; ammo channel before lookups 526; ammo channel before state view 470
-// Frame 0x58 versus 0x78; root/channel overlap and copy/sway allocation remain. Model count snapshot 556; vector adjustment helper 471; negative sway first 465; ammo-count boundary 459; early magazine maximum 462 (plain).
-// Frame 0x58 versus 0x78 and copy/sway homes remain. Zero-initialized root 602 (frame 0x78); direct blend time 455; conditional weight 497; adjustment index 464; native orientation copy 455 (plain).
-// root/channel overlap leaves frame 0x58 versus 0x78; channel after initial
-// sample 525; root before state bit 455; transform memcpy 455; node count before root 455;
-// conditional ammo cap 455 (plain).
-// Root after initial animated fill 597; orientation count retained 560; final
-// component subtraction loop 488; model component memcpy 456; promoted map result 474
-// (fast; unchanged preview 456/2166 versus full baseline 455/2154).
-// Indexed orientation field outputs 412f/411p; model fields 523f, both receivers 514f;
-// sway weapon input 439f, external scalar reference 456f, both 439f; readonly definition
-// 456f; root-fill inline/noinline 456f; indexed outputs plus weapon input 395f/437p rejected.
-// f: reduced control 456/2166; p: ordinary baseline 455/2154.
-// Complete identity value 550f (frame 0x78); native model-node base 555f; both 601f;
-// translation/rotation/scale 422f; scale/rotation/translation 438f; translation/scale/rotation
-// 436f; identity plus translation first 549f; node base plus translation first 555f.
-// Reduced control 412/2166; ordinary baseline 411/2154. All restored.
-// Fill/blend-update/blend-query/ammo-query inline or noinline declarations all 412 fast,
-// equal to the reduced control; all declarations restored. Frame remains 0x58.
-// Blend result initialized before sample/channel/identity/entry/definition/first model/
-// validity/second model: 359/548/450/527/541/435/367/405 fast (control 412/2166);
-// conditional-flag forms rejected without a match. Direct logical/compound eligibility
-// before sample or channel: 423/446 each; frame 0x58 and root/channel overlap remain.
-// Sway count/weight/output first 410/410/413; value-first products 411; products with
-// count/weight/output first 410/410/413; frame inputs first 415 (fast control 411/2166, full
-// 410/2154).
-// Complementary partial-blend predicate at bool/byte/word/long width 446/446/446/447;
-// raw animation flag at byte/word/dword/long width 443/440/442/442
-// against fast control 411; all initial sampling and game-call tuples retained.
-// bool-logical-query-eligibility 422; bool-compound-query-eligibility 430.
-// byte-logical-query-eligibility 422; byte-compound-query-eligibility 430.
-// word-logical-query-eligibility 448; word-compound-query-eligibility 448.
-// long-logical-query-eligibility 451; long-compound-query-eligibility 446.
-// Round 373: native quaternion-transform sway output, forced last/first 411/410;
-// ordinary inline last/first 769/768. Native orientation output gives the same
-// four scores. Reduced control 411/2166; full baseline 410/2154. All restored.
-// Native packed animation flags, logical result at bool/byte/word/long width 411/411/443/443; conditional result 446/446/442/443 (fast control 411/2166; full 410/2154). Frame 0x78 agrees; early blend byte and later receiver/sway homes remain.
-// Round 158: Early aiming default at two boundaries with bool/byte/short/long storage, then a complete
-// query-produced result at four widths and early bool/byte defaults (fast control 411; plain baseline 410).
-// Scores [393, 393, 426, 428, 411, 411, 434, 435, 441, 441, 471, 470, 441, 441]. Original executable body
-// restored.
-// Signed-char blend consumer 411; uninitialized blend result at entry 411; full user/weapon/both
-// receivers at each use 599/603/796; with signed-char consumer 599/603/796 (fast control 411/2166).
-// All eight forms restored; ordinary baseline remains 410/2154.
-// Blend-producer scope, paired Boolean role names, duration/query names and their combinations
-// 411 each; reversed declarations with all scope/names 411 (fast control 411; full 410).
-// Round 243: Owner-mediated state, handle at every use, both, buffer root at every use,
-// state/buffer, handle/buffer, all three and state with immutable buffer snapshot:
-// 497/529/494/743/742/775/767/497 (fast control 411/2166). Complete original body restored.
-// Round 161: Coordinated definition/header inline query/setter/sampler/query-setter/query-
-// sampler/setter-sampler/all-three/aiming sampler: 411 each (unchanged reduced control 411; full
-// 410). Every specification restored.
 // @retail 0x16760c
 void __stdcall function_16760c(long user_index, long field_x11c898)
 {
@@ -1934,14 +1974,15 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 
 		if (function_0b6780((s_index_triple *)state))
 		{
-			bool full_blend;
+			bool full_blend = true;
 			s_animation *animation;
 			real blend_time;
 
 			state->sample(0, 1.0f, NULL, (real_quaternion_transform *)orientations, 0, 0, weapon->orientation_count);
 			function_bd970(weapon_index, arg_2f82bc, state, 0, weapon->orientation_count, orientations);
 			animation = state->channels[0].function_1c6440();
-			full_blend = !(animation && (((byte *)animation)[0x18] & 0x10));
+			if (animation && (((byte *)animation)[0x18] & 0x10))
+				full_blend = false;
 			blend_time = full_blend ? 0.4f : 0.2f;
 			function_1d9240((s_1d9240 *)&user->unknown202c, full_blend, blend_time);
 			if (user->unknown202c.unknown1)
@@ -1958,7 +1999,7 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 					}
 					if (function_0b6760((s_index_pair *)&weapon->channelb8))
 					{
-						weapon->channelb8.sample((weapon_object->unknown188 + 0.5f) * weight, NULL, weapon->orientation_count,
+						weapon->channelb8.sample(weight * (weapon_object->unknown188 + 0.5f), NULL, weapon->orientation_count,
 							(real_quaternion_transform *)orientations);
 					}
 					aimed = false;
@@ -1974,16 +2015,12 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 					{
 						if (channel.function_1c6440()->frame_count >= 9)
 						{
-							first_person_channel_sample_sway_16760c(&channel, (real const *)&user->unknown2030[0x0], 0.0f, 1.0f, weight,
-								weapon->orientation_count, orientations);
-							first_person_channel_sample_sway_16760c(&channel, (real const *)&user->unknown2030[0x4], 3.0f, 2.0f, weight,
-								weapon->orientation_count, orientations);
+							FIRST_PERSON_CHANNEL_SAMPLE_SWAY(channel, *(real const *)&user->unknown2030[0x0], 0.0f, 1.0f, weight, weapon->orientation_count, orientations);
+							FIRST_PERSON_CHANNEL_SAMPLE_SWAY(channel, *(real const *)&user->unknown2030[0x4], 3.0f, 2.0f, weight, weapon->orientation_count, orientations);
 							if (!aimed)
 							{
-								first_person_channel_sample_sway_16760c(&channel, (real const *)&user->unknown2030[0x10], 4.0f, 5.0f, weight,
-									weapon->orientation_count, orientations);
-								first_person_channel_sample_sway_16760c(&channel, (real const *)&user->unknown2030[0x14], 7.0f, 6.0f, weight,
-									weapon->orientation_count, orientations);
+								FIRST_PERSON_CHANNEL_SAMPLE_SWAY(channel, *(real const *)&user->unknown2030[0x10], 4.0f, 5.0f, weight, weapon->orientation_count, orientations);
+								FIRST_PERSON_CHANNEL_SAMPLE_SWAY(channel, *(real const *)&user->unknown2030[0x14], 7.0f, 6.0f, weight, weapon->orientation_count, orientations);
 							}
 							if (weapon->indices.unknownc > 0.0f)
 							{
@@ -2014,7 +2051,9 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 
 					if (loaded >= 0x2c)
 					{
-						real fraction = (real)(loaded - 0x2c) * 0.2f;
+						real excess = (real)(loaded - 0x2c);
+						real fraction = excess * 0.2f;
+						s_16760c_magazine_definition *magazine = definition->magazines;
 						short maximum;
 						short total;
 
@@ -2023,7 +2062,7 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 							fraction = 1.0f;
 						}
 						total = (short)function_100b40(0, weapon_index, false);
-						maximum = definition->magazines->rounds_maximum;
+						maximum = magazine->rounds_maximum;
 						if (total > maximum)
 						{
 							total = maximum;
@@ -2036,15 +2075,15 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 				{
 					short rounds = weapon_object->unknown22c;
 
-					if (rounds >= 0)
+					if (rounds < 0)
+					{
+						frame = 0;
+					}
+					else
 					{
 						frame = ammo_animation->frame_count - 1;
 						if (rounds <= frame)
 							frame = rounds;
-					}
-					else
-					{
-						frame = 0;
 					}
 				}
 				channel.set_frame_position((real)frame);
@@ -2077,8 +2116,12 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 				user->adjustment.position.x -= definition->first_person_offset.x;
 				user->adjustment.position.y -= definition->first_person_offset.y;
 				user->adjustment.position.z -= definition->first_person_offset.z;
+				SET_FLAG(user->flags, _first_person_user_adjusted_bit, true);
 			}
-			SET_FLAG(user->flags, _first_person_user_adjusted_bit, user->unknown2094 != NONE);
+			else
+			{
+				SET_FLAG(user->flags, _first_person_user_adjusted_bit, false);
+			}
 		}
 	}
 }

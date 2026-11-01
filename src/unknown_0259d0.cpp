@@ -4,8 +4,11 @@ in some callers: distance3d (0x3ea30) and function_259d0 (0x259d0).
 The source's shape decides the match:
 - distance3d squares k, then j, then i: written i*i + j*j + k*k, the
   compiler evaluates the operands in another order.
-- function_259d0 takes the random value into a local first. LTCG also
-  deletes its unused file and line arguments, as in retail. */
+- function_259d0 takes the random value into a local first and returns the
+  sum through a (real) cast; without the cast, callers that keep the result
+  on the x87 stack fuse the lower bound's add (faddp) where retail adds and
+  pops it separately (0x21ce60). LTCG also deletes its unused file and line
+  arguments, as in retail. */
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
@@ -47,5 +50,5 @@ inline real function_259d0(
 	real upper_bound)
 {
 	real random = function_x82e52f(seed, file, line);
-	return lower_bound + (upper_bound - lower_bound) * random;
+	return (real)(lower_bound + (upper_bound - lower_bound) * random);
 }

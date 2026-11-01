@@ -4,6 +4,7 @@
 #include "havok_reference.h"
 #include "unknown_1cec30.h"
 #include "unknown_1efac0.h"
+#include "constraint_helpers_314090.h"
 
 struct s_1d8dd0
 {
@@ -55,22 +56,6 @@ void s_1d8e40::function_1d8ec0(hkVector4 const &arg_0, hkVector4 const &arg_1)
 		activate();
 	m_motion->applyPointImpulse(arg_0, arg_1);
 }
-
-struct s_1d1870
-{
- char field_0;
- s_1d1870() {}
- s_1d1870(bool arg_0) : field_0(arg_0) {}
-};
-
-class c_314710 : public c_a
-{
-public:
-	byte field_8[0x58];
-	c_314710(hkEntity *arg_0);
-	s_1d1870 function_3144b0(void *arg_0);
-	s_1d1870 function_314580(void *arg_0);
-};
 
 class c_1d19d0 : public c_314710
 {

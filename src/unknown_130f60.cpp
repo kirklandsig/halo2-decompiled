@@ -122,17 +122,22 @@ struct s_fog_angles
 	real yaw;
 	real pitch;
 };
+struct s_fog_sample_set
+{
+	long count;
+	s_fog_direction_sample *entries;
+};
 struct s_fog_direction
 {
 	vector3f direction;
 	s_fog_angles angles;
 	byte unknown14[8];
-	long forward_count;
-	s_fog_direction_sample *forward;
-	long opposite_count;
-	s_fog_direction_sample *opposite;
+	s_fog_sample_set samples[2];
 	byte unknown2c[8];
 };
+typedef char assert_fog_sample_set_size[(sizeof(s_fog_sample_set) == 8) ? 1 : -1];
+typedef char assert_fog_direction_size[(sizeof(s_fog_direction) == 0x34) ? 1 : -1];
+typedef char assert_fog_sample_offset[(offsetof(s_fog_direction, samples) == 0x1c) ? 1 : -1];
 struct s_fog_base_layer
 {
 	color3f color;
@@ -170,6 +175,85 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
+// score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
+// clamp, and clamp combinations 410/414/420/402/410/414/420; all with disjoint clears before common
+// remaining initialization 454 (fast control 402; full 444).
+// Round 300: Existing vector setter for source/opposite/trigonometric constructions in seven
+// nonempty subsets 413/408/414/410/414/416/423; complete setter graph with readonly source/sample
+// records 423 (fast control 402; full 444). Original constructions and arithmetic restored.
+// Round 221: real paired descriptor table with original switch 402 fast; direct index 374;
+// descriptor pointer/reference 382/382; index after axis 501; null-first descriptor 318;
+// word side ordinal 441; readonly direct index 374 (unchanged fast control 402).
+// Plain direct index 355 at 1893/1892 kept; descriptor conditional 361 at 1888/1892,
+// null-first descriptor 433 at 1886/1892. Entry ESI save, vector homes and x87 storage remain.
+// N227: Complete color-by-value/accumulator/angle-copy subsets 571/947/1184/367/676/970/1197;
+// all with native input CRT copy 1197 (fast control 374). Seven-point preview lead below gate;
+// original helper and complete body restored.
+// Round 47: the entry ESI save comes from the rest of the image: a reduced image of this file,
+// 0x11ce20's file and globals.cpp saves ESI only around the loop as retail; adding
+// src/unknown_0350e0.cpp alone moves it to the entry (other large files do not). Reduced-image
+// forms (control 374): `opposite` renamed three ways 374; declared before `direction` 374; `j` at
+// function scope 374; sample/axis chosen per case (retail's constant-offset case blocks) 402, axis
+// first 484; the angle call with retail's argument order (axis in EDX) 374, plain 355; with
+// the per-case blocks 402, plain 444.
+// Lane 14 r16 (fast control 374 at 1892 bytes; the fast build shrink-wraps esi like retail, the plain
+// build saves it at entry and shifts every loop offset by 4): angle call as (axis, view_direction),
+// the callee being symmetric, 374 (retail's ecx/edx setup); each switch case selecting its own sample
+// set 402 fast (retail's switch block and [esp+8] counter); opposite renamed to sort first 402
+// (same code); the existing normalize_inline for the opposite vector with both 347 fast, 367 plain
+// (retail's vector homes; plain still saves esi at entry and spills the third remaining weight);
+// the existing normalize 0x30bf0 called instead 526. Body restored.
+// Round 240: inner descriptor cursor/two-axis dispatch/byte ordinal and their pairs/all
+// 369/417/448/443/452/416/468; direct table-end cursor 512 (fast control 374).
+// With full-context control recovered at 355, the descriptor cursor scores 419; original body restored.
+// Round 244: complete final base-layer receivers, seven subsets, fast
+// 378/374/378/375/379/379/379; complete native layer values 520.
+// Original final consumers and complete body restored (fast control 374).
+// Round 49 (lane 16): the opposite vector's magnitude from float squares (no double casts) gives
+// retail's x87 block and vector homes exactly (fast 372, plain 409 at 1879 bytes alone); with each
+// switch case selecting its own sample set 324 plain at 1893 bytes (kept); the angle call as
+// (axis, view_direction), retail's EDX/ECX setup, 324 (kept, same count); float squares and the
+// call order without the per-case sets 409; the existing vector3f_scale for the reciprocal scale
+// 344 fast (1895 bytes, same multiplies). Screened compile-only (same code as kept): the scale rows
+// in any operand or row order or through vector3f_assign (retail loads j and multiplies by the
+// reciprocal, ours copies the reciprocal; the 3-byte difference drops retail's loop-head padding and
+// shifts the rest); the remaining stores after all three memsets (1.0 stays in XMM5). Without the
+// angles copy the frame drops to 0x28 (retail 0x30). On the kept form (fast 336): the weight
+// clamped in its own statement 406 (1845 bytes); `remaining = remaining * (1 - weight)` 337; the
+// reciprocal written inline in each row 336 (same code).
+// Round 58 (lane 12; none kept): the final third remaining weight read from the field at both uses
+// 379 plain (353 fast, 1874 bytes); the pitch cosine read from the angles copy 304 plain (264 fast,
+// 1901 bytes: retail's first accumulation and the inner loop-head padding, but retail reads the
+// source's pitch there, and the mixed reads are not kept); the yaw sine and cosine from the copy 265
+// fast; every angle read from the copy 359 fast. Compile-only screens (control 159 aligned lines):
+// operand order, if/else clamp, PIN macro and an out-colour pointer in the accumulate helper 159;
+// the weight statement first 177; a clamped-weight local 284; scope moves of weight, magnitude,
+// reciprocal, j, i and the sample/axis order 159; 1/2/3 unused locals 159/157/157; an angles-to-vector
+// inline helper (one caller) by value 169-176, by pointer with the copy adjusted 145. The second and
+// third accumulations keep a rotated height/distance/intensity colouring in every form.
+// Round 52 (lane 16; fast control 336, retail's ESI shrink-wrap there): the body's own differences are the
+// reciprocal scale's j row (retail loads j then multiplies by the reciprocal; ours copies the reciprocal; any
+// spelling, row order, vector3f_scale, normalize_inline: same) and the loop accumulations' products (retail
+// colour * weight for red, weight * colour for green and blue; ours colour first everywhere; helper body orders,
+// weight-first products, a clamped local, if/else clamp, reference/scalar/weight-first helper parameters: same).
+// The products follow the symbol set: reading the angles from the local copy everywhere gives retail's products
+// compile-only but changes the angle reads (359 fast); the existing direction_from_angles on the copied angles
+// with yaw turned and pitch zeroed 371, on the source angles and the turned copy 334 (1885 bytes, the x87 order
+// differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
+// Round 217: Complete native output value assignments at original zero initialization, seven subsets,
+// then all with readonly tag receiver: 539/539/546/533/564/564/599/599. Original library clears and output lifetimes restored.
+// Round 21 (m3 lane 2; fast control 336): scale rows i, k, j 338; k, i, j 338; the magnitude from the direction's
+// squares 327 fast (1.0 in XMM6 as retail, first difference +0x8b, direction homes swap) but 374 plain (1894 bytes);
+// named i/j products stored after the k row 339; `opposite.k = 0` after the magnitude 344. Compile-only: no row
+// order, operand order, division, pointer or reciprocal placement gives retail's load-first j row.
+// Round 263: Direction/angle library copies and their pair tie fast control 336; sample library clamp with
+// none/either/both copies scores 421; complete graph with the shared accumulator library clamp 1040.
+// Original copies, clamps, angle observations and full body restored; full score 324, entry ESI save and
+// constant/accumulation allocation remain.
+// Round 269: Default-relocated case orders 0d1/1d0/d01/d10 fast 336 each; reversed cases with
+// axis-first declarations 336, with assignments/both 361/361; default-first reversed with both 361
+// (fast control 336, full 324). Original switch, assignments and body restored; ESI/XMM/scale schedules remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
@@ -202,7 +286,7 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt((double)opposite.j * opposite.j + (double)opposite.i * opposite.i);
+			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
 			if (!(0.0001f > fabs(magnitude)))
 			{
 				real reciprocal = 1.0f / magnitude;
@@ -219,11 +303,18 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 				vector3f const *axis;
 				switch (j)
 				{
-				case 0: sample = source->forward_count > 0 ? source->forward : NULL; axis = &direction; break;
-				case 1: sample = source->opposite_count > 0 ? source->opposite : NULL; axis = &opposite; break;
-				default: continue;
+				case 0:
+					sample = source->samples[0].count > 0 ? source->samples[0].entries : NULL;
+					axis = &direction;
+					break;
+				case 1:
+					sample = source->samples[1].count > 0 ? source->samples[1].entries : NULL;
+					axis = &opposite;
+					break;
+				default:
+					continue;
 				}
-				real angle = function_11ce20(view_direction, axis);
+				real angle = function_11ce20(axis, view_direction);
 				if (sample && sample->angle_end > sample->angle_start)
 				{
 					real weight = PIN((angle - sample->angle_end) / (sample->angle_start - sample->angle_end), 0.0f, 1.0f);

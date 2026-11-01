@@ -254,6 +254,9 @@ bool function_10f340(long unit_index, long mode, long set)
 	return false;
 }
 
+/* retail keeps this out of line in its only caller (0xe7020) */
+__declspec(noinline) byte function_10f3b0(long unit_index, long mode, long set);
+
 /* whether the unit's graph has an overlay for a mode and set (0x7000101 is
    the playing mode) */
 // @retail 0x10f3b0

@@ -98,8 +98,11 @@ bool function_b5830(long *identifiers, long count, long const *handler_indices, 
 	return result;
 }
 
+/* object_index is the object the entity was made for (b57d0's object_index);
+   this build doesn't read it, and LTCG drops the argument, but 185a30 passing
+   its loop index keeps retail's element-index loop there */
 // @retail 0xb5920
-void function_b5920(long identifier)
+void function_b5920(long identifier, long object_index)
 {
 	s_world *world = (s_world *)g_4cf77c;
 	long state = world->state;
@@ -283,109 +286,69 @@ long simulation_watcher_find_machine(s_simulation_world_owner const *watcher, s_
 void function_8b4d0(s_event_distribution *distribution, long type, long entity_count,
     long const *entities, dword machine_mask, long size, void const *data, long timeout);
 
-// score 92 (was 92): the convention matches (player in eax, copied to ebx; ret 0x18), but only
-// through the entry masking of the player (retail masks it only at its use) and the count and
-// object list read through their addresses (retail keeps the count in ebp, loaded once from its
-// slot, and spills the distribution instead); the loop walks a pointer where retail indexes.
-// Tried: retail's plain body (indexed loop, count used directly, `count > 0 ? entities : NULL`)
-// 121, LTCG then passes the count in ebx and the player on the stack, and the matched callers
-// 0xa7c50, 0xa8040 and 0xa9260 differ; the same with a local copy of the player 121; the count
-// read once through its address 116 (all seven on the stack, ret 0x1c); the entry mask dropped
-// 127 (player on the stack); the draft with an indexed loop 103, plus the ternary 110.
+// distributes an event about the given objects to every machine except the one of a player
 // @retail 0xb5a70
 void __stdcall function_b5a70(long player_index, long type, long count, long object_indices,
     long size, void const *data, long timeout)
 {
-    // Preserve NONE while reducing valid handles to their player slots.
-    player_index = player_index == NONE ? NONE : (player_index & 0xffff);
-    // Keep the count and object-list inputs in their retail stack slots.
-    long const *count_reference = &count;
-    long const *object_indices_reference = &object_indices;
     long entities[2];
     s_world *world = (s_world *)g_4cf77c;
     long state = world->state;
     if (state == 4 || state == 5)
     {
         s_event_distribution *distribution = (s_event_distribution *)((byte *)world->data + 0xa0ac);
-        long *output = entities;
-        for (long i = 0; i < *count_reference; i++, ++output)
+        for (long i = 0; i < count; i++)
         {
             if (state != 3 && state != 5)
-                *output = function_a5930(((long const *)*object_indices_reference)[i]);
+                entities[i] = function_a5930(((long const *)object_indices)[i]);
             else
-                *output = function_a5980(((long const *)*object_indices_reference)[i]);
+                entities[i] = function_a5980(((long const *)object_indices)[i]);
         }
-        if (*count_reference <= 0 || entities[0] != NONE)
+        if (count <= 0 || entities[0] != NONE)
         {
             dword mask = NONE;
             if (state != 3 && state != 5 && player_index != NONE)
             {
                 byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
-                short machine = *(short *)(player + 0x1a);
-                if (machine != NONE)
+                if (*(short *)(player + 0x1a) != NONE)
                 {
-                    s_machine_address const *address = (s_machine_address const *)((byte *)g_4e8c20 + 0x30) + machine;
+                    s_machine_address const *address = (s_machine_address const *)((byte *)g_4e8c20 + 0x30) + *(short *)(player + 0x1a);
                     long index = simulation_watcher_find_machine(*(s_simulation_world_owner **)g_4cf77c, address);
                     if (index != NONE)
                         mask = ~(1 << index);
                 }
             }
-            long const *entity_list = 0;
-            if (*count_reference > 0) entity_list = entities;
-            function_8b4d0(distribution, type, *count_reference, entity_list, mask, size, data, timeout);
+            function_8b4d0(distribution, type, count, count > 0 ? entities : 0, mask, size, data, timeout);
         }
     }
 }
 
-// score 79 (was 79): the convention already matches (player in eax, ret 0x18), but ours
-// computes has_player (setne) and the player slot at entry and keeps the world in ebx;
-// retail copies the player to ebx, tests it and masks it only at the use, keeps the world
-// in eax and the state in edi, and tests the count again after the loop (a for loop).
-// Tried: a for loop (101); a for loop without player_slot (101, retail's registers apart
-// from setne); both locals dropped (122; 119 with a for loop: LTCG then passes the count
-// in ebx and the player on the stack); only has_player dropped (90, same flip); a local
-// copy of the player (119); both dropped with the count read through its address as in
-// 0xb5a70 (113: the player still goes on the stack).
-// score 79 (was 79): retail reads the player's machine field twice (its dead `add ebx, edx`
-// after the folded load); doing so moves LTCG's register parameter from the player to the count
-// (ebx) and the five callers differ. Natural for loop with the player used only at its test 119;
-// machine field read twice on the entry-flag form / the opening body 85 / 99 (callers differ);
-// entry flag after the state read 101; loop index declared at the top 101; existing event player
-// getter with the double read 85 (callers differ). The entry-flag form (player tested at entry only,
-// re-measured 101) keeps the callers and is closest when aligned.
+// distributes an event about the given objects to the machine of one player
 // @retail 0xb5ba0
 void __stdcall function_b5ba0(long player_index, long type, long count, long object_indices,
     long size, void const *data, long timeout)
 {
-    bool has_player = player_index != NONE;
-    long player_slot = player_index & 0xffff;
     long entities[2];
     s_world *world = (s_world *)g_4cf77c;
     long state = world->state;
     if (state == 4 || state == 5)
     {
         s_event_distribution *distribution = (s_event_distribution *)((byte *)world->data + 0xa0ac);
-        long i = 0;
-        if (count > 0)
+        for (long i = 0; i < count; i++)
         {
-            do
-            {
-                if (state != 3 && state != 5)
-                    entities[i] = function_a5930(((long const *)object_indices)[i]);
-                else
-                    entities[i] = function_a5980(((long const *)object_indices)[i]);
-                i++;
-            } while (i < count);
+            if (state != 3 && state != 5)
+                entities[i] = function_a5930(((long const *)object_indices)[i]);
+            else
+                entities[i] = function_a5980(((long const *)object_indices)[i]);
         }
         if (count <= 0 || entities[0] != NONE)
         {
-            if (state != 3 && state != 5 && has_player)
+            if (state != 3 && state != 5 && player_index != NONE)
             {
-                byte *player = g_4e8c24->data + player_slot * 0x21c;
-                short machine = *(short *)(player + 0x1a);
-                if (machine != NONE)
+                byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
+                if (*(short *)(player + 0x1a) != NONE)
                 {
-                    s_machine_address const *address = (s_machine_address const *)((byte *)g_4e8c20 + 0x30) + machine;
+                    s_machine_address const *address = (s_machine_address const *)((byte *)g_4e8c20 + 0x30) + *(short *)(player + 0x1a);
                     long index = simulation_watcher_find_machine(*(s_simulation_world_owner **)g_4cf77c, address);
                     if (index != NONE)
                         function_8b4d0(distribution, type, count, count > 0 ? entities : 0,

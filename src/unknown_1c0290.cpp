@@ -20,6 +20,18 @@ struct s_slot_7c
 	byte unknown20[0x40 - 0x20];
 };
 
+/* the collision result this caller reserves: retail's object is 0x5c bytes with
+   its flag word at +0x24 (the shared declaration is 0x4c bytes, so the shared
+   declaration cannot describe this caller's output) */
+struct s_collision_result_1697c0_caller
+{
+	byte unknown00[8];
+	point3f point;
+	byte unknown14[0x24 - 0x14];
+	short unknown24;
+	byte unknown26[0x5c - 0x26];
+};
+
 /* the prop state's position (unknown_25d690.cpp) */
 struct s_prop_state_position
 {
@@ -192,26 +204,6 @@ short __stdcall function_1c04f0(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
-// score 143 (was 143): Frame 0xa0 versus 0xb0; native homes, request/collision argument
-// allocation and point/goal publication differ. The movement helper now expands; the current
-// shared collision output is 0x4c while the writer reaches the word at +0x5a.
-// Native slot data 143; local full collision output 140 (frame 0xb0), with slot data 140;
-// complete point setter/vector setter/position-add/both vector producers 140 each;
-// material initialized at declaration 138; native slot/point/vector producers 140.
-// Partial unit copy 104, with aggregate target or CRT point copy 104 each (all restored);
-// CRT point copy/aggregate target alone 140/140; aggregate target/early material 138;
-// uniform unit copy at entry 234, after position 161, with early material/slot data 161/161.
-// frame 0xa0 versus 0xb0; action/collision argument registers
-// and destination publication scheduling differ. The movement helper already expands.
-// Earlier: complete 0x5c collision 140, with early material 138; uniform unit index
-// captures 234/161; native slot-data 143; target/request/point/probe names on full output 140.
-// Full output with shared scaled target, whole-point initialization or shared distance
-// difference, alone and together with native slot-data: eight forms 140 each; restored.
-// frame 0xa0 versus 0xb0; target copy and goal registers differ.
-// Movement helper already inlines; the collision output still reserves 0x4c, not 0x5c.
-// Round 210: Complete shared collision extent with native slot-data access 140; destination, request,
-// paired destination/request, hit/probe, both point names, target/request/probe names and
-// all workspace names 140 each. The three-point frame correction is restored.
 // @retail 0x1c0670
 bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 {
@@ -233,10 +225,12 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 		{
 			if (!state->unknown18)
 			{
+				s_game_time_globals *game = g_510c54;
 				state->unknown18 = true;
-				state->unknown14 = g_510c54->game_time;
+				state->unknown14 = game->game_time;
 			}
-			if (!function_110ab0(actor->unknown018))
+			long unit_index = actor->unknown018;
+			if (!function_110ab0(unit_index))
 			{
 				s_unit_request action;
 
@@ -250,16 +244,17 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 	if (actor->unknown040)
 	{
 		vector3f vector;
-		s_collision_result_1697c0 collision;
+		s_collision_result_1697c0_caller collision;
 
+		collision.unknown24 = NONE;
 		vector.i = g_4687bc->i * 4.0f;
 		vector.j = g_4687bc->j * 4.0f;
 		vector.k = g_4687bc->k * 4.0f;
 		position.x += g_4687b0->i;
 		position.y += g_4687b0->j;
 		position.z += g_4687b0->k;
-		collision.unknown24 = NONE;
-		if (function_1697c0(0x1808c0d, &position, &vector, node->object_index, actor->unknown018, &collision))
+		if (function_1697c0(0x1808c0d, &position, &vector, node->object_index, actor->unknown018,
+			(s_collision_result_1697c0 *)&collision))
 		{
 			long object_index = function_baf80(node->object_index);
 			s_actor_point_target target;
@@ -288,6 +283,15 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 // Round 70: array-index actor lookup 26; slot declared first 26; reset stores in retail's
 // order 26 (identical code: the order is the scheduler's); existing reset function through a
 // forceinline declaration 85 (stays a call: its file is /Ob1); prop copy first 37.
+// Round 89: the reset's actor address offset-first, as an array element or through actor_get 26 each;
+// bool result single exit 26; const state/actor 26; chained time stores 34. Matched 0x1b4490 has the
+// same head without the reset and gets retail's eax/ecx: the offset's life into the reset decides it.
+// BLOCKED-BY 0x1f86a0 (retail inlines it at link time; its /Ob1 file keeps ours out of line).
+// Round 11 (lane 17): the existing 0x146650 game-time getter for both reads 26; time stores first 35
+// (133 bytes); all 120 orders of the five slot stores 26 or more; 0x1f86a0 itself inlined at link time
+// (its file built without /Ob1, a diagnostic only) 26, as is its body as a forceinline copy, so the
+// reset's form is not the cause. The reset's five zero stores decide it: with one zero store (or only
+// the NONE stores) the entry takes retail's EAX index / ECX slot.
 // @retail 0x1c0430
 bool __stdcall function_1c0430(long actor_index, s_slot *slot)
 {

@@ -75,6 +75,9 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// score 109 (was 109): this round: the tail call still needs 0x2b5d0's own body (it takes the mode
+// in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
+// a file this lane may not edit: BLOCKED-BY 0x2b5d0.
 // score 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
@@ -189,7 +192,22 @@ void function_2232a0(void)
 // Round 87 (fast): slot data NULL at the loop top with no else arms 124 (gives retail's loop-top zero,
 // in EDX, but not the found arm's second zero); the NONE store then one ternary 117, one if/else 117;
 // the first with a pretested for loop 179, the second 166. 0x2b5d0's file is held by another lane.
+// Round 152: slot data NULL at the loop top + default-last ternary in the found arm 122 (NULL lands in
+// ECX, retail EAX); NULL then an `index != NONE && g_4686c4 != NONE` guard after the scan 121 (the
+// NONE test is not threaded); that ternary form with the pretested for loop 158 (EBX save sinks past
+// the pretest: our tail needs no EBX because the stub takes count + 1 in ECX); NULL first in both arms
+// 124. The one-use record pointer for the initializer dropped (identical code, kept).
 // Round 223: Complete shared successor with staged/direct optional source in do/for traversal 319/168/319/168; with twice-used terminal count 268/113/268/113. Original scan, source, traversal and terminal restored.
+// Separate candidate/result on the recovered prefix: long/int with original/pretested
+// traversal 106/172 each; short/word counterparts 160/192 each. Three-count gains rejected;
+// original scan restored. Outer pretest, optional-source homes and tail transport remain.
+// Round 208: advancing native output receiver on the recovered source arms:
+// scan-boundary acquisition, numeric/pointer terminal, do/for 111/170/141/192;
+// layout-boundary counterparts 130/171/158/192. All restored; outer pretest,
+// source homes and outside tail transport remain.
+// Round 81: combined entry/found source clears in do/for traversal 124/120; entry clear with
+// original arms 109/138; entry clear without the empty-arm store 122/158; entry clear without
+// the final null-arm store 123/160. Original source assignments and traversal restored.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
@@ -239,8 +257,7 @@ void function_2234e0(void)
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
 	} while (local_0 < local_2);
-	s_223240 *local_6 = &g_47f0f8[local_2 + 1];
-	function_2232a1(local_6);
+	function_2232a1(&g_47f0f8[local_2 + 1]);
 	function_2b5d0(local_2 + 1, 3, local_2, local_3, &g_47f0f8[1]);
 }
 

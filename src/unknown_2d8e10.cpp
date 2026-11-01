@@ -12,14 +12,7 @@ char *__cdecl function_2d8e10(const char *string)
 	return copy;
 }
 
-class class_2d8e50
-{
-public:
-	long field_0;
-	long length;
-
-	void release();
-};
+#include "string_block_2d8e50.h"
 
 // @retail 0x2d8e50
 void class_2d8e50::release()

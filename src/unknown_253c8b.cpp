@@ -8,6 +8,8 @@
 #include "unknown_234c64.h"
 #include "globals.h"
 #include "unknown_030290.h"
+#include "slot_handler.h"
+static __forceinline long real_to_long(real value);
 
 bool function_13ee20(word const *text, long font);
 extern color3f *g_468724;
@@ -170,34 +172,8 @@ s_button_block *function_253cc8(c_class_19b8b1 *button)
 	return result;
 }
 
-// score 33 (was 37): the source width is stored after the target bounds are read, as retail
-// orders it. Before that: height conversion and independent-axis SIMD homes still differ.
-// height word move and independent-axis SIMD residency still differ.
-// Native short height retained at retail length. Real screen offsets
-// x/y/both/early 103/103/102/114; short width/height/both 40/37/119;
-// short dimensions with offsets 118; long height/width 100/104;
-// short-height vertical origin/near-first/vertical-first 38/40/39.
-// source width/height/both 104/103/105; aggregate source 107; source width,
-// height, both and aggregate with staged far edges 104/103/105/107.
-// Output x/y/both origins 105/101/105; output far edges 105; vertical-first edges 108; native bounds
-// 100; native origins/edges 105/108.
-// both origins first 104; vertical origin first 106; corner stores 104; vertical/corners 105;
-// all edges first 104; vertical edges first 105; named far edges 104; vertical far edge first 105.
-// Height/width/both read at use 100/40/100; height/width/both role names 37/37/37;
-// origin/rectangle names 37/37; long width with native height 39; reversed dimension
-// producers 40; native-height source initializer 35; height-first extent stores 36;
-// reversed rectangle names 37. Two- and one-count gains rejected; opening body retained.
-// Constant native height 37; height/dimensions before opacity 42/42;
-// library source initialization 150; native output with short height 37;
-// zero before dimensions 37; closed dimension lifetime 37; native source bounds 37.
-// Horizontal/vertical interleaved source extents 100/103; separate vertical/horizontal source axes 104/35;
-// bounds before source/dimensions/interleaved source/value initialization 72/40/117/184.
-// Two-count source-axis gain rejected; opening body retained.
-// Height stored to the source rectangle and read back there 103 (552 bytes; converts the height
-// as retail does); both extents read back 105; offsets before any store 40, with the height or
-// both read back 104/104; orders of the six coordinate statements 100-104; offsets added into
-// the target first, far edges from it, then the position added (the matched sibling's shape)
-// 100-123 at 558-561 bytes, best with the y position converted first 100.
+/* draws the button: its definition's sprite, offset from its bounds, then its text (or, when
+   the global outline flag is set, its index inside an outline) */
 // @retail 0x253ea8
 void c_class_19b8b1::v4(long screen_rect_address)
 {
@@ -219,26 +195,23 @@ void c_class_19b8b1::v4(long screen_rect_address)
         short frame = (short)v17();
         byte *tag = g_4e3b44[definition->bitmap_tag_index & 0xffff].bytes;
         s_sprite_element *element = (s_sprite_element *)(*(byte **)(tag + 0x48) + frame * 0x74);
-        real fade = alpha * 255.0f;
-        long opacity;
-        __asm
-        {
-            fld fade
-            fistp opacity
-        }
+        long opacity = real_to_long(alpha * 255.0f);
         s_float_rect from, to;
-        real width = element->width;
-        short height = element->height;
+        real offset_x, offset_y;
         from.x0 = from.y0 = 0.0f;
-        from.y1 = height;
+        from.x1 = (real)element->width;
+        from.y1 = (real)element->height;
         get_real_bounds((box2f *)&to);
-        from.x1 = width;
-        real px = *(short *)definition->unknown2c + to.x0;
-        to.x0 = x + px;
-        to.x1 = x + (width + px);
-        real py = to.y0 - *(short *)(definition->unknown2c + 2);
-        to.y0 = y + py;
-        to.y1 = y + (py - height);
+        to.x0 += *(short *)definition->unknown2c;
+        to.y0 -= *(short *)(definition->unknown2c + 2);
+        to.y1 = to.y0 - element->height;
+        to.x1 = to.x0 + element->width;
+        offset_y = (real)y;
+        offset_x = (real)x;
+        to.x0 += offset_x;
+        to.y0 += offset_y;
+        to.x1 += offset_x;
+        to.y1 += offset_y;
         function_23618e(&to, depth, screen);
         function_235e5e(element, &from, &to, ((dword)opacity << 24) | 0xffffff, 1, 0);
     }

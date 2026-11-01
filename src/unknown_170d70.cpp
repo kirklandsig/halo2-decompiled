@@ -21,18 +21,38 @@ short g_468d3c[6] = { 3, 3, 2, 1, 1, 3 };
 short g_468d30[6] = { 3, 3, 2, 1, 1, 6 };
 real const g_4449c0[6] = { 1500.0f, 1500.0f, 1500.0f, 100000.0f, 100000.0f, 100000.0f };
 
+struct s_view_setup
+{
+	point3f position;
+	s_location location;
+	vector3f unknown14;
+	vector3f forward;
+	vector3f up;
+	real field_of_view;
+	real aspect;
+	real scale_x;
+	real scale_y;
+	real deviation;
+	real vertical_field_of_view;
+	real ratio;
+};
+
 struct s_motion_channels_1701f0
 {
 	byte unknown00[8];
 	dword flags;
 	real target[16];
-	byte unknown4c[0x94 - 0x4c];
+	vector3f translation;
+	byte unknown58[0x94 - 0x58];
 	byte channel_flags[6];
 	byte unknown9a[2];
 	real times[6];
-	byte unknownb4[0x10c - 0xb4];
+	byte unknownb4[2];
+	byte follow_matrix;
+	byte unknownb7;
+	s_view_setup view;
 	real current[16];
-	byte unknown14c[0x180 - 0x14c];
+	transform4x3f matrix;
 	real first_derivative[13];
 	real second_derivative[13];
 	real fifth[13];
@@ -232,7 +252,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 
 /* advances the player's motion channels by the elapsed time, then rebuilds the forward and up
    vectors at current[10] and current[13] as an orthonormal pair when they drift */
-// score 72 (was 81): the loop matches but for two slots (the time pointer the compiler makes and
+// score 64 (was 72): the current pointer is declared before the values, and the new up's j is stored as soon as it
+// is computed (the permuter found both: 70 and 66 alone). Before (72, was 81): the loop matches but for two slots
+// (the time pointer the compiler makes and
 // the group counter are swapped) and the order of the current and value pointer setup; after it
 // the float sums and products come out in another order (the dot product as k, j, i where retail
 // has k, i, j; the cross products' first loads) and 1.0f is loaded later. Our compiler reorders the
@@ -241,13 +263,21 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // stored j, k, i 72 (stored directly 81). Tried: an explicit time pointer with the current pointer
 // declared before the value pointer (the whole loop then matches, but the code after it changes:
 // 124); declaration orders around it 120-140; a cross product helper for both products 122-140.
+// Second logic walk (c2B, every block, retail 0x170630-0x170ba2): the six groups' tables, the time compare
+// (> 0 / flags & 1 copy path), the t^5..t^1 polynomial and the 0 - velocity * step path, the < 5 add vs the
+// 0x170d70 call, the 1.0 / 0.001 / 0.001 tests and both normalizes agree with retail, no behaviour difference.
+// Also tried (all worse): explicit time pointer with the pointers declared in retail's lea order (target,
+// fifth..first, velocity, constant, time, current, value): the loop is then identical, the prologue's lea order
+// and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
+// product in a local (180) or the tests split into bool locals (123). Permuter (25 min on r622): best 63, from the
+// two changes kept here plus spelling-only rewrites; the count as unsigned 72 alone.
 // @retail 0x170630
 void function_170630(long player_index)
 {
 	s_motion_channels_1701f0 *state = (s_motion_channels_1701f0 *)g_4e9bd4 + player_index;
+	real *current = state->current;
 	real values[13];
 	real *value = values;
-	real *current = state->current;
 	real *target = state->target;
 	real *velocity = state->first_derivative;
 	real *fifth = state->fifth;
@@ -313,8 +343,8 @@ void function_170630(long player_index)
 		left.k = forward->j * up->i - up->j * forward->i;
 		real up_i = forward->j * left.k - left.j * forward->k;
 		real up_j = left.i * forward->k - forward->i * left.k;
-		real up_k = forward->i * left.j - forward->j * left.i;
 		up->j = up_j;
+		real up_k = forward->i * left.j - forward->j * left.i;
 		up->k = up_k;
 		up->i = up_i;
 		normalize3d(forward);
@@ -698,6 +728,11 @@ void function_16de20(short index, s_16e150_bits const *table, dword *output);
 bool __stdcall function_134950(long a, long b, void const *context);
 void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdcall *compare)(long, long, void const *), void const *context);
 
+// score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
+// retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
+// before the last stack push (`push edx` holding &camera) and ours after it. Tried: a local for the context, a local
+// for the count, a local loop counter, none changed it. Permuter (25 min on r621): best 9 (full image 10), only with
+// a volatile store to the cluster's first count; not kept.
 // @retail 0x1733e0
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera)
 {
@@ -736,13 +771,25 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 	}
 }
 
+// score 142 (was 156): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
+// limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
+// What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
+// (je 0x172fad ... jmp 0x172f08) with cluster_slot in ebx and volume_index in ebp (pushed only before the loop);
+// we keep it inline with the two registers swapped. Tried: creation inline with one trailing cluster pointer (156),
+// `while ((slot = map[ci]) == NONE)` (134 but the first argument moves to eax and ret becomes 0x18), `for (;;)` with
+// a break (138, same convention change), a forceinline helper returning the cluster (130, but needs a pointer
+// difference to recover the slot), a helper returning the slot (159), volume_index declared before the slot
+// (156), goto create/found (203). Permuter (25 min on r622): best 100, only with volatile locals and list_next's
+// two index arguments swapped (a behaviour change); not kept.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
 {
 	long cluster_slot = cluster_map[cluster_index];
 	s_view_cluster_1733e0 *cluster;
-	if (cluster_slot == NONE)
+	if (cluster_slot != NONE)
+		cluster = &collection->clusters[cluster_slot];
+	else
 	{
 		short count = collection->cluster_count;
 		if (count >= 128)
@@ -754,8 +801,8 @@ bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool,
 		collection->clusters[cluster_slot].index = (short)cluster_index;
 		memset(collection->clusters[cluster_slot].counts, 0, sizeof(collection->clusters[cluster_slot].counts));
 		memset(collection->clusters[cluster_slot].heads, 0xff, sizeof(collection->clusters[cluster_slot].heads));
+		cluster = &collection->clusters[cluster_slot];
 	}
-	cluster = &collection->clusters[cluster_slot];
 	do
 	{
 		short volume_index = collection->volume_count;
@@ -871,21 +918,6 @@ struct s_rotation_matrix
 	real m20, m21, m22;
 };
 
-struct s_view_setup
-{
-	point3f position;
-	s_location location;
-	byte unknown14[0x20 - 0x14];
-	vector3f forward;
-	vector3f up;
-	real field_of_view;
-	real aspect;
-	real scale_x;
-	real scale_y;
-	real deviation;
-	real vertical_field_of_view;
-	real ratio;
-};
 
 static inline void rotation_matrix_from_axis_angle(s_rotation_matrix *m, vector3f const *axis, real angle)
 {
@@ -970,6 +1002,18 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
+// score 346 (was 346). Logic walked block by block against retail: every call, constant and field offset agrees.
+// The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
+// rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
+// 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
+// ((i,k),j), and for k ((j,k),i) / ((i,j),k) / ((j,k),i) / ((i,j),k); the helper uses the first form everywhere.
+// A helper that picks the grouping per call reproduces all four (checked in our output) but scores 361.
+// What still differs is register choice and scheduling: retail holds the constant 1.0 in xmm5 for the whole
+// function and computes axis i2/j2/k2 before the first fptan, ours spills them; retail multiplies s*axis.i on the
+// x87 stack (fld/fmul/fstp 0x171e56-0x171e6d) and the other products in SSE; the deviation sum is fld/fmul-per-term
+// in retail, ours loads all three first.
+// Tried (no gain, all 356-383): sk/sj/si locals before or after the squares (357-383), ratio/original/vertical
+// statements moved (360-361), deviation as float sum (367), per-term (double)(a*a) (372), double locals (419).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1046,33 +1090,51 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
 
+// score 69 (was 126): logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
+// of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
+// of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
+// (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
+// `mov edi, [polygon+0x1c]` (count) and the origin pointer (retail addresses [eax+0x60] directly, we form
+// eax+0x60) still differ. Tried: long positive = cond ? 1L : 0L with an `axes` pointer (126, 129 direct), bool positive
+// (127 / 130), bool positive with `positive != 0` or byte/char positive (60 but the compiler then passes both
+// parameters on the stack, `ret 8`: not usable), long positive with `!= 0` (77), short positive (69, this form),
+// all 48 operand/sum orders of the origin dot product (135 each: the order does not change the code), origin
+// as a local pointer vs context->origin->position.x directly (126 vs 135).
+// Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
+// a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
+// the plane declared first are 69.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
-	long axis = function_120850(&plane->n);
-	long positive = ((real const *)plane)[axis] > 0.0f ? 1L : 0L;
+	short axis = function_120850(&plane->n);
+	short positive = plane->n.n[axis] > 0.0f ? 1 : 0;
 	point3f const *origin = &context->origin->position;
 	real distance = 0.0f - plane_distance_to_point(plane, origin);
 	point3f projected;
 	projected.x = plane->n.i * distance + origin->x;
 	projected.y = distance * plane->n.j + origin->y;
 	projected.z = plane->n.k * distance + origin->z;
-	short const *axes = g_440b94[axis * 2 + positive];
 	point2f point;
-	point.x = ((real const *)&projected)[axes[0]];
-	point.y = ((real const *)&projected)[axes[1]];
+	point.x = projected.n[g_440b94[axis * 2 + (positive != 0)][0]];
+	point.y = projected.n[g_440b94[axis * 2 + (positive != 0)][1]];
 	for (long i = 0; i < polygon->count; ++i)
 	{
 		point2f *destination = &points[i];
 		point3f const *vertex = &polygon->points[i];
-		destination->x = vertex->n[axes[0]];
-		destination->y = vertex->n[axes[1]];
+		destination->x = vertex->n[g_440b94[axis * 2 + (positive != 0)][0]];
+		destination->y = vertex->n[g_440b94[axis * 2 + (positive != 0)][1]];
 	}
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
 
+// score 23 (unchanged): logic equals retail (inside test, state <= 0 / >= 3 returns, 1 vs 2 by the sign of the
+// distance). Only the x term's fld/fmul operand order (retail loads the plane first) and the block layout differ:
+// retail keeps `return 0` right after the first state test and jumps back to it from the inside branch; we put it
+// last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
+// `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
+// Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
@@ -1145,6 +1207,21 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
+// score 96 (was 123): logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
+// 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
+// copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
+// minimum, the state 3 inside clamp (0.015625 as a double) and the memcpy of the view's points, the four 1/256 inflate
+// steps and the corner order, the view[0x84] cull and the pool recount agree; no behaviour difference found. What
+// still differs: retail stores pool->count and tests result->state before it stores result->points, the count and
+// field_0 (ours stores points first); `mov [esp+0x1c], ecx` (step * 8) comes after the `lea edx` in ours; the clamp
+// (retail: fld const, fld distance, compare, pop both, reload the winner; ours keeps a copy: one extra fld), which
+// shifts everything after it by one line; the inflate (retail adds/subs the constant in xmm0 one box field at a time,
+// ours interleaves them) and the register of the final count recompute. Tried: `++pointer` before `index += step`
+// (123 -> 96, kept); every order of the four stores points/pool count/count/field_0 (124-131); points through a
+// local pointer after the pool count store (128); `distance <= c ? distance : c` (124), `c < distance` (same code),
+// if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
+// Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
+// not kept.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1196,8 +1273,8 @@ s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_
 						bounds.y1 = point->y;
 					real distance = 0.0f - local_cb4759->z;
 					result->distance = result->distance > distance ? distance : result->distance;
-					index += step;
 					++local_cb4759;
+					index += step;
 				}
 				if (result->state == 3)
 				{
@@ -1265,6 +1342,14 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
+// score 221 (unchanged): the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
+// (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
+// the 173380 clip, the stores into the new entry in retail's order, the 173b00/173b60 calls, the flag tail).
+// Remaining: retail saves esi at entry (we push all four registers at the loop), so every [esp+N] differs; retail's
+// spill slot for the other cluster (movsx'd, [esp+0x3c]) is the last one while ours is the second ([esp+0x18], with a
+// zero-extending xor/mov); the g_4687dc rectangle copy is scheduled earlier in retail. Tried: other_cluster as long
+// (236), as a ternary short/long (240/246), no variable with next->value08 reused for the 173b00 call (257/259),
+// an extra short copy widened to long (246).
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1362,6 +1447,10 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 	return result;
 }
 
+// score 3 (was 3): the same sort_4byte call as function_1733e0: retail computes &scratch in edx, then `lea ecx` for
+// the order array, then `push edx`; ours uses ecx for &scratch and pushes it first. Tried: locals for the order
+// pointer, the count, the unused pointer, any combination (no change); dropping the block around `scratch` (42).
+// Permuter (25 min on r621, about 1150 variants): nothing below 3.
 // @retail 0x173130
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index,
 	s_view_collection_1733e0 *collection)
@@ -1424,13 +1513,17 @@ struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
+// Matches with the collision flags as an unsigned long declared before `result` (found by the permuter). The
+// start then arrives in EAX, the end in ESI and `narrow` in DL, as retail's callers 0x171830 and 0x16ebf0 set them
+// up (ret 4). Before (19), narrow stayed on the stack and the end came in EDX; `long narrow` gave 14, other spellings
+// of the flag, the result and the direction 19-42.
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
-    bool result = false;
     s_segment_collision collision;
     collision.material = NONE;
-    long flags = 0x808c0f;
+    unsigned long flags = 0x808c0f;
+    bool result = false;
     if (narrow) flags = 0x808c0d;
     vector3f direction;
     direction.i = end->x - start->x;
@@ -1460,13 +1553,25 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
+// score 266 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
+// the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
+// calling convention: retail takes forward in eax and up in ecx with point, distance and offset on the stack
+// (ret 0xc; the prologue copies [esp+0xc4] into ebp); ours passes up in eax and point in ebx and leaves forward
+// on the stack. The declared order of the five parameters changes nothing (6 orders tried, same score), and the
+// old `(void)&point` lines were dead code (removed, same bytes). The 0x171d00 call is also set up differently
+// until that function takes narrow in dl and end in esi.
+// c2B: no body trigger found for the convention. Retail keeps position on the stack and copies it into ebp
+// in the prologue (long-lived: loops and calls), and keeps forward and up, which die before the sample
+// loop, in registers; ours keeps position in ebx and copies forward into ebp. The chain through 0x171d00
+// matters (its convention changes this function's score: `long narrow` there gives 288), so this function
+// is probably not fixable before 0x171d00 matches. 0x171d00 now matches (#987), which took this from 266 to 284.
+// Permuter (25 min on r622): 26 below its own baseline, only with a float term truncated through an int and a
+// volatile pointer (a behaviour change); not kept.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
 {
-	(void)&point;
-	(void)&distance;
-	(void)&offset;
 	real center_fraction = 1.0f;
 	s_location location;
 	function_11bed0(&location, point);
@@ -1587,30 +1692,76 @@ void function_171830(point3f const *point, vector3f const *forward,
 void function_3f500(long cluster_index);
 double g_45e4c8 = -3.4028234663852886e+38;
 
+/* the point (or vector) scaled by the matrix's scale, when it is not 1, then carried by its axes */
+PRIVATE __forceinline void follow_matrix_point(transform4x3f const *matrix, point3f *point)
+{
+	real z = point->z;
+	real y = point->y;
+	real x = point->x;
+	if (matrix->scale != 1.0f)
+	{
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
+	}
+	point->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
+	point->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+	point->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+}
+
+PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vector3f *vector)
+{
+	real i = vector->i;
+	real j = vector->j;
+	real k = vector->k;
+	if (matrix->scale != 1.0f)
+	{
+		i = matrix->scale * i;
+		j = matrix->scale * j;
+		k = matrix->scale * k;
+	}
+	vector->i = matrix->up.i * k + matrix->left.i * j + matrix->forward.i * i;
+	vector->j = matrix->up.j * k + matrix->left.j * j + matrix->forward.j * i;
+	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
+}
+
+// score 346 (was 464): same behaviour as retail (the logic walk found no difference). What still differs:
+// (1) the call to function_171830. Retail passes forward in ecx, up in eax and &position, &distance, 0.02f on
+//     the stack (0x171684-0x171694); our function_171830 takes position in ebx and forward on the stack, so the
+//     call setup differs and ebx is busy: the state pointer lands in ebp (retail ebx) and the view.up pointer in
+//     ebx (retail ebp). That swap is most of the remaining score and needs function_171830 to match first.
+// (2) the stack slots: retail has distance 0xc, field of view 0x10, magnitude 0x14, direction 0x18/0x1c, position
+//     0x20 (frame 0x20); ours has one more slot (frame 0x24) and a different order.
+// (3) the matrix block: some y and z sums are added in another order, and retail adds the translation as
+//     `offset + translation` (offset loaded first) where ours loads the translation first.
+// Kept (each made it closer): struct copies for the default forward/up and the view forward/up; `up` declared
+// before `forward` (retail's lea order); pointer locals for view.forward/view.up; the y of the direction read as
+// state->current[11] (retail loads [ebx+0x138], x through the forward pointer); the field of view tested on the
+// memory operand; the ternary clamp macro for view.position; `player_index = NONE` then an if; (real)g_45e4c8 so
+// 0.05f is a dword constant; the point helper declares z, y, x in that order (the compiler sorts terms by it).
+// Tried, no help: `a = a + b` for the translation, the other five declaration orders of the vector helper
+// (i, j, k is best) and of the direction/magnitude locals, a `long cluster_index` local in the cluster test (365),
+// __fastcall or reordered parameters on function_171830.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
 	s_motion_channels_1701f0 *state = (s_motion_channels_1701f0 *)g_4e9bd4 + user_index;
-	s_view_setup *view = (s_view_setup *)((byte *)state + 0xb8);
 	point3f position = *(point3f *)&state->current[0];
 	real distance;
 	if (0.0f > state->current[8]) distance = 0.0f;
 	else if (state->current[8] > 3.4028235e38f) distance = 3.4028235e38f;
 	else distance = state->current[8];
-	vector3f *forward = (vector3f *)&state->current[10];
 	vector3f *up = (vector3f *)&state->current[13];
+	vector3f *forward = (vector3f *)&state->current[10];
 	if (!function_a74c0(forward, up))
 	{
-		forward->i = g_4687a8->i;
-		forward->j = g_4687a8->j;
-		forward->k = g_4687a8->k;
-		up->i = g_4687b0->i;
-		up->j = g_4687b0->j;
-		up->k = g_4687b0->k;
+		*forward = *g_4687a8;
+		*up = *g_4687b0;
 	}
-	real field_of_view = state->current[9];
-	if (g_54e858 > field_of_view) field_of_view = g_54e858;
-	else if (field_of_view > g_54e85c) field_of_view = g_54e85c;
+	real field_of_view;
+	if (g_54e858 > state->current[9]) field_of_view = g_54e858;
+	else if (state->current[9] > g_54e85c) field_of_view = g_54e85c;
+	else field_of_view = state->current[9];
 	state->current[9] = field_of_view;
 	if (-50000.0f > position.x) position.x = -50000.0f;
 	else if (position.x > 50000.0f) position.x = 50000.0f;
@@ -1621,7 +1772,7 @@ void __stdcall function_170fd0(long user_index)
 	if (0.0f > distance) distance = 0.0f;
 	else if (distance > g_54e860) distance = g_54e860;
 	real direction_x = forward->i;
-	real direction_y = forward->j;
+	real direction_y = state->current[11];
 	real magnitude = (real)sqrt(direction_y * direction_y + direction_x * direction_x);
 	if (!(fabs(magnitude) < 0.0001f))
 	{
@@ -1632,85 +1783,50 @@ void __stdcall function_170fd0(long user_index)
 	position.x += state->current[4] * direction_y + state->current[3] * direction_x;
 	position.y = state->current[3] * direction_y - state->current[4] * direction_x + position.y;
 	position.z = state->current[5] + position.z;
-	view->forward.i = forward->i;
-	view->forward.j = forward->j;
-	view->forward.k = forward->k;
-	view->up.i = up->i;
-	view->up.j = up->j;
-	view->up.k = up->k;
-	vector3f *offset = (vector3f *)((byte *)state + 0xcc);
-	offset->i = 0.0f - state->first_derivative[0];
-	offset->j = 0.0f - state->first_derivative[1];
-	offset->k = 0.0f - state->first_derivative[2];
-	view->field_of_view = field_of_view;
-	view->aspect = 1.33333337f;
-	view->scale_x = state->current[6];
-	view->scale_y = state->current[7];
-	function_171d90(view);
-	if (*((byte *)state + 0xb6))
+	vector3f *view_forward = &state->view.forward;
+	vector3f *view_up = &state->view.up;
+	*view_forward = *forward;
+	*view_up = *up;
+	state->view.unknown14.i = 0.0f - state->first_derivative[0];
+	state->view.unknown14.j = 0.0f - state->first_derivative[1];
+	state->view.unknown14.k = 0.0f - state->first_derivative[2];
+	state->view.field_of_view = field_of_view;
+	state->view.aspect = 1.33333337f;
+	state->view.scale_x = state->current[6];
+	state->view.scale_y = state->current[7];
+	function_171d90(&state->view);
+	if (state->follow_matrix)
 	{
-		transform4x3f const *matrix = (transform4x3f *)((byte *)state + 0x14c);
-		point3f scaled = position;
-		if (matrix->scale != 1.0f)
-		{
-			scaled.x *= matrix->scale;
-			scaled.y *= matrix->scale;
-			scaled.z *= matrix->scale;
-		}
-		position.x = matrix->up.i * scaled.z + matrix->left.i * scaled.y + matrix->forward.i * scaled.x + matrix->position.x;
-		position.y = matrix->up.j * scaled.z + matrix->left.j * scaled.y + matrix->forward.j * scaled.x + matrix->position.y;
-		position.z = matrix->up.k * scaled.z + matrix->left.k * scaled.y + matrix->forward.k * scaled.x + matrix->position.z;
-		vector3f source;
-		source.i = offset->i; source.j = offset->j; source.k = offset->k;
-		if (matrix->scale != 1.0f)
-		{
-			source.i *= matrix->scale; source.j *= matrix->scale; source.k *= matrix->scale;
-		}
-		offset->i = matrix->up.i * source.k + matrix->left.i * source.j + matrix->forward.i * source.i;
-		offset->j = matrix->up.j * source.k + matrix->left.j * source.j + matrix->forward.j * source.i;
-		offset->k = matrix->up.k * source.k + matrix->left.k * source.j + matrix->forward.k * source.i;
-		source.i = view->forward.i; source.j = view->forward.j; source.k = view->forward.k;
-		if (matrix->scale != 1.0f)
-		{
-			source.i *= matrix->scale; source.j *= matrix->scale; source.k *= matrix->scale;
-		}
-		view->forward.i = matrix->up.i * source.k + matrix->left.i * source.j + matrix->forward.i * source.i;
-		view->forward.j = matrix->up.j * source.k + matrix->left.j * source.j + matrix->forward.j * source.i;
-		view->forward.k = matrix->up.k * source.k + matrix->left.k * source.j + matrix->forward.k * source.i;
-		source.i = view->up.i; source.j = view->up.j; source.k = view->up.k;
-		if (matrix->scale != 1.0f)
-		{
-			source.i *= matrix->scale; source.j *= matrix->scale; source.k *= matrix->scale;
-		}
-		view->up.i = matrix->up.i * source.k + matrix->left.i * source.j + matrix->forward.i * source.i;
-		view->up.j = matrix->up.j * source.k + matrix->left.j * source.j + matrix->forward.j * source.i;
-		view->up.k = matrix->up.k * source.k + matrix->left.k * source.j + matrix->forward.k * source.i;
-		vector3f const *translation = (vector3f const *)((byte *)state + 0x4c);
-		offset->i += translation->i;
-		offset->j += translation->j;
-		offset->k += translation->k;
+		transform4x3f const *matrix = &state->matrix;
+		follow_matrix_point(matrix, &position);
+		follow_matrix_vector(matrix, &state->view.unknown14);
+		follow_matrix_vector(matrix, view_forward);
+		follow_matrix_vector(matrix, view_up);
+		state->view.unknown14.i += state->translation.i;
+		state->view.unknown14.j += state->translation.j;
+		state->view.unknown14.k += state->translation.k;
 	}
 	if (!(state->flags & 0x10) && distance != 0.0f)
-		function_171830(&position, &view->forward, &view->up, &distance, 0.02f);
-	view->position.x = position.x - view->forward.i * distance;
-	view->position.y = position.y - view->forward.j * distance;
-	view->position.z = position.z - view->forward.k * distance;
-	if (-50000.0f > view->position.x) view->position.x = -50000.0f;
-	else if (view->position.x > 50000.0f) view->position.x = 50000.0f;
-	if (-50000.0f > view->position.y) view->position.y = -50000.0f;
-	else if (view->position.y > 50000.0f) view->position.y = 50000.0f;
-	if (-50000.0f > view->position.z) view->position.z = -50000.0f;
-	else if (view->position.z > 50000.0f) view->position.z = 50000.0f;
+		function_171830(&position, view_forward, view_up, &distance, 0.02f);
+	state->view.position.x = position.x - state->view.forward.i * distance;
+	state->view.position.y = position.y - state->view.forward.j * distance;
+	state->view.position.z = position.z - state->view.forward.k * distance;
+	/* the same ternary clamp as function_172520: retail keeps the value in a register and stores it once */
+	PLACEMENT_CLAMP_172520(state->view.position.x, -50000.0f, 50000.0f);
+	PLACEMENT_CLAMP_172520(state->view.position.y, -50000.0f, 50000.0f);
+	PLACEMENT_CLAMP_172520(state->view.position.z, -50000.0f, 50000.0f);
 	s_location location;
-	function_11bed0(&location, &view->position);
+	function_11bed0(&location, &state->view.position);
 	if (location.cluster_index != NONE)
 	{
-		if (location.cluster_index != view->location.cluster_index && location.cluster_index >= 0 &&
+		if (location.cluster_index != state->view.location.cluster_index && location.cluster_index >= 0 &&
 			location.cluster_index < *(long *)((byte *)g_4e0348 + 0x9c))
 			function_3f500(location.cluster_index);
-		view->location = location;
+		state->view.location = location;
 	}
-	long player_index = user_index == NONE ? NONE : g_4e8c20->entries[user_index];
+	long player_index = NONE;
+	if (user_index != NONE)
+		player_index = g_4e8c20->entries[user_index];
 	byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
 	if (*(long *)(player + 0x2c) == NONE && !(player[2] & 8) && *g_510c70 == g_4686c4)
 	{
@@ -1718,6 +1834,7 @@ void __stdcall function_170fd0(long user_index)
 		if (cluster_index >= 0 && cluster_index < *(long *)((byte *)g_4e0348 + 0x9c))
 			function_3f500(cluster_index);
 	}
-	if (fabs(g_45e4c8) < 0.05f)
-		view->position.z -= 3.4028235e38f;
+	/* the cast keeps 0.05f a float constant (retail: fld dword); the global holds -FLT_MAX, so this never fires */
+	if (fabs((real)g_45e4c8) < 0.05f)
+		state->view.position.z -= 3.4028235e38f;
 }

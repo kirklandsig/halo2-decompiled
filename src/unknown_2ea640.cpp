@@ -5,6 +5,8 @@
 // accepts is passed with the first shape to the query function for the two
 // kinds. Each phase is marked in the timing stream.
 #include "reference_counted_2d88a0.h"
+#include "physics_allocator.h"
+#include "child_query_2f9950.h"
 #include "timer_mark_2ebc80.h"
 #include "pair_agents_2eab70.h"
 #include "side_bounds_2e9140.h"
@@ -45,28 +47,32 @@ struct placement_2ea940
 };
 
 // a box given by its two corners
-struct bounds_2ea940
-{
-	__m128 minimum;
-	__m128 maximum;
-};
+typedef bounds_2e9140 bounds_2ea940;
 
 // the keys of the parts a query found, held in place for up to 128 of them
-struct key_array_2ea940
+struct key_array_base_2ea940
 {
 	long *data;
 	long size;
-	unsigned long capacity_and_flags;
-	long storage[128];
+	long capacity_and_flags;
 
-	key_array_2ea940() : data(storage), size(0), capacity_and_flags(128 | 0x80000000) {}
-	~key_array_2ea940()
+	key_array_base_2ea940(long *buffer, unsigned long capacity)
+		: data(buffer), size(0), capacity_and_flags(capacity | 0x80000000) {}
+	~key_array_base_2ea940()
 	{
 		if ((capacity_and_flags & 0x80000000) == 0)
 		{
-			g_memory_2d88a0->release_block(data, (capacity_and_flags & 0x7fffffff) * sizeof(long), 0x12);
+			havok_allocator()->release(data,
+				(capacity_and_flags & 0x7fffffff) * 4, 0x12);
 		}
 	}
+};
+
+struct key_array_2ea940 : key_array_base_2ea940
+{
+	long storage[128];
+
+	key_array_2ea940() : key_array_base_2ea940(storage, 128) {}
 };
 
 class shape_2ea940
@@ -99,16 +105,6 @@ public:
 	long field_4;
 	long field_8;
 	shape_2ea940 const *container;
-};
-
-// one side of a query: a shape, the key of the part concerned, where it sits,
-// and the side it is a part of
-struct body_2ea940
-{
-	shape_2ea940 const *shape;
-	long key;
-	placement_2ea940 const *placement;
-	body_2ea940 const *parent;
 };
 
 // the one-byte answer of a filter, returned through a hidden pointer
@@ -193,30 +189,34 @@ struct part_body_2ea830
 // @retail 0x2ea640
 void __cdecl function_2ea640(void const *a_, void const *b_, void const *input_, void *collector, void *second_collector)
 {
-	timer_add_2ea940("LtBvTree");
 	body_2ea940 const *a = (body_2ea940 const *)a_;
 	body_2ea940 const *b = (body_2ea940 const *)b_;
 	input_2ea940 const *input = (input_2ea940 const *)input_;
-	body_2ea940 part;
+	timer_add_2ea940("LtBvTree");
 	bounds_2e9140 bounds;
 	function_2e9140(a, b, input, &bounds);
 	tree_shape_2ea940 const *tree = (tree_shape_2ea940 const *)b->shape;
 	key_array_2ea940 keys;
-	tree->overlapping_keys((bounds_2ea940 const *)&bounds, &keys);
+	tree->overlapping_keys(&bounds, &keys);
 	timer_add_2ea940("StNarrowPhase");
-	long const kind_a = a->shape->kind();
-	part.parent = b;
-	part.placement = b->placement;
-	long const *const end = keys.data + keys.size;
+	long const kind_a = ((shape_2ea940 const *)a->shape)->kind();
+	body_2ea940 child;
+	long const *key = keys.data;
+	long const *const end = key + keys.size;
 	shape_2ea940 const *container = tree->container;
+	child.parent = b;
+	child.placement = b->placement;
 	__declspec(align(16)) char buffer[0x100];
-	for (long const *key = keys.data; key != end; key++)
+	for (; key != end; ++key)
 	{
 		if (input->filter->accepts(input, a, b, container, *key).value)
 		{
-			part.shape = container->part(*key, buffer);
-			part.key = *key;
-			input->dispatcher->path_queries_318c[kind_a][part.shape->kind()](a, &part, input, collector, second_collector);
+			shape_2ea940 const *shape = container->part(*key, buffer);
+			geometry_2ea640 const geometry = { shape, *key };
+			static_cast<geometry_2ea640 &>(child) = geometry;
+			long const kind_b = shape->kind();
+			path_query_2ea640 query = input->dispatcher->path_queries_318c[kind_a][kind_b];
+			query(a, &child, input, collector, second_collector);
 		}
 	}
 	timer_add_2ea940("lt");
@@ -248,28 +248,36 @@ void class_2ea830::function_2ea830(void const *a, void const *b, void const *inp
 void __cdecl function_2ea940(body_2ea940 const *a, body_2ea940 const *b, input_2ea940 const *input, void *collector)
 {
 	timer_add_2ea940("LtBvTree");
-	body_2ea940 part;
 	c_query_transform a_in_b;
-	a_in_b.inverse_product(&b->placement->transform, &a->placement->transform);
+	c_query_transform const *transform_b = &((placement_2ea940 const *)b->placement)->transform;
+	c_query_transform const *transform_a = &((placement_2ea940 const *)a->placement)->transform;
+	a_in_b.inverse_product(transform_b, transform_a);
 	bounds_2ea940 bounds;
-	a->shape->bounds(&a_in_b, input->tolerance, &bounds);
+	((shape_2ea940 const *)a->shape)->bounds(&a_in_b, input->tolerance, &bounds);
 	tree_shape_2ea940 const *tree = (tree_shape_2ea940 const *)b->shape;
 	key_array_2ea940 keys;
 	tree->overlapping_keys(&bounds, &keys);
 	timer_add_2ea940("StNarrowPhase");
-	long const kind_a = a->shape->kind();
-	part.parent = b;
-	part.placement = b->placement;
-	long const *const end = keys.data + keys.size;
-	shape_2ea940 const *container = tree->container;
-	__declspec(align(16)) char buffer[0x100];
-	for (long const *key = keys.data; key != end; key++)
+	long const kind_a = ((shape_2ea940 const *)a->shape)->kind();
 	{
-		if (input->filter->accepts(input, a, b, container, *key).value)
+		body_2ea940 child;
+		long const *key = keys.data;
+		long const *const end = key + keys.size;
+		child.parent = b;
+		child.placement = b->placement;
+		shape_2ea940 const *container = tree->container;
+		__declspec(align(16)) char buffer[0x100];
+		for (; key != end; ++key)
 		{
-			part.shape = container->part(*key, buffer);
-			part.key = *key;
-			input->dispatcher->queries_218c[kind_a][part.shape->kind()](a, &part, input, collector);
+			if (input->filter->accepts(input, a, b, container, *key).value)
+			{
+				shape_2ea940 const *shape = container->part(*key, buffer);
+				geometry_2ea640 const geometry = { shape, *key };
+				static_cast<geometry_2ea640 &>(child) = geometry;
+				long const kind_b = shape->kind();
+				pair_query_2ea940 query = input->dispatcher->queries_218c[kind_a][kind_b];
+				query(a, &child, input, collector);
+			}
 		}
 	}
 	timer_add_2ea940("lt");

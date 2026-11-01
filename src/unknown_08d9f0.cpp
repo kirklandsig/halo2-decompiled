@@ -8,6 +8,7 @@
 #include "online_attributes.h"
 #include <xtl.h>
 #include <string.h>
+#include "online_result_cache.h"
 
 class c_class_93590;
 class c_class_938e0;
@@ -92,7 +93,6 @@ extern bool g_510554;
 extern dword g_510558;
 extern bool g_510580;
 extern long g_510584;
-extern long g_5107dc;
 
 bool network_link_initialize(c_class_93590 *link);
 bool network_observer_initialize(s_network_observer *observer, void *unknown04,
@@ -114,7 +114,21 @@ void function_7f930(void);
 void pending_messages_reset(void);
 void function_53210(void);
 void function_8dd70(void);
-// score 230 (was 230): entry predicate, helper boundaries and global reloads differ;
+// score 221 (was 221): four-byte frame and entry predicate agree; helper boundaries,
+// readiness storage and global reloads differ.
+// Round 110 (diagnostic chain, not kept): the six pointers 0x510560..0x510574 as one struct
+// global whose address 0x8dd70 takes (a memset of it in place of the six clears) give retail's
+// reload before every call and after every pointer store: 330 (984 bytes, 0x662f0/0xb2cc0 still
+// inlined); with noinline declarations of those two in their headers 222 (876 bytes, every call
+// as retail's); bool readiness 192 (892 bytes, prologue exact); the link result normalised
+// (`!= false`, retail's test/setne) 161; the gateway and handler set-ups as inline helpers taking
+// the pointers as arguments (retail's argument loads and its dead `lea ecx, [eax + 8]` exactly)
+// 174, with the observer readiness as `link_ready && observer_initialize(...)` 151. Not kept: the
+// memset contradicts retail's dispose (it clears the six with the function's EBX zero, 0x8dd70
+// 29 -> 43), the helpers have one caller, and what takes the addresses in retail is unknown.
+// On the original globals: bool readiness with the normalised link result and the && observer
+// readiness 257 (858 bytes); without the normalisation 257.
+// entry predicate, helper boundaries and global reloads differ;
 // Lane 10 r11 (forms reverted: reading globals through casts of their own addresses is not kept
 // without a match): message pointer read through its address 231; noinline 0x662f0 in its header
 // 266, with 0xb2cc0 too 321 (calls pair with retail's); all seven network pointers (0x510560..
@@ -211,6 +225,24 @@ void function_8dd70(void);
 // (230 -> 221): the prologue now matches retail's sete/cmp byte for byte. Still differs: retail
 // calls 0x662f0 and the nine registration wrappers out of line and reloads the seven network
 // pointers after every call; ours expands them and keeps the link result in EBP.
+// Original-stage Boolean observer/session/both 224/225/227; Boolean link with
+// Boolean observer/session/both 222/230/227; byte link with both Boolean stages 227;
+// all Boolean with immutable link 227. Original short stage storage restored.
+// Round 173: complete link/message/both/gateway/link-gateway/message-gateway/all-three
+// initialized root lifetimes 219/230/235/228/225/235/232; all seven roots 215 (897 bytes).
+// Exact-only snapshots restored; frame/entry agree, helper calls, readiness and global
+// reloads remain. The six-count form fails the eight-count gate as well.
+// Round 172: coordinated native AL success return domains at the existing
+// trim/interface providers, byte/bool, char/bool, bool/byte, bool/char,
+// byte/byte, char/char, byte/char and char/byte: 221 each.
+// Every declaration and both provider return contracts restored.
+// Round 269: Native session-admission chain split at all seven call-boundary
+// subsets, then all with separate manager/interface gates: 221 each. Original
+// complete chain, short readiness, observations and entire body restored.
+// Native gateway/handler entry declarations with immutable entry decision,
+// seven subsets and complete receiver role names: 221 each. Original lifetimes restored.
+// Final-completion bool/byte/short/long at admitted/entry scope all 230; original success return
+// and cleanup restored. No flagged completion form matches.
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {
@@ -304,7 +336,7 @@ void function_8d9f0(void)
 					function_53210();
 					memset(&g_510580, 0, 0x268);
 					g_510584 = NONE;
-					g_5107dc = NONE;
+					g_510588.registered_index = NONE;
 					g_4d8ba0 = true;
 					return;
 				}

@@ -7,7 +7,7 @@
 // @flags /O2 /arch:SSE /Gr
 
 __declspec(noinline) void *function_122c10(long arg_0, long arg_1);
-void function_db760(long arg_0, long arg_1, long arg_2, long arg_3);
+void function_db760(long region_index, long object_index, long permutation_index, long mode);
 struct s_18444a;
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3);
 extern byte *g_4ed280;
@@ -17,24 +17,15 @@ static __forceinline long function_9c912(long arg_0, long arg_1, long arg_2)
     long local_0;
     if (arg_0 < arg_1)
         local_0 = arg_1;
-    else
-    {
+    else if (arg_0 > arg_2)
         local_0 = arg_2;
-        if (arg_0 <= arg_2)
-            local_0 = arg_0;
-    }
+    else
+        local_0 = arg_0;
     return local_0;
 }
 
-// score 57 (was 57): the definition table is kept in edi and the event in esi
-// (retail esi/edi); the clamp's equality test is threaded away; the call setup
-// is BLOCKED-BY 0xdb760 (contributor; retail takes the permutation in ebx and
-// the object on the stack, ours the object in ebx). Clamp of a re-read mode 84
-// (310 bytes, retail's unthreaded clamp); with a plain permutation local 110;
-// no false assignments 107 (result only on the stack), inner one removed 58,
-// outer one removed 68.
-// Earlier: the member's fields are copied in the other order and the store of
-// the second field sits before the comparison in ours and after it in retail
+/* applies a section response event to an object: when the event names a valid region and an intact
+   permutation of it (for mode 1, one with an effect), destroys that permutation through function_db760 */
 // @retail 0x9c910
 bool c_damage_section_response_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -56,27 +47,22 @@ bool c_damage_section_response_event_definition::v11(long arg_0, long const *arg
                 if (*(long *)(damage + 0x60) > 0)
                 {
                     byte *region = *(byte **)(*(byte **)(damage + 0x64) + 0xc0) + region_index * 0x38;
-                    /* the permutation index lives in the event pointer's slot from here on */
-                    arg_3 = (void const *)event[1];
-                    long permutation_index = (long)arg_3;
+                    /* the event pointer parameter carries the permutation index from here on */
+                    long permutation_index = event[1];
+                    arg_3 = (void const *)permutation_index;
                     if (permutation_index >= 0 && permutation_index < *(long *)(region + 0xc))
                     {
-                        long mode = event[2];
-                        if (function_9c912(mode, 0, 1) == mode)
+                        if (function_9c912(event[2], 0, 1) == event[2])
                         {
                             long permutation_bit = event[1];
                             if (!(*(word *)(region_flags + region_index * 8) & (1 << permutation_bit)))
                             {
-                                if (mode != 1 || *(long *)(*(byte **)(region + 0x10) + permutation_bit * 0x50 + 0x34) != NONE)
+                                if (event[2] != 1 || *(long *)(*(byte **)(region + 0x10) + permutation_bit * 0x50 + 0x34) != NONE)
                                 {
-                                    function_db760(region_index, (long)arg_3, object_index, mode);
+                                    function_db760(region_index, object_index, (long)arg_3, event[2]);
                                     result = true;
                                 }
-                                else
-                                    result = false;
                             }
-                            else
-                                result = false;
                         }
                     }
                 }
@@ -102,7 +88,18 @@ struct s_9cca0
 
 // score 9 (was 9): the two vector copies and the global's test are ordered
 // differently; retail sinks the k component's store past the global's test and
-// loads the tag after it, ours stores the tag before the test
+// loads the tag after it, ours stores the tag before the test. The test can only
+// move above the event's stores when LTCG knows the event's address does not
+// escape: passing it to a small non-capturing callee instead of 0x184440 gives
+// retail's order, so this waits on 0x184440's body (BLOCKED-BY 0x184440).
+// Tried: the first zeroing through the member array 9; the tag in a local 58;
+// the tag test on the input 9; the vectors copied with memcpy 9; `&field_7e` 9.
+// Round 19: the global flag read into a named bool before the event 53; the marker stored
+// before the tag 10; the input as a typed struct 9 (same code); the vectors copied by component
+// through source pointers 50; the tag stored first after the zeroing 31. Diagnostics in 0x184440:
+// without its set_location call, or with a non-recursive stand-in for it, the test moves above
+// the k store as in retail but the vector copies then store i early (12), so the escape comes
+// through the recursive set_location and is not the whole difference.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -247,24 +244,23 @@ struct s_input_9c610
     byte field_34;
 };
 
-// score 23 (was 31): only the call to function_e4a20 at the end differs (and
-// the branch offsets past it): retail passes the point in eax and the object in
-// ecx, ours the point in ecx and the object on the stack, which follows from
-// function_e4a20's own body (BLOCKED-BY 0xe4a20). Tried: the flags store first
-// of the second copy group 23 (kept); before the vector copy 67; first of all
-// 67; before field_3c 27.
-// Shared absolute lookup inline 23, out of line 122; shared index
-// reconstruction 107; both shared inline operations 114; point local at
-// notification 23, before guard 23, across dispatch 23; shared lookup
-// with point lifetime 23. Native frame/report copies still agree.
-// final validity predicate 129; byte success result 23; unsigned reconstructed handle 23;
-// signed-byte material 46; bool presence field 23; named validated tag result 23; source-width
-// pool index 112; unsigned salt word 24.
-// Byte notification read 46; byte tail read 23; both byte reads 46; word notification read 46.
-// Word tail read 23; both word reads 46; signed-byte tail read 23; byte notification/signed tail 46.
-// score 13 (was 23): flag 7 of +0x20 as TEST_FIELD_BIT((x >> 7) & 1) 13 (retail tests it as a
-// signed byte, mov al / test al, al / jns; a char < 0 test, a byte mask or a byte shift 23; flag 1
-// rewritten the same way 56, both 63).
+// score 13 (was 13): BLOCKED-BY 0xe4a20. The call to function_e4a20 at the end differs: retail
+// passes the point in eax and the object in ecx, ours the point in ecx and the object on the
+// stack, which follows from function_e4a20's own body. Flag 7 of +0x20 retail tests as
+// `mov al / test al, al / jns`: the plain `input->field_20 & 0x80` gives that test and retail's
+// length (429), but with the shorter call setup every later line shifts, 23 (also as a char < 0
+// test or a byte mask); use it once 0xe4a20 is fixed. TEST_FIELD_BIT((x >> 7) & 1) 13 (kept),
+// TEST_FIELD_BIT(x & 0x80) 13; flag 1 rewritten the same way 56, both 63; one flags local for
+// the copy and both tests 49. Earlier (at 23): the flags store first of the second copy group
+// 23 (kept); before the vector copy 67; first of all 67; before field_3c 27. Shared absolute
+// lookup inline 23, out of line 122; shared index reconstruction 107; both shared inline
+// operations 114; point local at notification 23, before guard 23, across dispatch 23; shared
+// lookup with point lifetime 23. Final validity predicate 129; byte success result 23; unsigned
+// reconstructed handle 23; signed-byte material 46; bool presence field 23; named validated tag
+// result 23; source-width pool index 112; unsigned salt word 24. Byte notification read 46; byte
+// tail read 23; both byte reads 46; word notification read 46; word tail read 23; both word
+// reads 46; signed-byte tail read 23; byte notification/signed tail 46.
+// Round 11 (lane 17): unchanged; 0xe4a20 (contributor code, src/bipeds.cpp) is still todo at 104.
 // @retail 0x9c610
 bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

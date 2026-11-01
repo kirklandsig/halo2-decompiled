@@ -33,7 +33,7 @@ struct s_object_seat
 /* lists the seats of an object and of the units riding it */
 void __stdcall function_c8a40(long object_index, s_object_seat *seats, short *count, short maximum_count);
 /* whether the unit may take the seat of the object */
-bool function_c8200(long object_index, short seat_index, long unit_index);
+bool function_c8200(long unit_index, long object_index, short seat_index);
 long function_c8f60(long unit_index, short seat_index);
 
 #endif

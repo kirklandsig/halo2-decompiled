@@ -142,7 +142,7 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 780 (was 780): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
+// score 731 (was 731): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
 // Earlier 780 (was 780): Frame 0xe0 and state/output carriers agree; the flag bits are now set with retail's branches. Left: settings/zero homes, clamp-arm placement and unthreaded repeated flag tests.
 // Round 86 (fast, aligned counts in brackets, 383 at the start): turn rates assigned in both arms (retail loads
 // the stored rates on the else path) 788 [367] and the attachment index NONE per path (retail sets it on each
@@ -255,6 +255,49 @@ union s_185be7
 // DH round 218: whole input snapshot aggregate with native/byte/word/both scratch initialization
 // 1046/1077/1046/1072; same four with readonly settings 1046/1077/1046/1072.
 // All grow to 3817 or 3837 bytes versus retail 3777; complete original body restored.
+// Round 184: Separate current/previous angle outputs and carried direction, masks 1-7, then all
+// three with entry output declarations: [780, 780, 780, 969, 975, 969, 975, 975]. Angle splits tie;
+// direction copies grow the frame and regress. Original unions, vector reuse, helpers, values and
+// complete body restored.
+// Round 265: adjacent selected-input/input-five/input-four shared-mask groups, all
+// seven subsets and complete grouping with full-width selection 813/895/1033/954/990/990/1031/1030.
+// Original individual masks, selected byte and complete body restored.
+// Independent lower/upper bounds, parameter/result 780/928; independent upper/lower
+// 943/929; upper-first exclusive 943/949; ordinary lower/upper parameter/result 780/928.
+// Original clamp, complete body and all caller expressions restored.
+// Round 186: Native input memcpy with byte/word scratch aggregate masks 0-3 780/979/942/979; memmove
+// with the same masks 1109/1104/1111/1102. Complete original body and helpers restored.
+// Round 188: existing reset whole-output void/result/subobject-reference/whole-output-reference
+// contracts, forced then ordinary inline: 961/961/780/961/961/961/780/961.
+// Complete output contracts grow the frame; original reset and whole body restored.
+// Round 267: reset groups float/word/index 781, index/float/word 782,
+// index/word/float 783, word/float/index 783, word/index/float 783;
+// split admission 780; inactive update/return 1026; chained indices first 782.
+// Original six-store producer and complete body restored.
+// Round 417: native output one-bit groups at 18/1c/20, subsets 1-7:
+// 1008/958/993/803/995/825/938; all Boolean bitfield domains 1066.
+// Output size/offsets agree; every native view and store form restored.
+// Round 220: Parent-before-attachment acquisition, nested/direct-parent/direct-slot/direct-both 767 each;
+// the same four with promoted component result 767 each. Keep nested native-short acquisition, plain 767;
+// all other observations, widths and helpers restored. Control-root/NONE, settings/zero and flag joins remain.
+// Round 222: native control bit with arithmetic/real-array entry; live/cached/constant roots 767
+// each, complete per-field roots 1006 each. Original body and shared type restored; control-
+// root/NONE and settings/zero homes remain.
+// Round 231: all four rate bounds once 963; exponent once 731 (kept, plain); both 962;
+// shared two-row retained weight 913; bounds/weight 966; exponent/weight 811; all three
+// 963, with read-only rate receiver 963. Keep only the exponent shared by its test and
+// power call; control-root/NONE, settings/zero homes and flag joins remain.
+// Independent final input-five/four/seven Boolean ownership, subsets 1-7: 728/754/776/750/777/757/786; all with selected-input Boolean 784.
+// The three-point input-five lead is below the retention gate; every original predicate observation, individual helper call, root and full body restored.
+// Round 452: shared object/header getters and readonly settings, subsets 1-7,
+// 731 each; complete shared graph with ordinary lookup/predicate inline 810.
+// The control-root/NONE and range-result homes remain; original full source restored.
+// Round 461: raw third-input byte/word/long/dword across duration and latch tests
+// 734/730/733/733; complementary inactive bool/byte/short/long 731/731/728/730.
+// Gains at most three rejected; original Boolean carrier and complete body restored.
+// Round 265: library range / paired axis-duration / paired response-weight-angle
+// selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
+// upper-first nesting 1320. Native frame, original custom clamps and full body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -280,23 +323,27 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         {
             byte *local_8 = function_185be2(local_7);
             long local_9 = *(long *)(local_8 + 0x14);
-            short local_10 = *(short *)(local_8 + 0x1fc);
-            if (local_9 != NONE && local_10 != NONE)
+            if (local_9 != NONE)
             {
-                byte *local_11 = function_185be2(local_9);
-                byte *local_12 = (byte *)g_4e3b44[*(long *)local_11 & 0xffff].data;
-                byte *local_13 = *(byte **)(local_12 + 0x1cc) + local_10 * 0xb0;
-                real local_14 = *(real *)(local_13 + 0x54);
-                real local_15 = *(real *)(local_13 + 0x58) - local_14;
-                real local_16 = 0.0f;
-                if (local_15 > 0.0f)
-                    local_16 = function_185be1((magnitude3d((vector3f *)(local_11 + 0x88)) - local_14) / local_15, 0.0f, 1.0f);
-                if (*(real *)(local_13 + 0x5c) != 0.0f)
-                    local_16 = (real)pow(local_16, *(real *)(local_13 + 0x5c));
-                if (*(real *)(local_13 + 0x44) > 0.0f || *(real *)(local_13 + 0x48) > 0.0f)
-                    local_5.field_0[0] = ((*(real *)(local_13 + 0x48) - *(real *)(local_13 + 0x44)) * local_16 + *(real *)(local_13 + 0x44)) * 0.01745329238474369f;
-                if (*(real *)(local_13 + 0x4c) > 0.0f || *(real *)(local_13 + 0x50) > 0.0f)
-                    local_5.field_0[1] = ((*(real *)(local_13 + 0x50) - *(real *)(local_13 + 0x4c)) * local_16 + *(real *)(local_13 + 0x4c)) * 0.01745329238474369f;
+                short local_10 = *(short *)(local_8 + 0x1fc);
+                if (local_10 != NONE)
+                {
+                    byte *local_11 = function_185be2(local_9);
+                    byte *local_12 = (byte *)g_4e3b44[*(long *)local_11 & 0xffff].data;
+                    byte *local_13 = *(byte **)(local_12 + 0x1cc) + local_10 * 0xb0;
+                    real local_14 = *(real *)(local_13 + 0x54);
+                    real local_15 = *(real *)(local_13 + 0x58) - local_14;
+                    real local_16 = 0.0f;
+                    if (local_15 > 0.0f)
+                        local_16 = function_185be1((magnitude3d((vector3f *)(local_11 + 0x88)) - local_14) / local_15, 0.0f, 1.0f);
+                    real exponent = *(real *)(local_13 + 0x5c);
+                    if (exponent != 0.0f)
+                        local_16 = (real)pow(local_16, exponent);
+                    if (*(real *)(local_13 + 0x44) > 0.0f || *(real *)(local_13 + 0x48) > 0.0f)
+                        local_5.field_0[0] = ((*(real *)(local_13 + 0x48) - *(real *)(local_13 + 0x44)) * local_16 + *(real *)(local_13 + 0x44)) * 0.01745329238474369f;
+                    if (*(real *)(local_13 + 0x4c) > 0.0f || *(real *)(local_13 + 0x50) > 0.0f)
+                        local_5.field_0[1] = ((*(real *)(local_13 + 0x50) - *(real *)(local_13 + 0x4c)) * local_16 + *(real *)(local_13 + 0x4c)) * 0.01745329238474369f;
+                }
             }
         }
         arg_5->field_0 = local_2.field_38;

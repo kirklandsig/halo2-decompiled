@@ -12,13 +12,15 @@ struct s_particle_property
 	short modifier_index;
 	s_tag_data function;
 };
-struct s_draw_value_cache
+struct s_particle_value_cache
 {
 	real values[17];
-	dword field_44;
+	dword mask;
 	void *field_48;
 	void *field_4c;
 	void const *field_50;
+
+	void function_173c10(dword mask);
 };
 struct s_draw_sprite_definition
 {
@@ -69,7 +71,6 @@ union s_draw_sprite_uv { box2f bounds; real values[4]; };
 typedef char check_draw_sprite_mask[offsetof(s_draw_sprite_definition, field_98)==0x98?1:-1];
 typedef char check_draw_sprite_frame[sizeof(s_draw_sprite_frame)==0x20?1:-1];
 
-void __stdcall function_173ba0(dword, void *, void *, void const *, real *);
 real function_246cd0(s_particle_property const *, real const *);
 void function_246d80(s_particle_property const *, real const *, color3f *);
 color3f *unpack_color3f(dword, color3f *);
@@ -100,7 +101,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
-	s_draw_value_cache *arg_1, color4f const *arg_2, s_draw_sprite_definition const *arg_3)
+	s_particle_value_cache *arg_1, color4f const *arg_2, s_draw_sprite_definition const *arg_3)
 {
 	color4f tint;
 	function_246d80(&arg_3->color,arg_1->values,(color3f *)&tint.red);
@@ -109,28 +110,30 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 	{
 		color3f seed_color;
 		unpack_color3f(arg_0->color,&seed_color);
-		tint.red=tint.red*seed_color.red*2.0f;
-		tint.green=tint.green*seed_color.green*2.0f;
-		tint.blue=tint.blue*seed_color.blue*2.0f;
+		tint.red=seed_color.red*tint.red*2.0f;
+		tint.green=seed_color.green*tint.green*2.0f;
+		tint.blue=seed_color.blue*tint.blue*2.0f;
 	}
 	tint.red=arg_2->red*tint.red;
 	tint.green=arg_2->green*tint.green;
 	tint.blue=arg_2->blue*tint.blue;
-	if(tint.alpha<0.0f) tint.alpha=0.0f;
-	else if(tint.alpha>1.0f) tint.alpha=1.0f;
-	if(tint.red<0.0f) tint.red=0.0f;
-	else if(tint.red>1.0f) tint.red=1.0f;
-	if(tint.green<0.0f) tint.green=0.0f;
-	else if(tint.green>1.0f) tint.green=1.0f;
-	if(tint.blue<0.0f) tint.blue=0.0f;
-	else if(tint.blue>1.0f) tint.blue=1.0f;
+	real *components=&tint.alpha;
+	for(long channel=0;channel<4;++channel)
+		components[channel]=sprite_pin(components[channel]);
 	dword local_0=pack_color4f(&tint);
 	return local_0;
 }
 
 
-// score 421 (was 421): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
-// slot), cache EBP/EBX and scalar homes remain.
+// score 381 (was 381): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
+// slot); the angle is stored in a dead argument slot instead of a frame slot and the second UV set has no
+// frame home of its own; the cache is kept in EBP where retail reloads it into EBX; scalar homes remain.
+// Inlining the tint into the body or passing it out by pointer gives retail's 0x60 frame but scores 520,
+// so the helper stays. (Earlier notes: 391 before round 56.)
+// Frame 0x50 versus retail 0x60; helper tint and second UV
+// overlap, angle uses an argument home, cache EBP replaces EBX, and scalar homes differ.
+// Earlier tint code in the body or caller tint output recovered frame 0x60 at 520.
+// Earlier 391 forms and their scores follow.
 // Frame pointer 597; size optimization 990; tint input-array parameter 435;
 // direct packed-tint return 435; byte flip selector 538.
 // UV result by value 553; bounds input by value 687; short sequence count 441; unsigned flip mask 435; paired UV defaults 439.
@@ -170,15 +173,94 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // Caller tint output with x/y/all four scalar observations 463 each; complete scalar
 // bounds with native reference input 421. Original helper contracts and captures restored.
 // Round 380: Alpha clamp before seed/before RGB/after RGB with phased RGB 463/421/421; per-channel RGB with alpha after RGB/before seed/before RGB/after red/after green 421/473/421/421/421. Original tint restored.
+// Round 242: Plain indexed/pointer tint clamp traversal with the existing
+// early-return scalar clamp 391 each; single-exit clamp 468 each, inline or
+// forced. Keep ordinary indexed form, plain 391 at 1931/1937; frame remains.
+// Round 244: Existing tint producer as cache/seed/definition member, forced 391 each, ordinary inline 722
+// each; cache/definition member with caller tint output 520/520. Native tint outputs recover frame 0x60 but
+// not cache/UV homes; original producer and clamp loop restored.
+// Round 266: native in-place pointer/reference clamps on the retained four-channel
+// loop, indexed/pointer walks and inline/forced combinations all 421. Original
+// value-return clamp, indexed traversal, tint producer and UV captures restored.
+// Round 166: actual fixed-size cache-value input with native color/definition/both references
+// 391/391/391/391; each with direct descending channel traversal
+// 399/399/399/399. Original tint contract and indexed clamp restored.
+// Round 228: Complete unclamped tint returned by value/pointer/reference, caller owns
+// the four clamps and packing; producer/entry lifetimes 604, 604, 520, 520, 520, 520; value return
+// with a plain pointer clamp at either lifetime 604, 604. Frame 0x60 recovered, tint/UV
+// ordering and cache residence still differ; original complete tint producer restored.
+// Round 181: Existing tint producer packed-dword output by pointer/reference, first/last,
+// with cache receiver or fixed-size input array, eight forms 391 each. Original complete producer
+// and callback restored; tint/second-UV overlap and cache/interval homes remain.
+// Round 400: Short/word/byte/signed-byte clamp ordinals in the plain for loop
+// 502/502/502/502; the same four with a plain four-pass do loop
+// 502/502/502/502. These recover entry cache EBX but leave frame 0x50.
+// On that graph, caller tint reference/pointer, caller packing and native value return
+// 472/472/472/509; the same with entry tint declarations
+// 472/472/472/509. Original tint producer and ordinal restored.
+// Round 393: Shared cache identity with tint cache pointer/reference or fixed-array/element-pointer inputs, direct update
+// or existing update method: 391/391/391/391/391/391/391/391. Original cache, callback declaration and helpers restored.
+// Round 253: Branch-produced primary aspects/later next reciprocals/later blend remainder/
+// both later phases/aspects-reciprocals/aspects-remainder/all/constant-first aspects with
+// later next spans 417/431/409/405/431/412/436/412. Original scalar phases and complete callback restored.
+// Round 274: Existing flip producer with a zero result and two native bit tests,
+// definition/seed reference inputs and forced expansion in eight combinations 466 each.
+// Original flip producer, input contracts, tint clamp and complete callback restored.
+// Round 284: Actual two-element UV output array with original packed tint, caller
+// tint pointer/reference and native color return 445/519/519/592; lexical array
+// homes 445/519/519/592. Exact-only grouping did not match; all native
+// separate outputs and complete helper restored, including every in-place input capture.
+// Round 214: lower-first conditional clamp 391; upper-first conditional/early-return/complete-result clamps 401 each.
+// Real component-end walks with those four producers 494/497/497/497. Original helper and traversal restored;
+// frame 0x50/0x60, overlapping tint/second UV and cache/interval homes remain.
+// Round 431: Plain input-RGB/seed-RGB/both modulation loops with long then dword ordinals; input/seed
+// body-stepped component cursors: 388/388/385/388/388/385/391/388. Original complete tint producer,
+// clamp traversal, callback and in-place UV captures restored.
+// Round 29 (fast; aligned counts in brackets, control 391 [252]): in-place clamp
+// `if (c < 0) c = 0; else if (c > 1) c = 1;` in the channel loop gives retail's store-on-clamp
+// sequence exactly but 418 [245] (1955 bytes); the ternary clamp in the loop 388; with the clamp, the
+// definition's geometry declared as the 4-real union and copied whole (retail's dword moves) 481
+// [221]; the copy alone 487; the flip as if/else 391/481 (same code); on that, the tint as a caller
+// local filled by the producer gives retail's frame 0x60 but tint/uv_b slots swapped (0x60/0x50) and
+// 1980 bytes, 517 [215]; renaming the tint or declaring it after the UVs moves nothing. Every form
+// still holds the cache in EBP and copies it to EBX for each callee.
+// Round 439: separate genuine RGB evaluation result before RGBA assembly, producer/scoped
+// lifetimes and late/early assembly with scalar/native subrecord copies, 392/540/392/506 twice.
+// No frame recovery; original tint helper and all in-place UV captures restored.
+// Round 4 (lane 18, fast): the seed products written seed_color * tint * 2 385 (retail's load order;
+// six-point gain, not kept); UV/geometry declared ahead of the tint call 391; with the seed order, the
+// in-place loop clamp 418 (the tint, seed and clamp code then equals retail's, but our cache's EBP copy
+// to EBX before each call shifts the alignment by one); that with the cache's address taken 418 (no
+// effect); the tint written in the body (helper removed) with both 460 (frame 0x60, tint and UV slots
+// swapped), the tint renamed either way 460. Retail re-reads the cache parameter from its stack slot
+// into EBX where ours keeps it in EBP. Restored.
+// Round 56 (lane 12, fast; plain 381 confirmed): the interval count computed before the `count > 0`
+// test as `intervals = count; if (flags & 8) intervals--;` 387 (1937 bytes, retail's length and test
+// order; as a ternary there 393); with the seed products written seed_color * tint * 2 381 (kept,
+// 1937 bytes). On 381: the sequence pointer in a local 496; frames read before the count re-read
+// 490; the in-place loop clamp 429 (1961 bytes; tint code then retail's but the colour parameter
+// in ESI for EBP); the definition's geometry as an s_draw_sprite_uv copied whole 478 (1914 bytes,
+// retail's dword moves); both 480 (1938 bytes, aligned 245 -> 214: one byte long); the tint owned by
+// the caller 532 (1994 bytes, frame 0x60); the flip as `flip = 0; if (...) flip = 1;` 454.
+// Round 30 (lane 14, fast; kept: the cache update through the existing 0x173c10 method of the cache's real
+// type, inlined to the same code, 381): the cache's value array in a named local 381 (copy-propagated); the
+// geometry copied before the bounds 381; the definition declared before blend 381; geometry declared after
+// the UV sets 381. Diagnostic (reverted at once): the cache read through a volatile cast at its last use 490
+// (1949 bytes) puts the cache in EBX from entry and the angle in a frame slot as in retail, so the
+// remaining root is our cache being allocated to EBP for the whole function.
+// Round 457: complete four-channel modulation then/fused with clamps, input-first/tint-first
+// products, original/looped seed RGB: 426/430/426/430/426/428/426/428.
+// Frame remains 0x50; original complete tint producer and all UV captures restored.
+// Round 262: Library copies of definition/selected-frame bounds/both 381/381/381;
+// geometry-array copy alone/with definition/with selected/with both/with encoded UV copy 478 each.
+// The original arrays and all input-before-store UV captures are restored; frame/cache homes remain.
 // @retail 0x224550
-void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache *values,
+void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
 {
 	real blend=0.0f;
 	s_draw_sprite_definition const *definition=context->definition;
-	dword mask=definition->field_98&0xf80f;
-	function_173ba0(~values->field_44&mask,values->field_48,values->field_4c,values->field_50,values->values);
-	values->field_44|=mask;
+	values->function_173c10(definition->field_98&0xf80f);
 	real angle=function_246cd0(&definition->angle,values->values)*6.2831854820251465f;
 	dword packed=function_224551(seed,values,color,definition);
 	real geometry[4];
@@ -210,9 +292,11 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache
 			if(context->sequence)
 			{
 				long count=context->sequence->count;
+				long intervals=count;
+				if(definition->flags&8)
+					intervals--;
 				if(count>0)
 				{
-					long intervals=(definition->flags&8)?count-1:count;
 					real frame=function_246cd0(&definition->frame,values->values)*(real)intervals;
 					long index=function_016ae0(frame);
 					s_draw_sprite_frame const *frames=context->sequence->frames;

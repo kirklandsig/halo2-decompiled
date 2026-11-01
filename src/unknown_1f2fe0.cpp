@@ -170,12 +170,11 @@ bool function_1f3230(long actor_index, real radius)
 // @retail 0x1f3430
 bool function_1f3430(long actor_index)
 {
+	s_actor_moving *actor = actor_moving_get(actor_index);
 	bool result = false;
 
-	if (actor_moving_get(actor_index)->unknown50c && actor_moving_get(actor_index)->unknown504 == 1)
+	if (actor->unknown50c && actor_moving_get(actor_index)->unknown504 == 1)
 	{
-		s_actor_moving *actor = actor_moving_get(actor_index);
-
 		if (actor->path_index >= actor->path_count)
 		{
 			result = true;

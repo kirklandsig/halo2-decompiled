@@ -60,6 +60,10 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 }
 
 // score 383 (was 383): frame 0x5c versus 0x64, actor/input transport and x87 homes differ.
+// Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
+// MiniMax D: the requested direction read through its own address (a stack argument, as
+// retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
+// i/j/k order alone 383.
 // frame 0x5c/0x64, actor/requested-vector transport and x87 homes differ.
 // Earlier: frame 0x5c versus 0x64, actor/input transport and x87 homes differ.
 // Earlier 396 from 428: magnitude helpers now give retail's copies, memory-operand products and epsilon;
@@ -153,12 +157,58 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Round 211: Complete history value alone/with shared current add/history scale/both
 // 401/402/411/411; those four with a shared current coefficient 401/401/411/406. All original
 // helpers, fields and arithmetic restored; frame/input and magnitude homes remain.
+// Round 281: existing scale publication ikj/jik/jki/kij/kji 383 each; planar ji 383;
+// scale jki/kji with planar ji 383/383. All helper bodies and the original movement body
+// restored; frame/input transport and magnitude homes remain.
 // Round 379: actor at later formal positions 1..8, preserving every other input order,
 // 383/381/381/381/381/381/381/381. Positions 2..8 recover actor EAX but leave vector ECX,
 // frame 0x5c and ret 0x1c; two-point gains rejected. Definition and disabled caller restored.
 // Round 381: marked-function requested/movement/acceleration vector references, all seven
 // nonempty subsets, 383 each; all vectors plus native scalar-output references 383.
 // Every original signature, operation and disabled declaration/call restored.
+// Round 153 (fast): vector argument through its address (diagnostic) 368, with an if-statement magnitude test 449;
+// vector locals renamed into retail's slot order 383; output declared first 383; position declared first 383.
+// Round 222: Selective ordinary-inline magnitude/planar/clamp boundaries, all seven
+// subsets 383 each; all four private math helpers ordinary inline 383. Original
+// forced boundaries, helper bodies and every call restored; frame/input homes remain.
+// Round 174: coherent existing work/position, planar and magnitude home identities,
+// all seven nonempty family subsets 383 each; complete graph with alternate role
+// identities 383. Original names/helpers/body restored; frame 0x5c/0x64, actor/input
+// delivery and native magnitude homes remain.
+// Round 233: Distinct squared-speed/half-limit, later floor/heading and query-output
+// identities in seven subsets, then alternate complete roles: 383/383/383/383/383/383/383/383.
+// Original names, scopes, helper bodies and complete executable body restored.
+// Round 182: input-updated clamp result in all six formal orders 438 each;
+// lower-failure nesting with forward/reverse orders 438/438 (1814 bytes).
+// Original repeated helper, all four uses and movement body restored.
+// Round 238: Shared add/scale/affine blend with actual sum/current-workspace homes 5/5, 22/22,
+// 6/6, 5/22, 22/5, 6/5, 5/6 and 22/6: 383 each. Original helpers, vectors and body restored.
+// Round 240: Plain native-component blend/clamp loops: fused long/short/byte
+// 409/479/479; blend before original clamps 383/415/415; fused with shared current
+// coefficient/complete expression parts 409/409. Frame/input homes remain; original body restored.
+// Round 251: native value-input scale 476; all six complete scaled-product declaration orders 476 each; complete scale plus planar staged products 476. Original repeated helper contracts and body restored.
+// DL190: Native real root/magnitude-absolute/planar-absolute API subsets 1-7 all 383; all with native correction root/absolute 383. Original arithmetic and helpers restored; frame, requested-vector stack ownership and x87 homes remain.
+// Round 442: Ordinary-inline declarations at the three query boundaries in seven subsets, then
+// all plus turning publication, 383 each in eight compiled forms. All original declarations,
+// helpers and body restored.
+// Round 459: Native double correction-expression stages
+// absolute/root/both/scaled/absolute-scaled/root-scaled/all-three/all-four
+// 383/383/383/383/383/383/383/383. All executable trial forms restored.
+// Lane 18 round 15 (fast with the callees): retail also reuses the dead homes of arg_2 and arg_8 for the two
+// Boolean query outputs (and arg_8's for the planar magnitude). Magnitude helper's epsilon test as an if
+// statement 454 (1847 bytes); the query's Boolean and vector outputs declared at function scope 383; only the
+// vector output there 383; the planar input copied field by field 383; the 12-byte locals renamed to sort in
+// retail's home order 383 (identical code: names do not order these homes); declared in retail's home order
+// (local_5, local_4, local_6, local_12, local_7) 383 (identical: declaration order does not either).
+// Diagnostic: arg_2 read once through its address gives retail's convention, 368 here, with arg_2 then in EBX
+// for the whole body where retail keeps the +0x290 pointer in EBX and loads arg_2 into ESI after 0xb9dd0.
+// Round 469: Native coordinate aggregate construction of working/output/query vectors in
+// seven nonempty subsets, then all with shared final vector setters: 390/453/463/414/376/449/460/487.
+// Working/query aggregates recover actor EAX and ret 0x20 at 376 (gain seven, rejected).
+// On that graph, magnitude-result update/query outputs at entry/native vector-position names
+// in seven subsets, then all with position at entry: 446/376/446/376/446/376/446/446.
+// Independent native-vector producer orders 465/546/564/645 on that graph: 435/376/381/439.
+// Original copies, helper bodies and call roles restored; frame and input transport remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

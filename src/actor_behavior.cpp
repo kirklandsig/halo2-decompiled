@@ -32,7 +32,7 @@ s_slot_handler *g_46eeb8[k_slot_type_count];
    NONE when that is past the last level */
 /* (the plain loop with a break does not match: round 39) */
 // @retail 0x1a8080
-short actor_behavior_get_insert_level(short type, short level, s_slot_owner_entry *owner)
+short actor_behavior_get_insert_level(short type, s_slot_owner_entry *owner, short level)
 {
 	short result = -1;
 	short parent_type = g_46eeb8[type]->wanted_type;

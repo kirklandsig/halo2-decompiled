@@ -26,7 +26,17 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 
 // score 2 (was 2): retail writes the request's fields in the order type (0x31),
 // arguments[0] and arguments[2], ours writes arguments[0], type and
-// arguments[2]
+// arguments[2]. Retail's time-field load precedes the type store, so the
+// product is evaluated before it. Tried: all six store orders 2-15 (type
+// first leaves the field load below the type store); a named short, long or
+// word duration local in each order 2-25 (it takes AX from the dying time
+// pointer and its store moves above `mov eax, ebx`); named duration and
+// request-value locals 20. Round 11 (lane 17): type first 6 (the type store is scheduled above
+// the time-field load); a short duration local before the type store, at block scope, before the
+// request or at function scope 20/20/20 (the product takes AX and its store is hoisted above the
+// type store; the e6900 result path then changes registers); the product written `3 * field` 2.
+// A typed union member for the two arguments instead of the casts: our order 2, type first 6.
+// The one-file harness is not exact here (7: callee conventions).
 // @retail 0x1e0dc0
 long function_1e0dc0(short team, long unit_index, short request_value, short squad_index)
 {

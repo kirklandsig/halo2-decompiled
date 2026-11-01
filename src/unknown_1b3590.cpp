@@ -370,20 +370,28 @@ short __stdcall function_1b3ea0(long actor_index)
 	return result;
 }
 
-// score 26 (was 26): offset/pool setup and zero register differ;
+// score 26 (was 26): offset/pool setup and zero register differ: retail computes the offset in
+// EAX, keeps the pool pointer in ESI (the second data load reuses it, so the reset's actor is the
+// offset plus that load in EAX), the first actor in ECX and the zero in EDX; ours has the offset
+// in ECX, the pool in EAX, the first actor in EDX and the zero in EBX, and the reset's zero
+// stores are then scheduled ahead of its NONE stores.
 // compound bit 26; word mask 26; slot sentinel result 36; slot Boolean result 38;
-// joint slot result 43; reset mode result 38; reset owner result 39; active slot result 43.
-// actor-index/pool load order and zero register differ;
+// joint slot result 43; reset mode result 38; reset owner result 39; active slot result 43;
 // native word ordinal 32; sentinel-first stores 26; actor after/between slot stores 52/27;
 // actor after reset/direct final getter 35/34; published-bit return 31;
-// sentinel after reset 36; activation before reset 25, rejected. Body restored.
-// input-index, pool and zero registers plus reset-store schedule still differ.
-// This round: Boolean after reset 26; both slots after reset 46; Boolean after activation 25; both slots after activation 53; sentinel after activation 34; actor after reset 34; actor after slots 34; direct slots after reset 46.
-// Out-of-line reset function call 80 (stays a call); reset actor without the nested getter 26;
-// offset-first actor address 26; local and parameter renames 26 each.
-// score 26 (was 26): input offset/pool scheduling and shared zero still differ;
-// explicit getter/reset/both inline contracts 26/26/26; Boolean/sentinel/both field lvalues 26/26/26;
-// inline contracts with Boolean/both lvalues 26/26. All helper declarations and lvalues restored.
+// sentinel after reset 36; activation before reset 25, rejected.
+// Boolean after reset 26; both slots after reset 46; Boolean after activation 25; both slots after
+// activation 53; sentinel after activation 34; actor after reset 34; actor after slots 34; direct
+// slots after reset 46. Out-of-line reset function call 80 (stays a call); reset actor without the
+// nested getter 26; offset-first actor address 26; local and parameter renames 26 each.
+// Explicit getter/reset/both inline contracts 26/26/26; Boolean/sentinel/both field lvalues
+// 26/26/26; inline contracts with Boolean/both lvalues 26/26.
+// Slot state through a past-the-header view (`slot->unknownc`) 26, declared first 27 (127 bytes),
+// with the NONE store first 26; stores through the cast parameter 26; `bool result = true` first 26.
+// Round 39: `bool result = true` stored into the bit and returned 26; actor first with the NONE store
+// first 26; `bit0 |= 1` 26; `result = true` after the bit 26; returning the bit itself 31 (128 bytes).
+// Harness (exact for this function): the actor address spelled offset-first, by index or with a named
+// offset 26 each; the reset in retail's store order as a forceinline or static helper 26 (identical code).
 // @retail 0x1b3ee0
 bool __stdcall function_1b3ee0(long actor_index, s_slot *slot)
 {
@@ -636,6 +644,8 @@ short actor_behavior_find_level(long owner_index, short type);
 // Round 41: selected target-index snapshot 62; source-selected target index 62;
 // all-phase target index 85; candidate-selected target index 85; candidate-selected location 84;
 // all-phase location 84; source-selected location 62; source-selected target pointer 131.
+// Round 155: selected actor getter at each use 88; selected pointer at the top 59; inverted 0x1f4460
+// test 59; slot-state pointer local 59. BLOCKED-BY 0x270750 (its convention: target EAX, sector EDX, scratch ECX).
 // @retail 0x1b3fd0
 bool __stdcall function_1b3fd0(long actor_index, s_slot *slot)
 {

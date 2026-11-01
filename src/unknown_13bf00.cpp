@@ -311,8 +311,6 @@ long player_slot_iterate_next(long index);
 
 /* whether a signed in player wants subtitles: always, or when the map's
    language isn't the game's */
-// score 14 (was 17): retail does not common the element address, it uses two
-// displacement-form instructions where ours emits a lea plus a load.
 // @retail 0x13cbf0
 bool function_13cbf0(void)
 {
@@ -324,10 +322,10 @@ bool function_13cbf0(void)
 	map_language = 0;
 	if (g_4e0350)
 	{
-		long language = ((s_language_globals_view *)g_4e034c)->language;
-		if (language >= 0 && language < 9)
+		s_language_globals_view *globals = (s_language_globals_view *)g_4e034c;
+		if (globals->language >= 0 && globals->language < 9)
 		{
-			map_language = language;
+			map_language = globals->language;
 		}
 	}
 

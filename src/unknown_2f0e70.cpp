@@ -78,6 +78,12 @@ struct placed_point_2f0f70
 {
 	__m128 value;
 
+	placed_point_2f0f70 &operator=(__m128 const &point)
+	{
+		value = point;
+		return *this;
+	}
+
 	void set_transformed(transform_2f0f70 const *transform, __m128 const *point)
 	{
 		__m128 p = *point;
@@ -109,7 +115,7 @@ struct input_2f0f70
 struct contact_2f0f70
 {
 	__m128 point;
-	__m128 normal;
+	placed_point_2f0f70 normal;
 };
 
 // the contact of a sphere with a triangle, the triangle's corners taken into
@@ -119,15 +125,14 @@ struct contact_2f0f70
 int __cdecl function_2f0f70(body_2f0f70 const *a, body_2f0f70 const *b, input_2f0f70 const *input, float const *terms, contact_2f0f70 *contact)
 {
 	rounded_2f0f70 const *sphere = a->shape;
-	__m128 const *centre = &a->placement->transform.position;
-	transform_2f0f70 const *frame = &b->placement->transform;
 	rounded_2f0f70 const *triangle = b->shape;
+	__m128 const *centre = &a->placement->transform.position;
 	placed_point_2f0f70 corners[3];
 	__m128 const *vertex = triangle->corners;
 	placed_point_2f0f70 *corner = corners;
 	for (int count = 3; count != 0; count--)
 	{
-		corner->set_transformed(frame, vertex);
+		corner->set_transformed(&b->placement->transform, vertex);
 		corner++;
 		vertex++;
 	}
@@ -138,8 +143,10 @@ int __cdecl function_2f0f70(body_2f0f70 const *a, body_2f0f70 const *b, input_2f
 	{
 		__m128 const single = _mm_set_ss(triangle->radius - closest.distance);
 		__m128 const scale = _mm_shuffle_ps(single, single, 0);
+		placed_point_2f0f70 point;
+		point = _mm_add_ps(*centre, _mm_mul_ps(scale, closest.normal));
 		contact->normal = closest.normal;
-		contact->point = _mm_add_ps(*centre, _mm_mul_ps(scale, closest.normal));
+		contact->point = point.value;
 		contact->point.m128_f32[3] = closest.distance - radii;
 		return status ? 2 : 1;
 	}

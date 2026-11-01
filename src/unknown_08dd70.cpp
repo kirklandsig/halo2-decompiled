@@ -145,6 +145,20 @@ struct s_handler_slot
 // reverse chained handler/gateway/both pair clears 55/51/59; those forms with
 // complete reciprocal-slot and active-field lifetimes 55/51/59; both reversed
 // pairs in phase scopes 59; reversed pairs/field lifetimes/native handler byte 59.
+// Round 95 (lane 8): retail's `mov ecx, [eax + 0xc]; add eax, 0xc` is the shape of a
+// pointer-to-pointer variable (the matched list walks 0x984d0/0x89df0 have it), with the
+// address shared by the test load and the store. The handler flag as a one-byte memset 29
+// (same code); that with one-pointer memsets of both back-pointers 29 (same code); the
+// back-pointer memsets alone 29; the link/messages pairs as plain stores in retail's order
+// (handler 0x14, 8, 4; gateway 0x10, 0xc) with the handler flag memset, with or without the
+// back-pointer memsets 59/59 (retail's store order and EBX zero, but no materialised
+// back-pointer address: 8 bytes short there); plain pairs with the back-pointer memsets 59;
+// the back-pointers as one-member structs with an inline detach() on the handler, the
+// gateway or both 29/29/29 (same code), both with plain pairs 59.
+// KIMI1 r94: guarded gateway 12-byte clear 73; gateway/handler/both 12-byte
+// ranges 29/29/29 (same code); base plus back-pointer field aliases handler/
+// gateway/both 29/29/29 (same code); base plus active-field alias 54;
+// scoped link local 29 (same code); direct first link global read 29 (same code).
 // @retail 0x8dd70
 void function_8dd70(void)
 {

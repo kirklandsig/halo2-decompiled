@@ -3,18 +3,19 @@
 // Havok (third-party physics library): a table of 64 slots that all start out
 // pointing at the empty object it keeps after them (0x372a40 builds it); its
 // blocks come from the allocator with tag 0x22.
-#include "reference_counted_2d88a0.h"
+#include "holder_30dc80.h"
 
 // the empty object kept after the slots
-struct empty_slot_372a40
+struct empty_slot_372a40 : pair_handler_30dc80
 {
-	virtual void slot_0() {}
+	virtual void slot_1(void const *) {}
+	virtual void slot_2(void const *) {}
 };
 
 class slot_table_372a40
 {
 public:
-	void *slots[64];
+	void *slots[8][8];
 	empty_slot_372a40 empty;
 
 	static void *operator new(unsigned int size)
@@ -27,10 +28,12 @@ public:
 	}
 
 	slot_table_372a40();
+	~slot_table_372a40();
 	void store_slot_372a40(int index, void *value)
 	{
-		slots[index] = value;
+		slots[index >> 3][index & 7] = value;
 	}
 };
 
+typedef slot_table_372a40 helper_3728b0;
 #endif

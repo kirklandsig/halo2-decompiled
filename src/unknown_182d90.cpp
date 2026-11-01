@@ -51,13 +51,6 @@ PRIVATE __forceinline real extent_length(__m128 vector)
 #define EXTENT_MIN(a, b) ((a) > (b) ? (b) : (a))
 #define EXTENT_MAX(a, b) ((a) > (b) ? (a) : (b))
 
-// score 95 (was 95): retail keeps the shared min/max tail in case 5 (case 6 jumps into it,
-// and case 5's maximum branch into case 4's store), ours keeps case 6's and case 5 jumps
-// there. Case 4's maximum through EXTENT_MAX 422 (its tail merges too); that with a
-// case-local return 407, with returns in cases 4 and 5 388; return in case 5 378; case 5's
-// bounds against a literal 0 97; case 5's width declared first 95.
-// score 100: retail's case-4 branch comes before ours and clamps both bounds
-// there, so the two branches sit in another order.
 // @retail 0x182d90
 real __stdcall function_182d90(c_extent_shape *shape, real radius,
 	s_extent_transform const *transform, real *minimum, real *maximum)
@@ -125,9 +118,7 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 					result = data->field_c.radius + extent_length(local.rows[3]);
 					*minimum = EXTENT_MIN(*minimum, data->field_c.radius);
 					real width = data->field_c.radius * 2.0f;
-					real upper = *maximum;
-					if (!(upper > width)) upper = width;
-					*maximum = upper;
+					*maximum = EXTENT_MAX(*maximum, width);
 					break;
 				}
 			case 5:
@@ -140,7 +131,7 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 					*minimum = EXTENT_MIN(*minimum, width);
 					*maximum = EXTENT_MAX(*maximum, width);
 				}
-				break;
+				goto done;
 			case 6:
 				{
 					real extent = extent_length(data->vectors[0]);
@@ -150,7 +141,7 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 					*minimum = EXTENT_MIN(*minimum, width);
 					*maximum = EXTENT_MAX(*maximum, width);
 				}
-				break;
+				goto done;
 			case 7:
 				{
 					real shape_radius = data->field_c.radius;
@@ -196,6 +187,7 @@ real __stdcall function_182d90(c_extent_shape *shape, real radius,
 			}
 		}
 	}
+done:
 	return result;
 }
 

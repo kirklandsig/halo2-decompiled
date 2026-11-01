@@ -1131,6 +1131,38 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Partial traversal-zero subsets before requested keys (step/mode-entry/both/class-entry/
 // step-class/both-entry) 828/827/828/828/828/827; interleaved key/zero stores 828/828
 // (fast control 828). Small gains rejected; original initialization and body restored.
+// Round 267: Complete named-identifier producer, native value/caller output, default before
+// lookup/after lookup/on failure, ordinary/forced expansion 828/828/932/932/996/996/998/998.
+// Original candidate, iterator, resource requests and all helpers restored.
+// Round 392: Actual iterator output receivers in mode/class/type input slots, all three pairs and all,
+// then all with native iterator initialization: 982/1026/982/1023/1001/1023/1001/1024. Original parameter and output lifetimes restored.
+// Round 394: Native resolved-name output record, member/aggregate construction, guarded/entry
+// declaration and direct/record set key: 837/984/837/964/993/993/993/999. Grouped forms require a match; all restored.
+// Round 176: Entry candidate constructed before returned object, with complete/native-word reset,
+// member/native iterator and retained/producer-written mode default: 932/986/932/986/932/893/932/895.
+// All reach 2825 bytes; native reset fixes initial class/NONE roles and result +0x14 but adds entry
+// candidate stores and leaves traversal/candidate homes. Original constructors and complete body restored.
+// Round 268: One retained selection-success or selection-absence test, bool/byte/short/long, shared by
+// loop and requests: 1023/1023/998/1000/991/991/999/999. Original body restored.
+// Round 417: existing native resource hierarchy expanded through one/two/three levels,
+// original/resolved/both requests: 2101/2157/3335, 1989/1988/2978, 828/828/828. Full
+// expansion ties but changes matched helper controls; all declarations and body restored.
+// Unsigned class key/set key/both/all four input-key domains 828 each; definitions
+// and shared declarations restored.
+// Round 425: Iterator graph field at every post-search graph use, with all eight
+// requested mode/class/type field subsets, 969/964/1008/1024/969/964/1008/1024.
+// Original graph/key owners, constructors, iterator outputs and requests restored.
+// Round 197: Immutable native candidate with both member transfers and native-iterator/
+// readonly named-source/readonly iterator-entry masks 0..7 all 997 at 2825 bytes.
+// The matched channel-refresh caller also differs; original complete body restored.
+// DL204: last native named-record selection, guarded/conditional complete result,
+// mutable/readonly source and member/aggregate iterator 990/1005/990/1005/990/1005/990/1005. Restored.
+// Round 459: Resolved-output defaults after corresponding key stores,
+// mode/class/both/type/mode-type/class-type/all 828/828/828/828/828/828/828; all after traversal defaults
+// 826. Original initialization restored. All executable trial forms restored.
+// Round 262: Ordinary inline metadata on existing private resource levels: outer alone 3524
+// (310/2825); middle/inner and all remaining pairs/triple 828 each; all with forced existing
+// animation-resource expansion 828. All provider metadata, target body and request tuples restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1228,6 +1260,39 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 978/828/978/828/978/828/978/1011. Complete original body and declarations restored.
 // Round 228: flat class rejection to the final return, with member/native iterator
 // and original/early iterator/output-default lifetimes 1011/1009/1016/1016/1011/1011/1016/1016. All restored.
+// Round 267: Complete named-identifier producer, native value/caller output, default before
+// lookup/after lookup/on failure, ordinary/forced expansion 828/828/932/932/996/996/998/998.
+// Original candidate, iterator, resource requests and all helpers restored.
+// Round 392: Actual iterator output receivers in mode/class/type input slots, all three pairs and all,
+// then all with native iterator initialization: 982/1026/982/1023/1001/1023/1001/1024. Original parameter and output lifetimes restored.
+// Round 394: Native resolved-name output record, member/aggregate construction, guarded/entry
+// declaration and direct/record set key: 837/984/837/964/993/993/993/999. Grouped forms require a match; all restored.
+// Round 176: Independently tested entry candidate before returned object, complete/native-word
+// resets, member/native iterator and retained/producer-written mode defaults:
+// 932/986/932/986/932/893/932/895 at 2825 bytes. Initial result home/class roles improve with native
+// reset, but entry candidate stores and traversal homes remain. Original constructors and body restored.
+// Round 268: One retained selection-success or selection-absence test, bool/byte/short/long, shared by
+// loop and requests: 1023/1023/998/1000/991/991/999/999. Original body restored.
+// Round 417: existing native resource hierarchy expanded through one/two/three levels,
+// original/resolved/both requests: 2101/2157/3335, 1989/1988/2978, 828/828/828. Full
+// expansion ties but changes matched helper controls; unsigned class key/set key/both/
+// all four input-key domains 828 each. All declarations and executable source restored.
+// Round 191: Persistent-result admission 828; with immutable candidate 978, late candidate 996,
+// paired native transfers 988, iterator-owned request keys 1016, native iterator 826, direct result
+// 978, retained lookup name 828. Two-point gain rejected; original body restored.
+// DL199: Member stdcall, fastcall and inline with member/native iterator give 828/826 each; cdecl
+// gives 839/839 and loses twelve checked matches. Two-point reductions rejected. Inline trials
+// recover all controls. Return/candidate/output homes and late zero carrier remain; original body
+// and declaration restored.
+// T47: Full native iterator memset before key publication, with requested-key ownership
+// subsets 0..7: 996/999/1021/1042/999/999/1023/1042. Native clear reaches retail
+// length in some forms but does not recover the homes; original complete body restored.
+// Round 459: Resolved-output defaults after corresponding key stores,
+// mode/class/both/type/mode-type/class-type/all 828/828/828/828/828/828/828; all after traversal defaults
+// 826. Original initialization restored. All executable trial forms restored.
+// Round 471: Separate selected graph/index short/short, short/long, long/short, long/long,
+// materialized before/after outputs 1024/1002/1017/1000/1018/1001/1014/1002.
+// All selected-component carriers and original constructor lifetimes restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

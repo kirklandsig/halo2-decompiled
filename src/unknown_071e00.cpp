@@ -120,14 +120,46 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 }
 #pragma inline_depth(255)
 
-// score 37 (was 37): the session state test is inverted (je against jne) and the shared tail
-// block is placed on the other side of the branch. Retail lays the search block (mark the
-// session, mode 7) right after the session_b state test and reaches it from the timeout
-// compare with `jle tail; jmp search`; ours always places it after the timeout compare.
+// score 15 (was 15): only the order of the players-match block and the timeout test differs:
+// retail lays out [search][players match][timeout: jle tail; jmp search], ours
+// [search][timeout: jle tail; jmp search][players match]. Retail's two search-block copies are
+// cross-jumped after layout; VC merges them before layout (block last) whenever the timeout
+// copy is the last arm before the shared return, so the match arm is written last here.
 // Tried: a search flag set on both paths (37); if/else with the goto into the else (37);
 // the search block written out twice, with local_0 = true (37), return true (65) or one of
 // each (90); returns in the players-match branch and a goto to the end (41); a
 // do/while (false) with breaks (37); state == 0 and inline state helpers (37).
+// Round 34, the search block written in both arms (state == 0 first, then players-match, then timeout):
+// first copy `return true`, timeout copy `local_0 = true` and players-match `return true` 74 (aligned 16:
+// retail's block order exactly, but the timeout copy ends `mov bl, 1; ...; mov al, bl` instead of
+// `mov al, 1`, so the copies are not cross-jumped); with the players-match arm setting the result 85; the
+// first copy setting it 90/85; all three `return true` 65 (copies merged, search block last); the
+// timeout copy with a byte-offset search pointer or flag 65/65; `local_0 = true; return local_0;` in
+// one copy 65/65, in both 34 (178 bytes, copies merged); a dead `local_0 = true` before either
+// `return true` 65/65.
+// Unhandled-result bool/char/short/word/dword 83/83/89/89/86; genuine success
+// char/short/word carriers 66/54/54. Round 96: two copies in the original arm order 37
+// (merged), with the result set before/between the calls 95/74; the state test as a switch
+// 54 (range compare, default last; copies kept apart); a named bool for the state test 55
+// (copies apart, the 71e00 arm last); the state test inverted 37; an extra return in the
+// state arm 38/44; an inline search helper at both sites 20 (the timeout site keeps a call),
+// forced inline 37; the players-match test `== false` 15; no volatile store 75.
+// Round 45: timeout/first flag `!= false` 15/15 and `== true` 35/37; a named flag
+// in the timeout/first copy 15/15; a search receiver local in the timeout/first copy 15/15.
+// Round 17: natural arm order (state 0, match, timeout) 37; with the state test as a named bool 55
+// (session arms as retail, the 71e00 arm last); a plain inline search helper at both sites 20
+// (second site a call); one search copy behind `!state || timeout` 55; a search flag from `!state`
+// set by the timeout test 40.
+// Round 10: the timeout arm a goto into the first search block 37 (block laid out after the timeout
+// test); retail's arm order (state, match, timeout) 37; with a named state bool 55 (session arms
+// exactly retail's, 71e00 arm last); with the 71e00 arm first under a named bool or `!=` chain 37/37;
+// the state test inverted inside the session arm 37; the result set before the timeout or first
+// copy's calls 95/115; an early return for type != 9 72; a new inline search helper at the timeout
+// site only, the first site only or both 20/37/20 (inlined copies merge before layout).
+// Round 16 (lane 2), retail's arm order (state 0, players match, timeout) with the timeout copy made
+// different in source: its session argument named first 37; its search pointer named first 37; the
+// timeout read into a named elapsed value inside an else arm 37; the players-match result named in
+// the else arm 37; its flag tested `!= 0` 37 (all merged before layout, 176 bytes).
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {
@@ -142,21 +174,28 @@ bool function_712d0(c_session_state_matchmaking *arg_0)
 		{
 			if (!local_3->state)
 			{
-local_7:
 				if (arg_0->flag97c)
 					session_search_mark_session((s_session_search *)&arg_0->flag97c,
 						(const s_search_session *)((byte *)arg_0 + 0xa20));
 				network_session_set_mode(local_2, 7);
 				local_0 = true;
-				goto local_6;
 			}
-			if (network_session_players_match(local_2, local_3))
+			else if (!network_session_players_match(local_2, local_3))
+			{
+				if (function_75890(arg_0->unknown970) > g_network_configuration.value190)
+				{
+					if (arg_0->flag97c)
+						session_search_mark_session((s_session_search *)&arg_0->flag97c,
+							(const s_search_session *)((byte *)arg_0 + 0xa20));
+					network_session_set_mode(local_2, 7);
+					local_0 = true;
+				}
+			}
+			else
 			{
 				network_session_set_mode(local_2, 13);
 				local_0 = true;
 			}
-			else if (function_75890(arg_0->unknown970) > g_network_configuration.value190)
-				goto local_7;
 		}
 		else
 		{
@@ -164,7 +203,6 @@ local_7:
 			function_71e00(arg_0);
 		}
 	}
-local_6:
 	return local_0;
 }
 
