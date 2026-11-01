@@ -144,6 +144,14 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 260: Native i/k/j norm with real-absolute/shared-scale/single-result combinations
 // 792/786/792/786/791/785/791/785 on direct input. Original promoted products, input access, helpers and
 // entire body restored.
+// Round 47 (m3 lane 13, fast, input reference kept; without it the input moves to EAX, frame 0x8c): the shared
+// normalize3d() from include/normalize3d.h gives retail's normalizer instruction for instruction (memory squares,
+// fst/fabs, dword epsilon, in-place mulss, zero store; homes 4 off) 771 (aligned 421 -> 413); the planar input and
+// heading copies as `*(vector2f const *)` struct copies (retail's dword moves) 750 at 3499 bytes; both 797; both
+// plus magnitude2d() for the radial distance (retail's float squares) 833 at frame 0x8c; that plus the radial test
+// evaluated once through a conditional expression (retail's single fcompi branch) 850. Swapping the names of two
+// vector locals moves no home. Retail keeps the object index in EDI and pushes EBX late for the heading pointer;
+// ours holds the input pointer in EBX from the prologue.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

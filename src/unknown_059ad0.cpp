@@ -3666,6 +3666,13 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
 // Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
 // the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Round 47 (m3 lane 13, fast; aligned counts in brackets, baseline [30]): constant true/false exits 116 [29];
+// with the guarded leave 123 [29]; the guarded leave alone 131 [30]; identity source before the memset 101 [27];
+// constant exits with the reply member pointer before the id 116 [23]; those three together 123 [23];
+// `if (peer) {...; return true;} return false;` with the guarded leave and member pointer first 121 [15]: every
+// block but the timed-out call setup (retail's owner spill and split member-state lea, 3 instructions more)
+// and the announcement's member offset (retail scales it before the memset) is then retail's, but the 3-line
+// shift there keeps the positional count up. Keep that form for when the timed-out call is solved.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
