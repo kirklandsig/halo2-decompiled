@@ -209,6 +209,15 @@ struct s_free_state_23d260
 // rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
 // 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
 // Original body restored.
+// Round 125 (m3 lane 5, fast): screen of normalize_inline/normalize3d x hand-written up/cross3f(&side,
+// &forward, &up)/cross3f_staged x the six side assignment orders: normalize_inline with any order 102,
+// with cross3f 257, with cross3f_staged 256; normalize3d with the hand-written up 291 (1309 bytes for
+// k,i,j/i,j,k/i,k,j, 1326 for the others); normalize3d with cross3f 279 (side.i before side.j: x87
+// length exact, but the side.i copy is hoisted above the forward.k store where retail keeps it after
+// the side.j load) or 143 (side.j before side.i: the length squares side.i first again); normalize3d
+// with cross3f_staged 289/290. With the yaw cosine/sine as named locals for the movement: normalize3d
+// and the hand-written up 276 (k,i,j) / 257 (j,i,k and k,j,i); normalize3d and cross3f 279/283/283;
+// normalize_inline 291.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

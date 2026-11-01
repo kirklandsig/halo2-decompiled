@@ -222,6 +222,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (953 bytes). Screens: 384 helper shapes on 0x120810 19-24 mismatches (only row order counts).
 // Best screen 7 with four extra function-scope locals and one in the helper: retail's body may have
 // more named locals than ours (in combination, not singly).
+// Round 125 (m3 lane 5, fast): retail loads the side byte with `mov al` ahead of each later corner's
+// products and zero-extends it at the lookup (corner 0 uses the stored AX/CL), as a by-value byte would;
+// the corner helper taking `short axis, byte side` by value (side + axis * 2 / axis * 2 + side) 140/140
+// (still `movzx` from memory); a `byte side` local in the helper 140; `bool`/`short` locals for both 138
+// (same code); the corner coordinates passed by value 192 (969 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

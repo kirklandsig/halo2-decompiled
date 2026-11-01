@@ -320,7 +320,7 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
-// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// Earlier at 115: the case 1/3 loop still differs in registers: retail keeps the items
 // pointer and the index in different registers than ours, and the argument order of the
 // 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
@@ -392,6 +392,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
 // N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
 // Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 125 (lane 5): the slot index written out as `local_1 & 0x3ff` at each use 161 (diagnostic of
+// the handle's weight); the handle typed dword 115; memcmp sized by the request's count with the count
+// test reversed 178 (520 bytes); a plain for loop with the cursors set before it (no hand-inverted
+// guard) 195; the case 2/4 element through a pointer local 115.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

@@ -2121,6 +2121,14 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 119 (lane 5): word flag store with the full-width return 65 (206); that with 0x203d70's loop 98 (165);
 // game time stored before the flag 64; squad_get with the word flag store 84 (179); word flag store and word
 // flag test 62 (199).
+// Round 125 (lane 5): actor index assigned in the loop test 64; actor and actor index declared at the top 64;
+// iterator declared at the top, before or after the squad pointer, 64/64; flag test as a signed char 64;
+// flag test with an empty then-arm 64; the 0x1e11b0 test as `== false`, with an empty then-arm, through a
+// named bool 64/64/64; game time stored first 64. Diagnostics: pointer renamed (name order) 64; iterator's
+// squad index field stored in the loop 65 (the index becomes a register argument). Flags lead (not
+// applied): with `/Ob1` file flags and no pragma, the existing step helper gives 71 at 191 bytes exactly as
+// the statement-level pragma does, so /Ob1 alone accounts for retail's out-of-line 0x204d30/0x203f60 and
+// unrotated loop; the squad index still never gets a register there (byte return 78).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

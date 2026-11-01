@@ -544,6 +544,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
 // other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
 // and case 2's declaration orders, compile identically (286-290).
+// Round 125 (m3 lane 5, fast): retail's caller sets ECX (surface index), EAX (pathfinding), EDI (entry)
+// in that order, as ours already does, so no parameter reorder has evidence. a, b, c, d re-measured 299
+// (1284 bytes: actor index loaded into EAX at entry and pathfinding homed in EBX as retail, but
+// pathfinding arrives in EDX); on it the surface declared first 299, the result declared first 299,
+// a, b, d, c 314, one `vertices` base for the four corners 295.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -461,6 +461,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // dot spelling gives the same code; no by-name or pointer access per axis or per written component
 // moved the dot's k,i,j order or the swapped products. A 600 s permuter run was cut off by its time
 // cap while confirming a candidate.
+// Round 125 (m3 lane 5, fast): the entry pointer declared before the object lookup 113 (the entry index
+// still arrives in EAX); the entry as `entries + entry_index` 112 (same code); the hand-written cross and
+// dot replaced by the existing cross3f_staged(up, forward, left) and dot3f 112 (same code, kept).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
@@ -516,7 +519,7 @@ void function_109660(long object_index, long entry_index)
 					function_30bf0(left);
 					vector3f *up = &entry->transform.up;
 					function_30bf0(up);
-					real dot = up->k * forward->k + up->j * forward->j + forward->i * up->i;
+					real dot = dot3f(forward, up);
 					real scaled_i = forward->i * dot;
 					real scaled_j = forward->j * dot;
 					real scaled_k = forward->k * dot;
@@ -524,12 +527,7 @@ void function_109660(long object_index, long entry_index)
 					up->j -= scaled_j;
 					up->k -= scaled_k;
 					function_30bf0(up);
-					real cross_k = forward->j * up->i - forward->i * up->j;
-					real cross_j = forward->i * up->k - forward->k * up->i;
-					real cross_i = up->j * forward->k - up->k * forward->j;
-					left->i = cross_i;
-					left->j = cross_j;
-					left->k = cross_k;
+					cross3f_staged(up, forward, left);
 					function_30bf0(left);
 				}
 				return;
