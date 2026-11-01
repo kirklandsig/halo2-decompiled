@@ -642,6 +642,10 @@ real function_30bf0(vector3f *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
 #pragma inline_depth(0)
+// score 2 (was 2): Round 108 plain trials: existing player-unit getter direct with ordinary/forceinline/inline declarations 160/160/160;
+// camera-position copy then component subtraction 147 (664 bytes); direction copy then component scaling 154 (682);
+// to-camera copy then projection subtraction 160 (673); staged along and distance sums 2/2. Original restored;
+// success result/pop schedule remains.
 // score 2 (was 2): success result/pop schedule (retail pops ESI before `mov al, 1`). It follows
 // the link-time context, not this body or its caller's call: a 67-source reduced image matches,
 // any image of 541+ sources (0xf8eb0's, or any of 0xfc330/0xfcdd0/0x10c880/0x17a8a0/0x184440)
