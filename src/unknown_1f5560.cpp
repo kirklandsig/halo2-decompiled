@@ -310,6 +310,9 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
+// matches (0, plain): an array of one steering the state's word stack home is the same form as the
+// one-member struct below (Y201, MiniMax G), so it is reverted; the body stays at 11.
 // Not kept (MiniMax G, 10-31): the state in a named one-member struct local matches (0); that is the
 // one-member struct steering a stack home that Y201 already found here (held, ruled out).
 // score 11 (was 11): the state is loaded with movsx and spilled as a dword;
