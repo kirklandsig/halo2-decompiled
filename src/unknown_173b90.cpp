@@ -577,6 +577,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // compile-only screen of 190 combinations (indexed, flags local, mask at each use, scale/colour/result pointers
 // first, mask scope, `+=` translation) shows five whole-function rotation states; the mask read at each use is
 // the only one with retail's rows i and j in both rotations (row k then left/forward/up), none is retail's.
+// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
+// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
+// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
+// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
+// fixed); after the particle mask or the particle lookup 42 (no change).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
