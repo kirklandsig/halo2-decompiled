@@ -1195,6 +1195,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // Round 57: aggregate iterator initialization 24; first-initialized index 24; iterator pointer 50;
 // index declared after initialization 24; first-next while/do-while 64/64; current-index rename 24;
 // named state predicate 24 (one-use local, restored). Plain checks throughout; original body restored.
+// Lane 18 round 15 (fast with 0x126df0, 0x12a810 and the matched siblings; it reproduces 24): 0x126df0's
+// fade-in gain as a ternary 37 (0x126df0 15); one `sound` local shared by 0x126df0's two halves 24; the
+// iterator's next link tested `== first ? NONE :` 24; both iterator helpers __forceinline 24, only the
+// next helper 24; a __forceinline declaration of 0x126df0 in this file 24. Diagnostic: without the state
+// test the first index leaves EBX for the stack and the index takes EDI (48), so the conditional arm
+// weighs into the tie. A 600 s fast annealing permuter run: 64 tries, none below 24 (its reduced image scores the
+// original 57, so it cannot see this tie).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1522,17 +1529,17 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 307 (was 307): extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
-// reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
-// score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
-// retail's layout: the original body is restored.
-// score 307 (was 307): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 305 (was 307): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
-// score 307 (was 307): frame 0x11c versus 0x128 (the detail request is passed on as the 0xa0-byte sound play state,
-// this file's view stops at 0x90; retail also keeps the playback pointer in EDI, ours in a slot); retail reads each
-// pitch-range loop's count once into a stack slot; definition, index and ring homes still differ.
+// At 307: extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
+// reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
+// score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
+// retail's layout: the original body is restored.
+// Lane 18 round 14: approach_126660 now takes (value, delta, maximum) and forms the lower bound
+// itself, as every caller passed `0 - maximum, maximum` (0x1269f0 matched with it): the gain
+// step's call 307 -> 305 (plain).
 
 // Earlier: frame 0x128 matched with the stop helper out of line;
 // index homes, definition register and ring traversal still differ.
@@ -1602,7 +1609,7 @@ void function_21b0e0(bool update)
 					if (!(fabs(sound_class->gain_change_rate) < 0.0001f))
 					{
 						real step = ((s_looping_sound_system *)g_4e6380)->elapsed_time * sound_class->gain_change_rate;
-						approach_126660(&track->gain, sound->source.scale - track->gain, 0.f - step, step);
+						approach_126660(&track->gain, sound->source.scale - track->gain, step);
 					}
 					else
 						track->gain = sound->source.scale;

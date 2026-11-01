@@ -499,6 +499,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // set 42 (round 32's form again); visited declared before the markers with bit_vector_test 42; the target
 // marker declared first 37 (same code); `if (found) { one combined test } else break;` 37 (same code);
 // the iterator's weapon class stored before its mode in both arms 44.
+// Lane 18 round 15 (fast with the matched callees and 0x113ba0/0x113c60): the visited words as a 256-bit
+// record cleared by its own member (memset inside), with the mask test 42, with the shift test 37; the set
+// through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,
+// mask-first load/OR/store again); visited and both markers as one record cleared by its own member
+// (diagnostic for lane 1's escaped aggregate) 42: the frame stays 0x104, but the set is load/OR/store.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)

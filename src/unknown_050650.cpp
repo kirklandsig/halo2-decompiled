@@ -599,6 +599,13 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // candidate at function scope 349, the pitch axis member by member 349, the helper's cross terms j, k, i 349,
 // the ray through the existing vector3f_scale 347 (frame 0xa0). Diagnostic, reverted: that form with the header's
 // collision type at 0x5c 344 (retail's 0xa8 frame, first difference +0xa; the rotation stays 16 bytes longer).
+// Lane 18 r14 (one-link LTCG env with the callee-closure objects, exact for this function: env count 326 = check
+// 333): collision type at 0x5c 324; with byte clear 328; byte clear 330; byte clear set first in each pass 334;
+// that with 0x5c 329 (late EBX push, byte clear in AL); yaw-axis pointer local before the loop 334, with 0x5c 333;
+// rotation helper with the j/k cross terms first and i in its row: vector 328, scalars 326 (same code), 0x29c860
+// spelling 328, k before j 329 (0x297d30 22/22/22/38, control 22); candidate copy before the draws 327, between
+// them 343; fraction as `((real *)&collision)[1]` 326; best_fraction declared before result 326 (same code).
+// Retail also holds g_4687b0 in ECX across the loop and keeps best.k in a stack slot.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -780,6 +787,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 1); the remembered-prop test as `result = state->unknown00 != NONE; if (!result) goto done;` 375 (retail's
 // failure exit, shared by the normalize failures, both remembered NONE tests and case 1's state < 1, stores
 // result = false); point_valid renamed to sort after result 276 (homes unchanged).
+// Lane 18 r14 (one-link LTCG env with 333 objects, exact for this function: env count 233 = check 276; the
+// 0x1ffe00 call now pushes both arguments as in retail): the first difference is point_valid's byte (ours below
+// result, retail above); eleven renames of either flag (a_, zz_, valid_point, has_point, success, found ...)
+// leave the homes unchanged; `bool result = false; bool point_valid = false;` 235, point first 233, `point_valid =
+// result = false` 235, flags before the actor lookup 235 / point first 233. Case 2 with its own remembered-prop
+// copy (retail keeps two) 228 at 1484 B: retail's order up to its 0x1e3b00 call, but case 1's copy does not
+// cross-jump into it, so the direction/output tail still follows the shared copy; the tail written inside case 2
+// is byte-identical (228).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1386,6 +1401,10 @@ struct s_actor_looking_turn_request
 // 543 (on 442); first/second before the unit index 442; turn request declared with them 442; override
 // result as `if (0x2967b0(...)) { valid = true; forced = true; }` 535. Retail also packs first/second into the
 // two vectors' slots (as if they lived in an inlined helper's scope).
+// Lane 18 r14 (one-link LTCG env with 351 objects, exact for this function: env count 411 = check 442; a plain
+// noinline declaration of 0x1fdd90 here changes nothing): the side test as `if (first == A || first == B)
+// { bool current_side = first == A; ...` 464 (retail's threaded side stores); bool valid 519; that with the side
+// test 517; bool looking_valid 513; both bool 516; both with the side test 515.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

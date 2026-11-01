@@ -197,6 +197,10 @@ struct s_24e9c7_bounds
 // side vector, declared at function entry 139 (742 bytes) or at its computation 139; a separate across point
 // declared at entry 139; an initialised across point 139; size computed before the bitmap pointer 125 (same
 // code). Every point local still homes below the scalars.
+// Lane 18 round 15 (fast): result renamed to sort first 125 (its home stays at -8: these are spill slots, names
+// do not order them); back as scalars re-measured 133; back plus up scalars 133; back plus side scalars 133;
+// up, side and back all scalars 133; back scalars with `size * (0.0f - forward_j)` 146 (739 bytes); all scalars
+// with it 146 (739 bytes).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
