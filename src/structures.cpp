@@ -951,6 +951,10 @@ done:
 // through a `found` flag 139 (471 bytes); either with the existing availability helper 148 (470 bytes: the
 // failure exit inline as retail's, but ESI pushed after it) / 150; the plain form with `*probe = *point`
 // before the flags computation 128.
+// DH round 264: Result-owned pretested retries with independent flags/long-short-word-byte attempts
+// and native collision fields 157/156/156/160; with the existing initial point setter
+// 144/145/145/157. All regress; original record layout, grouped state, triangle access and
+// body restored; result/NONE/exclusion allocation and direction reloads remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

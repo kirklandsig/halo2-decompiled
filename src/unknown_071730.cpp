@@ -189,6 +189,10 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 478: complete strict solver predicate with short/bool/byte/long result
 // 455/458/458/457; both strict and fallback predicates 458/458/458/458.
 // All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// DH round 264: On the complementary waiting graph, native producer record/existing kind-four setter/
+// both/native long balance/record-balance/setter-balance/all/all with initial memset
+// 439/477/477/454/454/477/477/486. Original record, property construction, short balance
+// and complete body restored; frame/result/state/getter homes remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

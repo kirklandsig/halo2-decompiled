@@ -178,6 +178,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 112 (lane 8, fast): group-table pointer declared first and assigned at its test 398; scenario
 // pointer declared first 398; no structure-BSP local (global read at both uses) 398; the three defaults
 // declared in reverse order 398; the group-table pointer as one ternary initialiser 398 (all same code).
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
