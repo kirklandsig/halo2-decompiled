@@ -352,6 +352,15 @@ void function_07b3e0(void)
 // non-inline copies of the step and scan, auto-inlined in this /O2 file, still give one pool register, so
 // retail's `mov ebp, ebx` copy comes from LTCG inlining the real 0x16bb70/0x16bc00 across files (their
 // file's /Ob1 keeps them out of line here: a flags decision).
+// Round 18 (m3 lane 18, fast with 0x7b650): both helpers on the global, no pool local, 45 (126 bytes: the global is
+// read inside the loop); data_find_index (data_array.h) returning from inside its loop 60 at 118 bytes: the not-found
+// path then threads straight to the exit, the found block follows the `ret`, and the final stores take immediate
+// zeros, all as retail; only the second pool register (EBX scan, EBP datum), the loop pad and the step's dead datum
+// `add` are missing. With it, MiniMax H's two pool locals 10 at 131 bytes (only the found block's data/size registers
+// and the dead `add`; one-use duplicate local, not kept). The iterator form over a file-local scan that returns from
+// its loop 58 (120 bytes: retail's found block with the dead `add` and data in ESI, one pool register); the datum
+// iterator (bool step) 58; the step reading the iterator's pool again after the scan 58; scan on the iterator field
+// with the datum on the step's copy 58; the iterator set up by an inline (iterator, pool) helper 58.
 // @retail 0x7b430
 void function_07b430(void)
 {

@@ -2618,6 +2618,14 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // (same code); `shown_count = 0` before the empty-list call 166 (918 bytes only because the two list-fill
 // calls then tail-merge; the last loop keeps its 8 extra bytes). An LTCG env link with the direct callees'
 // objects does not reproduce this function (the players[i] reload depends on callees further down).
+// Round 18 (m3 lane 18, fast): with the four widget indices at function scope (92) and separate counters for the
+// first loop and the other two (93), the spilled values sit one step round a cycle from retail's (ours text_a -0x14,
+// bitmap_b +0xc, bitmap_a +0x1c, text_b -8, shown count -0x10, player/no_team -0xc; retail takes the next slot of
+// that cycle for each), so a single value is ordered differently, not a declaration. On it: the second counter
+// declared first 93; the first loop's player declared at function scope 93 (slots unchanged); with the indices
+// alone: declared first in the function 92, the last loop with its own counter 92, the colour array at function
+// scope 92. The last loop's extra bytes stay: retail gives bitmap_a EBX, ours spills it and reloads the screen
+// into EBX once per pass.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
@@ -3063,6 +3071,12 @@ PRIVATE inline void squad_item_set_team(s_widget_item *item, short team)
 // 67; `searching = !A; if (searching && (B || C))` 163; false default with `!A` then `!B && !C` 53; A
 // false else `!(B || C)` (uninitialised / true default) 46/46; false/true if/else on `A || B || C` 46;
 // row-scoped text/bitmap on the 161 form 171; the expression as `!A && !B && !C` 48 (same code).
+// Round 18 (m3 lane 18, fast): `bool searching = !A; if (searching) searching = !B && !C;` 50 (881); `!A && !(B || C)`
+// 48 (same code); on the `bool searching = true; if (A || B || C) searching = false;` form (161): one bitmap setter
+// call after the index selection 242, section 1's text and bitmap in their own locals 161; a row counter of its own
+// on this body 48. Diagnostics on the identical-branch 13 form (not keepable): the counter renamed, or a separate
+// row counter declared after / before `text`, 13 each (names and declaration order do not move the row loop's
+// ESI/EDI pair); the row bitmap flag as `squad && i < count` 36; the row compares reversed 15.
 // @retail 0x253339
 void c_network_squad_browser_screen::v3()
 {
