@@ -333,6 +333,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
 // with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
 // frame 0x30 versus 0x2c and the second transform spill remain.
+// Round N284: Native real absolute-value APIs at the three epsilon consumers,
+// masks 1..7 195/195/195/195/195/195/195; all with displaced-factor admission first 219.
+// Original absolute tests, inverse defaults, alias-safe helper and complete body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

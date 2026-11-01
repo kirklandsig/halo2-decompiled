@@ -285,6 +285,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter
 // read 642; the counter conversion without `volatile` 671 (2860 bytes).
+// Round N284: Ramp-admission orders settled-ticks-distance/distance-settled-ticks/
+// distance-ticks-settled/ticks-settled-distance/ticks-distance-settled 642/696/696/695/696;
+// nested settled/distance/ticks gates 642/696/695. Original sample, comparisons,
+// counter result and complete body restored; exact caller preserved throughout.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
