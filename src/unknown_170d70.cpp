@@ -981,6 +981,18 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
+// score 346 (was 346). Logic walked block by block against retail: every call, constant and field offset agrees.
+// The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
+// rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
+// 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
+// ((i,k),j), and for k ((j,k),i) / ((i,j),k) / ((j,k),i) / ((i,j),k); the helper uses the first form everywhere.
+// A helper that picks the grouping per call reproduces all four (checked in our output) but scores 361.
+// What still differs is register choice and scheduling: retail holds the constant 1.0 in xmm5 for the whole
+// function and computes axis i2/j2/k2 before the first fptan, ours spills them; retail multiplies s*axis.i on the
+// x87 stack (fld/fmul/fstp 0x171e56-0x171e6d) and the other products in SSE; the deviation sum is fld/fmul-per-term
+// in retail, ours loads all three first.
+// Tried (no gain, all 356-383): sk/sj/si locals before or after the squares (357-383), ratio/original/vertical
+// statements moved (360-361), deviation as float sum (367), per-term (double)(a*a) (372), double locals (419).
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1448,6 +1460,12 @@ struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
+// score 19 (was 19). Retail takes eax=start, esi=end, dl=narrow, [esp+4]=fraction (ret 4; callers 0x171830, 0x16ebf0
+// load esi and dl); ours keeps narrow on the stack (cmp byte ptr [esp+0x74], bl) and puts end in edx (ret 8). The
+// body is otherwise identical (130 vs 132 bytes). The declared order of the parameters does not change any of this
+// (tried 4 orders). Tried: `long narrow` (14: test esi,esi, 130 bytes, but retail's callers load dl),
+// byte/char (19), short (21), `narrow ? a : b` (42), `flags &= ~2` (19), flags/direction statement order (19),
+// early `return true/false` instead of result (41), result set last (41).
 // @retail 0x171d00
 bool function_171d00(point3f const *start, point3f const *end, real *fraction, bool narrow)
 {
@@ -1484,13 +1502,18 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
+// score 266 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
+// the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
+// calling convention: retail takes forward in eax and up in ecx with point, distance and offset on the stack
+// (ret 0xc; the prologue copies [esp+0xc4] into ebp); ours passes up in eax and point in ebx and leaves forward
+// on the stack. The declared order of the five parameters changes nothing (6 orders tried, same score), and the
+// old `(void)&point` lines were dead code (removed, same bytes). The 0x171d00 call is also set up differently
+// until that function takes narrow in dl and end in esi.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
 {
-	(void)&point;
-	(void)&distance;
-	(void)&offset;
 	real center_fraction = 1.0f;
 	s_location location;
 	function_11bed0(&location, point);
