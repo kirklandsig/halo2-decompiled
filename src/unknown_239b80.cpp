@@ -537,6 +537,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // flag: Boolean departure, heading first, memmove, `||` update and `current` at function scope 253
 // (746 bytes); direct returns 262; short hull count 257; `current` at function scope 245, with the
 // Boolean departure 215; the heading at function scope 231. Original body restored.
+// Round 41 (lane 14): retail's first departure test compares the y term with `fxch; fcompi; jb` (the exit
+// test does not). Boolean departure with heading first and the `||` update 264, with memmove 273 (748 B,
+// points/indices in EBP/EBX); that with `|=` 295; long departure with `||` and memmove 236; done-flag
+// diagnostic on the memmove form 229.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -803,6 +807,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // `points` into ECX at the loop head (ours into EDI, coalesced with the current point), so ECX is never free across
 // the loop there and the previous side stays in memory; a `(void)&` on the previous side, both sides or count changes
 // nothing (env).
+// Round 41 (lane 14): no matched game function has retail's `mov ecx,[count]; movsx edi,cx ... test cx,cx`
+// entry (retail scan). On the if/else fraction (249, 880 B): if/else-if clamp 249; clamp inside the nonzero
+// arm 249; `short last = count - 1` 273; previous side declared before the previous point 249; loop test
+// `i != count` 249; `points + count - 1` 249. Zero-denominator arm first (`== 0.f`) 198 (887 B).
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
