@@ -1323,6 +1323,10 @@ bool function_0bfe60(dword const *flags, long bit);
 // Round 139, on the kept form: the global test split into two nested ifs 52; the visibility-result
 // outputs declared before the bitset test 52; the push pointer advanced before its store 52; the slot
 // tests as a `continue` filter 52; the index set to the counter and overwritten from the list 55.
+// Round 125 (lane 6, fast): index, slot, test and row declared const 52; the query block as a
+// forceinline (slot, index, set, draw) helper 52; the clamp as two plain ifs 52; the three slot tests
+// as nested ifs on this form 52 (all identical code); round 7's row form re-measured 38 (the same
+// colours left: counter/total EDI, player/test EBP, slot temps/status EBX, device EDI).
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

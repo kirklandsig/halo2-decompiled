@@ -572,6 +572,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
 // helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
 // pointer to the candidate for all six queries 67.
+// Round 125 (lane 6, fast with 0x91dd0/0x91860): `reference->count_spread() - candidate.count_spread() > 0`
+// for the first test 72 (516 bytes); the reference picked by `= &current; if (improved) = &best;` on this
+// body 70; nested ifs in place of the two continues on this body 67; the selection through a forceinline
+// optimizer member returning `improved ? &best : &current` 67; party_b's pointer declared before party_a's
+// 67 (the last three identical code). The candidate's count_spread still runs second.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -835,6 +840,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
 // pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
 // into EBX.
+// Round 125 (lane 6, fast with 0x91e30): open slots computed first from the sum written out, total after
+// (real build) 71, with the sum extra first 71 (player count still EDX; next party then in EAX with a
+// cmovle); total and open slots `const` 34; the locals as `int` 34; the excess as `imbalance -=
+// open_slots` in place 34 (all three identical code).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

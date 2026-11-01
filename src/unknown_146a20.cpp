@@ -160,6 +160,10 @@ bool g_47f05b;
 // Round 43 (fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0): a byte block for the buffer and the pool 40; the
 // buffer named before the global stores 36; the construction in a typed local published after 38; the size as a
 // named const 34 (same code); the pool address named after the first construction 34 (same code).
+// Round 125 (lane 6, fast with 0x146b80/0x22c3e0 matched): the fixed allocator in a typed local published
+// after the pool's construction 38 (154 bytes); `g_4798b4++` between the two constructions 38 (137 bytes);
+// the three global stores after both constructions 40 (144 bytes); `g_479880 = true` after the first
+// construction 39, `g_479890 = 1` there 40 (141 bytes each). The base vtable store stays dropped in all.
 // @retail 0x146a20
 void function_146a20(void)
 {

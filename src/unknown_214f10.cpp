@@ -206,6 +206,13 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
 // 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
 // the element or the copy 49/50/50/49.
+// Round 125 (lane 6, fast): with the handle read into a scalar (`void *handle = g_5020f8[i].handle;`) or
+// kept in the struct copy, `success = handle != INVALID; _ReadWriteBarrier(); if (success)` no longer
+// reloads the element: the store and memory re-test are retail's (aligned 3 real instructions left: the
+// `xor edx, edx` widening, the handle in EAX for retail's ECX and retail's `mov eax, ecx` before the push),
+// but 50 positional (alignment padding moves); the same with the struct built in the branch by member or
+// `{ handle }`, built before the barrier, the copy with the long `opened`, `success = (bool)opened`,
+// `(long)(...) != 0` and a forceinline bool handle test 50 each (one code).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
