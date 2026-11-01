@@ -328,6 +328,10 @@
 // top, result[5] `band2 * y * z`, sqrt5 first, result[6] first or inverse_sqrt_pi first, result[7] unstaged.
 // Real builds on this body: const inputs 59; result[5] `band2 * y * z` 59; sqrt5 set first 59; result[6] with
 // inverse_sqrt_pi first 59.
+// Round 59 (lane 16, fast; 0x146020 matched in each): lane 4's 2-point form still 2. On lane 12's named-sqrt3
+// / band3_35-first form (55 again): result[11] staged 72 (662 bytes); result[13] before result[11] 55
+// (identical); result[13] staged 64 (662 bytes); both staged 70 (662 bytes); result[15] first, right after
+// xx_3yy 147 (647 bytes).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {
