@@ -2197,6 +2197,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 331: Separate scalar initialization of turning/animation/motion planar copies, subsets 1-7:
 // 591/502/612/490/600/510/620; all with Boolean completion 620 (fast control 485; full 469). Original
 // copies and complete body restored; turning forms recover the entry but regress overall.
+// Round 273: On the recovered turning-constructor register prefix, coherent
+// admission/alignment/search workspace names in seven subsets and all with
+// planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
+// First point/prefix recover but later homes regress; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

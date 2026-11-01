@@ -123,7 +123,7 @@ bool function_249c20(s_structure_bsp_view *bsp, long cluster_a, long cluster_b)
 
 /* the two rows of cluster bits of an index (512 bits each at most) */
 // @retail 0x249c90
-void function_249c90(dword *bits_a, s_structure_bsp_view *bsp, long index, dword *bits_b)
+void function_249c90(s_structure_bsp_view *bsp, dword *bits_a, long index, dword *bits_b)
 {
 	if (bsp->audibility_count > 0)
 	{

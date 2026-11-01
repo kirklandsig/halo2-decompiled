@@ -265,6 +265,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 265: existing staged cross at point velocity/point torque/contact velocity/contact torque
 // 1418/1417/1422/1384; paired points/paired contacts/private sites/all 1455/1360/1400/1445.
 // Three-point contact-pair lead rejected; original body/captures restored, frame remains 0x5cc.
+// Round 276: Projection snapshots through the existing scalar setter:
+// direction/velocity/normalized-force/direction-velocity/direction-force/velocity-force/all
+// 1438/1400/1360/1447/1441/1410/1452; all with contact-velocity publication 1421. Three-point lead
+// rejected.
+// Original executable source restored; Frame 0x5cc versus 0x58c, component/velocity/query homes and contact induction remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -73,6 +73,9 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// MiniMax R (11-01): no new form, no lower score; the element select still loads the field pointer
+// into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test
+// still uses EDX and EAX where retail uses EAX and ECX.
 // score 7 (was 7): this round: five more shapes of the group loop's call (the entity list in a
 // named local, the element read through pointer arithmetic, the index read into a local before the
 // select, both of those together, and the element pointer in a local) all compile to the same 507
