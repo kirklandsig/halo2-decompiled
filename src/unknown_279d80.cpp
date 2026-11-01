@@ -1977,6 +1977,10 @@ void function_27dd10(void)
 // frame-state saves or restores reversed and the pass counters as a switch keep the tie and change
 // matched neighbours; a constant subtraction before the blend-1 rotation apply (semantics changing)
 // is the only form that gives retail's order.
+// Round 98: inheritance pointer by value 399; the apply through the existing component_apply 2;
+// the alternate existing node lookup 2; rotation and translation cases swapped 2; vector blending
+// through interpolate_real 155; scale blending through interpolate_real 42; root scaling through
+// interpolate_real 2; blend-1 and blend-2 arms swapped 2. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

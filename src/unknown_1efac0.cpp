@@ -394,6 +394,10 @@ struct s_surface_object_header
 // Round 19: the record address as byte arithmetic on the data 8; the record written in full at
 // both uses 8; a named region index with the object left a common subexpression 8; the
 // permutation read through a forceinline helper 8; the two index locals declared surface first 10.
+// Round 98: one surface pointer shared by the first two cases 8; result assigned from the mapped
+// index 52; an early return for the value mismatch 69; all three failure guards as early returns 69;
+// a read-only object pointer 8; a read-only values pointer 8; a bit-field discriminator 8;
+// bit-field views for all three key fields 8. All restored.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0
