@@ -1957,6 +1957,8 @@ void function_269250(long clump_index, long actor_index);
 // in-arm search as a forceinline function returning the selection 126 (480 B); the in-arm compare with the selection
 // and best declared once for the whole function and reset per actor 126. The fast image swaps 0x269580's two
 // argument registers (0x269580 matches only in the full image): read this function's call setup from plain checks.
+// Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
+// all plus pre-search created-result storage 89. Original declarations and body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2188,6 +2190,8 @@ void function_269250(long clump_index, long actor_index)
 // Round 482: Independent category false-initializer lifetimes at entry/object/type
 // boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
 // declarations restored; category-byte homes and deletion/pool completion remain.
+// Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
+// unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2311,7 +2315,7 @@ int __cdecl function_269da0(void const *a, void const *b);
 void bitset_or(dword const *a, dword const *b, dword *destination, long bit_count);
 void *actor_get_character_situation_entry(long actor_index);
 
-// score 71 (was 283): the cluster loop (hoisted reset word in SI, NONE in EDI), the marking loop and the
+// score 71 (was 71): the cluster loop (hoisted reset word in SI, NONE in EDI), the marking loop and the
 // second selection loop now equal retail; left: the prop-loop head (ours loads the count before the prop
 // pool and keeps the pool in EDI where retail has EDX) and the first selection loop's `add ebx, 0x10`,
 // where retail re-derives the candidate from the cursor (doing that here drops the reset hoist, 301).
@@ -2417,6 +2421,9 @@ void *actor_get_character_situation_entry(long actor_index);
 // Round 482: Stable selection-count snapshots short/long after sort 197/313, before sort
 // 203/315; with first-loop indexed candidate advancement 314/171/313/184.
 // Caller-inclusive fast control 71; every snapshot regresses. Original escaped count restored.
+// Round 295: Native prop iterator/prop result/object result entry homes in seven subsets [71, 71, 71, 71, 71, 71, 71],
+// all plus entry candidate receiver 71. Caller-inclusive fast control 71.
+// Every initializer and escaped count observation stayed fixed; original complete body restored.
 // @retail 0x269870
 void function_269870(long clump_index)
 {

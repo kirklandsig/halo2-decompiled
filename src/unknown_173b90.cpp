@@ -595,6 +595,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // (re-measured), plus the separate input copies 115 (1138 bytes), with the emitter mask read from the
 // definition at both uses 232 (1130 bytes); the separate input copy for the position rotation only 42
 // (same code: VC folds it into the helper's own copy).
+// Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
+// before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
+// All overrides and memory observations stayed fixed; original defaults and complete body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1401,7 +1404,8 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 102 (was 102): an earlier round: the availability flag written as `query(view) == 0` 102 (the
+// score 102 (was 102): frame 0x14 agrees; NONE/owner, availability and Boolean homes differ.
+// Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
 // availability flag lives in bl because its NONE sentinel lives in ebp and frees ebx; ours keeps
@@ -1491,6 +1495,8 @@ bool function_17afd0(long effect_index, long value);
 // declared before the availability 115; the same view false-then-set 121 (501 bytes). On the kept form:
 // the loop as `for (long index = ...; index != NONE;)` (this file's own form above) 102 (same code); the
 // availability as `view != NONE ? !query(view) : false` 107 (485 bytes).
+// Round 295: Native system/definition/cluster entry storage in all seven subsets [102, 102, 102, 102, 102, 102, 102].
+// All three plus effect/view entry storage 102. Original producers and body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
