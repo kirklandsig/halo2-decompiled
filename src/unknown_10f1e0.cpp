@@ -1399,6 +1399,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 243: Complete success/depletion/interruptibility status enums, subsets
 // 1..7 381/173/386/172/403/174/384; all with entry success constant 384. Original byte
 // result, Boolean statuses, queries, parameter observation and complete body restored.
+// Round 273: Complete complementary permission bool/byte/long/dword at the original
+// phase 281/281/277/277; entry bool/byte/short/dword 281/281/290/277. Original byte
+// result, status graph and argument observation restored. Two other reduced links
+// produced no comparison and are excluded; pool/state/count/return differences remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1606,6 +1610,9 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 243: Reused long/word/dword header ordinal and long byte offset,
 // at entry 491/469/491/489 and within controlled admission 495/461/495/476.
 // Original pool observations and body restored; frame/state/request/result homes remain.
+// Round 273: Reused two-request primary membership bool/byte/short/long before the
+// predicate call 497/497/474/472; inside dispatch 482/482/478/482. Original request
+// comparisons, case results and complete body restored; frame eight versus twelve remains.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1940,6 +1947,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Round 243: Complete two-use center predicate byte/short/long/dword storage
 // 790/848/786/786; complementary bool/byte/short/long 844/844/836/831. Long/dword gain
 // only four at 3392 bytes and are dropped. Original predicate, helper and complete body restored.
+// Round 273: Repeated native slot receivers 4/3/0, pairs 4-3/4-0/3-0, all and
+// all declared at entry 790/796/793/796/793/799/799/796. Original receiver expressions,
+// native direction copy, helpers and body restored; frame 0xcc versus 0xd4 remains.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

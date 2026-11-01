@@ -1438,6 +1438,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 268: shared final color-scale scalar pairs 1-2/1-0/2-0/all, original luminance
 // workspace 567 each; split luminance producers 529/529/529/567. Frame stays 0x2c;
 // caller 364 and exact caller survive all eight. Original scalar graph and body restored.
+// Round 273: Repeated primary/secondary/ambient output-field pointers in single/pair/all
+// subsets 535/529/530/532/533/537/533; all with primary direction 532. Original fields,
+// native workspaces, helper contracts and body restored; frame 0x2c versus 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1956,7 +1959,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
-// score 555 (was 595): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// score 555 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // Earlier: frame 0x90 agrees and the first arm matches retail instruction for instruction
 // except its stack homes (lightmap +0x20 versus +0x34, mesh +0x2c versus +0x20, result/part, normal,
 // u/v/bsp/material slots: retail packs them jointly with the second arm's colours and normals); the
@@ -2077,6 +2080,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // ascending/reverse declarations and model/entry validity lifetime: 603/821/555/773/603/821/555/773.
 // sample_offset names 555; plain 555 kept. Each offset has both format consumers; all sample objects,
 // helper bodies, call roles and arithmetic grouping stay fixed.
+// Round 273: Complete encoded decoder input value/reference-copy/library-copy/native
+// five-short array copy 687 each; weights-first value/pointer-copy/reference-copy/library-copy
+// 699 each. Original decoder, separate samples, shared offsets and complete body restored.
+// Frame 0x90 agrees; status +0x30 versus +0x24 and mesh +0x2c versus +0x20 remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
