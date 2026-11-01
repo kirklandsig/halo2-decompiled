@@ -150,6 +150,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // forward.i 333 (1836 bytes); 40 random dependency-respecting orders 219..456, best (kept) 219; product
 // operand orders and the two locals' names/declaration order 218-219 (same code); scalar sine products
 // with the squared vector 328 (frame 0x64), scalar squares with the sine vector 438 (frame 0x60).
+// Round 129 (m3 lane 6, fast): case 0's up copied field by field k, j, i 354 (the jump tables then sit at
+// retail's address, but the copy becomes float loads and the cross recolours); the forward negations
+// written k, j, i 219 (same code); both 354; the rotation's j square moved ahead of ij 360 (1840 bytes);
+// left.j moved ahead of ik 350 (1764 bytes, frame changes). Compile-only (non-LTCG) does not reproduce
+// this function's rotation block (its schedule and loads differ from the real build), so it can't screen it.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

@@ -645,10 +645,17 @@ real function_267370(long object_index);
 // clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
 // chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
 // the zone helper's compares 98 (same code: the constant is shared either way).
+// Round 147 (m3 lane 4, plain checks; --fast differs only at the 0x28f8d0 call, an aligned diff shows 28 real
+// instructions left): a compile-only build of this file without /GL gives retail's immediate zone compares and
+// `or ecx, -1` at the resets, so the NONE sharing comes from the LTCG allocation, not the spelling. The shared
+// zone helper reading the cluster index at each use 96 (the sharing stays; three cross products flip to retail's
+// operand order and three away, so those orders follow internal numbering); the parent pointer set by an `if`
+// 352; typed byte fields for 0x265/0x267 98 (same code); the zone result in a named bool 100; `left` declared
+// before the up copy 98; type read before the parent 129. Re-measured: without `(void)&actor_index` 98 (same
+// code, removed: it only took the parameter's address); the parent ternary with the found arm first 102.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
-	(void)&actor_index;
 	s_actor_moving *actor = actor_moving_get(actor_index);
 	byte *actor_bytes = (byte *)actor;
 	if (actor->unknown007)

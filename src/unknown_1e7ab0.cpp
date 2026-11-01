@@ -281,10 +281,14 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 262: Entry declaration scopes for status/child iterator/metadata result, all
 // seven nonempty subsets 620 each; complete workspaces with ordinary player pointer 786 (2124/2308).
 // Original scopes, cases, helper contracts and inherited local qualifications restored.
+// Round 53 (m3 lane 1; kept: the `(void)&local_index;` line dropped, byte-identical 620: the index
+// stays a stack argument without it): the existing function_14de70 for the player index 623 (retail's
+// or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the
+// address line 623; the player index as the matched 0x1e83c0's ternary 622; result declared first 620
+// (same code).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
- (void)&local_index;
  s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
  byte *data = (byte *)state;
  bool result = false;

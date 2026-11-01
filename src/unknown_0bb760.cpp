@@ -573,6 +573,16 @@ void function_3dd10(long object_index, bool force);
 // mask or the last index address-taken 638 each (taking an accumulator's address does not stop the
 // unroll); the mixing moved after the second loop on a found choice pointer 145. The weight, mask and
 // last index are memory-resident in both builds, so that is not what stops retail's unroll.
+// Round 147 (m3 lane 4, fast = plain here): with the inverse at the top of the found block (round 55's form, 132)
+// an aligned diff leaves only four instructions: blend's fstp after the variant byte compare, the first scan's
+// two exits, and retail's `movss xmm5, 1.0` at the selection loop's not-found exit (retail rematerializes 1.0 on
+// both exits; ours sends that exit through the clamp entry's load), plus 8 bytes of padding; blend also takes
+// retail's slot there. A compile-only build without /GL packs blend into index's slot as retail and keeps the
+// signed scan rolled, so the slot and the unroll are LTCG-build effects. Tried: seed renamed hash 84 (same
+// code); the first scan as a signed for with the weight added first 616 (1294 bytes, unrolled); the inverse at
+// the top of the selection loop body 84 (hoisted back); on the found-block form the target before the running
+// sum 136 and the eligibility test as nested ifs 132. Diagnostic (reverted): size preference around the
+// function 443 (879 bytes).
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -703,6 +713,10 @@ struct s_colour_function_ab
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 
 // score 91 (was 91): retail keeps the destination pointer in EBX and
+// retail keeps the destination pointer in EBX and the source pointer only in its stack
+// slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
+// at the end of this note.
+// Round 31 (lane D): unchanged; retail keeps the destination pointer in EBX and
 // the source pointer in its stack slot, while ours keeps the source in EBX and the destination in
 // EDI (which also feeds the 0x131c20 result register), and retail counts the colours with a signed
 // 32-bit division by 24 (magic 0xAAAAAAAB) where our (long) cast gives the cheaper 16-bit-range
@@ -713,11 +727,13 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
 // destination 148 and a constant source 91; every one restored.
 // Earlier: retail keeps the destination pointer in EBX and the source pointer
+// Earlier (91, was 91): Retail keeps the destination pointer in EBX and the source pointer
 // only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
 // retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
 // (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
 // instruction sequence does not.
 // Earlier: retail tests the count against zero before it computes
+// Earlier (91, was 91): retail tests the count against zero before it computes
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the
 // loop's bookkeeping differ.
@@ -786,6 +802,16 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // destination keeps EDI); the blend output passed as `&base[count]` 209 (609 bytes); the source read as
 // `base[i]` with no source increment 161; a plain `for (i = 0; i < count; i++)` with an indexed source and
 // destination 107; that loop stepping only the destination 161.
+// Round 147 (m3 lane 4, fast): a plain `for (i = 0; i < count; i++)` with `current = &base[count + i]`,
+// `*current = base[i]` and `result = true` after the copy 149 (563 bytes; its loop head equals retail's,
+// source and entry offset in retail's slots, but base takes ECX, so the false result takes BL with EBX pushed
+// at entry, and the destination EDI); the same inside `if (count > 0) { result = true; ... }` 107 (572 bytes);
+// a plain for with a walking source (`current = base + count` each pass, `base++` at the body's end) 89 (581
+// bytes: entry, size-first read and division agree, false result back in CL, but base keeps EBX in the loop,
+// the destination EDI, and base/entry-offset slots swap; 2 points, not kept); on it the copy before the entry
+// lookup 141, the source step right after the copy 180, `result = true` before the copy 89 (same), count
+// declared before base 178, the blend call through a forceinline wrapper (diagnostic) 89 (same); an indexed
+// source with a walking destination 161 (575 bytes).
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

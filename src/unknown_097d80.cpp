@@ -190,6 +190,14 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// Round 31 (m3 lane 2, fast): produced as a dword (passed through a long pointer cast) 31; total as a
+// dword 32; the room argument as `sizeof(blocks) / sizeof(blocks[0]) - total` 31; the collection child
+// declared before loop 1 31; error and total declared before starts 31 (frame 0x8024 in each).
+// Round 147 (m3 lane 4, fast; a compile-only /GL- listing names the shared lowest slot produced plus two
+// compiler temporaries, the next slot three more): error renamed status (a name sorting after produced)
+// 31 (same code); produced declared and zeroed at the loop-body top 125 (389 bytes); the boundary stored
+// before the child read 31; the cleanup through blocks[k] directly 31; both loops calling the concrete
+// child class (children[i] without the cast) 31. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

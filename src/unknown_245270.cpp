@@ -485,6 +485,11 @@ void function_245400(s_source_245400 const *source, long index,
 // pointer 209/209/209 (source in ECX, 0x245aa0 MATCH each; the block-top read kept); just before the edge
 // vector 203 (EDX, 0x245aa0 3). (index, matrix, source, ...) with the entry read 209 (0x245aa0 16, the
 // element loaded through EDX); the old order with the entry read 209 (0x245aa0 16).
+// Round 110 (lane 8, fast; the reduced image holds 2 sources): the facing test with the side test
+// inverted (`!=` arm first) 209; sides as `(code & 0x8000) != 0` 209; the two sides in a two-element
+// array 207; sides computed inside the plane-index test 209; a named `same_side` comparison 209 (all
+// compile alike: our build sinks both side bits into one xor, retail computes them eagerly into a
+// stack byte and BL and compares bytes).
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
