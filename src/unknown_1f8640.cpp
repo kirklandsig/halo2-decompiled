@@ -367,7 +367,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// MiniMax R (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
+// MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
 // then differs in ~417 instructions, so the 228 body is kept.
 // score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
