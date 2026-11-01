@@ -954,6 +954,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 117: a barrier inside the tick reader after the zero store 3, before it 4 (the zero xor
 // again after the pushes); the header's address taken 3; the page count read before the tick
 // read 17; the reader with external linkage 3.
+// Round 133: the tick as `volatile long ticks[2]` 3; as two volatile longs 10; unsigned 3; as a
+// volatile LARGE_INTEGER 3; this function placed before 0x194260 3; the retry counter at the
+// allocator's top 17 (0x194260 then 8).
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {
