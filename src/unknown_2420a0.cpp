@@ -1124,7 +1124,7 @@ void c_game_engine_markers::v21(long object_index)
 // mode read through g_4e6948's own view 119 and the absolute index inside the flag block 119; guard
 // returns for the mode, type and slot tests 40; the object fetched before the type test as in the
 // matched v24 119 (the object is then kept, where retail reloads it).
-// score 40 (was 40): the entry swaps EAX/ECX for the object index and the header; retail computes the
+// Earlier note (40): the entry swaps EAX/ECX for the object index and the header; retail computes the
 // player pointer before the flag test with the players' data load unfolded and reloads the options
 // pointer at the engine-type compare.
 // Round 77: the team at each call again 119 (the options pointer then stays in EDX from entry and the
@@ -1221,6 +1221,13 @@ void c_game_engine_markers::v21(long object_index)
 // on this body or on the team at each call; a slot-table local as in v24 (`g = g_51ec80`) 50, with the
 // team at each call 119; v30's per-arm team with a const player 119; early returns for the mode and the
 // type test 40 (same code), with the team at each call 119.
+// Round 64 (lane 9, fast): declaration order only: the unit declared before the slot 40, player_index
+// declared at the function's top 40, absolute_index at the type block's top 40 (same code each); on the team
+// at each call: the unit declared first 119, player_index at the top 119; the player getter at each call
+// without a player local 100 (re-measured). Diagnostic: the slot read through the unit index (no shared
+// object-index CSE) 117 still loads the index into EAX. A compile-only build with 0x101280's body pasted in
+// as an inline reproduces the entry swap and keeps it with the header in a local, the index masked into a
+// local, or without the mode test.
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

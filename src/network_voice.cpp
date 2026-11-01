@@ -3364,6 +3364,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // shared kind test before the relay branch 180 (467 bytes).
 // Word/dword exclusion mask with original/independent cursor and signed/unsigned native ordinals:
 // 166/168/174/175/166/168/174/175. Channel/cursor/member ownership remains; original source restored.
+// Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
+// 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
+// the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
+// member bit cleared before the talker test 161 (469 bytes).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
