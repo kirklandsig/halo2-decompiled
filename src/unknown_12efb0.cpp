@@ -266,6 +266,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 264: Library contribution clamp, paired radius caps and paired fallback bounds,
 // subsets 1/2/4/3/5/6/7 and full upper-first clamp 2071/836/848/2166/2161/942/2251/2228.
 // All enlarge code; original selections, input captures and complete body restored.
+// Round 440: complete immediate contribution products in scalar/merge/color, subsets 1/2/4/3/5/6/7, then
+// all with six-field publication 616/616/615/616/615/615/616/616. The 615 forms gain only one and are
+// rejected. Original product trees, all reads/stores, alias-safe source-weight copy and complete
+// helpers/body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

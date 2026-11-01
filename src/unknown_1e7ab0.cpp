@@ -286,6 +286,10 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the
 // address line 623; the player index as the matched 0x1e83c0's ternary 622; result declared first 620
 // (same code).
+// Round 440: call-free seated-reset/magazine/input field-test orders, subsets 1/2/4/3/5/6/7, then all with
+// seat/parent test order 657/620/782/657/759/782/759/759. Magazine producer clears the complete output
+// first. Call admissions, widths and values are preserved; no state/player allocation gain; original guard
+// orders and complete body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -642,7 +642,7 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
 // clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
 // volatile slot, kept one load but changed the register allocation (133, 132, 141).
-// score 93 (was 97): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
+// score 93 (was 93): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
 // one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
 // 126; clears spanning clamp 136, with word events 136. Original body and parameter accesses restored.
@@ -718,6 +718,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // plain pointer read used at the first two 136; `(void)&callback` with the parameter read at each dispatch
 // 128 (LTCG passes the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); a const reference
 // to the callback read at each dispatch 136.
+// Round 440: distinct initial/completion identity lifetimes at entry/before-dispatch/first-
+// admission/after-publication 166/142/142/142; those four graphs with a const callback slot
+// 166/142/142/142. Extra identity storage grows the frame; complete original identities, callback contract
+// and body restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

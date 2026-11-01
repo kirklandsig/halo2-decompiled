@@ -2035,6 +2035,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 450: live cluster field alone/zone/entry/both 128/165/379/379; with
 // live base 128/165/379/379. Entry-field forms outline the existing zone producer;
 // its forced expansion on live cluster/entry gives 186. Original producer and body restored.
+// Round 440: shared plane producer 128; complete plane/point/both/zone/zone-point/zone-producer inputs and
+// assigned plane result 379 each (producer outlined). Forced existing expansion on
+// plane/point/both/zone/zone-point/assigned graphs 281/240/358/340/400/405. All input objects, original
+// arithmetic, helper and body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
