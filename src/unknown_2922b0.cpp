@@ -70,7 +70,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 629 (was 629): Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
+// score 618 (was 618): Frame 0x108 agrees; success/hit/input/minimum homes, inactive-exit placement and axis schedules remain.
+// Earlier at 629: Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
 // Retail stores true directly in its result byte and returns immediate one on the inactive path.
 // Hit/basis/ray/root/rotation homes follow.
 // Frame 0x108 and the prologue agree (success in retail's stack byte); our
@@ -225,6 +226,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
 // cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 300: Single inactive goto to the common result exit, staged cross basis/rotation/projection
+// masks 0..7: 635/657/635/657/632/651/632/651. All restore early EBX/BL success and regress.
+// Original constant inactive return, private producers, in-place snapshots and complete body
+// restored; success/hit/input/minimum homes and axis schedules remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -378,6 +378,10 @@ void function_14bac0()
 // workspace, 311/305/311/305; with native result-tested recipients
 // 304/302/307/305. Original separate probes, returned relocation output,
 // selected unit, observations and both player traversals restored.
+// Round 300: Complete alternate elevation before publication: native/memcpy/shared-setter copies
+// 233/233/240; each with native recipients 229/229/245. Shared setter producing the final z
+// directly 240, with native recipients 245. Original point copies, elevation, returned relocation
+// output, selected unit and both scans restored; frame/readiness/recipient sharing remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
