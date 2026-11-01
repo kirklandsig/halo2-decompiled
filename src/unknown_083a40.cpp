@@ -708,6 +708,14 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // swap order follows the key copy's registers); the last record's two source reads before its update pointer
 // 36; `collection` declared before the second loop 276 (1072 bytes); the occupied key through
 // `watcher->players.players[i].key` 292 (frame 0x8c). Permuter (600 s, 74 tries) none better.
+// Round 111 (lane 8, fast; one-file LTCG harness exact, 28/32): on the swap order above the occupied
+// block's head is retail's and only its key sum differs ((offset + cursor) + collection against
+// retail's (collection + offset) + cursor; the key copy and the last record's reads then trade
+// registers). `slot`/`occupied` initialized to NONE/false 168 (1074 bytes), with the swap order 168; the
+// swap test as `slot != i && slot != NONE` 322 (1091 bytes); the occupied key as `i[collection->players]`
+// on the swap order 32 (same code as `(i + collection->players)`, `&...key[0]` and `key + 0`, harness);
+// the key copies as 12-byte struct assignments (diagnostic cast) 28 (same code); the occupied key from
+// the loop-top `player` 291 (harness, either swap order); `if (occupied == true)` 110 (harness).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

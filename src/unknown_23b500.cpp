@@ -182,6 +182,12 @@ struct s_spawn_scenario_23aea0
 // function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
 // nested loops through a named source record pointer 123. No other retail function uses this
 // integer-offset store idiom, so no matched sibling shows its form.
+// Round 111 (lane 8, fast; one-file LTCG harness exact at 105): a zero-based `dword` loop over the twelve
+// records 141 (375 bytes; in the LTCG harness it counts down with a pointer, not the integer offset); one
+// `dword` type loop from 2 141; an `unsigned short` type loop 256 (278 bytes, not unrolled); a zero-based
+// `long` loop over the records 105 (same code); the outer batch counter `dword` 141. Harness diagnostics
+// (not kept): /G5, /G6, /G7 and /Ox the same 105; the weights reached through an extern `dword *const`
+// global pointer 105 (folded at link), through a non-const one 156.
 // @retail 0x23aea0
 void function_23aea0()
 {
