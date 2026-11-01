@@ -170,6 +170,11 @@ short __stdcall function_2551c0(long actor_index)
 // and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
 // five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
 // statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
+// Round 45 (lane 11, fast), the rotation helper in other files' forms: 0x26db50's (dot3f(axis, vector)
+// projection, the components in locals, crosses written in the outputs) 117 (817 bytes); 0x1f6090's
+// (mixed operand orders, outputs into a local vector copied back) 197 (848 bytes); the components read
+// into locals in the copy's store order i, k, j 116; the three outputs into locals stored after 181
+// (837 bytes); the crosses written in the outputs with the named projection 151 (799 bytes).
 // Round 122 (lane 5, fast; the current tail and frame are already retail's): the existing 0xe70b0
 // call for the state test re-measured 70 (820 bytes); the rotation into a local vector with inline
 // cross terms, then `*vector = rotated` 200 (851 bytes); `cross3f_staged(vector, axis, &cross)` 159

@@ -764,6 +764,11 @@ real g_55e618;
 // 0x10c frame, so the collision record escapes in retail as in ours and the early argument read is not
 // escape-driven. Re-measured in the env only (listed above): the velocity pointer, with dot3f, with
 // vector3f_scale 183/102 each.
+// Round 67 (lane 12, same env; positional/aligned): the tangent through the existing vector3f_assign 74/84 (same
+// code); with the perpendicular through vector3f_scale 76/87; the final velocity through vector3f_assign 175/77
+// (1545 bytes); the velocity pointer with perpendicular/tangent/final setters, with dot3f, or with only the final
+// setter 184/103 each (1541 bytes, frame 0x118: perpendicular still gets no home); the pointer declared at the
+// loop top and used for the displacement too 279/201 (1567 bytes).
 // Round 36 (lane 13, fast): retail's homes follow its spills (tangent.i/j spilled twice each sit low at +0x38,
 // perp.k once at +0xa4 under the collision); it holds the three position sums in xmm1/xmm4/xmm2 until after
 // impact.index, so only perp.i/j, tangent.k and keep cross the call. On the velocity pointer form (194): dot3f

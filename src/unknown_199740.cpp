@@ -71,6 +71,11 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // separately defined reader inlined at link time). Real build: pool flags as one chained assignment
 // 5 (0x3d stored first); the helper's result declared before its start read 3 (0x18f260 75,
 // 0x6a8a0 12); start declared then assigned 3; unsigned reader local 3; plain `inline` reader 3.
+// Round 47 (lane 11, fast): `_ReadWriteBarrier()` after the result default (0x8c790's and 0x194260's
+// form) 4 (stores in retail's order, `xor ebx` after the pushes); the barrier after the allocation 41;
+// the decompressor context declared at the top and assigned in the block 22; the pool freed through the
+// context local 24; the pool flags set through the context local 53. Compile-only: /G5, /G6, /G7 and /GB
+// all hoist the first zero store above PUSH EDI the same way.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {
