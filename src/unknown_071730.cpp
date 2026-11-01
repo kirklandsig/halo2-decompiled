@@ -189,6 +189,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 478: complete strict solver predicate with short/bool/byte/long result
 // 455/458/458/457; both strict and fallback predicates 458/458/458/458.
 // All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 221: coordinated byte return with Boolean/native-byte final storage 439/439; with Boolean reset
+// 469/469. Signed-byte return on those four graphs 439/439/469/469. Every native return declaration
+// loses matched dispatcher 0x706f0 (123) and is rejected. Boolean reset recovers frame 0x3e4 but
+// shortens to 1562/1589; result remains at +0xe versus +0xf. Original Boolean interface, caller
+// declaration, long reset, short balance, waiting decision and whole body restored; frame/state stores
+// and getter boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

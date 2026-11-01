@@ -84,7 +84,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // index and point index in memory (frame 0x2c and 0x80) where ours keeps them in registers, its three
 // NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
 // and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
-// score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// score 390 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Earlier: frame 0x68/0x64, induction/endpoint homes and x87 scheduling differ.
 // Earlier: table-pointer roles now agree; frame 0x68/0x64, outer-loop reload placement, inner-loop registers and x87 square order remain.
 // Complete initial guard exits 458; CRT output point copy 416; distance second point by value 569;
@@ -178,13 +178,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 112 (lane 8, fast): group-table pointer declared first and assigned at its test 398; scenario
 // pointer declared first 398; no structure-BSP local (global read at both uses) 398; the three defaults
 // declared in reverse order 398; the group-table pointer as one ternary initialiser 398 (all same code).
+// Round 221: native selected group/terminal/both 466/394/459; with native group input 513/470/471
+// (native input control 496); complete graph with short byte-narrowed terminal producer 433. Native
+// selected terminal plus actual output-record cursor and consistent point-table fields 390, kept:
+// best-distance home agrees at frame 0x64. Separate short/long output-point induction 415/412; with one
+// shared computed step 418/427. Original signed-short input scans, byte narrowing, metric helpers and
+// validator tuples remain; selected-default, bitmap/endpoint, root-table and x87 homes still differ.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
 {
     short local_0 = NONE;
     short local_1 = NONE;
-    short local_2 = NONE;
+    long local_2 = NONE;
     real best_distance = 3.402823466e38f;
     bool local_4 = false;
     s_29e0f3 *local_5 = (s_29e0f3 *)g_4e0348;
@@ -271,18 +277,19 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                     }
                     if (local_0 != NONE && local_1 != NONE && local_2 != NONE)
                     {
-                        s_29e0f0 *local_36 = &local_11->field_44[local_0];
+                        s_29e0f8 *output = &arg_4->field_30[0];
                         short local_37 = 0;
                         do
                         {
-                            function_29e64d(&arg_4->field_30[local_37], &local_36->field_4[local_1]);
+                            function_29e64d(output, &local_11->field_44[local_0].field_4[local_1]);
+                            ++output;
                             ++local_37;
                             if (local_1 == local_2) break;
                             local_1 += local_2 > local_1 ? 1 : -1;
                         } while (local_37 < 4);
                         if (local_37 < 4)
                         {
-                            function_29e64d(&arg_4->field_30[local_37], &marker_position);
+                            function_29e64d(output, &marker_position);
                             ++local_37;
                             arg_4->field_2c = true;
                         }
