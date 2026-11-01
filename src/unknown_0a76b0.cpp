@@ -4319,7 +4319,7 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 	point3f world;
 	point3f local;
 	quaternionf object_orientation;
-	quaternionf frame_orientation;
+	quaternionf inverse_rotation;
 	quaternionf orientation;
 
 	frame.scale = 1.0f;
@@ -4330,10 +4330,10 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 	unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
 	unit_action_untransform_point(&frame, &world, &local);
 	function_141f60(&object_matrix.rotation, &object_orientation);
-	function_141f60(&frame.rotation, &frame_orientation);
-	frame_orientation.w *= -1.0f;
+	function_141f60(&frame.rotation, &inverse_rotation);
+	inverse_rotation.w *= -1.0f;
 	function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
-	function_11d820(&frame_orientation, &orientation, &orientation);
+	function_11d820(&inverse_rotation, &orientation, &orientation);
 	*(point3f *)(seat_transform + 0x10) = local;
 	*(quaternionf *)seat_transform = orientation;
 
