@@ -642,7 +642,7 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
 // clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
 // volatile slot, kept one load but changed the register allocation (133, 132, 141).
-// score 93 (was 97): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
+// score 93 (was 93): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
 // one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
 // 126; clears spanning clamp 136, with word events 136. Original body and parameter accesses restored.
@@ -718,6 +718,15 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // plain pointer read used at the first two 136; `(void)&callback` with the parameter read at each dispatch
 // 128 (LTCG passes the callback in EAX; callers 0x1c68c0 16, 0x1c6920 8, 0x1cb710 19); a const reference
 // to the callback read at each dispatch 136.
+// Round 47 (lane 11, fast; callers 0x1c68c0, 0x1c6920, 0x1cb710 match unless given): retail treats the
+// callback (and the graph) as memory variables whose register copy is reused: loaded into EBX at the first
+// dispatch, kept for the second, reloaded after the variant join for the third. A plain callback with the
+// pointer and volatile dropped and the parameter renamed to sort after `graph` 128 (callback in EAX, kept
+// in EBX from entry; callers 16/8/19, same as without the rename); the volatile read taken once into a
+// named local for the first two dispatches 141 (frame 0x10, EBX becomes the zero); the callback pointer
+// declared `const *const` 93, declared just before the first dispatch 93, declared after the position
+// read 93 (same code each). Lead not tried: callback and user passed as one by-value pair would keep both
+// in memory as retail, but every caller up the chain would change with it.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

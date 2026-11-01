@@ -249,6 +249,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // (success)` and the element passed directly (`(bool *)&success`) matches byte for byte; the same with the
 // comparison stored without the `(long)` 48 (byte setne, no `xor edx, edx`), from a long local 48, as
 // `(bool)opened` 48, as a char store 48. The flag is written by the queued task like `done`.
+// Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
+// result and the call on the array element with no file copy, branching on success 55 (351 bytes);
+// `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
+// handle and constant 42 (same code); success set true inside the open branch over a false
+// initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

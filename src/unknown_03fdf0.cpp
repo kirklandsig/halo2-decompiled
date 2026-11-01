@@ -376,6 +376,13 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // 143 (164 real), indexed 145; a dword count at the `if` top indexed 126 (140 real, 495 bytes), block 125; real
 // `--fast`: unsigned cache_index 54, current/count/first/entries/copy/selection/advance on the block 66, first/
 // entries/current/copy/selection/advance 66.
+// Round 47 (lane 11, fast): the block pointer renamed to sort after or before the other locals 54/54
+// (same code: its slot stays between n and the weight, where retail has the weight and the scaled
+// index is a temporary after geometry); the count read at each use through the caller's metadata
+// view (`g_4c6b00[cache_index].count`) with the entries from the record view 144 (492 bytes: the
+// indexed form's index EDX, count CX, zero EAX, first EAX, entries ESI spilled at once, where retail
+// has count AX/EAX, zero ECX, first EDI and entries EDX); that with a short count local at the `if`
+// or before the clears 177/177 (480 bytes).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
