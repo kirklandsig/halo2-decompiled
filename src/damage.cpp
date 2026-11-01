@@ -767,6 +767,11 @@ void __stdcall function_d6bc0(long object_index)
 // shares one `mov al, 1` epilogue between the type test, the flags & 8 test and the team test, we emit one inline
 // before the team call and reach the other through `mov bl, 1`. Tried: all `return true` (convention reverts, 85),
 // `result = true` at every site (35, `mov bl, 1` tail), `return player_index != NONE` without the bool local (50).
+// Round 473: success paths type/flags/team as set/return/return 51, return/set/return 51, set/set/return
+// 36, set/return/set 26, return/set/set 33; first result on set/return/return 72; dword on
+// return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
+// predicate and current/entry lifetime: four comparison forms 88, four conditional forms 91. Original body
+// restored; shared true epilogue and stack parameter convention remain coupled.
 // @retail 0xd72e0
 bool function_d72e0(long object_index, s_type_1e6529 const *data)
 {
@@ -1376,6 +1381,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // which then goes through ecx instead of eax). Everything else, including the usercall registers, matches.
 // Tried: memcpy of the owner (10), the owner copied through a local (10), flags updated with ?: chains (10),
 // the flags read and written through data.flags instead of the byte-array alias (10).
+// Round 473: required bit at final publication 32; flag declaration before event 10; event name 10;
+// damage_flags name 10; owner before scale 17; owner/late bit 35; both names/late bit 32; flags before
+// disjoint publications 17. Original body restored; aggregate-copy registers and final flag-store schedule
+// remain.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -1899,6 +1908,11 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // `lea ebx, [ecx + 8]` before the last call's first push.
 // Tried: the region entry cached in a local before the `info &&` test (226).
 // @coldspear's permuter (#104, 2026-10-30): 40 -> 36 only by reading a short where retail reads a dword (not kept).
+// Round 473: coherent region input across guard/index/damage call, reciprocal lifetime/null order/native
+// name combinations: 230/230/230/230/149/149/230/230. Original field reads with pointer-first guard 166,
+// nested guard 40, eager null comparisons 238, nullable ordinal 40, definition flag first 58, upper range
+// first 44; three-use owner address after/before initial damage 180/185. All restored; pointer-load
+// scheduling, object/shift registers and final owner-address schedule remain.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
