@@ -1470,6 +1470,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
 // sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
 // writers and entire body restored.
+// Round 279: Existing native four-vector persistent sample output, indexed/field consumers
+// with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
+// exact-only storage forms restored, including the temporary include; sampler and writers
+// unchanged. The mapped rescale word load remains.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {

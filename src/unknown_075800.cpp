@@ -961,6 +961,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
+// MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
+// message, address) with the receiver in EDX, which this file's declaration cannot change.
 // score 193 (was 193): retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // the address on the stack (loaded into EDI, which 0x94220 takes it in); ours the type in ECX, the
 // address in EAX and the message on the stack, in every declared order. Retail lays the case bodies out
@@ -1162,76 +1166,86 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // D(2,4,0,3), Q(8,9,10), S(12,13,14,18,11), P(22,23,24) in orders
 // DSQP/DPQS/QSDP/QPDS/SDQP/SQDP/PDSQ/PSDQ: 298/281/300/280/302/300/299/287.
 // Added byte remapping and stacked selector regress; original phases restored.
+// Round 479: accepted direct root with separate residual classifiers for
+// query/session/peer/singleton families 207/247/196/232; connection paired
+// with query/session/peer 200/221/221; query plus session 203 (fast control
+// 191, full 193); every original case operation and handler input preserved.
+// Consolidated first-root/late-family forms 208/208/196/208/203/196/203/194f;
+// observed first-root priority with late 18/11 is 153 plain, kept, and matches
+// the unchanged caller. All other source forms restored; no interface change.
+// Round 483: late singleton switch inside default, both orders 196/196;
+// late case returns in both orders 196/196; default/terminal conditional chains
+// 196/196; singleton-first switch/conditional chain 201/202 (fast control 196).
+// Full baseline 153; original native-role graph and matched caller preserved.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
 	long connection_index;
 	switch (message_type)
 	{
+	case 0:
+		network_message_handler_refuse_connect((const s_connect_request *)message, this, (long)address);
+		return;
 	case 2:
 		function_093fa0(this, message);
+		return;
+	case 3:
+		network_message_handler_handle_session_query((const s_network_message_session_query *)message, address);
 		return;
 	case 4:
 		function_0785d0(unknown10, address, message);
 		return;
-	case 0:
-		network_message_handler_refuse_connect((const s_connect_request *)message, this, (long)address);
+	case 8:
+		function_94100((const s_network_message_session_query *)message, address);
 		return;
-	case 3:
-		network_message_handler_handle_session_query((const s_network_message_session_query *)message, address);
+	case 9:
+		network_message_handler_handle_leave_request(this, (long)address, (const s_session_id *)message);
+		return;
+	case 10:
+		function_094220(this, (const s_session_id *)message, address);
+		return;
+	case 12:
+		function_0942d0(this, (const s_session_id *)message, address);
+		return;
+	case 13:
+		function_094310(this, (const s_session_id *)message, address);
+		return;
+	case 14:
+		function_094330(this, (const s_session_id *)message, address);
+		return;
+	case 22:
+		function_94520((const s_session_id *)message, address);
+		return;
+	case 23:
+		handle_peer_reestablish((const s_session_id *)message, address);
+		return;
+	case 24:
+		function_945f0((const s_session_id *)message, address);
+		return;
+	case 5:
+		connection_index = network_link_find_connection(field_4_5, 0, address);
+		if (connection_index != NONE)
+			network_message_handle_connect_refuse(connection_index, (const s_type_2c88a0 *)message);
+		return;
+	case 6:
+		connection_index = network_link_find_connection(field_4_5, 0, address);
+		if (connection_index != NONE)
+			network_message_handle_connect_establish(connection_index, (const s_type_3de205 *)message);
+		return;
+	case 7:
+		connection_index = network_link_find_connection(field_4_5, 0, address);
+		if (connection_index != NONE)
+			network_message_handle_connect_closed(connection_index, (const s_type_ac8d96 *)message);
 		return;
 	default: break;
 	}
 	switch (message_type)
 	{
-	case 5:
-		connection_index = network_link_find_connection(field_4_5, 0, address);
-		if (connection_index != NONE)
-			network_message_handle_connect_refuse(connection_index, (const s_type_2c88a0 *)message);
-		break;
-	case 6:
-		connection_index = network_link_find_connection(field_4_5, 0, address);
-		if (connection_index != NONE)
-			network_message_handle_connect_establish(connection_index, (const s_type_3de205 *)message);
-		break;
-	case 7:
-		connection_index = network_link_find_connection(field_4_5, 0, address);
-		if (connection_index != NONE)
-			network_message_handle_connect_closed(connection_index, (const s_type_ac8d96 *)message);
-		break;
-	case 8:
-		function_94100((const s_network_message_session_query *)message, address);
-		break;
-	case 9:
-		network_message_handler_handle_leave_request(this, (long)address, (const s_session_id *)message);
-		break;
-	case 10:
-		function_094220(this, (const s_session_id *)message, address);
-		break;
-	case 12:
-		function_0942d0(this, (const s_session_id *)message, address);
-		break;
-	case 13:
-		function_094310(this, (const s_session_id *)message, address);
-		break;
-	case 14:
-		function_094330(this, (const s_session_id *)message, address);
-		break;
-	case 22:
-		function_94520((const s_session_id *)message, address);
-		break;
-	case 23:
-		handle_peer_reestablish((const s_session_id *)message, address);
-		break;
-	case 24:
-		function_945f0((const s_session_id *)message, address);
-		break;
 	case 18:
 		function_94420((const s_session_id *)message, address);
 		break;
 	case 11:
 		function_94270((const s_session_id *)message, address);
 		break;
-
 	}
 }
