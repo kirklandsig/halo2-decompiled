@@ -638,6 +638,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 }
 
 /* Channel and callback access through local pointers preserves the stack-only entry convention. */
+// score 97 (was 97): retail loads the flags word before the byte clear (movzx edx, word ptr [ebp + 0x12])
+// and keeps the callback in ebx across the second dispatch, while ours loads the flags after the clear
+// and reloads the callback from its stack home; reading the callback once, plainly or through the
+// volatile slot, keeps one load but changes the register allocation (133, 132, 141).
 // score 97 (was 97): adjacent flag load/byte clear and callback reload still differ; direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
 // 126; clears spanning clamp 136, with word events 136. Original body and parameter accesses restored.
