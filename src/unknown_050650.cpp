@@ -539,8 +539,6 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 	actor_looking_rotate_in_place(vector, axis, sine, cosine);
 }
 
-// score 333 (was 333): this round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
-// random/trig and vector schedules still differ.
 // score 333 (was 333): the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // Tried: direct collision Boolean 355; initial best vector before normalization 356; result declared first 354;
 // long sample counter 355; axis/sample/range names 355; shared normalizer 330 (sum order changed, restored);
@@ -591,6 +589,13 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
 // 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
 // but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Round 26 (m3 lane 2, fast): bool clear set at the top of each pass with `return true` after the best tail
+// 327 (0x297660 4: the collision flag then passes in BL); that with one `return result` 349 at 1435 B (retail's
+// late EBX push, EBX scratch, EBP/EDI best i/j, AL clear and DL result, the tail is retail's code, but the loop
+// body is 16 bytes longer and the x87 temp sits above the pitch axis, retail's at the frame bottom); on it the
+// candidate at function scope 349, the pitch axis member by member 349, the helper's cross terms j, k, i 349,
+// the ray through the existing vector3f_scale 347 (frame 0xa0). Diagnostic, reverted: that form with the header's
+// collision type at 0x5c 344 (retail's 0xa8 frame, first difference +0xa; the rotation stays 16 bytes longer).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -767,6 +772,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // case 2's remembered 0x1e3b00 block (case 1's copy cross-jumps into it; the 0xcafc0 blocks stay apart).
 // N round 257: Actual marker output at function/case/valid-reference/aiming lifetime, original/two-use marker-key observations 322/322/322/322/322/322/322/322.
 // Original marker lifetime, key reads and complete body restored; fast control 322, full 276.
+// Round 26 (m3 lane 2, plain): the marker position member by member 276 (same code); marker, case 3 and case 5
+// points as struct assignments together 306 (1388 B); that with point_valid set once at the aim label 370 (0x297660
+// 1); the remembered-prop test as `result = state->unknown00 != NONE; if (!result) goto done;` 375 (retail's
+// failure exit, shared by the normalize failures, both remembered NONE tests and case 1's state < 1, stores
+// result = false); point_valid renamed to sort after result 276 (homes unchanged).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1319,7 +1329,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
-// score 442 (was 506): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
+// score 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
 // Tried the out-of-line predicate declaration 546 fast; horizontal aggregate copies 562 fast; initial native setters 546 fast;
 // explicit looking success/fallback stores 532 fast, 527 plain (three-point gain, restored); target point or selected vector
 // renamed 546 fast each; validity at function scope 546 fast; aggregate inputs plus explicit stores 549 fast;

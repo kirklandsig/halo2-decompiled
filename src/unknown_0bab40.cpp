@@ -61,7 +61,7 @@ bool object_dispatch_query_function_value(long object_index, long name, real *va
 bool function_10aac0(long object_index, long name, real *value, long *index);
 bool function_ba8c0(s_object_function_ab const *function, long object_index, real *out);
 
-// score 23 (was 28): retail gives the 1.0 case its own epilogue (`mov al, 1`, no store of the
+// score 23 (was 23): retail gives the 1.0 case its own epilogue (`mov al, 1`, no store of the
 // enabled byte); ours stores the byte and shares the final return (the three jumps to that return
 // differ with it). Before round 55 the recursive call's parent
 // index and name sat in ECX/EAX where retail has EAX/ECX. Tried: `enabled = true; return enabled;`
@@ -77,6 +77,16 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // screen); with that kept, the 1.0 case's `return true` 117, `return true` with the early result in a
 // `found` local 117, through a `real one` local 117, `enabled = true; return enabled;` 117, the name
 // tests chained as an else of the early test 117 (each 1.0 return cross-jumps into the early return).
+// Round 24 (m3 lane 2): `result = true;` ahead of the 1.0 store, `result = enabled;` for the other paths
+// and one `return result;` 117 (the constant still reaches the return and the early return still
+// jumps into the 1.0 block's pops); the override and 1.0 paths sharing one `return true` at the end 117;
+// the constant names setting a bool, then one `*value = one ? 1.0f : 0.0f; return one;` 141 (380
+// bytes, the value pointer leaves EBP). Lead: the 1.0 path and the not-found path through one shared
+// `*value = constant; return result;` tail (a goto, diagnostic only) keep the early return apart and
+// give retail's 1.0 block with the store between the pops (compile-only), but under LTCG the value
+// pointer leaves EBP: 112 with the tail after the loop, 112 with it at the 1.0 case. Compile-only, all
+// still merged: the early test nested, through a named bool, a single-exit result, a forceinline
+// helper for the override test or for everything after it, the 1.0 return through `enabled`.
 // Round 466: Enabled declared after override, declared at entry but initialized after override,
 // initialized on complete name/lookup paths, and that graph with its own one-value exit:
 // 51/51/119/131; with override index scoped to the actual flag branch 51/51/119/131.

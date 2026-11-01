@@ -157,6 +157,10 @@ struct c_aggregate : c_child
 // dispatch gate with the type test first 49; the dispatch inner loop as `while (first < end)` with a
 // post-increment 45; the capacity named before the call 45. Still BLOCKED by the build flag (frame 0x8020
 // needs `produced` to share a slot, which only a non-LTCG object gives).
+// Round 23 (m3 lane 2, fast): the request type read into a local at the top 150 (389 bytes); `total = total +
+// produced` 45; the dispatch start read in the inner loop's init 45; the get_info result named as a bool 45; the
+// dispatch bounds through `long const *bounds = &starts[i]` (bounds[0], bounds[1]) 45: it gives retail's
+// boundary load order (starts[i] into ECX first), but those lines still differ by the 4-byte frame offset.
 // Round 32 (m3 lane 14, fast): loop 2 walking a `starts` pointer (`start[0]`/`start[1]`) 120 (389 bytes);
 // loop 2 over a block pointer with a countdown from `starts[i + 1] - starts[i]` 50; `*source` read into a
 // local in loop 1 147 (389 bytes); the type test first in the dispatch gate 49; `blocks + total` in loop

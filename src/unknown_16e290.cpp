@@ -425,6 +425,22 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
 // sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
 // as an aggregate initializer 111 (same code).
+// Round 23 (m3 lane 2, fast): the portal flags as a byte field read into a named byte local before the test 111 (still
+// `test byte ptr [m], 4`, retail loads it into BL); the existing bit_vector_test/bit_vector_set for the visited and
+// global portal bits 111 (same code); bytes as `((count + 31) >> 3) & ~3` 111 (same code); the visited clear as
+// `((portal_count + 31) >> 5) << 2` 232 (795 bytes: VC folds it to `sar 3; and ~3`, so retail's `sar 5; shl 2` there
+// and `lea [words*4]` at the head are multiplies); the flag test named as a bool first 232 (827 bytes).
+// Round 25 (m3 lane 2, fast; a compile-only /O2 screen of this file reproduces the head): both shifts are `sar`, so
+// there is no signedness split. Retail's head comes from `long count = table->count;` read first, bytes and base
+// written on the field (`((table->count + 31) >> 5) * 4`, `index * ((table->count + 31) >> 5)`) and the late word
+// count from the local (`(count + 31) >> 5`): VC then keeps count + 31 in EBX and shifts it again after the clears,
+// and the build matches retail to +0x52 (bytes in memory, `lea [words*4]`, the portal flags loaded into BL), but 207
+// (827 bytes): the word count's slot is [esp+0x28] (retail 0x14) and the loop head reloads it as a word from memory
+// (retail stores BX). With round 85's mid-loop `if (memcmp(...) == 0) break;` loop 200 (822 bytes; retail's
+// `xor ebx, ebx; repe cmpsb; je`, but no EBX reload on the back edge), with the word count declared with the head
+// locals 200, with the iterator declared before the loop 200. A count local used everywhere with the word count
+// written at each use 224 (796 bytes, shift shared). Lead: keep this head and find what puts the word count back in
+// EBX at the loop head (retail reloads it right after the memcmp exit) and moves its slot to 0x14.
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {
