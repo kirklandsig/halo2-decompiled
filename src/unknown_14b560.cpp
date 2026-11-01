@@ -2046,7 +2046,8 @@ struct s_player_creation_record
 // score 0 (was 33): matches retail (plain check): the reset of the player's controller is written
 // out in the NONE arm, where retail has 0x14f270's reset expanded, and the other arm's call to
 // 0x14f270 passes the controller through a local, so the compiler leaves the call out of line as
-// retail does instead of specializing it on the literal.
+// retail does instead of specializing it on the literal. Both forms (the written-out reset and the
+// one-use local) are retail's code shape and are kept only with this byte match.
 // The rounds that led here are kept below.
 // score 33 (was 33): retail inlines function_14f270(index, record->value04) here one level (its NONE
 // arm inline, its recursive NONE call kept); our link keeps that variable-argument call out of line
