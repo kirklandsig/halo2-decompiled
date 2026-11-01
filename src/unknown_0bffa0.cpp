@@ -832,6 +832,10 @@ byte g_55e708;
 // every object read in the marker arm 152; the first-person count as a ternary initialiser 128. Compile-only: a
 // forward/position/matrix pointer local, both locals in either order, the 0x3e9c0 result as a local, a do-while,
 // a for over both cursors keep the forward anchor; mixing `markers[i]` with the walked pointer gives two cursors.
+// Round 50 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the marker array and count declared before the object
+// and marker-name reads 128; the object_index local also as the loop's 0x3e9c0 argument 148 (587 bytes); the
+// fallback count as a ternary 128; the first-person test as nested ifs 128; the cursor advanced before the
+// index 128. Still BLOCKED-BY 0x2dba0's parameter order.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {

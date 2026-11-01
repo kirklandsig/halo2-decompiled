@@ -644,6 +644,16 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
 // volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
 // memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
+// Round 50 (lane 10, fast, 0x24590 listed): the projection as `0.0f - dot3f(&state->velocity, &direction)` (the
+// existing helper) 130 at retail's 1077 bytes, the dot then k first as retail (two points, not kept), with the
+// arguments swapped 130 (same code); on it: the direction scaled through vector3f_scale 130, the squared length
+// through length_sq3f 130, the direction declared then assigned 130, the projection and movement adds through
+// vector3f_add_scaled/vector3f_add 177 (1111 bytes), the movement add alone 178, the jitter add 132. On the plain
+// body: limits built unscaled and scaled in place by vector3f_scale 190 (1078 bytes: the j/k products are
+// multiplied separately); retail-order jitter with a plain long 233 again (limits.k stored from its definition and
+// velocity.k reading limits.j's XMM6), with `limits.j = limits.k = ...` or `limits.k = limits.j = ...` 259 (1009
+// bytes, one register). Left: 1.0 in XMM4 (retail XMM3), the direction loaded k/j/i into XMM3/2/1 (retail 2/1/3),
+// the velocity stores and the jitter block.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

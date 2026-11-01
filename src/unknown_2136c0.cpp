@@ -159,6 +159,11 @@ void function_213970(void);
 // With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
 // the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
 // Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
+// Round 50 (lane 10, fast): the file built /O1 without the size pragma (diagnostic, restored) 131, the same code
+// (the language getter stays out of line there too, so retail's inline getter is not /O1 alone); one forced-inline
+// compare-and-set helper for both preference updates under the pragma 131 (same code), with a forced-inline
+// redeclaration of the getter 131 (the getter still called); the NONE/flag stores after the language query 131;
+// the dirty flag set before each field store 131; block A's NONE store right after block A's clears 131.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

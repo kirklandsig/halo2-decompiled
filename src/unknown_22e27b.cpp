@@ -277,6 +277,17 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
 // next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
 // 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
+// Round 50 (lane 10, fast): fraction first (t right after the elapsed clamp) with the expression restart 207 and
+// with the true-only restart 197 (645 bytes) again: retail's loop registers need the fraction first, and next time
+// then leaves its stack home for EBX unless one boundary block lacks the restart's `else` (the zero/dispose
+// register loses EBX). On fraction first with the expression restart: the dispose and restart tests as two
+// forced-inline predicate helpers 207 (same code); dispose declared first 207; `restart = false;` then `if (...)
+// restart = true;` in both blocks 193 (656 bytes, retail's allocation, the false store before the test), in one
+// block only 195/163; the if/else with the false arm first 207; restart cleared at the block top 217; a per-pass
+// restart reset with true-only blocks 209; dispose false at its declaration 207; the true-only restart in one block
+// only 189/162 (651 bytes); the restart break inside each block 207; the post-loop dispose test nested 207; the
+// per-pass dispose reset before the frame 207; identical loop-switch cases merged in block 1/block 2/both
+// 239/214/227.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
