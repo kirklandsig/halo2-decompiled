@@ -182,6 +182,12 @@ struct s_spawn_scenario_23aea0
 // function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
 // nested loops through a named source record pointer 123. No other retail function uses this
 // integer-offset store idiom, so no matched sibling shows its form.
+// Round 148 (fast): retail's IV reads as 12 * (first type of the batch) from 0x18 with the exit `cmp eax, 0xa8`
+// (first < 14), so the batch loop `for (first = 2; first < 14; first += 6)` with `type = first + j` 139
+// (374 bytes, again a pointer induction; the same as re-measure), the inner loop over `k = first .. first + 6`
+// 227 (312 bytes), both batch counters `dword` 162 (374 bytes); the weights as records indexed by the
+// definition's entry index from `g_502258 - 4` 157 (378 bytes); one `dword` type loop 256 (278 bytes, not
+// unrolled, pointer induction).
 // @retail 0x23aea0
 void function_23aea0()
 {

@@ -798,6 +798,13 @@ union s_60403
 // Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
 // count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
 // loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
+// Round 148 (lane 4, fast): `const byte *old_members = previous + 0xc;` before the member loop, the old
+// member taken from it, 276 (1513 bytes): the first natural form that gives retail's entry (previous EBX,
+// current EBP, frame 0x94) with the mapping and removal loops as retail except two swapped count/cursor
+// homes; the member loop then rebuilds the old member from the stack argument and its flag test grows;
+// with a plain bool flag 289 (frame 0x98); with the retained mask declared after the member loop 291
+// (1529 bytes), both 302; `old_members` declared after the maps and used by the mapping, removal and
+// member loops 283 (1513 bytes).
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
