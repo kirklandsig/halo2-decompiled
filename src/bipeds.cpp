@@ -2267,6 +2267,13 @@ real function_1d1230(long rigid_body_index, s_havok_component *component);
 bool __stdcall function_e1b60(long arg_159e6d, point3f const *point, real value);
 
 /* starts a fallen biped's ragdoll from its main rigid body */
+// score 2 (was 2): the extent call's argument setup is still emitted in the other order (ours
+// mov ecx,esi then mov eax,ebx, retail mov eax,ebx then mov ecx,esi); 0x1d1230 itself matches
+// retail and takes the index in EAX and the component in ECX, so only the caller's spelling is
+// left; retail calls it as a member of s_havok_component, which needs the callee's own file
+// (include/unknown_1cec30.h and src/unknown_1cec30.cpp), outside this lane's files; round 162
+// found that the member form matches both the caller and the callee there, so the fix only
+// waits for that file to be free
 // score 2 (was 2): only argument preparation before the extent call differs: mov ecx,esi precedes mov eax,ebx.
 // Shared main-index helper with short 34, with long 31; long ternary 76; shared point setter 52; long helper/setter 24;
 // typed body getter 61; short helper/setter 27; both typed body helpers/setter 24; typed three-use point source 2, kept; earlier uninitialized index declaration 2.
