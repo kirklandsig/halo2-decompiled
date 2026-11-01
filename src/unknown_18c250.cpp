@@ -163,6 +163,10 @@ bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker
 // Round 42: named machine object 23; header local in the machine arm 23; indices local 23; object local
 // reassigned from the header 23; one header local for the type and machine reads 137. Only dropping the (word)
 // cast gives retail's cluster lea/base order, but retail zero-extends the index.
+// Round 43 (lane 10): `machine_index & 0xffff` for the cast 23 (same code); the location local at function
+// scope 23; `forward` declared before `matrix` 23; a byte object type 110; a cluster table pointer local
+// 23; 1-3 unused locals at the top (diagnostic, numbering) 23 each. Retail reuses the dying register in
+// both the machine read (EBP) and the cluster sum (EAX holds the row, then the table).
 // @retail 0x18c3b0
 bool __stdcall function_18c3b0(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {
