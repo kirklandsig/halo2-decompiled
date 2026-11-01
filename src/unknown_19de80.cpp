@@ -396,6 +396,10 @@ static inline bool teams_enabled_19e1c0()
 // (team in EDI passed in ECX as retail, 1424 bytes); with `best_score <= function_1587f0(team)` 421 (loop body
 // now retail's, missing only its `xor edi, edi` and padding); both with the plain result 688; and with the text
 // buffer declared before the plain result 688. Original body restored.
+// Round 466: Event/token-plus-length/output/all-four formal role names: 390 each;
+// the same four with ordinary result storage 691 each, frame 0x204 but merged copy tails.
+// Original formals, result storage, dispatch and copy/format paths restored;
+// frame 0x208 versus 0x204 and independent name-copy/result/capacity homes remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
