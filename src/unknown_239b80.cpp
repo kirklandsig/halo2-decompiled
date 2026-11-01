@@ -537,6 +537,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // flag: Boolean departure, heading first, memmove, `||` update and `current` at function scope 253
 // (746 bytes); direct returns 262; short hull count 257; `current` at function scope 245, with the
 // Boolean departure 215; the heading at function scope 231. Original body restored.
+// Round 480: Shared native point-difference distance/angle/both producers
+// 203/213/213; with squared-length sum 203/213/213; paired squared terms
+// with/without the named sum 213/213. Original body restored; count/departure homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -803,6 +806,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // `points` into ECX at the loop head (ours into EDI, coalesced with the current point), so ECX is never free across
 // the loop there and the previous side stays in memory; a `(void)&` on the previous side, both sides or count changes
 // nothing (env).
+// Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
+// 278/278/278/278 and conditional collection 302/278/278/278. All restored;
+// native count ECX, prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
