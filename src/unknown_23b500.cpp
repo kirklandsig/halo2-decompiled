@@ -164,6 +164,11 @@ struct s_spawn_scenario_23aea0
 // pointer); with the scenario read first 110; one type loop with the index 252 (not unrolled); `index =
 // type * 3 - 4` 103; the index plus a named source record 121; the index with the table store after
 // the defaults 104.
+// Round 62 (m3 lane 16, fast): one type loop over the records through a file-scope const pointer to the globals 105;
+// `(globals->types - 2)[type]` 105; the type loop as a do-while 254 (278 bytes, not unrolled); scenario read after the
+// copy 158; a short type 256. Compile-only probes: a second global of the same stride in the loop gives an integer IV
+// rebased to 0 (`xor eax, eax`, displacement +0x18), never retail's unrebased 0x18 start; selectany/static/extern "C"/
+// thread/class-member globals, const and local base pointers, an inline getter and negative-offset bases all fold.
 // @retail 0x23aea0
 void function_23aea0()
 {

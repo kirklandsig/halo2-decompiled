@@ -225,6 +225,10 @@ void function_1ea880(long first_player, long player_index, s_object_values *tabl
 // With all of it 353 (cursor biased +4, killer/victim_team/damage_code in rotated slots, killer kept in
 // EBP, the assist player index in EBX), but only with a file-local __forceinline redeclaration of the
 // header's plain-inline real_to_long (483 without it): an inline twin, kept only with a match; body restored.
+// Round 62 (m3 lane 16, fast, on this body without the forceinline real_to_long): the victim through the existing
+// unit_get_player_index 459 (1561 bytes); the game time through function_146650 441; friendly through function_15eaf0
+// 438; all three 463 (1567 bytes); other_assists[5] 421 (frame 0x4c). Retail still inlines real_to_long's fld/fistp
+// where this body calls it.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
