@@ -102,6 +102,10 @@
 // Round 471: Native workspace list construction on eight-byte storage, original/reverse
 // object order and six field-group orders 573 each (1620 bytes). Constructor and native
 // alignment removed; original branch-local descriptor publication and full header restored.
+// Round 474: Unsigned capacity/sign-mask on native four/eight storage 456/454;
+// external-storage bit view 456/454; native allocation-count view 456/454;
+// aligned whole-plane publication with bit/count or mask 480/480. Header and
+// body restored; cleanup tests/preloads recover but entry roles and length regress.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -161,6 +161,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 464: late per-group record default/endpoints/both/nearest-distance default
 // 403/448/430/398; record-distance/endpoints-distance/all 403/448/430; all with
 // complete matching-record search 423. Original per-group lifetimes and search restored.
+// Round 474: Native early reference/provider/both ordinal snapshots 398 each;
+// complete link payload alone/with reference/provider/both 475 each; complete
+// graph with promoted provider ordinal 513. Original body and helpers restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

@@ -3000,6 +3000,10 @@ struct s_2a2f0_record
 // Round 468: Signed-byte/byte remainders with long, signed-byte, dword and word ordinals
 // 169/178, 272/265, 169/178, 272/265. All with independent dimensions and ordinary
 // counts; original complete body restored; bounded-count register copy remains.
+// Round 474: Independent dimensions and ordinary counts with float-result
+// clamps/whole bounds/both 166 each; shared alpha clamp alone/with dimensions/
+// bounds/both 275/274/275/274; all with shared half-height 274. Original body
+// restored; bounded-count register copy and dimension homes remain.
 // @retail 0x2a2f0
 void __stdcall function_2a2f0(long tag, real alpha)
 {
@@ -3190,7 +3194,7 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
     D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
 }
 
-// score 972 (was 1083): frame 0x2c agrees; small permission now has retail byte tests,
+// score 949 (was 972): frame 0x2c agrees; small permission now has retail byte tests,
 // but mode-bound/save roles, state expansion and scalar homes differ.
 // Earlier: Frame 0x2c agrees; capability/save roles and state expansion remain.
 // frame 0x2c agrees; saved registers, mode flags and state-call expansion differ.
@@ -3279,6 +3283,10 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 468: Late descriptor arms 1023/2013/3012/0213/0312/1230/2301/3210
 // 972/1112/1106/1085/1081/1117/1086/1119. Order 1023 kept plain at 4848/4828 bytes;
 // order 0312 reaches retail length but gains only two. Initial capability switch unchanged.
+// Round 474: Complete encoded mode-three pair 949 (plain, 4828/4828 bytes);
+// mode-zero RGB 972; pair/RGB 949; final word 1100; pair/final 1074;
+// RGB/final 1100; all 1074; all/full alpha 1083; first/second word alone
+// 954/967. Pair kept; mode-bound/save roles and state expansion remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3510,12 +3518,12 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSTextureModes = 0x8421;
         g_484f68.PSConstant0[4] = pack_color3f((color3f const *)(configuration + 4));
         g_484f68.PSConstant1[4] = pack_color3f((color3f const *)(configuration + 0x10));
-        g_484f68.PSRGBInputs[4] = (((((configuration[0] ? 0x10 : 0) + 9) << 16) | ((configuration[0] ? 0x10 : 0) + 10)) << 8) | 0x10002;
+        g_484f68.PSRGBInputs[4] = configuration[0] ? 0x19011a02 : 0x09010a02;
         g_484f68.PSRGBOutputs[4] = 0x3045;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
         g_484f68.PSConstant0[5] = pack_color3f((color3f const *)(configuration + 0x1c));
-        g_484f68.PSRGBInputs[5] = (((configuration[0] ? 0x10 : 0) + 11) << 8) | 0x24250001;
+        g_484f68.PSRGBInputs[5] = configuration[0] ? 0x24251b01 : 0x24250b01;
         g_484f68.PSRGBOutputs[5] = 0x1045;
         g_484f68.PSAlphaInputs[5] = 0x1d201d00 | (exponent > 6 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
