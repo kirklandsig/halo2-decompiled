@@ -1425,6 +1425,8 @@ struct s_1ba091
 // pointers before the actor with the inline test 201. Retail re-reads g_4e0300 at the later lookups, so a named
 // header-table local for all three lookups would differ there; the FORMS-slot-data-block form is the
 // "typed slot payload 198" above (no change).
+// Round 217: Mirrored read-only root equality with member/original payload and bool/byte/word/long
+// comparison-result domains: 198/198/198/198/202/202/201/201. Original equality, payload and carriers restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

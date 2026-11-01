@@ -116,6 +116,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // controller before kind then old state 24; complete controller/old state before kind 24;
 // the latter three early-old-state graphs with direct change-result production 39/38/38.
 // Original acquisition order restored; request/kind registers remain.
+// Round 219: availability nested/negative-guard/true-result forms 4/4/4;
+// native bit availability 31; named selection result 11; availability outside kind 9;
+// nested availability with long change result 12, negative guards with short result 13.
+// Original request/kind pair remains EAX/CX versus retail ECX/AX.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {
