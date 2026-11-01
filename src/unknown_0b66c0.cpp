@@ -254,6 +254,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 48 forms (start or count tested first, `start += string` / `string + start` / `&string[start]`, volatile
 // or plain string, result variable or early returns, `++count` in the clamp): 28-40, nothing at retail's
 // colouring with start arriving in ECX; `length - start >= count` 33 (start in EDX, 0xb5f10 6).
+// Round 22 (lane 18): the length helper `static inline` 40 and the copy helper `static inline` 40 (same
+// code); the scan as `string[length]` 60 (83 bytes, 0xb61d0 46); constants on the left of the sign tests 40;
+// the clamp as `count >= 0x201` 40. Retail's matched 0xb61d0 shows the same pattern: the inlined scan takes
+// the start's incoming register (EAX there) and the start moves to EDI.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -3672,6 +3672,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
 // Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
 // the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Round 22 (lane 18), fast (aligned difflib counts in brackets, start 101 [38]): an early `return false`
+// with the guarded leave and the reply pointer first 123 [31]; `result = false` ... `result = true` with both
+// 119 [19]; `if (is_peer) { ...; return true; } return false;` with both 121 [17] (exits, leave and reply
+// blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
+// address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
+// only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
