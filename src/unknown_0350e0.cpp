@@ -1719,6 +1719,10 @@ real game_time_get_seconds();
 // as retail does (2285 bytes = retail's, definition in ebx and NONE in ebp as retail) but scores 512 because the stack
 // slots still differ (retail's frame is 0x94; aligned differences 439 -> 370); `if (!(visibility > 0.0f))` gives
 // retail's comparison order (506; 511 with the member form).
+// J225: point-difference helper 507; projection dot helper 507; scalar-output role names 507; vector-output
+// role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
+// directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
+// member vertex API 524. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

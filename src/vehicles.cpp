@@ -2307,6 +2307,9 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // Round 44 (lane 11): the contact torque store as if/else 171 (692 bytes); right computed before left 101; right
 // declared before left 101; `!(i & 1) ? left : right` 101 (identical code); diagnostic: the turn product at both
 // uses 98 again (left: the NONE gear arm, right copied to XMM0 before its store, the spin temp at each definition).
+// J225: shared period receiver 101; torque call then multiply 101; period and torque assignment 101; shared
+// drive fraction 132; period and drive fraction 132; shared control length 101; period, drive fraction and
+// length 132; native byte gear and torque assignment 114. Original body restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4623,7 +4626,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1134 (was 1166): Frame 0x104 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1134 (was 1166): Frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4638,6 +4641,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // interactions 1166/1166/1166/1177/1177/1177/1135/1166, all restored.
 // Desired with sum/normalizer/both/shared crosses 1129/1145/1135/1129; the five-point
 // sum additions are rejected. Keep only the consumed desired-matrix output.
+// J225: relative product in flip workspace 1179; current in facing workspace 1147; both early workspaces
+// 1179; state rotation in facing workspace 1148; all rotation workspaces 1179; inertia in consumed matrix
+// workspace 1197; all workspaces with flip output 1192; all workspaces with in-place output 1197; shared
+// quaternion-axis setter 1134; shared torque setter 1135. Original body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

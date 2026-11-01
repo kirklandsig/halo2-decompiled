@@ -1309,6 +1309,9 @@ long function_2197f0(real gain);
 // N round 257: Native real/aggregate ducking gains and endpoints, real/aggregate returns, expression/accumulator 322/322/322/322/198/198/198/198.
 // Original value types, helper and complete body restored.
 // J221: Elapsed/reciprocal/both/fraction role names 137 each; fade-in/full timing/ambience snapshots 144/179/182; parallel interpolation outputs 137; native table base plus original short lookup input 146 at 672 bytes (entry instructions agree). All original executable code restored.
+// J225: shared ducking-array receiver 164; external ducking-record references 137; array and references
+// 164; native fade-record value 174; fade value and array 181; fade value and references 174; fade value,
+// array and references 181; native ducking-record values 284. Original body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3290,6 +3293,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // (78 or 164). Fast: for/continue 78; with the update test inverted (pending arm first) 132; `case 1: case 2:
 // continue;` 17; 0x128020's while + `skip_to_next:` with `case 1: goto skip_to_next;` 214 (592 bytes); index and mode
 // declared at function scope 78.
+// J225: native class mode field 49; native class mode and flag fields 49; native fields with two-case for
+// dispatch 78; dispatch with complete role names 78; native fields with range-record reference 49; dispatch
+// with range reference 78; dispatch with shared class index 98; dispatch with range reference and class
+// index 98. Original body restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
