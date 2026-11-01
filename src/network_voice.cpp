@@ -1480,6 +1480,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Upper-first ternary, sequential bounds, lower/upper-first conditional clamped-result construction:
 // 179/134/134/140; same four with exhaustive result production 201/177/177/177. Zero sharing and pre-loop
 // scheduling remain; original source restored.
+// Round 287: Actual membership/clamp return producers, expression/branch/both,
+// 192/167/179/170/197/170; membership/both producers without entry zero 198/199.
+// Independent result zero and capacity-failure epilogue remain; original body restored.
 // Round 480: Complement low-bit mask at both count observations, with original/shared
 // recipient-bit consumers and original/native recipient accumulation: dword 138/158/174/181,
 // word 179/158/183/182. Original mask expressions, field accumulation and body restored;

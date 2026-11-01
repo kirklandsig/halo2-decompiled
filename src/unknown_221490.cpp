@@ -639,6 +639,18 @@ bool sound_driver_voice_create_buffer(
 // Round 226: actual result acquired before capacity admission, short/word/long/dword with
 // play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
 // caller; original result lifetime, modes, storage and complete body restored at 71.
+// Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
+// result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
+// spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not
+// the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
+// `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
+// one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
+// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
+// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
+// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
+// Round 226: actual result acquired before capacity admission, short/word/long/dword with
+// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
+// caller; original result lifetime, modes, storage and complete body restored at 71.
 // Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
 // first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D
@@ -657,6 +669,9 @@ bool sound_driver_voice_create_buffer(
 // Round 285: bounded short/word/byte/signed-byte first-pair loops, then both
 // pair arrays with the real spatial-bin table 234/234/234/234/234/234/234/234. Original
 // complete body restored; spatial/play split and zero/input scheduling remain.
+// Round 333: Complementary nonspatial bool/byte, optional play normal/complementary
+// 154/156/154/156; nonspatial-first 152/155/152/155. Caller preserved; spatial/play and descriptor
+// carriers remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

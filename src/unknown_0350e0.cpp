@@ -592,17 +592,6 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
 void function_14bc0(short index, short element, bool use_depth);
 extern long g_4858b8;
 
-// score 17 (was 17): the three calls are set up differently: retail passes the globals
-// in ECX and the word in EAX where ours uses EDX, and the last call's argument order
-// differs (the callees' conventions are fixed in their own files).
-// Retail also sets function_14bc0's bool (AL) between its two pushes, which suggests a different
-// declared parameter order (index, use_depth, element); that callee has 89 call sites, not tried.
-// Tried: swapping function_4c690's parameters (no change), locals for the index/tag read before
-// the first call (40), dropping the (short) cast or using word (17), testing function_3ebd0's result (24).
-// Round 104: callee entries confirm the current signatures; retail's caller temporaries are offset EDX,
-// output ECX and target EAX against our ECX/EAX/EDX. Matrix pointer at the calls/function scope 17/17;
-// direct element-zero address at both/first/last calls 17/17/17; const count 17; late tag/target snapshots
-// 17/17; offset snapshot 17. Original restored.
 // @retail 0x3ede0
 void function_3ede0(void)
 {
@@ -616,16 +605,15 @@ void function_3ede0(void)
 		byte *data = 0;
 		if (index != NONE) data = g_4e3b44[index & 0xffff].bytes;
 		byte *definition = g_4e3b44[*(long *)(data + 4) & 0xffff].bytes;
-		long count = *(long *)(definition + 0x48);
-		if (count != g_4c5038.count)
+		if (*(long *)(definition + 0x48) != g_4c5038.count)
 		{
-			g_4c5038.count = count;
+			g_4c5038.count = *(long *)(definition + 0x48);
 			g_4c5038.valid = false;
 			return;
 		}
 		if (g_4c5038.valid)
 		{
-			function_3ebd0(g_4687a4, g_4c5038.matrices, matrices, count);
+			function_3ebd0(g_4687a4, g_4c5038.matrices, matrices, *(long *)(definition + 0x48));
 			function_14bc0((short)g_4858b8, 0, true);
 			function_4c690(*(long *)(data + 4), matrices);
 		}
@@ -2152,6 +2140,7 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // receiver alone/with loop random/while/both 57 each; outer empty-state exit with
 // loop random and count receiver 300. Exact-only receiver forms restored with the
 // full original body; lazy saves and the post-fstp memory compare remain.
+// Round 447: existing in-place scale, six distinct sample roles and motion-before-record cursor declarations, subsets 1..7: 57/57/57/64/64/64/64; six sample roles at entry 57. Original body restored; lazy saves and the split final count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2458,6 +2447,13 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // prefix count initialized before admission 331; separate named phase ordinals 317; retained-only removal
 // cursor advancement 318. All eight executable forms restored; frame 0x30 agrees, early prefix/state
 // register roles and the two counter homes remain exchanged. Earlier scores were 405 and 424.
+// Round 36: a compile-only build reproduces this listing (aligned 131 against retail); `first` takes EBP in all 60
+// random combinations of declaration order, loop tests, flag order, per-loop counters, an entries alias and the
+// clamp spelling, in renames, and even with its address taken (diagnostic), so the EBP/EDX choice is not a spelling.
+// Retail's growth loop computes `elapsed + step`, stores it and re-reads elapsed for `initial + elapsed`; a pointer to
+// `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
+// Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
+// second loop as a search with the swap after it 365.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3594,6 +3590,7 @@ long __stdcall function_3ddd0(long object_index);
 // A 480-second annealed search: 45 attempts, none below 1.
 // Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
 // one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
+// Round 447: entry-scope previous/cache/nullable-table lifetimes, subsets 1..7: 105/1/105/162/147/162/147; complete lifetimes after float workspace 147. Original body restored; indexed-byte SIB order remains.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -4140,6 +4137,13 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // unculled/gated plus unculled/all five modes 482/280/540/340/636/435/722;
 // plain loop over the actual mode sequence 795. Provider stays out of line;
 // original whole body and call roles restored. Flag stores and stub convention remain.
+// Round 36 (fast, the shared pass helper changed for all three callers): the gate only for modes 2/8 with
+// `if (mode == 3 || mode == 16) enabled = true;` after the cull call and pass 8's raw byte 193 (958 bytes;
+// 0x423c0 201, 0x2bcd0 371), the same with the `!= 0` gate 186, with `g_485898 >= 4 && g_485898 <= 7 ? 0 :
+// cull` 193; the gate pointer with that late store 193, with the cull ternary 193. The late store is
+// threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
+// 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
+// retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

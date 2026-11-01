@@ -2403,6 +2403,9 @@ real g_547f14;
 // (428 bytes); a by-value real sum helper 35; a pointer to the class gain base 35. Compile-only: every form
 // that sums before the flag tests folds the base load; only a float-consistency pragma (diagnostic, not kept;
 // it worsens 0x1251e0's x87 interpolation in the LTCG probe) gives retail's unfolded add before the tests.
+// Round 72 (plain): direct class-field loudness after forced 16; loudness from the pre-flag class base 7;
+// inner-seeded class sum / in-place class sum 7 each; an audible bool after forced 67 (468 bytes); a two-view
+// decibel-return union 7; a real const-reference sum helper 35; a forceinline class-lookup sum helper 35.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {

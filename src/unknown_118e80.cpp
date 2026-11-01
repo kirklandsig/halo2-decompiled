@@ -219,6 +219,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
+// basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
+// src/unknown_11eed0.cpp).
 // score 220 (was 220): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
@@ -332,6 +335,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 244: complete ordinary-path requested-forward values via native/const,
 // aggregate/const, memcpy/memmove and entry copy/memmove constructions
 // 295/295/264/264/295/314/295/314. Original input observations and body restored.
+// Round 288: plain world-up component rows with long/short/dword/word counters,
+// scalar/native-vector captures 224/318/224/318/295/300/295/300.
+// Original producer and body restored; frame, early-save and basis homes remain.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -745,6 +751,9 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
 // same result arms with the existing animation helper 130/120. All restored; post-reset
 // table/object/result homes, native size load and saved-key tests remain.
+// Round 288: native output selection/allocation/controller field-family subsets
+// 83/83/83/85/85/85/85, all with native reset timer 85. Original record layout,
+// byte views, body and shared allocator interface restored.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
@@ -964,6 +973,9 @@ void __stdcall function_d6bc0(long arg_0);
 void function_b75a0(long arg_0, point3f const *arg_1, vector3f const *arg_2, vector3f const *arg_3,
     s_location const *arg_4, bool arg_5);
 void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
+// MiniMax E (11-01): no new form, no lower score; left: the quotient spill across the candidate
+// query, the sweep/impact stack homes and the saved identifier widths (the protected owner-call
+// boundary is another file's).
 // score 156 (was 156): retail keeps the quotient in a register and computes the scaled direction
 // before the sweep query; ours spills the quotient, computes it after the query, and the sweep
 // and point homes are swapped. Computing the scaled direction before the query gives 292.
@@ -1103,6 +1115,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
 // with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
 // homes, word loads and zero allocation remain.
+// Round 333: Complete selected snapshot memmove with first/second signed-word domains
+// 333/334/334/339; native short-count counterparts 333/334/334/339. Query/sweep and selected homes
+// remain; original body restored.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {

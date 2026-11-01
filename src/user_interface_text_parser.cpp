@@ -603,6 +603,9 @@ done:
 // or a NONE guard, env 60 each (identical); an early `if (!globals) goto done;` identical; the translator in each case
 // env 58 (171 bytes); the natural form with the tag read before the getter env 59 (167 bytes); the current form with
 // the written-out getter env 48 (the base's figure).
+// DL218: Zero-default name results with local/entry initialization and complete signed/unsigned
+// arms tie 32 with the repeated exit, 54 with one copy. No reduction of entry EDI save or scratch-
+// buffer cache; original complete parser and all call values restored.
 // Round 63 (m3 lane 16, fast; parse_variant stays matched): a compile-only /O1 screen still caches the buffer
 // with a NONE-guarded translator call and with a `(wchar_t const *)(word *)` copy source; the name from a
 // switch-with-returns inline helper stays out of line. Real: the natural one-copy form with the tag read

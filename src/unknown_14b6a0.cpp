@@ -314,6 +314,13 @@ void function_14bac0()
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
 // Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
 // points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
 // (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte
@@ -357,6 +364,15 @@ void function_14bac0()
 // Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
 // 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
 // pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 219: common reset exit with native recipient, shared probe/bounds and real relocation/destination
+// buffers, masks 0..7: 222/228/233/229/222/228/233/229. Original exit, buffers and both scans
+// restored; frame, point/recipient sharing and readiness homes remain.
+// Round 334: first +0xf reserves 0x50 versus 0x3c; point/recipient sharing,
+// readiness homes and scalar spill order remain. Plain ordered traversal of the two
+// adjacent marker indices, long/short counter and separate/shared probe-bounds
+// workspace, 311/305/311/305; with native result-tested recipients
+// 304/302/307/305. Original separate probes, returned relocation output,
+// selected unit, observations and both player traversals restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

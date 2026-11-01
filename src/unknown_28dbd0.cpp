@@ -213,6 +213,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 284: shared scaled-add accumulation deferring cross/projection/both/direction+cross,
 // original/sine-first production: 233/230, 204/252, 254/253, 235/231. Original
 // complete helper and body restored; frame 0x11c versus 0x118 remains.
+// Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
+// consuming weighted-preserved direction 226/227/208/209
+// Original executable body and helpers restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

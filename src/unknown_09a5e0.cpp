@@ -2241,6 +2241,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
 // 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
 // complete body restored; object/offset and low-mask homes remain.
+// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
+// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
+// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
+// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
+// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
+// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
 // Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
 // loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
 // no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
@@ -2254,6 +2260,8 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
 // outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
 // Native object/offset and low-mask homes remain; original tests, stores and body restored.
+// DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
+// 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

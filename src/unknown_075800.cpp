@@ -1181,6 +1181,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // cases, default-owned late cases, case-local lookup results on those three completion graphs,
 // and common completion with failed-lookup breaks: eight 196 fast, tying control 196.
 // All-case common completion is 153 plain, tying baseline; original complete body restored.
+// Round 445: Accepted first classifier with connection orders 5,7,6 / 6,5,7 / 6,7,5 / 7,5,6 /
+// 7,6,5 and direct priorities 2,4,0,3 / 4,2,0,3 / 0,3,4,2: 195/196/196/195/196/196/194/195.
+// Original complete executable body restored.
+// Round 494: late case-18/case-11 inline boundaries on the native-input graph
+// inline/ordinary, ordinary/inline, inline/inline, noinline/ordinary, ordinary/noinline,
+// noinline/noinline, inline/noinline, noinline/inline: 196/196/196/211/196/211/196/211 fast.
+// Case-18 noinline moves the input roles and loses the matched caller; all declarations restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

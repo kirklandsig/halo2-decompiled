@@ -115,6 +115,10 @@ struct s_visibility_bound_record
 // external-storage bit view 456/454; native allocation-count view 456/454;
 // aligned whole-plane publication with bit/count or mask 480/480. Header and
 // body restored; cleanup tests/preloads recover but entry roles and length regress.
+// Round 437: Native sixteen-byte storage with the per-part containment output
+// 406 reduced; with const query 406; live flags 442/442; branch-owned query data
+// 448/447, with const query 448/447. Ordinary judgment unavailable; original
+// storage, observations and complete body restored. Frame/list and pointer homes remain.
 // Round 230: Native bound record and sixteen-byte storage with point/vector copy/component
 // construction/direct shared scale 417/417/450/424; per-part containment output on those
 // graphs 406/406/449/421. Native point form kept at 406 after full validation; all call values

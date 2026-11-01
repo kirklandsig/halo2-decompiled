@@ -652,6 +652,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
 // `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
 // nothing below 47.
+// Round 47 (m3 lane 14, fast): a second `allow_exit = true` at the end of the scan arm, keeping the one after
+// the seat call, with the if/else flag 233, the `&&` flag 233 (the first store is dropped as dead, giving the
+// lead's code with allow_exit in BL), the bitwise flag 156; `allow_exit = true` before the seat call: bitwise
+// 48, if/else 200; at the scan's start: if/else 200, bitwise 48. Retail's join of the scan exits (the CL
+// reload at 0x1bc16f) is not an allow_exit store.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

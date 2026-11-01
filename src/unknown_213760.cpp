@@ -1365,6 +1365,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
 // *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
 // the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
+// Round 56 (m3 lane 1, fast): without the count's zero store (`!resized ||` in the close test, the count declared
+// beside size) 157, with the count read first 157: not a size/count share, `resized` moves into the low byte
+// slots (0x12) and the frame drops to 0x1140. `bool written = false;` before the write block, the count scoped
+// inside it and `written = bytes_written == 0x800;` 98 (first difference +0x1e0: frame, slots and the close copy
+// are retail's; left the write's handle load and a `sete` join); plus a write-handle local 57 (write setup exact,
+// the close copy then dropped); with the success set by its own test 119 (914 bytes); the close written in both
+// arms 179 (994 bytes). On 98 the success set by its own test 83, plus round 53's header-read `else if` with
+// `valid = true` 7 (the round 53 plateau, now with no zero store; left the write's handle load after the flags
+// zero and the checksum compare in EDX); on 7: the write's handle through `file` 7, a named stored-path pointer 7,
+// the checksum as a ternary on the call 15. Restored: the 7 needs three match-only forms.
 // Round 35 (lane 15, fast): the 7 and 6 forms reproduce, and the 7 form with a write handle local alone 114 (917
 // bytes: the close's copy dropped, the checksum load in ECX). On that write-local form: the query, resize, close
 // argument or close test through `g_557c90[index]` 114/114/114/114; the write local before the header / before
