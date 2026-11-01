@@ -232,6 +232,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 470: unsigned raw decibel words in choice/target/datum records, all
 // seven subsets 886 each; all with unsigned helper transport 886. Original
 // records, helpers and body restored; entry zero and target/query/count homes remain.
+// Round 54 (m3 lane 1, fast): retail reads the query count straight from the out-parameter as a dword and keeps
+// the choice count in ESI as a dword (the entry zero in ESI becomes the count; `cmp esi, 2`): the count read
+// directly with a long choice count 927 (3297 bytes; aligned differing lines 700 -> 585), with the short choice
+// count 919; on the long counts `s_loop_path_choice *choice = &choices[choice_count++]` with retail's store
+// order (tag, source, decibels, cluster) 960 (our choice address becomes an induction variable; retail
+// recomputes it from the count); the three 1.0f defaults as statements in retail's store order (inside, portal,
+// outside; the chained assignment stores them reversed) 886, with the long counts 927. Array names (two full
+// prefix orders) and declaration order leave the four query-array homes unchanged (retail: gains +0xec, indices
+// +0x1f0, portals +0x2f0, clusters +0x3f0; ours portals, indices, clusters, gains).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

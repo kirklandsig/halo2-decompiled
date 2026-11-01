@@ -149,6 +149,15 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
+// 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
+// tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
+// retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:
+// the end test as `((flags >> 8) & 1) || ((flags >> 11) & 1)` 110 (VC merges both into `test ch, 9`; retail
+// tests the byte bit 8, then shifts out bit 11). In the current header order (plain checks): set-or-clear
+// object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
+// priority from the request's audible field 147 (485). Retail's full header order
+// (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
 // score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
 // and our link inlines, in src/unknown_221490.cpp.
@@ -229,6 +238,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
 // state registers decide where the request is homed.
 // MiniMax R (10-31): no new form, no lower score.
+// MiniMax I (11-01): no new form, no lower score; the priority and the flags are still formed after the location
+// copy, and our compiler still forwards the state flags across the 0x221810 call where retail reloads them.
+// MiniMax I (11-01, second pass): no lower score. Forming the priority and the flags before the location copy,
+// with retail's set/clear branches for the two flag bits and the priority read from the request, reproduces
+// retail's shape (140-149 against 110, 485-499 bytes against retail's 470): our link then inlines the first
+// 0x221810 call, so the body grows past retail's, and the flags still land in EDX where retail builds them in
+// EAX. The original order stays.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

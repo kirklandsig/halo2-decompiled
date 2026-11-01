@@ -392,6 +392,8 @@ short __stdcall function_1b3ea0(long actor_index)
 // first 26; `bit0 |= 1` 26; `result = true` after the bit 26; returning the bit itself 31 (128 bytes).
 // Harness (exact for this function): the actor address spelled offset-first, by index or with a named
 // offset 26 each; the reset in retail's store order as a forceinline or static helper 26 (identical code).
+// Round 71: PRIVATE/inline/both 26 each; const actor/state/both 26 each; activation from the slot
+// Boolean/sentinel 49/47; reset index signed/unsigned word 39/37 (sibling regressions; restored).
 // @retail 0x1b3ee0
 bool __stdcall function_1b3ee0(long actor_index, s_slot *slot)
 {

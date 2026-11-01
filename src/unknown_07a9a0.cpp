@@ -366,6 +366,11 @@ void function_07b3e0(void)
 // its loop 58 (120 bytes: retail's found block with the dead `add` and data in ESI, one pool register); the datum
 // iterator (bool step) 58; the step reading the iterator's pool again after the scan 58; scan on the iterator field
 // with the datum on the step's copy 58; the iterator set up by an inline (iterator, pool) helper 58.
+// Round 149 (lane 4, fast): the scan and the datum index both on the global (no pool local) 45 (126 bytes);
+// the datum-iterator form with the final valid store through the iterator's pool 64 (114 bytes), the
+// record-pool iterator form likewise 64 (114); the absolute-index scan on the pool local with the datum
+// index on the global 65 (142); `++index` as the scan's start 39 (same code). qos_release (0x7b650) takes
+// the datum index only, so retail's `add ecx, esi` is the inlined step's datum pointer, not an argument.
 // Round 129 (m3 lane 6, fast): the scan and the datum index both reading the global at each use (no pool
 // local) 45 (126 bytes: LTCG hoists the two reads into one EBP and drops the final reload); with
 // index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);

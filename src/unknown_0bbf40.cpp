@@ -732,13 +732,14 @@ void __stdcall function_bc300(long object_index)
 	record_pool_release(g_4e0300, object_index);
 }
 
+// score 5 (was 5): with a `long` parameter MSVC widens every 16-bit read of it, so
 // MiniMax lane E (11-01): no new form, no lower score; the short size parameter still needs the
 // four other declarations changed and 0x118510 kept at its own score.
 // score 5 (was 5): this round: with a `long` parameter MSVC widens every 16-bit read of it, so
 // the narrow load needs the parameter type changed, which changes the mangled name and breaks the
 // four other declarations (src/unknown_0b7b40.cpp, src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp,
 // src/unit_object_type.cpp) and still raises 0x118510: BLOCKED-BY 0x118510.
-// score 5 (was 5): the only difference left is the size parameter's load: retail reads it with a
+// Earlier (score 5): the only difference left is the size parameter's load: retail reads it with a
 // 16-bit load (a short parameter), ours with a 32-bit one, which shifts every later byte by one.
 // With `short size` in the definition and in every declaration (src/unknown_0b7b40.cpp,
 // src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp, src/unit_object_type.cpp) the function matches
@@ -768,6 +769,10 @@ void __stdcall function_bc300(long object_index)
 // Round 202: entry normalization of size/offset/both/alignment/size-alignment/offset-alignment/
 // all domains 89/57/79/5/89/57/79; size normalization with the zero-size result producer 90.
 // Original parameters, body and result restored; formal narrowing still needs protected declarations.
+// Round 52 (lane 10, fast): the allocation arm first under `(short)size != 0` with the zero arm in the
+// else, single exit 62 (233 bytes); the zero arm's block from `header->object` 42; the new size written
+// into the reallocation call 7; the alignment shift without the byte cast 6; `return true` / `return
+// false` in place of the result 90 (214 bytes, the result byte leaves the frame).
 // Round 106: pointer-initialized short/word snapshots used at every size read 5/5;
 // a two-byte memcpy snapshot 5; signed/unsigned reference views 5/5; memmove 117;
 // memcpy only for the zero test 5; a pointer-initialized short with nonzero arm first 70.

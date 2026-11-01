@@ -245,6 +245,12 @@ point3f *function_b9ef0(long object_index, point3f *result)
 // Round 41: scale-first product 2; named height sum 2; scale local 2; `z = product + z` 2; crouch declared
 // at function scope 2. Retail's biped copy of this blend (0xe5d50) loads the crouching height before the 1.0
 // constant, as ours does here; 1.0 is used once in 0xcafc0, so it is not a shared value.
+// Round 52: the parentless branch as a force-inline helper with its own lookups 267; heights read through
+// the definition macro at each use 117; the raise through the point 0xb9dd0 returns 265; heights as a
+// two-element field 2; definition local declared after the others 2; a 600 s permuter run, best 2.
+// Compile-only screens of the blend (unused locals, if/else or default-first crouch, sum/product orders,
+// named or array terms, 1.0 as a global, lerp helpers; flag variants only as compile-only screens) all keep the
+// crouching height first.
 // @retail 0xcafc0
 void function_cafc0(long unit_index, point3f *position)
 {
