@@ -186,6 +186,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
 // 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
 // sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
+// Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
+// consuming weighted-preserved direction 226/227/208/209
+// Original executable body and helpers restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

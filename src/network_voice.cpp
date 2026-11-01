@@ -3144,6 +3144,9 @@ struct s_voice_route_choice
 // Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
 // radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
 // three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
+// Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
+// with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
+// Original executable body and helpers restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
