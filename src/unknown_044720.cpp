@@ -221,6 +221,9 @@ void function_44720(void)
 // Round 467: Accepted entry level named at its original read in long/short/word/byte,
 // used by admission and cached submission predicate 155/151/151/152; predicate at its
 // submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 326: material selector at each table use, cached/live level and pointer/indexed geometry
+// inputs 107/135/140/136; the same four with conditional material production 127/140/150/119.
+// Original selector, predicate and complete body restored; frame and geometry reloads remain.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -258,7 +261,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
         }
     }
 }
-// score 182 (was 190): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
+// score 182 (was 182): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
 // retail also keeps a separate center point (+0x30) beside the sphere query (+0x20).
 // Round 81 (fast): a `visible_word` pointer for the test and both marks 190 (same code); one marking
 // site after the bound branch with `if (!(r * r >= d)) continue;` 210 (the marks become retail's single
@@ -383,6 +386,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // provider-filled count and read-only node-array subsets 0-7,
 // 190/182/191/192/190/182/191/192. Positive count and removal of the
 // impossible byte sentinel retained; entry/index spill and point/query homes remain.
+// Round 326: whole-traversal tag snapshot before/after geometry or at the small branch 218/218/218;
+// the same inputs with separate center/query 219/219/219; branch count output on the first/third
+// snapshot 218/218. Entry/index spill and point/query homes remain; complete original body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
