@@ -274,6 +274,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // boundary disposal as `if ((valuee & 2) && type == 0) { dispose = true; break; }` 96 (same code), with
 // fraction first 207, with fraction first and no reset 207, with no reset 96; the key table read before
 // the next-frame switch 145 (656 bytes).
+// Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
+// next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
+// 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

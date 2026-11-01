@@ -751,6 +751,11 @@ struct s_device_machine_view
 // top of both 0x1200055f arms (hoisted above the `je` exactly like the single zero store) on the lane S form
 // 117 (657 bytes), on word-local masks 122; a byte machine-flags local with masks + zero store 122 (the
 // pointer still takes the pushed ESI, popped right after `test al, 1`).
+// Round 14 (lane 17, fast; on the masks + 0x1200055f zero-store form, 122): the case labels in numeric
+// order, in retail's block layout order and with the 0x6000560 case first 122/122/122; the machine block
+// behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
+// Matched retail sites that load 16 bits into the pointer's own register (0x3f500, 0x1c7450, 0x1023d0)
+// use the value in 16-bit compares or a phi, never in byte tests.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1042,6 +1047,12 @@ bool function_108530(long device_index, long name)
 // Round 46 (m3 lane 10, fast, with both callers): `distance = target - position` with delta copied from it
 // 123; the denominator staged with two `+=` 121; the velocity staged (difference, then `/= denominator`) 121;
 // both delta swap and staged velocity 123; the reset stores as two chained assignments 121 (identical code).
+// Round 14 (lane 17, fast, with both callers): the deceleration through the velocity local and the
+// acceleration through the motion field 121 (same code); the three target stores chained 121; the half
+// ramp-down time computed before the position pin 129; the denominator written out in its test and
+// division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
+// target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
+// 0x108670 13 -> 34).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

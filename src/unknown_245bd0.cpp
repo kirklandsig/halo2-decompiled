@@ -358,6 +358,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // difference and scaled in place on the plane 397 (456); the radius test as `!(distance_squared >= r * r)` 58;
 // the squared distance as a double 397 (456). Repeats: unit-z default before the epsilon test 174 (689 bytes),
 // a radius local after the normal 62 (672 bytes).
+// Round 15 (lane 17, fast with 0x19cb90/0x245bd0/0x245d80/0x2461a0): the sphere passed by reference 57; flat
+// i, k, j sum with the reciprocal in the call 61; a named i + k partial plus the j square 59; the
+// unit-z arm through the normal member, unit z first then separate zeros 61; a scalar point-to-point
+// squared-distance helper (no vector of its own) beside the difference 307 (776 bytes), with the
+// difference made inside the radius test 227 (722): the subtractions are still not merged. Diagnostic:
+// the unit-z arm's 1.0 read from a named global stops the 1.0 hoist (retail's fsqrt block) 153 (681 bytes).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

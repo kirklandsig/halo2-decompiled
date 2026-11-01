@@ -2315,6 +2315,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // remain); the shared inverse with an own velocity length 199 (the normal block changes from +0x53),
 // with the word-first setter 192; vector3f_add velocity sums + shared inverse + word-first setter 404,
 // with the length as sqrt(dot3f) 404.
+// Round 14 (lane 17, fast): the length kept from normalize3d in a named local 91; the speed products'
+// operand order (v * s for all three, s * v for all three) 91/91; the material count cast to real 91;
+// the result pointer declared before the normalization 263 (1403 bytes). Diagnostics (written-out
+// normalization, not kept): the scale as (s * i, j * s, k * s) 91 (identical code: operand order is
+// not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
+// k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
+// unscaled else), reloading only i; ours reloads all three in each arm.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

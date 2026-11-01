@@ -626,6 +626,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // split_screen renamed to sort last 191, scripted renamed to sort first/last 191/191, split_screen declared
 // at function scope 191 (114 with the long timer), the timer or all three flags as `byte` 191/191: names,
 // scope and byte/bool type do not move the byte slots.
+// Round 16 (m3 lane 17, fast; unchanged source 115 fast): `left` renamed to sort first 115 (same code: it
+// is a spill slot, so slot-name ordering does not reach it); `left` declared before `top` 115 (same); the
+// HUD state global read at each use 115 (same); the text buffer declared first 115 (same); `top` as a long
+// 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
+// tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
+// where retail starts a new group after origin (-0xd).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

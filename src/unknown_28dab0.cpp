@@ -246,6 +246,10 @@ void __stdcall swarm_delete(long arg_0);
 // moved alone 47 in the harness); any order with the position first and the gather point last gives 38-39 in the
 // harness (36 pair swaps of a searched order). On the kept form: the if-form limit 90 (289 bytes), with the NONE
 // pair after the zero pair 89; the index read after the stores with the if-form limit 44 (harness).
+// Round 14 (lane 17, fast; all on s2, 92, identical code each): a const tag pointer with `NONE != field`;
+// the allocation folded into the head condition; the allocation pool read once into a local for the
+// allocation and the record address; the result declared uninitialised and set NONE after the tag
+// pointer; the record pointer declared at function scope.
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

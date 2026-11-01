@@ -690,6 +690,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // right negated after the forward-first product (diagnostic) 256 (the negation is not folded); on the
 // forward-first form: the first product as cross3f_staged 57, previous_up copied after the direction
 // difference 249 (1272 bytes).
+// Round 15 (lane 17, fast): a cross helper returning its result pointer, the second product passed
+// straight to the normalize 57 (same code), both products through it nested with staged components
+// 221 (1272 bytes), plain components nested 57; a player-state pointer local for the previous_up copy
+// 57; previous_up declared at function scope 57. Diagnostics: the first product's components in j, i,
+// k order (up.k named first) with the staged second product, written out 218 (forward read through
+// edi), through a pointer helper 219 (up.k then in xmm2, loaded before the distance store).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

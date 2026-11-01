@@ -122,6 +122,10 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 104 (lane 8, fast): the tail tests without `else` 111 (251 bytes); a named high mask (used
 // twice) 82 (identical); the height logarithm first 100 (0x136140 lost); the y shift folded into each
 // branch's lookup 82 (identical); the branch test on `common_bits <= 6` 82 (identical).
+// Round 16 (m3 lane 17, fast; 0x136140 kept): common_bits declared before the height logarithm 82 (same
+// code); tail tests as `common_bits < width_bits` / `< height_bits` 91; the minimum as `height_bits <
+// width_bits ? height_bits : width_bits` 82 (same code), as `width_bits < height_bits ? width_bits :
+// height_bits` 82 (same code); the output words declared with the coordinate copies 82 (same code).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

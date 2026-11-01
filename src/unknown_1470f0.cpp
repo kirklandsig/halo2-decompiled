@@ -216,7 +216,6 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // 36/36/45/36; pool+fixed/pool+physical/three pools/all paths 36 each.
 // Original calls restored; first upper-bound branch pair and bound-register reuse remain.
 // the first range's end is now a named local tested for equality, which gives
-// the first range's end is now a named local tested for equality, which gives
 // retail's jge/jne pair and the shared dispatch block; the first range's start and the second and
 // third ranges' ends are still computed in edx where retail uses eax. Only an end named before
 // the first test keeps the jne, and it is then computed before the jg; every end written in the
@@ -233,6 +232,10 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // Round 61: first-only return 8; nested named end with the first return 70; nested plain inclusive
 // end 43; const end 8; one shared end 8; shared start/end 8; start named after end 8; concrete
 // page_count end 8; void * end 8. Original body restored.
+// Round 15: the first end in the test as the siblings write it 70 (start and end both in EAX, but the
+// first call block merges into the second's and the equality branch goes), with `>` 70; all three
+// ranges in that form 68; address-first comparisons with the named end 10; second and third ranges
+// address-first 14.
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {

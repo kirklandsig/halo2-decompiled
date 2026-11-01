@@ -552,6 +552,12 @@ done:
 // shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;
 // a named pointer to the tag field read at the translator call 45 (178 bytes, globals in EBX); the tag declared
 // at function scope 32 (identical). All real (fast).
+// Round 14 (lane 17, fast; parse_variant stays matched), on the natural one-copy form (54): the shared
+// getter's fallback as a ternary 54 (same code: the tag load stays after the fallback join), with the tag
+// read before the variant call 57 (171 bytes; the tag loads before the call); the selector read into a
+// local before the tag 54; numeric case order 49 (173 bytes); numeric order with the tag read first 55
+// (171 bytes). Retail's tag load sits between `test eax, eax` and `jne` in the call's block, so in its IR
+// the tag read precedes the fallback branch.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
