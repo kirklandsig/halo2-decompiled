@@ -224,6 +224,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 249: Complete sound/portal/default table snapshots, masks 1..7,
 // 970/937/973/948/982/924/987; all with query metadata before its producer 988.
 // Original observations and complete body restored; exact-length 924 has the wrong frame.
+// Round 47 (lane 10, fast): the four query arrays sit in other slots (retail gains +0xec, indices +0x1f0, portals
+// +0x2f0, clusters +0x3f0; ours portals +0xf0, indices +0x1f0, clusters +0x2f0, gains +0x3f0) although retail reads
+// them in our order (indices, clusters, gains, portals). The arrays renamed three ways 886 each; declared one per
+// line in four orders 886 each; declared at function scope 886; the count declared before them 886 (all the same
+// code: neither names, declaration order nor scope moves the slots).
 // Round 470: unsigned raw decibel words in choice/target/datum records, all
 // seven subsets 886 each; all with unsigned helper transport 886. Original
 // records, helpers and body restored; entry zero and target/query/count homes remain.

@@ -1314,6 +1314,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // inline getter returning it by value, at the write / write+close / all four / write+resize: 7 each (the
 // getter is transparent). Diagnostics: the file pointer from a byte offset 104, from a displacement local
 // 101 (the displacement then takes EAX, retail ECX).
+// Round 110 (lane 8, fast): round 53's 7 form and round 56's 6 form reproduce (7/6). Upstream of the
+// resize block, on the 7 / 6 forms: `remove_later = false;` before the delete call 9/8; the size test
+// written `expected_size != size` 8/7; `dword size` declared at the loop top 7/6; `long expected_size`
+// 7/6. On the 7 form the resize and close match retail; only the write call (the flags zero takes EAX, so
+// the handle load cannot move ahead of it as retail's does) and the checksum register differ.
 // Round 123 (lane 6, fast): the 7 and 6 forms reproduce. On the 7 form a write handle local alone 114 is one
 // instruction from retail (917 bytes: only the close call's `mov ecx, eax` struct copy is missing, the rest is
 // loop padding); with a `s_file_write_flags flags(0)` local as 0x2151f0 writes it 114; the write handle built by
@@ -1348,6 +1353,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // address built from the array element). On round 53's 7 form: the handle pointer 7; the checksum as
 // `if (call) valid = a == b; else valid = false;` 15 (header zero moves to AL); a bool-returning inline write
 // helper in the close condition 355 (834 bytes: the two headers share one slot).
+// Round 66 (lane 9, fast): the 7 and 6 forms and the write-handle-local form (114, close copy dropped) reproduce.
+// Register reading: in all three the checksum load takes the scratch register one step after the close call's
+// copy (7: ECX/EDX, 6: EDX/EAX, write local: EAX coalesced/ECX), in retail two steps (ECX/EAX), so one more
+// rotating temporary sits between the close and the checksum in retail, whatever the write does. Tried: write local
+// with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
+// *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
+// the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
 // @retail 0x213970
 void function_213970(void)
 {

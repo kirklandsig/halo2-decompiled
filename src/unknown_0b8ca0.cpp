@@ -10,6 +10,7 @@
 #include "object_markers.h"
 #include "unknown_16d180.h"
 #include "matrix_transform.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <xmmintrin.h>
 #include <string.h>
@@ -639,7 +640,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 230 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // Earlier round: the root-walk loop and the table read are the only places
 // left that could give retail's frame shape, so each was tried alone and together: the table
@@ -732,6 +733,15 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // distance_squared` 227. Retail's latch NONE re-test and abs-index spill follow from its frame
 // pointer (the handle lives in memory); the zoom argument's 32-bit widening needs 0xc8880's
 // parameter (contributor, left alone).
+// Round 38 (m3 lane 14): both callers now match and the old BLOCKED-BY 0x268c90 no longer explains the frame:
+// with either caller alone in the image (0x268c90, or the table-called 0xbf2c0) ours never self-aligns, though
+// both call sites sit 4 bytes off an 8-byte boundary (0xbf2c0 after four pushes, 0x268c90 after a 0x50 frame and
+// four pushes) in retail and ours alike; 0xbf380's frame (0x2a04 against our 0x2a08) and
+// the table entry make no difference (diagnostics). Our LTCG self-aligns this body only with no caller in the
+// image, so the frame is BLOCKED by the toolchain's alignment rule, not by any caller's source. Fast, caller
+// included: the cluster test through the existing bit_vector_test 230 (same code, kept: it replaces that
+// helper's body written out); the distance through length_sq3f 230; the range test as an else-if 230; the
+// model index read at each use 227 (below the bar); a named radius for the square 230.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -753,7 +763,7 @@ bool function_bba80(long object_index)
         short cluster = function_b8a80(root, &links);
         while (cluster != NONE)
         {
-            if (((dword *)((byte *)g_4e6948 + 0x1138))[cluster >> 5] & (1 << (cluster & 31)))
+            if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
                 break;
             cluster = function_b8b20(&links);
         }
@@ -1703,6 +1713,24 @@ void function_bba20(long index);
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
 // score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Round 189 (m3 lane 3): retail has no call to 0xb8bd0 here: it reads the parent's node-matrix base before the
+// link stores (`movsx eax, word [edi + 0x116]` precedes the parent-index store) and indexes it by the node at the
+// 0x141590 call, and takes the header and the re-fetched object from a fresh `g_4e0300->data` plus the entry offset
+// (the offset is CSE'd, so `index` is not volatile). Best form 245 plain (1249 bytes): `index` not volatile, the
+// header from OBJECT_HEADER_GET(index) defined with was_active before the parent, the bit-7/8/6 tests in shift
+// form, the type test as `!((1 << type) & 0x80)`, and `byte *node_parent = OBJECT_GET(parent_index);
+// transform4x3f *node_matrices = (transform4x3f *)(node_parent + *(short *)(node_parent + 0x116));` before the
+// stores with `node_matrices + node_index` at the call. Not kept: node_matrices is a one-use local evaluated ahead
+// of stores, and without it the rest scores 304 (b8bd0 at the use) / 317 (index volatile again). Steps (fast): node
+// base before the stores 350 (1283 bytes), the whole node matrix there 349, the 0xb8bd0 call moved there 285; with
+// the child link through `g_4e0300->data + offset` 354, plus that header 341; non-volatile index + macro header
+// 296 (1236 bytes), without the node base 320; on 296 the bit-7/8 shift tests 302, bit-6 shift 296, type mask
+// 304, all three 253; header and was_active before the parent 245 (header first alone 253). On 245/253: object
+// and loop through OBJECT_GET 268/276, object through OBJECT_GET with pool kept 304/287, object through the header
+// view 245; cluster read at each use 285; node not volatile 290/300, also used directly 283; bit 6 through the
+// physics_active bitfield 276; flag7/flag8 bitfields 245 (same code); the bit-7 test named before was_active 245;
+// `allowed` first or offset before pool 253; node_parent as a two-use local with the offset read at the call 297;
+// `parent` renamed (parent_object, new_parent, attach_parent) 245 (homes unchanged).
 // Earlier: the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
 // +0x76 (pool in EBX, -1 in EAX). Retail inlines the node matrix lookup (0xb8bd0's body, here called
 // out of line because its file is /Ob1) and re-derives pool->data into EBX after the ancestry loop

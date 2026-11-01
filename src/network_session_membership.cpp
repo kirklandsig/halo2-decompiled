@@ -769,6 +769,13 @@ union s_60403
 // Round 137 (lane 4): plain bool discriminator 167 (frame 0x98, entry registers unchanged); retained mask declared
 // at the function top 403 (1513 bytes), with the plain bool 401; both maps declared at the top 149 (same code); a
 // named `dword bit = 1 << i;` in the emission loop 149 (same code).
+// Round 146 (lane 4, fast): typed records (the snapshot layout 0x5cb80 already names, typed member/player
+// update records; definition, declaration and both calls) 149 (identical code); one `previous_count` for the
+// mapping and removal loops 366 (1482 bytes); plain bool flag + map entry read at each use + retained declared
+// after the member loop 362 (1513 bytes, aligned 65 masked: the flag stays in memory, retail spills only its
+// false and carries it in BL); that with the removal loop reading the records directly 362; `new_to_old[i]`
+// read directly for `local_0` 149 (same code). Diagnostic: parameters swapped (definition and calls) 153: current
+// still takes EBX, so the entry choice follows current's weight, not symbol order.
 // Round 23 (m3 lane 2, fast): the current member count named once (`member_count`, the mapping and member loop
 // bounds) 204 (frame 0x98); the previous count named for the mapping and removal loops 366 (1482 bytes); both 342;
 // the previous member address named in the outer mapping loop 149 (same code); the previous header as an if/else
@@ -796,6 +803,13 @@ union s_60403
 // compared first 149; the old index named before the old member pointer 149. Retail keeps previous in EBX
 // through the member loop (reloaded at its latch, `lea esi, [ecx + ebx + 0xc]`); ours reloads it from its
 // home for the old member.
+// Round 148 (lane 4, fast): `const byte *old_members = previous + 0xc;` before the member loop, the old
+// member taken from it, 276 (1513 bytes): the first natural form that gives retail's entry (previous EBX,
+// current EBP, frame 0x94) with the mapping and removal loops as retail except two swapped count/cursor
+// homes; the member loop then rebuilds the old member from the stack argument and its flag test grows;
+// with a plain bool flag 289 (frame 0x98); with the retained mask declared after the member loop 291
+// (1529 bytes), both 302; `old_members` declared after the maps and used by the mapping, removal and
+// member loops 283 (1513 bytes).
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

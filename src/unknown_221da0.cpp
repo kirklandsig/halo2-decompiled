@@ -881,9 +881,22 @@ real function_18cac0(long arg_0);
 // Round 245: plain door-cluster/gain/final-entry cursors in seven subsets
 // 236/203/211/154/236/203/211; all with native real table 211. Final-entry cursor
 // saves one point and is rejected. Original indexed body and both library clears restored.
+// Round 110 (lane 8, fast; base aligned 53): the small mask as `= {0}` 204; the maximum through a pointer to
+// the table element 246 (781 bytes); `if (gain < table_value)` in place of the negated `>` 161; the
+// maximum stored only when smaller 541 (493 bytes); the side as a default-1 local with nested tests 233
+// (812 bytes, retail's length, but aligned 104). Retail's extra 15 bytes are its direct `[esp + i*4 + 0xbc]`
+// table accesses, which our build only emits with the frame realignment (a flags lead, recorded above).
 // Round 470: complete-array clear-return view with real backing, retained
 // audibility and camera-cluster continuation interactions 155/155/167/167/155/155/167/167.
 // Original scalar view and complete body restored; camera/clear-result homes remain.
+// Round 112 (lane 8, fast): a real table cleared with the return discarded and indexed directly 240 (816
+// bytes, `and esp, -8` frame; with __declspec(align(4)) as a diagnostic also 240); memset's return named,
+// the maximum loop on the table and the final calls through the return 202 (816, frame 0x8a8); the reverse
+// (maximum loop through the return, final calls on the table) 219 (788; camera in retail's EBP, the final
+// calls' `lea ecx, [esp + 0xc0]` as retail); those two with the batch count read once 198 (812) / 218
+// (784; retail's countdown loop). Compile-only: a memset of any local array of 0x80 bytes or more
+// realigns (variable size, partial clear, struct member, zeroing loop too); only a used memset return
+// avoids it. Retail's caller 0x125b40 does not realign, so no alignment comes from above.
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {

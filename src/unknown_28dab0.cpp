@@ -19,7 +19,7 @@ long function_1e4990(long arg_0);
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4);
 void __stdcall swarm_delete(long arg_0);
 
-// score 33 (was 44): the head now matches (tag pointer EDI, NONE result ESI, a fresh `or ecx, -1` for the
+// score 33 (was 33): the head now matches (tag pointer EDI, NONE result ESI, a fresh `or ecx, -1` for the
 // NONE stores); retail still spills the creature definition index and keeps the loop limit in EBX with a
 // cmovg, where ours keeps the index in EBX and puts the limit in a stack slot with a branch, and retail's
 // record stores run in its own order (below). Before round 108 (44): the tag pointer was in ESI where retail
@@ -246,6 +246,14 @@ void __stdcall swarm_delete(long arg_0);
 // moved alone 47 in the harness); any order with the position first and the gather point last gives 38-39 in the
 // harness (36 pair swaps of a searched order). On the kept form: the if-form limit 90 (289 bytes), with the NONE
 // pair after the zero pair 89; the index read after the stores with the if-form limit 44 (harness).
+// Round 110 (lane 8; plain): retail's store order with the index read after the swarm pointer and the
+// if-form limit 81 (289 bytes: tag EDI and result ESI as retail, but a separate NONE register EBX feeds
+// the head compares and the NONE stores; the harness shows the if-form always makes that NONE register
+// when the index is spilled); the allocation in its own local with the result set on success 56 (296
+// bytes); the delete path returning NONE 83; the limit as `if (field > 0) limit = field; else limit = 10;`
+// 33 (same code as the ternary); the index read before the swarm pointer 53. Harness only: unsigned
+// NONE stores, nested head tests, the tag field compared against the result, the counter or limit
+// declared at the block or function top and the tag field read at the call change nothing or score worse.
 // Round 14 (lane 17, fast; all on s2, 92, identical code each): a const tag pointer with `NONE != field`;
 // the allocation folded into the head condition; the allocation pool read once into a local for the
 // allocation and the record address; the result declared uninitialised and set NONE after the tag
@@ -262,6 +270,8 @@ void __stdcall swarm_delete(long arg_0);
 // read-and-spill place) 53 (first +0x16: the head swap returns); the two flag bytes after the gather point
 // 43; that with the NONE pair after the zero pair 43; flags last with the if-form limit 81 (289 bytes);
 // the index first with the flags last 53.
+// creates a swarm for a spawn definition: allocates and clears the record, then places up to field_2e
+// creatures (10 when it is not positive) and deletes the swarm again when none were placed
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {
@@ -273,17 +283,19 @@ long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 		if (local_0 != NONE)
 		{
 			s_swarm *local_3 = swarm_get(local_0);
+			short local_4 = 10;
 			long local_2 = local_1->field_18;
-			local_3->position = *g_468788;
-			local_3->gather_position_valid = false;
-			local_3->spawn_slot_reference = true;
-			local_3->creature_count = 0;
-			local_3->initial_creature_count = 0;
-			local_3->event_count = 0;
 			local_3->actor_index = NONE;
 			local_3->first_creature_index = NONE;
+			local_3->creature_count = 0;
+			local_3->initial_creature_count = 0;
+			local_3->position = *g_468788;
+			local_3->event_count = 0;
 			local_3->gather_position = *g_468788;
-			short local_4 = arg_1->field_2e > 0 ? arg_1->field_2e : 10;
+			local_3->gather_position_valid = false;
+			local_3->spawn_slot_reference = true;
+			if (arg_1->field_2e > 0)
+				local_4 = arg_1->field_2e;
 			for (short local_5 = 0; local_5 < local_4; local_5++)
 				function_28dbd0(local_0, arg_0, local_2, arg_1, local_5 == 0);
 			if (local_3->creature_count <= 0)

@@ -416,6 +416,10 @@ static inline bool teams_enabled_19e1c0()
 // (as the switch-side-time case): plain 696 (1167 bytes), volatile 439 (1416 bytes). With the plain result our
 // allocator gives `token` EDI and leaves `remaining` on the stack (retail: remaining EBP, token reloaded per
 // compare), so the name/team tails merge whatever the clamp's form.
+// Round 66 (lane 9, fast): every vsnprintf failure as `return remaining;` with the volatile/plain result 439/696;
+// each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
+// token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
+// failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

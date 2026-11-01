@@ -2217,6 +2217,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // the named offset 246. Retail's dead `add ebp, 0x214` is the idiom of a pointer-to-field variable whose
 // last use was folded away (matched 0x89df0 and 0xbb950 link walks, 0xa0c50's inlined flag setter); no
 // existing accessor reads the unit's 0x214 field.
+// Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
+// loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
+// no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
+// read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
+// flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

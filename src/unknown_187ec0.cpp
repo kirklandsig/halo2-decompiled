@@ -209,6 +209,8 @@ struct s_seat_animations
 	s_seat_animation *animations;
 };
 
+/* the first of the animation's entries (by type) for the element or its nearest
+   parent that has one */
 // score 55 (was 55): retail's ebp is not a frame pointer: it holds animation for the whole body, and result lives
 // in the push ecx slot ([esp + 0x10]), stored on a hit and reloaded into edx after the inner loop. Ours keeps result
 // in ebp and reloads animation from its parameter slot at every use; that register-or-spill choice is the whole
@@ -313,16 +315,17 @@ s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *anima
 	s_seat_animation_entry *result = NULL;
 	long count = first ? animation->first_count : animation->second_count;
 	c_type_47f957 index = element_index;
-	s_globals_element *element;
 
-	while ((element = globals_element_get((s_globals_element_block_view *)g_4e034c, index.m_index)) != NULL)
+	while (globals_element_get((s_globals_element_block_view *)g_4e034c, index.m_index) != NULL)
 	{
-		for (long i = 0; i < count && !result; i++)
+		s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, index.m_index);
+
+		for (long i = 0; i < count; i++)
 		{
-			s_seat_animation_entry *entries = first ? animation->first_entries : animation->second_entries;
-			if (entries[i].element_index == index.m_index)
+			s_seat_animation_entry *entry = first ? &animation->first_entries[i] : &animation->second_entries[i];
+			if (entry->element_index == index.m_index)
 			{
-				result = &entries[i];
+				result = entry;
 				break;
 			}
 		}
@@ -411,56 +414,23 @@ s_seat_animation_entry *function_188130(long tag_index, long index, long type, s
 	return seat_animation_entry_find(tag_index, index, type, element_index);
 }
 
-// score 22 (was 22): the element index is loaded as a dword (retail a word), EBP holds the hoisted table instead of
-// the requested entry index, and the element address is `add ecx, esi; mov ebx, ecx` (retail `lea ebx, [ecx+edx];
-// test ebx, ebx`). BLOCKED-BY 0x1883e0: retail's convention needs the one-short index class on 0x1883e0's
-// parameters too, whose declarations sit in held/contributor files.
-// Native walk index 21, direct input 33;
-// native parent assignment 21; native requested index 22; both indices 21, direct input 33; native hit return 21; result first 21.
-// Native parent/request/both formals 22/14/14; register parameter second/third/last 22/22/22;
-// native parent with register last 22; native indices with register second 14. All restored: unmatched index wrappers rejected.
-// initial word load, requested-index/table register ownership and lookup schedule still differ.
-// This round: success before parent 28; native carry with alias 30; initial negative guard 73; signed loop admission 79; walking formal 38; direct native carry 35; complete per-tag result 56; success inside tag arm 28.
-// initial short load and global-table/entry-index register lifetimes differ.
-// Earlier requested-index snapshot 22; parent snapshot 28; explicit lookup 22; found return 22;
-// word carry 22; result first 22; one-element array 21; for parent walk 71; parameter walk 22;
-// entry local, null break, shared return and memcpy copy 22. Direct short carry 33; native carry 31;
-// result loop guard 22; tag workspace lifetime 22; ancestor local names 22; complete result 30;
-// native carry with stack input 23; existing entry lookup 105.
-// initial word load, EBP entry/table lifetime and lookup registers remain;
-// native entry formal 22; native parent formal 22; both native formals 22;
-// direct tag field 22; current-element traversal 141; separate inline declaration 22;
-// separate noinline declaration 22; existing element query 59.
-// Long requested index 22; both indices as a block-index class 11 (word load,
-// requested index in EBP, the table reloaded per tag; only `lea ebx, [ecx+edx]; test ebx, ebx`
-// left); with 0x1883e0's two material parameters of the same class too, 0x1883e0 matches and
-// 0x188180 drops 89 -> 70, but 0x1883e0's callers in held/contributor files declare short/long;
-// requested index only as the class 11; without the element reference 23; declaration orders,
-// names, loop guard 11; early-return or ternary lookup helper 12 (0x188690/0x188130 lose).
-// Round 15: walking index as the material class built through the parameter's address 21 (word load only);
-// the class walk local built from the parameter 33; result declared first 22; tag field read at each use 22;
-// parent step before the lookup 35; the entry index as a class local at the top 22.
-// Round 108: both material parameters as the material class, read directly (no parameter reference), 14;
-// 0x1883e0 stays 118 (its own parameters keep short/long). Not kept (unmatched index wrappers).
-// Round 12 (lane 18): 1-7 unused initialised locals at the top 22 each (register choice, not operand numbering);
-// the element getter as a ternary 23 (0x188640 22, 0x188690 18), with `elements + index` 22, with an else arm 22
-// (0x188640/0x188690 lose), with the bounds test nested 22; the loop testing the assignment directly 22.
+/* the requested entry from the first tag found on the element or its parents
+   that has one */
 // @retail 0x1882d0
-s_seat_animation_entry *function_1882d0(long type, short element_index, long index, short entry_element_index)
+s_seat_animation_entry *function_1882d0(long type, c_type_47f957 element_index, long index, c_type_47f957 entry_element_index)
 {
-	short const *element_reference = &element_index;
-	short local_0 = *element_reference;
+	c_type_47f957 local_0 = element_index;
 	s_seat_animation_entry *result = NULL;
-	s_globals_element *element;
 
-	while ((element = globals_element_get((s_globals_element_block_view *)g_4e034c, local_0)) != NULL)
+	while (globals_element_get((s_globals_element_block_view *)g_4e034c, local_0.m_index) != NULL)
 	{
+		s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, local_0.m_index);
 		long tag_index = element->tag_index;
 		if (tag_index != NONE)
 		{
-			result = seat_animation_entry_find(tag_index, index, type, entry_element_index);
+			result = seat_animation_entry_find(tag_index, index, type, entry_element_index.m_index);
 		}
-		local_0 = element->parent_index;
+		local_0 = c_type_47f957(element->parent_index);
 		if (result)
 		{
 			break;
@@ -602,11 +572,11 @@ void function_1883e0(long tag_index, bool ignore_distance, point3f const *point,
 		}
 		if (!first_entry)
 		{
-			first_entry = function_1882d0(0, element_index, first_index, (short)entry_element_index);
+			first_entry = function_1882d0(0, c_type_47f957(element_index), first_index, c_type_47f957((short)entry_element_index));
 		}
 		if (!second_entry)
 		{
-			second_entry = function_1882d0(1, element_index, index, (short)entry_element_index);
+			second_entry = function_1882d0(1, c_type_47f957(element_index), index, c_type_47f957((short)entry_element_index));
 		}
 
 		if (first_entry)
