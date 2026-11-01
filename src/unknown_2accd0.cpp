@@ -743,6 +743,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -893,7 +896,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 129 (was 134): with the address-taken scratch record and the two-pointer getter (see
+// score 129 (was 129): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -964,6 +967,9 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Round 484: native I/O header-failure/extension-admission/signature-admission joins,
+// subsets H/E/S/HE/HS/ES/HES and HES with explicit byte-count failure
+// 301/129/129/301/301/129/301/301; frame/capacity/offset homes remain. Original body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

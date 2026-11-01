@@ -298,6 +298,10 @@ union s_185be7
 // Round 265: library range / paired axis-duration / paired response-weight-angle
 // selection, their pairs and all: 951/1095/1037/1123/1181/1293/1311; complete
 // upper-first nesting 1320. Native frame, original custom clamps and full body restored.
+// Round 484: shared-exponent range-result positive/conditional/unordered ownership
+// 935/935/800; default before lower bound/selected record 735/735; the three
+// branch-owned forms with exponent declaration at range scope 935/935/800.
+// Original fraction producer, exponent observation and complete body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
