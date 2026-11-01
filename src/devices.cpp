@@ -766,6 +766,9 @@ struct s_device_machine_view
 // behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
 // Matched retail sites that load 16 bits into the pointer's own register (0x3f500, 0x1c7450, 0x1023d0)
 // use the value in 16-bit compares or a phi, never in byte tests.
+// Round 276: complete group value before/after the machine test, masked bits/word
+// masks without/with velocity zero 199/203/192/199 and 204/207/200/204.
+// Original pointer and values restored; word-load/EAX sharing and zero move remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1069,6 +1072,9 @@ bool function_108530(long device_index, long name)
 // division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
 // target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
 // 0x108670 13 -> 34).
+// Round 276: complete native motion result published at the tail, declared at reset/entry,
+// with local/field cruise speed and up/down phase order 173/174/173/174 each.
+// Original field stores restored; frameless initial-speed/ramp-down ownership remains.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1540,6 +1546,9 @@ bool function_0b6760(s_index_pair const *pair);
 // on this body the same 303 (1510 bytes); the b3 byte tested `<= 0` 294 (retail's `ja`, same count); the
 // state as one conditional expression 300 (1512 bytes). Retail's result byte never crosses a call on any
 // path, so its stack home is not register pressure from a live range.
+// Round 276: actual header/device byte members 294/294; with ordinary index,
+// header/device/both 395/395/395; with ordinary saved pointer 386/386; both
+// with ordinary index and saved pointer 412. All declarations and storage restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

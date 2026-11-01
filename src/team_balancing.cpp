@@ -595,6 +595,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
 // ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
 // `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
+// Round 276: complete selected-solution value after edits with no/candidate/reference/both
+// retained spread results 126/97/100/99; before candidate copy 183/152/155/139.
+// Original selected-pointer graph restored; candidate-first query ownership remains.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -887,6 +890,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
 // 35. Re-measured: copy before the maximum 82, open
 // slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
+// Round 276: standard count-based fill with difference/extra count, alone 62/60,
+// with excess maximum 82/82, party maximum 118/115, both maxima 116/113.
+// Combined scan, original fill and clamp restored; EAX/EDX count ownership remains.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
