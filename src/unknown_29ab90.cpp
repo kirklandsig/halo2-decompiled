@@ -220,6 +220,7 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Round 294: isolated planar scalar products, ij/ji producer and ij/ji publication
 // schedules, 354 each; four complete compound-product boundaries 354 each.
 // Original three-use normalizer and complete body restored; frame 0x58/0x64 remains.
+// Round 297: Actual acceleration workspace at entry/settings entry/movement-query entry, scalar stores or existing vector setter, 354 each; original-scope coordinate aggregate/setter 354/354. Original storage, native producers, helper bodies and complete body restored; frame 0x58/0x64 and magnitude/query homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

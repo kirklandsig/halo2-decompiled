@@ -1348,7 +1348,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	function_10cf80(&velocity, object_index, false);
 }
 
-// score 140 (was 158): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
+// score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
 // the tail, the event-point homes and the location-call setup are unchanged, and
@@ -1472,6 +1472,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 171/159/180/140/140/141/141; all with entry contact point 141. Paired point setters with
 // direct filled-buffer inputs 158; with entry event record 158. Minimal paired setters
 // retained, plain 140 at 892/892 bytes; other graphs and original impulse helper restored.
+// Round 297: Merged spin-success arm, bool/byte/short/long accumulator, completion 190/185/202/203 and entry 190/185/202/203. Bool recovers return-byte +0xf but shrinks to 874/892 bytes. Original two-use spin result, paired point setters and full body restored; release RMW/tail and event/location homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

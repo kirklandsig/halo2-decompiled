@@ -926,7 +926,7 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
-// score 184 (was 248): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
+// score 184 (was 184): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
 // normalized-j residence and color/tag homes remain. Earlier 248: 1355 bytes and frame
 // 0x60 as retail (round 27 form, below). Before it (292,
 // 1372 bytes against 1355): our entry stored a `result`
@@ -1057,6 +1057,7 @@ public:
 // Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
 // 189/248/240/184/237; coordinate names 248; reversed independent comparisons
 // with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
+// Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1497,6 +1498,7 @@ bool function_17afd0(long effect_index, long value);
 // availability as `view != NONE ? !query(view) : false` 107 (485 bytes).
 // Round 295: Native system/definition/cluster entry storage in all seven subsets [102, 102, 102, 102, 102, 102, 102].
 // All three plus effect/view entry storage 102. Original producers and body restored.
+// Round 297: Native unsigned owner/iterator/next-slot domains in all seven subsets, then all with owner declared before effect acquisition, 102 each. Original signed domains, declaration scopes, queries and complete body restored; NONE/owner, availability and Boolean homes remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
