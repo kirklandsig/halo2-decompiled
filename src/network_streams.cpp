@@ -1296,6 +1296,11 @@ bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb 
 // oldest in EDX) with result declared before self 106, with the scan fragment NULL first 106; one final
 // return reached by a single goto from the decode success with the failure as `result = false` 281, with
 // `> 0` 278 (769 bytes each).
+// Round 120 (lane 6, fast; aligned 50): the failure as `result = false; m_unknown05 = true; return
+// result;` 107 (same code); the scan as a while loop with its own increment 107 (same code); the scan's
+// terminal test as `result |= (flags & 2) != 0` 110 (aligned 72); the copy loop's fragment as one
+// ternary 134; the scan stopping at the terminal fragment (`result = (flags & 2) != 0; if (result)
+// break;`) 102 (807 bytes, aligned 78: retail scans on past it).
 // @retail 0x95840
 bool __stdcall function_095840(s_network_stream_header *header, long *message_type, long *message_size, void *message_data)
 {

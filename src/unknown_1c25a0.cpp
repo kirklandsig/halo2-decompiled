@@ -921,6 +921,10 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // moved to the end of the file 1; function_146da0 before function_1c4040 in src/unknown_146a20.cpp
 // (alone) 1; function_1c4040 declared before function_278f00 here 1; function_146bf0 before
 // function_1c3770 in src/unknown_278f00.cpp 1 (function_1c4040 25, 0x1c39c0 lost at 41).
+// Round 61: attempt declared before force 3; callee declaration at the TU top 1; consistent inline
+// declaration 1; byte callee result 1; the other caller's function_146da0 declaration first 1;
+// callee declared before function_278f00/function_146bf0 1; function_146bf0/callee/function_278f00
+// order 1; callee after both 1. Original declarations restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
