@@ -640,6 +640,9 @@ struct s_1f9762
 // score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
 // products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
 // second dot's i term keeps the projection vector in the register where retail has the point.
+// Round 103: on the projection index read through the actor, a second projection pointer, input pointer,
+// projection or input reference, direct comparison and subtract-assignment 2 each; current dot named first 4;
+// input dot named first 2; input dot alone named 4; two-component input product 14. Original body restored.
 // MiniMax G (10-31): the first dot written out by hand (i term projection-first, j and k terms
 // point-first, an order the helper cannot express) 7: an existing helper's body by hand, kept only
 // with a match; both dots projection-first 10 (same code).
