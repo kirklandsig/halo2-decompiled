@@ -89,7 +89,7 @@ static inline long bungienet_user_voice_setting(short kind)
 	return setting;
 }
 
-// score 4 (was 11): only the request pointer and the kind differ: retail ECX and AX, ours EAX
+// score 4 (was 4): only the request pointer and the kind differ: retail ECX and AX, ours EAX
 // and CX. Before round 55 retail kept the request pointer in ECX, the
 // kind in AX, the setting in ECX and `changed` in DL; ours used EAX, CX, EDX and CL.
 // The volatile read keeps retail's 16-bit load and register compare of the kind (a plain
@@ -107,6 +107,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // straight 32; an added `kind == 0` test first 32 (103 bytes, but retail's ECX/AX pair); the index read
 // first 5; word/long kind parameter 4/4; inverted `kind != 1` chain 4; `old != setting` 5. Names, a
 // byte-offset read, the dword's high half, a reference parameter: the compare still folds.
+// Round 121: plain read through a `short const *` helper parameter 32 (95 bytes); forceinline helper 4 (same
+// code); the controller pointer taken before the setting 15; the controller index read at each use 23 (99
+// bytes); a one-expression ternary helper, plain read 32. One-file LTCG probe (exact here), plain read: a 16-bit
+// bitfield kind, a byte-pointer read, the header type's view, by-reference/pointer parameters, `1 == kind`, the
+// helper written in place: all fold the compare (`cmp word ptr [eax + 0xe], 1`).
 // Round 466: Controller before selector 15; old state before selector 24; controller before kind 14;
 // controller before kind then old state 24; complete controller/old state before kind 24;
 // the latter three early-old-state graphs with direct change-result production 39/38/38.
@@ -115,6 +120,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // native bit availability 31; named selection result 11; availability outside kind 9;
 // nested availability with long change result 12, negative guards with short result 13.
 // Original request/kind pair remains EAX/CX versus retail ECX/AX.
+// Round 145: a plain read stays in a register when the kind has a second use that constant-propagates
+// away: `setting = kind` in the not-available arm 4 (same code as the volatile read; not kept, the
+// assignment only steers). Kind read, setting, then index 23 (kind AX, request EDX); index first with that
+// arm 5; handler typed as the pending-message header with a last-result helper 32; `kind == 0` arm
+// merged into the default 32 (103 bytes, retail's ECX/AX pair).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

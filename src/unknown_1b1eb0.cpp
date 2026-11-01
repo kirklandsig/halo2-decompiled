@@ -47,7 +47,9 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 // Round 28: the slot block read through slot->unknownc 14; the reset helper plain inline 14; its
 // parameter/local named actor_index/actor 14; a result local 14; (harness: declaration order,
 // const actor 14). Three of the reset's volatile stores (0x5b0, 0x5b4, 0x504) made plain: 14,
-// kept; making any fourth one plain raises the count.
+// kept; making any fourth one plain raises the count. Round 64: actor flag in the reset 20;
+// that with a direct reference lookup 33; shared unmasked index local 14; in-place index mask 14;
+// each pair of the remaining qualified stores made plain 18; reset before the actor flag 31.
 // @retail 0x1b1eb0
 bool __stdcall function_1b1eb0(long actor_index, s_slot *slot)
 {

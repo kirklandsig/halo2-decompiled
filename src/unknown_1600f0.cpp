@@ -1365,6 +1365,9 @@ PRIVATE inline long score_string_list_1608e0()
 // height 718. Frame improves to 0x794; viewer/clamp/color homes remain, 2906/2879 bytes. Coordinator review: the
 // field aggregate is a copy of the global kept only with a match (the natural copies give 687) and it moves the
 // size off retail's, so the body is back to its earlier form (680).
+// Round 265: library scroll/header-alpha/body-row-alpha bounds and their pairs/all
+// 697/727/719/729/725/743/817; all with upper-first nesting 789. Body-row bounds
+// recover frame 0x79c but regress to 719 at 2922 bytes; original full body restored.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

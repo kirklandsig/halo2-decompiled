@@ -1977,6 +1977,14 @@ void function_27dd10(void)
 // frame-state saves or restores reversed and the pass counters as a switch keep the tie and change
 // matched neighbours; a constant subtraction before the blend-1 rotation apply (semantics changing)
 // is the only form that gives retail's order.
+// Round 98: inheritance pointer by value 399; the apply through the existing component_apply 2;
+// the alternate existing node lookup 2; rotation and translation cases swapped 2; vector blending
+// through interpolate_real 155; scale blending through interpolate_real 42; root scaling through
+// interpolate_real 2; blend-1 and blend-2 arms swapped 2. All restored.
+// Round 99: the blend fraction by const reference 338; a source pointer local 307; quaternion source
+// and destination parameters swapped 2; the saved fraction declared first 2; the orchestration output
+// and cursor declarations swapped 2; a const in-place predicate 2; output selection as if/else 2;
+// a constant-initialized blend-weight local 2. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2058,7 +2066,10 @@ void function_2818e0(void)
 // two places), the rest 22-83; on the two best, declarations by kind or by pass, count first or last 4.
 // Round 100 (lane 7, --fast): the per-arm apply reading the blend weight into a local at its top 2,
 // in the blend-1 arm 2; the blend-2 rotation through a pointer local to the destination rotation
-// 352; the flags test as `!= 0` 2; the apply index in a named local 2.
+// 352; the flags test as `!= 0` 2; the apply index in a named local 2. KIMI1 round 100: real zero
+// lanes plus a sign store 256; a negative-zero scalar 308; an __m128 mask 235; a zero __m128 plus
+// a sign store 290; split dword initialization 2 (0x289580 78); quaternion fields 256; ordinary
+// inline multiply 480; the flag declaration split from its read 2.
 // @retail 0x281b60
 void function_281b60(void)
 {

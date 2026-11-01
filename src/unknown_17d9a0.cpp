@@ -212,6 +212,14 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (plane, normal, point) 151: the normal copy, the d store through the normal's base `[eax+0xc]` and the call
 // argument are then retail's, only the dot's i term loads the point first, but every corner product's operand
 // order changes with it (the order follows something global, not the corner's own source).
+// Round 62 (lane 12, fast): edges typed `vector2f` (the file's duplicate `struct vector2f` dropped for the
+// header's union) with both squared lengths through the existing dot_product2d, the determinant through the
+// existing cross_product2d and an if/else inverse 176 (965 bytes: the four edge stores come first and the
+// determinant is retail's but for reloading e1.j; the squares go in place where retail copies first, and the
+// shared zero moves from XMM3 to XMM1, reordering every corner's products); that with the determinant written
+// out 160 (969 bytes: e1.j then stays in a register as retail); that with the ternary inverse 206; the current
+// body with an if/else inverse 140 (the zero path stores XMM3 as retail, the edge stores still interleave);
+// the plane's d as dot3f(position, normal) 144.
 // Round 104 (lane 8): a compile-only screen reproduces the corner product operand orders exactly; they
 // shift with the function's symbol numbering (1-8 unused locals at the top or in the corner helper,
 // diagnostic only, give 7-24 product mismatches against the current 10), so they follow how many
@@ -222,6 +230,12 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (953 bytes). Screens: 384 helper shapes on 0x120810 19-24 mismatches (only row order counts).
 // Best screen 7 with four extra function-scope locals and one in the helper: retail's body may have
 // more named locals than ours (in combination, not singly).
+// Round 62 (fast, 0x120810 listed): edges through vector2d_from_points2d with an if/else inverse 157 (986 bytes);
+// the existing 0x120810 per corner 189 (966); both 182 (975, aligned 55); with the corner helper taking axis and
+// side by value 180 (975, aligned 49, the closest: left are the plane store base, the bool in EAX for ECX, the
+// product operand orders and the side byte); that with a bool side parameter 180; with side/axis read into
+// locals at the helper's top 182. In every 0x120810 form our side load is `movzx edx, byte [ebp+0x56]` where
+// retail loads `mov al` at the corner's start and extends at the index: the 2 bytes per corner of the gap.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
