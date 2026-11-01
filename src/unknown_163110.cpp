@@ -885,6 +885,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
 // Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
 // operands fixed in the unrolled loop, flipped in the remainder loop).
+// Round 215: complete classification/denominator/both products 263/247/131;
+// complete numerator products 113; classification/numerator 265; denominator/numerator 251;
+// all three product boundaries 140; existing shared vector addition after scale 115.
+// All restored; early coefficient preload and clipping/projection allocation remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

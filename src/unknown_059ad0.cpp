@@ -4489,6 +4489,12 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
 // `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
 // an `owner` local 374 (scratch copy; loaded at the top).
+// Round 215: complete decision outputs recover result +b; dword/byte/short counts
+// on that graph 298/314/299; native received packet 298, with those domains 298/314/299;
+// complete native stored fields 323. Seven Boolean-home name combinations 298 each;
+// all names without redundant selection defaults 298. Seven-point leads rejected;
+// original body, packet types, output states and held interfaces restored.
+// Identity/selection byte homes and acknowledgement/rejection placement remain.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

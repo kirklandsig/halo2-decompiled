@@ -534,6 +534,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // inline alone does not move the convention); sample/update declared at function scope 420; the maximum test
 // as `(short)maximum < field` 421; the 0x25d610 test nested under `sample && update` 420; the sampler result
 // clearing the flag with the 0x264b50 call in its else arm 458 (1656 bytes).
+// Round 215: terminal maximum publication through native reset/count arms 420;
+// twice-used elapsed values on that graph 420; each with plain word maximum 472/472;
+// terminal reset result bool/long 440/444, each with plain word maximum 448/448.
+// Exact-only reset-result forms and every executable change restored; frame and actor homes remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
