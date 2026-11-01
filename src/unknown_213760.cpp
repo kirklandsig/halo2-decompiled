@@ -1346,7 +1346,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // count itself as the write success (`dword bytes_written = 0;`, close when `!= 0x800`) 85, kept (the count
 // alone 122). Left: the count's zero store and its slot (ours 0x24, size 0x28; retail the reverse), the write's
 // handle loaded after the flags zero, the checksum compare in EDX, and the header-read range test (retail's 1 in
-// ESI, threaded continue). On 85: size renamed actual_size 85; the count declared before size 85; the close test
+// ESI, threaded continue). On 85: a renamed size local 85; the count declared before size 85; the close test
 // as `(!resized || bytes_written != 0x800)` with no zero 157 (frame 0x1140: count and size share a slot); with
 // the match-only header-read `else if` 135; the count zeroed before the resize call 190; the close test nested
 // under the count test 85. The handle pointer built from `&file->handle` instead 122 (the displacement fix needs the

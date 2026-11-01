@@ -362,7 +362,7 @@ void __stdcall function_1160c0(real dt)
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
 // Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
 // cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
-// cosine declared before sine 179; both 179; `rest_offset`, `last_position`, `sin_angle`/`cos_angle` names 179
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position`, sine/cosine angle names 179
 // each (all identical code: neither names nor declaration order place these homes).
 // Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
 // direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
