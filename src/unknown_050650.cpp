@@ -549,7 +549,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 322 (was 333): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
+// score 322 (was 322): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
 // (shared with the random and sine temps) at the frame bottom, so every lower slot is 4 off; the trig and rotation
 // schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
@@ -652,6 +652,10 @@ struct s_collision_result_buffer_1697c0
 // 322 plain (1424 B, retail's frame and prologue; the initialiser then dead and dropped, same code). On 322: the
 // single-exit normalize 341 (1449 B), the header normalize3d 340 (1447 B; both put the length temp at the frame
 // bottom as retail), bool clear 344 (1435 B), single-exit with bool clear 368, normalize3d with bool clear 367.
+// Round 242: Normalizer length/inverse-length and norm/reciprocal homes, four naming pairs
+// and two entry reciprocal declarations 322 each; existing length_sq3f and dot3f producers
+// 322/322. All original helpers restored; frame 0xa8 agrees, scratch/axis homes and
+// initialization/rotation schedules remain. Matched caller and shared rotation user unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

@@ -292,7 +292,7 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 172 (was 241): the body loop now matches retail except the order of the groups/current reloads at its
+// score 172 (was 172): the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
 // through the group pointer, count and first body), the section loops load the component's object index after
 // both keys where retail loads it between them, and retail lets the `next == NONE` section loop fall into the
@@ -429,6 +429,11 @@ struct s_physics_component_walk : s_havok_component
 // Round 239: On the retained output/early-continue graph, native selected neighbor, terminal scan-index
 // completion and explicit empty-recursion continuation, seven subsets, 184/340/185/172/184/340/185;
 // native overwrite selection 189. Original method restored; frame 0x18 agrees, exit placement and neighbor/key homes remain.
+// Round 242: Uniform two-query object/first-key/second-key snapshots in both scans,
+// seven input subsets 330/329/377/327/376/321/375; all inputs with long keys 370.
+// Every snapshot has two real uses and preserves the read-only query values, but
+// frames/code grow. Original method, field rereads, counts and recursive arguments
+// restored; frame 0x18 agrees, neighbor/key ownership and cold exit placement remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

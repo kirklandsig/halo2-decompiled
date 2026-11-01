@@ -1484,6 +1484,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // masks 0..7, 242/233/242/233/242/234/242/234. Native Boolean units move the frame to 0xa8 and disrupt
 // entry allocation; original word units, shared release helper, paired point setters and full body
 // restored.
+// Round 242: On the paired-setter/two-use-spin graph, native short/long countdown values
+// captured before admission or after the positive test, with spin consumed after damping,
+// 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,
+// paired event setters and full body restored; frame 0xac, return-byte +0xe/+0xf and
+// release/event homes remain. Earlier terminal-only short work preceded this graph.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

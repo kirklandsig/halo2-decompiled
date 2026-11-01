@@ -1154,7 +1154,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 85 (was 104): frame 0x1144 and the entry prefix agree; size/count homes, write setup,
+// score 85 (was 85): frame 0x1144 and the entry prefix agree; size/count homes, write setup,
 // checksum register and write/header validity joins remain.
 // Earlier: the read-handle declaration/caller contract differed; frame and extent agreed.
 // frame 0x1144 and extent agree; file displacement, request-copy
@@ -1407,6 +1407,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 239: On the indexed-handle/direct write-count graph, native by-value query/resize/write
 // copies in seven subsets, then all four I/O copies, 84/84/89/82/89/89/89/84. All exact-only forms
 // restored; frame and entry prefix agree, size/count homes and write/checksum/result scheduling remain.
+// Round 242: Shared query/write byte-count storage, block/entry scopes with original/later
+// zero and resize-guarded/failure-only-zero completion forms 110/110/213/213/154/154/166/166.
+// All shrink the frame to 0x1140/0x113c and regress; separate original outputs, all waits and
+// native I/O values restored. Frame 0x1144 agrees; size/count and write/checksum joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
