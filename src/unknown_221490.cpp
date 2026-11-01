@@ -607,6 +607,13 @@ bool sound_driver_voice_create_buffer(
 // bytes: the voice index takes EBP, both bools spill); the voice index as a long 161; the globals local
 // dropped (the global at each use) with three_d first 182 (599), with play first 71 (same code); three_d
 // first with the 3D test negated (NULL arm first) 182 (599).
+// Round 17 (lane 17, fast with 0x191420): the 3D flag defined first with a long result 158 (618 bytes: the
+// bools take retail's BL/stack byte and the tail is retail's one instruction late; the prologue differs: the
+// result is a sign-extended copy stored after the range test where retail spills the zero-extended voice
+// index before it, and the count store comes after the zeroing); with a long voice index 184 (597); the
+// short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
+// at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
+// block top with `result = NONE` after the decrement 155.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

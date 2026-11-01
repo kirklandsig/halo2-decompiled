@@ -696,6 +696,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 57; previous_up declared at function scope 57. Diagnostics: the first product's components in j, i,
 // k order (up.k named first) with the staged second product, written out 218 (forward read through
 // edi), through a pointer helper 219 (up.k then in xmm2, loaded before the distance store).
+// Round 17 (lane 17, fast): both products staged with the first in place into the previous_up copy 222
+// (1270 bytes); the else branch through a force-inline helper reading the angles through the observer and
+// writing through its forward pointer (0x23d790's form) 222 (1273 bytes: the else branch is retail's, but
+// the first product recolours, up.k xmm2, and the second loses its memory operands), with cross3f_staged
+// for the second product 221 (1272); the camera basis as a force-inline helper with pointer parameters 296
+// (1267, frame differs); `right` renamed `left` 57 and previous_up/direction renamed up/a_direction 57
+// (identical code: local names do not move these registers).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
