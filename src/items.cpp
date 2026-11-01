@@ -1340,7 +1340,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	function_10cf80(&velocity, object_index, false);
 }
 
-// score 158 (was 158): the frame 0xac agrees; the release byte's read-modify-write,
+// score 140 (was 158): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
+// event/point homes and location-call setup remain. Paired existing point setters kept.
+// Earlier: the frame 0xac agrees; the release byte's read-modify-write,
 // the tail, the event-point homes and the location-call setup are unchanged, and
 // this round's trials in this file left them where they are
 // the frame 0xac agrees; the release byte's read-modify-write,
@@ -1458,6 +1460,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N271: full spin-byte capture, byte/signed-byte/word/dword with mask decoding 191/194/189/190;
 // with shift decoding 158/158/185/189. Original twice-used Boolean and complete body restored;
 // result byte +0xe/+0xf, release-byte RMW/early impulse sharing and event homes remain.
+// Round N274: Existing scalar setters at release/damping/event boundaries, masks 1..7,
+// 171/159/180/140/140/141/141; all with entry contact point 141. Paired point setters with
+// direct filled-buffer inputs 158; with entry event record 158. Minimal paired setters
+// retained, plain 140 at 892/892 bytes; other graphs and original impulse helper restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
@@ -1536,8 +1542,8 @@ bool __stdcall function_10b4d0(long object_index)
                     *(byte *)&data.unknown84 = 4;
                     data.unknown54 = 1.0f;
                     object_get_root_location(object_index, (s_location *)&data.unknown1c);
-                    data.origin = *event_point;
-                    data.position = data.origin;
+                    real_point3d_set(&data.origin, event_point->x, event_point->y, event_point->z);
+                    real_point3d_set(&data.position, data.origin.x, data.origin.y, data.origin.z);
                     function_d6c80(&data, NONE);
                 }
                 function_176780(object_index, (s_effect_owner const *)&owner, 0.0f, *(long *)(definition + 0x128), 0.0f, NULL, NULL);

@@ -1818,6 +1818,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // adjusted pointer, so it is the natural source under /arch:SSE, a file-flag lead); a user record pointer
 // for the users loop 754 (the loop then gets retail's jump over the padding and xuid-relative loads); with
 // online_logon_connected() too 775 (2846 bytes); delay as `> 3 ? 300000 : 2000` 709 (aligned 515 -> 513).
+// Round N274: Library property copy before identity capture 711; readonly identity 711;
+// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
+// Original identity/property order, native buffer lifetime and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

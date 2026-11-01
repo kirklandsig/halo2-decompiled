@@ -276,6 +276,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
 // then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
 // inherited counter qualification, body and exact caller restored; direction/sample homes remain.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -1706,6 +1706,9 @@ struct s_camera_clip_reference_16ebf0
 // short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
 // inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool
 // truth, plain 87 at 953 bytes. Cross carriers, clipping producers and interpolation still differ.
+// Round N274: On signed-reference/bool homes, false-first result 105; native high-bit test 87;
+// false-first with high-bit 105; table fields at use 87; fields with false-first/high-bit/both
+// 105/87/105; all with entry constant result 243. Original clipping-result and cross graph restored.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
