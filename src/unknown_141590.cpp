@@ -224,6 +224,9 @@ static inline void quaternion_transform_vector(
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
 // score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
+// Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
+// with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
+// 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
