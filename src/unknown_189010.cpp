@@ -238,6 +238,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
 // state registers decide where the request is homed.
 // MiniMax R (10-31): no new form, no lower score.
+// MiniMax I (11-01): no new form, no lower score; the priority and the flags are still formed after the location
+// copy, and our compiler still forwards the state flags across the 0x221810 call where retail reloads them.
+// MiniMax I (11-01, second pass): no lower score. Forming the priority and the flags before the location copy,
+// with retail's set/clear branches for the two flag bits and the priority read from the request, reproduces
+// retail's shape (140-149 against 110, 485-499 bytes against retail's 470): our link then inlines the first
+// 0x221810 call, so the body grows past retail's, and the flags still land in EDX where retail builds them in
+// EAX. The original order stays.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

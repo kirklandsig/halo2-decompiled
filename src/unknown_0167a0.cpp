@@ -199,6 +199,8 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 281: multi-use addresses of the actual table/entry/range pointer fields, each alone,
 // table-entry/table-range/entry-range pairs and all three, 47 each; early table-field address 47.
 // Restore-load order and the sampler state convention remain; original body restored.
+// MiniMax I (11-01): no new form, no lower score; the restore block still loads `second` before the table bases
+// where retail loads it after them, and the 0x18a90 tail is still blocked by that file's call convention.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

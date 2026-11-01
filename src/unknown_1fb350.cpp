@@ -475,6 +475,16 @@ extern "C" void _ReadWriteBarrier(void);
 // DL213: actual four-field iterator call with original suppression 201; ordinary declaration 180;
 // inline iterator and scan 152; forced iterator with ordinary/inline scan 180/152.
 // Forced iterator and scan together unscored. Original body and declarations restored; two pool homes remain.
+// MiniMax I (11-01): 101 again (473 bytes, retail's length, frame 0x14 and prologue stores) with the iterator
+// step written out in the body (data_find_index, data_datum_index, the element address in the body, a four-field
+// datum iterator and the pool in a local declared after the iterator's assignments). Not kept: it is a hand copy
+// of function_1fb762 without a match (see above). On that form: the pool local declared before the iterator's
+// assignments 104; the iterator's pool from that local 126; the datum index in the iterator 126 (same code);
+// data_datum_iterator_next_inlined 166; separate size/data locals, swapped element operands or the object pool
+// read early through the unit lookup 101; a _ReadWriteBarrier() before the unit lookup 122, inside the unit test
+// 160; the datum index after the unit lookup 156, from the element's salt 99; a permuter run (one try in 431 s)
+// found only an argument swap in the second set_flag call (98, wrong arguments, dropped). Left on that form:
+// retail keeps the object index in EAX, the datum index in EDI and the object pool in EBX; ours ECX, EBX, EBP.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

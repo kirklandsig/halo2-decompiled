@@ -429,6 +429,8 @@ static inline bool teams_enabled_19e1c0()
 // 573/416/461/516/631/588; complete case results with original/remaining-first
 // native copy clamps 540/540. Formatter-only gives retail length at 416; original
 // result ownership, all cases, text buffer, loop and full body restored.
+// MiniMax I (11-01): no new form, no lower score; the plain result still merges the four name/team copy tails (691)
+// and a permuter run over it (27 tries in 301 s) produced only mechanical shuffles, none below the baseline.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
