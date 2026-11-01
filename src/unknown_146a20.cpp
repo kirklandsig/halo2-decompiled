@@ -185,6 +185,10 @@ bool g_47f05b;
 // g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
 // sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
 // construction in a typed local published after the pool construction 38 (154 bytes).
+// Round 212: named complete allocator copied into placement, direct/copy initialization:
+// whole-function lifetime 89/89; guarded production 88/88;
+// lifetime ending before the pool 89/89; outer producer with guarded
+// placement 89/89. All restored: a 0x30 frame and an out-of-line copy call.
 // @retail 0x146a20
 void function_146a20(void)
 {
