@@ -1,5 +1,6 @@
 #include "unknown_0b68c0.h"
 #include "unknown_11c920.h"
+#include "bit_vector.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "effects.h"
@@ -1174,6 +1175,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // Round 122 (fast, aligned 16): no-model parent through slot_handler.h's object_get/object_node_matrix 234;
 // with the current and render-branch lookups through object_get too 234/234; 0xbfed0 declared inline here 234,
 // and with its separate noinline declaration removed 234 (still called, the caller still trusts its ESI).
+// Round 37 (lane 13, fast): the node-mask tests through the existing bit_vector_test 234 (same code, kept: replaces
+// the hand-written bit tests); render/no-model branches swapped in the source 313 (1372 bytes); a short node
+// counter 222 (1387 bytes, but aligned 16 -> 120: the frame and every later slot move); `++node` 234; the render
+// model's node count named for the default-orientation test and the loop bound 252 (1370 bytes).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
@@ -1251,7 +1256,7 @@ void __stdcall function_bd090(long object_index)
             }
         }
         if (!*(long *)(render_model + 0x48)) orientations[0] = *(rigid_transform_scaled *)g_4687d8;
-        if (!(mask[0] & 1))
+        if (!bit_vector_test(mask, 0))
         {
             if (root_absolute)
                 function_1421f0(matrices, &orientations[0]);
@@ -1283,7 +1288,7 @@ void __stdcall function_bd090(long object_index)
         for (long node = 1; node < *(long *)(render_model + 0x48); node++)
         {
             byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
-            if (!(mask[node >> 5] & (1 << (node & 31))))
+            if (!bit_vector_test(mask, node))
             {
                 function_1421f0(&matrices[node], &orientations[node]);
                 function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);
