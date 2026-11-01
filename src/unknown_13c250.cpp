@@ -141,6 +141,11 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // read as the declared bitfield 188; the fallback's second field in its own local 144 (identical).
 // Retail's count (memory-resident, yet the first append stores 1) fits an append helper taking the
 // count's address that only LTCG inlines; no such existing helper was found.
+// Round 35 (fast): the 0x213 slot read through object_get, or both slot reads through it, 144 each
+// (same code: the second unit lookup still merges, so the merge does not follow the getter's type; both
+// slot reads inline 0xcbd50 in retail too, so no callee summary is involved); one unit pointer for the
+// flag test and the first slot, re-fetched for the second (with `continue` for NONE), through either
+// getter 240/240 (858 bytes); the player loop index declared in the for-init 144 (same code).
 // Round 265: indexed ranking with default first/after rank two/after rank one, each
 // with ordinary/reversed rank-two labels, then default last with reversed rank-two
 // or rank-three labels: 326 each. Opening-switch indexed control also 326 (971 bytes).

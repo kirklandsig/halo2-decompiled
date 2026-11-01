@@ -241,6 +241,8 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // compile-only but changes the angle reads (359 fast); the existing direction_from_angles on the copied angles
 // with yaw turned and pitch zeroed 371, on the source angles and the turned copy 334 (1885 bytes, the x87 order
 // differs); the axis as a call-argument ternary 338; the third tail reading third->remaining directly 353.
+// Round 217: Complete native output value assignments at original zero initialization, seven subsets,
+// then all with readonly tag receiver: 539/539/546/533/564/564/599/599. Original library clears and output lifetimes restored.
 // Round 21 (m3 lane 2; fast control 336): scale rows i, k, j 338; k, i, j 338; the magnitude from the direction's
 // squares 327 fast (1.0 in XMM6 as retail, first difference +0x8b, direction homes swap) but 374 plain (1894 bytes);
 // named i/j products stored after the k row 339; `opposite.k = 0` after the magnitude 344. Compile-only: no row

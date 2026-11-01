@@ -192,6 +192,20 @@ struct s_24e9c7_bounds
 // 155 (735 bytes); the same with separate side scalars 155; across built in the side point and scaled in
 // place with scalar back 139 (the listed form; side y spilled at -0x14); that scalar form with scale read
 // first 155.
+// Round 35 (lane 13, fast): retail's -0xc/-8 pair reads as one 8-byte point (x kept in a register, its home
+// unused; y spilled, then scaled in place to the side y); tried: across as a point scaled in place into the
+// side vector, declared at function entry 139 (742 bytes) or at its computation 139; a separate across point
+// declared at entry 139; an initialised across point 139; size computed before the bitmap pointer 125 (same
+// code). Every point local still homes below the scalars.
+// Lane 18 round 15 (fast): result renamed to sort first 125 (its home stays at -8: these are spill slots, names
+// do not order them); back as scalars re-measured 133; back plus up scalars 133; back plus side scalars 133;
+// up, side and back all scalars 133; back scalars with `size * (0.0f - forward_j)` 146 (739 bytes); all scalars
+// with it 146 (739 bytes).
+// Round 145: a compile-only frame screen shows a spilled scalar homes above result only when the back pair
+// is scalar (frame 0x44, one slot short of retail's two). Real (fast): across scaled in place as side
+// scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
+// side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
+// up/back 139 (742); the half width named and multiplied first 143 (739).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

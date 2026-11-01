@@ -52,10 +52,12 @@ struct c_aggregate : c_child
 };
 
 
-// score 45 (was 45): the release reads the allocator global again (allocator_globals_release, retail's
-// reload into eax then edi) at retail's length; left: frame 0x8024 against 0x8020 (`produced` keeps its own
-// slot where retail packs the loop-2 cursor and loop-3 count into it), request/child cursor in EBP/EBX
-// (retail EBX/EBP) and the starts[i]/starts[i + 1] load order. Compiled without /GL (screen only) the body
+// score 31 (was 45): the release reads the allocator global again (allocator_globals_release, retail's
+// reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
+// loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
+// for-init, which gives retail's starts[i]/starts[i + 1] load order; left: only the frame, 0x8024 against
+// 0x8020 (`produced` keeps its own slot where retail packs the loop-2 cursor and loop-3 count into it, and the
+// two temporary slots are swapped). This body built without /GL is byte-exact (BLOCKED by the build flag). Compiled without /GL (screen only) the body
 // gets retail's 0x8020 frame and every slot, 20 left (EBX/EBP and the boundary loads); every /GL form
 // screened keeps 0x8024.
 // Earlier (74): the dispatch loop walks the child cursor and the starts[] boundaries as retail does
@@ -157,10 +159,33 @@ struct c_aggregate : c_child
 // dispatch gate with the type test first 49; the dispatch inner loop as `while (first < end)` with a
 // post-increment 45; the capacity named before the call 45. Still BLOCKED by the build flag (frame 0x8020
 // needs `produced` to share a slot, which only a non-LTCG object gives).
+// Round 23 (m3 lane 2, fast): the request type read into a local at the top 150 (389 bytes); `total = total +
+// produced` 45; the dispatch start read in the inner loop's init 45; the get_info result named as a bool 45; the
+// dispatch bounds through `long const *bounds = &starts[i]` (bounds[0], bounds[1]) 45: it gives retail's
+// boundary load order (starts[i] into ECX first), but those lines still differ by the 4-byte frame offset.
 // Round 32 (m3 lane 14, fast): loop 2 walking a `starts` pointer (`start[0]`/`start[1]`) 120 (389 bytes);
 // loop 2 over a block pointer with a countdown from `starts[i + 1] - starts[i]` 50; `*source` read into a
 // local in loop 1 147 (389 bytes); the type test first in the dispatch gate 49; `blocks + total` in loop
 // 1's call 45 (same code). Still BLOCKED by the build flag.
+// Round 34 (m3 lane 14, fast): the count output as a local of a forceinline collection helper, error or count
+// returned, 147/147 (389 bytes, frame 0x8024); as a one-member struct 45 and a one-element array 45
+// (diagnostics, frame unchanged); the cleanup loop walking an item pointer 87 (376 bytes); the dispatch child
+// read as `((c_child **)children)[i]` (no walking cursor) 31, kept. On 31: produced declared at function scope
+// 42, at the collection loop's top 141 (389 bytes); `blocks + k` 31; starts declared before blocks 31; the
+// dispatch bounds read in the inner loop's test 121 (388 bytes); the cleanup loop over a block pointer 100
+// (391 bytes). Diagnostic (reverted at once): the file built /GL- leaves 2 (the bound loads only). Compile-only
+// (/O2 /Gr, no /GL) bound spellings: end declared first, `end_block > j`, j declared outside the for, the end
+// named before a loop-variable j: end loaded first (as ours); a bounds pointer, a while loop, `for (; j < end;)`
+// and `for (long j = starts[i], end_block = starts[i + 1]; ...)` load starts[i] first as retail; the last
+// kept (31 under LTCG: those two loads still differ by the frame offset; without /GL nothing else changes, so
+// that build is byte-exact). Still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
+// Round 36 (m3 lane 14, fast; all 31 differences are the 4-byte frame offset and the swapped temporary slots):
+// produced declared at the loop-body top and zeroed in the call's block 42; the cleanup block as `blocks + k`
+// 31; total declared before error 31; `total = total + produced` 31; a named room argument 31; the cleanup item
+// tested without `!= 0` 31 (all same code).
+// Retail's slot 0x10 holds produced, the dispatch child cursor and the cleanup countdown, slot 0x14 the
+// children base, the inner count and the block pointer; ours groups the temporaries the same way but keeps
+// produced apart. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
@@ -184,15 +209,11 @@ long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 
 	if (error == 0 && request->type != 4)
 	{
-		c_child **child = (c_child **)children;
 		for (long i = 0; i < 3; i++)
 		{
-			c_child *object = *child;
-			long first_block = starts[i];
-			long end_block = starts[i + 1];
-			for (long j = first_block; j < end_block; j++)
+			c_child *object = ((c_child **)children)[i];
+			for (long j = starts[i], end_block = starts[i + 1]; j < end_block; j++)
 				object->v6(&blocks[j]);
-			child++;
 		}
 	}
 

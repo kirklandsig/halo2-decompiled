@@ -1517,6 +1517,10 @@ struct s_item_collection
 // Ticks initialised to 0 5; int ticks 5; collection pointer local 5; one reassigned short spawn
 // time 31; zero default with a final test 21; dword ticks 30; plain conversion instead of the
 // rounding helper keeps the same registers.
+// Round 43: the group test as a two-case switch 5; ticks declared before the default 5; one
+// else-if chain assigning the collection time in its condition 5; a return per source 84 (169
+// bytes); a named result at the single exit 5; the ten other orders of the equipment/seconds/
+// spawn-time/ticks declarations 5 each.
 // @retail 0x15ac50
 long function_15ac50(long index)
 {
@@ -2341,6 +2345,12 @@ static __forceinline void add_clamped_score(short *score, short delta)
 // operand first 5/5; engine tests through g_55e4d0[globals->engine_index] 5/5/5; player pointer
 // after the add 97, at its use 104. Retail's 0x1e9ce0 has the same engine-test swap, and 0x2422d0
 // rotates three identical engine tests through EAX, ECX, EDX (scratch rotation, not spelling).
+// Round 43: the add and notify through the existing function_1e9ce0 call 142 (kept out of line);
+// the helper as plain inline 121 (called); a long delta parameter with `*score + (short)delta` 5;
+// a named old-score local in the helper 5; a statistics pointer for both score reads 5. In matched
+// 0x15b3a0 (an `inc` add) retail's next engine test is EAX/ECX as here; with a two-operand add
+// retail shares the result register with delta, and the test turns to ECX/EAX. Globals declared
+// before the result with the player before the index 5.
 // @retail 0x15b7c0
 bool function_15b7c0(long delta, long player_index)
 {
@@ -2857,7 +2867,12 @@ void function_158090(long player_index, short old_team)
 // the existing cause setter forced inline 69; inline depth one 12; the existing initializer forced
 // inline 73; global optimization off 120. The team through engine_player_get 14; a pool pointer
 // local 14; the players local declared at function scope 12; the event declared first 12; a player
-// reference 35; a second index local 12.
+// reference 35; a second index local 12. Round 124: the team through the header's event_player_get
+// 14 (every register retail's, mark-dirty block too, but the data load sinks below the init stores);
+// a player pointer from it before the event 35; the index local declared before the players local 12;
+// players as a byte pointer read by byte offset 12; the existing out-of-line cause setter called
+// plainly 69; the two cause stores swapped 40; a 600 s permuter run from the event_player_get form
+// (44 variants), none below 14.
 // @retail 0x157de0
 void function_157de0(long player_index)
 {
@@ -3140,6 +3155,11 @@ void function_15ba20(void)
 // pointer before the event 50, after the initializer 56; team read into a local 56. Retail stores
 // type and f first and loads the data pointer before the NONE stores; every form keeps the
 // initializer's store order (as the matched 0x162d00 and 0x2bc420 do).
+// Round 43: cause team set before the cause player 56; the team through engine_player_get 16; the
+// existing cause setter as a plain call 70 (kept out of line; the zero stores then lead, as in
+// retail); the shared initializer forced inline 16 (0x157de0 then 12); a no-alias diagnostic and the
+// initializer's stores written directly (diagnostic only) both 16 with identical code, so the late
+// player-data load is not an alias or inlined-pointer effect.
 // @retail 0x157ed0
 void function_157ed0(long player_index)
 {
@@ -3997,6 +4017,9 @@ static __forceinline long nonnegative_15ce70(long value)
 {
 	return value < 0 ? 0 : value;
 }
+// score 456 (was 470): the mode dispatch written as an if/else chain instead of a switch, and the
+// award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
+// attacker parameter is still copied into EDX in the entry block.
 // score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
 // tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
@@ -4075,11 +4098,11 @@ static __forceinline long nonnegative_15ce70(long value)
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
-    long award = NONE;
     if (!game_engine_get()) return;
     s_engine_player *victim = engine_player_get(victim_index);
     long damage_type = damage & 0x3f;
     long damage_modifier = damage >> 6;
+    long award = NONE;
     bool special = damage_type == 3 || damage_type == 0x1a || damage_type == 0x18 || damage_type == 0x17 || damage_type == 0x14;
     long elapsed = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
     *(long *)((byte *)victim + 0x1b4) = elapsed;
@@ -4109,22 +4132,20 @@ void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte
     if (total <= minimum) total = minimum;
     long mode = 2;
     if (function_x340af0()) mode = *(long *)((byte *)g_4e6948 + 0x1e4);
-    switch (mode)
+    if (mode == 0)
     {
-    case 0:
         function_15d6c0(victim_index, total, delay);
-        break;
-    case 1:
-        {
-            long now = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
-            long next = (now / interval + 1) * interval;
-            while (next < now + delay) next += interval;
-            victim->value164 = next - now;
-        }
-        break;
-    case 2:
+    }
+    else if (mode == 1)
+    {
+        long now = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
+        long next = (now / interval + 1) * interval;
+        while (next < now + delay) next += interval;
+        victim->value164 = next - now;
+    }
+    else if (mode == 2)
+    {
         victim->value164 = total;
-        break;
     }
     *(long *)victim->unknown168 = 0;
     if (victim->unit_index != NONE)
@@ -4806,6 +4827,10 @@ bool function_158eb0()
 // mode last 5; `!!` on the global 38; index local read after the count, before the flag 5.
 // The flag through engine_options() 5; `flag ? 1 : 0` 5; a named score 5; count assigned after
 // its declaration 5; index initialised first 7; the bool flag passed directly 41.
+// Round 124: retail evaluates the mode before the index (so the mode takes ECX and is copied to EAX);
+// ours evaluates the index first. A long mode local after the flag 37 (the mode goes straight to EAX,
+// 144 bytes); the mode local in place of the flag 37; `(bool)` on the global for that local 44; the
+// flag read before the count 5; the score named and the count moved after the call 5.
 // @retail 0x158f50
 bool function_158f50()
 {

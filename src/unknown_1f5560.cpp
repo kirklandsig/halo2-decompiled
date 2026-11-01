@@ -310,6 +310,9 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
+// matches (0, plain): an array of one steering the state's word stack home is the same form as the
+// one-member struct below (Y201, MiniMax G), so it is reverted; the body stays at 11.
 // Not kept (MiniMax G, 10-31): the state in a named one-member struct local matches (0); that is the
 // one-member struct steering a stack home that Y201 already found here (held, ruled out).
 // score 11 (was 11): the state is loaded with movsx and spilled as a dword;
@@ -634,7 +637,13 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 12 (was 12): layout, frame and code now as retail; left: both dot products evaluate their
+// score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
+// products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
+// second dot's i term keeps the projection vector in the register where retail has the point.
+// MiniMax G (10-31): the first dot written out by hand (i term projection-first, j and k terms
+// point-first, an order the helper cannot express) 7: an existing helper's body by hand, kept only
+// with a match; both dots projection-first 10 (same code).
+// Earlier 12: layout, frame and code now as retail; left: both dot products evaluate their
 // Frame and block layout agree; dot-product term/operand order remains.
 // Earlier: layout, frame and code now as retail; left: both dot products evaluate their
 // y and z terms in swapped order with each x term's operands swapped (ours y,z / z,y; retail z,y /
@@ -772,7 +781,7 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 		projection_direction = &direction;
 	if (projection_direction)
 	{
-		real remaining = dot3f((vector3f *)&path->field_30[path->field_2e].point.point, projection_direction) - dot3f((vector3f const *)point, projection_direction);
+		real remaining = dot3f(projection_direction, (vector3f *)&path->field_30[path->field_2e].point.point) - dot3f((vector3f const *)point, projection_direction);
 		if (remaining < *(real *)(definition + 4) * 1.2f)
 			reached = true;
 	}
@@ -1470,6 +1479,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),

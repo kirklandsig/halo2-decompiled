@@ -1396,7 +1396,7 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // MiniMax I (10-31) review: round 31's 200 came from the `frame_settings` pointer copy, a one-use
 // local (kept only with a match); without it the s_view_angles local alone 216 against 220, under the
 // 8-point bar, so the body stays as it was.
-// score 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
+// Earlier score 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // 0x28 versus 0x2c (look homes), the shared look reciprocal, ESI/EDI saved before the unit test (retail
 // after it, restored at the loop exit) and the channelb8 pointer in ECX remain.
 // Earlier 241 from 241: frame 0x30 vs 0x2c; esi/edi saved before the unit test (retail after it,
@@ -1591,6 +1591,7 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // locals' addresses taken as a no-op (diagnostic) 220 [79]; the loop index declared in the for 220 [79].
 // N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
 // All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
+// J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

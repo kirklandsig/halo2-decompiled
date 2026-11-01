@@ -1124,6 +1124,9 @@ void function_2118c0(void)
 // become pointer IVs); previous at the k level 22; tb before ta 20.
 // Round 55: a local 3D table pointer/reference 150/150; function-scope/split wrapped
 // indices 14/14; split float declarations 14; early band reset 14; sample/function-scope row 14/14.
+// Round 141 (lane 4): the band row as `b * 8` 150 (every row becomes a pointer IV); w3, w2, w0
+// declared in that order 150; a long band index 134; the knots named (`next = previous + 2.0f`,
+// `current = previous + 1.0f`) 14 (same code); the first sample row from the band row 163.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2639,6 +2642,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // differences at each use 366; no helper, locals y, z, x and an accumulated
 // z, y, x sum 45 (z, x, y 47; selector in the switch 343); locals y, z, x
 // before the helper 430.
+// Round 141 (lane 4): vector3d_from_points3d + length_sq3f with the delta's fields in the cases
+// 365 (x, y, z order, table moves); the helper's differences y, z, x with one-expression and split
+// sums 26/26; a one-expression sum in every difference order (the term order is ignored; only the
+// difference order counts) xyz/xzy 27, yxz 23, yzx 26, zxy 11, zyx 16; the outer x, y, z locals in
+// the other five orders xzy/zxy/zyx 15, yxz/yzx 3 (same code).
 // @retail 0x20c440
 void function_20c440(byte const *request, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2844,7 +2852,11 @@ bool function_1df640(short team_a, short team_b);
 // read through the table parameter 6, the bound's terms swapped 6 (VC sorts
 // them), a (long) cast on either or both terms 6; (r169) the parameter-address
 // statements removed 6 (kept); a long index 148; a named request pointer 6;
-// a while loop 6.
+// a while loop 6; (r106) the index read from the group before the count test
+// with `group[0] + group[1]` as the bound 8 (the first word's load moves above
+// the branch, the reload order stays); a named entry pointer 6; the count test
+// in the loop condition 6; the existing object_get/actor_get helpers for both
+// objects 6 (same code); the entries as rows of 0x40 bytes 6.
 // @retail 0x20cbd0
 void function_20cbd0(short group_index, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category,
@@ -2914,6 +2926,12 @@ void function_20fda0(long arg_0);
 // (r169) the node before the queue 24 (pool loads first, node add moves up);
 // the node before the call 49; NODE() 19; a long side 39; the queue written
 // at both calls 62; a `byte *const &` node 19.
+// Round 141 (lane 4): retail loads the pool first and the queue into EAX after the MOVSX, then
+// builds the node as data + offset in EAX before the flag read (the 0x20d570 lookup shape); ours
+// loads the queue into EDX first and folds the node into the flag read. One queue call after the
+// if/else 19; the pool read into a local before the owner (0x20f960's form) 19; the node declared
+// first 19; the side cast inside the owner expression 19; the object through OBJECT_FROM_INDEX 19
+// (all the same code).
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

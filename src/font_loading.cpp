@@ -507,6 +507,10 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
+// retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
+// the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so
+// the 16-bit helper is kept.
 // score 85 (was 85): Frame 0xc agrees; alpha extension, literal assembly and run-two reuse differ.
 // Alpha parity extension, literal-word assembly and run=2 reuse remain. Disjoint
 // shifted/multiplied alpha fields 204/194; long/word/unsigned opacity nibble 172/236/172; word
@@ -558,6 +562,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 270: Complete branch/case-owned run production with long/word run and pixel,
 // existing fill boundary 92/92/164/164; common post-switch fill 149/149/137/137.
 // Original run producer, switch, pixel helper and decoder restored.
+// Round 470: signed helper/destination/both 85/85/85; signed fill carriers alone,
+// with helper/destination/both 109 each; all with signed color 109. All restored;
+// alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

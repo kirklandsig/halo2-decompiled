@@ -1291,6 +1291,11 @@ bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb 
 // result declared before `self`, declared then assigned, the count in a local 108 each; forceinline
 // count helper 108; count `> 0` 116; a `window` pointer local 291; the count written out (diagnostic)
 // 248, as `!=` 252 (count then in EAX, result in DL).
+// Round 106 (fast; aligned 31): retail also keeps the scan loop's `or edx, -1` NONE index and tests it,
+// where ours threads the NONE path straight to the loop exit. Count test as `!= 0` 107; `> 0` (106,
+// oldest in EDX) with result declared before self 106, with the scan fragment NULL first 106; one final
+// return reached by a single goto from the decode success with the failure as `result = false` 281, with
+// `> 0` 278 (769 bytes each).
 // Round 120 (lane 6, fast; aligned 50): the failure as `result = false; m_unknown05 = true; return
 // result;` 107 (same code); the scan as a while loop with its own increment 107 (same code); the scan's
 // terminal test as `result |= (flags & 2) != 0` 110 (aligned 72); the copy loop's fragment as one
@@ -1299,6 +1304,11 @@ bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb 
 // Round 264: Complete payload/stream initialization before count, before result, at entry,
 // at nonempty admission and before scan-result admission 260/260/260/255/266; first three
 // with the existing buffer initializer 260/260/260. Original setup/body restored.
+// Round 62 (fast): `if (!result) return false;` after the scan 107 (same code); `return true` on the decode
+// success 106 (789 bytes, aligned 43; retail returns the stack byte there); both 106; with the count as
+// `> 0` 105 (aligned 42, oldest in EDX). Diagnostic: the scan setting the result through a pointer to it
+// compiles identically (107; 106 with `> 0`), so an address-taken result is not retail's CL zero.
+// Round 62, later: the decoder's result assigned to the result and returned 116 (fast, 774 bytes).
 // @retail 0x95840
 bool __stdcall function_095840(s_network_stream_header *header, long *message_type, long *message_size, void *message_data)
 {

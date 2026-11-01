@@ -425,6 +425,34 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // `(count + 31) >> 5` 208 (811 bytes, one shared word value); the same with bytes as that words value times
 // sizeof(dword) 224; a padded count shifted in place after the copies (`>>= 5`) 224 (796 bytes); the iterator
 // as an aggregate initializer 111 (same code).
+// Round 23 (m3 lane 2, fast): the portal flags as a byte field read into a named byte local before the test 111 (still
+// `test byte ptr [m], 4`, retail loads it into BL); the existing bit_vector_test/bit_vector_set for the visited and
+// global portal bits 111 (same code); bytes as `((count + 31) >> 3) & ~3` 111 (same code); the visited clear as
+// `((portal_count + 31) >> 5) << 2` 232 (795 bytes: VC folds it to `sar 3; and ~3`, so retail's `sar 5; shl 2` there
+// and `lea [words*4]` at the head are multiplies); the flag test named as a bool first 232 (827 bytes).
+// Round 25 (m3 lane 2, fast; a compile-only /O2 screen of this file reproduces the head): both shifts are `sar`, so
+// there is no signedness split. Retail's head comes from `long count = table->count;` read first, bytes and base
+// written on the field (`((table->count + 31) >> 5) * 4`, `index * ((table->count + 31) >> 5)`) and the late word
+// count from the local (`(count + 31) >> 5`): VC then keeps count + 31 in EBX and shifts it again after the clears,
+// and the build matches retail to +0x52 (bytes in memory, `lea [words*4]`, the portal flags loaded into BL), but 207
+// (827 bytes): the word count's slot is [esp+0x28] (retail 0x14) and the loop head reloads it as a word from memory
+// (retail stores BX). With round 85's mid-loop `if (memcmp(...) == 0) break;` loop 200 (822 bytes; retail's
+// `xor ebx, ebx; repe cmpsb; je`, but no EBX reload on the back edge), with the word count declared with the head
+// locals 200, with the iterator declared before the loop 200. A count local used everywhere with the word count
+// written at each use 224 (796 bytes, shift shared). Lead: keep this head and find what puts the word count back in
+// EBX at the loop head (retail reloads it right after the memcmp exit) and moves its slot to 0x14.
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 111 [86]): a `count + 31` local for bytes and
+// base with the word count declared inside the do-loop (hoisted only after CSE), bytes as `* sizeof(dword)`,
+// `* 4` or from a words local 224/224/224 (796 bytes: VC still CSEs both shifts), masked `>> 3` 208 [77]; the
+// three bit loops from a named `last = word_count - 1` 128 [105]; the cluster output declared before the
+// iterator 111, at the arm's scope 111 (same code); `while (true)` with `if (memcmp(...) == 0) return;` and the
+// copy 125 [70] at 810 bytes.
+// Round 37 (m3 lane 14, fast): word count `bytes >> 2` 111 (same code); `bytes / 4` 246 (821 bytes);
+// `((table->count + 31) & ~31) >> 5` late 128 (a separate `sar 5`, but the count is reloaded after the copy
+// into output); `(bytes * 8) >> 5` 183; a count local with that masked word count and masked/sizeof/`* 4`
+// bytes 208/224/224 (796); masked word count with sizeof bytes on table->count 221; masked word count first
+// in the arm 135 (count reloaded after the flag test), at the top 208; `(table->count + 31) >> 5` at the
+// top 208. bitset_or for the two OR loops 181 (827; no descending AND helper exists).
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {
