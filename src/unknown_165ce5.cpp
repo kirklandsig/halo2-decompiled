@@ -1592,6 +1592,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
 // All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
 // J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
+// Round 23 (lane 18, fast control 220): the d03b0 overrides as one chained assignment 220 (same code);
+// the zoom flags preset true and cleared under `if (zoom > 0.1f)` 224; the look history read through a
+// point view 220; the zoom flag as `zoom <= 0.1f` 417 (2190 bytes); the four spring overrides as
+// conditional expressions 220 (same code). Diagnostic: both look locals' addresses taken as a no-op 220
+// (no effect: retail's separate look homes and reloaded rate are not an address-taken local).
+// Slot map (ours/retail): unit+flags -0x18/-0x1c, mode -0x1c/-0x18, zoom shares spring d (-0x14) in ours
+// and unit's home in retail, the active byte shares unit's home in ours and spring d's in retail.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

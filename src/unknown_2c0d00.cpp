@@ -288,6 +288,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 882/906/906/914/914/906/906f (control 931); all plus late inflation 906f.
 // Restricted/classification/device alone 918/932/918 plain. Frame 0x2cb8 remains;
 // all original constant lifetimes, qualifiers, buffers and complete body restored.
+// Round 23 (lane 18, plain; fast misleads here, 931 fast against 882 plain): aligned before straight 882;
+// the 0x26c flag before the dot 883; self unit chosen right after its fetch 881; the range pair before
+// the ignore/block priorities 881; range maximum read before the minimum 882 (one-point moves, not kept).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

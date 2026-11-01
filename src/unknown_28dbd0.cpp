@@ -186,6 +186,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
 // 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
 // sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
+// Round 23 (lane 18, fast): the matched 0x170d70 rotation form (cross i, projection, cross j, k; rows
+// v*cos + projection*axis - cross*sin) with sine then cosine computed by the caller 241 (frame 0x114,
+// 1193 bytes: sine first and its +0x24 home as retail, but heading at +0x10, cosine +0x1c, one cross spill);
+// that with the cosine declared before the heading or renamed 241 (same code: neither moves its home);
+// sine/cosine before the heading copy and outer cross 241; projection, cross j, k, i with every row
+// projection*axis + v*cos - cross*sin 241 (same code); the 173 form with three scalar cross terms 246
+// (frame 0x124). Diagnostic: the random arm's two draws as an offset vector with zero k (z stored back,
+// the -0.5 applied per draw as retail; ours still consumes the draws in the adds) 226 (1220 bytes).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
