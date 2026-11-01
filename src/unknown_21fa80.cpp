@@ -161,6 +161,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // four differences 534; `fabsf` on all six 532; an inline previous/current compare helper on all six 617, on the
 // four differences 585 (one call stays out of line). Diagnostic only (flags are the user's call): the file without
 // /Op 723 (1728 bytes: inline fabs without rounding, but `fld input; fsub [stored]` and no xmm bounce).
+// Round 479: shared native active-mixbin workspace for first/submix, first/routing,
+// submix/routing and all phases, declared before updates 535/542/532/542;
+// at entry 535/542/532/542 (fast control 532). Original workspaces and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

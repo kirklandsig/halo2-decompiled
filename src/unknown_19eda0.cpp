@@ -386,6 +386,9 @@ PRIVATE inline long polygon_round_19f(real value)
 }
 
 // score 316 (was 316): the distance to the centre is now computed and compared in double, so the
+// MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
+// comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
+// score 316 (was 379): the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
 // bound is still one product where retail has two and the frame is 0x34 versus 0x30.
 // Earlier 379: frame 0x34 versus 0x30; fade/radius homes and render-call transport differ.

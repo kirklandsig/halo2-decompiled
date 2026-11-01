@@ -205,6 +205,12 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 50: pending request as path input 161; call-first pending input 430; transfer buffer local
 // after/before resize 165/519; one-use handle locals in states 7/9/14 151/317/153 and states 7+14
 // 143 (one-use field copies, not kept without a match). Opening body restored.
+// Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
+// (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
+// after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep
+// that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
+// chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
+// EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

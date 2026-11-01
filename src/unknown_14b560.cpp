@@ -808,6 +808,8 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 	return datum != 0;
 }
 
+// score 43 (was 43): the datum address is still computed in EBX where retail computes it in EDI, and the
+// walk is still 0xbaf80 called out of line because another lane's file pins it noinline: BLOCKED-BY 0xbaf80.
 // score 43 (was 43): the 44 differing lines are 34 real ones (the rest are the
 // unmatched callees and the relocated globals): the datum address is computed in
 // EBX where retail computes it in EDI, and the two are used the other way round.

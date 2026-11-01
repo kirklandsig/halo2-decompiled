@@ -559,11 +559,23 @@ static inline word font_character_pixel(long alpha, long color)
 // pointer-convention changes regress. Alpha width, literal assembly and run-two reuse remain.
 // Round 245: plain two-byte literal parser, word/dword accumulator, with full parity and
 // native word fill interactions 85/85/204/204/107/107/208/208. Original helper and decoder restored.
+// Round 270: Complete branch/case-owned run production with long/word run and pixel,
+// existing fill boundary 92/92/164/164; common post-switch fill 149/149/137/137.
+// Original run producer, switch, pixel helper and decoder restored.
 // Round 470: signed helper/destination/both 85/85/85; signed fill carriers alone,
 // with helper/destination/both 109 each; all with signed color 109. All restored;
 // alpha extension, literal assembly and run-two reuse remain.
 // Round 216: Plain packed-alpha triplet loop, long/short shift counter with word/long helper result and byte/full parity:
 // 164/218/172/222/238/222/183/230. Original executable source restored.
+// Round 275: Pointer stores in switch/ordinary/both fill loops 172/172/164; full parity 228/228/236; both with word pixels 166, full parity and word pixels 240.
+// Original executable source restored; alpha extension, literal assembly and two-run reuse remain.
+// Round 277: Complete alpha-only pixel helper with word/long result and byte/numeric parity, OR
+// color 110/204/105/212; disjoint-add color 113/206/108/214. Original helper and decoder restored;
+// alpha extension, literal fusion and run-two reuse remain.
+// Round 280: native pixel split color/parity/alpha fields, word/dword and both
+// production orders 201/201/195/195; complete opacity field with byte/numeric
+// parity, word/dword 211/201/239/195. Exact-only records, helper and full decoder
+// restored; alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

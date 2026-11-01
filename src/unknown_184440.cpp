@@ -233,6 +233,11 @@ __forceinline bool function_184448(long arg_0)
 // (three-point gain, not kept); on it: the per-face bounds initialized at the top of the face loop 974; the plane
 // transform reading the normal into scalars (i, j, k) 975 (4557 bytes, frame 0x11cc as retail), captured k, j, i
 // 996 (4541), j, k, i 975 (4557); scalars plus face-top bounds 1021 (4538). Body restored.
+// Round 484: native packed plane index/orientation and Boolean edge-side, subsets
+// index/flag/side/index+flag/index+side/flag+side/all/signed flag
+// 965/982/981/982/981/982/982/964. Last form 4602 bytes (retail 4590), one-point gain
+// rejected. Eight-byte record asserted in each typed form;
+// frame excess remains. Original surface declaration and complete body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
