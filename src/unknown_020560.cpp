@@ -1372,6 +1372,8 @@ bool function_0bfe60(dword const *flags, long bit);
 // flags are not what keeps retail's inline from ours; the slot read through a reference 52; the pixel count
 // as a long passed through a cast (0x20770's form) 52; the `continue` test after the bit-test block 139 (441
 // bytes); one `data` pointer shared by both draw calls 139.
+// Round 481: One invariant embedded bitset row before/after count admission with signed
+// long/short/byte/64-bit remainder storage 98/96/140/96/140/96/137/143. Original row lifetime and body restored.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

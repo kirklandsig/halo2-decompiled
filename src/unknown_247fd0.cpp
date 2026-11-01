@@ -238,6 +238,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
 // with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
 // `changed` bool, dword-cast pointers, the cache stores swapped.
+// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
+// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
+// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
+// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
+// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
+// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
 // Round 63 (m3 lane 16, fast): compile-only, field_10 first still splits the compare with the sample in a
 // named local, the compare operands swapped, a `cached` record local read just before it, `!(==)`, the
 // sample as `/ 65535.f`, an empty-then if, a flags-word pointer for the update. Real: field_10 first with

@@ -1352,6 +1352,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
 // *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
 // the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
+// Round 35 (lane 15, fast): the 7 and 6 forms reproduce, and the 7 form with a write handle local alone 114 (917
+// bytes: the close's copy dropped, the checksum load in ECX). On that write-local form: the query, resize, close
+// argument or close test through `g_557c90[index]` 114/114/114/114; the write local before the header / before
+// bytes_written 114/114. No `file` local (every use through `g_557c90[index]`) on the 7 / write-local / 6 forms
+// 283/278/284 (955-958 bytes). On the 7 form: an `s_file_write_flags flags(0)` local at the call / at the top of
+// the resized block 7/7; bytes_written before the header, `written` declared before / after `resized` 7/7/7. A
+// constructor on s_file_handle (to make the handle a class temporary like the flags) does not compile: the
+// handle sits in the async task union (C2620).
+// Round 64 (lane 16, fast), on round 56's 6 form (reproduces at 6): the resize handle local before `bool resized;`
+// 6, `const` 6, the done flag declared once before the loop 6 (same code each); the close passing the resize handle
+// local 129 (915 bytes); the size limit read just before the size query 284 (902 bytes). s_file_handle cannot take a
+// copy constructor (it is a member of the task union), so retail's by-value handles are plain struct copies.
 // @retail 0x213970
 void function_213970(void)
 {

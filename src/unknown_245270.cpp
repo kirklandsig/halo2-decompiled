@@ -155,6 +155,9 @@ PRIVATE __forceinline void function_244de2(real thickness, short count, point3f 
 // pointer gives retail's square order and reload, but puts the second prism's loads in y, x,
 // distance order (retail y, distance, x); routing both prisms through function_24526f with a
 // plane local grows the frame.
+// Round 68: point2f normalization view 6; length local / condition-scoped length 6/6;
+// shared 2d dot / 3d add / both 6/6/6; lower corner copied from the first 6;
+// upper and lower shared setters together 203. Original body restored.
 // @retail 0x244de0
 void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 	real arg_3, long arg_4, long arg_5, long arg_6, byte arg_7,

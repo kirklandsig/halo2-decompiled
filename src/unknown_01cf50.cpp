@@ -69,6 +69,8 @@ struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 
+// MiniMax D (11-01): no lower score: our build puts the constant one into edi for the two
+// combiner-count stores where retail stores the immediate; the permuter timed out.
 // MiniMax D (10-30): the stage states through the existing sampler_state_write plus one more
 // inline_depth(0) pair around the (3, 1, 0) vertex call matched (full check); new in-body pragmas
 // are not kept, so the pair was dropped at review: 188 (fast, 1457 bytes, retail 1422; main 316).
@@ -3590,6 +3592,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
@@ -3824,6 +3827,7 @@ void function_12fa0(byte const *camera, real const *projection, bool scaled, lon
 real *table_entry_data(long handle);
 long function_184000(long index, long bit);
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
 // transform lookup and the outlined helper's argument order still differ from retail's.
 // @retail 0x45ce0
@@ -4087,6 +4091,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 152 (was 152): the instruction sequence is retail's, the same number of instructions, and
 // only the register allocation and the spill slots differ: retail loads cosine, width, height,
 // sine and screen[1] where we load width, cosine, height, screen[1] and screen[0].
@@ -4206,6 +4211,7 @@ extern dword g_4b82e8, g_4b82f4, g_4b82f8;
 dword g_4b8438, g_4b82e0, g_4b82fc, g_4b82ec;
 void function_48010(real const *color);
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
 // retail is also 17 instructions longer than ours, and the two drift apart in the mode branch.
@@ -6101,6 +6107,10 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     bool center, bool shift, bool clip, bool skip_state, real *depth_out);
 void function_47ea0(short stage, byte flags);
 
+// MiniMax D (11-01): score 385 (was 406): the points are read through a local, so the parameter
+// stays on the stack and all nine arguments travel there (ret 0x24); retail takes the tag in ecx
+// with the other eight on the stack (ret 0x20), which our call to 0x14560 still cannot match.
+// The vertex-shader constants now hold 1.0f at retail's indices 0, 5, 8, 13, 16, 21, 24 and 29.
 // score 406 (was 406): retail takes the tag in ecx and the eight arguments on the stack
 // (ret 0x20), ours takes the points in ecx and the tag in edx with seven stack arguments
 // (ret 0x1c), so every stack offset differs; retail also calls 0x14560 with the stage in
@@ -6130,6 +6140,7 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
     if (!skip)
     {
         function_47ea0(stage, 0);
+        s_501e0 const *source = points;
         if (segments)
         {
             long total = count - 1;
@@ -6162,7 +6173,7 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                 }
             }
             s_501e0 const *volatile selected = midpoints;
-            points = selected;
+            source = selected;
             count = total;
         }
         else
@@ -6175,19 +6186,19 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
         }
         for (long i = 0; i < count; ++i)
         {
-            real width = points[i].field_c > points[i].field_10 ? points[i].field_c : points[i].field_10;
+            real width = source[i].field_c > source[i].field_10 ? source[i].field_c : source[i].field_10;
             if (filtered)
             {
                 vector3f delta;
-                delta.i = g_4b9da0.x - points[i].field_0.x;
-                delta.j = g_4b9da0.y - points[i].field_0.y;
-                delta.k = g_4b9da0.z - points[i].field_0.z;
+                delta.i = g_4b9da0.x - source[i].field_0.x;
+                delta.j = g_4b9da0.y - source[i].field_0.y;
+                delta.k = g_4b9da0.z - source[i].field_0.z;
                 real depth = 0.0f - (g_4b9dac.i * delta.i + g_4b9dac.k * delta.k + g_4b9dac.j * delta.j);
-                point3f position = points[i].field_0;
-                real low = depth - points[i].field_10;
+                point3f position = source[i].field_0;
+                real low = depth - source[i].field_10;
                 if (low < g_4b9de0) low = g_4b9de0;
                 else if (low > g_4b9de4) low = g_4b9de4;
-                real high = depth + points[i].field_10;
+                real high = depth + source[i].field_10;
                 if (high < g_4b9de0) high = g_4b9de0;
                 else if (high > g_4b9de4) high = g_4b9de4;
                 if (high > low && depth != 0.0f)
@@ -6196,10 +6207,10 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                     if (function_3a5c0((byte const *)NONE, low, high, 0, true, true, true, false, &adjusted_depth) && depth != adjusted_depth)
                     {
                         real scale = (adjusted_depth / depth) * 0.0f + 1.0f;
-                        real shift = 0.0f - (depth - adjusted_depth) * points[i].field_10;
-                        position.x = delta.i * shift + points[i].field_0.x;
-                        position.y = delta.j * shift + points[i].field_0.y;
-                        position.z = delta.k * shift + points[i].field_0.z;
+                        real shift = 0.0f - (depth - adjusted_depth) * source[i].field_10;
+                        position.x = delta.i * shift + source[i].field_0.x;
+                        position.y = delta.j * shift + source[i].field_0.y;
+                        position.z = delta.k * shift + source[i].field_0.z;
                         function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x84), 0);
                         function_1c710(g_51f0f0);
                         function_1cf50();
@@ -6212,14 +6223,14 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                         constants[5] = 1.0f;
                         constants[6] = 0.0f;
                         constants[7] = 0.0f;
-                        constants[8] = 0.0f;
+                        constants[8] = 1.0f;
                         constants[9] = 0.0f;
-                        constants[10] = 1.0f;
+                        constants[10] = 0.0f;
                         constants[11] = 0.0f;
                         constants[12] = 0.0f;
-                        constants[13] = 0.0f;
+                        constants[13] = 1.0f;
                         constants[14] = 0.0f;
-                        constants[15] = 1.0f;
+                        constants[15] = 0.0f;
                         constants[16] = 1.0f;
                         constants[17] = 0.0f;
                         constants[18] = 0.0f;
@@ -6228,23 +6239,23 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                         constants[21] = 1.0f;
                         constants[22] = 0.0f;
                         constants[23] = 0.0f;
-                        constants[24] = 0.0f;
+                        constants[24] = 1.0f;
                         constants[25] = 0.0f;
-                        constants[26] = 1.0f;
+                        constants[26] = 0.0f;
                         constants[27] = 0.0f;
                         constants[28] = 0.0f;
-                        constants[29] = 0.0f;
+                        constants[29] = 1.0f;
                         constants[30] = 0.0f;
-                        constants[31] = 1.0f;
+                        constants[31] = 0.0f;
                         D3DDevice_SetVertexShaderConstant(-78, constants, 8);
-                        function_484b0(&position, adjusted_depth, width * scale, points[i].field_10 * scale,
-                            rotations[i].x, rotations[i].y, points[i].field_14);
+                        function_484b0(&position, adjusted_depth, width * scale, source[i].field_10 * scale,
+                            rotations[i].x, rotations[i].y, source[i].field_14);
                     }
                 }
             }
             else
-                function_480a0(&points[i].field_0, width, points[i].field_10,
-                    rotations[i].x, rotations[i].y, points[i].field_14);
+                function_480a0(&source[i].field_0, width, source[i].field_10,
+                    rotations[i].x, rotations[i].y, source[i].field_14);
         }
     }
     return !skip;
@@ -6539,6 +6550,10 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax D (11-01): 309 (was 312) with the two integer comparisons against zero written against
+// one (the zero literal is no longer promoted into ebp and the frame loses its extra push); not kept
+// (gain under 8, still above 30). The call to 0x4f7e0 passes all nine arguments on the stack, one
+// push more than retail's.
 // score 312 (was 312): retail's frame is 0x1894 bytes and ours 0x1890, and our locals sit four
 // bytes higher than retail's (the fade at [esp+0x10] against our [esp+0x18], the direction
 // vector at [esp+0x6c] against our [esp+0x70]), so every reference in the body is at another offset.
@@ -7265,6 +7280,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
 // @retail 0x1f5c0

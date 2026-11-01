@@ -157,6 +157,17 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
 // 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
 // entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
+// Round 37 (lane 15, fast): the result assigned from the test chain on every pass (`result = tests;
+// if (result) { copy; break; }`) hoists the mask exactly as retail (`push ebx; mov al, 3` after the guard,
+// false remade at the loop exit) 59, but index and successor still share one register (entry copied into
+// ESI at the loop top) and the loop head gets a jump over 16-byte padding (135 bytes); on it a successor
+// local 59, the successor read through the table first 62 (successor EBX, index ECX), `index = *iterator`
+// at the end 59, a for loop stepping `index = *iterator` 59 or from a successor 59, the entry pointer at
+// function scope 59, every field read through the table 75, the loop over `*iterator` 70 (iterator then
+// passed in a register, callers lose). `while (index != NONE && !result)` with a successor 53; `continue`
+// filters with an early return 55; the `!result` loop assigning the result each pass with the copy after
+// the loop 71 (top-tested, no hoist); the guest test 3rd/4th (diagnostic) 48/47, no hoist; the parameters
+// swapped to (iterator, player) with both callers 43 (identical: player stays in EAX).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1097,6 +1108,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // path upper first 56, with `lower = removed > position ? position : removed` 54 (only the EDX/ESI entry load and
 // upper in EAX left); the plain entry alone 370 (1162 bytes), with the explicit flag arms only 358, with the count
 // path's flag store only 372.
+// Round 37 (lane 15, fast; current body): the backward copy as `long i = upper; while (--i >= lower)` 49, the
+// forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
+// canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
+// entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

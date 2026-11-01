@@ -575,6 +575,11 @@ done:
 // the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
 // with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
 // named once for the translator and the copy 32; the tag read in the translator call alone 45.
+// Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
+// only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
+// the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
+// bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
+// after it 54; `if (globals != NULL)` 54.
 // Round 63 (m3 lane 16, fast; parse_variant stays matched): a compile-only /O1 screen still caches the buffer
 // with a NONE-guarded translator call and with a `(wchar_t const *)(word *)` copy source; the name from a
 // switch-with-returns inline helper stays out of line. Real: the natural one-copy form with the tag read

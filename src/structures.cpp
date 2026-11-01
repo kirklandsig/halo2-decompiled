@@ -322,6 +322,14 @@ static __forceinline bool structure_bsp_collision_available()
 // (245 bytes, out of line). Compile-only: /O1, /Os, /G7, /Ob1, /Ob0, /Op and /Ox all thread the flag too, and so
 // do helpers returning the exclusion (early returns, single-exit result, &&), `found = excluded ? ...`,
 // `found = !excluded && requery` and an `__assume` at the join.
+// Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
+// jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
+// into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
+// `excluded = false`, `excluded = scenery_excluded;` at the join and a final `found && !excluded`. Real builds of
+// that: 77 (295 bytes: a second flag test, `found` spilled across the probe, the probe block laid out last); with
+// the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
+// (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
+// { requery }` 75 (295 bytes).
 // Round 63 (m3 lane 16, fast): compile-only, the join test also threads as a switch on the flag, behind an
 // `excluded || !0xbf9a0` guard, as a counter, as a parameter, and as `!!`, `== true`, `!= false`, `(char)`,
 // `(long)`, `? true : false`, `| false`, `^ false`, `& 0xff`; the C front end and a constructed/destructed
@@ -940,6 +948,10 @@ done:
 // clearing `found` 159 (453 bytes, 0xd2a50 72); the flag declared at function scope and cleared before the loop
 // 125 (same code); the object part as an if/else-if chain with an empty excluded arm 125 (same code);
 // `excluded = false; if (scenery) excluded = policy != 2;` 133 (470 bytes, setne, threaded).
+// Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
+// local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
+// first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
+// existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
 // Round 63 (m3 lane 16, fast): a bit-and join test (`else if (!(excluded & 1))`, diagnostic) keeps the flag
 // unthreaded and gives retail's allocation (flag in BL with `mov bl, 1; jmp` and `xor bl, bl` before 0xbf9a0,
 // the direction reloaded into ESI, NONE in EBX with `or ebx, -1` at the back edge, the result in its

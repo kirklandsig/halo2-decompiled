@@ -418,6 +418,8 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // as `slot->unknownc` 161 each (same code); `result` declared before the actor 175; the two tests nested
 // (`if (prop != NONE) { if (ready) {...} } else result = false;`) 277; `else { if (ready) {...} }` 161;
 // the direct 0x25d690 call 182.
+// Round 477: Comparison-produced entry result signed-byte/byte/short/long on aligned and native search requests 116/116/275/276 each.
+// Narrow results fold later returns to constants despite recovering frame 0x162c; original Boolean result, aligned request and complete body restored.
 // Round 46 (m3 lane 10, fast): lane 14's sibling single exit rebuilt (`bool result = true; if (prop_index ==
 // NONE) result = false; else if (ready) { body } return result;`) 182: frame 0x162c, the result byte at 0xf
 // beside has_markers and retail's `mov al, 1; mov [esp+0xf], al; jne; xor al, al` opening, but the actor

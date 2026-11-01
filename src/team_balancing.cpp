@@ -605,6 +605,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
 // reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
 // count_spread (the newer, higher stack copy) still runs before the candidate's.
+// Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
+// `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
+// a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
+// pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -912,6 +916,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // loaded first); the extra-first sum with the clamp's subtraction written in place 45 (192 bytes); the fill
 // bound `i != total` 35; the maximum test as `party_indices[i] + 1 >= next_party` 35. Re-measured
 // (diagnostic, value-changing): `(short)next_party` in the fill 7 with retail's roles.
+// Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
+// the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
+// 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
+// copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
+// as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

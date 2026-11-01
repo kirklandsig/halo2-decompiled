@@ -224,6 +224,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // C's (blocked, edge, distance) 410 (no gain); `bool success` 432 (1568 bytes); `iterator.forward` read at
 // each use 526 (1696 bytes, 0x26ccb0 209). Retail keeps `hit` in the dead pathfinding parameter slot (+0x74),
 // reaches the hit block only from the edge loop's break, and returns constants from separate tails.
+// Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
+// planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
+// Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
