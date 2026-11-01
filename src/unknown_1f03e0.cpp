@@ -714,6 +714,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Round 481: Complete fallback plane/forward candidate with publication after normalization,
 // eight independent fallback/forward-phase/active-entry declaration pairs 247 each (1243 bytes).
 // Original in-place fallback and full body restored.
+// Round 191 (lane 3, fast): `vector3f up;` then `up = ground->normal;` 182 (same code); up copied
+// component by component 293 (breaks 0x1e5af0); the old-forward pointer declared before `up` 297 (1229
+// bytes: the first cross then reads the old up through ESI with up as the destination, the state dot
+// keeps [edi+0x104/0x108]), declared after `up` 297 (1229), declared at function scope 288 (breaks
+// 0x1e5af0). Retail keeps up in XMM5-7 through the state dot and the forward cross and multiplies the
+// forward from memory into its own registers; ours keeps up in XMM4-6 as the destinations.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -1522,6 +1528,16 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // locals still store after the count test); the flying test's planar dot i-first or with each
 // product's operands swapped 230/230 (same code: the speed dot still computes j before k).
 // Diagnostic, not kept: 0x1f1df0 out of line at both calls 301 (1005 bytes). Original body restored.
+// Round 191 (lane 3, fast): retail's float 0.0 constant (0x45dbd8) confirms the `real` magnitude. On
+// it, the velocity pointer declared first, selected/highest declared right after the unknown58 store
+// and the contact list read at each use 273 (1076 bytes): the reset block is then retail's exactly
+// (velocity load first, NONE in EAX stored to unknown58, selected and highest, the list loaded after
+// the count test) but the arms' shared height test and the inlined second 0x1f1df0 call stay; that
+// with the airborne test as `(flags & 8) || (flags & 0x10)` 270 (1072); with the double magnitude 274.
+// The existing havok_component_get for the component (plain inline, to spend inline budget) 221
+// (same code, on either base); 0x1f1df0 defined after this function 221 (same code: the second call
+// stays inlined). Retail tests the height in both not-supported arms (two `comiss; ja` copies, laid
+// out after the first post-loop block); ours merges them into one.
 // Round 111 (lane 8, fast; one-file LTCG harness with the ballast object, unknown_11fc80.cpp and
 // unknown_1cec30.cpp exact at 221): `selected`/`highest` declared right after the unknown58 store 221
 // (their NONE stores join it as retail, aligned 99 -> 96); that with the contact list read from the

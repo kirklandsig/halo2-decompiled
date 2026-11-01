@@ -195,6 +195,12 @@ struct s_spawn_scenario_23aea0
 // function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
 // nested loops through a named source record pointer 123. No other retail function uses this
 // integer-offset store idiom, so no matched sibling shows its form.
+// Round 191 (lane 3): the batch's first type stepping by six (`type = 2; type < 14; type += 6`, inner
+// j loop) 105 (same code); one signed type loop with an unsigned `type - 2u` record index 105 (same
+// code); `extern dword g_502258[]` unsized, linked, 105 (same code); a `dword` type counter from 2
+// 141 (375 bytes, a pointer countdown). Diagnostic, reverted at once: a volatile destination 242
+// (294 bytes, not unrolled, still a pointer). 0x502248..0x502257 hold other globals (a `long *` and
+// the game type), so retail's displacement is only g_502258 - 16, not a wider table.
 // Round 148 (fast): retail's IV reads as 12 * (first type of the batch) from 0x18 with the exit `cmp eax, 0xa8`
 // (first < 14), so the batch loop `for (first = 2; first < 14; first += 6)` with `type = first + j` 139
 // (374 bytes, again a pointer induction; the same as re-measure), the inner loop over `k = first .. first + 6`

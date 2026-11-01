@@ -799,8 +799,8 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // and the flags on the stack; this file's declaration describes another order and the callers are
 // in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
 // sine and the cosine in the dead argument slots.
-// MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // score 155 (was 155): Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
+// MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // movement/rotation homes and cross/result lifetimes still differ.
 // Frame 0x18 agrees; sampled movement/rotation homes and SSE/output scheduling still differ.
 // Frame 0x18 agrees; sampled-vector homes and x87/SSE rotation scheduling remain.
@@ -913,6 +913,16 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // rotation is then retail's: sample at +0xc, test, copy; left the axis read into registers where retail uses
 // memory operands, and sine in the angle's dead slot +0x34 where retail puts cosine there and sine at +0x44);
 // on that, cosine before sine 156, the moved-away flag preset false and set in its test 178.
+// Round 191 (lane 3, fast): on the 1382-byte shared sample/forward vector with the
+// `!(fabs(angle) < 0.0001f)` guard and an in-place rotation (155, everything before the rotation
+// matches): rows assigned j, i, k 149 (a compile-only screen of the rotation block also ranks j,i,k
+// first; dot term/operand orders, cross component orders and sine/cosine order change nothing);
+// with dot3f for the four turn-block dots 149 (VC still forms the alignment dot k, j, i; retail j,
+// k, i); plus dot3f for the projection 154; plus cross3f for the turn crosses 154, and for the
+// rotation cross 154. The shared-vector in-place rotation through the sibling 0x1ecf50's rotate form
+// 176 (1385 bytes); a separate forward local rotated in place with the sample in its own block 169
+// (the slot is not shared). Retail keeps the vector components in XMM and multiplies by the axis from
+// memory; ours loads the axis into the destination registers.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
