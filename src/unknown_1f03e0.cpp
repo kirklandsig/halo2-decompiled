@@ -925,6 +925,8 @@ struct s_flags_1f0870
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
 // Round 288: Continued magnitude/input squared sum/both/history squared sum/magnitude+history/input+history/all/all with entry magnitude,
 // 593/590/593/590/593/590/593/593 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
+// declaration lifetimes. Scores 590/590/590/590/590/590/590/590. Original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1545,6 +1547,8 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
 // at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
 // rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.
+// Round 296: Accepted-state support-first, flag-first, scalar-first and interleaved stores, on original
+// and real movement graphs. Scores 221/224/221/221/224/227/224/224. Original complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

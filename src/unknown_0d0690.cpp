@@ -2081,6 +2081,8 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
 // with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
 // restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
+// Round 296: Per-format a/b/c/ab/ac/bc/abc sample offsets, then bc offsets with long dynamic validity.
+// Scores 589/600/593/598/588/597/606/627. Original complete body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
