@@ -547,6 +547,12 @@ done:
 // before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
 // the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
 // its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 14 (lane 17, fast; parse_variant stays matched), on the natural one-copy form (54): the shared
+// getter's fallback as a ternary 54 (same code: the tag load stays after the fallback join), with the tag
+// read before the variant call 57 (171 bytes; the tag loads before the call); the selector read into a
+// local before the tag 54; numeric case order 49 (173 bytes); numeric order with the tag read first 55
+// (171 bytes). Retail's tag load sits between `test eax, eax` and `jne` in the call's block, so in its IR
+// the tag read precedes the fallback branch.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

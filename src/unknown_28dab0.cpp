@@ -227,6 +227,10 @@ void __stdcall swarm_delete(long arg_0);
 // feeds the compares and record stores); the definition index after the stores, before/after the limit 96/96;
 // with the original store order 93, the index after the stores 90. A compile-only screen does not reproduce
 // the record-first head (tag/NONE swap in all 64 placements: head window 6-10).
+// Round 14 (lane 17, fast; all on s2, 92, identical code each): a const tag pointer with `NONE != field`;
+// the allocation folded into the head condition; the allocation pool read once into a local for the
+// allocation and the record address; the result declared uninitialised and set NONE after the tag
+// pointer; the record pointer declared at function scope.
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {

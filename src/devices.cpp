@@ -746,6 +746,11 @@ struct s_device_machine_view
 // length because the block shrinks by the zero store's size: there the table base and index are
 // computed after the machine flags load and the word load folds the address (`mov ax, [esi + eax*4 +
 // 2]`), so the 16-bit load shares EAX only once the address computation sinks below the machine test.
+// Round 14 (lane 17, fast; on the masks + 0x1200055f zero-store form, 122): the case labels in numeric
+// order, in retail's block layout order and with the 0x6000560 case first 122/122/122; the machine block
+// behind an early `break` 122; a const group reference with direct flag masks 122 (all the pushed ESI).
+// Matched retail sites that load 16 bits into the pointer's own register (0x3f500, 0x1c7450, 0x1023d0)
+// use the value in 16-bit compares or a phi, never in byte tests.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1034,6 +1039,12 @@ bool function_108530(long device_index, long name)
 // in the inner block 122; the half ramp-up time named before the half ramp-down 123; the cruise time named
 // right after the remaining-time clamp 140 (the remaining time dies early, a `push ecx` frame, 0x108600 31 ->
 // 26, 0x108670 13 -> 28; still ret 0x18); the motion's duration stored first among the reset fields 121.
+// Round 14 (lane 17, fast, with both callers): the deceleration through the velocity local and the
+// acceleration through the motion field 121 (same code); the three target stores chained 121; the half
+// ramp-down time computed before the position pin 129; the denominator written out in its test and
+// division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
+// target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
+// 0x108670 13 -> 34).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
