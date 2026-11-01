@@ -577,6 +577,13 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // compile-only screen of 190 combinations (indexed, flags local, mask at each use, scale/colour/result pointers
 // first, mask scope, `+=` translation) shows five whole-function rotation states; the mask read at each use is
 // the only one with retail's rows i and j in both rotations (row k then left/forward/up), none is retail's.
+// Round 20 (lane 17, fast): permuter 600 s, 58 tries, none below 42. Row i's input copy is stored in the
+// order the row consumes it (ours y, z, x; retail y, x, z), so the copy follows the sum order. Both
+// rotations fed from a separate input copy (`position = translated_position`, rotated into it; the same
+// for the velocity) 123 (1136 bytes, row i unchanged); indexed definitions with scale first 113
+// (re-measured), plus the separate input copies 115 (1138 bytes), with the emitter mask read from the
+// definition at both uses 232 (1130 bytes); the separate input copy for the position rotation only 42
+// (same code: VC folds it into the helper's own copy).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1449,6 +1456,14 @@ bool function_17afd0(long effect_index, long value);
 // before the owner 138; one-expression availability with the if/else owner 113 (498 bytes); owner declared
 // before the effect index 125; availability declared at the loop top 123. Retail keeps -1 in EBP until the
 // owner takes EBP; ours keeps -1 in EBX all through, so five values compete across the view query.
+// Round 20 (lane 17, fast): the cluster test through the existing bit_vector_test 102 (same code, kept in
+// place of its expression written out); on it, lane 13 r27's retail-length form re-measured as a base (the
+// view global at each use, bit 9 as (bool)(((dword)word >> 9) & 1), one-expression availability and an
+// if/else owner) 113 (498 bytes; NONE in EBX, owner in ESI, view in EBP, availability in AL, same view in
+// BL), and its false-then-set availability re-measured 138 (510 bytes); new on that base: the camera flag
+// declared before the availability 115; the same view false-then-set 121 (501 bytes). On the kept form:
+// the loop as `for (long index = ...; index != NONE;)` (this file's own form above) 102 (same code); the
+// availability as `view != NONE ? !query(view) : false` 107 (485 bytes).
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
@@ -1461,7 +1476,7 @@ void __stdcall function_174220(bool view_pass)
         short cluster = system->location.cluster_index;
         if (cluster != NONE &&
             ((*(word *)((byte *)definition + 0x16) & (1 << 9)) ||
-             (g_547f88.flags[cluster >> 5] & (1 << (cluster & 31))) || function_3eb20(cluster)) &&
+             bit_vector_test(g_547f88.flags, cluster) || function_3eb20(cluster)) &&
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;

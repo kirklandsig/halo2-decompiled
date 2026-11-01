@@ -1340,7 +1340,7 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-// score 134 (was 198): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
@@ -1441,6 +1441,11 @@ void function_1f86a0(long actor_index);
 // as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
 // `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
 // root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
+// Round 20 (lane 17, fast): the element index read once into a local and reused for the joint index at
+// the break 244; a plain break with `if (entry != NULL) joint_index = entry->unknown4;` after the loop
+// 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
+// first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
+// as the subscript base 134 (same code, so the head's early header load is not evaluation order).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
