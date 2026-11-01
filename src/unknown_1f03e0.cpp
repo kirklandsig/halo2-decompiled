@@ -509,6 +509,13 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // cross through 0x1f087b 122 (same code); the `selected != 0` arm first 164 (975 bytes, as before); the compare
 // written `dot_average > dot_a` 122 (same code); dot_average computed before dot_a 122 (same code). Ours hoists the
 // g_4687b0 reload into each selected arm (each computes j, k, i), so the arms' j/k store tails are not shared.
+// Round 329: Corresponding first/second/both product parts in every first-cross row
+// 122/122/73; selected-cross rows 165/165/122; joint first/all parts 122/122.
+// Both parts named in the shared first-cross helper (contact_cross): plain 73 at 978/977 bytes,
+// not kept: the helper change raises its other callers (below).
+// Seven within-row second-product-first declaration orders all 73, with the same
+// caller counts; original product order and selected helper restored. Existing
+// unmatched callers: 0x1f1460 182 -> 200, 0x1f2250 418 -> 419, 0x1f0870 stays 590.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1529,6 +1536,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
 // accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
 // second call).
+// Round 329: Complete reset orders MNSZ/SNMZ/ZNMS/NSMZ/NZMS/MSNZ/SZNM/ZMSN
+// 223/221/222/221/222/222/222/223; N=normal, M=material, S=sentinel, Z=scalar zero. Both
+// reset phases use the same order; original stores and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

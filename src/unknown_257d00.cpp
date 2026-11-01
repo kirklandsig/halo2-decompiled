@@ -1712,6 +1712,9 @@ void function_b7360(long object_index);
 // Round 327: Shared movement-query tail after dispatch, success-first bool/byte/short/long
 // 470/470/493/492; failure-first 473/473/490/494. Original case flow and body restored; entry
 // carriers and length gap remain.
+// Round 329: Independent movement/direct/point conversion workspaces declared at callback
+// scope, subsets 1-7 and all with coherent product/tick names, 471 each. Original
+// declaration scopes, conversion operations and complete executable body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

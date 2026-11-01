@@ -1956,7 +1956,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
-// score 555 (was 595): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// score 555 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // Earlier: frame 0x90 agrees and the first arm matches retail instruction for instruction
 // except its stack homes (lightmap +0x20 versus +0x34, mesh +0x2c versus +0x20, result/part, normal,
 // u/v/bsp/material slots: retail packs them jointly with the second arm's colours and normals); the
@@ -2077,6 +2077,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // ascending/reverse declarations and model/entry validity lifetime: 603/821/555/773/603/821/555/773.
 // sample_offset names 555; plain 555 kept. Each offset has both format consumers; all sample objects,
 // helper bodies, call roles and arithmetic grouping stay fixed.
+// Round 329: Three-entry sample-offset table, long/dword entries with initializer,
+// ascending assignments, descending assignments and plain indexed loop,
+// 603/603/555/575 each. No exact match; independent offset locals and full body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
