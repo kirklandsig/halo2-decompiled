@@ -754,6 +754,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // 221 (694); the body position at both uses 213; the signature case as the switch's `default:` label 177
 // (688). Diagnostic: 1-7 dead long temps leave the code byte-identical (34), so these colour ties do not
 // follow the temp count.
+// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
+// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
+// declared with buffer/size and assigned later: 34 each (same code). All restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

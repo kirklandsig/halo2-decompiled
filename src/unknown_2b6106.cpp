@@ -777,6 +777,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // row increment as two statements 506 (same code); `long row` 506; both timer arms passing
 // `seconds / 60, seconds % 60` 506. Retail's shared arm tail stores row = 1 to its home and reloads it
 // into EDI, while its 7/8 arm sets EDI directly: that arm sits in another home region of row.
+// Round 41 (lane 14): one show after the 2/3 arm's campaign/totals if-else 607 (1977 B); `text[row]` then
+// `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
+// (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
+// and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

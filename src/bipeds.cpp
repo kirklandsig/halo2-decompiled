@@ -1480,7 +1480,7 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 /* a biped's response to a damage impulse: it starts flinching or falling,
    a hard one knocks it over (and a ragdoll gets a random spin), and on
    the ground it turns to face away from the hit */
-// score 77 (was 122): Frame 0x28 and entry saves agree; the x87 squares (k, j, i; retail j, k, i), spin.i
+// score 77 (was 77): Frame 0x28 and entry saves agree; the x87 squares (k, j, i; retail j, k, i), spin.i
 // (axis.i loaded first; retail copies the angle and multiplies by axis.i) and the mode-3 test (retail keeps the byte
 // in cl: mov cl; movzx eax, cl ... cmp cl, 3) still differ.
 // Earlier (score 122 (was 223)): tag/flag carriers, strong-result home, spin scaling and late call/output scheduling.
@@ -1528,6 +1528,18 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 // cross re-coloured; also with `strong ||` first in linear or away declared up front); spin_fraction folded into
 // the angle 131 (the two constants fold). Compile-only screens: spin via vector3f_scale, angle initialised at its
 // declaration, declaration and statement orders, `spin = axis; spin.X *= angle` never give retail's spin.i.
+// Round 39 (fast; a compile-only screen of this file reproduces all three spots and the colour flip): the x87
+// square order follows the creation order of velocity's fields (newest first), set by their first direct mention:
+// the scale through the existing vector3f_scale 77 (same code), with the magnitude written i, k, j 73 (x87 squares
+// as retail; every other term order screened: ijk/jik/jki/kij/kji give kji/kij/ikj/jik/ijk). spin.i follows a
+// direct mention of axis.i before the angle (diagnostic `(void)axis.i;` 60, aligned 9: only the mode block left);
+// natural forms: vector3f_scale(&axis, angle, &spin) 73, the angle passed as an expression to vector3f_scale 71
+// (spin.i and spin.j angle-first), angle/magnitude/fraction declared or initialised in place, spin rows reordered,
+// cross3f_staged (screens) keep spin.i. Mode block: retail's `mov cl; movzx eax, cl ... cmp cl, 3` comes only from
+// the long local for 4/5 plus the field read for 3 (174; with the probe 178; with the spin expression 179), and on
+// cross3f that always re-colours the velocity scale and the cross (xmm2/1/0 -> 0/2/1); the hand-written cross
+// keeps the colours (screen) but turns spin to angle-first in all rows and the squares to i, j, k. A byte mode local
+// with the field read for 3 90 (narrow compares); byte/char/word/short/dword locals (screens) narrow or keep eax.
 // @retail 0xde620
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
@@ -2766,8 +2778,8 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 
 struct rigid_transform_scaled;
 struct real_quaternion_transform;
-bool function_1faf80(vector3f *facing, long arg_159e6d, void const *definition_flight, vector3f const *control,
-	real rate, real *turn);
+bool function_1faf80(long arg_159e6d, void const *definition_flight, vector3f const *control, real rate,
+	vector3f *facing, real *turn);
 bool function_bf5d0(long object_index);
 void matrix4x3_rotation_between_vectors(transform4x3f *matrix, vector3f const *arg_5f338b,
 	vector3f const *arg_bc44c6);
@@ -2830,7 +2842,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 			{
 				real rate = (biped->control_flags & 8) ? 0.99f : *(real *)(definition + 0x24c);
 
-				function_1faf80(&biped->facing_goal, arg_159e6d, definition + 0x2cc, &biped->control, rate,
+				function_1faf80(arg_159e6d, definition + 0x2cc, &biped->control, rate, &biped->facing_goal,
 					&biped->unknown3a0);
 			}
 			else
@@ -3716,7 +3728,7 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 171 (was 184): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm6/xmm4,
+// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm6/xmm4,
 // retail xmm4/xmm3); the frame is 0x30 (retail 0x24: the rotate helper's cross spills) and the rotation/basis SSE
 // carriers still differ.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
@@ -3747,6 +3759,15 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // and sine initialised at their declarations 171 (same code); in the rotate helper the cross computed before the dot
 // 180 (frame 0x24 as retail, carriers move), scalar cross terms 194, dot written k, j, i or i, j, k 171. Compile-only:
 // all 720 orders of the six locals keep frame 0x30.
+// Round 39 (fast): retail's rotation is v * cos + axis * dot(1 - cos) - (v x axis) * sin with the cross terms as
+// scalars (no cross vector in its 0x24 frame) and keeps the rotated up in registers for the two crosses. In the
+// helper: 0x146320's rotate shape (projection written k, j, i, cross j/k locals, cross i inline) 162 (frame 0x24, the
+// first rotation nearly retail's; aligned 163 -> 157; not kept: cross3f's body as scalars); 0x170d70's shape (cross i
+// local first, projection, cross j/k) 211 (919 bytes), projection first 211; cross3f(v, axis) subtracted 171 (same
+// code), computed before the dot 180 (frame 0x24), dot-first products 171. In the body: up and side declared at the
+// copy 171; up copied before the first rotation 229 (874 bytes). Lead: the rotate helper with scalar cross terms
+// is shared by 0x146320, 0x170d70 and 0x50650's files (each has its own copy, all held this round); one shared
+// header helper would let this body use it.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -3870,7 +3891,7 @@ void __stdcall function_e3380(long arg_159e6d)
 
 /* the dead biped's animation: its getting-up animation once it can stand,
    the ragdoll's pose while it lies, or its landing */
-// score 13 (was 31): Frame 0xc agrees; three object lookups read [data + index] where retail reads [index + data],
+// score 13 (was 13): Frame 0xc agrees; three object lookups read [data + index] where retail reads [index + data],
 // the 0x1e5af0 push temp is ecx (retail edx) and the not-found arm keeps names in edx and copies it to ecx (retail
 // loads it twice, into eax for the store and ecx for the join).
 // Earlier (score 31 (was 158)): retail reloads the result byte at the second block's and the 0x34b block's false
@@ -3901,6 +3922,17 @@ void __stdcall function_e3380(long arg_159e6d)
 // 13; a named absolute-index local at each lookup 213 (argument moves to the stack); the two zero stores swapped
 // 15; `result = true` before the names store 15; the inner if/else inverted 13; result declared first 16; a 600 s
 // permuter run (44 tries), none below 13.
+// Round 39 (fast): only the top lookup decides the order of all three: the index formed before the table pointer
+// there gives retail's [index + data] in all three (13 -> 10): a header pointer local (`header = &headers[i]`,
+// `biped = header->biped`) 10, a named absolute index 10 (both one-use, kept only with a match), the index-first
+// getter on the inner tests or in the flag helper only 13; BIPED_GET file-wide as an index-first inline getter 10
+// (0xdd0d0 and 0xe4450 stop matching). On the header local: the names store in both inner arms 199, `result = true`
+// first in the found arm 12, the output zero store first 12, `state->flags & 1` unwrapped 67, physics as a byte
+// offset 10, output as `((real *)output)[10]` 10, result declared before state 12, inner if/else inverted 10, the
+// blend constant passed directly 13 (10 on the header local; same code). Left
+// (10): the push temp and the names registers, a one-step scratch rotation; 0xdd360's 0x1e5af0 call also takes edx
+// for the push temp in retail where ours takes the first free register (lead: 0x1e5af0's parameter order; its file
+// is held this round).
 // @retail 0xe3c90
 bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

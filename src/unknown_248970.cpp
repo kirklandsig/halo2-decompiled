@@ -297,6 +297,14 @@ public:
 // `(salt << 16) | (element - data)` in place 176 (716 bytes: frame 0x0c, the location held in EBP, metadata
 // spilled); that with `head = child_index;` before a break test on head 248 (location an EBX register argument,
 // 0x175270 100); the break as the initialization test's `else` 54 (same).
+// Round 42 (m3 lane 13, fast, with 0x175270): the handle from the element's salt and the pointer difference in place
+// 176 (frame 0x0c, the location becomes an EBP register argument); 0x2483f0 called with `inline` on its definition
+// 298 (its link body stays a call under that file's inline_depth(1)); the same with that pragma dropped 261 (fully
+// inlined, the location an EBX register argument, 0x175270 100; the inlined salt read is volatile, so the pool's
+// data field is loaded twice where retail loads it once into EBP); a non-volatile copy of the link body (diagnostic)
+// 261 (data loaded once, location still EBX); that copy with the location read once through its address 248
+// (location stacked again, frame 8, but held in EBX; 0x175270 21). Retail's link keeps the pool in EBX, NONE in
+// EDI then EBP and reloads the location into EDX; every inlined-link form here keeps the location in EBX.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

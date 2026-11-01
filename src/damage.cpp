@@ -768,11 +768,22 @@ void __stdcall function_d6bc0(long object_index)
 }
 
 /* whether a damage event can affect an object */
-// score 26 (was 77): `result` must be a variable that is set true in one branch, or it is folded away and the
-// parameters move to registers (data on the stack, in ebp, is retail's). What still differs is layout: retail
+// score 15 (was 26): `result` must be a variable that is set true in one branch, or it is folded away and the
+// parameters move to registers (data on the stack, in ebp, is retail's). With the flag-8 test swapped (team call in
+// the then arm, `result = true` in the else) the layout is retail's except one `mov bl, 1` block before the false
+// epilogue: retail sends that path to the shared `mov al, 1` epilogue too (219 against 217 bytes).
+// Earlier: what still differs is layout: retail
 // shares one `mov al, 1` epilogue between the type test, the flags & 8 test and the team test, we emit one inline
 // before the team call and reach the other through `mov bl, 1`. Tried: all `return true` (convention reverts, 85),
 // `result = true` at every site (35, `mov bl, 1` tail), `return player_index != NONE` without the bool local (50).
+// Round 39 (lane 13, --fast): `if (!(flags & 8) || team) result = true` 33, with `return true` 88 (folds), `result =
+// !(flags & 8) || team` 63; nested flag-8 test with `result = true` / else `return true` 29 (217 bytes); unit branch
+// assigning result without returning, with the original / `||` return / nested return / nested result team 51/62/62/53;
+// unit `result = ...; return result;` 26, with `||` or nested return 88/88; type test `result = true` in an else-if chain
+// with `||` / nested result 35/35, two-arm else-if 33, `result = team` 74/74; type test inverted with `||` result /
+// nested result 35/35, with `||` return 15, `result = true` first with `||` return 38, one combined condition 35. On 15
+// (kept): `result = true; return result;` 88, type-test else `return true` with the team result forms 28/29/29,
+// result declared first / second 83/83.
 // Round 473: success paths type/flags/team as set/return/return 51, return/set/return 51, set/set/return
 // 36, set/return/set 26, return/set/set 33; first result on set/return/return 72; dword on
 // return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
@@ -808,9 +819,12 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 				return true;
 			if (!((flags & 0x8000) && g_4e6948->state == 1 && object->player_index != NONE))
 			{
-				if (!(flags & 8))
-					return true;
-				if (function_1df560(object->team, data->owner.team))
+				if (flags & 8)
+				{
+					if (function_1df560(object->team, data->owner.team))
+						return true;
+				}
+				else
 					result = true;
 			}
 		}
@@ -1391,6 +1405,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // which then goes through ecx instead of eax). Everything else, including the usercall registers, matches.
 // Tried: memcpy of the owner (10), the owner copied through a local (10), flags updated with ?: chains (10),
 // the flags read and written through data.flags instead of the byte-array alias (10).
+// Round 39 (lane 13, --fast): definition index through a named globals pointer 10, data declared first 10, object
+// pointer local 10, single exit 10, `flags = data; flags |= 4;` 10, with blank-line splits 10, data.flags
+// read-modify-writes 10; permuter 16 tries, best 10. 0xd6660 (score 3) uses retail's registers, so its summary is not
+// the cause.
 // Round 473: required bit at final publication 32; flag declaration before event 10; event name 10;
 // damage_flags name 10; owner before scale 17; owner/late bit 35; both names/late bit 32; flags before
 // disjoint publications 17. Original body restored; aggregate-copy registers and final flag-store schedule
@@ -1920,7 +1938,7 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
-// score 40 (was 218): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
+// score 5 (was 40): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
 // result to a stack byte and pushes the dword, and sign-extends the team into esi/ecx); what is left is scheduling (the
 // `mov eax, [edi]` before the `info` test, which register the object pointer and the 1 << type shift use) and the
 // `lea ebx, [ecx + 8]` before the last call's first push.
@@ -1931,6 +1949,14 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // nested guard 40, eager null comparisons 238, nullable ordinal 40, definition flag first 58, upper range
 // first 44; three-use owner address after/before initial damage 180/185. All restored; pointer-load
 // scheduling, object/shift registers and final owner-address schedule remain.
+// Round 40 (lane 14): the 0xb58c0 notify written as 0xd6790 has it (an object pointer read once for the
+// test and the argument) took 40 -> 5: every register now agrees. Left: retail loads `mov eax, [edi]` above
+// the info `je`, addresses the region flags as [eax + edx + 4] (ours [edx + eax + 4]) and does the `lea ebx`
+// before the effect call's `push eax` (0xd9110 has the same swap). On that graph: the effect call straight
+// to the owner-first 0x176780 40 (same code, on the old graph); region entry local before the guard 226
+// (accumulator in EAX, old graph); region element pointer 5; one combined guard reading the entry at each
+// use 201 (880 bytes); short region index 201; `!= NULL` guard 5; player test joined into the region test 5;
+// a 600 s permuter run, 12 tries, none below 5.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -1972,8 +1998,9 @@ void function_d8cb0(long object_index, s_damage_effect_definition const *definit
 			if (0.0001f > object->body_vitality)
 				object->body_vitality = 0.0001f;
 		}
-		if (DAMAGE_OBJECT(object_index)->unknownd4 != NONE)
-			function_b58c0(DAMAGE_OBJECT(object_index)->unknownd4, 0x40);
+		s_damage_object *damaged = DAMAGE_OBJECT(object_index);
+		if (damaged->unknownd4 != NONE)
+			function_b58c0(damaged->unknownd4, 0x40);
 		accumulator->unknown28 = body_damage;
 	}
 
@@ -3386,16 +3413,6 @@ void function_d87e0(long list_index, bool can_take_damage)
 
 /* how many of the model markers of a name an object and its attached
    children are missing */
-// score 46 (was 46): the walk and the first marker test match. What differs is the marker loop head: retail loads
-// the marker array (+0x6c), then marker_name (a separate `mov ecx,[esp+0x94]`), then `add eax,esi; mov eax,[eax]; cmp eax,ecx`;
-// ours folds both into `mov eax,[esi+ecx]; cmp eax,[esp+0x94]`, so every instruction of the loop after that shifts.
-// Tried (all still 46): operand order of the name test, passing marker_name instead of name to 0xb8d30, the array
-// address in a separate local, i*0x1c written before the base, marker_name copied to a local, a struct-array
-// view of the markers.
-// @coldspear's permuter (#104, 2026-10-30): 46 -> 31 only by changing an offset and swapping 0xb8d30's arguments at one
-// call (not kept).
-// Round 268: marker output at function/object/model/marker-loop scope, short or long missing
-// counter, all eight 46 at 332 bytes. Original scope and counter restored.
 // @retail 0xd88f0
 short __stdcall function_d88f0(long object_index, long marker_name)
 {
@@ -3420,13 +3437,13 @@ short __stdcall function_d88f0(long object_index, long marker_name)
 
 					for (long i = 0; i < marker_count; i++)
 					{
-						string_handle name = *(string_handle *)(*(byte **)(model + 0x6c) + i * 0x1c);
+						byte *entry = *(byte **)(model + 0x6c) + i * 0x1c;
 
-						if (name == marker_name)
+						if (*(string_handle *)entry == marker_name)
 						{
 							s_object_marker marker;
 
-							if (!function_b8d30(index, name, &marker, 1, false))
+							if (!function_b8d30(index, *(string_handle *)entry, &marker, 1, false))
 								missing_count++;
 						}
 					}

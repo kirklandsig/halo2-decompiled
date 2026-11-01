@@ -584,6 +584,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // (re-measured), plus the separate input copies 115 (1138 bytes), with the emitter mask read from the
 // definition at both uses 232 (1130 bytes); the separate input copy for the position rotation only 42
 // (same code: VC folds it into the helper's own copy).
+// Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
+// the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
+// read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
+// lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
+// fixed); after the particle mask or the particle lookup 42 (no change).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
