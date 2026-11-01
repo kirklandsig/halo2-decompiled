@@ -581,6 +581,9 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // getter gives the session EBX as in retail, and 0x6e500 and 0x72700 match with it. Left: the opening's
 // second lea after the je (retail's comes before it) and a one-step scratch rotation through the summary
 // lea, the mask temp and the copy loop.
+// Round 105: direct unconditional stored-pointer pair 22 (same code); named missing condition 218; summary declared
+// after the buffers 22; named machine-mask value 22; memcpy machine copy 22; two scalar copies 144;
+// address/member pointer arithmetic 22/22. Original body restored; caller and matched-callee controls preserved.
 // Before (55): aligned frame agrees; the code is retail's apart from the colours. Retail takes the
 // session in EBX (its callers copy it there) and gives the loop temporaries ESI/EDI; ours keeps the session
 // in ESI and the loop temporaries in EBX/EDI. Deleting the whole tail (live test, 0x4994 setter, machine

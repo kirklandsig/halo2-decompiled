@@ -3547,6 +3547,8 @@ long __stdcall function_3ddd0(long object_index);
 // late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
 // base/index order; original loads and arithmetic restored.
 // A 480-second annealed search: 45 attempts, none below 1.
+// Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
+// one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
