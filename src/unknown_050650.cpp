@@ -614,6 +614,11 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // late EBX push, ECX yaw axis, every frame offset, the collision block, latch and both tails; left are the two
 // rotations, about 30 instructions longer with spills through the sine slot, and the pitch normalize's j
 // product order); on that the rotation's cross_j/cross_k before cross_i 368 (same code).
+// Lane 13 r46 (fast = full here): the rotation's dot product as k, j, i 333 (0x297d30 23, unchanged); long `clear = true`
+// first in each pass 327 again (retail's prologue and late EBX push; the rest is the 0x10 frame gap, every stack
+// offset shifted); on it a long attempt counter 326 at 1423 B (retail compares `cmp dx, 0xa`: a short counter), the
+// candidate copy before the draws 334, the single-exit normalize 346 (1449 B), `clear` left uninitialised 327 (same
+// code). In this body the rotations are about retail's length (fsin/fcos/branch at the same listing lines).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -697,7 +702,7 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// score 257 (was 276): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
+// score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
 // (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
 // Earlier at 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
 // Earlier at 322 (was 322): Round 32: the jump-table base and every internal jump still differ (our body is 1424 bytes
@@ -814,6 +819,12 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // as `if (weapon_index != NONE) { ... }` 257 (kept, one goto fewer); on 257: `point_valid = result = false` 259,
 // separate initialised declarations 259, case 1's body under `if (reference)` 257 (same code), the aim test as
 // `if (aiming) { ... }` 257 (same code); the struct copies and then-block on the shared label 324 (1380 B).
+// Lane 13 r46 (plain): case 0's route records written in full 331 (1444 B, but the index is no longer re-read after
+// 0x24590 as retail does); `point_valid = result = false` 259 (homes unchanged); weapon_index/origin in the weapon
+// block 257, case 2's player test inverted 257, `if (!result || !point_valid) goto done;` 257 (all the same code).
+// A compile-only screen shows two spilled bools take their bytes by usage weight (the more-referenced one gets the
+// lower byte), not by name or declaration order: retail's result is the heavier one, ours point_valid (five case
+// stores before cross-jumping), which is why setting point_valid once at the aim label gave retail's homes.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1428,6 +1439,12 @@ struct s_actor_looking_turn_request
 // `*function_e70b0(actor->unit_index, &state)` 544 (same code); with bool valid 552; the idle cosines in a
 // block of their own around the query (retail packs them into direction's slots) 544 (same code); direction
 // declared at function scope 544 (same code).
+// Lane 13 r46 (plain): BLOCKED-BY 0x1fdd90: retail calls it from here only (one E8 call, no address taken in the image)
+// and keeps it out of line; ours inlines it, keeping its pool in EBX, and the extra frame dword is `&actor->forward`
+// held in a stack slot across the body where retail rematerialises `lea [ebp + 0x290]` at each use. Tried: the
+// looking output as an if/else 579 (2080 B); the output flags through actor_looking_get at each use 441 (2020 B);
+// a scoped pointer for the two entry forward copies 442; the turn block's forward point declared first 442; the
+// request's forward copied before 0xb9dd0 445.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
