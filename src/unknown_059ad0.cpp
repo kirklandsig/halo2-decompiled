@@ -3528,6 +3528,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
 // fast; all three with the native machine-address field copy 131. Original declarations,
 // machine copy, result qualifier and full body restored; full starting count remains 119.
+// Round 482: Independent added/replacement channel results, shared/long/const-long
+// producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
+// Control 119 with related caller retained; original channel join and body restored.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3767,6 +3770,9 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
 // address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
 // key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
+// Round 482: Five nonoriginal complete payload-copy orders 136/138/137/138/137;
+// three with metadata before payload 138/138/137. Original request construction
+// restored; host/session staging, clock expansion and cleanup placement remain.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4910,6 +4916,10 @@ struct s_membership_update_snapshot
 // first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
 // Necessary result-controlled error-continue loops first/second/both 696/704/732;
 // with signed-short ordinals 718/715/724. Original records and validation exits retained.
+// Round 482: Persistent member-record cursors first/second/both 697/769/761;
+// first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
+// both with unsigned-word application ordinal 743 (fast; unchanged control 523).
+// Every form regresses; original signed-short validation ordinal and full body restored.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

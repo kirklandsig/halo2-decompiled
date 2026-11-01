@@ -2172,6 +2172,9 @@ void function_269250(long clump_index, long actor_index)
 // Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
 // order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
 // deletion/pool scheduling remain; all matched controls survive.
+// Round 482: Independent category false-initializer lifetimes at entry/object/type
+// boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
+// declarations restored; category-byte homes and deletion/pool completion remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2398,6 +2401,9 @@ void *actor_get_character_situation_entry(long actor_index);
 // Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
 // with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
 // allocation remain; all matched controls survive.
+// Round 482: Stable selection-count snapshots short/long after sort 197/313, before sort
+// 203/315; with first-loop indexed candidate advancement 314/171/313/184.
+// Caller-inclusive fast control 71; every snapshot regresses. Original escaped count restored.
 // @retail 0x269870
 void function_269870(long clump_index)
 {
