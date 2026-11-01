@@ -126,6 +126,11 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
 // component if/conditional selections 204/220; reused side predicate 204; existing negative
 // scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
+// Round 444: Double magnitude/inverse/both signed-projection domains, subsets 1/2/4/3/5/6/7,
+// then all with untruncated sqrt: 194/196/228/199/237/241/243/243. Original scalar precision, complete body and inline boundary restored.
+// Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
+// original/earlier magnitude 233/237/239/245/85/183/199/210
+// Original executable body and helpers restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

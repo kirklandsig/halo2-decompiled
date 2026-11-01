@@ -188,6 +188,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // a vector local with j,k,i / i,j,k / k,j,i sums 188 each (same code). Left on 188: per-call x87 square
 // orders, arg_3 not kept in ESI across the distances to the 0x29de20 call, the found flag stored from AL,
 // the record-index add, the output loop's entry jump. distance3d on the original 418/418.
+// Round 494: complete point-input copies inside squared/length metrics, first/second/both
+// in each alone, then both squared with first/both length: 439/437/473/558/555/787/677/892.
+// Original input reads, metric helpers and entire body restored; selected homes and table roles remain.
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

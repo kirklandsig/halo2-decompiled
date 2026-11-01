@@ -988,6 +988,9 @@ real function_30bf0(vector3f *v);
 // Y492: native real quotient producers optimal/solved/both 232/232/232;
 // double producers 246/273/264, both with entry result/double flight time 267/302.
 // All restored; frame, rounded-root scheduling and separate divisions remain.
+// Round 495: Whole fallback/default/publication CRT-copy subsets on the shared-scale/path
+// graph 232 each (seven forms); complete copies with entry result 245. Original body
+// restored; frame, rounded-root scheduling and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1557,6 +1560,10 @@ PRIVATE inline long projectile_object_root(long object_index)
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
 // score 315 (was 315): HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// first +0 is entry scheduling; frame 0xc versus retail 4.
+// Pool/input and tag receiver allocation still differ.
+// Speed update is still called instead of expanded; 1239/1261 bytes.
+// HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
 // #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
 // retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
 // without the inline is 380. On that 304 form: retail keeps the pool pointer in EDX from the entry to the
@@ -1860,6 +1867,10 @@ real function_17c900(short function_type, real input);
 // Y492: complete clamped time/lead/turn-amount producers in seven subsets
 // 348/348/348/352/352/352/352; all with clamped drift producer 366.
 // All restored; index/output transport and normalization/rotation homes remain.
+// Round 495: Complete normalizer input vector/scalar snapshots with reciprocal/result
+// variants 464 (eight forms); forced original graphs 410/348, forced shared-reciprocal
+// single-exit graphs 398/344 (344 raises other users 0 to 8 and 3 to 10). All helper
+// changes restored; stacked-index/output transport and component homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
