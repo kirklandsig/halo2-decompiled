@@ -118,6 +118,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 468: Second-axis count long/word/byte/signed-byte, each with short/word
 // common count, 91/129, 99/91, 95/118, 95/94. All controls remain matched; original
 // height/common counts and complete body restored; coordinate promotions and count homes remain.
+// Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
+// 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
+// coordinate promotion, height/common homes and minimum selection remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

@@ -694,6 +694,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // builds hold the callback in EBX; ours reloads it only because the first read is volatile. Frame limit
 // after the clamp 118; byte clear before the event-word clears 116; event-word clears after the clamp 114;
 // `next_frame < 0.0f` 97 (same code); frame limit after the byte clear 119.
+// Round 470: six lexical orders of the position/limit/next scalars 97 each;
+// first and last float orders with later saved-identity names 97/97. Original
+// names and body restored; adjacent flags scheduling and callback reload remain.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

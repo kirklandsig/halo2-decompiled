@@ -877,6 +877,9 @@ real function_18cac0(long arg_0);
 // Round 245: plain door-cluster/gain/final-entry cursors in seven subsets
 // 236/203/211/154/236/203/211; all with native real table 211. Final-entry cursor
 // saves one point and is rejected. Original indexed body and both library clears restored.
+// Round 470: complete-array clear-return view with real backing, retained
+// audibility and camera-cluster continuation interactions 155/155/167/167/155/155/167/167.
+// Original scalar view and complete body restored; camera/clear-result homes remain.
 // @retail 0x221a70
 void __stdcall function_221a70(long arg_0, s_voice_position_batch *arg_1)
 {
