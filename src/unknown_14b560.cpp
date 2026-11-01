@@ -2238,10 +2238,14 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
-// score 775 (was 701): the first 0x151b80 call's boolean argument passed through a named local; the
+// score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// Round 439: parent/tag/seat one-use intermediary elision in all seven subsets 701 each;
+// complete graph with all three target field-reference lifetimes at receiver acquisition 701.
+// Original entire body restored; every field observation and protected call boundary retained.
+// At 775: the first 0x151b80 call's boolean argument passed through a named local; the
 // call was no longer expanded, the body shrank to 2636 bytes and the score rose. Reverted; the frame
 // and the two expanded calls remain the blocker.
-// score 701 (was 701): frame 0x4c versus 0x74 and selective call expansion remain.
+// At 701: frame 0x4c versus 0x74 and selective call expansion remain.
 // Earlier: frame 0x4c versus 0x74; request/pointer homes and call expansion remain.
 // frame 0x4c versus 0x74; request/pointer homes and call expansion differ.
 // Frame 0x4c versus 0x74; request/pointer homes and selective expansion remain.

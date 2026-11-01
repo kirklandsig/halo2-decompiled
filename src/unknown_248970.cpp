@@ -275,6 +275,10 @@ public:
 // with the entry locals 115; the pool local declared, then assigned 95; `return` for the break 95. On 54: the inline
 // 0x2483f0 call 298; head and offset in the for-init 53; `head = child_index;` before the break test, testing head
 // 118 or child_index 118 (both make the location an EBX register argument); the link element from `child_index` 54.
+// Round 439: head before byte-offset update 54; native pretested while with head/ordinal/offset
+// and ordinal/head/offset latches 49/49, head/offset/ordinal 54; direct remaining-count traversal
+// with head/offset or offset/head updates 142/142; real definition cursor with for/while 243/243.
+// Five-point while gains are below the keep threshold; complete original body restored.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

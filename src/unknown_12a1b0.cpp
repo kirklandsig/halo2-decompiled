@@ -1532,7 +1532,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
-// score 305 (was 307): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
@@ -1582,6 +1582,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 254: Reduced shared full request type with no/first/second/both long range counts,
 // first/second/both short counts and both byte counts 479/491/497/363/465/451/469/508. All restored.
 // Ordinary full-request/two-long-count form 370 at 1923 bytes; rejected against full 307.
+// Round 439: entry declarations of detail reason, selected range and current ring result, all
+// seven subsets, 479 reduced each; all three plus the replacement result 479 reduced.
+// Original producers, observations, loops and entire body restored (reduced control 479, full 305).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2113,11 +2116,16 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
-// score 615 (was 615): the entry and the homes through the creation call still differ, the gains
+// score 597 (was 615): retail length recovered; saved-register order, record homes, energy-loop
+// padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
+// declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
+// initial result 694 reduced, 597 plain (kept); independent request state 811 reduced;
+// complete geometry output scope 716 reduced (unchanged reduced control 716, full 615).
+// At 615: the entry and the homes through the creation call still differ, the gains
 // clear uses retail's store form (retail stores [ebp+0xc4..] from eax), the energy loop keeps its
 // padding jump in retail, the track loop holds the state in EBX and the track in EBP, and the
 // impulse bits are still tested twice unmerged with the field_c_4 = 0 reload.
-// score 615 (was 615): entry and homes retail's through the creation call; the gains clear (memset's
+// At 615: entry and homes retail's through the creation call; the gains clear (memset's
 // lea form, retail stores [ebp+0xc4..] from eax), the energy loop's padding (jmp + 8 bytes in retail), state held
 // in EBX and track (not track_definition/i) in EBP in the track loop, the impulse bits tested twice unmerged and
 // the field_c_4 = 0 reload still differ.
@@ -2169,10 +2177,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
 {
+	bool alternate = (flags & 1) != 0;
 	bool result = state == 2;
 	if (definition_index != NONE)
 	{
-		bool alternate = (flags & 1) != 0;
 		if (looping_sound_system_available())
 		{
 			looping_sound_definition *definition = (looping_sound_definition *)g_4e3b44[definition_index & 0xffff].bytes;

@@ -866,6 +866,10 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 439: single-consumer same-type sum/product/copy elision, all seven subsets,
+// 1881/1796/1903/1766/1867/1796/1905; complete graph with matrix receiver renamed 1905.
+// Product elision leaves 943 scalars and recovers rotation in EAX, but frame 0x314 remains;
+// all nine initial loads and explicit precision conversions were retained. Entire body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
