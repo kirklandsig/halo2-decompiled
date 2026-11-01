@@ -164,7 +164,7 @@ void function_44720(void)
 // score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
 // through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
 // the flags word; this round's variants all scored worse, so the body is unchanged.
-// score 107 (was 107): frame 0x44 versus retail 0x40; entry-offset construction
+// Earlier: frame 0x44 versus retail 0x40; entry-offset construction
 // and the geometry flag reloads differ.
 // Round 125 (one-link LTCG harness with the callers' and callees' files, exact for this function):
 // level != 31 at the call gives retail's frame (harness aligned 70 -> 50) but 135; on it the
@@ -206,6 +206,12 @@ void function_44720(void)
 // Round 453: Ordinary inline query/submission/both contracts 107/107/107;
 // with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
 // Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
+// Round 32: 0x458d0's matched lookup loads the structure global once above its branch, so the per-branch
+// reloads are this function's own; retail's loop callees reach none of the global's writers. Level test at
+// the call 135 (frame, slots and EDI/EBP/EBX roles retail's); with the lookup given `&g_4ba138[(short)index]`
+// 136 (global hoisted out of the loop into EBX); plus the global read in each lookup branch 136 (still
+// hoisted; 0x45560 246); level test at the call with the transform after the lookup 150; `use_level` once
+// before the outer loop 158.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

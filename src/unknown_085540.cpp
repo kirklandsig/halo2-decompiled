@@ -118,7 +118,7 @@ bool c_simulation_view::channel_ready(void)
 {
 	bool result;
 	if (channel_index != NONE)
-		result = network_observer_channel_ready(observer, channel_index, 0x2b);
+		result = network_observer_channel_ready(observer, 3, channel_index, 0x2b);
 	else
 		result = true;
 	return result;
@@ -521,7 +521,7 @@ void simulation_view_baseline_update(s_simulation_view_baseline *baseline)
 			}
 			else if (view->channel_index != NONE)
 			{
-				network_observer_mark_message(view->observer, view->channel_index, 0x2b);
+				network_observer_mark_message(view->observer, 3, view->channel_index, 0x2b);
 			}
 		}
 	}
