@@ -1133,7 +1133,7 @@ void __stdcall function_095580(void *header, long message_type, long message_siz
 
 bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb const *collection, long *size);
 
-// score 107 (was 141): frame agrees; aligned 50. Retail reads the oldest sequence once (EDX) for the
+// score 107 (was 107): frame agrees; aligned 50. Retail reads the oldest sequence once (EDX) for the
 // count, the first sequence and the scan; keeps the result in a stack byte, made zero in CL at entry and
 // returned with `mov al, cl` from early exits placed at the end, reloaded at the final return; sets the
 // copy loop's fragment to NULL before the index test; and falls into the failure return after the
@@ -1296,6 +1296,9 @@ bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb 
 // terminal test as `result |= (flags & 2) != 0` 110 (aligned 72); the copy loop's fragment as one
 // ternary 134; the scan stopping at the terminal fragment (`result = (flags & 2) != 0; if (result)
 // break;`) 102 (807 bytes, aligned 78: retail scans on past it).
+// Round 264: Complete payload/stream initialization before count, before result, at entry,
+// at nonempty admission and before scan-result admission 260/260/260/255/266; first three
+// with the existing buffer initializer 260/260/260. Original setup/body restored.
 // @retail 0x95840
 bool __stdcall function_095840(s_network_stream_header *header, long *message_type, long *message_size, void *message_data)
 {
