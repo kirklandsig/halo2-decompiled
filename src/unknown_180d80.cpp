@@ -111,6 +111,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
+// MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
+// prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
+// score 94 (was 94): BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // eax: `push -1` for `mov eax, -1` shifts every later offset by 3 bytes). A short strip-loop
 // index gives retail's prologue and count loop but 547 (the loop head's padding grows to a
 // jmp); local names for the count and vertex index 94; vertex index declared first 547;

@@ -1517,6 +1517,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 364 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // Round 36 (lane 1, fast, 0x3db00 kept; aligned/shape base 320/203): in-place direction2 rotation 435
 // (292/143, frame 0x40, 1870 bytes, first +0x57); with the square right after the direction1 negate 462
@@ -2084,6 +2085,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // five-short array copy 687 each; weights-first value/pointer-copy/reference-copy/library-copy
 // 699 each. Original decoder, separate samples, shared offsets and complete body restored.
 // Frame 0x90 agrees; status +0x30 versus +0x24 and mesh +0x2c versus +0x20 remain.
+// Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
+// with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
+// restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

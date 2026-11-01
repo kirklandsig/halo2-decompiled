@@ -285,6 +285,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 277: standard minimum/maximum/alignment-pin families, subsets 1..7,
 // 718/752/751/829/868/895/880; all with failure constant first 880. Alignment-pin
 // graphs also lose the exact caller; original body, helpers and 0x24 frame restored.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

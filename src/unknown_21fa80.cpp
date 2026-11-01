@@ -164,6 +164,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 277: standard selected-gain/real-pin/bit-pin extrema, subsets 1..7,
 // 570/564/561/536/556/558/578; all with real gain value 578 (fast control 532,
 // full 545). Original body and helpers restored; frame and stream/gain homes remain.
+// Round 479: shared native active-mixbin workspace for first/submix, first/routing,
+// submix/routing and all phases, declared before updates 535/542/532/542;
+// at entry 535/542/532/542 (fast control 532). Original workspaces and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

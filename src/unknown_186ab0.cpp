@@ -153,6 +153,9 @@ void player_action_initialize(s_player_action *arg_0);
 // score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
+// MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
+// and a one-caller forceinline wrapper of 0x14d040; the retail callees stay out of line at inline_depth(0)).
+// score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
 // byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
 // MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
 // for the cycle loop and the field-first selection comparison, both calls inlined only with this function at

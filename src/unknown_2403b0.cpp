@@ -37,6 +37,8 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // score 86 (was 86): frame 0x3c agrees; pool-data spill across readers, cap-factor load order,
 // low-bit materialization and team scratch rank differ.
 // Earlier: the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
+// MiniMax S (11-01): still 86: the pool data pointer is loaded before the masked index and kept across 0xcbd50/0x101280, where retail loads it again after them.
+// score 86 (was 86): the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
 // (other files), and MSVC always loads the limit product's cap global before the scale global whatever
 // order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses
 // `not al; and al, 1`, and the team is still copied into edx where retail uses ecx.
