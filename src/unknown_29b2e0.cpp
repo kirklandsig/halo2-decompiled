@@ -211,6 +211,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // renamed to sort after the yaw 255; both angle declarations moved to the function's top 255 (all the same
 // code); the XY vector initialised before the second copy 253 (two-point gain, not kept), before the first
 // copy 361 (1710 bytes). Retail also spills the pitch into arg_4's home after its last use.
+// Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
+// with complete role names 255/255/255/255/255/255/255/255.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

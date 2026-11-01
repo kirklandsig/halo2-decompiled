@@ -214,6 +214,15 @@ const dword g_455978[81] = {
 // Round 253: Coherent unsigned bounds/sample/count domains in seven subsets, then immutable complete
 // count; scores 298/298/298/298/298/298/298/298.
 // Original executable source restored; no qualifying gain.
+// Round 62 (m3 lane 16, fast): retail's planar block reads as `vector3f v = table[i]; v.k = 0.0f; if
+// (normalize_inline(&v) == 0.0f) continue;` (a three-component copy, the fabs < 0.0001 skip, i, j and the zero k
+// scaled by the inverse, then the `length == 0` skip), with v.i/j/k scaled by arg_6: 308 at 2078 bytes (LCS-aligned
+// 205 -> 173; the planar block is then retail's code apart from its frame slots: ours puts the table vector at +0x20,
+// the length at +0x2c and the copy at +0x30, retail the copy at +0x2c, the length at +0x44 and the table vector at
+// +0x48); the length as a named local 308; the two vectors renamed offset/horizontal, sample_direction/radial,
+// direction/planar 308 each (names do not move these slots).
+// On that form: the copy declared before the table vector 308; the blend factor first and the copy in its own
+// nested block 317 (2075 bytes).
 // Round 473: coherent component identity after SSE setup, original/shared filter and per-sample/shared
 // invariant blend: 488/476/512/524; entry identity on the same four graphs 493/521/494/502. Original body
 // restored; optional-state/sample/ray homes and selective location/release expansion remain.

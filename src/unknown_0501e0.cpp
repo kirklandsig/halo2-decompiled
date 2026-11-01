@@ -209,6 +209,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // (1136 bytes), declared at the calls 252; a scaled vector copy through vector3f_scale in place 283 (1160), from
 // the input 309; explicit rows with (real) product casts 306 (1081), grouped 301; locals declared k-first
 // 258, scaled k-first 245; the per-component ternary scale 256 (1136, three tests).
+// Round 477: Native input-vector scale induction long/dword/short/word with cursor 312/312/355/355; indexed rows 309/309/358/358.
+// Original scalar snapshots, scale producers, separate offset loops, output cursor and entire body restored; frame and coefficient/input/result homes remain.
+// Round 483: coherent radius from output/producer, branch/common publication
+// and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
+// All regress; initial stores, alias-sensitive reads, original helper/body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

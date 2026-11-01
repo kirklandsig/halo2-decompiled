@@ -26,6 +26,14 @@
 // a DWORD index for the bin store 8; a long-cast count 8. Diagnostics (not kept): /Op 8, the decibels'
 // address taken 8, the conversion written out or split 8: every form compiles to the same code, the
 // decibels load always ahead of the count load.
+// Round 19 (lane 18): retail's own inlined copies of this append (0x2aefe0: count in ECX, volume in
+// EAX, the bin store scheduled between the pushes) compile exactly like ours; only retail's
+// out-of-line copy is unscheduled with EAX reused throughout, so the lead is a different code
+// generation setting for this function. Tried: the pair built in a local and copied 15; a two-use
+// count local with `count + 1` 12; a DWORD mixbin 8; the volume local declared first 8; the
+// conversion as an ordinary function in this or the filter file 49 each (never inlined at link time).
+// Diagnostics (not kept): a compiler barrier after the bin store 5 (retail's prefix order, the
+// decibels still in EDX and the count/volume still ECX/EAX); favor-size pragma 45 (conversion not inlined).
 // @retail 0x21e230
 void sound_mixbins_add(s_mixbin_settings *settings, long mixbin, real decibels)
 {

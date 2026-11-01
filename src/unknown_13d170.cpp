@@ -267,6 +267,12 @@ struct s_block_candidate
 // Retail lays the no-candidate tail (limit update, result reload, `pop edi`) and the shared epilogue right
 // after the loop guard (`jg loop`, falling into the tail); allocation failure and the post-loop !have_best
 // test jump back to it. Ours places the tail last and enters the loop through `jle tail; jmp body`.
+// Round 275: Reused candidate pages/time/both/best fields/pages-best/time-best/all 369/367/367/370/367/367/367; all with immutable successor 367. One/three-point leads rejected.
+// Original executable source restored; frame 0x1050 versus 0x1054, page/ring homes and policy blocks remain.
+// Round 277: Existing private iterator with field/aggregate initialization and candidate
+// assignment/memcpy 370 each; each with native successful-datum lookup 367 at 1213 bytes
+// (three-point gains rejected). Original helper use, iterator, lookups and body restored;
+// frame/page-tail homes and policy blocks remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
