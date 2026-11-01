@@ -1718,6 +1718,10 @@ void function_b7360(long object_index);
 // Round 331: Common case-thirteen notification with branch/conditional flag values and
 // orientation/point result stores: 471/483/512/521/471/493/519/528. Original terminal cases, output
 // producers and complete body restored; actor/pool/output allocation and length gap remain.
+// Round 335: Whole countdown case zero before 17/4/7/8/10/5/9/13 gives
+// 470/471/485/524/526/526/528/528 (fast control 471). The one-point reduction
+// is rejected; original complete case order and body restored. Pool/actor/output
+// ownership and the forty-byte length gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2201,6 +2205,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // admission/alignment/search workspace names in seven subsets and all with
 // planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
 // First point/prefix recover but later homes regress; original complete body restored.
+// Round 335: Complete turning/alignment/both-distance product parts, subsets 1-7,
+// 485 each; all parts const 485 (fast control 485; full 469). Actor/state allocation
+// and first point home remain; all original products, cases and body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

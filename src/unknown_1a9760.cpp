@@ -109,6 +109,10 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
 // [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
 // alone [66].
+// Round 335: Native offset passes position/scale/scaled-input/affine 197/237/199/181;
+// affine-pass normalization orders ikj/jik/jki/kij/kji 180/180/180/179/181.
+// The affine graph reaches 996 bytes and first +0xa9, but regresses; original
+// offset producer, normalization and complete body restored at 85.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
