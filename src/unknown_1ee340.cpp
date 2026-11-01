@@ -301,6 +301,8 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // with the direction from ray->start 192; copy-first plus origin set after both 230; hit-block result
 // writes with `found = true` last 239 (1045 bytes); a short count local for the call 297. Unused-local
 // probes +1/+2/+3/+4/+8/+12 all 192 (diagnostic: no symbol-numbering effect here).
+// DL220: Scalar origin with native difference constructors, crossed with scalar start, ray constructor and staged cross:
+// 192/195/192/195/192/195/192/195. Original complete body restored; original frame and register homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

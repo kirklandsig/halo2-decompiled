@@ -179,6 +179,8 @@ void function_213970(void);
 // definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
 // Round 217: standard whole-array path/request/storage-record initializers, seven subsets,
 // then all endpoint initializers: 166/178/184/206/226/232/239/243. Original library clears and complete body restored.
+// DL220: Plain member-level array resets using library payload clears and native endpoint stores, seven subsets; all with reversed member publication:
+// 169/178/202/171/195/204/227/227. Separate allocation still prevents both complete bulk clears. Original body restored.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
